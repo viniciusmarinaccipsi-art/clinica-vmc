@@ -1441,13 +1441,13 @@ body{
         <tr><td>⚡/🌿 Reações Físicas</td><td>Desconforto ou Bem-Estar</td></tr>
         <tr><td>🌧️/☀️ Pensamentos</td><td>Desadaptativos ou Adaptativos</td></tr>
         <tr><td>🔎 Distorções</td><td>Padrões de pensamento</td></tr>
-        <tr><td>📉/📈 Comportamentos</td><td>Disfuncionais ou Adaptativos</td></tr>
+        <tr><td>📉/📈 Comportamentos</td><td>Disfuncionais ou Funcionais</td></tr>
       </table>
       <h3>Como funciona o preenchimento</h3>
       <ul>
         <li><strong>Na primeira vez</strong>, você precisa seguir as etapas em ordem (da Situação aos Comportamentos). Depois, pode navegar livremente.</li>
         <li><strong>Clique no título de cada grupo</strong> para abrir as opções. Marque os itens que correspondem à sua experiência.</li>
-        <li><strong>Ao marcar um item</strong>, aparece uma escala para avaliar a intensidade. É obrigatório dar uma nota.</li>
+        <li><strong>Nas seções de Emoções, Reações Físicas e Pensamentos</strong>, para toda opção selecionada aparecerá uma escala de intensidade que deverá ser preenchida.</li>
         <li><strong>Registro Negativo primeiro.</strong> Na sua primeira experiência, o Registro Positivo só abre depois que você completar o primeiro negativo.</li>
       </ul>
       <h3>Escalas</h3>
@@ -1730,7 +1730,7 @@ body{
       </button>
       <button class="auto-card green" data-sec-idx="4" data-sec-tipo="pos" type="button" onclick="autoEntrarSecao('sec-auto-comp-b',4,'pos')">
         <span class="auto-card-icon">📈</span>
-        <div class="auto-card-title">Comportamentos Adaptativos</div>
+        <div class="auto-card-title">Comportamentos Funcionais</div>
         <div class="auto-card-desc">Atitudes que ajudaram</div>
         <span class="auto-progress" id="autoProg-comp-b">Preenchido</span>
         <span class="auto-card-arrow">›</span>
@@ -1761,10 +1761,11 @@ body{
           <div class="auto-sec-sub">O que estava acontecendo quando seu humor mudou</div>
         </div>
       </div>
-      <div class="auto-field"><label>Quando?</label><input type="text" data-auto-campo="neg_sit_quando" placeholder="Ex: Logo após o almoço, voltando do trabalho..."></div>
-      <div class="auto-field"><label>Onde?</label><input type="text" data-auto-campo="neg_sit_onde" placeholder="Ex: No trabalho, em casa"></div>
-      <div class="auto-field"><label>Com quem?</label><input type="text" data-auto-campo="neg_sit_com_quem" placeholder="Ex: Sozinho, com colega"></div>
-      <div class="auto-field"><label>O que aconteceu? <span class="req">*</span></label><textarea data-auto-campo="neg_sit_o_que" placeholder="Descreva brevemente..."></textarea></div>
+      <!-- Pacote 3: caixa única substituindo Quando/Onde/Com quem/O que aconteceu.
+           Princípio aditivo: as 4 colunas continuam existindo na planilha; só
+           a coluna _o_que recebe valor nos registros novos. Os campos antigos
+           ficam na planilha como histórico legível dos registros v3/v4. -->
+      <div class="auto-field"><label>O que aconteceu? <span class="req">*</span></label><textarea data-auto-campo="neg_sit_o_que" rows="4" placeholder="Ex: Quando isso aconteceu? Onde você estava? Com quem você estava? O que você estava fazendo?"></textarea></div>
 
       <h3 style="font-family:'Quicksand',sans-serif;font-size:14px;color:var(--gray);margin:18px 0 6px;">Tipo de Contexto</h3>
 
@@ -3741,10 +3742,8 @@ body{
           <div class="auto-sec-sub">O que estava acontecendo quando seu humor mudou</div>
         </div>
       </div>
-      <div class="auto-field"><label>Quando?</label><input type="text" data-auto-campo="pos_sit_quando" placeholder="Ex: Logo após o almoço, voltando do trabalho..."></div>
-      <div class="auto-field"><label>Onde?</label><input type="text" data-auto-campo="pos_sit_onde" placeholder="Ex: No trabalho, em casa"></div>
-      <div class="auto-field"><label>Com quem?</label><input type="text" data-auto-campo="pos_sit_com_quem" placeholder="Ex: Sozinho, com colega"></div>
-      <div class="auto-field"><label>O que aconteceu? <span class="req">*</span></label><textarea data-auto-campo="pos_sit_o_que" placeholder="Descreva brevemente..."></textarea></div>
+      <!-- Pacote 3: caixa única (mesma lógica do lado negativo). -->
+      <div class="auto-field"><label>O que aconteceu? <span class="req">*</span></label><textarea data-auto-campo="pos_sit_o_que" rows="4" placeholder="Ex: Quando isso aconteceu? Onde você estava? Com quem você estava? O que você estava fazendo?"></textarea></div>
       <button class="auto-btn-next green" onclick="autoAvancarSequencial('pos','sec-auto-emo-b')">Próximo: Emoções Agradáveis →</button>
     </div>
   </div>
@@ -5227,21 +5226,21 @@ body{
         </div>
         </div>
       </div>
-      <button class="auto-btn-next green" onclick="autoAvancarSequencial('pos','sec-auto-comp-b')">Próximo: Comportamentos Adaptativos →</button>
+      <button class="auto-btn-next green" onclick="autoAvancarSequencial('pos','sec-auto-comp-b')">Próximo: Comportamentos Funcionais →</button>
     </div>
   </div>
 
   <div class="section" id="sec-auto-comp-b">
     <div class="nav-bar">
       <button class="btn-back" onclick="abrirSecao('sec-auto-menu-pos')">← Menu</button>
-      <span class="nav-title">Comportamentos Adaptativos</span>
+      <span class="nav-title">Comportamentos Funcionais</span>
     </div>
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
     <div class="anam-card">
       <div class="auto-sec-header" style="border-color:var(--green);">
         <div class="auto-sec-icon" style="background:var(--green-bg);color:var(--green);">📈</div>
         <div>
-          <div class="auto-sec-title" style="color:var(--green);">Comportamentos Adaptativos <span class="req">*</span></div>
+          <div class="auto-sec-title" style="color:var(--green);">Comportamentos Funcionais <span class="req">*</span></div>
           <div class="auto-sec-sub">Identifique reações ou atitudes que ajudaram</div>
         </div>
       </div>
@@ -7805,7 +7804,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
    - Formato de dados v4: "item:likert | item:likert | Outro (texto):likert"
    ============================================================ */
 
-const AUTO_VERSAO = 'v4';
+const AUTO_VERSAO = 'v5';
 const AUTO_RASCUNHO_KEY = 'automon_rascunho_v4';
 const AUTO_SEPARADOR = ' | ';
 
@@ -8881,7 +8880,7 @@ const PEV_SECOES = [
   { secao: 'pos', prefixo: 'pos_pens_', titulo: 'Pensamentos Adaptativos',
     sub: 'Quais tipos de pensamento saudável aparecem mais',
     cor: '#6BBF8A', classe: 'green' },
-  { secao: 'pos', prefixo: 'pos_comp_', titulo: 'Comportamentos Adaptativos',
+  { secao: 'pos', prefixo: 'pos_comp_', titulo: 'Comportamentos Funcionais',
     sub: 'Quais ações saudáveis aparecem mais',
     cor: '#6BBF8A', classe: 'green' }
 ];
@@ -8899,56 +8898,59 @@ const PEV_TITULOS_GRUPO = {
   'pos_comp_enfrentamento':'Enfrentamento/Ação','pos_comp_conexao':'Conexão/Vínculo','pos_comp_expressao':'Expressão/Comunicação','pos_comp_autocuidado':'Autocuidado','pos_comp_aceitacao':'Aceitação/Flexibilidade',
 };
 
-/* ----------------------------------------------------------------
-   PACOTE 2.1 — Fonte única de verdade dos subitens
-   ----------------------------------------------------------------
-   Os subitens de cada grupo são lidos diretamente do DOM do
-   formulário de Automonitoramento (atributos data-item dos
-   checkboxes dentro de cada [data-grupo="..."]).
-
-   Por que isso: a constante PEV_SUBITENS_GRUPO antiga era uma
-   cópia hardcoded que divergiu do formulário em quase todos os
-   grupos, fazendo as pizzas perderem itens. Lendo do DOM, o
-   painel acompanha automaticamente qualquer mudança no formulário
-   no futuro, e o problema não pode mais voltar.
-
-   O cache é populado uma única vez (na primeira chamada) e dura
-   pela vida da página. Como o formulário é estático no HTML, não
-   precisa invalidar.
-   ---------------------------------------------------------------- */
-const PEV_SUBITENS_CACHE = { dados: null };
-
-function pevConstruirCacheSubitens() {
-  const mapa = {};
-  // Procurar todos os grupos do formulário de Automonitoramento.
-  // Usamos .auto-group[data-grupo] porque é a marcação comum a TODOS
-  // os grupos do Auto, inclusive os de Tipos de Situação e Distorções
-  // Cognitivas (que não têm Likert e portanto não têm data-tem-likert).
-  const grupos = document.querySelectorAll('.auto-group[data-grupo]');
-  grupos.forEach(g => {
-    const chave = g.getAttribute('data-grupo');
-    if (!chave) return;
-    if (mapa[chave]) return; // primeira ocorrência vence (deduplica)
-    const checkboxes = g.querySelectorAll('input[type="checkbox"][data-item]');
-    const itens = [];
-    checkboxes.forEach(cb => {
-      const v = cb.getAttribute('data-item');
-      if (v) itens.push(v);
-    });
-    mapa[chave] = itens;
-  });
-  PEV_SUBITENS_CACHE.dados = mapa;
-}
-
-function pevObterSubitensGrupo(coluna) {
-  if (!PEV_SUBITENS_CACHE.dados) pevConstruirCacheSubitens();
-  return PEV_SUBITENS_CACHE.dados[coluna] || [];
-}
-
-function pevListarColunasSubitens() {
-  if (!PEV_SUBITENS_CACHE.dados) pevConstruirCacheSubitens();
-  return Object.keys(PEV_SUBITENS_CACHE.dados);
-}
+// Subitens de cada grupo (extraídos do próprio formulário deste arquivo)
+const PEV_SUBITENS_GRUPO = {
+  "neg_sit_tipo_interpessoais": ["Conflito ou discussão","Sentir-se rejeitado, ignorado ou excluído","Receber crítica ou feedback negativo","Comparar-se com alguém","Sentir-se incompreendido ou invalidado"],
+  "neg_sit_tipo_desempenho": ["Erro, falha ou resultado abaixo do esperado","Pressão por prazo ou cobrança","Tarefa nova ou desafiadora","Avaliação ou exposição diante de outros","Acúmulo de tarefas ou sobrecarga"],
+  "neg_sit_tipo_solidao": ["Estar sozinho sem atividade","Fim de semana ou feriado sem planos","Horário noturno / hora de dormir","Momento de transição (acordar, voltar para casa)","Cancelamento de planos ou expectativas frustradas"],
+  "neg_sit_tipo_perda": ["Perda ou afastamento de alguém importante","Mudança inesperada na rotina ou planos","Problema de saúde (próprio ou de alguém próximo)","Dificuldade financeira","Incerteza sobre o futuro"],
+  "neg_sit_tipo_internas": ["Lembrança ou memória intrusiva",'Pensamento que "surgiu do nada"',"Sensação física que disparou preocupação","Sonho ou pesadelo","Comparação mental (imaginar como deveria estar)"],
+  "neg_emo_tristeza": ["Triste","Solitário(a)","Deprimido(a)","Desanimado(a)","Desesperançoso(a)"],
+  "neg_emo_ansiedade": ["Ansioso(a)","Inseguro(a)","Apreensivo(a)","Preocupado(a)","Amedrontado(a)"],
+  "neg_emo_raiva": ["Irritado(a)","Furioso(a)","Ofendido(a)","Frustrado(a)","Indignado(a)"],
+  "neg_emo_culpa": ["Culpado(a)","Envergonhado(a)","Arrependido(a)","Constrangido(a)","Humilhado(a)"],
+  "neg_emo_ciume": ["Com ciúme","Invejoso(a)","Possessivo(a)","Desconfiado(a)","Inferiorizado(a)"],
+  "neg_fis_ativacao": ["Coração acelerado","Respiração ofegante","Suor frio","Tremores","Tontura"],
+  "neg_fis_desativacao": ["Cansaço extremo","Sem energia","Peso no corpo","Lentidão","Sonolência fora de hora"],
+  "neg_fis_tensao": ["Tensão muscular","Mandíbula travada","Ombros duros","Dor de cabeça","Punhos cerrados"],
+  "neg_fis_digestivas": ["Dor de estômago","Náusea","Boca seca","Falta de apetite","Compulsão alimentar"],
+  "neg_fis_sono": ["Insônia","Sono agitado","Acordar cansado","Dificuldade de concentração","Mente acelerada"],
+  "neg_pens_sobre_mim": ['"Não sou bom o suficiente"','"Há algo de errado comigo"','"Sou um fracasso / incompetente"','"Não mereço ser amado / valorizado"','"Sou fraco / não consigo lidar com as coisas"'],
+  "neg_pens_sobre_futuro": ['"Vai dar errado"','"Nada vai melhorar"','"Não vou conseguir"','"Algo ruim vai acontecer"','"Não tenho saída"'],
+  "neg_pens_sobre_outros": ['"Vão me julgar"','"Não posso confiar em ninguém"','"Estão contra mim"','"Não me valorizam"','"Vão me abandonar"'],
+  "neg_pens_cobranca": ['"Eu deveria ter feito diferente"','"Eu tinha que dar conta"','"Não posso falhar"','"Eu preciso ser perfeito"','"Eu deveria ser mais forte"'],
+  "neg_pens_culpa": ['"A culpa é minha"','"Eu causei isso"','"Eu deveria ter previsto"','"Sou responsável pelo sofrimento dos outros"','"Mereço o que está acontecendo"'],
+  "neg_dist_previsao": ["Catastrofização","Adivinhação do futuro",'Pensamento "e se...?"'],
+  "neg_dist_generalizacao": ["Supergeneralização","Rotulação","Filtro mental"],
+  "neg_dist_percepcao": ["Tudo ou nada","Desqualificação do positivo","Aumentar o negativo / Minimizar o positivo"],
+  "neg_dist_interpretacao": ["Leitura mental","Personalização","Raciocínio emocional"],
+  "neg_dist_exigencia": ['Pensamento de "deveria"',"Visão tunelada","Comparação destrutiva"],
+  "neg_comp_evitacao": ["Adiar tarefa","Evitar pessoa/lugar","Procrastinação","Fugir da situação","Distração compulsiva"],
+  "neg_comp_isolamento": ["Não atender ligações","Cancelar compromisso","Ficar trancado em casa","Evitar conversa","Recusar convites"],
+  "neg_comp_reatividade": ["Discutir","Bater porta","Gritar","Chorar sem controle","Falar coisas que se arrepende"],
+  "neg_comp_entorpecimento": ["Beber em excesso","Comer compulsivamente","Maratona de TV/redes","Jogos por horas","Outras formas de fuga"],
+  "neg_comp_controle": ["Checar várias vezes","Repetir rituais","Tentar antecipar tudo","Microgerenciar","Buscar reasseguramento"],
+  "pos_emo_felicidade": ["Feliz","Satisfeito(a)","Contente","Animado(a)","Alegre"],
+  "pos_emo_orgulho": ["Orgulhoso(a)","Realizado(a)","Capaz","Competente","Vitorioso(a)"],
+  "pos_emo_conexao": ["Amado(a)","Acolhido(a)","Conectado(a)","Querido(a)","Pertencente"],
+  "pos_emo_calma": ["Calmo(a)","Sereno(a)","Tranquilo(a)","Em paz","Centrado(a)"],
+  "pos_emo_esperanca": ["Esperançoso(a)","Motivado(a)","Confiante","Otimista","Inspirado(a)"],
+  "pos_fis_calma": ["Respiração tranquila","Coração calmo","Corpo leve","Mente desacelerada","Sensação de presença"],
+  "pos_fis_energia": ["Disposto(a)","Vigoroso(a)","Cheio(a) de energia","Vital","Pronto(a) para agir"],
+  "pos_fis_relaxamento": ["Músculos relaxados","Ombros soltos","Mandíbula relaxada","Sem dores","Conforto geral"],
+  "pos_fis_digestivo": ["Apetite equilibrado","Digestão tranquila","Sem náusea","Comer sem ansiedade","Bem-estar abdominal"],
+  "pos_fis_atencao": ["Sono reparador","Acordar descansado(a)","Boa concentração","Mente clara","Foco fácil"],
+  "pos_pens_autocompaixao": ['"Estou fazendo o que posso"','"Não preciso ser perfeito"','"É ok sentir o que sinto"','"Mereço cuidado também"','"Estou aprendendo"'],
+  "pos_pens_esperanca": ['"Vai melhorar"','"Já passei por coisas difíceis antes"','"Tenho recursos para lidar"','"Existe um caminho"','"Amanhã é um novo dia"'],
+  "pos_pens_confianca": ['"Posso pedir ajuda"','"Há pessoas boas ao meu redor"','"Não preciso fazer tudo sozinho"','"Confio em quem está comigo"','"Sou apoiado(a)"'],
+  "pos_pens_flexibilidade": ['"Existem outras formas de ver isso"','"Nem tudo é preto no branco"','"Posso mudar de ideia"','"Errar faz parte"','"Posso tentar de outro jeito"'],
+  "pos_pens_responsabilidade": ['"Fiz minha parte"','"Não controlo tudo"','"Posso aprender com isso"','"Isso não é só minha responsabilidade"','"Reconheço meus limites"'],
+  "pos_comp_enfrentamento": ["Encarar a tarefa","Conversar sobre o problema","Pedir ajuda","Resolver passo a passo","Enfrentar o desconforto"],
+  "pos_comp_conexao": ["Conversar com alguém querido","Aceitar convite","Buscar contato","Demonstrar afeto","Estar presente"],
+  "pos_comp_expressao": ["Falar como me sinto","Escrever sobre o que sinto","Pedir o que preciso","Estabelecer limite","Dizer não"],
+  "pos_comp_autocuidado": ["Dormir bem","Comer com calma","Praticar atividade física","Tomar um tempo para si","Cuidar do corpo"],
+  "pos_comp_aceitacao": ["Permitir-se ser imperfeito","Reconhecer o que está fora do meu controle","Aceitar uma emoção difícil sem tentar eliminá-la","Praticar gratidão ou valorizar algo positivo no dia","Agir de acordo com meus valores mesmo com desconforto"]
+};
 
 // ----- 2. PARSER V4 (utilitário reaproveitável) -----
 function pevParsearGrupoV4(valorCelula) {
@@ -9288,7 +9290,7 @@ function pevMontarBlocoBarras(secao) {
 
 function pevDesenharBarras(secao, regs) {
   const canvasId = `pevChartBarras_${secao.prefixo}`;
-  const colunas = pevListarColunasSubitens().filter(k => k.startsWith(secao.prefixo));
+  const colunas = Object.keys(PEV_SUBITENS_GRUPO).filter(k => k.startsWith(secao.prefixo));
   const contagens = colunas.map(coluna => {
     let count = 0;
     regs.forEach(r => {
@@ -9341,7 +9343,7 @@ function pevDesenharBarras(secao, regs) {
 
 // ----- 11. MODAL DE PIZZA -----
 function pevAbrirModalPizza(coluna, secao, regs) {
-  const subitens = pevObterSubitensGrupo(coluna);
+  const subitens = PEV_SUBITENS_GRUPO[coluna] || [];
   const titulo = PEV_TITULOS_GRUPO[coluna] || coluna;
 
   const contagem = {};
