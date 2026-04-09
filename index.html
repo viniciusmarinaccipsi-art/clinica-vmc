@@ -79,6 +79,14 @@ body{
   padding:3px 8px;border-radius:10px;
   text-transform:uppercase;letter-spacing:.5px;
 }
+.card-badge-done{
+  position:absolute;top:14px;right:14px;
+  background:var(--green-bg);color:var(--green);
+  font-size:9px;font-weight:700;
+  padding:3px 8px;border-radius:10px;
+  text-transform:uppercase;letter-spacing:.5px;
+  border:1px solid #D0EDDA;
+}
 .card-blue{border-color:var(--blue-lt);}.card-blue .card-title{color:var(--blue);}
 .card-coral{border-color:#F5D0CA;}.card-coral .card-title{color:var(--coral);}
 .card-green{border-color:#D0EDDA;}.card-green .card-title{color:var(--green);}
@@ -136,7 +144,10 @@ body{
   font-size:12px;font-weight:700;color:var(--txt-m);
   display:block;margin-bottom:6px;
 }
-.field input{
+.field label .req{color:var(--coral);margin-left:2px;}
+.field input,
+.field select,
+.field textarea{
   width:100%;
   border:1.5px solid var(--gray-lt);
   border-radius:var(--rs);
@@ -145,9 +156,21 @@ body{
   font-size:14px;outline:none;
   transition:border .2s;
   background:var(--w);
+  color:var(--txt);
 }
-.field input:focus{border-color:var(--blue);}
-.field input:disabled{background:var(--gray-bg);cursor:not-allowed;}
+.field input:focus,
+.field select:focus,
+.field textarea:focus{border-color:var(--blue);}
+.field input:disabled,
+.field select:disabled,
+.field textarea:disabled{background:var(--gray-bg);cursor:not-allowed;}
+.field textarea{min-height:80px;resize:vertical;font-family:'Nunito',sans-serif;}
+.field-hint{font-size:11px;color:var(--txt-l);margin-top:4px;}
+.field-error{font-size:11.5px;color:var(--coral);margin-top:4px;display:none;font-weight:600;}
+.field.has-error input,
+.field.has-error select,
+.field.has-error textarea{border-color:var(--coral);background:var(--coral-bg);}
+.field.has-error .field-error{display:block;}
 
 .btn-primary{
   display:block;width:100%;margin-top:20px;padding:14px;
@@ -162,11 +185,12 @@ body{
 .alert{
   padding:10px 14px;border-radius:var(--rs);
   font-size:12.5px;margin-top:12px;
-  display:none;
 }
-.alert.visible{display:block;}
 .alert-error{background:var(--coral-bg);color:var(--coral);border:1px solid #F5D0CA;}
 .alert-info{background:var(--blue-lt);color:var(--blue);border:1px solid #C7DDE8;}
+.alert-success{background:var(--green-bg);color:#3F8B5A;border:1px solid #D0EDDA;}
+.alert-warn{background:var(--amber-bg);color:#9A7820;border:1px solid #F0E0A8;}
+.alert.hidden{display:none;}
 
 .login-footer{
   text-align:center;margin-top:24px;
@@ -212,9 +236,293 @@ body{
 }
 @keyframes spin{to{transform:rotate(360deg);}}
 
+/* ============================================================
+   MÓDULO ANAMNESE — formulário em passos
+   ============================================================ */
+.anam-card{
+  background:var(--w);
+  border-radius:var(--r);
+  padding:24px 22px;
+  box-shadow:0 2px 12px rgba(0,0,0,.06);
+  border:1px solid var(--gray-lt);
+}
+
+/* Indicador de passos (4 dots) */
+.steps{display:flex;gap:6px;margin:0 0 18px;justify-content:center;}
+.step-dot{
+  width:10px;height:10px;border-radius:50%;
+  background:var(--gray-lt);transition:all .3s;
+}
+.step-dot.active{background:var(--blue);width:30px;border-radius:5px;}
+.step-dot.done{background:var(--green);}
+
+.anam-step-title{
+  font-family:'Quicksand',sans-serif;
+  font-size:18px;font-weight:700;color:var(--blue);
+  text-align:center;margin-bottom:4px;
+}
+.anam-step-sub{
+  font-size:12px;color:var(--txt-l);
+  text-align:center;margin-bottom:20px;
+}
+
+.anam-section-title{
+  font-family:'Quicksand',sans-serif;
+  font-size:14px;font-weight:700;color:var(--txt-m);
+  margin:22px 0 10px;
+  padding-bottom:6px;
+  border-bottom:2px solid var(--gray-lt);
+}
+.anam-section-title:first-child{margin-top:0;}
+
+/* Grid de 2 colunas para campos curtos no desktop */
+.field-row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.field-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+@media(max-width:600px){
+  .field-row-2,.field-row-3{grid-template-columns:1fr;}
+}
+
+/* Bloco condicional (aparece quando "Sim") */
+.conditional-block{
+  margin-top:8px;
+  padding:14px;
+  background:var(--blue-lt);
+  border-radius:var(--rs);
+  border-left:3px solid var(--blue);
+  display:none;
+}
+.conditional-block.visible{display:block;animation:fadeIn .25s ease;}
+
+/* Pergunta Sim/Não em linha */
+.yesno{display:flex;gap:10px;margin-top:6px;}
+.yesno label{
+  flex:1;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:10px;
+  background:var(--gray-bg);
+  border:2px solid var(--gray-lt);
+  border-radius:var(--rs);
+  font-size:13px;font-weight:600;
+  cursor:pointer;
+  transition:all .2s;
+}
+.yesno label:hover{border-color:var(--blue);}
+.yesno input[type="radio"]{display:none;}
+.yesno input[type="radio"]:checked + span{color:var(--blue);}
+.yesno label:has(input:checked){
+  background:var(--blue-lt);
+  border-color:var(--blue);
+  color:var(--blue);
+}
+
+/* Matriz de transtornos (desktop = tabela; mobile = cartões) */
+.matrix{
+  margin-top:6px;
+  border:1px solid var(--gray-lt);
+  border-radius:var(--rs);
+  overflow:hidden;
+}
+.matrix-row{
+  display:grid;
+  grid-template-columns:1fr 130px 130px;
+  align-items:center;
+  padding:10px 14px;
+  border-bottom:1px solid var(--gray-lt);
+  font-size:13px;
+  gap:8px;
+}
+.matrix-row:last-child{border-bottom:none;}
+.matrix-row:nth-child(even){background:var(--gray-bg);}
+.matrix-header{
+  background:var(--blue) !important;
+  color:var(--w);
+  font-weight:700;
+  font-size:11.5px;
+  text-transform:uppercase;
+  letter-spacing:.4px;
+  text-align:center;
+}
+.matrix-header > div:first-child{text-align:left;}
+.matrix-cell-check{
+  display:flex;align-items:center;justify-content:center;
+}
+.matrix-cell-check input[type="checkbox"]{
+  width:20px;height:20px;
+  accent-color:var(--blue);
+  cursor:pointer;
+}
+.matrix-row .matrix-label{font-weight:600;color:var(--txt-m);}
+.matrix-row-other input[type="text"]{
+  width:100%;
+  border:none;border-bottom:1.5px solid var(--gray-lt);
+  background:transparent;
+  font-family:'Nunito',sans-serif;font-size:13px;
+  padding:4px 2px;outline:none;
+}
+.matrix-row-other input[type="text"]:focus{border-bottom-color:var(--blue);}
+
+/* Em mobile, vira lista de cartões empilhados */
+@media(max-width:600px){
+  .matrix-header{display:none;}
+  .matrix-row{
+    grid-template-columns:1fr;
+    gap:8px;padding:12px 14px;
+  }
+  .matrix-row:nth-child(even){background:var(--w);}
+  .matrix-row{border-bottom:1px solid var(--gray-lt);}
+  .matrix-row .matrix-label{font-size:13.5px;color:var(--txt);margin-bottom:4px;}
+  .matrix-cell-check{
+    justify-content:flex-start;
+    gap:8px;
+    padding:6px 10px;
+    background:var(--gray-bg);
+    border-radius:var(--rs);
+    font-size:12px;color:var(--txt-m);
+    font-weight:600;
+  }
+  .matrix-cell-check::after{content:attr(data-label);}
+}
+
+/* Idade calculada ao lado da data */
+.age-display{
+  font-size:12px;
+  color:var(--blue);
+  font-weight:700;
+  margin-top:4px;
+  display:none;
+}
+.age-display.visible{display:block;}
+
+/* Botões de navegação do formulário */
+.anam-nav{
+  display:flex;gap:10px;
+  margin-top:24px;
+  padding-top:18px;
+  border-top:1px solid var(--gray-lt);
+}
+.btn-step{
+  flex:1;padding:13px;
+  border:none;border-radius:var(--rs);
+  font-family:'Nunito',sans-serif;font-size:13.5px;font-weight:700;
+  cursor:pointer;transition:all .2s;
+}
+.btn-step-prev{
+  background:var(--gray-bg);color:var(--txt-m);
+  border:1.5px solid var(--gray-lt);
+}
+.btn-step-prev:hover{background:var(--gray-lt);}
+.btn-step-next{
+  background:var(--blue);color:var(--w);
+}
+.btn-step-next:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(44,95,124,.25);}
+.btn-step-finish{
+  background:var(--green);color:var(--w);
+}
+.btn-step-finish:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(107,191,138,.25);}
+
+/* ============================================================
+   TELA DE REVISÃO
+   ============================================================ */
+.review-section{
+  background:var(--gray-bg);
+  border-radius:var(--rs);
+  padding:14px 16px;
+  margin:14px 0;
+}
+.review-section h4{
+  font-family:'Quicksand',sans-serif;
+  font-size:13px;font-weight:700;color:var(--blue);
+  margin-bottom:8px;
+  padding-bottom:4px;
+  border-bottom:1px solid var(--gray-lt);
+}
+.review-row{
+  display:grid;
+  grid-template-columns:160px 1fr;
+  gap:10px;
+  padding:5px 0;
+  font-size:12.5px;
+  align-items:start;
+}
+@media(max-width:600px){
+  .review-row{grid-template-columns:1fr;gap:2px;padding:6px 0;}
+}
+.review-row strong{color:var(--txt-m);font-weight:700;}
+.review-row span{color:var(--txt);word-break:break-word;}
+.review-row span.empty{color:var(--txt-l);font-style:italic;}
+
+/* ============================================================
+   MODAL DE CONFIRMAÇÃO
+   ============================================================ */
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(45,55,72,.55);
+  display:none;align-items:center;justify-content:center;
+  z-index:2000;
+  padding:20px;
+  backdrop-filter:blur(3px);
+}
+.modal-overlay.visible{display:flex;animation:fadeIn .2s ease;}
+.modal-card{
+  background:var(--w);
+  border-radius:var(--r);
+  padding:28px 24px;
+  max-width:440px;width:100%;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);
+}
+.modal-icon{
+  width:64px;height:64px;
+  background:var(--amber-bg);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:32px;margin:0 auto 14px;
+}
+.modal-title{
+  font-family:'Quicksand',sans-serif;
+  font-size:18px;font-weight:700;color:var(--txt);
+  text-align:center;margin-bottom:10px;
+}
+.modal-text{
+  font-size:13px;color:var(--txt-m);
+  text-align:center;line-height:1.6;
+  margin-bottom:20px;
+}
+.modal-actions{display:flex;gap:10px;}
+.modal-actions button{
+  flex:1;padding:12px;
+  border:none;border-radius:var(--rs);
+  font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;
+  cursor:pointer;transition:all .2s;
+}
+.btn-modal-cancel{
+  background:var(--gray-bg);color:var(--txt-m);
+  border:1.5px solid var(--gray-lt);
+}
+.btn-modal-cancel:hover{background:var(--gray-lt);}
+.btn-modal-confirm{
+  background:var(--green);color:var(--w);
+}
+.btn-modal-confirm:hover{transform:translateY(-1px);}
+
+/* ============================================================
+   MODO CONSULTA (anamnese já preenchida)
+   ============================================================ */
+.consulta-banner{
+  background:var(--green-bg);
+  border:1px solid #D0EDDA;
+  border-left:4px solid var(--green);
+  border-radius:var(--rs);
+  padding:14px 16px;
+  margin-bottom:18px;
+  font-size:12.5px;
+  color:#3F8B5A;
+}
+.consulta-banner strong{display:block;margin-bottom:2px;font-size:13px;}
+
 @media(max-width:600px){
   .app-header h1{font-size:20px;}
-  .login-card{padding:24px 18px;}
+  .login-card,.anam-card{padding:22px 16px;}
+  .modal-card{padding:24px 18px;}
 }
 </style>
 </head>
@@ -225,6 +533,26 @@ body{
      ============================================================ -->
 <div class="loading-overlay" id="loadingOverlay">
   <div class="spinner"></div>
+</div>
+
+<!-- ============================================================
+     MODAL DE CONFIRMAÇÃO (usado pela Anamnese)
+     ============================================================ -->
+<div class="modal-overlay" id="modalConfirma">
+  <div class="modal-card">
+    <div class="modal-icon">⚠️</div>
+    <div class="modal-title">Confirmar envio definitivo</div>
+    <div class="modal-text">
+      Após enviar, sua anamnese <strong>não poderá ser editada</strong>.
+      Caso precise de alguma alteração no futuro, fale diretamente com seu terapeuta.
+      <br><br>
+      Você revisou todos os dados e quer enviar agora?
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="fecharModalConfirma()">Voltar e revisar</button>
+      <button class="btn-modal-confirm" onclick="enviarAnamneseDefinitivo()">Sim, enviar</button>
+    </div>
+  </div>
 </div>
 
 <div class="app">
@@ -260,7 +588,7 @@ body{
 
       <button class="btn-primary" id="btnLogin" onclick="fazerLogin()">Entrar</button>
 
-      <div class="alert alert-error" id="loginError"></div>
+      <div class="alert alert-error hidden" id="loginError"></div>
 
       <div class="login-footer">
         Em caso de problemas, entre em contato com seu terapeuta.
@@ -279,18 +607,25 @@ body{
       Escolha o módulo que deseja acessar
     </p>
 
+    <!-- Aviso quando a anamnese ainda não foi preenchida -->
+    <div class="alert alert-info hidden" id="avisoAnamnesePendente" style="margin-bottom:16px;">
+      📝 <strong>Antes de começar</strong>, precisamos que você preencha sua anamnese.
+      Os outros módulos serão liberados em seguida.
+    </div>
+
     <div class="card-grid">
 
       <!-- Módulo 1 — Anamnese -->
-      <button class="card card-blue" onclick="abrirModulo('anamnese')">
+      <button class="card card-blue" id="cardAnamnese" onclick="abrirModulo('anamnese')">
         <span class="card-icon">📝</span>
         <div class="card-title">1. Anamnese</div>
         <div class="card-desc">Informações pessoais e histórico de saúde (preenchimento único)</div>
         <span class="card-arrow">›</span>
+        <span class="card-badge-done hidden" id="badgeAnamneseDone">✓ Preenchida</span>
       </button>
 
       <!-- Módulo 2 — Registro de Automonitoramento -->
-      <button class="card card-coral" onclick="abrirModulo('automonitoramento')">
+      <button class="card card-coral" id="cardAutomon" onclick="abrirModulo('automonitoramento')">
         <span class="card-icon">📊</span>
         <div class="card-title">2. Registro de Automonitoramento</div>
         <div class="card-desc">Acompanhamento diário de humor, emoções, pensamentos e comportamentos</div>
@@ -325,21 +660,20 @@ body{
   </div>
 
   <!-- ============================================================
-       SEÇÃO: MÓDULO ANAMNESE (placeholder — Etapa 2)
+       SEÇÃO: MÓDULO ANAMNESE
+       Comporta 6 modos:
+         - Passo 1, 2, 3, 4 (formulário em etapas)
+         - Revisão (antes do envio definitivo)
+         - Consulta (anamnese já enviada — somente leitura)
        ============================================================ -->
   <div class="section" id="sec-anamnese">
     <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-menu')">← Menu</button>
+      <button class="btn-back" onclick="voltarMenuAnamnese()">← Menu</button>
       <span class="nav-title">Módulo 1 — Anamnese</span>
     </div>
-    <div class="placeholder-box">
-      <span class="placeholder-icon">📝</span>
-      <div class="placeholder-title">Anamnese</div>
-      <div class="placeholder-text">
-        Este módulo será implementado na <strong>Etapa 2</strong> do desenvolvimento.<br>
-        A estrutura e a tabela de dados já estão preparadas.
-      </div>
-    </div>
+
+    <!-- Conteúdo dinâmico renderizado via JS -->
+    <div id="anamConteudo"></div>
   </div>
 
   <!-- ============================================================
@@ -417,8 +751,18 @@ function abrirSecao(idSecao) {
 }
 
 function abrirModulo(modulo) {
-  if (modulo === 'anamnese') abrirSecao('sec-anamnese');
-  else if (modulo === 'automonitoramento') abrirSecao('sec-automonitoramento');
+  if (modulo === 'anamnese') {
+    abrirSecao('sec-anamnese');
+    iniciarAnamnese();
+  } else if (modulo === 'automonitoramento') {
+    // Bloqueio: precisa ter anamnese preenchida antes
+    const paciente = carregarSessao();
+    if (paciente && !paciente.anamnese_preenchida) {
+      alert('Por favor, preencha sua anamnese antes de acessar este módulo.');
+      return;
+    }
+    abrirSecao('sec-automonitoramento');
+  }
 }
 
 
@@ -439,6 +783,7 @@ function carregarSessao() {
 
 function limparSessao() {
   sessionStorage.removeItem('paciente');
+  sessionStorage.removeItem('anamnese_rascunho');
 }
 
 function atualizarBadgeUsuario() {
@@ -452,6 +797,22 @@ function atualizarBadgeUsuario() {
   }
 }
 
+function atualizarMenuConformeSessao() {
+  const paciente = carregarSessao();
+  if (!paciente) return;
+
+  const badgeDone = document.getElementById('badgeAnamneseDone');
+  const aviso = document.getElementById('avisoAnamnesePendente');
+
+  if (paciente.anamnese_preenchida) {
+    badgeDone.classList.remove('hidden');
+    aviso.classList.add('hidden');
+  } else {
+    badgeDone.classList.add('hidden');
+    aviso.classList.remove('hidden');
+  }
+}
+
 
 /* ============================================================
    LOGIN
@@ -462,11 +823,11 @@ async function fazerLogin() {
   const erroBox = document.getElementById('loginError');
   const btn = document.getElementById('btnLogin');
 
-  erroBox.classList.remove('visible');
+  erroBox.classList.add('hidden');
 
   if (!sigla || !senha) {
     erroBox.textContent = 'Por favor, preencha sigla e senha.';
-    erroBox.classList.add('visible');
+    erroBox.classList.remove('hidden');
     return;
   }
 
@@ -480,7 +841,7 @@ async function fazerLogin() {
 
   if (!resposta.ok) {
     erroBox.textContent = resposta.erro || 'Erro ao autenticar.';
-    erroBox.classList.add('visible');
+    erroBox.classList.remove('hidden');
     document.getElementById('inputSenha').value = '';
     return;
   }
@@ -488,15 +849,1344 @@ async function fazerLogin() {
   // Login bem-sucedido
   salvarSessao(resposta.paciente);
   atualizarBadgeUsuario();
+  atualizarMenuConformeSessao();
   document.getElementById('inputSigla').value = '';
   document.getElementById('inputSenha').value = '';
-  abrirSecao('sec-menu');
+
+  // Roteamento: se for primeiro acesso (sem anamnese), vai direto pro módulo
+  if (!resposta.paciente.anamnese_preenchida) {
+    abrirSecao('sec-anamnese');
+    iniciarAnamnese();
+  } else {
+    abrirSecao('sec-menu');
+  }
 }
 
 function logout() {
   limparSessao();
   atualizarBadgeUsuario();
   abrirSecao('sec-login');
+}
+
+
+/* ============================================================
+   ============================================================
+   MÓDULO 1 — ANAMNESE
+   ============================================================
+   ============================================================ */
+
+/* ============================================================
+   ESTADO DO MÓDULO
+   ============================================================ */
+const ANAM_STATE = {
+  passoAtual: 1,    // 1, 2, 3, 4 ou 'revisao'
+  totalPassos: 4,
+  modoConsulta: false,
+  dadosConsulta: null,  // dados retornados do servidor quando em modo consulta
+};
+
+// Lista de transtornos do briefing (Seção 3)
+const LISTA_TRANSTORNOS = [
+  'Ansiedade',
+  'Depressão',
+  'Transtorno Afetivo Bipolar',
+  'Transtorno do Pânico',
+  'Transtorno do Estresse Pós-Traumático',
+  'Anorexia Nervosa',
+  'Bulimia Nervosa',
+  'Compulsão Alimentar Periódica',
+  'Transtorno Obsessivo Compulsivo',
+  'Transtorno do Déficit de Atenção e Hiperatividade',
+  'Transtorno de Personalidade Antissocial',
+  'Transtorno de Personalidade Borderline',
+  'Transtorno por Uso de Substâncias / Dependência Química',
+  'Transtornos / Distúrbios Sexuais',
+  'Transtornos / Distúrbios do Sono',
+  'Ideações e Tentativas de Suicídio',
+];
+
+// Lista de complicações clínicas do briefing (Seção 3)
+const LISTA_COMPLICACOES = [
+  'Doenças Cardíacas',
+  'Hipertensão Arterial',
+  'Hipotireoidismo',
+  'Hipertireoidismo',
+  'Epilepsia / Convulsões',
+  'Diabetes Mellitus',
+];
+
+// Estados brasileiros (siglas)
+const ESTADOS_BR = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
+
+// Opções de escolaridade
+const ESCOLARIDADES = [
+  'Fundamental incompleto',
+  'Fundamental completo',
+  'Médio incompleto',
+  'Médio completo',
+  'Superior incompleto',
+  'Superior completo',
+  'Pós-graduação incompleto',
+  'Pós-graduação completo',
+];
+
+// Opções de estado civil
+const ESTADOS_CIVIS = ['Solteiro(a)','União Estável','Casado(a)','Separado(a)','Divorciado(a)'];
+
+
+/* ============================================================
+   ENTRADA DO MÓDULO
+   ============================================================ */
+async function iniciarAnamnese() {
+  const paciente = carregarSessao();
+  if (!paciente) {
+    abrirSecao('sec-login');
+    return;
+  }
+
+  // Se já preencheu, abre em modo consulta
+  if (paciente.anamnese_preenchida) {
+    ANAM_STATE.modoConsulta = true;
+    await abrirModoConsulta();
+  } else {
+    ANAM_STATE.modoConsulta = false;
+    ANAM_STATE.passoAtual = 1;
+    renderPasso(1);
+  }
+}
+
+function voltarMenuAnamnese() {
+  // Se estiver no meio do preenchimento, salva rascunho antes de sair
+  if (!ANAM_STATE.modoConsulta && ANAM_STATE.passoAtual !== 'revisao') {
+    salvarRascunho();
+  }
+  abrirSecao('sec-menu');
+}
+
+
+/* ============================================================
+   RASCUNHO LOCAL (sessionStorage)
+   ============================================================
+   Preserva o que foi digitado se o usuário recarregar a aba
+   acidentalmente. NÃO persiste entre sessões diferentes.
+   Limpo após o envio definitivo.
+   ============================================================ */
+function salvarRascunho() {
+  const dados = coletarDadosFormulario(false); // sem validação
+  if (dados) {
+    sessionStorage.setItem('anamnese_rascunho', JSON.stringify({
+      passo: ANAM_STATE.passoAtual,
+      dados: dados,
+    }));
+  }
+}
+
+function carregarRascunho() {
+  const raw = sessionStorage.getItem('anamnese_rascunho');
+  return raw ? JSON.parse(raw) : null;
+}
+
+function limparRascunho() {
+  sessionStorage.removeItem('anamnese_rascunho');
+}
+
+
+/* ============================================================
+   RENDERIZAÇÃO DOS PASSOS
+   ============================================================ */
+function renderPasso(numero) {
+  ANAM_STATE.passoAtual = numero;
+  const container = document.getElementById('anamConteudo');
+
+  let html = '<div class="anam-card">';
+  html += renderStepDots(numero);
+
+  if (numero === 1) html += renderPasso1();
+  else if (numero === 2) html += renderPasso2();
+  else if (numero === 3) html += renderPasso3();
+  else if (numero === 4) html += renderPasso4();
+
+  html += renderNavegacao(numero);
+  html += '</div>';
+
+  container.innerHTML = html;
+
+  // Após renderizar, restaura valores do rascunho (se houver)
+  restaurarValoresDoRascunho();
+
+  // Configura listeners de campos condicionais e máscaras
+  configurarListenersDoPasso(numero);
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderStepDots(passoAtivo) {
+  let html = '<div class="steps">';
+  for (let i = 1; i <= 4; i++) {
+    let cls = 'step-dot';
+    if (i < passoAtivo) cls += ' done';
+    else if (i === passoAtivo) cls += ' active';
+    html += `<div class="${cls}"></div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderNavegacao(numero) {
+  let html = '<div class="anam-nav">';
+  if (numero > 1) {
+    html += `<button class="btn-step btn-step-prev" onclick="irParaPassoAnterior()">← Voltar</button>`;
+  }
+  if (numero < 4) {
+    html += `<button class="btn-step btn-step-next" onclick="irParaProximoPasso()">Próximo →</button>`;
+  } else {
+    html += `<button class="btn-step btn-step-next" onclick="irParaRevisao()">Revisar respostas →</button>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+
+/* ============================================================
+   PASSO 1 — DADOS PESSOAIS
+   ============================================================ */
+function renderPasso1() {
+  let html = '';
+  html += '<div class="anam-step-title">Passo 1 de 4 — Dados Pessoais</div>';
+  html += '<div class="anam-step-sub">Preencha suas informações básicas</div>';
+
+  html += `
+    <div class="field">
+      <label>Nome completo <span class="req">*</span></label>
+      <input type="text" id="f_nome_completo" autocomplete="name">
+      <div class="field-error">Campo obrigatório</div>
+    </div>
+
+    <div class="field-row-2">
+      <div class="field">
+        <label>Data de nascimento <span class="req">*</span></label>
+        <input type="date" id="f_data_nascimento">
+        <div class="age-display" id="ageDisplay"></div>
+        <div class="field-error">Campo obrigatório</div>
+      </div>
+      <div class="field">
+        <label>Telefone com DDD <span class="req">*</span></label>
+        <input type="tel" id="f_telefone" placeholder="(00) 00000-0000" maxlength="15" inputmode="numeric">
+        <div class="field-error">Telefone inválido</div>
+      </div>
+    </div>
+
+    <div class="field-row-2">
+      <div class="field">
+        <label>RG <span class="req">*</span></label>
+        <input type="text" id="f_rg" maxlength="20">
+        <div class="field-error">Campo obrigatório</div>
+      </div>
+      <div class="field">
+        <label>CPF <span class="req">*</span></label>
+        <input type="text" id="f_cpf" placeholder="000.000.000-00" maxlength="14" inputmode="numeric">
+        <div class="field-error">CPF inválido</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>E-mail <span class="req">*</span></label>
+      <input type="email" id="f_email" autocomplete="email">
+      <div class="field-error">E-mail inválido</div>
+    </div>
+
+    <div class="field-row-2">
+      <div class="field">
+        <label>Escolaridade <span class="req">*</span></label>
+        <select id="f_escolaridade">
+          <option value="">Selecione...</option>
+          ${ESCOLARIDADES.map(e => `<option value="${e}">${e}</option>`).join('')}
+        </select>
+        <div class="field-error">Campo obrigatório</div>
+      </div>
+      <div class="field">
+        <label>Estado Civil <span class="req">*</span></label>
+        <select id="f_estado_civil">
+          <option value="">Selecione...</option>
+          ${ESTADOS_CIVIS.map(e => `<option value="${e}">${e}</option>`).join('')}
+        </select>
+        <div class="field-error">Campo obrigatório</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Profissão / Ocupação</label>
+      <input type="text" id="f_profissao">
+    </div>
+
+    <div class="anam-section-title">Endereço</div>
+
+    <div class="field">
+      <label>Reside fora do Brasil? <span class="req">*</span></label>
+      <div class="yesno">
+        <label><input type="radio" name="reside_fora_brasil" value="Não" onchange="toggleEnderecoExterior(false)"><span>Não</span></label>
+        <label><input type="radio" name="reside_fora_brasil" value="Sim" onchange="toggleEnderecoExterior(true)"><span>Sim</span></label>
+      </div>
+      <div class="field-error">Selecione uma opção</div>
+    </div>
+
+    <!-- Endereço no Brasil -->
+    <div id="blocoBrasil" class="conditional-block">
+      <div class="field-row-3">
+        <div class="field">
+          <label>Estado <span class="req">*</span></label>
+          <select id="f_estado">
+            <option value="">UF</option>
+            ${ESTADOS_BR.map(uf => `<option value="${uf}">${uf}</option>`).join('')}
+          </select>
+          <div class="field-error">Obrigatório</div>
+        </div>
+        <div class="field">
+          <label>Cidade <span class="req">*</span></label>
+          <input type="text" id="f_cidade">
+          <div class="field-error">Obrigatório</div>
+        </div>
+        <div class="field">
+          <label>CEP <span class="req">*</span></label>
+          <input type="text" id="f_cep" placeholder="00000-000" maxlength="9" inputmode="numeric">
+          <div class="field-error">CEP inválido</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Endereço <span class="req">*</span></label>
+        <input type="text" id="f_endereco" placeholder="Rua, número, complemento, bairro">
+        <div class="field-error">Obrigatório</div>
+      </div>
+    </div>
+
+    <!-- Endereço no exterior -->
+    <div id="blocoExterior" class="conditional-block">
+      <div class="field-row-2">
+        <div class="field">
+          <label>País <span class="req">*</span></label>
+          <input type="text" id="f_pais">
+          <div class="field-error">Obrigatório</div>
+        </div>
+        <div class="field">
+          <label>ZIP Code <span class="req">*</span></label>
+          <input type="text" id="f_zip_code">
+          <div class="field-error">Obrigatório</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Endereço <span class="req">*</span></label>
+        <input type="text" id="f_endereco_ext">
+        <div class="field-error">Obrigatório</div>
+      </div>
+    </div>
+  `;
+
+  return html;
+}
+
+
+/* ============================================================
+   PASSO 2 — HISTÓRICO DE TRATAMENTOS
+   ============================================================ */
+function renderPasso2() {
+  let html = '';
+  html += '<div class="anam-step-title">Passo 2 de 4 — Histórico de Tratamentos</div>';
+  html += '<div class="anam-step-sub">Tratamentos anteriores, procedimentos e medicações</div>';
+
+  html += `
+    <div class="field">
+      <label>Tratamentos anteriores</label>
+      <textarea id="f_tratamentos_anteriores" placeholder="Descreva tratamentos anteriores: período, profissional responsável, local..."></textarea>
+      <div class="field-hint">Pode deixar em branco se não houver.</div>
+    </div>
+
+    <div class="field">
+      <label>Realizou algum procedimento médico nos últimos 12 meses? <span class="req">*</span></label>
+      <div class="yesno">
+        <label><input type="radio" name="procedimento_medico_12m" value="Não" onchange="toggleCondicional('blocoProcedimento', false)"><span>Não</span></label>
+        <label><input type="radio" name="procedimento_medico_12m" value="Sim" onchange="toggleCondicional('blocoProcedimento', true)"><span>Sim</span></label>
+      </div>
+      <div class="field-error">Selecione uma opção</div>
+    </div>
+
+    <div id="blocoProcedimento" class="conditional-block">
+      <div class="field">
+        <label>Quais procedimentos? <span class="req">*</span></label>
+        <textarea id="f_procedimento_medico_detalhes" placeholder="Descreva os procedimentos realizados..."></textarea>
+        <div class="field-error">Descreva os procedimentos</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Fez uso de medicação nos últimos 12 meses? <span class="req">*</span></label>
+      <div class="yesno">
+        <label><input type="radio" name="medicacao_12m" value="Não" onchange="toggleCondicional('blocoMedicacao', false)"><span>Não</span></label>
+        <label><input type="radio" name="medicacao_12m" value="Sim" onchange="toggleCondicional('blocoMedicacao', true)"><span>Sim</span></label>
+      </div>
+      <div class="field-error">Selecione uma opção</div>
+    </div>
+
+    <div id="blocoMedicacao" class="conditional-block">
+      <div class="field">
+        <label>Quais medicações? <span class="req">*</span></label>
+        <textarea id="f_medicacao_detalhes" placeholder="Medicação, miligramas, períodos e quantidade..."></textarea>
+        <div class="field-error">Descreva as medicações</div>
+      </div>
+    </div>
+  `;
+
+  return html;
+}
+
+
+/* ============================================================
+   PASSO 3 — HISTÓRICO DE SAÚDE
+   ============================================================ */
+function renderPasso3() {
+  let html = '';
+  html += '<div class="anam-step-title">Passo 3 de 4 — Histórico de Saúde</div>';
+  html += '<div class="anam-step-sub">Diagnósticos prévios, atuais e histórico familiar</div>';
+
+  // Matriz de transtornos
+  html += '<div class="anam-section-title">Transtornos psicológicos</div>';
+  html += '<div class="field-hint" style="margin-bottom:8px;">Marque os transtornos pelos quais já esteve em tratamento e/ou está em tratamento atualmente. Pode marcar as duas colunas se aplicável.</div>';
+  html += renderMatriz('transtornos', LISTA_TRANSTORNOS);
+
+  html += `
+    <div class="field" style="margin-top:14px;">
+      <label>Algum familiar foi diagnosticado com algum desses transtornos? <span class="req">*</span></label>
+      <div class="yesno">
+        <label><input type="radio" name="familiar_transtorno" value="Não" onchange="toggleCondicional('blocoFamTranstorno', false)"><span>Não</span></label>
+        <label><input type="radio" name="familiar_transtorno" value="Sim" onchange="toggleCondicional('blocoFamTranstorno', true)"><span>Sim</span></label>
+      </div>
+      <div class="field-error">Selecione uma opção</div>
+    </div>
+    <div id="blocoFamTranstorno" class="conditional-block">
+      <div class="field">
+        <label>Quais familiares e quais transtornos? <span class="req">*</span></label>
+        <textarea id="f_familiar_transtorno_detalhes" placeholder="Ex: Mãe — Depressão; Irmão — TDAH..."></textarea>
+        <div class="field-error">Descreva os familiares</div>
+      </div>
+    </div>
+  `;
+
+  // Matriz de complicações
+  html += '<div class="anam-section-title">Complicações clínicas</div>';
+  html += '<div class="field-hint" style="margin-bottom:8px;">Marque as condições clínicas pelas quais já esteve em tratamento e/ou está em tratamento atualmente.</div>';
+  html += renderMatriz('complicacoes', LISTA_COMPLICACOES);
+
+  html += `
+    <div class="field" style="margin-top:14px;">
+      <label>Algum familiar foi diagnosticado com alguma dessas complicações? <span class="req">*</span></label>
+      <div class="yesno">
+        <label><input type="radio" name="familiar_complicacao" value="Não" onchange="toggleCondicional('blocoFamComplicacao', false)"><span>Não</span></label>
+        <label><input type="radio" name="familiar_complicacao" value="Sim" onchange="toggleCondicional('blocoFamComplicacao', true)"><span>Sim</span></label>
+      </div>
+      <div class="field-error">Selecione uma opção</div>
+    </div>
+    <div id="blocoFamComplicacao" class="conditional-block">
+      <div class="field">
+        <label>Quais familiares e quais complicações? <span class="req">*</span></label>
+        <textarea id="f_familiar_complicacao_detalhes" placeholder="Ex: Pai — Hipertensão; Avó — Diabetes..."></textarea>
+        <div class="field-error">Descreva os familiares</div>
+      </div>
+    </div>
+  `;
+
+  return html;
+}
+
+/**
+ * Gera uma matriz de checkboxes com 2 colunas (Esteve / Está)
+ * para uma lista de itens. O parâmetro `prefixo` é usado nos
+ * IDs e nos atributos data- para identificação posterior.
+ */
+function renderMatriz(prefixo, lista) {
+  let html = `<div class="matrix" id="matrix_${prefixo}">`;
+  html += `
+    <div class="matrix-row matrix-header">
+      <div>Condição</div>
+      <div>Esteve em tratamento</div>
+      <div>Está em tratamento</div>
+    </div>
+  `;
+  lista.forEach((item, idx) => {
+    const itemId = `${prefixo}_${idx}`;
+    html += `
+      <div class="matrix-row">
+        <div class="matrix-label">${item}</div>
+        <div class="matrix-cell-check" data-label="Esteve em tratamento">
+          <input type="checkbox" data-matrix="${prefixo}" data-tipo="esteve" data-item="${item}" id="chk_${itemId}_esteve">
+        </div>
+        <div class="matrix-cell-check" data-label="Está em tratamento">
+          <input type="checkbox" data-matrix="${prefixo}" data-tipo="esta" data-item="${item}" id="chk_${itemId}_esta">
+        </div>
+      </div>
+    `;
+  });
+  // Linha "Outros" — texto livre + 2 checkboxes
+  html += `
+    <div class="matrix-row matrix-row-other">
+      <div class="matrix-label">
+        <input type="text" id="f_${prefixo}_outros" placeholder="Outros (descreva)..." data-matrix-other="${prefixo}">
+      </div>
+      <div class="matrix-cell-check" data-label="Esteve em tratamento">
+        <input type="checkbox" data-matrix="${prefixo}" data-tipo="esteve" data-outros="1" id="chk_${prefixo}_outros_esteve">
+      </div>
+      <div class="matrix-cell-check" data-label="Está em tratamento">
+        <input type="checkbox" data-matrix="${prefixo}" data-tipo="esta" data-outros="1" id="chk_${prefixo}_outros_esta">
+      </div>
+    </div>
+  `;
+  html += '</div>';
+  return html;
+}
+
+
+/* ============================================================
+   PASSO 4 — PESSOA DE CONFIANÇA
+   ============================================================ */
+function renderPasso4() {
+  let html = '';
+  html += '<div class="anam-step-title">Passo 4 de 4 — Pessoa de Confiança</div>';
+  html += '<div class="anam-step-sub">Alguém que pode ser contatado em caso de necessidade</div>';
+
+  html += `
+    <div class="field">
+      <label>Nome <span class="req">*</span></label>
+      <input type="text" id="f_pessoa_confianca_nome">
+      <div class="field-error">Campo obrigatório</div>
+    </div>
+
+    <div class="field">
+      <label>Grau de parentesco / relação <span class="req">*</span></label>
+      <input type="text" id="f_pessoa_confianca_relacao" placeholder="Ex: Mãe, esposo, amigo próximo...">
+      <div class="field-error">Campo obrigatório</div>
+    </div>
+
+    <div class="field">
+      <label>Contato (telefone, e-mail ou outro meio) <span class="req">*</span></label>
+      <input type="text" id="f_pessoa_confianca_contato" placeholder="Ex: (00) 00000-0000 ou email@exemplo.com">
+      <div class="field-error">Campo obrigatório</div>
+    </div>
+  `;
+
+  return html;
+}
+
+
+/* ============================================================
+   LISTENERS DE CAMPOS CONDICIONAIS E MÁSCARAS
+   ============================================================ */
+function configurarListenersDoPasso(numero) {
+  if (numero === 1) {
+    // Máscara de telefone
+    const tel = document.getElementById('f_telefone');
+    if (tel) tel.addEventListener('input', mascaraTelefone);
+
+    // Máscara de CPF
+    const cpf = document.getElementById('f_cpf');
+    if (cpf) cpf.addEventListener('input', mascaraCPF);
+
+    // Máscara de CEP
+    const cep = document.getElementById('f_cep');
+    if (cep) cep.addEventListener('input', mascaraCEP);
+
+    // Cálculo de idade
+    const data = document.getElementById('f_data_nascimento');
+    if (data) data.addEventListener('change', atualizarIdade);
+  }
+}
+
+function toggleEnderecoExterior(forExterior) {
+  const blBR = document.getElementById('blocoBrasil');
+  const blEx = document.getElementById('blocoExterior');
+  if (forExterior) {
+    blBR.classList.remove('visible');
+    blEx.classList.add('visible');
+  } else {
+    blBR.classList.add('visible');
+    blEx.classList.remove('visible');
+  }
+}
+
+function toggleCondicional(idBloco, mostrar) {
+  const el = document.getElementById(idBloco);
+  if (!el) return;
+  if (mostrar) el.classList.add('visible');
+  else el.classList.remove('visible');
+}
+
+
+/* ============================================================
+   MÁSCARAS DE INPUT
+   ============================================================ */
+function mascaraTelefone(e) {
+  let v = e.target.value.replace(/\D/g, '').slice(0, 11);
+  if (v.length > 10) {
+    v = v.replace(/^(\d{2})(\d{5})(\d{0,4}).*/, '($1) $2-$3');
+  } else if (v.length > 6) {
+    v = v.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
+  } else if (v.length > 2) {
+    v = v.replace(/^(\d{2})(\d{0,5}).*/, '($1) $2');
+  } else if (v.length > 0) {
+    v = v.replace(/^(\d{0,2})/, '($1');
+  }
+  e.target.value = v;
+}
+
+function mascaraCPF(e) {
+  let v = e.target.value.replace(/\D/g, '').slice(0, 11);
+  v = v.replace(/(\d{3})(\d)/, '$1.$2');
+  v = v.replace(/(\d{3})(\d)/, '$1.$2');
+  v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+  e.target.value = v;
+}
+
+function mascaraCEP(e) {
+  let v = e.target.value.replace(/\D/g, '').slice(0, 8);
+  if (v.length > 5) v = v.replace(/^(\d{5})(\d{0,3})/, '$1-$2');
+  e.target.value = v;
+}
+
+
+/* ============================================================
+   VALIDAÇÃO DE CPF (algoritmo dos dígitos verificadores)
+   ============================================================ */
+function validarCPF(cpf) {
+  cpf = String(cpf).replace(/\D/g, '');
+  if (cpf.length !== 11) return false;
+  if (/^(\d)\1{10}$/.test(cpf)) return false; // todos os dígitos iguais
+
+  let soma = 0;
+  for (let i = 0; i < 9; i++) soma += parseInt(cpf[i]) * (10 - i);
+  let dig1 = 11 - (soma % 11);
+  if (dig1 >= 10) dig1 = 0;
+  if (dig1 !== parseInt(cpf[9])) return false;
+
+  soma = 0;
+  for (let i = 0; i < 10; i++) soma += parseInt(cpf[i]) * (11 - i);
+  let dig2 = 11 - (soma % 11);
+  if (dig2 >= 10) dig2 = 0;
+  if (dig2 !== parseInt(cpf[10])) return false;
+
+  return true;
+}
+
+
+/* ============================================================
+   CÁLCULO DE IDADE
+   ============================================================ */
+function calcularIdade(dataISO) {
+  if (!dataISO) return null;
+  const hoje = new Date();
+  const nasc = new Date(dataISO + 'T00:00:00');
+  if (isNaN(nasc.getTime())) return null;
+  let idade = hoje.getFullYear() - nasc.getFullYear();
+  const m = hoje.getMonth() - nasc.getMonth();
+  if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) idade--;
+  return idade;
+}
+
+function atualizarIdade() {
+  const data = document.getElementById('f_data_nascimento').value;
+  const display = document.getElementById('ageDisplay');
+  if (!display) return;
+  const idade = calcularIdade(data);
+  if (idade !== null && idade >= 0 && idade < 130) {
+    display.textContent = `${idade} anos`;
+    display.classList.add('visible');
+  } else {
+    display.classList.remove('visible');
+  }
+}
+
+
+/* ============================================================
+   COLETA DE DADOS DO FORMULÁRIO
+   ============================================================
+   Lê o que está atualmente na tela e devolve um objeto.
+   - Se `validar` = true, retorna null em caso de erro de validação
+     e marca os campos com erro visualmente.
+   - Se `validar` = false, retorna o que conseguir (usado para rascunho).
+   ============================================================ */
+function coletarDadosFormulario(validar = true) {
+  // Lê tudo o que estiver no DOM atual + mescla com o que já está no rascunho
+  // (para preservar passos anteriores que não estão renderizados agora).
+  const rascunho = carregarRascunho();
+  const dados = rascunho ? { ...rascunho.dados } : {};
+
+  // Helper para ler valor de um input se ele existir no DOM
+  const lerInput = (id) => {
+    const el = document.getElementById(id);
+    return el ? el.value.trim() : null;
+  };
+  const lerRadio = (name) => {
+    const el = document.querySelector(`input[name="${name}"]:checked`);
+    return el ? el.value : null;
+  };
+
+  let temErro = false;
+  const marcarErro = (idCampo, msg) => {
+    const el = document.getElementById(idCampo);
+    if (el) {
+      const fieldDiv = el.closest('.field');
+      if (fieldDiv) {
+        fieldDiv.classList.add('has-error');
+        const errEl = fieldDiv.querySelector('.field-error');
+        if (errEl && msg) errEl.textContent = msg;
+      }
+    }
+    temErro = true;
+  };
+  const limparErros = () => {
+    document.querySelectorAll('.field.has-error').forEach(f => f.classList.remove('has-error'));
+  };
+
+  if (validar) limparErros();
+
+  // ===== PASSO 1: Dados Pessoais =====
+  if (ANAM_STATE.passoAtual === 1) {
+    const nome = lerInput('f_nome_completo');
+    if (nome !== null) dados.nome_completo = nome;
+    const dnasc = lerInput('f_data_nascimento');
+    if (dnasc !== null) dados.data_nascimento = dnasc;
+    const rg = lerInput('f_rg');
+    if (rg !== null) dados.rg = rg;
+    const cpf = lerInput('f_cpf');
+    if (cpf !== null) dados.cpf = cpf;
+    const tel = lerInput('f_telefone');
+    if (tel !== null) dados.telefone = tel;
+    const email = lerInput('f_email');
+    if (email !== null) dados.email = email;
+    const escol = lerInput('f_escolaridade');
+    if (escol !== null) dados.escolaridade = escol;
+    const prof = lerInput('f_profissao');
+    if (prof !== null) dados.profissao = prof;
+    const ec = lerInput('f_estado_civil');
+    if (ec !== null) dados.estado_civil = ec;
+    const rfb = lerRadio('reside_fora_brasil');
+    if (rfb !== null) dados.reside_fora_brasil = rfb;
+
+    if (rfb === 'Sim') {
+      dados.pais = lerInput('f_pais') || '';
+      dados.zip_code = lerInput('f_zip_code') || '';
+      dados.endereco = lerInput('f_endereco_ext') || '';
+      dados.estado = '';
+      dados.cidade = '';
+      dados.cep = '';
+    } else if (rfb === 'Não') {
+      dados.estado = lerInput('f_estado') || '';
+      dados.cidade = lerInput('f_cidade') || '';
+      dados.cep = lerInput('f_cep') || '';
+      dados.endereco = lerInput('f_endereco') || '';
+      dados.pais = '';
+      dados.zip_code = '';
+    }
+
+    if (validar) {
+      if (!dados.nome_completo) marcarErro('f_nome_completo');
+      if (!dados.data_nascimento) marcarErro('f_data_nascimento');
+      else {
+        const idade = calcularIdade(dados.data_nascimento);
+        if (idade === null || idade < 0 || idade > 130) marcarErro('f_data_nascimento', 'Data inválida');
+      }
+      if (!dados.rg) marcarErro('f_rg');
+      if (!dados.cpf || !validarCPF(dados.cpf)) marcarErro('f_cpf', 'CPF inválido');
+      if (!dados.telefone || dados.telefone.replace(/\D/g, '').length < 10) marcarErro('f_telefone', 'Telefone inválido');
+      if (!dados.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dados.email)) marcarErro('f_email', 'E-mail inválido');
+      if (!dados.escolaridade) marcarErro('f_escolaridade');
+      if (!dados.estado_civil) marcarErro('f_estado_civil');
+
+      if (!dados.reside_fora_brasil) {
+        marcarErro('f_pais', 'Selecione uma opção'); // qualquer um
+        // O erro real fica no bloco do radio — hack: marcar via querySelector
+        const radioField = document.querySelector('input[name="reside_fora_brasil"]')?.closest('.field');
+        if (radioField) radioField.classList.add('has-error');
+      } else if (dados.reside_fora_brasil === 'Sim') {
+        if (!dados.pais) marcarErro('f_pais');
+        if (!dados.zip_code) marcarErro('f_zip_code');
+        if (!dados.endereco) marcarErro('f_endereco_ext');
+      } else {
+        if (!dados.estado) marcarErro('f_estado');
+        if (!dados.cidade) marcarErro('f_cidade');
+        if (!dados.cep || dados.cep.replace(/\D/g, '').length !== 8) marcarErro('f_cep', 'CEP inválido');
+        if (!dados.endereco) marcarErro('f_endereco');
+      }
+    }
+  }
+
+  // ===== PASSO 2: Histórico de Tratamentos =====
+  if (ANAM_STATE.passoAtual === 2) {
+    const trat = lerInput('f_tratamentos_anteriores');
+    if (trat !== null) dados.tratamentos_anteriores = trat;
+    const proc12 = lerRadio('procedimento_medico_12m');
+    if (proc12 !== null) dados.procedimento_medico_12m = proc12;
+    const procDet = lerInput('f_procedimento_medico_detalhes');
+    if (procDet !== null) dados.procedimento_medico_detalhes = proc12 === 'Sim' ? procDet : '';
+    const med12 = lerRadio('medicacao_12m');
+    if (med12 !== null) dados.medicacao_12m = med12;
+    const medDet = lerInput('f_medicacao_detalhes');
+    if (medDet !== null) dados.medicacao_detalhes = med12 === 'Sim' ? medDet : '';
+
+    if (validar) {
+      if (!dados.procedimento_medico_12m) {
+        const f = document.querySelector('input[name="procedimento_medico_12m"]')?.closest('.field');
+        if (f) f.classList.add('has-error');
+        temErro = true;
+      } else if (dados.procedimento_medico_12m === 'Sim' && !dados.procedimento_medico_detalhes) {
+        marcarErro('f_procedimento_medico_detalhes');
+      }
+      if (!dados.medicacao_12m) {
+        const f = document.querySelector('input[name="medicacao_12m"]')?.closest('.field');
+        if (f) f.classList.add('has-error');
+        temErro = true;
+      } else if (dados.medicacao_12m === 'Sim' && !dados.medicacao_detalhes) {
+        marcarErro('f_medicacao_detalhes');
+      }
+    }
+  }
+
+  // ===== PASSO 3: Histórico de Saúde =====
+  if (ANAM_STATE.passoAtual === 3) {
+    // Coleta matrizes
+    const transtornosEsteve = [];
+    const transtornosEsta = [];
+    document.querySelectorAll('input[data-matrix="transtornos"]').forEach(chk => {
+      if (chk.checked && !chk.dataset.outros) {
+        if (chk.dataset.tipo === 'esteve') transtornosEsteve.push(chk.dataset.item);
+        else transtornosEsta.push(chk.dataset.item);
+      }
+    });
+    // "Outros" — se marcado, inclui o texto livre
+    const outrosTransTxt = lerInput('f_transtornos_outros') || '';
+    const outrosTransEsteve = document.getElementById('chk_transtornos_outros_esteve')?.checked;
+    const outrosTransEsta = document.getElementById('chk_transtornos_outros_esta')?.checked;
+    if (outrosTransTxt && outrosTransEsteve) transtornosEsteve.push(outrosTransTxt);
+    if (outrosTransTxt && outrosTransEsta) transtornosEsta.push(outrosTransTxt);
+
+    dados.transtornos_esteve_tratamento = transtornosEsteve.join('; ');
+    dados.transtornos_esta_tratamento = transtornosEsta.join('; ');
+    dados.transtornos_outros = outrosTransTxt;
+
+    const ft = lerRadio('familiar_transtorno');
+    if (ft !== null) dados.familiar_transtorno = ft;
+    const ftDet = lerInput('f_familiar_transtorno_detalhes');
+    if (ftDet !== null) dados.familiar_transtorno_detalhes = ft === 'Sim' ? ftDet : '';
+
+    const complicacoesEsteve = [];
+    const complicacoesEsta = [];
+    document.querySelectorAll('input[data-matrix="complicacoes"]').forEach(chk => {
+      if (chk.checked && !chk.dataset.outros) {
+        if (chk.dataset.tipo === 'esteve') complicacoesEsteve.push(chk.dataset.item);
+        else complicacoesEsta.push(chk.dataset.item);
+      }
+    });
+    const outrosCompTxt = lerInput('f_complicacoes_outros') || '';
+    const outrosCompEsteve = document.getElementById('chk_complicacoes_outros_esteve')?.checked;
+    const outrosCompEsta = document.getElementById('chk_complicacoes_outros_esta')?.checked;
+    if (outrosCompTxt && outrosCompEsteve) complicacoesEsteve.push(outrosCompTxt);
+    if (outrosCompTxt && outrosCompEsta) complicacoesEsta.push(outrosCompTxt);
+
+    dados.complicacoes_esteve_tratamento = complicacoesEsteve.join('; ');
+    dados.complicacoes_esta_tratamento = complicacoesEsta.join('; ');
+    dados.complicacoes_outros = outrosCompTxt;
+
+    const fc = lerRadio('familiar_complicacao');
+    if (fc !== null) dados.familiar_complicacao = fc;
+    const fcDet = lerInput('f_familiar_complicacao_detalhes');
+    if (fcDet !== null) dados.familiar_complicacao_detalhes = fc === 'Sim' ? fcDet : '';
+
+    if (validar) {
+      if (!dados.familiar_transtorno) {
+        const f = document.querySelector('input[name="familiar_transtorno"]')?.closest('.field');
+        if (f) f.classList.add('has-error');
+        temErro = true;
+      } else if (dados.familiar_transtorno === 'Sim' && !dados.familiar_transtorno_detalhes) {
+        marcarErro('f_familiar_transtorno_detalhes');
+      }
+      if (!dados.familiar_complicacao) {
+        const f = document.querySelector('input[name="familiar_complicacao"]')?.closest('.field');
+        if (f) f.classList.add('has-error');
+        temErro = true;
+      } else if (dados.familiar_complicacao === 'Sim' && !dados.familiar_complicacao_detalhes) {
+        marcarErro('f_familiar_complicacao_detalhes');
+      }
+    }
+  }
+
+  // ===== PASSO 4: Pessoa de Confiança =====
+  if (ANAM_STATE.passoAtual === 4) {
+    const pn = lerInput('f_pessoa_confianca_nome');
+    if (pn !== null) dados.pessoa_confianca_nome = pn;
+    const pr = lerInput('f_pessoa_confianca_relacao');
+    if (pr !== null) dados.pessoa_confianca_relacao = pr;
+    const pc = lerInput('f_pessoa_confianca_contato');
+    if (pc !== null) dados.pessoa_confianca_contato = pc;
+
+    if (validar) {
+      if (!dados.pessoa_confianca_nome) marcarErro('f_pessoa_confianca_nome');
+      if (!dados.pessoa_confianca_relacao) marcarErro('f_pessoa_confianca_relacao');
+      if (!dados.pessoa_confianca_contato) marcarErro('f_pessoa_confianca_contato');
+    }
+  }
+
+  if (validar && temErro) return null;
+  return dados;
+}
+
+
+/* ============================================================
+   RESTAURAÇÃO DE VALORES (do rascunho para o DOM)
+   ============================================================ */
+function restaurarValoresDoRascunho() {
+  const rascunho = carregarRascunho();
+  if (!rascunho) return;
+  const d = rascunho.dados;
+
+  const setInput = (id, val) => {
+    const el = document.getElementById(id);
+    if (el && val !== undefined && val !== null && val !== '') el.value = val;
+  };
+  const setRadio = (name, val) => {
+    if (!val) return;
+    const el = document.querySelector(`input[name="${name}"][value="${val}"]`);
+    if (el) el.checked = true;
+  };
+
+  // Passo 1
+  if (ANAM_STATE.passoAtual === 1) {
+    setInput('f_nome_completo', d.nome_completo);
+    setInput('f_data_nascimento', d.data_nascimento);
+    setInput('f_rg', d.rg);
+    setInput('f_cpf', d.cpf);
+    setInput('f_telefone', d.telefone);
+    setInput('f_email', d.email);
+    setInput('f_escolaridade', d.escolaridade);
+    setInput('f_profissao', d.profissao);
+    setInput('f_estado_civil', d.estado_civil);
+    setRadio('reside_fora_brasil', d.reside_fora_brasil);
+    if (d.reside_fora_brasil === 'Sim') {
+      toggleEnderecoExterior(true);
+      setInput('f_pais', d.pais);
+      setInput('f_zip_code', d.zip_code);
+      setInput('f_endereco_ext', d.endereco);
+    } else if (d.reside_fora_brasil === 'Não') {
+      toggleEnderecoExterior(false);
+      setInput('f_estado', d.estado);
+      setInput('f_cidade', d.cidade);
+      setInput('f_cep', d.cep);
+      setInput('f_endereco', d.endereco);
+    }
+    if (d.data_nascimento) atualizarIdade();
+  }
+
+  // Passo 2
+  if (ANAM_STATE.passoAtual === 2) {
+    setInput('f_tratamentos_anteriores', d.tratamentos_anteriores);
+    setRadio('procedimento_medico_12m', d.procedimento_medico_12m);
+    if (d.procedimento_medico_12m === 'Sim') {
+      toggleCondicional('blocoProcedimento', true);
+      setInput('f_procedimento_medico_detalhes', d.procedimento_medico_detalhes);
+    }
+    setRadio('medicacao_12m', d.medicacao_12m);
+    if (d.medicacao_12m === 'Sim') {
+      toggleCondicional('blocoMedicacao', true);
+      setInput('f_medicacao_detalhes', d.medicacao_detalhes);
+    }
+  }
+
+  // Passo 3
+  if (ANAM_STATE.passoAtual === 3) {
+    // Restaurar matriz transtornos
+    const transtornosEsteve = (d.transtornos_esteve_tratamento || '').split('; ').filter(Boolean);
+    const transtornosEsta = (d.transtornos_esta_tratamento || '').split('; ').filter(Boolean);
+    const outrosTrans = d.transtornos_outros || '';
+    LISTA_TRANSTORNOS.forEach((item, idx) => {
+      if (transtornosEsteve.includes(item)) document.getElementById(`chk_transtornos_${idx}_esteve`).checked = true;
+      if (transtornosEsta.includes(item)) document.getElementById(`chk_transtornos_${idx}_esta`).checked = true;
+    });
+    if (outrosTrans) {
+      setInput('f_transtornos_outros', outrosTrans);
+      if (transtornosEsteve.includes(outrosTrans)) document.getElementById('chk_transtornos_outros_esteve').checked = true;
+      if (transtornosEsta.includes(outrosTrans)) document.getElementById('chk_transtornos_outros_esta').checked = true;
+    }
+
+    setRadio('familiar_transtorno', d.familiar_transtorno);
+    if (d.familiar_transtorno === 'Sim') {
+      toggleCondicional('blocoFamTranstorno', true);
+      setInput('f_familiar_transtorno_detalhes', d.familiar_transtorno_detalhes);
+    }
+
+    const compEsteve = (d.complicacoes_esteve_tratamento || '').split('; ').filter(Boolean);
+    const compEsta = (d.complicacoes_esta_tratamento || '').split('; ').filter(Boolean);
+    const outrosComp = d.complicacoes_outros || '';
+    LISTA_COMPLICACOES.forEach((item, idx) => {
+      if (compEsteve.includes(item)) document.getElementById(`chk_complicacoes_${idx}_esteve`).checked = true;
+      if (compEsta.includes(item)) document.getElementById(`chk_complicacoes_${idx}_esta`).checked = true;
+    });
+    if (outrosComp) {
+      setInput('f_complicacoes_outros', outrosComp);
+      if (compEsteve.includes(outrosComp)) document.getElementById('chk_complicacoes_outros_esteve').checked = true;
+      if (compEsta.includes(outrosComp)) document.getElementById('chk_complicacoes_outros_esta').checked = true;
+    }
+
+    setRadio('familiar_complicacao', d.familiar_complicacao);
+    if (d.familiar_complicacao === 'Sim') {
+      toggleCondicional('blocoFamComplicacao', true);
+      setInput('f_familiar_complicacao_detalhes', d.familiar_complicacao_detalhes);
+    }
+  }
+
+  // Passo 4
+  if (ANAM_STATE.passoAtual === 4) {
+    setInput('f_pessoa_confianca_nome', d.pessoa_confianca_nome);
+    setInput('f_pessoa_confianca_relacao', d.pessoa_confianca_relacao);
+    setInput('f_pessoa_confianca_contato', d.pessoa_confianca_contato);
+  }
+}
+
+
+/* ============================================================
+   NAVEGAÇÃO ENTRE PASSOS
+   ============================================================ */
+function irParaProximoPasso() {
+  const dados = coletarDadosFormulario(true);
+  if (dados === null) {
+    // Há erros de validação — não avança
+    return;
+  }
+  // Salva no rascunho e avança
+  sessionStorage.setItem('anamnese_rascunho', JSON.stringify({
+    passo: ANAM_STATE.passoAtual + 1,
+    dados: dados,
+  }));
+  renderPasso(ANAM_STATE.passoAtual + 1);
+}
+
+function irParaPassoAnterior() {
+  // Salva o que tiver no passo atual sem validar (rascunho)
+  const dados = coletarDadosFormulario(false);
+  if (dados) {
+    sessionStorage.setItem('anamnese_rascunho', JSON.stringify({
+      passo: ANAM_STATE.passoAtual - 1,
+      dados: dados,
+    }));
+  }
+  renderPasso(ANAM_STATE.passoAtual - 1);
+}
+
+function irParaRevisao() {
+  const dados = coletarDadosFormulario(true);
+  if (dados === null) return;
+  sessionStorage.setItem('anamnese_rascunho', JSON.stringify({
+    passo: 'revisao',
+    dados: dados,
+  }));
+  renderRevisao(dados);
+}
+
+
+/* ============================================================
+   TELA DE REVISÃO
+   ============================================================ */
+function renderRevisao(dados) {
+  ANAM_STATE.passoAtual = 'revisao';
+  const container = document.getElementById('anamConteudo');
+
+  const linha = (label, valor) => {
+    const v = (valor === undefined || valor === null || valor === '') ? '<span class="empty">— não informado —</span>' : escapeHtml(String(valor));
+    return `<div class="review-row"><strong>${label}</strong><span>${v}</span></div>`;
+  };
+
+  let html = '<div class="anam-card">';
+  html += '<div class="anam-step-title">Revisão antes do envio</div>';
+  html += '<div class="anam-step-sub">Confira atentamente todos os dados abaixo</div>';
+
+  html += '<div class="alert alert-warn" style="margin-bottom:14px;">⚠️ Após o envio, a anamnese <strong>não poderá ser editada</strong>. Se identificar algum erro, use o botão "Voltar e corrigir".</div>';
+
+  // Seção 1
+  html += '<div class="review-section"><h4>1. Dados Pessoais</h4>';
+  html += linha('Nome completo', dados.nome_completo);
+  const idade = calcularIdade(dados.data_nascimento);
+  const dataFmt = formatarDataBR(dados.data_nascimento) + (idade !== null ? ` (${idade} anos)` : '');
+  html += linha('Data de nascimento', dataFmt);
+  html += linha('RG', dados.rg);
+  html += linha('CPF', dados.cpf);
+  html += linha('Telefone', dados.telefone);
+  html += linha('E-mail', dados.email);
+  html += linha('Escolaridade', dados.escolaridade);
+  html += linha('Profissão', dados.profissao);
+  html += linha('Estado civil', dados.estado_civil);
+  html += linha('Reside fora do Brasil?', dados.reside_fora_brasil);
+  if (dados.reside_fora_brasil === 'Sim') {
+    html += linha('País', dados.pais);
+    html += linha('ZIP Code', dados.zip_code);
+    html += linha('Endereço', dados.endereco);
+  } else {
+    html += linha('Estado', dados.estado);
+    html += linha('Cidade', dados.cidade);
+    html += linha('CEP', dados.cep);
+    html += linha('Endereço', dados.endereco);
+  }
+  html += '</div>';
+
+  // Seção 2
+  html += '<div class="review-section"><h4>2. Histórico de Tratamentos</h4>';
+  html += linha('Tratamentos anteriores', dados.tratamentos_anteriores);
+  html += linha('Procedimento médico (12m)', dados.procedimento_medico_12m);
+  if (dados.procedimento_medico_12m === 'Sim') html += linha('Detalhes', dados.procedimento_medico_detalhes);
+  html += linha('Medicação (12m)', dados.medicacao_12m);
+  if (dados.medicacao_12m === 'Sim') html += linha('Detalhes', dados.medicacao_detalhes);
+  html += '</div>';
+
+  // Seção 3
+  html += '<div class="review-section"><h4>3. Histórico de Saúde</h4>';
+  html += linha('Transtornos — esteve em tratamento', dados.transtornos_esteve_tratamento);
+  html += linha('Transtornos — está em tratamento', dados.transtornos_esta_tratamento);
+  html += linha('Familiar com transtorno?', dados.familiar_transtorno);
+  if (dados.familiar_transtorno === 'Sim') html += linha('Detalhes', dados.familiar_transtorno_detalhes);
+  html += linha('Complicações — esteve em tratamento', dados.complicacoes_esteve_tratamento);
+  html += linha('Complicações — está em tratamento', dados.complicacoes_esta_tratamento);
+  html += linha('Familiar com complicação?', dados.familiar_complicacao);
+  if (dados.familiar_complicacao === 'Sim') html += linha('Detalhes', dados.familiar_complicacao_detalhes);
+  html += '</div>';
+
+  // Seção 4
+  html += '<div class="review-section"><h4>4. Pessoa de Confiança</h4>';
+  html += linha('Nome', dados.pessoa_confianca_nome);
+  html += linha('Relação', dados.pessoa_confianca_relacao);
+  html += linha('Contato', dados.pessoa_confianca_contato);
+  html += '</div>';
+
+  // Botões de ação
+  html += `
+    <div class="anam-nav">
+      <button class="btn-step btn-step-prev" onclick="voltarDaRevisao()">← Voltar e corrigir</button>
+      <button class="btn-step btn-step-finish" onclick="abrirModalConfirma()">✓ Enviar definitivamente</button>
+    </div>
+  `;
+
+  html += '</div>';
+  container.innerHTML = html;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function voltarDaRevisao() {
+  renderPasso(4);
+}
+
+
+/* ============================================================
+   MODAL DE CONFIRMAÇÃO
+   ============================================================ */
+function abrirModalConfirma() {
+  document.getElementById('modalConfirma').classList.add('visible');
+}
+function fecharModalConfirma() {
+  document.getElementById('modalConfirma').classList.remove('visible');
+}
+
+
+/* ============================================================
+   ENVIO DEFINITIVO
+   ============================================================ */
+async function enviarAnamneseDefinitivo() {
+  fecharModalConfirma();
+
+  const rascunho = carregarRascunho();
+  if (!rascunho || !rascunho.dados) {
+    alert('Não há dados para enviar. Por favor, preencha o formulário novamente.');
+    renderPasso(1);
+    return;
+  }
+
+  const paciente = carregarSessao();
+  if (!paciente) {
+    alert('Sessão expirada. Faça login novamente.');
+    logout();
+    return;
+  }
+
+  const resposta = await chamarServidor('salvarAnamnese', {
+    sigla: paciente.sigla,
+    dados: rascunho.dados,
+  });
+
+  if (!resposta.ok) {
+    alert('Erro ao salvar a anamnese: ' + (resposta.erro || 'erro desconhecido') + '\n\nTente novamente. Se o problema persistir, entre em contato com seu terapeuta.');
+    return;
+  }
+
+  // Sucesso! Atualiza sessão, limpa rascunho e abre modo consulta
+  paciente.anamnese_preenchida = true;
+  paciente.data_anamnese = new Date().toISOString().slice(0, 10);
+  salvarSessao(paciente);
+  limparRascunho();
+  atualizarMenuConformeSessao();
+
+  ANAM_STATE.modoConsulta = true;
+  await abrirModoConsulta(true);
+}
+
+
+/* ============================================================
+   MODO CONSULTA (somente leitura)
+   ============================================================ */
+async function abrirModoConsulta(recemEnviado = false) {
+  const paciente = carregarSessao();
+  if (!paciente) return;
+
+  const container = document.getElementById('anamConteudo');
+  container.innerHTML = '<div class="anam-card"><div style="text-align:center;padding:20px;color:var(--txt-l);">Carregando sua anamnese...</div></div>';
+
+  const resposta = await chamarServidor('lerHistorico', { sigla: paciente.sigla });
+
+  if (!resposta.ok || !resposta.anamnese) {
+    container.innerHTML = `
+      <div class="anam-card">
+        <div class="alert alert-error">
+          Não foi possível carregar sua anamnese.
+          ${resposta.erro ? '<br>' + escapeHtml(resposta.erro) : ''}
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  const dados = resposta.anamnese;
+  ANAM_STATE.dadosConsulta = dados;
+  renderConsulta(dados, recemEnviado);
+}
+
+function renderConsulta(dados, recemEnviado) {
+  const container = document.getElementById('anamConteudo');
+
+  const linha = (label, valor) => {
+    let v;
+    if (valor === undefined || valor === null || valor === '') {
+      v = '<span class="empty">— não informado —</span>';
+    } else if (valor instanceof Date) {
+      v = formatarDataBR(valor.toISOString().slice(0, 10));
+    } else {
+      v = escapeHtml(String(valor));
+    }
+    return `<div class="review-row"><strong>${label}</strong><span>${v}</span></div>`;
+  };
+
+  // Tratar data_nascimento (pode vir como Date ou string ISO)
+  let dnasc = dados.data_nascimento;
+  if (dnasc instanceof Date) dnasc = dnasc.toISOString().slice(0, 10);
+  const idade = calcularIdade(dnasc);
+  const dataFmt = (dnasc ? formatarDataBR(dnasc) : '') + (idade !== null ? ` (${idade} anos)` : '');
+
+  // Tratar timestamp de envio
+  let dataEnvio = dados.timestamp;
+  if (dataEnvio instanceof Date) dataEnvio = formatarDataBR(dataEnvio.toISOString().slice(0, 10));
+  else if (typeof dataEnvio === 'string' && dataEnvio.length >= 10) dataEnvio = formatarDataBR(dataEnvio.slice(0, 10));
+
+  let html = '<div class="anam-card">';
+
+  if (recemEnviado) {
+    html += `
+      <div class="alert alert-success" style="margin-bottom:16px;">
+        ✓ <strong>Anamnese enviada com sucesso!</strong><br>
+        Seus dados foram salvos. Você já pode acessar os outros módulos.
+      </div>
+    `;
+  }
+
+  html += `
+    <div class="consulta-banner">
+      <strong>Anamnese preenchida${dataEnvio ? ' em ' + dataEnvio : ''}</strong>
+      Para qualquer alteração, por favor fale diretamente com seu terapeuta.
+    </div>
+  `;
+
+  html += '<div class="anam-step-title">Sua Anamnese</div>';
+  html += '<div class="anam-step-sub">Visualização somente leitura</div>';
+
+  // Seção 1
+  html += '<div class="review-section"><h4>1. Dados Pessoais</h4>';
+  html += linha('Nome completo', dados.nome_completo);
+  html += linha('Data de nascimento', dataFmt);
+  html += linha('RG', dados.rg);
+  html += linha('CPF', dados.cpf);
+  html += linha('Telefone', dados.telefone);
+  html += linha('E-mail', dados.email);
+  html += linha('Escolaridade', dados.escolaridade);
+  html += linha('Profissão', dados.profissao);
+  html += linha('Estado civil', dados.estado_civil);
+  html += linha('Reside fora do Brasil?', dados.reside_fora_brasil);
+  if (dados.reside_fora_brasil === 'Sim') {
+    html += linha('País', dados.pais);
+    html += linha('ZIP Code', dados.zip_code);
+    html += linha('Endereço', dados.endereco);
+  } else {
+    html += linha('Estado', dados.estado);
+    html += linha('Cidade', dados.cidade);
+    html += linha('CEP', dados.cep);
+    html += linha('Endereço', dados.endereco);
+  }
+  html += '</div>';
+
+  // Seção 2
+  html += '<div class="review-section"><h4>2. Histórico de Tratamentos</h4>';
+  html += linha('Tratamentos anteriores', dados.tratamentos_anteriores);
+  html += linha('Procedimento médico (12m)', dados.procedimento_medico_12m);
+  if (dados.procedimento_medico_12m === 'Sim') html += linha('Detalhes', dados.procedimento_medico_detalhes);
+  html += linha('Medicação (12m)', dados.medicacao_12m);
+  if (dados.medicacao_12m === 'Sim') html += linha('Detalhes', dados.medicacao_detalhes);
+  html += '</div>';
+
+  // Seção 3
+  html += '<div class="review-section"><h4>3. Histórico de Saúde</h4>';
+  html += linha('Transtornos — esteve em tratamento', dados.transtornos_esteve_tratamento);
+  html += linha('Transtornos — está em tratamento', dados.transtornos_esta_tratamento);
+  html += linha('Familiar com transtorno?', dados.familiar_transtorno);
+  if (dados.familiar_transtorno === 'Sim') html += linha('Detalhes', dados.familiar_transtorno_detalhes);
+  html += linha('Complicações — esteve em tratamento', dados.complicacoes_esteve_tratamento);
+  html += linha('Complicações — está em tratamento', dados.complicacoes_esta_tratamento);
+  html += linha('Familiar com complicação?', dados.familiar_complicacao);
+  if (dados.familiar_complicacao === 'Sim') html += linha('Detalhes', dados.familiar_complicacao_detalhes);
+  html += '</div>';
+
+  // Seção 4
+  html += '<div class="review-section"><h4>4. Pessoa de Confiança</h4>';
+  html += linha('Nome', dados.pessoa_confianca_nome);
+  html += linha('Relação', dados.pessoa_confianca_relacao);
+  html += linha('Contato', dados.pessoa_confianca_contato);
+  html += '</div>';
+
+  html += `
+    <div class="anam-nav">
+      <button class="btn-step btn-step-prev" onclick="abrirSecao('sec-menu')">← Voltar ao menu</button>
+    </div>
+  `;
+
+  html += '</div>';
+  container.innerHTML = html;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+
+/* ============================================================
+   UTILITÁRIOS
+   ============================================================ */
+function formatarDataBR(dataISO) {
+  if (!dataISO) return '';
+  const partes = String(dataISO).slice(0, 10).split('-');
+  if (partes.length !== 3) return dataISO;
+  return `${partes[2]}/${partes[1]}/${partes[0]}`;
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 
@@ -509,6 +2199,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const paciente = carregarSessao();
   if (paciente) {
     atualizarBadgeUsuario();
+    atualizarMenuConformeSessao();
     abrirSecao('sec-menu');
   } else {
     abrirSecao('sec-login');
