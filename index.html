@@ -7,18 +7,14 @@
 <title>Clínica VMC — Sistema TCC</title>
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
-<!-- Chart.js carregado desde o início para uso futuro nos gráficos de evolução -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
-/* ============================================================
-   IDENTIDADE VISUAL — herdada de registro_interativo_v1.html
-   Mesma paleta, mesmas fontes, mesmos componentes.
-   ============================================================ */
 :root{
   --blue:#2C5F7C; --blue-lt:#E8F1F5;
   --coral:#E07A6B; --coral-bg:#FFF5F3;
   --green:#6BBF8A; --green-bg:#F2FBF5;
   --amber:#D4A843; --amber-bg:#FFFBF0;
+  --red:#D94444; --red-bg:#FEF2F2;
   --gray:#7A8D9C; --gray-bg:#F5F7F9; --gray-lt:#E8ECF0;
   --txt:#2D3748; --txt-m:#4A5568; --txt-l:#718096;
   --w:#FFF; --r:14px; --rs:8px;
@@ -33,7 +29,7 @@ body{
 }
 .app{max-width:800px;margin:0 auto;padding:20px 16px 100px;}
 
-/* ===== Cabeçalho do app ===== */
+/* ===== Cabeçalho ===== */
 .app-header{text-align:center;padding:30px 0 20px;position:relative;}
 .app-header h1{font-family:'Quicksand',sans-serif;font-size:22px;font-weight:700;color:var(--blue);}
 .app-header p{font-size:12px;color:var(--txt-l);margin-top:4px;}
@@ -52,7 +48,7 @@ body{
 }
 .btn-logout:hover{opacity:1;}
 
-/* ===== Cards de menu (reutilizados do registro) ===== */
+/* ===== Cards de menu ===== */
 .card-grid{display:grid;gap:14px;margin-top:16px;}
 .card{
   background:var(--w);border-radius:var(--r);padding:20px;
@@ -93,7 +89,7 @@ body{
 .card-amber{border-color:var(--amber-bg);}.card-amber .card-title{color:var(--amber);}
 .card-gray{border-color:var(--gray-lt);}.card-gray .card-title{color:var(--gray);}
 
-/* ===== Sistema de seções (single-page navigation) ===== */
+/* ===== Seções ===== */
 .section{display:none;animation:fadeIn .3s ease;}
 .section.active{display:block;}
 @keyframes fadeIn{
@@ -101,7 +97,7 @@ body{
   to{opacity:1;transform:translateY(0);}
 }
 
-/* ===== Barra de navegação (voltar / home) ===== */
+/* ===== Nav bar ===== */
 .nav-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:10px 0;}
 .btn-back{
   background:var(--gray-bg);border:none;border-radius:var(--rs);
@@ -112,9 +108,7 @@ body{
 .btn-back:hover{background:var(--gray-lt);}
 .nav-title{font-family:'Quicksand',sans-serif;font-size:14px;font-weight:600;color:var(--txt-l);}
 
-/* ============================================================
-   TELA DE LOGIN
-   ============================================================ */
+/* ===== Login ===== */
 .login-card{
   background:var(--w);
   border-radius:var(--r);
@@ -139,7 +133,9 @@ body{
   font-size:12px;color:var(--txt-l);
   text-align:center;margin-bottom:24px;
 }
-.field{margin:12px 0;}
+
+/* ===== Campos de formulário ===== */
+.field{margin:12px 0;position:relative;}
 .field label{
   font-size:12px;font-weight:700;color:var(--txt-m);
   display:block;margin-bottom:6px;
@@ -163,7 +159,7 @@ body{
 .field textarea:focus{border-color:var(--blue);}
 .field input:disabled,
 .field select:disabled,
-.field textarea:disabled{background:var(--gray-bg);cursor:not-allowed;}
+.field textarea:disabled{background:var(--gray-bg);cursor:not-allowed;color:var(--txt-m);}
 .field textarea{min-height:80px;resize:vertical;font-family:'Nunito',sans-serif;}
 .field-hint{font-size:11px;color:var(--txt-l);margin-top:4px;}
 .field-error{font-size:11.5px;color:var(--coral);margin-top:4px;display:none;font-weight:600;}
@@ -172,6 +168,33 @@ body{
 .field.has-error textarea{border-color:var(--coral);background:var(--coral-bg);}
 .field.has-error .field-error{display:block;}
 
+/* Campo CEP com ícone de lupa */
+.cep-wrap{position:relative;}
+.cep-wrap input{padding-right:42px;}
+.btn-cep-search{
+  position:absolute;
+  right:6px;top:50%;
+  transform:translateY(-50%);
+  background:var(--gray-bg);
+  border:none;
+  width:32px;height:32px;
+  border-radius:6px;
+  cursor:pointer;
+  font-size:14px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.btn-cep-search:hover{background:var(--blue-lt);}
+.cep-status{
+  font-size:11px;color:var(--txt-l);
+  margin-top:4px;font-style:italic;
+  display:none;
+}
+.cep-status.visible{display:block;}
+.cep-status.success{color:var(--green);}
+.cep-status.error{color:var(--coral);}
+
+/* ===== Botões ===== */
 .btn-primary{
   display:block;width:100%;margin-top:20px;padding:14px;
   background:var(--blue);color:var(--w);
@@ -182,6 +205,7 @@ body{
 .btn-primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 12px rgba(44,95,124,.25);}
 .btn-primary:disabled{opacity:.6;cursor:not-allowed;}
 
+/* ===== Alertas ===== */
 .alert{
   padding:10px 14px;border-radius:var(--rs);
   font-size:12.5px;margin-top:12px;
@@ -197,9 +221,7 @@ body{
   font-size:11px;color:var(--txt-l);
 }
 
-/* ============================================================
-   PLACEHOLDER DE MÓDULOS NÃO IMPLEMENTADOS
-   ============================================================ */
+/* ===== Placeholder ===== */
 .placeholder-box{
   background:var(--w);
   border-radius:var(--r);
@@ -216,9 +238,7 @@ body{
 }
 .placeholder-text{font-size:12.5px;color:var(--txt-l);line-height:1.6;}
 
-/* ============================================================
-   LOADING (spinner overlay durante chamadas ao servidor)
-   ============================================================ */
+/* ===== Loading ===== */
 .loading-overlay{
   position:fixed;inset:0;
   background:rgba(255,255,255,.85);
@@ -236,9 +256,7 @@ body{
 }
 @keyframes spin{to{transform:rotate(360deg);}}
 
-/* ============================================================
-   MÓDULO ANAMNESE — formulário em passos
-   ============================================================ */
+/* ===== Anamnese — container e passos ===== */
 .anam-card{
   background:var(--w);
   border-radius:var(--r);
@@ -246,8 +264,6 @@ body{
   box-shadow:0 2px 12px rgba(0,0,0,.06);
   border:1px solid var(--gray-lt);
 }
-
-/* Indicador de passos (4 dots) */
 .steps{display:flex;gap:6px;margin:0 0 18px;justify-content:center;}
 .step-dot{
   width:10px;height:10px;border-radius:50%;
@@ -265,7 +281,6 @@ body{
   font-size:12px;color:var(--txt-l);
   text-align:center;margin-bottom:20px;
 }
-
 .anam-section-title{
   font-family:'Quicksand',sans-serif;
   font-size:14px;font-weight:700;color:var(--txt-m);
@@ -275,14 +290,14 @@ body{
 }
 .anam-section-title:first-child{margin-top:0;}
 
-/* Grid de 2 colunas para campos curtos no desktop */
+/* Grids */
 .field-row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .field-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
 @media(max-width:600px){
   .field-row-2,.field-row-3{grid-template-columns:1fr;}
 }
 
-/* Bloco condicional (aparece quando "Sim") */
+/* Blocos condicionais */
 .conditional-block{
   margin-top:8px;
   padding:14px;
@@ -293,7 +308,7 @@ body{
 }
 .conditional-block.visible{display:block;animation:fadeIn .25s ease;}
 
-/* Pergunta Sim/Não em linha */
+/* Sim/Não */
 .yesno{display:flex;gap:10px;margin-top:6px;}
 .yesno label{
   flex:1;
@@ -308,82 +323,13 @@ body{
 }
 .yesno label:hover{border-color:var(--blue);}
 .yesno input[type="radio"]{display:none;}
-.yesno input[type="radio"]:checked + span{color:var(--blue);}
 .yesno label:has(input:checked){
   background:var(--blue-lt);
   border-color:var(--blue);
   color:var(--blue);
 }
 
-/* Matriz de transtornos (desktop = tabela; mobile = cartões) */
-.matrix{
-  margin-top:6px;
-  border:1px solid var(--gray-lt);
-  border-radius:var(--rs);
-  overflow:hidden;
-}
-.matrix-row{
-  display:grid;
-  grid-template-columns:1fr 130px 130px;
-  align-items:center;
-  padding:10px 14px;
-  border-bottom:1px solid var(--gray-lt);
-  font-size:13px;
-  gap:8px;
-}
-.matrix-row:last-child{border-bottom:none;}
-.matrix-row:nth-child(even){background:var(--gray-bg);}
-.matrix-header{
-  background:var(--blue) !important;
-  color:var(--w);
-  font-weight:700;
-  font-size:11.5px;
-  text-transform:uppercase;
-  letter-spacing:.4px;
-  text-align:center;
-}
-.matrix-header > div:first-child{text-align:left;}
-.matrix-cell-check{
-  display:flex;align-items:center;justify-content:center;
-}
-.matrix-cell-check input[type="checkbox"]{
-  width:20px;height:20px;
-  accent-color:var(--blue);
-  cursor:pointer;
-}
-.matrix-row .matrix-label{font-weight:600;color:var(--txt-m);}
-.matrix-row-other input[type="text"]{
-  width:100%;
-  border:none;border-bottom:1.5px solid var(--gray-lt);
-  background:transparent;
-  font-family:'Nunito',sans-serif;font-size:13px;
-  padding:4px 2px;outline:none;
-}
-.matrix-row-other input[type="text"]:focus{border-bottom-color:var(--blue);}
-
-/* Em mobile, vira lista de cartões empilhados */
-@media(max-width:600px){
-  .matrix-header{display:none;}
-  .matrix-row{
-    grid-template-columns:1fr;
-    gap:8px;padding:12px 14px;
-  }
-  .matrix-row:nth-child(even){background:var(--w);}
-  .matrix-row{border-bottom:1px solid var(--gray-lt);}
-  .matrix-row .matrix-label{font-size:13.5px;color:var(--txt);margin-bottom:4px;}
-  .matrix-cell-check{
-    justify-content:flex-start;
-    gap:8px;
-    padding:6px 10px;
-    background:var(--gray-bg);
-    border-radius:var(--rs);
-    font-size:12px;color:var(--txt-m);
-    font-weight:600;
-  }
-  .matrix-cell-check::after{content:attr(data-label);}
-}
-
-/* Idade calculada ao lado da data */
+/* Idade */
 .age-display{
   font-size:12px;
   color:var(--blue);
@@ -393,7 +339,216 @@ body{
 }
 .age-display.visible{display:block;}
 
-/* Botões de navegação do formulário */
+/* ===== Accordion de categorias (Seção 3) ===== */
+.accordion{margin:8px 0 14px;border:1px solid var(--gray-lt);border-radius:var(--rs);overflow:hidden;}
+.acc-item{border-bottom:1px solid var(--gray-lt);}
+.acc-item:last-child{border-bottom:none;}
+.acc-header{
+  width:100%;
+  background:var(--gray-bg);
+  border:none;
+  padding:13px 14px;
+  display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;
+  font-family:'Nunito',sans-serif;
+  font-size:13px;font-weight:700;
+  color:var(--txt-m);
+  text-align:left;
+  transition:all .2s;
+  gap:10px;
+}
+.acc-header:hover{background:var(--blue-lt);color:var(--blue);}
+.acc-header .acc-count{
+  background:var(--blue);color:var(--w);
+  font-size:10px;font-weight:800;
+  min-width:20px;height:20px;
+  border-radius:10px;
+  display:none;align-items:center;justify-content:center;
+  padding:0 6px;
+}
+.acc-header.has-selection .acc-count{display:inline-flex;}
+.acc-header.has-selection{background:var(--blue-lt);color:var(--blue);}
+.acc-chevron{font-size:12px;transition:transform .3s;color:var(--txt-l);flex-shrink:0;}
+.acc-item.open .acc-chevron{transform:rotate(180deg);}
+.acc-body{
+  display:none;
+  padding:12px 16px 14px;
+  background:var(--w);
+}
+.acc-item.open .acc-body{display:block;animation:fadeIn .2s ease;}
+.acc-item-option{
+  padding:8px 0;
+  border-bottom:1px dashed var(--gray-lt);
+}
+.acc-item-option:last-child{border-bottom:none;}
+.acc-item-checkbox-label{
+  display:flex;align-items:flex-start;gap:10px;
+  font-size:13px;
+  color:var(--txt);
+  cursor:pointer;
+  line-height:1.4;
+}
+.acc-item-checkbox-label input[type="checkbox"]{
+  width:18px;height:18px;
+  accent-color:var(--blue);
+  cursor:pointer;
+  flex-shrink:0;
+  margin-top:1px;
+}
+.acc-item-status{
+  margin:10px 0 4px 28px;
+  padding:10px 12px;
+  background:var(--blue-lt);
+  border-left:3px solid var(--blue);
+  border-radius:0 var(--rs) var(--rs) 0;
+  font-size:12px;
+  display:none;
+}
+.acc-item-option.selected .acc-item-status{display:block;animation:fadeIn .2s ease;}
+.acc-item-status-label{
+  font-weight:700;color:var(--blue);
+  display:block;margin-bottom:6px;
+  font-size:11.5px;
+}
+.acc-item-status-option{
+  display:flex;align-items:center;gap:8px;
+  padding:5px 0;
+  cursor:pointer;
+  color:var(--txt-m);
+}
+.acc-item-status-option input[type="radio"]{
+  width:15px;height:15px;
+  accent-color:var(--blue);
+  cursor:pointer;
+}
+.acc-item-other-text{
+  width:100%;margin-top:6px;margin-left:28px;
+  max-width:calc(100% - 28px);
+  border:none;border-bottom:1.5px solid var(--gray-lt);
+  background:transparent;
+  font-family:'Nunito',sans-serif;
+  font-size:12.5px;
+  padding:4px 2px;
+  outline:none;
+}
+.acc-item-other-text:focus{border-bottom-color:var(--blue);}
+
+/* Lista simples de checkboxes (complicações clínicas, sinais de risco) */
+.checklist{
+  margin:8px 0 14px;
+  border:1px solid var(--gray-lt);
+  border-radius:var(--rs);
+  padding:14px 16px;
+  background:var(--w);
+}
+.checklist-item{
+  padding:8px 0;
+  border-bottom:1px dashed var(--gray-lt);
+}
+.checklist-item:last-child{border-bottom:none;}
+.checklist-item label{
+  display:flex;align-items:flex-start;gap:10px;
+  font-size:13px;
+  color:var(--txt);
+  cursor:pointer;
+  line-height:1.4;
+}
+.checklist-item input[type="checkbox"]{
+  width:18px;height:18px;
+  accent-color:var(--blue);
+  cursor:pointer;
+  flex-shrink:0;
+  margin-top:1px;
+}
+
+/* ===== Sinais de risco (destaque) ===== */
+.risk-box{
+  margin:22px 0 14px;
+  border:2px solid var(--amber);
+  border-radius:var(--r);
+  background:var(--amber-bg);
+  padding:16px 18px;
+}
+.risk-title{
+  display:flex;align-items:center;gap:8px;
+  font-family:'Quicksand',sans-serif;
+  font-size:14px;font-weight:800;
+  color:#9A7820;
+  margin-bottom:6px;
+}
+.risk-sub{
+  font-size:11.5px;
+  color:#9A7820;
+  line-height:1.5;
+  margin-bottom:12px;
+  font-style:italic;
+}
+.risk-box .checklist{
+  background:var(--w);
+  border-color:#F0E0A8;
+}
+.risk-box .checklist-item input[type="checkbox"]{accent-color:var(--amber);}
+.risk-warning{
+  display:none;
+  margin-top:12px;
+  padding:14px;
+  background:var(--red-bg);
+  border:1px solid #F5C6C6;
+  border-left:4px solid var(--red);
+  border-radius:var(--rs);
+  font-size:12px;
+  color:#8B2D2D;
+  line-height:1.6;
+}
+.risk-warning.visible{display:block;animation:fadeIn .2s ease;}
+.risk-warning strong{display:block;margin-bottom:6px;font-size:13px;}
+.risk-warning .emergency-list{margin-top:8px;}
+.risk-warning .emergency-list div{margin:3px 0;}
+
+/* ===== Pessoa de confiança - blocos múltiplos ===== */
+.pc-block{
+  background:var(--gray-bg);
+  border-radius:var(--rs);
+  padding:16px 18px;
+  margin:14px 0;
+  border-left:3px solid var(--blue);
+}
+.pc-block-title{
+  font-family:'Quicksand',sans-serif;
+  font-size:13px;font-weight:700;
+  color:var(--blue);
+  margin-bottom:10px;
+}
+.pc-add-block{
+  background:var(--blue-lt);
+  border:1.5px dashed var(--blue);
+  border-radius:var(--rs);
+  padding:16px;
+  margin:14px 0;
+  text-align:center;
+}
+.pc-add-question{
+  font-size:12.5px;
+  color:var(--blue);
+  margin-bottom:10px;
+  font-weight:600;
+}
+.pc-add-buttons{display:flex;gap:8px;justify-content:center;}
+.pc-add-buttons button{
+  padding:8px 16px;
+  border:1.5px solid var(--blue);
+  background:var(--w);
+  color:var(--blue);
+  border-radius:var(--rs);
+  font-family:'Nunito',sans-serif;
+  font-size:12px;font-weight:700;
+  cursor:pointer;
+  transition:all .2s;
+}
+.pc-add-buttons button:hover{background:var(--blue);color:var(--w);}
+.pc-add-buttons button.yes{background:var(--blue);color:var(--w);}
+
+/* ===== Botões de navegação do formulário ===== */
 .anam-nav{
   display:flex;gap:10px;
   margin-top:24px;
@@ -411,18 +566,12 @@ body{
   border:1.5px solid var(--gray-lt);
 }
 .btn-step-prev:hover{background:var(--gray-lt);}
-.btn-step-next{
-  background:var(--blue);color:var(--w);
-}
+.btn-step-next{background:var(--blue);color:var(--w);}
 .btn-step-next:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(44,95,124,.25);}
-.btn-step-finish{
-  background:var(--green);color:var(--w);
-}
+.btn-step-finish{background:var(--green);color:var(--w);}
 .btn-step-finish:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(107,191,138,.25);}
 
-/* ============================================================
-   TELA DE REVISÃO
-   ============================================================ */
+/* ===== Tela de revisão ===== */
 .review-section{
   background:var(--gray-bg);
   border-radius:var(--rs);
@@ -438,7 +587,7 @@ body{
 }
 .review-row{
   display:grid;
-  grid-template-columns:160px 1fr;
+  grid-template-columns:180px 1fr;
   gap:10px;
   padding:5px 0;
   font-size:12.5px;
@@ -451,9 +600,7 @@ body{
 .review-row span{color:var(--txt);word-break:break-word;}
 .review-row span.empty{color:var(--txt-l);font-style:italic;}
 
-/* ============================================================
-   MODAL DE CONFIRMAÇÃO
-   ============================================================ */
+/* ===== Modal ===== */
 .modal-overlay{
   position:fixed;inset:0;
   background:rgba(45,55,72,.55);
@@ -499,14 +646,10 @@ body{
   border:1.5px solid var(--gray-lt);
 }
 .btn-modal-cancel:hover{background:var(--gray-lt);}
-.btn-modal-confirm{
-  background:var(--green);color:var(--w);
-}
+.btn-modal-confirm{background:var(--green);color:var(--w);}
 .btn-modal-confirm:hover{transform:translateY(-1px);}
 
-/* ============================================================
-   MODO CONSULTA (anamnese já preenchida)
-   ============================================================ */
+/* ===== Consulta ===== */
 .consulta-banner{
   background:var(--green-bg);
   border:1px solid #D0EDDA;
@@ -528,16 +671,10 @@ body{
 </head>
 <body>
 
-<!-- ============================================================
-     OVERLAY DE LOADING (mostrado durante chamadas ao servidor)
-     ============================================================ -->
 <div class="loading-overlay" id="loadingOverlay">
   <div class="spinner"></div>
 </div>
 
-<!-- ============================================================
-     MODAL DE CONFIRMAÇÃO (usado pela Anamnese)
-     ============================================================ -->
 <div class="modal-overlay" id="modalConfirma">
   <div class="modal-card">
     <div class="modal-icon">⚠️</div>
@@ -557,7 +694,6 @@ body{
 
 <div class="app">
 
-  <!-- Cabeçalho -->
   <div class="app-header">
     <h1>📋 Clínica VMC</h1>
     <p>Sistema Clínico Digital — TCC</p>
@@ -567,9 +703,7 @@ body{
     </div>
   </div>
 
-  <!-- ============================================================
-       SEÇÃO: LOGIN
-       ============================================================ -->
+  <!-- LOGIN -->
   <div class="section active" id="sec-login">
     <div class="login-card">
       <div class="login-icon">🔐</div>
@@ -580,7 +714,6 @@ body{
         <label for="inputSigla">Sigla</label>
         <input type="text" id="inputSigla" placeholder="Ex: TST" autocomplete="off" autocapitalize="characters" maxlength="10">
       </div>
-
       <div class="field">
         <label for="inputSenha">Senha</label>
         <input type="password" id="inputSenha" placeholder="Sua senha" autocomplete="current-password">
@@ -596,9 +729,7 @@ body{
     </div>
   </div>
 
-  <!-- ============================================================
-       SEÇÃO: MENU PRINCIPAL
-       ============================================================ -->
+  <!-- MENU -->
   <div class="section" id="sec-menu">
     <h2 style="font-family:'Quicksand',sans-serif;font-size:16px;color:var(--blue);text-align:center;margin:8px 0 4px;">
       Menu Principal
@@ -607,15 +738,12 @@ body{
       Escolha o módulo que deseja acessar
     </p>
 
-    <!-- Aviso quando a anamnese ainda não foi preenchida -->
     <div class="alert alert-info hidden" id="avisoAnamnesePendente" style="margin-bottom:16px;">
       📝 <strong>Antes de começar</strong>, precisamos que você preencha sua anamnese.
       Os outros módulos serão liberados em seguida.
     </div>
 
     <div class="card-grid">
-
-      <!-- Módulo 1 — Anamnese -->
       <button class="card card-blue" id="cardAnamnese" onclick="abrirModulo('anamnese')">
         <span class="card-icon">📝</span>
         <div class="card-title">1. Anamnese</div>
@@ -624,7 +752,6 @@ body{
         <span class="card-badge-done hidden" id="badgeAnamneseDone">✓ Preenchida</span>
       </button>
 
-      <!-- Módulo 2 — Registro de Automonitoramento -->
       <button class="card card-coral" id="cardAutomon" onclick="abrirModulo('automonitoramento')">
         <span class="card-icon">📊</span>
         <div class="card-title">2. Registro de Automonitoramento</div>
@@ -632,7 +759,6 @@ body{
         <span class="card-arrow">›</span>
       </button>
 
-      <!-- Módulo 3 — Escalas e Inventários (reservado) -->
       <button class="card card-green" disabled>
         <span class="card-icon">📋</span>
         <div class="card-title">3. Escalas e Inventários</div>
@@ -640,7 +766,6 @@ body{
         <span class="card-badge-soon">Em breve</span>
       </button>
 
-      <!-- Módulo 4 — Psicoeducação (reservado) -->
       <button class="card card-amber" disabled>
         <span class="card-icon">📚</span>
         <div class="card-title">4. Psicoeducação</div>
@@ -648,37 +773,25 @@ body{
         <span class="card-badge-soon">Em breve</span>
       </button>
 
-      <!-- Módulo 5 — Intervenções (reservado) -->
       <button class="card card-gray" disabled>
         <span class="card-icon">🛠️</span>
         <div class="card-title">5. Intervenções Cognitivas e Comportamentais</div>
         <div class="card-desc">Exercícios e técnicas terapêuticas</div>
         <span class="card-badge-soon">Em breve</span>
       </button>
-
     </div>
   </div>
 
-  <!-- ============================================================
-       SEÇÃO: MÓDULO ANAMNESE
-       Comporta 6 modos:
-         - Passo 1, 2, 3, 4 (formulário em etapas)
-         - Revisão (antes do envio definitivo)
-         - Consulta (anamnese já enviada — somente leitura)
-       ============================================================ -->
+  <!-- ANAMNESE -->
   <div class="section" id="sec-anamnese">
     <div class="nav-bar">
       <button class="btn-back" onclick="voltarMenuAnamnese()">← Menu</button>
       <span class="nav-title">Módulo 1 — Anamnese</span>
     </div>
-
-    <!-- Conteúdo dinâmico renderizado via JS -->
     <div id="anamConteudo"></div>
   </div>
 
-  <!-- ============================================================
-       SEÇÃO: MÓDULO AUTOMONITORAMENTO (placeholder — Etapa 3)
-       ============================================================ -->
+  <!-- AUTOMONITORAMENTO -->
   <div class="section" id="sec-automonitoramento">
     <div class="nav-bar">
       <button class="btn-back" onclick="abrirSecao('sec-menu')">← Menu</button>
@@ -698,22 +811,149 @@ body{
 
 <script>
 /* ============================================================
-   CONFIGURAÇÃO
+   SISTEMA CLÍNICO DIGITAL — v2
    ============================================================ */
 
 // URL do Google Apps Script publicado como Web App
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx7kHrVq7KizCWCVeEhTpsBFcU36Vc1zUBWF1AuJxdPD3iO5K4LIPuZs2vXXr1OK94eAg/exec';
+const VERSAO_FRONT = 'v2';
 
-// Versão do front (para futuras compatibilizações)
-const VERSAO_FRONT = 'v1';
+
+/* ============================================================
+   DADOS ESTRUTURAIS DO MÓDULO ANAMNESE
+   ============================================================ */
+
+// 13 categorias clínicas (Seção 3)
+const CATEGORIAS_TRANSTORNOS = [
+  { id: 'ansiedade', nome: 'Transtornos de Ansiedade', itens: [
+    'Transtorno de Ansiedade Generalizada (TAG)',
+    'Transtorno do Pânico',
+    'Transtorno de Ansiedade Social (Fobia Social)',
+    'Fobias Específicas',
+    'Agorafobia',
+    'Outro transtorno de ansiedade',
+  ]},
+  { id: 'depressivos', nome: 'Transtornos Depressivos', itens: [
+    'Transtorno Depressivo Maior',
+    'Transtorno Depressivo Persistente (Distimia)',
+    'Transtorno Disfórico Pré-Menstrual',
+    'Outro transtorno depressivo',
+  ]},
+  { id: 'bipolar', nome: 'Transtorno Bipolar e Relacionados', itens: [
+    'Transtorno Bipolar Tipo I',
+    'Transtorno Bipolar Tipo II',
+    'Transtorno Ciclotímico',
+  ]},
+  { id: 'trauma', nome: 'Transtornos Relacionados a Trauma e Estressores', itens: [
+    'Transtorno de Estresse Pós-Traumático (TEPT)',
+    'Transtorno de Estresse Agudo',
+    'Transtorno de Adaptação',
+    'Transtorno de Luto Prolongado',
+  ]},
+  { id: 'toc', nome: 'TOC e Transtornos Relacionados', itens: [
+    'Transtorno Obsessivo-Compulsivo (TOC)',
+    'Transtorno Dismórfico Corporal',
+    'Tricotilomania (Transtorno de Arrancar Cabelos)',
+    'Transtorno de Escoriação (Beliscar a Pele)',
+  ]},
+  { id: 'alimentares', nome: 'Transtornos Alimentares', itens: [
+    'Anorexia Nervosa',
+    'Bulimia Nervosa',
+    'Transtorno de Compulsão Alimentar Periódica (TCAP)',
+  ]},
+  { id: 'neurodesenvolvimento', nome: 'Transtornos do Neurodesenvolvimento', itens: [
+    'Transtorno do Déficit de Atenção e Hiperatividade (TDAH)',
+    'Transtorno do Espectro Autista (TEA)',
+    'Transtorno Específico de Aprendizagem (Dislexia, Discalculia)',
+  ]},
+  { id: 'substancias', nome: 'Transtornos por Uso de Substâncias', itens: [
+    'Transtorno por Uso de Álcool',
+    'Transtorno por Uso de Maconha (Cannabis)',
+    'Transtorno por Uso de Cocaína / Crack',
+    'Transtorno por Uso de Estimulantes / Anfetaminas',
+    'Transtorno por Uso de Opioides',
+    'Transtorno por Uso de Tabaco / Nicotina',
+    'Outro transtorno por uso de substância',
+  ]},
+  { id: 'aditivos', nome: 'Outras Dependências Comportamentais — Transtornos Aditivos', itens: [
+    'Transtorno do Jogo / Ludopatia (apostas, bets, cassinos online, jogos físicos)',
+    'Uso problemático de jogos eletrônicos / videogames',
+    'Uso problemático de pornografia',
+    'Uso problemático de internet e redes sociais',
+    'Compras compulsivas',
+    'Outro comportamento aditivo',
+  ]},
+  { id: 'personalidade', nome: 'Transtornos da Personalidade', itens: [
+    'Transtorno de Personalidade Borderline',
+    'Transtorno de Personalidade Antissocial',
+    'Transtorno de Personalidade Narcisista',
+    'Transtorno de Personalidade Esquiva',
+    'Transtorno de Personalidade Dependente',
+    'Transtorno de Personalidade Obsessivo-Compulsiva',
+    'Outro transtorno de personalidade',
+  ]},
+  { id: 'sono', nome: 'Transtornos do Sono-Vigília', itens: [
+    'Transtorno de Insônia',
+    'Transtorno de Hipersonia',
+    'Outro transtorno do sono',
+  ]},
+  { id: 'sexuais', nome: 'Disfunções e Transtornos Sexuais', itens: [
+    'Disfunção sexual',
+    'Disforia de gênero',
+    'Outro',
+  ]},
+  { id: 'outros', nome: 'Outros Diagnósticos', itens: [
+    'Esquizofrenia ou outro Transtorno Psicótico',
+    'Transtorno Dissociativo',
+    'Outro diagnóstico não listado',
+  ]},
+];
+
+// Sinais de risco — categoria especial (destaque visual)
+const SINAIS_RISCO = [
+  'Já tive ideação suicida (pensamentos sobre morrer ou desejar não estar vivo) ao longo da vida',
+  'Tive ideação suicida nos últimos 12 meses',
+  'Já fiz alguma tentativa de suicídio ao longo da vida',
+  'Fiz alguma tentativa de suicídio nos últimos 12 meses',
+  'Já pratiquei autolesão sem intenção suicida (cutting, queimaduras, etc)',
+  'Pratico autolesão atualmente',
+];
+
+// Complicações clínicas (lista simples)
+const COMPLICACOES_CLINICAS = [
+  'Doenças cardíacas',
+  'Hipertensão arterial',
+  'Hipotireoidismo',
+  'Hipertireoidismo',
+  'Epilepsia / Convulsões',
+  'Diabetes',
+  'Enxaqueca crônica',
+  'Fibromialgia',
+  'Doença autoimune',
+  'Câncer (atual ou em remissão)',
+];
+
+// Estados brasileiros (siglas)
+const ESTADOS_BR = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
+
+const ESCOLARIDADES = [
+  'Fundamental incompleto','Fundamental completo','Médio incompleto','Médio completo',
+  'Superior incompleto','Superior completo','Pós-graduação incompleto','Pós-graduação completo',
+];
+
+const ESTADOS_CIVIS = ['Solteiro(a)','União Estável','Casado(a)','Separado(a)','Divorciado(a)'];
+
+// Status de tratamento para cada transtorno marcado
+const STATUS_TRATAMENTO = [
+  { valor: 'suspeita', label: 'Nunca recebi diagnóstico formal (é uma suspeita minha)' },
+  { valor: 'sem_tratamento', label: 'Recebi diagnóstico — nunca estive em tratamento' },
+  { valor: 'passado', label: 'Recebi diagnóstico — estive em tratamento no passado' },
+  { valor: 'atual', label: 'Recebi diagnóstico — estou em tratamento atualmente' },
+];
 
 
 /* ============================================================
    COMUNICAÇÃO COM O APPS SCRIPT
-   ============================================================
-   Usa Content-Type text/plain para evitar o preflight CORS,
-   que é uma limitação conhecida do Apps Script. O servidor
-   interpreta o corpo como JSON mesmo assim.
    ============================================================ */
 async function chamarServidor(acao, dados = {}) {
   mostrarLoading(true);
@@ -755,7 +995,6 @@ function abrirModulo(modulo) {
     abrirSecao('sec-anamnese');
     iniciarAnamnese();
   } else if (modulo === 'automonitoramento') {
-    // Bloqueio: precisa ter anamnese preenchida antes
     const paciente = carregarSessao();
     if (paciente && !paciente.anamnese_preenchida) {
       alert('Por favor, preencha sua anamnese antes de acessar este módulo.');
@@ -768,9 +1007,6 @@ function abrirModulo(modulo) {
 
 /* ============================================================
    SESSÃO DO PACIENTE
-   ============================================================
-   Guardada em sessionStorage: vive enquanto a aba estiver
-   aberta, é apagada quando o paciente fecha o navegador.
    ============================================================ */
 function salvarSessao(paciente) {
   sessionStorage.setItem('paciente', JSON.stringify(paciente));
@@ -800,10 +1036,8 @@ function atualizarBadgeUsuario() {
 function atualizarMenuConformeSessao() {
   const paciente = carregarSessao();
   if (!paciente) return;
-
   const badgeDone = document.getElementById('badgeAnamneseDone');
   const aviso = document.getElementById('avisoAnamnesePendente');
-
   if (paciente.anamnese_preenchida) {
     badgeDone.classList.remove('hidden');
     aviso.classList.add('hidden');
@@ -846,14 +1080,12 @@ async function fazerLogin() {
     return;
   }
 
-  // Login bem-sucedido
   salvarSessao(resposta.paciente);
   atualizarBadgeUsuario();
   atualizarMenuConformeSessao();
   document.getElementById('inputSigla').value = '';
   document.getElementById('inputSenha').value = '';
 
-  // Roteamento: se for primeiro acesso (sem anamnese), vai direto pro módulo
   if (!resposta.paciente.anamnese_preenchida) {
     abrirSecao('sec-anamnese');
     iniciarAnamnese();
@@ -870,68 +1102,16 @@ function logout() {
 
 
 /* ============================================================
-   ============================================================
    MÓDULO 1 — ANAMNESE
-   ============================================================
-   ============================================================ */
-
-/* ============================================================
-   ESTADO DO MÓDULO
    ============================================================ */
 const ANAM_STATE = {
-  passoAtual: 1,    // 1, 2, 3, 4 ou 'revisao'
+  passoAtual: 1,
   totalPassos: 4,
   modoConsulta: false,
-  dadosConsulta: null,  // dados retornados do servidor quando em modo consulta
+  dadosConsulta: null,
+  // Quantas pessoas de confiança estão visíveis no formulário (1 a 3)
+  numPessoasConfianca: 1,
 };
-
-// Lista de transtornos do briefing (Seção 3)
-const LISTA_TRANSTORNOS = [
-  'Ansiedade',
-  'Depressão',
-  'Transtorno Afetivo Bipolar',
-  'Transtorno do Pânico',
-  'Transtorno do Estresse Pós-Traumático',
-  'Anorexia Nervosa',
-  'Bulimia Nervosa',
-  'Compulsão Alimentar Periódica',
-  'Transtorno Obsessivo Compulsivo',
-  'Transtorno do Déficit de Atenção e Hiperatividade',
-  'Transtorno de Personalidade Antissocial',
-  'Transtorno de Personalidade Borderline',
-  'Transtorno por Uso de Substâncias / Dependência Química',
-  'Transtornos / Distúrbios Sexuais',
-  'Transtornos / Distúrbios do Sono',
-  'Ideações e Tentativas de Suicídio',
-];
-
-// Lista de complicações clínicas do briefing (Seção 3)
-const LISTA_COMPLICACOES = [
-  'Doenças Cardíacas',
-  'Hipertensão Arterial',
-  'Hipotireoidismo',
-  'Hipertireoidismo',
-  'Epilepsia / Convulsões',
-  'Diabetes Mellitus',
-];
-
-// Estados brasileiros (siglas)
-const ESTADOS_BR = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
-
-// Opções de escolaridade
-const ESCOLARIDADES = [
-  'Fundamental incompleto',
-  'Fundamental completo',
-  'Médio incompleto',
-  'Médio completo',
-  'Superior incompleto',
-  'Superior completo',
-  'Pós-graduação incompleto',
-  'Pós-graduação completo',
-];
-
-// Opções de estado civil
-const ESTADOS_CIVIS = ['Solteiro(a)','União Estável','Casado(a)','Separado(a)','Divorciado(a)'];
 
 
 /* ============================================================
@@ -943,8 +1123,6 @@ async function iniciarAnamnese() {
     abrirSecao('sec-login');
     return;
   }
-
-  // Se já preencheu, abre em modo consulta
   if (paciente.anamnese_preenchida) {
     ANAM_STATE.modoConsulta = true;
     await abrirModoConsulta();
@@ -956,7 +1134,6 @@ async function iniciarAnamnese() {
 }
 
 function voltarMenuAnamnese() {
-  // Se estiver no meio do preenchimento, salva rascunho antes de sair
   if (!ANAM_STATE.modoConsulta && ANAM_STATE.passoAtual !== 'revisao') {
     salvarRascunho();
   }
@@ -965,17 +1142,14 @@ function voltarMenuAnamnese() {
 
 
 /* ============================================================
-   RASCUNHO LOCAL (sessionStorage)
-   ============================================================
-   Preserva o que foi digitado se o usuário recarregar a aba
-   acidentalmente. NÃO persiste entre sessões diferentes.
-   Limpo após o envio definitivo.
+   RASCUNHO LOCAL
    ============================================================ */
 function salvarRascunho() {
-  const dados = coletarDadosFormulario(false); // sem validação
+  const dados = coletarDadosFormulario(false);
   if (dados) {
     sessionStorage.setItem('anamnese_rascunho', JSON.stringify({
       passo: ANAM_STATE.passoAtual,
+      numPessoasConfianca: ANAM_STATE.numPessoasConfianca,
       dados: dados,
     }));
   }
@@ -1010,13 +1184,8 @@ function renderPasso(numero) {
   html += '</div>';
 
   container.innerHTML = html;
-
-  // Após renderizar, restaura valores do rascunho (se houver)
   restaurarValoresDoRascunho();
-
-  // Configura listeners de campos condicionais e máscaras
   configurarListenersDoPasso(numero);
-
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -1079,7 +1248,8 @@ function renderPasso1() {
     <div class="field-row-2">
       <div class="field">
         <label>RG <span class="req">*</span></label>
-        <input type="text" id="f_rg" maxlength="20">
+        <input type="text" id="f_rg" maxlength="20" placeholder="00.000.000-0">
+        <div class="field-hint">Máscara padrão SP. Pode digitar em outro formato se preferir.</div>
         <div class="field-error">Campo obrigatório</div>
       </div>
       <div class="field">
@@ -1130,12 +1300,20 @@ function renderPasso1() {
       <div class="field-error">Selecione uma opção</div>
     </div>
 
-    <!-- Endereço no Brasil -->
     <div id="blocoBrasil" class="conditional-block">
-      <div class="field-row-3">
+      <div class="field">
+        <label>CEP <span class="req">*</span></label>
+        <div class="cep-wrap">
+          <input type="text" id="f_cep" placeholder="00000-000" maxlength="9" inputmode="numeric">
+          <button type="button" class="btn-cep-search" onclick="abrirBuscaCepCorreios()" title="Não sei meu CEP — buscar nos Correios">🔍</button>
+        </div>
+        <div class="cep-status" id="cepStatus"></div>
+        <div class="field-error">CEP inválido</div>
+      </div>
+      <div class="field-row-2">
         <div class="field">
           <label>Estado <span class="req">*</span></label>
-          <select id="f_estado">
+          <select id="f_estado" disabled>
             <option value="">UF</option>
             ${ESTADOS_BR.map(uf => `<option value="${uf}">${uf}</option>`).join('')}
           </select>
@@ -1143,23 +1321,18 @@ function renderPasso1() {
         </div>
         <div class="field">
           <label>Cidade <span class="req">*</span></label>
-          <input type="text" id="f_cidade">
+          <input type="text" id="f_cidade" disabled>
           <div class="field-error">Obrigatório</div>
-        </div>
-        <div class="field">
-          <label>CEP <span class="req">*</span></label>
-          <input type="text" id="f_cep" placeholder="00000-000" maxlength="9" inputmode="numeric">
-          <div class="field-error">CEP inválido</div>
         </div>
       </div>
       <div class="field">
         <label>Endereço <span class="req">*</span></label>
         <input type="text" id="f_endereco" placeholder="Rua, número, complemento, bairro">
+        <div class="field-hint">Complete com número e complemento após o CEP preencher os demais campos.</div>
         <div class="field-error">Obrigatório</div>
       </div>
     </div>
 
-    <!-- Endereço no exterior -->
     <div id="blocoExterior" class="conditional-block">
       <div class="field-row-2">
         <div class="field">
@@ -1169,7 +1342,7 @@ function renderPasso1() {
         </div>
         <div class="field">
           <label>ZIP Code <span class="req">*</span></label>
-          <input type="text" id="f_zip_code">
+          <input type="text" id="f_cep_exterior">
           <div class="field-error">Obrigatório</div>
         </div>
       </div>
@@ -1180,7 +1353,6 @@ function renderPasso1() {
       </div>
     </div>
   `;
-
   return html;
 }
 
@@ -1234,27 +1406,80 @@ function renderPasso2() {
       </div>
     </div>
   `;
-
   return html;
 }
 
 
 /* ============================================================
-   PASSO 3 — HISTÓRICO DE SAÚDE
+   PASSO 3 — HISTÓRICO DE SAÚDE (reformulado v2)
    ============================================================ */
 function renderPasso3() {
   let html = '';
   html += '<div class="anam-step-title">Passo 3 de 4 — Histórico de Saúde</div>';
-  html += '<div class="anam-step-sub">Diagnósticos prévios, atuais e histórico familiar</div>';
+  html += '<div class="anam-step-sub">Diagnósticos psicológicos e condições clínicas</div>';
 
-  // Matriz de transtornos
-  html += '<div class="anam-section-title">Transtornos psicológicos</div>';
-  html += '<div class="field-hint" style="margin-bottom:8px;">Marque os transtornos pelos quais já esteve em tratamento e/ou está em tratamento atualmente. Pode marcar as duas colunas se aplicável.</div>';
-  html += renderMatriz('transtornos', LISTA_TRANSTORNOS);
+  // === TRANSTORNOS PSICOLÓGICOS ===
+  html += '<div class="anam-section-title">Transtornos psicológicos e psiquiátricos</div>';
+  html += `<div class="field-hint" style="margin-bottom:10px;line-height:1.6;">
+    As categorias abaixo listam os principais transtornos. Clique em cada categoria para expandi-la.
+    <strong>Marque apenas os itens que se aplicam a você</strong> — se nenhum se aplica, é só deixar tudo fechado.
+    Para cada item marcado, responda qual é a sua situação atual.
+  </div>`;
 
+  // Accordion
+  html += '<div class="accordion" id="accTranstornos">';
+  CATEGORIAS_TRANSTORNOS.forEach(cat => {
+    html += `
+      <div class="acc-item" id="acc_${cat.id}">
+        <button type="button" class="acc-header" onclick="toggleAccordion('${cat.id}')">
+          <span>${cat.nome}</span>
+          <span style="display:flex;align-items:center;gap:8px;">
+            <span class="acc-count" id="count_${cat.id}">0</span>
+            <span class="acc-chevron">▼</span>
+          </span>
+        </button>
+        <div class="acc-body">
+    `;
+    cat.itens.forEach((item, idx) => {
+      const itemId = `${cat.id}_${idx}`;
+      html += `
+        <div class="acc-item-option" id="opt_${itemId}">
+          <label class="acc-item-checkbox-label">
+            <input type="checkbox"
+                   data-cat="${cat.id}"
+                   data-item="${escapeAttr(item)}"
+                   id="chk_${itemId}"
+                   onchange="onTranstornoChange('${itemId}', '${cat.id}')">
+            <span>${escapeHtml(item)}</span>
+          </label>
+          <div class="acc-item-status" id="status_${itemId}">
+            <span class="acc-item-status-label">Situação para "${escapeHtml(item)}":</span>
+            ${STATUS_TRATAMENTO.map(s => `
+              <label class="acc-item-status-option">
+                <input type="radio" name="status_${itemId}" value="${s.valor}">
+                <span>${s.label}</span>
+              </label>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    });
+    html += '</div></div>';
+  });
+  html += '</div>';
+
+  // Campo "Outros" (texto livre)
   html += `
-    <div class="field" style="margin-top:14px;">
-      <label>Algum familiar foi diagnosticado com algum desses transtornos? <span class="req">*</span></label>
+    <div class="field" style="margin-top:10px;">
+      <label>Outro diagnóstico não listado nas categorias acima</label>
+      <input type="text" id="f_transtornos_outros_texto" placeholder="Se houver, descreva aqui...">
+    </div>
+  `;
+
+  // Familiar com transtorno
+  html += `
+    <div class="field" style="margin-top:16px;">
+      <label>Algum familiar foi diagnosticado com algum transtorno psicológico/psiquiátrico? <span class="req">*</span></label>
       <div class="yesno">
         <label><input type="radio" name="familiar_transtorno" value="Não" onchange="toggleCondicional('blocoFamTranstorno', false)"><span>Não</span></label>
         <label><input type="radio" name="familiar_transtorno" value="Sim" onchange="toggleCondicional('blocoFamTranstorno', true)"><span>Sim</span></label>
@@ -1270,14 +1495,72 @@ function renderPasso3() {
     </div>
   `;
 
-  // Matriz de complicações
-  html += '<div class="anam-section-title">Complicações clínicas</div>';
-  html += '<div class="field-hint" style="margin-bottom:8px;">Marque as condições clínicas pelas quais já esteve em tratamento e/ou está em tratamento atualmente.</div>';
-  html += renderMatriz('complicacoes', LISTA_COMPLICACOES);
+  // === SINAIS DE RISCO ===
+  html += `
+    <div class="risk-box">
+      <div class="risk-title">⚠️ Atenção especial — sinais clínicos relevantes</div>
+      <div class="risk-sub">
+        Estas perguntas são importantes para o seu cuidado. Por favor, responda com sinceridade.
+        Tudo o que você indicar aqui será tratado com seriedade e acolhimento por seu terapeuta.
+      </div>
+      <div class="checklist">
+  `;
+  SINAIS_RISCO.forEach((item, idx) => {
+    html += `
+      <div class="checklist-item">
+        <label>
+          <input type="checkbox" data-risco="1" data-item="${escapeAttr(item)}"
+                 id="chk_risco_${idx}" onchange="atualizarAvisoRisco()">
+          <span>${escapeHtml(item)}</span>
+        </label>
+      </div>
+    `;
+  });
+  html += `
+      </div>
+      <div class="risk-warning" id="riskWarning">
+        <strong>Obrigado por compartilhar.</strong>
+        Recomendamos <strong>fortemente</strong> que você converse sobre estes pontos diretamente com seu terapeuta na próxima sessão.
+        <div class="emergency-list">
+          Se estiver em crise neste momento:
+          <div>📞 <strong>CVV — 188</strong> (Centro de Valorização da Vida, 24h, ligação gratuita)</div>
+          <div>🚑 <strong>SAMU — 192</strong> (emergências médicas, 24h)</div>
+          <div>💬 Se precisar entrar em contato com seu terapeuta fora da sessão, use o canal combinado entre vocês.</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // === COMPLICAÇÕES CLÍNICAS ===
+  html += '<div class="anam-section-title">Condições clínicas</div>';
+  html += `<div class="field-hint" style="margin-bottom:8px;">
+    Marque as condições clínicas que você tem ou já teve. Se nenhuma se aplica, deixe tudo em branco.
+  </div>`;
+  html += '<div class="checklist">';
+  COMPLICACOES_CLINICAS.forEach((item, idx) => {
+    html += `
+      <div class="checklist-item">
+        <label>
+          <input type="checkbox" data-complicacao="1" data-item="${escapeAttr(item)}"
+                 id="chk_compl_${idx}">
+          <span>${escapeHtml(item)}</span>
+        </label>
+      </div>
+    `;
+  });
+  html += '</div>';
 
   html += `
-    <div class="field" style="margin-top:14px;">
-      <label>Algum familiar foi diagnosticado com alguma dessas complicações? <span class="req">*</span></label>
+    <div class="field" style="margin-top:10px;">
+      <label>Outra condição clínica não listada</label>
+      <input type="text" id="f_complicacoes_outros_texto" placeholder="Se houver, descreva aqui...">
+    </div>
+  `;
+
+  // Familiar com complicação
+  html += `
+    <div class="field" style="margin-top:16px;">
+      <label>Algum familiar foi diagnosticado com alguma dessas condições clínicas? <span class="req">*</span></label>
       <div class="yesno">
         <label><input type="radio" name="familiar_complicacao" value="Não" onchange="toggleCondicional('blocoFamComplicacao', false)"><span>Não</span></label>
         <label><input type="radio" name="familiar_complicacao" value="Sim" onchange="toggleCondicional('blocoFamComplicacao', true)"><span>Sim</span></label>
@@ -1286,7 +1569,7 @@ function renderPasso3() {
     </div>
     <div id="blocoFamComplicacao" class="conditional-block">
       <div class="field">
-        <label>Quais familiares e quais complicações? <span class="req">*</span></label>
+        <label>Quais familiares e quais condições? <span class="req">*</span></label>
         <textarea id="f_familiar_complicacao_detalhes" placeholder="Ex: Pai — Hipertensão; Avó — Diabetes..."></textarea>
         <div class="field-error">Descreva os familiares</div>
       </div>
@@ -1296,105 +1579,138 @@ function renderPasso3() {
   return html;
 }
 
-/**
- * Gera uma matriz de checkboxes com 2 colunas (Esteve / Está)
- * para uma lista de itens. O parâmetro `prefixo` é usado nos
- * IDs e nos atributos data- para identificação posterior.
- */
-function renderMatriz(prefixo, lista) {
-  let html = `<div class="matrix" id="matrix_${prefixo}">`;
-  html += `
-    <div class="matrix-row matrix-header">
-      <div>Condição</div>
-      <div>Esteve em tratamento</div>
-      <div>Está em tratamento</div>
-    </div>
-  `;
-  lista.forEach((item, idx) => {
-    const itemId = `${prefixo}_${idx}`;
-    html += `
-      <div class="matrix-row">
-        <div class="matrix-label">${item}</div>
-        <div class="matrix-cell-check" data-label="Esteve em tratamento">
-          <input type="checkbox" data-matrix="${prefixo}" data-tipo="esteve" data-item="${item}" id="chk_${itemId}_esteve">
-        </div>
-        <div class="matrix-cell-check" data-label="Está em tratamento">
-          <input type="checkbox" data-matrix="${prefixo}" data-tipo="esta" data-item="${item}" id="chk_${itemId}_esta">
-        </div>
-      </div>
-    `;
-  });
-  // Linha "Outros" — texto livre + 2 checkboxes
-  html += `
-    <div class="matrix-row matrix-row-other">
-      <div class="matrix-label">
-        <input type="text" id="f_${prefixo}_outros" placeholder="Outros (descreva)..." data-matrix-other="${prefixo}">
-      </div>
-      <div class="matrix-cell-check" data-label="Esteve em tratamento">
-        <input type="checkbox" data-matrix="${prefixo}" data-tipo="esteve" data-outros="1" id="chk_${prefixo}_outros_esteve">
-      </div>
-      <div class="matrix-cell-check" data-label="Está em tratamento">
-        <input type="checkbox" data-matrix="${prefixo}" data-tipo="esta" data-outros="1" id="chk_${prefixo}_outros_esta">
-      </div>
-    </div>
-  `;
-  html += '</div>';
-  return html;
-}
-
 
 /* ============================================================
-   PASSO 4 — PESSOA DE CONFIANÇA
+   PASSO 4 — PESSOAS DE CONFIANÇA (até 3)
    ============================================================ */
 function renderPasso4() {
   let html = '';
-  html += '<div class="anam-step-title">Passo 4 de 4 — Pessoa de Confiança</div>';
-  html += '<div class="anam-step-sub">Alguém que pode ser contatado em caso de necessidade</div>';
+  html += '<div class="anam-step-title">Passo 4 de 4 — Pessoa(s) de Confiança</div>';
+  html += '<div class="anam-step-sub">Indique pelo menos uma pessoa que possa ser contatada em caso de necessidade</div>';
 
-  html += `
-    <div class="field">
-      <label>Nome <span class="req">*</span></label>
-      <input type="text" id="f_pessoa_confianca_nome">
-      <div class="field-error">Campo obrigatório</div>
-    </div>
+  // Sempre renderiza 1 (obrigatória), 2 e 3 conforme state
+  const num = ANAM_STATE.numPessoasConfianca;
 
-    <div class="field">
-      <label>Grau de parentesco / relação <span class="req">*</span></label>
-      <input type="text" id="f_pessoa_confianca_relacao" placeholder="Ex: Mãe, esposo, amigo próximo...">
-      <div class="field-error">Campo obrigatório</div>
-    </div>
+  for (let i = 1; i <= num; i++) {
+    html += renderBlocoPessoaConfianca(i);
+  }
 
-    <div class="field">
-      <label>Contato (telefone, e-mail ou outro meio) <span class="req">*</span></label>
-      <input type="text" id="f_pessoa_confianca_contato" placeholder="Ex: (00) 00000-0000 ou email@exemplo.com">
-      <div class="field-error">Campo obrigatório</div>
-    </div>
-  `;
+  // Se ainda não chegou no limite, mostra a pergunta para adicionar mais
+  if (num < 3) {
+    const textoPergunta = num === 1
+      ? 'Você gostaria de indicar outra pessoa de confiança?'
+      : 'Você gostaria de indicar mais uma pessoa de confiança?';
+    html += `
+      <div class="pc-add-block">
+        <div class="pc-add-question">${textoPergunta}</div>
+        <div class="pc-add-buttons">
+          <button type="button" onclick="adicionarPessoaConfianca()">Sim, adicionar</button>
+          <button type="button" class="yes" onclick="naoAdicionarMaisPessoas()">Não, continuar</button>
+        </div>
+      </div>
+    `;
+  }
 
   return html;
 }
 
+function renderBlocoPessoaConfianca(n) {
+  const titulo = n === 1 ? '1ª Pessoa de Confiança (obrigatória)' : `${n}ª Pessoa de Confiança (opcional)`;
+  const obrigatorio = n === 1;
+  const asterisco = obrigatorio ? '<span class="req">*</span>' : '';
+  const showRemove = n > 1;
+
+  return `
+    <div class="pc-block" id="pcBlock_${n}">
+      <div class="pc-block-title" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>${titulo}</span>
+        ${showRemove ? `<button type="button" onclick="removerPessoaConfianca(${n})" style="background:none;border:none;color:var(--coral);font-size:16px;cursor:pointer;font-weight:700;" title="Remover">×</button>` : ''}
+      </div>
+      <div class="field">
+        <label>Nome ${asterisco}</label>
+        <input type="text" id="f_pc_${n}_nome">
+        <div class="field-error">Campo obrigatório</div>
+      </div>
+      <div class="field">
+        <label>Grau de parentesco / relação ${asterisco}</label>
+        <input type="text" id="f_pc_${n}_relacao" placeholder="Ex: Mãe, esposo, amigo próximo...">
+        <div class="field-error">Campo obrigatório</div>
+      </div>
+      <div class="field-row-2">
+        <div class="field">
+          <label>Telefone ${asterisco}</label>
+          <input type="tel" id="f_pc_${n}_telefone" placeholder="(00) 00000-0000" maxlength="15" inputmode="numeric">
+          <div class="field-error">Telefone inválido</div>
+        </div>
+        <div class="field">
+          <label>E-mail</label>
+          <input type="email" id="f_pc_${n}_email" placeholder="email@exemplo.com">
+          <div class="field-error">E-mail inválido</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function adicionarPessoaConfianca() {
+  // Salva o estado atual no rascunho antes de re-renderizar
+  salvarRascunho();
+  ANAM_STATE.numPessoasConfianca = Math.min(3, ANAM_STATE.numPessoasConfianca + 1);
+  renderPasso(4);
+}
+
+function naoAdicionarMaisPessoas() {
+  // Remove o bloco de adição da tela (usuário declinou)
+  salvarRascunho();
+  const addBlock = document.querySelector('.pc-add-block');
+  if (addBlock) addBlock.remove();
+}
+
+function removerPessoaConfianca(n) {
+  if (n === 1) return; // Não pode remover a primeira
+  salvarRascunho();
+  // Zera os dados da pessoa n no rascunho
+  const rascunho = carregarRascunho() || { dados: {} };
+  const d = rascunho.dados;
+  delete d[`pessoa_confianca_${n}_nome`];
+  delete d[`pessoa_confianca_${n}_relacao`];
+  delete d[`pessoa_confianca_${n}_telefone`];
+  delete d[`pessoa_confianca_${n}_email`];
+  sessionStorage.setItem('anamnese_rascunho', JSON.stringify({
+    passo: 4,
+    numPessoasConfianca: Math.max(1, ANAM_STATE.numPessoasConfianca - 1),
+    dados: d,
+  }));
+  ANAM_STATE.numPessoasConfianca = Math.max(1, ANAM_STATE.numPessoasConfianca - 1);
+  renderPasso(4);
+}
+
 
 /* ============================================================
-   LISTENERS DE CAMPOS CONDICIONAIS E MÁSCARAS
+   LISTENERS / INTERAÇÕES DOS PASSOS
    ============================================================ */
 function configurarListenersDoPasso(numero) {
   if (numero === 1) {
-    // Máscara de telefone
     const tel = document.getElementById('f_telefone');
     if (tel) tel.addEventListener('input', mascaraTelefone);
-
-    // Máscara de CPF
     const cpf = document.getElementById('f_cpf');
     if (cpf) cpf.addEventListener('input', mascaraCPF);
-
-    // Máscara de CEP
+    const rg = document.getElementById('f_rg');
+    if (rg) rg.addEventListener('input', mascaraRGFlex);
     const cep = document.getElementById('f_cep');
-    if (cep) cep.addEventListener('input', mascaraCEP);
-
-    // Cálculo de idade
+    if (cep) {
+      cep.addEventListener('input', mascaraCEP);
+      cep.addEventListener('blur', onCepBlur);
+    }
     const data = document.getElementById('f_data_nascimento');
     if (data) data.addEventListener('change', atualizarIdade);
+  }
+  if (numero === 4) {
+    // Aplica máscara de telefone em cada bloco de pessoa de confiança
+    for (let i = 1; i <= ANAM_STATE.numPessoasConfianca; i++) {
+      const t = document.getElementById(`f_pc_${i}_telefone`);
+      if (t) t.addEventListener('input', mascaraTelefone);
+    }
   }
 }
 
@@ -1417,9 +1733,49 @@ function toggleCondicional(idBloco, mostrar) {
   else el.classList.remove('visible');
 }
 
+function toggleAccordion(catId) {
+  const item = document.getElementById(`acc_${catId}`);
+  if (!item) return;
+  item.classList.toggle('open');
+}
+
+function onTranstornoChange(itemId, catId) {
+  const chk = document.getElementById(`chk_${itemId}`);
+  const optDiv = document.getElementById(`opt_${itemId}`);
+  if (!chk || !optDiv) return;
+  if (chk.checked) {
+    optDiv.classList.add('selected');
+  } else {
+    optDiv.classList.remove('selected');
+    // limpa radio de status
+    document.querySelectorAll(`input[name="status_${itemId}"]`).forEach(r => r.checked = false);
+  }
+  // Atualiza badge de contagem na categoria
+  atualizarContadorCategoria(catId);
+}
+
+function atualizarContadorCategoria(catId) {
+  const checks = document.querySelectorAll(`input[data-cat="${catId}"]:checked`);
+  const countEl = document.getElementById(`count_${catId}`);
+  const headerEl = document.querySelector(`#acc_${catId} .acc-header`);
+  if (!countEl || !headerEl) return;
+  const n = checks.length;
+  countEl.textContent = n;
+  if (n > 0) headerEl.classList.add('has-selection');
+  else headerEl.classList.remove('has-selection');
+}
+
+function atualizarAvisoRisco() {
+  const marcados = document.querySelectorAll('input[data-risco="1"]:checked');
+  const warning = document.getElementById('riskWarning');
+  if (!warning) return;
+  if (marcados.length > 0) warning.classList.add('visible');
+  else warning.classList.remove('visible');
+}
+
 
 /* ============================================================
-   MÁSCARAS DE INPUT
+   MÁSCARAS
    ============================================================ */
 function mascaraTelefone(e) {
   let v = e.target.value.replace(/\D/g, '').slice(0, 11);
@@ -1449,33 +1805,48 @@ function mascaraCEP(e) {
   e.target.value = v;
 }
 
+// Máscara de RG flexível: formata como XX.XXX.XXX-X se tiver só dígitos,
+// mas aceita letras e outros formatos sem reclamar.
+function mascaraRGFlex(e) {
+  const original = e.target.value;
+  // Se contém qualquer letra, não aplica máscara (respeita outros estados)
+  if (/[a-zA-Z]/.test(original)) return;
+  const digitos = original.replace(/\D/g, '').slice(0, 9);
+  let v = digitos;
+  if (digitos.length > 8) {
+    v = digitos.replace(/^(\d{2})(\d{3})(\d{3})(\d{1}).*/, '$1.$2.$3-$4');
+  } else if (digitos.length > 5) {
+    v = digitos.replace(/^(\d{2})(\d{3})(\d{1,3}).*/, '$1.$2.$3');
+  } else if (digitos.length > 2) {
+    v = digitos.replace(/^(\d{2})(\d{1,3}).*/, '$1.$2');
+  }
+  e.target.value = v;
+}
+
 
 /* ============================================================
-   VALIDAÇÃO DE CPF (algoritmo dos dígitos verificadores)
+   VALIDAÇÃO DE CPF
    ============================================================ */
 function validarCPF(cpf) {
   cpf = String(cpf).replace(/\D/g, '');
   if (cpf.length !== 11) return false;
-  if (/^(\d)\1{10}$/.test(cpf)) return false; // todos os dígitos iguais
-
+  if (/^(\d)\1{10}$/.test(cpf)) return false;
   let soma = 0;
   for (let i = 0; i < 9; i++) soma += parseInt(cpf[i]) * (10 - i);
   let dig1 = 11 - (soma % 11);
   if (dig1 >= 10) dig1 = 0;
   if (dig1 !== parseInt(cpf[9])) return false;
-
   soma = 0;
   for (let i = 0; i < 10; i++) soma += parseInt(cpf[i]) * (11 - i);
   let dig2 = 11 - (soma % 11);
   if (dig2 >= 10) dig2 = 0;
   if (dig2 !== parseInt(cpf[10])) return false;
-
   return true;
 }
 
 
 /* ============================================================
-   CÁLCULO DE IDADE
+   IDADE
    ============================================================ */
 function calcularIdade(dataISO) {
   if (!dataISO) return null;
@@ -1503,20 +1874,83 @@ function atualizarIdade() {
 
 
 /* ============================================================
+   VIACEP — busca automática de endereço
+   ============================================================ */
+async function onCepBlur() {
+  const cepEl = document.getElementById('f_cep');
+  if (!cepEl) return;
+  const cepLimpo = cepEl.value.replace(/\D/g, '');
+  if (cepLimpo.length !== 8) return; // só busca se tiver 8 dígitos
+  await buscarCep(cepLimpo);
+}
+
+async function buscarCep(cepLimpo) {
+  const statusEl = document.getElementById('cepStatus');
+  const estadoEl = document.getElementById('f_estado');
+  const cidadeEl = document.getElementById('f_cidade');
+  const enderecoEl = document.getElementById('f_endereco');
+
+  statusEl.textContent = 'Buscando endereço...';
+  statusEl.className = 'cep-status visible';
+
+  try {
+    const resp = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+    const data = await resp.json();
+
+    if (data.erro) {
+      statusEl.textContent = 'CEP não encontrado. Preencha manualmente.';
+      statusEl.className = 'cep-status visible error';
+      // Libera campos para edição manual
+      estadoEl.disabled = false;
+      cidadeEl.disabled = false;
+      return;
+    }
+
+    // Preenche campos
+    if (data.uf) estadoEl.value = data.uf;
+    if (data.localidade) cidadeEl.value = data.localidade;
+
+    // Endereço: combina logradouro + bairro se existirem
+    let enderecoBase = '';
+    if (data.logradouro) enderecoBase += data.logradouro;
+    if (data.bairro) enderecoBase += (enderecoBase ? ', ' : '') + data.bairro;
+
+    // Se o campo endereço está vazio, preenche; senão preserva
+    if (enderecoBase && !enderecoEl.value) {
+      enderecoEl.value = enderecoBase + ', ';
+      enderecoEl.focus();
+      // Posiciona cursor no final
+      const len = enderecoEl.value.length;
+      enderecoEl.setSelectionRange(len, len);
+    }
+
+    // Bloqueia estado/cidade (vieram do CEP)
+    estadoEl.disabled = true;
+    cidadeEl.disabled = true;
+
+    statusEl.textContent = '✓ Endereço encontrado. Complete com número e complemento.';
+    statusEl.className = 'cep-status visible success';
+  } catch (err) {
+    console.warn('Erro ao buscar CEP:', err);
+    statusEl.textContent = 'Erro ao buscar CEP. Preencha manualmente.';
+    statusEl.className = 'cep-status visible error';
+    estadoEl.disabled = false;
+    cidadeEl.disabled = false;
+  }
+}
+
+function abrirBuscaCepCorreios() {
+  window.open('https://buscacepinter.correios.com.br/app/endereco/index.php', '_blank', 'noopener');
+}
+
+
+/* ============================================================
    COLETA DE DADOS DO FORMULÁRIO
-   ============================================================
-   Lê o que está atualmente na tela e devolve um objeto.
-   - Se `validar` = true, retorna null em caso de erro de validação
-     e marca os campos com erro visualmente.
-   - Se `validar` = false, retorna o que conseguir (usado para rascunho).
    ============================================================ */
 function coletarDadosFormulario(validar = true) {
-  // Lê tudo o que estiver no DOM atual + mescla com o que já está no rascunho
-  // (para preservar passos anteriores que não estão renderizados agora).
   const rascunho = carregarRascunho();
   const dados = rascunho ? { ...rascunho.dados } : {};
 
-  // Helper para ler valor de um input se ele existir no DOM
   const lerInput = (id) => {
     const el = document.getElementById(id);
     return el ? el.value.trim() : null;
@@ -1545,7 +1979,7 @@ function coletarDadosFormulario(validar = true) {
 
   if (validar) limparErros();
 
-  // ===== PASSO 1: Dados Pessoais =====
+  // ===== PASSO 1 =====
   if (ANAM_STATE.passoAtual === 1) {
     const nome = lerInput('f_nome_completo');
     if (nome !== null) dados.nome_completo = nome;
@@ -1570,7 +2004,7 @@ function coletarDadosFormulario(validar = true) {
 
     if (rfb === 'Sim') {
       dados.pais = lerInput('f_pais') || '';
-      dados.zip_code = lerInput('f_zip_code') || '';
+      dados.cep_exterior = lerInput('f_cep_exterior') || '';
       dados.endereco = lerInput('f_endereco_ext') || '';
       dados.estado = '';
       dados.cidade = '';
@@ -1581,7 +2015,7 @@ function coletarDadosFormulario(validar = true) {
       dados.cep = lerInput('f_cep') || '';
       dados.endereco = lerInput('f_endereco') || '';
       dados.pais = '';
-      dados.zip_code = '';
+      dados.cep_exterior = '';
     }
 
     if (validar) {
@@ -1599,13 +2033,12 @@ function coletarDadosFormulario(validar = true) {
       if (!dados.estado_civil) marcarErro('f_estado_civil');
 
       if (!dados.reside_fora_brasil) {
-        marcarErro('f_pais', 'Selecione uma opção'); // qualquer um
-        // O erro real fica no bloco do radio — hack: marcar via querySelector
         const radioField = document.querySelector('input[name="reside_fora_brasil"]')?.closest('.field');
         if (radioField) radioField.classList.add('has-error');
+        temErro = true;
       } else if (dados.reside_fora_brasil === 'Sim') {
         if (!dados.pais) marcarErro('f_pais');
-        if (!dados.zip_code) marcarErro('f_zip_code');
+        if (!dados.cep_exterior) marcarErro('f_cep_exterior');
         if (!dados.endereco) marcarErro('f_endereco_ext');
       } else {
         if (!dados.estado) marcarErro('f_estado');
@@ -1616,7 +2049,7 @@ function coletarDadosFormulario(validar = true) {
     }
   }
 
-  // ===== PASSO 2: Histórico de Tratamentos =====
+  // ===== PASSO 2 =====
   if (ANAM_STATE.passoAtual === 2) {
     const trat = lerInput('f_tratamentos_anteriores');
     if (trat !== null) dados.tratamentos_anteriores = trat;
@@ -1647,51 +2080,62 @@ function coletarDadosFormulario(validar = true) {
     }
   }
 
-  // ===== PASSO 3: Histórico de Saúde =====
+  // ===== PASSO 3 =====
   if (ANAM_STATE.passoAtual === 3) {
-    // Coleta matrizes
-    const transtornosEsteve = [];
-    const transtornosEsta = [];
-    document.querySelectorAll('input[data-matrix="transtornos"]').forEach(chk => {
-      if (chk.checked && !chk.dataset.outros) {
-        if (chk.dataset.tipo === 'esteve') transtornosEsteve.push(chk.dataset.item);
-        else transtornosEsta.push(chk.dataset.item);
+    // Coleta transtornos marcados e seus status
+    const em_tratamento = [];
+    const tratamento_passado = [];
+    const sem_tratamento = [];
+    const suspeitados = [];
+
+    document.querySelectorAll('input[data-cat]:checked').forEach(chk => {
+      const item = chk.dataset.item;
+      const itemId = chk.id.replace('chk_', '');
+      const statusRadio = document.querySelector(`input[name="status_${itemId}"]:checked`);
+      if (statusRadio) {
+        const status = statusRadio.value;
+        if (status === 'atual') em_tratamento.push(item);
+        else if (status === 'passado') tratamento_passado.push(item);
+        else if (status === 'sem_tratamento') sem_tratamento.push(item);
+        else if (status === 'suspeita') suspeitados.push(item);
+      } else {
+        // Marcado mas sem status — tratamos como suspeita (conservador)
+        suspeitados.push(item);
       }
     });
-    // "Outros" — se marcado, inclui o texto livre
-    const outrosTransTxt = lerInput('f_transtornos_outros') || '';
-    const outrosTransEsteve = document.getElementById('chk_transtornos_outros_esteve')?.checked;
-    const outrosTransEsta = document.getElementById('chk_transtornos_outros_esta')?.checked;
-    if (outrosTransTxt && outrosTransEsteve) transtornosEsteve.push(outrosTransTxt);
-    if (outrosTransTxt && outrosTransEsta) transtornosEsta.push(outrosTransTxt);
 
-    dados.transtornos_esteve_tratamento = transtornosEsteve.join('; ');
-    dados.transtornos_esta_tratamento = transtornosEsta.join('; ');
-    dados.transtornos_outros = outrosTransTxt;
+    dados.transtornos_em_tratamento = em_tratamento.join('; ');
+    dados.transtornos_tratamento_passado = tratamento_passado.join('; ');
+    dados.transtornos_sem_tratamento = sem_tratamento.join('; ');
+    dados.transtornos_suspeitados = suspeitados.join('; ');
 
+    const outrosTxt = lerInput('f_transtornos_outros_texto');
+    if (outrosTxt !== null) dados.transtornos_outros_texto = outrosTxt;
+
+    // Familiar com transtorno
     const ft = lerRadio('familiar_transtorno');
     if (ft !== null) dados.familiar_transtorno = ft;
     const ftDet = lerInput('f_familiar_transtorno_detalhes');
     if (ftDet !== null) dados.familiar_transtorno_detalhes = ft === 'Sim' ? ftDet : '';
 
-    const complicacoesEsteve = [];
-    const complicacoesEsta = [];
-    document.querySelectorAll('input[data-matrix="complicacoes"]').forEach(chk => {
-      if (chk.checked && !chk.dataset.outros) {
-        if (chk.dataset.tipo === 'esteve') complicacoesEsteve.push(chk.dataset.item);
-        else complicacoesEsta.push(chk.dataset.item);
-      }
+    // Sinais de risco
+    const riscos = [];
+    document.querySelectorAll('input[data-risco="1"]:checked').forEach(chk => {
+      riscos.push(chk.dataset.item);
     });
-    const outrosCompTxt = lerInput('f_complicacoes_outros') || '';
-    const outrosCompEsteve = document.getElementById('chk_complicacoes_outros_esteve')?.checked;
-    const outrosCompEsta = document.getElementById('chk_complicacoes_outros_esta')?.checked;
-    if (outrosCompTxt && outrosCompEsteve) complicacoesEsteve.push(outrosCompTxt);
-    if (outrosCompTxt && outrosCompEsta) complicacoesEsta.push(outrosCompTxt);
+    dados.sinais_risco_marcados = riscos.join('; ');
 
-    dados.complicacoes_esteve_tratamento = complicacoesEsteve.join('; ');
-    dados.complicacoes_esta_tratamento = complicacoesEsta.join('; ');
-    dados.complicacoes_outros = outrosCompTxt;
+    // Complicações clínicas
+    const compl = [];
+    document.querySelectorAll('input[data-complicacao="1"]:checked').forEach(chk => {
+      compl.push(chk.dataset.item);
+    });
+    dados.complicacoes_clinicas = compl.join('; ');
 
+    const complOutros = lerInput('f_complicacoes_outros_texto');
+    if (complOutros !== null) dados.complicacoes_outros_texto = complOutros;
+
+    // Familiar com complicação
     const fc = lerRadio('familiar_complicacao');
     if (fc !== null) dados.familiar_complicacao = fc;
     const fcDet = lerInput('f_familiar_complicacao_detalhes');
@@ -1712,22 +2156,66 @@ function coletarDadosFormulario(validar = true) {
       } else if (dados.familiar_complicacao === 'Sim' && !dados.familiar_complicacao_detalhes) {
         marcarErro('f_familiar_complicacao_detalhes');
       }
+
+      // Valida que todos os transtornos marcados têm status escolhido
+      let faltaStatus = false;
+      document.querySelectorAll('input[data-cat]:checked').forEach(chk => {
+        const itemId = chk.id.replace('chk_', '');
+        const statusRadio = document.querySelector(`input[name="status_${itemId}"]:checked`);
+        if (!statusRadio) faltaStatus = true;
+      });
+      if (faltaStatus) {
+        alert('Você marcou um ou mais transtornos mas não indicou a situação. Por favor, escolha a situação para cada item marcado.');
+        temErro = true;
+      }
     }
   }
 
-  // ===== PASSO 4: Pessoa de Confiança =====
+  // ===== PASSO 4 =====
   if (ANAM_STATE.passoAtual === 4) {
-    const pn = lerInput('f_pessoa_confianca_nome');
-    if (pn !== null) dados.pessoa_confianca_nome = pn;
-    const pr = lerInput('f_pessoa_confianca_relacao');
-    if (pr !== null) dados.pessoa_confianca_relacao = pr;
-    const pc = lerInput('f_pessoa_confianca_contato');
-    if (pc !== null) dados.pessoa_confianca_contato = pc;
+    for (let i = 1; i <= ANAM_STATE.numPessoasConfianca; i++) {
+      const nome = lerInput(`f_pc_${i}_nome`);
+      const rel = lerInput(`f_pc_${i}_relacao`);
+      const tel = lerInput(`f_pc_${i}_telefone`);
+      const em = lerInput(`f_pc_${i}_email`);
+      if (nome !== null) dados[`pessoa_confianca_${i}_nome`] = nome;
+      if (rel !== null) dados[`pessoa_confianca_${i}_relacao`] = rel;
+      if (tel !== null) dados[`pessoa_confianca_${i}_telefone`] = tel;
+      if (em !== null) dados[`pessoa_confianca_${i}_email`] = em;
+    }
+    // Zera slots não usados (caso tenha removido alguma)
+    for (let i = ANAM_STATE.numPessoasConfianca + 1; i <= 3; i++) {
+      dados[`pessoa_confianca_${i}_nome`] = '';
+      dados[`pessoa_confianca_${i}_relacao`] = '';
+      dados[`pessoa_confianca_${i}_telefone`] = '';
+      dados[`pessoa_confianca_${i}_email`] = '';
+    }
 
     if (validar) {
-      if (!dados.pessoa_confianca_nome) marcarErro('f_pessoa_confianca_nome');
-      if (!dados.pessoa_confianca_relacao) marcarErro('f_pessoa_confianca_relacao');
-      if (!dados.pessoa_confianca_contato) marcarErro('f_pessoa_confianca_contato');
+      // Pessoa 1 é obrigatória
+      if (!dados.pessoa_confianca_1_nome) marcarErro('f_pc_1_nome');
+      if (!dados.pessoa_confianca_1_relacao) marcarErro('f_pc_1_relacao');
+      if (!dados.pessoa_confianca_1_telefone || dados.pessoa_confianca_1_telefone.replace(/\D/g, '').length < 10) {
+        marcarErro('f_pc_1_telefone', 'Telefone inválido');
+      }
+      if (dados.pessoa_confianca_1_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dados.pessoa_confianca_1_email)) {
+        marcarErro('f_pc_1_email', 'E-mail inválido');
+      }
+
+      // Pessoas 2 e 3 — se preencheu algum campo, valida os obrigatórios
+      for (let i = 2; i <= ANAM_STATE.numPessoasConfianca; i++) {
+        const temNome = dados[`pessoa_confianca_${i}_nome`];
+        const temRel = dados[`pessoa_confianca_${i}_relacao`];
+        const temTel = dados[`pessoa_confianca_${i}_telefone`];
+        const temEmail = dados[`pessoa_confianca_${i}_email`];
+        const algoPreenchido = temNome || temRel || temTel || temEmail;
+        if (algoPreenchido) {
+          if (!temNome) marcarErro(`f_pc_${i}_nome`);
+          if (!temRel) marcarErro(`f_pc_${i}_relacao`);
+          if (!temTel || temTel.replace(/\D/g, '').length < 10) marcarErro(`f_pc_${i}_telefone`, 'Telefone inválido');
+          if (temEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(temEmail)) marcarErro(`f_pc_${i}_email`, 'E-mail inválido');
+        }
+      }
     }
   }
 
@@ -1737,12 +2225,17 @@ function coletarDadosFormulario(validar = true) {
 
 
 /* ============================================================
-   RESTAURAÇÃO DE VALORES (do rascunho para o DOM)
+   RESTAURAÇÃO DE VALORES DO RASCUNHO
    ============================================================ */
 function restaurarValoresDoRascunho() {
   const rascunho = carregarRascunho();
   if (!rascunho) return;
   const d = rascunho.dados;
+
+  // Restaura numPessoasConfianca se estiver no rascunho
+  if (rascunho.numPessoasConfianca) {
+    ANAM_STATE.numPessoasConfianca = rascunho.numPessoasConfianca;
+  }
 
   const setInput = (id, val) => {
     const el = document.getElementById(id);
@@ -1754,7 +2247,6 @@ function restaurarValoresDoRascunho() {
     if (el) el.checked = true;
   };
 
-  // Passo 1
   if (ANAM_STATE.passoAtual === 1) {
     setInput('f_nome_completo', d.nome_completo);
     setInput('f_data_nascimento', d.data_nascimento);
@@ -1769,19 +2261,25 @@ function restaurarValoresDoRascunho() {
     if (d.reside_fora_brasil === 'Sim') {
       toggleEnderecoExterior(true);
       setInput('f_pais', d.pais);
-      setInput('f_zip_code', d.zip_code);
+      setInput('f_cep_exterior', d.cep_exterior);
       setInput('f_endereco_ext', d.endereco);
     } else if (d.reside_fora_brasil === 'Não') {
       toggleEnderecoExterior(false);
-      setInput('f_estado', d.estado);
-      setInput('f_cidade', d.cidade);
       setInput('f_cep', d.cep);
+      // Se tem CEP, estado e cidade vêm dele — então preenchemos e deixamos bloqueados
+      if (d.estado) {
+        const estEl = document.getElementById('f_estado');
+        if (estEl) estEl.value = d.estado;
+      }
+      if (d.cidade) {
+        const cidEl = document.getElementById('f_cidade');
+        if (cidEl) cidEl.value = d.cidade;
+      }
       setInput('f_endereco', d.endereco);
     }
     if (d.data_nascimento) atualizarIdade();
   }
 
-  // Passo 2
   if (ANAM_STATE.passoAtual === 2) {
     setInput('f_tratamentos_anteriores', d.tratamentos_anteriores);
     setRadio('procedimento_medico_12m', d.procedimento_medico_12m);
@@ -1796,41 +2294,50 @@ function restaurarValoresDoRascunho() {
     }
   }
 
-  // Passo 3
   if (ANAM_STATE.passoAtual === 3) {
-    // Restaurar matriz transtornos
-    const transtornosEsteve = (d.transtornos_esteve_tratamento || '').split('; ').filter(Boolean);
-    const transtornosEsta = (d.transtornos_esta_tratamento || '').split('; ').filter(Boolean);
-    const outrosTrans = d.transtornos_outros || '';
-    LISTA_TRANSTORNOS.forEach((item, idx) => {
-      if (transtornosEsteve.includes(item)) document.getElementById(`chk_transtornos_${idx}_esteve`).checked = true;
-      if (transtornosEsta.includes(item)) document.getElementById(`chk_transtornos_${idx}_esta`).checked = true;
-    });
-    if (outrosTrans) {
-      setInput('f_transtornos_outros', outrosTrans);
-      if (transtornosEsteve.includes(outrosTrans)) document.getElementById('chk_transtornos_outros_esteve').checked = true;
-      if (transtornosEsta.includes(outrosTrans)) document.getElementById('chk_transtornos_outros_esta').checked = true;
-    }
+    // Restaura os transtornos marcados, por status
+    const restaurarPorStatus = (listaStr, statusValor) => {
+      const items = (listaStr || '').split('; ').filter(Boolean);
+      items.forEach(item => {
+        // Encontra o checkbox correspondente pelo data-item
+        document.querySelectorAll('input[data-cat]').forEach(chk => {
+          if (chk.dataset.item === item) {
+            chk.checked = true;
+            const itemId = chk.id.replace('chk_', '');
+            const optDiv = document.getElementById(`opt_${itemId}`);
+            if (optDiv) optDiv.classList.add('selected');
+            const statusRadio = document.querySelector(`input[name="status_${itemId}"][value="${statusValor}"]`);
+            if (statusRadio) statusRadio.checked = true;
+            atualizarContadorCategoria(chk.dataset.cat);
+          }
+        });
+      });
+    };
+    restaurarPorStatus(d.transtornos_em_tratamento, 'atual');
+    restaurarPorStatus(d.transtornos_tratamento_passado, 'passado');
+    restaurarPorStatus(d.transtornos_sem_tratamento, 'sem_tratamento');
+    restaurarPorStatus(d.transtornos_suspeitados, 'suspeita');
 
+    setInput('f_transtornos_outros_texto', d.transtornos_outros_texto);
     setRadio('familiar_transtorno', d.familiar_transtorno);
     if (d.familiar_transtorno === 'Sim') {
       toggleCondicional('blocoFamTranstorno', true);
       setInput('f_familiar_transtorno_detalhes', d.familiar_transtorno_detalhes);
     }
 
-    const compEsteve = (d.complicacoes_esteve_tratamento || '').split('; ').filter(Boolean);
-    const compEsta = (d.complicacoes_esta_tratamento || '').split('; ').filter(Boolean);
-    const outrosComp = d.complicacoes_outros || '';
-    LISTA_COMPLICACOES.forEach((item, idx) => {
-      if (compEsteve.includes(item)) document.getElementById(`chk_complicacoes_${idx}_esteve`).checked = true;
-      if (compEsta.includes(item)) document.getElementById(`chk_complicacoes_${idx}_esta`).checked = true;
+    // Sinais de risco
+    const riscos = (d.sinais_risco_marcados || '').split('; ').filter(Boolean);
+    document.querySelectorAll('input[data-risco="1"]').forEach(chk => {
+      if (riscos.includes(chk.dataset.item)) chk.checked = true;
     });
-    if (outrosComp) {
-      setInput('f_complicacoes_outros', outrosComp);
-      if (compEsteve.includes(outrosComp)) document.getElementById('chk_complicacoes_outros_esteve').checked = true;
-      if (compEsta.includes(outrosComp)) document.getElementById('chk_complicacoes_outros_esta').checked = true;
-    }
+    atualizarAvisoRisco();
 
+    // Complicações
+    const compls = (d.complicacoes_clinicas || '').split('; ').filter(Boolean);
+    document.querySelectorAll('input[data-complicacao="1"]').forEach(chk => {
+      if (compls.includes(chk.dataset.item)) chk.checked = true;
+    });
+    setInput('f_complicacoes_outros_texto', d.complicacoes_outros_texto);
     setRadio('familiar_complicacao', d.familiar_complicacao);
     if (d.familiar_complicacao === 'Sim') {
       toggleCondicional('blocoFamComplicacao', true);
@@ -1838,11 +2345,13 @@ function restaurarValoresDoRascunho() {
     }
   }
 
-  // Passo 4
   if (ANAM_STATE.passoAtual === 4) {
-    setInput('f_pessoa_confianca_nome', d.pessoa_confianca_nome);
-    setInput('f_pessoa_confianca_relacao', d.pessoa_confianca_relacao);
-    setInput('f_pessoa_confianca_contato', d.pessoa_confianca_contato);
+    for (let i = 1; i <= ANAM_STATE.numPessoasConfianca; i++) {
+      setInput(`f_pc_${i}_nome`, d[`pessoa_confianca_${i}_nome`]);
+      setInput(`f_pc_${i}_relacao`, d[`pessoa_confianca_${i}_relacao`]);
+      setInput(`f_pc_${i}_telefone`, d[`pessoa_confianca_${i}_telefone`]);
+      setInput(`f_pc_${i}_email`, d[`pessoa_confianca_${i}_email`]);
+    }
   }
 }
 
@@ -1852,24 +2361,21 @@ function restaurarValoresDoRascunho() {
    ============================================================ */
 function irParaProximoPasso() {
   const dados = coletarDadosFormulario(true);
-  if (dados === null) {
-    // Há erros de validação — não avança
-    return;
-  }
-  // Salva no rascunho e avança
+  if (dados === null) return;
   sessionStorage.setItem('anamnese_rascunho', JSON.stringify({
     passo: ANAM_STATE.passoAtual + 1,
+    numPessoasConfianca: ANAM_STATE.numPessoasConfianca,
     dados: dados,
   }));
   renderPasso(ANAM_STATE.passoAtual + 1);
 }
 
 function irParaPassoAnterior() {
-  // Salva o que tiver no passo atual sem validar (rascunho)
   const dados = coletarDadosFormulario(false);
   if (dados) {
     sessionStorage.setItem('anamnese_rascunho', JSON.stringify({
       passo: ANAM_STATE.passoAtual - 1,
+      numPessoasConfianca: ANAM_STATE.numPessoasConfianca,
       dados: dados,
     }));
   }
@@ -1881,6 +2387,7 @@ function irParaRevisao() {
   if (dados === null) return;
   sessionStorage.setItem('anamnese_rascunho', JSON.stringify({
     passo: 'revisao',
+    numPessoasConfianca: ANAM_STATE.numPessoasConfianca,
     dados: dados,
   }));
   renderRevisao(dados);
@@ -1895,7 +2402,9 @@ function renderRevisao(dados) {
   const container = document.getElementById('anamConteudo');
 
   const linha = (label, valor) => {
-    const v = (valor === undefined || valor === null || valor === '') ? '<span class="empty">— não informado —</span>' : escapeHtml(String(valor));
+    const v = (valor === undefined || valor === null || valor === '')
+      ? '<span class="empty">— não informado —</span>'
+      : escapeHtml(String(valor));
     return `<div class="review-row"><strong>${label}</strong><span>${v}</span></div>`;
   };
 
@@ -1921,7 +2430,7 @@ function renderRevisao(dados) {
   html += linha('Reside fora do Brasil?', dados.reside_fora_brasil);
   if (dados.reside_fora_brasil === 'Sim') {
     html += linha('País', dados.pais);
-    html += linha('ZIP Code', dados.zip_code);
+    html += linha('ZIP Code', dados.cep_exterior);
     html += linha('Endereço', dados.endereco);
   } else {
     html += linha('Estado', dados.estado);
@@ -1942,24 +2451,33 @@ function renderRevisao(dados) {
 
   // Seção 3
   html += '<div class="review-section"><h4>3. Histórico de Saúde</h4>';
-  html += linha('Transtornos — esteve em tratamento', dados.transtornos_esteve_tratamento);
-  html += linha('Transtornos — está em tratamento', dados.transtornos_esta_tratamento);
+  html += linha('Em tratamento atual', dados.transtornos_em_tratamento);
+  html += linha('Tratamento no passado', dados.transtornos_tratamento_passado);
+  html += linha('Diagnosticados sem tratamento', dados.transtornos_sem_tratamento);
+  html += linha('Suspeitas (sem diagnóstico formal)', dados.transtornos_suspeitados);
+  html += linha('Outros (texto livre)', dados.transtornos_outros_texto);
   html += linha('Familiar com transtorno?', dados.familiar_transtorno);
   if (dados.familiar_transtorno === 'Sim') html += linha('Detalhes', dados.familiar_transtorno_detalhes);
-  html += linha('Complicações — esteve em tratamento', dados.complicacoes_esteve_tratamento);
-  html += linha('Complicações — está em tratamento', dados.complicacoes_esta_tratamento);
-  html += linha('Familiar com complicação?', dados.familiar_complicacao);
+  html += linha('Sinais de risco marcados', dados.sinais_risco_marcados);
+  html += linha('Condições clínicas', dados.complicacoes_clinicas);
+  html += linha('Outras condições', dados.complicacoes_outros_texto);
+  html += linha('Familiar com condição clínica?', dados.familiar_complicacao);
   if (dados.familiar_complicacao === 'Sim') html += linha('Detalhes', dados.familiar_complicacao_detalhes);
   html += '</div>';
 
-  // Seção 4
-  html += '<div class="review-section"><h4>4. Pessoa de Confiança</h4>';
-  html += linha('Nome', dados.pessoa_confianca_nome);
-  html += linha('Relação', dados.pessoa_confianca_relacao);
-  html += linha('Contato', dados.pessoa_confianca_contato);
+  // Seção 4 — todas as pessoas preenchidas
+  html += '<div class="review-section"><h4>4. Pessoa(s) de Confiança</h4>';
+  for (let i = 1; i <= 3; i++) {
+    const nome = dados[`pessoa_confianca_${i}_nome`];
+    if (!nome && i > 1) continue; // só mostra blocos preenchidos (exceto o 1)
+    html += `<div style="margin-top:${i>1?'10px':'0'};font-weight:700;color:var(--blue);font-size:12px;">Pessoa ${i}</div>`;
+    html += linha('Nome', dados[`pessoa_confianca_${i}_nome`]);
+    html += linha('Relação', dados[`pessoa_confianca_${i}_relacao`]);
+    html += linha('Telefone', dados[`pessoa_confianca_${i}_telefone`]);
+    html += linha('E-mail', dados[`pessoa_confianca_${i}_email`]);
+  }
   html += '</div>';
 
-  // Botões de ação
   html += `
     <div class="anam-nav">
       <button class="btn-step btn-step-prev" onclick="voltarDaRevisao()">← Voltar e corrigir</button>
@@ -2018,7 +2536,6 @@ async function enviarAnamneseDefinitivo() {
     return;
   }
 
-  // Sucesso! Atualiza sessão, limpa rascunho e abre modo consulta
   paciente.anamnese_preenchida = true;
   paciente.data_anamnese = new Date().toISOString().slice(0, 10);
   salvarSessao(paciente);
@@ -2031,7 +2548,7 @@ async function enviarAnamneseDefinitivo() {
 
 
 /* ============================================================
-   MODO CONSULTA (somente leitura)
+   MODO CONSULTA
    ============================================================ */
 async function abrirModoConsulta(recemEnviado = false) {
   const paciente = carregarSessao();
@@ -2074,13 +2591,11 @@ function renderConsulta(dados, recemEnviado) {
     return `<div class="review-row"><strong>${label}</strong><span>${v}</span></div>`;
   };
 
-  // Tratar data_nascimento (pode vir como Date ou string ISO)
   let dnasc = dados.data_nascimento;
   if (dnasc instanceof Date) dnasc = dnasc.toISOString().slice(0, 10);
   const idade = calcularIdade(dnasc);
   const dataFmt = (dnasc ? formatarDataBR(dnasc) : '') + (idade !== null ? ` (${idade} anos)` : '');
 
-  // Tratar timestamp de envio
   let dataEnvio = dados.timestamp;
   if (dataEnvio instanceof Date) dataEnvio = formatarDataBR(dataEnvio.toISOString().slice(0, 10));
   else if (typeof dataEnvio === 'string' && dataEnvio.length >= 10) dataEnvio = formatarDataBR(dataEnvio.slice(0, 10));
@@ -2120,7 +2635,7 @@ function renderConsulta(dados, recemEnviado) {
   html += linha('Reside fora do Brasil?', dados.reside_fora_brasil);
   if (dados.reside_fora_brasil === 'Sim') {
     html += linha('País', dados.pais);
-    html += linha('ZIP Code', dados.zip_code);
+    html += linha('ZIP Code', dados.cep_exterior);
     html += linha('Endereço', dados.endereco);
   } else {
     html += linha('Estado', dados.estado);
@@ -2141,21 +2656,31 @@ function renderConsulta(dados, recemEnviado) {
 
   // Seção 3
   html += '<div class="review-section"><h4>3. Histórico de Saúde</h4>';
-  html += linha('Transtornos — esteve em tratamento', dados.transtornos_esteve_tratamento);
-  html += linha('Transtornos — está em tratamento', dados.transtornos_esta_tratamento);
+  html += linha('Em tratamento atual', dados.transtornos_em_tratamento);
+  html += linha('Tratamento no passado', dados.transtornos_tratamento_passado);
+  html += linha('Diagnosticados sem tratamento', dados.transtornos_sem_tratamento);
+  html += linha('Suspeitas (sem diagnóstico formal)', dados.transtornos_suspeitados);
+  html += linha('Outros', dados.transtornos_outros_texto);
   html += linha('Familiar com transtorno?', dados.familiar_transtorno);
   if (dados.familiar_transtorno === 'Sim') html += linha('Detalhes', dados.familiar_transtorno_detalhes);
-  html += linha('Complicações — esteve em tratamento', dados.complicacoes_esteve_tratamento);
-  html += linha('Complicações — está em tratamento', dados.complicacoes_esta_tratamento);
-  html += linha('Familiar com complicação?', dados.familiar_complicacao);
+  html += linha('Sinais de risco', dados.sinais_risco_marcados);
+  html += linha('Condições clínicas', dados.complicacoes_clinicas);
+  html += linha('Outras condições', dados.complicacoes_outros_texto);
+  html += linha('Familiar com condição clínica?', dados.familiar_complicacao);
   if (dados.familiar_complicacao === 'Sim') html += linha('Detalhes', dados.familiar_complicacao_detalhes);
   html += '</div>';
 
   // Seção 4
-  html += '<div class="review-section"><h4>4. Pessoa de Confiança</h4>';
-  html += linha('Nome', dados.pessoa_confianca_nome);
-  html += linha('Relação', dados.pessoa_confianca_relacao);
-  html += linha('Contato', dados.pessoa_confianca_contato);
+  html += '<div class="review-section"><h4>4. Pessoa(s) de Confiança</h4>';
+  for (let i = 1; i <= 3; i++) {
+    const nome = dados[`pessoa_confianca_${i}_nome`];
+    if (!nome && i > 1) continue;
+    html += `<div style="margin-top:${i>1?'10px':'0'};font-weight:700;color:var(--blue);font-size:12px;">Pessoa ${i}</div>`;
+    html += linha('Nome', dados[`pessoa_confianca_${i}_nome`]);
+    html += linha('Relação', dados[`pessoa_confianca_${i}_relacao`]);
+    html += linha('Telefone', dados[`pessoa_confianca_${i}_telefone`]);
+    html += linha('E-mail', dados[`pessoa_confianca_${i}_email`]);
+  }
   html += '</div>';
 
   html += `
@@ -2189,13 +2714,18 @@ function escapeHtml(s) {
     .replace(/'/g, '&#39;');
 }
 
+function escapeAttr(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 
 /* ============================================================
    INICIALIZAÇÃO
    ============================================================ */
 window.addEventListener('DOMContentLoaded', () => {
-  // Se já existe sessão salva (paciente recarregou a página),
-  // restaura direto no menu principal.
   const paciente = carregarSessao();
   if (paciente) {
     atualizarBadgeUsuario();
@@ -2205,7 +2735,6 @@ window.addEventListener('DOMContentLoaded', () => {
     abrirSecao('sec-login');
   }
 
-  // Permite logar apertando Enter no campo de senha
   document.getElementById('inputSenha').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') fazerLogin();
   });
@@ -2216,10 +2745,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 /* ============================================================
-   SERVICE WORKER (PWA — preparação)
-   ============================================================
-   Registrado em produção (HTTPS). No GitHub Pages funciona;
-   localmente em file:// não funciona, e está tudo bem.
+   SERVICE WORKER
    ============================================================ */
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
   window.addEventListener('load', () => {
@@ -2228,6 +2754,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
     });
   });
 }
+
 </script>
 </body>
 </html>
