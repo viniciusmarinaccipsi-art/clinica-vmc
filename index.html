@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#2C5F7C">
+<title>Clínica VMC — Sistema TCC</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Chart.js carregado desde o início para uso futuro nos gráficos de evolução -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+/* ============================================================
+   IDENTIDADE VISUAL — herdada de registro_interativo_v1.html
+   Mesma paleta, mesmas fontes, mesmos componentes.
+   ============================================================ */
+:root{
+  --blue:#2C5F7C; --blue-lt:#E8F1F5;
+  --coral:#E07A6B; --coral-bg:#FFF5F3;
+  --green:#6BBF8A; --green-bg:#F2FBF5;
+  --amber:#D4A843; --amber-bg:#FFFBF0;
+  --gray:#7A8D9C; --gray-bg:#F5F7F9; --gray-lt:#E8ECF0;
+  --txt:#2D3748; --txt-m:#4A5568; --txt-l:#718096;
+  --w:#FFF; --r:14px; --rs:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:'Nunito',sans-serif;
+  color:var(--txt);
+  background:linear-gradient(135deg,#EEF2F7,#E8ECF2,#F0F4F8);
+  min-height:100vh;
+  -webkit-tap-highlight-color:transparent;
+}
+.app{max-width:800px;margin:0 auto;padding:20px 16px 100px;}
+
+/* ===== Cabeçalho do app ===== */
+.app-header{text-align:center;padding:30px 0 20px;position:relative;}
+.app-header h1{font-family:'Quicksand',sans-serif;font-size:22px;font-weight:700;color:var(--blue);}
+.app-header p{font-size:12px;color:var(--txt-l);margin-top:4px;}
+.user-badge{
+  position:absolute;top:20px;right:0;
+  background:var(--blue-lt);color:var(--blue);
+  padding:6px 12px;border-radius:20px;
+  font-size:12px;font-weight:700;
+  display:none;align-items:center;gap:6px;
+}
+.user-badge.visible{display:flex;}
+.btn-logout{
+  background:none;border:none;color:var(--blue);
+  font-size:14px;cursor:pointer;padding:0 0 0 4px;
+  font-weight:700;opacity:.6;transition:opacity .2s;
+}
+.btn-logout:hover{opacity:1;}
+
+/* ===== Cards de menu (reutilizados do registro) ===== */
+.card-grid{display:grid;gap:14px;margin-top:16px;}
+.card{
+  background:var(--w);border-radius:var(--r);padding:20px;
+  cursor:pointer;transition:all .25s;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+  border:2px solid transparent;
+  position:relative;overflow:hidden;
+  text-align:left;width:100%;
+  font-family:'Nunito',sans-serif;
+}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.1);}
+.card:active{transform:translateY(0);}
+.card[disabled]{cursor:not-allowed;opacity:.55;}
+.card[disabled]:hover{transform:none;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.card-icon{font-size:32px;margin-bottom:8px;display:block;}
+.card-title{font-family:'Quicksand',sans-serif;font-size:16px;font-weight:700;margin-bottom:4px;}
+.card-desc{font-size:12px;color:var(--txt-l);line-height:1.5;}
+.card-arrow{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:20px;color:var(--gray-lt);transition:all .25s;}
+.card:hover .card-arrow{right:12px;color:var(--txt-l);}
+.card-badge-soon{
+  position:absolute;top:14px;right:14px;
+  background:var(--gray-lt);color:var(--txt-l);
+  font-size:9px;font-weight:700;
+  padding:3px 8px;border-radius:10px;
+  text-transform:uppercase;letter-spacing:.5px;
+}
+.card-blue{border-color:var(--blue-lt);}.card-blue .card-title{color:var(--blue);}
+.card-coral{border-color:#F5D0CA;}.card-coral .card-title{color:var(--coral);}
+.card-green{border-color:#D0EDDA;}.card-green .card-title{color:var(--green);}
+.card-amber{border-color:var(--amber-bg);}.card-amber .card-title{color:var(--amber);}
+.card-gray{border-color:var(--gray-lt);}.card-gray .card-title{color:var(--gray);}
+
+/* ===== Sistema de seções (single-page navigation) ===== */
+.section{display:none;animation:fadeIn .3s ease;}
+.section.active{display:block;}
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(10px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* ===== Barra de navegação (voltar / home) ===== */
+.nav-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:10px 0;}
+.btn-back{
+  background:var(--gray-bg);border:none;border-radius:var(--rs);
+  padding:8px 14px;font-family:'Nunito',sans-serif;font-size:13px;
+  font-weight:600;color:var(--txt-m);cursor:pointer;
+  transition:all .2s;display:flex;align-items:center;gap:4px;
+}
+.btn-back:hover{background:var(--gray-lt);}
+.nav-title{font-family:'Quicksand',sans-serif;font-size:14px;font-weight:600;color:var(--txt-l);}
+
+/* ============================================================
+   TELA DE LOGIN
+   ============================================================ */
+.login-card{
+  background:var(--w);
+  border-radius:var(--r);
+  padding:32px 24px;
+  box-shadow:0 4px 20px rgba(0,0,0,.08);
+  border:2px solid var(--blue-lt);
+  margin-top:30px;
+}
+.login-icon{
+  width:64px;height:64px;
+  background:var(--blue-lt);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:32px;margin:0 auto 16px;
+}
+.login-title{
+  font-family:'Quicksand',sans-serif;
+  font-size:18px;font-weight:700;color:var(--blue);
+  text-align:center;margin-bottom:6px;
+}
+.login-sub{
+  font-size:12px;color:var(--txt-l);
+  text-align:center;margin-bottom:24px;
+}
+.field{margin:12px 0;}
+.field label{
+  font-size:12px;font-weight:700;color:var(--txt-m);
+  display:block;margin-bottom:6px;
+}
+.field input{
+  width:100%;
+  border:1.5px solid var(--gray-lt);
+  border-radius:var(--rs);
+  padding:12px 14px;
+  font-family:'Nunito',sans-serif;
+  font-size:14px;outline:none;
+  transition:border .2s;
+  background:var(--w);
+}
+.field input:focus{border-color:var(--blue);}
+.field input:disabled{background:var(--gray-bg);cursor:not-allowed;}
+
+.btn-primary{
+  display:block;width:100%;margin-top:20px;padding:14px;
+  background:var(--blue);color:var(--w);
+  border:none;border-radius:var(--rs);
+  font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;
+  cursor:pointer;transition:all .2s;
+}
+.btn-primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 12px rgba(44,95,124,.25);}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed;}
+
+.alert{
+  padding:10px 14px;border-radius:var(--rs);
+  font-size:12.5px;margin-top:12px;
+  display:none;
+}
+.alert.visible{display:block;}
+.alert-error{background:var(--coral-bg);color:var(--coral);border:1px solid #F5D0CA;}
+.alert-info{background:var(--blue-lt);color:var(--blue);border:1px solid #C7DDE8;}
+
+.login-footer{
+  text-align:center;margin-top:24px;
+  font-size:11px;color:var(--txt-l);
+}
+
+/* ============================================================
+   PLACEHOLDER DE MÓDULOS NÃO IMPLEMENTADOS
+   ============================================================ */
+.placeholder-box{
+  background:var(--w);
+  border-radius:var(--r);
+  padding:40px 24px;
+  text-align:center;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+  border:2px dashed var(--gray-lt);
+}
+.placeholder-icon{font-size:48px;display:block;margin-bottom:12px;}
+.placeholder-title{
+  font-family:'Quicksand',sans-serif;
+  font-size:16px;font-weight:700;color:var(--txt-m);
+  margin-bottom:8px;
+}
+.placeholder-text{font-size:12.5px;color:var(--txt-l);line-height:1.6;}
+
+/* ============================================================
+   LOADING (spinner overlay durante chamadas ao servidor)
+   ============================================================ */
+.loading-overlay{
+  position:fixed;inset:0;
+  background:rgba(255,255,255,.85);
+  display:none;align-items:center;justify-content:center;
+  z-index:1000;
+  backdrop-filter:blur(2px);
+}
+.loading-overlay.visible{display:flex;}
+.spinner{
+  width:48px;height:48px;
+  border:4px solid var(--blue-lt);
+  border-top-color:var(--blue);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+@media(max-width:600px){
+  .app-header h1{font-size:20px;}
+  .login-card{padding:24px 18px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     OVERLAY DE LOADING (mostrado durante chamadas ao servidor)
+     ============================================================ -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+</div>
+
+<div class="app">
+
+  <!-- Cabeçalho -->
+  <div class="app-header">
+    <h1>📋 Clínica VMC</h1>
+    <p>Sistema Clínico Digital — TCC</p>
+    <div class="user-badge" id="userBadge">
+      <span id="userBadgeText">TST</span>
+      <button class="btn-logout" onclick="logout()" title="Sair">⏻</button>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SEÇÃO: LOGIN
+       ============================================================ -->
+  <div class="section active" id="sec-login">
+    <div class="login-card">
+      <div class="login-icon">🔐</div>
+      <div class="login-title">Acesso ao Sistema</div>
+      <div class="login-sub">Digite sua sigla e senha para entrar</div>
+
+      <div class="field">
+        <label for="inputSigla">Sigla</label>
+        <input type="text" id="inputSigla" placeholder="Ex: TST" autocomplete="off" autocapitalize="characters" maxlength="10">
+      </div>
+
+      <div class="field">
+        <label for="inputSenha">Senha</label>
+        <input type="password" id="inputSenha" placeholder="Sua senha" autocomplete="current-password">
+      </div>
+
+      <button class="btn-primary" id="btnLogin" onclick="fazerLogin()">Entrar</button>
+
+      <div class="alert alert-error" id="loginError"></div>
+
+      <div class="login-footer">
+        Em caso de problemas, entre em contato com seu terapeuta.
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SEÇÃO: MENU PRINCIPAL
+       ============================================================ -->
+  <div class="section" id="sec-menu">
+    <h2 style="font-family:'Quicksand',sans-serif;font-size:16px;color:var(--blue);text-align:center;margin:8px 0 4px;">
+      Menu Principal
+    </h2>
+    <p style="font-size:12px;color:var(--txt-l);text-align:center;margin-bottom:16px;">
+      Escolha o módulo que deseja acessar
+    </p>
+
+    <div class="card-grid">
+
+      <!-- Módulo 1 — Anamnese -->
+      <button class="card card-blue" onclick="abrirModulo('anamnese')">
+        <span class="card-icon">📝</span>
+        <div class="card-title">1. Anamnese</div>
+        <div class="card-desc">Informações pessoais e histórico de saúde (preenchimento único)</div>
+        <span class="card-arrow">›</span>
+      </button>
+
+      <!-- Módulo 2 — Registro de Automonitoramento -->
+      <button class="card card-coral" onclick="abrirModulo('automonitoramento')">
+        <span class="card-icon">📊</span>
+        <div class="card-title">2. Registro de Automonitoramento</div>
+        <div class="card-desc">Acompanhamento diário de humor, emoções, pensamentos e comportamentos</div>
+        <span class="card-arrow">›</span>
+      </button>
+
+      <!-- Módulo 3 — Escalas e Inventários (reservado) -->
+      <button class="card card-green" disabled>
+        <span class="card-icon">📋</span>
+        <div class="card-title">3. Escalas e Inventários</div>
+        <div class="card-desc">Instrumentos clínicos padronizados</div>
+        <span class="card-badge-soon">Em breve</span>
+      </button>
+
+      <!-- Módulo 4 — Psicoeducação (reservado) -->
+      <button class="card card-amber" disabled>
+        <span class="card-icon">📚</span>
+        <div class="card-title">4. Psicoeducação</div>
+        <div class="card-desc">Materiais educativos sobre TCC</div>
+        <span class="card-badge-soon">Em breve</span>
+      </button>
+
+      <!-- Módulo 5 — Intervenções (reservado) -->
+      <button class="card card-gray" disabled>
+        <span class="card-icon">🛠️</span>
+        <div class="card-title">5. Intervenções Cognitivas e Comportamentais</div>
+        <div class="card-desc">Exercícios e técnicas terapêuticas</div>
+        <span class="card-badge-soon">Em breve</span>
+      </button>
+
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SEÇÃO: MÓDULO ANAMNESE (placeholder — Etapa 2)
+       ============================================================ -->
+  <div class="section" id="sec-anamnese">
+    <div class="nav-bar">
+      <button class="btn-back" onclick="abrirSecao('sec-menu')">← Menu</button>
+      <span class="nav-title">Módulo 1 — Anamnese</span>
+    </div>
+    <div class="placeholder-box">
+      <span class="placeholder-icon">📝</span>
+      <div class="placeholder-title">Anamnese</div>
+      <div class="placeholder-text">
+        Este módulo será implementado na <strong>Etapa 2</strong> do desenvolvimento.<br>
+        A estrutura e a tabela de dados já estão preparadas.
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SEÇÃO: MÓDULO AUTOMONITORAMENTO (placeholder — Etapa 3)
+       ============================================================ -->
+  <div class="section" id="sec-automonitoramento">
+    <div class="nav-bar">
+      <button class="btn-back" onclick="abrirSecao('sec-menu')">← Menu</button>
+      <span class="nav-title">Módulo 2 — Automonitoramento</span>
+    </div>
+    <div class="placeholder-box">
+      <span class="placeholder-icon">📊</span>
+      <div class="placeholder-title">Registro de Automonitoramento</div>
+      <div class="placeholder-text">
+        Este módulo será implementado na <strong>Etapa 3</strong> do desenvolvimento.<br>
+        A estrutura completa do registro (96 colunas) já está preparada na planilha.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   CONFIGURAÇÃO
+   ============================================================ */
+
+// URL do Google Apps Script publicado como Web App
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx7kHrVq7KizCWCVeEhTpsBFcU36Vc1zUBWF1AuJxdPD3iO5K4LIPuZs2vXXr1OK94eAg/exec';
+
+// Versão do front (para futuras compatibilizações)
+const VERSAO_FRONT = 'v1';
+
+
+/* ============================================================
+   COMUNICAÇÃO COM O APPS SCRIPT
+   ============================================================
+   Usa Content-Type text/plain para evitar o preflight CORS,
+   que é uma limitação conhecida do Apps Script. O servidor
+   interpreta o corpo como JSON mesmo assim.
+   ============================================================ */
+async function chamarServidor(acao, dados = {}) {
+  mostrarLoading(true);
+  try {
+    const payload = { acao, ...dados };
+    const resposta = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'cors',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload),
+    });
+    const json = await resposta.json();
+    return json;
+  } catch (erro) {
+    console.error('Erro ao chamar servidor:', erro);
+    return { ok: false, erro: 'Falha de conexão com o servidor.' };
+  } finally {
+    mostrarLoading(false);
+  }
+}
+
+function mostrarLoading(visivel) {
+  document.getElementById('loadingOverlay').classList.toggle('visible', visivel);
+}
+
+
+/* ============================================================
+   NAVEGAÇÃO ENTRE SEÇÕES
+   ============================================================ */
+function abrirSecao(idSecao) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(idSecao).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function abrirModulo(modulo) {
+  if (modulo === 'anamnese') abrirSecao('sec-anamnese');
+  else if (modulo === 'automonitoramento') abrirSecao('sec-automonitoramento');
+}
+
+
+/* ============================================================
+   SESSÃO DO PACIENTE
+   ============================================================
+   Guardada em sessionStorage: vive enquanto a aba estiver
+   aberta, é apagada quando o paciente fecha o navegador.
+   ============================================================ */
+function salvarSessao(paciente) {
+  sessionStorage.setItem('paciente', JSON.stringify(paciente));
+}
+
+function carregarSessao() {
+  const dado = sessionStorage.getItem('paciente');
+  return dado ? JSON.parse(dado) : null;
+}
+
+function limparSessao() {
+  sessionStorage.removeItem('paciente');
+}
+
+function atualizarBadgeUsuario() {
+  const paciente = carregarSessao();
+  const badge = document.getElementById('userBadge');
+  if (paciente) {
+    document.getElementById('userBadgeText').textContent = paciente.sigla;
+    badge.classList.add('visible');
+  } else {
+    badge.classList.remove('visible');
+  }
+}
+
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+async function fazerLogin() {
+  const sigla = document.getElementById('inputSigla').value.trim().toUpperCase();
+  const senha = document.getElementById('inputSenha').value;
+  const erroBox = document.getElementById('loginError');
+  const btn = document.getElementById('btnLogin');
+
+  erroBox.classList.remove('visible');
+
+  if (!sigla || !senha) {
+    erroBox.textContent = 'Por favor, preencha sigla e senha.';
+    erroBox.classList.add('visible');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Entrando...';
+
+  const resposta = await chamarServidor('autenticar', { sigla, senha });
+
+  btn.disabled = false;
+  btn.textContent = 'Entrar';
+
+  if (!resposta.ok) {
+    erroBox.textContent = resposta.erro || 'Erro ao autenticar.';
+    erroBox.classList.add('visible');
+    document.getElementById('inputSenha').value = '';
+    return;
+  }
+
+  // Login bem-sucedido
+  salvarSessao(resposta.paciente);
+  atualizarBadgeUsuario();
+  document.getElementById('inputSigla').value = '';
+  document.getElementById('inputSenha').value = '';
+  abrirSecao('sec-menu');
+}
+
+function logout() {
+  limparSessao();
+  atualizarBadgeUsuario();
+  abrirSecao('sec-login');
+}
+
+
+/* ============================================================
+   INICIALIZAÇÃO
+   ============================================================ */
+window.addEventListener('DOMContentLoaded', () => {
+  // Se já existe sessão salva (paciente recarregou a página),
+  // restaura direto no menu principal.
+  const paciente = carregarSessao();
+  if (paciente) {
+    atualizarBadgeUsuario();
+    abrirSecao('sec-menu');
+  } else {
+    abrirSecao('sec-login');
+  }
+
+  // Permite logar apertando Enter no campo de senha
+  document.getElementById('inputSenha').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') fazerLogin();
+  });
+  document.getElementById('inputSigla').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') document.getElementById('inputSenha').focus();
+  });
+});
+
+
+/* ============================================================
+   SERVICE WORKER (PWA — preparação)
+   ============================================================
+   Registrado em produção (HTTPS). No GitHub Pages funciona;
+   localmente em file:// não funciona, e está tudo bem.
+   ============================================================ */
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => {
+      console.warn('Service worker não registrado:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>
