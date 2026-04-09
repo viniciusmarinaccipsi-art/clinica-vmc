@@ -954,6 +954,315 @@ body{
 .panel-soon-icon{font-size:56px;display:block;margin-bottom:14px;}
 .panel-soon-title{font-family:'Quicksand',sans-serif;font-size:18px;font-weight:700;color:var(--blue);margin-bottom:8px;}
 .panel-soon-text{font-size:13px;color:var(--txt-m);line-height:1.6;max-width:400px;margin:0 auto;}
+/* ============================================================
+   PAINEL DE EVOLUÇÃO — CSS isolado com prefixo pev-
+   Pacote 2 · Etapa 2.4 · Adição não destrutiva
+   ============================================================ */
+.pev-loading {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--txt-m);
+  font-size: 14px;
+}
+.pev-spin {
+  display: inline-block;
+  width: 32px; height: 32px;
+  border: 3px solid var(--blue-lt);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: pev-spin 0.8s linear infinite;
+  margin-bottom: 12px;
+}
+@keyframes pev-spin { to { transform: rotate(360deg); } }
+
+.pev-resumo {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.pev-resumo-card {
+  background: #FFFFFF;
+  border-radius: 14px;
+  padding: 16px 14px;
+  border-left: 4px solid var(--blue);
+  box-shadow: 0 2px 8px rgba(44,95,124,0.08);
+  text-align: center;
+}
+.pev-resumo-card.coral { border-left-color: var(--coral); }
+.pev-resumo-card.green { border-left-color: var(--green); }
+.pev-resumo-num {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--blue);
+  line-height: 1;
+}
+.pev-resumo-card.coral .pev-resumo-num { color: var(--coral); }
+.pev-resumo-card.green .pev-resumo-num { color: var(--green); }
+.pev-resumo-lbl {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--txt-m);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-weight: 600;
+}
+
+.pev-periodo {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 18px;
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 2px 8px rgba(44,95,124,0.08);
+}
+.pev-periodo-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 10px 6px;
+  border-radius: 8px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--txt-m);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.pev-periodo-btn:hover { background: var(--blue-lt); color: var(--blue); }
+.pev-periodo-btn.active {
+  background: var(--blue);
+  color: white;
+  box-shadow: 0 2px 6px rgba(44,95,124,0.25);
+}
+
+.pev-bloco {
+  background: #FFFFFF;
+  border-radius: 14px;
+  padding: 18px 18px 14px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 8px rgba(44,95,124,0.08);
+  border-left: 4px solid var(--blue);
+}
+.pev-bloco.coral { border-left-color: var(--coral); }
+.pev-bloco.green { border-left-color: var(--green); }
+.pev-bloco.amber { border-left-color: var(--amber); }
+.pev-bloco-titulo {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #2A3A45;
+  margin-bottom: 4px;
+}
+.pev-bloco-sub {
+  font-size: 12px;
+  color: var(--txt-m);
+  margin-bottom: 12px;
+}
+.pev-bloco-dica {
+  font-size: 11px;
+  color: #97A4AC;
+  margin-top: 8px;
+  text-align: center;
+  font-style: italic;
+}
+
+.pev-humor-wrap {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  height: 240px;
+}
+.pev-humor-legenda {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 6px 4px;
+  width: 38px;
+  flex-shrink: 0;
+}
+.pev-humor-legenda-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 10px;
+  color: var(--txt-m);
+  font-weight: 600;
+}
+.pev-humor-legenda-item .ic { font-size: 18px; line-height: 1; }
+.pev-humor-legenda-item .nm { margin-top: 2px; }
+.pev-humor-canvas-box { flex: 1; min-width: 0; position: relative; }
+
+.pev-secao-divider {
+  margin: 22px 4px 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.pev-secao-divider-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.pev-secao-divider.neg .pev-secao-divider-icon { background: var(--coral-bg); }
+.pev-secao-divider.pos .pev-secao-divider-icon { background: var(--green-bg); }
+.pev-secao-divider-titulo {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+}
+.pev-secao-divider.neg .pev-secao-divider-titulo { color: var(--coral); }
+.pev-secao-divider.pos .pev-secao-divider-titulo { color: var(--green); }
+.pev-secao-divider-linha {
+  flex: 1;
+  height: 1px;
+  background: #E1E7EB;
+}
+
+.pev-barras-canvas-box {
+  position: relative;
+  height: 200px;
+}
+
+.pev-vazio {
+  background: #FFFFFF;
+  border-radius: 14px;
+  padding: 50px 24px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(44,95,124,0.08);
+}
+.pev-vazio-icon { font-size: 56px; display: block; margin-bottom: 12px; }
+.pev-vazio-titulo {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2A3A45;
+  margin-bottom: 6px;
+}
+.pev-vazio-texto {
+  font-size: 14px;
+  color: var(--txt-m);
+  line-height: 1.6;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+/* Modal Pizza */
+.pev-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(20,30,38,0.55);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: pev-fade-in 0.2s ease-out;
+}
+.pev-modal-overlay.show { display: flex; }
+@keyframes pev-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+.pev-modal-card {
+  background: #FFFFFF;
+  border-radius: 18px;
+  max-width: 460px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  animation: pev-slide-up 0.25s ease-out;
+}
+@keyframes pev-slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.pev-modal-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid #E1E7EB;
+}
+.pev-modal-head-text { flex: 1; }
+.pev-modal-titulo {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: #2A3A45;
+}
+.pev-modal-sub {
+  font-size: 12px;
+  color: var(--txt-m);
+  margin-top: 3px;
+}
+.pev-modal-fechar {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: #F5F7F9;
+  color: var(--txt-m);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.pev-modal-fechar:hover { background: #E5E9ED; color: #2A3A45; }
+
+.pev-modal-body { padding: 18px 20px 22px; }
+.pev-modal-pizza-box {
+  position: relative;
+  height: 240px;
+  margin-bottom: 14px;
+}
+.pev-modal-zerado {
+  text-align: center;
+  padding: 30px 10px;
+  color: var(--txt-m);
+  font-size: 13px;
+}
+.pev-modal-zerado .ic { font-size: 36px; display: block; margin-bottom: 8px; }
+
+.pev-modal-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+.pev-modal-lista-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: #F5F7F9;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.pev-modal-lista-bolinha {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.pev-modal-lista-nome { flex: 1; color: #2A3A45; }
+.pev-modal-lista-qtd { font-weight: 700; color: var(--txt-m); font-size: 12px; }
+
+@media (max-width: 600px) {
+  .pev-resumo { gap: 8px; }
+  .pev-resumo-card { padding: 12px 8px; }
+  .pev-resumo-num { font-size: 24px; }
+  .pev-resumo-lbl { font-size: 10px; }
+  .pev-periodo-btn { font-size: 12px; padding: 9px 4px; }
+  .pev-bloco { padding: 14px 14px 12px; }
+  .pev-humor-wrap { height: 200px; }
+  .pev-barras-canvas-box { height: 180px; }
+}
+
 </style>
 </head>
 <body>
@@ -1151,17 +1460,40 @@ body{
     </div>
   </div>
 
-  <!-- PAINEL DE EVOLUÇÃO (placeholder) -->
+  <!-- PAINEL DE EVOLUÇÃO -->
   <div class="section" id="sec-auto-painel">
     <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-automonitoramento')">← Voltar</button>
+      <button class="btn-back" onclick="abrirSecao('sec-automonitoramento')">← Menu</button>
       <span class="nav-title">Painel de Evolução</span>
     </div>
-    <div class="panel-soon">
-      <span class="panel-soon-icon">📊</span>
-      <div class="panel-soon-title">Em breve</div>
-      <div class="panel-soon-text">
-        O Painel de Evolução trará gráficos de humor, tendências das suas emoções, padrões de pensamento e muito mais. Continue preenchendo seus registros — quanto mais dados, melhor o painel funcionará!
+    <!-- Container preenchido pelo JS quando o paciente abre o painel (lazy load) -->
+    <div id="pevConteudo">
+      <div class="pev-loading">
+        <div class="pev-spin"></div>
+        <div>Carregando seu painel...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Pizza (drill-down do Painel de Evolução) -->
+  <div class="pev-modal-overlay" id="pevModal">
+    <div class="pev-modal-card">
+      <div class="pev-modal-head">
+        <div class="pev-modal-head-text">
+          <div class="pev-modal-titulo" id="pevModalTitulo">—</div>
+          <div class="pev-modal-sub" id="pevModalSub">—</div>
+        </div>
+        <button class="pev-modal-fechar" onclick="pevFecharModal()" aria-label="Fechar">×</button>
+      </div>
+      <div class="pev-modal-body">
+        <div class="pev-modal-pizza-box">
+          <canvas id="pevModalPizzaCanvas"></canvas>
+          <div id="pevModalZerado" class="pev-modal-zerado" style="display:none;">
+            <span class="ic">🔍</span>
+            Nenhum subitem específico foi marcado neste período.
+          </div>
+        </div>
+        <div class="pev-modal-lista" id="pevModalLista"></div>
       </div>
     </div>
   </div>
@@ -5384,6 +5716,10 @@ function abrirSecao(idSecao) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById(idSecao).classList.add('active');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Painel de Evolução: lazy load ao abrir
+  if (idSecao === 'sec-auto-painel' && typeof pevAbrir === 'function') {
+    pevAbrir();
+  }
 }
 
 function abrirModulo(modulo) {
@@ -8229,6 +8565,8 @@ async function autoEnviarRegistro() {
 
   autoLimparRascunho();
   autoResetState();
+  // Painel de Evolução: força recarregamento na próxima visita
+  if (typeof pevInvalidarCache === 'function') pevInvalidarCache();
   alert('✓ Registro salvo com sucesso!');
   abrirSecao('sec-automonitoramento');
 }
@@ -8504,6 +8842,668 @@ function autoHidratarFormulario() {
   });
   autoAtualizarProgressoMenus();
 }
+
+/* ============================================================
+   PAINEL DE EVOLUÇÃO — Pacote 2 · Etapa 2.4
+   Tudo prefixado com pev/PEV. Adição não destrutiva.
+   ============================================================ */
+
+// ----- 1. CONSTANTES -----
+
+const PEV_SECOES = [
+  // ----- NEGATIVAS -----
+  // Tipos de Situação vai PRIMEIRO no lado negativo (gatilho)
+  { secao: 'neg', prefixo: 'neg_sit_tipo_', titulo: 'Tipos de Situação',
+    sub: 'Em que tipo de contexto seus registros costumam acontecer',
+    cor: '#E07A6B', classe: 'coral' },
+  { secao: 'neg', prefixo: 'neg_emo_', titulo: 'Emoções Desagradáveis',
+    sub: 'Quais grupos de emoções aparecem mais nos seus registros',
+    cor: '#E07A6B', classe: 'coral' },
+  { secao: 'neg', prefixo: 'neg_fis_', titulo: 'Reações Físicas — Desconforto',
+    sub: 'Quais grupos de sensações corporais aparecem mais',
+    cor: '#E07A6B', classe: 'coral' },
+  { secao: 'neg', prefixo: 'neg_pens_', titulo: 'Pensamentos Desadaptativos',
+    sub: 'Quais tipos de pensamento aparecem mais',
+    cor: '#E07A6B', classe: 'coral' },
+  { secao: 'neg', prefixo: 'neg_dist_', titulo: 'Distorções Cognitivas',
+    sub: 'Quais distorções aparecem com mais frequência',
+    cor: '#D4A843', classe: 'amber' },
+  { secao: 'neg', prefixo: 'neg_comp_', titulo: 'Comportamentos Disfuncionais',
+    sub: 'Quais reações comportamentais aparecem mais',
+    cor: '#E07A6B', classe: 'coral' },
+  // ----- POSITIVAS -----
+  { secao: 'pos', prefixo: 'pos_emo_', titulo: 'Emoções Agradáveis',
+    sub: 'Quais grupos de emoções positivas você tem registrado',
+    cor: '#6BBF8A', classe: 'green' },
+  { secao: 'pos', prefixo: 'pos_fis_', titulo: 'Reações Físicas — Bem-Estar',
+    sub: 'Quais sensações corporais agradáveis aparecem mais',
+    cor: '#6BBF8A', classe: 'green' },
+  { secao: 'pos', prefixo: 'pos_pens_', titulo: 'Pensamentos Adaptativos',
+    sub: 'Quais tipos de pensamento saudável aparecem mais',
+    cor: '#6BBF8A', classe: 'green' },
+  { secao: 'pos', prefixo: 'pos_comp_', titulo: 'Comportamentos Adaptativos',
+    sub: 'Quais ações saudáveis aparecem mais',
+    cor: '#6BBF8A', classe: 'green' }
+];
+
+const PEV_TITULOS_GRUPO = {
+  'neg_sit_tipo_interpessoais':'Interpessoais','neg_sit_tipo_desempenho':'Desempenho','neg_sit_tipo_solidao':'Solidão / Inatividade','neg_sit_tipo_perda':'Perda / Mudança','neg_sit_tipo_internas':'Internas',
+  'neg_emo_tristeza':'Tristeza/Depressão','neg_emo_ansiedade':'Ansiedade/Medo','neg_emo_raiva':'Raiva/Irritação','neg_emo_culpa':'Culpa/Vergonha','neg_emo_ciume':'Ciúme/Inveja',
+  'neg_fis_ativacao':'Ativação/Aceleração','neg_fis_desativacao':'Desativação','neg_fis_tensao':'Tensão/Contração','neg_fis_digestivas':'Digestivas','neg_fis_sono':'Sono/Concentração',
+  'neg_pens_sobre_mim':'Sobre Mim Mesmo','neg_pens_sobre_futuro':'Sobre o Futuro','neg_pens_sobre_outros':'Sobre os Outros','neg_pens_cobranca':'Cobrança','neg_pens_culpa':'Culpa',
+  'neg_dist_previsao':'Erros de Previsão','neg_dist_generalizacao':'Generalização','neg_dist_percepcao':'Percepção','neg_dist_interpretacao':'Interpretação','neg_dist_exigencia':'Exigência',
+  'neg_comp_evitacao':'Evitação/Fuga','neg_comp_isolamento':'Isolamento','neg_comp_reatividade':'Agitação/Reatividade','neg_comp_entorpecimento':'Entorpecimento','neg_comp_controle':'Busca de Controle',
+  'pos_emo_felicidade':'Felicidade/Satisfação','pos_emo_orgulho':'Orgulho/Realização','pos_emo_conexao':'Conexão/Afeto','pos_emo_calma':'Calma/Serenidade','pos_emo_esperanca':'Esperança/Motivação',
+  'pos_fis_calma':'Desaceleração/Calma','pos_fis_energia':'Energia/Vitalidade','pos_fis_relaxamento':'Relaxamento','pos_fis_digestivo':'Conforto Digestivo','pos_fis_atencao':'Atenção/Descanso',
+  'pos_pens_autocompaixao':'Autocompaixão','pos_pens_esperanca':'Esperança/Perspectiva','pos_pens_confianca':'Confiança nos Outros','pos_pens_flexibilidade':'Flexibilidade','pos_pens_responsabilidade':'Responsabilidade Equilibrada',
+  'pos_comp_enfrentamento':'Enfrentamento/Ação','pos_comp_conexao':'Conexão/Vínculo','pos_comp_expressao':'Expressão/Comunicação','pos_comp_autocuidado':'Autocuidado','pos_comp_aceitacao':'Aceitação/Flexibilidade',
+};
+
+// Subitens de cada grupo (extraídos do próprio formulário deste arquivo)
+const PEV_SUBITENS_GRUPO = {
+  "neg_sit_tipo_interpessoais": ["Conflito ou discussão","Sentir-se rejeitado, ignorado ou excluído","Receber crítica ou feedback negativo","Comparar-se com alguém","Sentir-se incompreendido ou invalidado"],
+  "neg_sit_tipo_desempenho": ["Erro, falha ou resultado abaixo do esperado","Pressão por prazo ou cobrança","Tarefa nova ou desafiadora","Avaliação ou exposição diante de outros","Acúmulo de tarefas ou sobrecarga"],
+  "neg_sit_tipo_solidao": ["Estar sozinho sem atividade","Fim de semana ou feriado sem planos","Horário noturno / hora de dormir","Momento de transição (acordar, voltar para casa)","Cancelamento de planos ou expectativas frustradas"],
+  "neg_sit_tipo_perda": ["Perda ou afastamento de alguém importante","Mudança inesperada na rotina ou planos","Problema de saúde (próprio ou de alguém próximo)","Dificuldade financeira","Incerteza sobre o futuro"],
+  "neg_sit_tipo_internas": ["Lembrança ou memória intrusiva",'Pensamento que "surgiu do nada"',"Sensação física que disparou preocupação","Sonho ou pesadelo","Comparação mental (imaginar como deveria estar)"],
+  "neg_emo_tristeza": ["Triste","Solitário(a)","Deprimido(a)","Desanimado(a)","Desesperançoso(a)"],
+  "neg_emo_ansiedade": ["Ansioso(a)","Inseguro(a)","Apreensivo(a)","Preocupado(a)","Amedrontado(a)"],
+  "neg_emo_raiva": ["Irritado(a)","Furioso(a)","Ofendido(a)","Frustrado(a)","Indignado(a)"],
+  "neg_emo_culpa": ["Culpado(a)","Envergonhado(a)","Arrependido(a)","Constrangido(a)","Humilhado(a)"],
+  "neg_emo_ciume": ["Com ciúme","Invejoso(a)","Possessivo(a)","Desconfiado(a)","Inferiorizado(a)"],
+  "neg_fis_ativacao": ["Coração acelerado","Respiração ofegante","Suor frio","Tremores","Tontura"],
+  "neg_fis_desativacao": ["Cansaço extremo","Sem energia","Peso no corpo","Lentidão","Sonolência fora de hora"],
+  "neg_fis_tensao": ["Tensão muscular","Mandíbula travada","Ombros duros","Dor de cabeça","Punhos cerrados"],
+  "neg_fis_digestivas": ["Dor de estômago","Náusea","Boca seca","Falta de apetite","Compulsão alimentar"],
+  "neg_fis_sono": ["Insônia","Sono agitado","Acordar cansado","Dificuldade de concentração","Mente acelerada"],
+  "neg_pens_sobre_mim": ['"Não sou bom o suficiente"','"Há algo de errado comigo"','"Sou um fracasso / incompetente"','"Não mereço ser amado / valorizado"','"Sou fraco / não consigo lidar com as coisas"'],
+  "neg_pens_sobre_futuro": ['"Vai dar errado"','"Nada vai melhorar"','"Não vou conseguir"','"Algo ruim vai acontecer"','"Não tenho saída"'],
+  "neg_pens_sobre_outros": ['"Vão me julgar"','"Não posso confiar em ninguém"','"Estão contra mim"','"Não me valorizam"','"Vão me abandonar"'],
+  "neg_pens_cobranca": ['"Eu deveria ter feito diferente"','"Eu tinha que dar conta"','"Não posso falhar"','"Eu preciso ser perfeito"','"Eu deveria ser mais forte"'],
+  "neg_pens_culpa": ['"A culpa é minha"','"Eu causei isso"','"Eu deveria ter previsto"','"Sou responsável pelo sofrimento dos outros"','"Mereço o que está acontecendo"'],
+  "neg_dist_previsao": ["Catastrofização","Adivinhação do futuro",'Pensamento "e se...?"'],
+  "neg_dist_generalizacao": ["Supergeneralização","Rotulação","Filtro mental"],
+  "neg_dist_percepcao": ["Tudo ou nada","Desqualificação do positivo","Aumentar o negativo / Minimizar o positivo"],
+  "neg_dist_interpretacao": ["Leitura mental","Personalização","Raciocínio emocional"],
+  "neg_dist_exigencia": ['Pensamento de "deveria"',"Visão tunelada","Comparação destrutiva"],
+  "neg_comp_evitacao": ["Adiar tarefa","Evitar pessoa/lugar","Procrastinação","Fugir da situação","Distração compulsiva"],
+  "neg_comp_isolamento": ["Não atender ligações","Cancelar compromisso","Ficar trancado em casa","Evitar conversa","Recusar convites"],
+  "neg_comp_reatividade": ["Discutir","Bater porta","Gritar","Chorar sem controle","Falar coisas que se arrepende"],
+  "neg_comp_entorpecimento": ["Beber em excesso","Comer compulsivamente","Maratona de TV/redes","Jogos por horas","Outras formas de fuga"],
+  "neg_comp_controle": ["Checar várias vezes","Repetir rituais","Tentar antecipar tudo","Microgerenciar","Buscar reasseguramento"],
+  "pos_emo_felicidade": ["Feliz","Satisfeito(a)","Contente","Animado(a)","Alegre"],
+  "pos_emo_orgulho": ["Orgulhoso(a)","Realizado(a)","Capaz","Competente","Vitorioso(a)"],
+  "pos_emo_conexao": ["Amado(a)","Acolhido(a)","Conectado(a)","Querido(a)","Pertencente"],
+  "pos_emo_calma": ["Calmo(a)","Sereno(a)","Tranquilo(a)","Em paz","Centrado(a)"],
+  "pos_emo_esperanca": ["Esperançoso(a)","Motivado(a)","Confiante","Otimista","Inspirado(a)"],
+  "pos_fis_calma": ["Respiração tranquila","Coração calmo","Corpo leve","Mente desacelerada","Sensação de presença"],
+  "pos_fis_energia": ["Disposto(a)","Vigoroso(a)","Cheio(a) de energia","Vital","Pronto(a) para agir"],
+  "pos_fis_relaxamento": ["Músculos relaxados","Ombros soltos","Mandíbula relaxada","Sem dores","Conforto geral"],
+  "pos_fis_digestivo": ["Apetite equilibrado","Digestão tranquila","Sem náusea","Comer sem ansiedade","Bem-estar abdominal"],
+  "pos_fis_atencao": ["Sono reparador","Acordar descansado(a)","Boa concentração","Mente clara","Foco fácil"],
+  "pos_pens_autocompaixao": ['"Estou fazendo o que posso"','"Não preciso ser perfeito"','"É ok sentir o que sinto"','"Mereço cuidado também"','"Estou aprendendo"'],
+  "pos_pens_esperanca": ['"Vai melhorar"','"Já passei por coisas difíceis antes"','"Tenho recursos para lidar"','"Existe um caminho"','"Amanhã é um novo dia"'],
+  "pos_pens_confianca": ['"Posso pedir ajuda"','"Há pessoas boas ao meu redor"','"Não preciso fazer tudo sozinho"','"Confio em quem está comigo"','"Sou apoiado(a)"'],
+  "pos_pens_flexibilidade": ['"Existem outras formas de ver isso"','"Nem tudo é preto no branco"','"Posso mudar de ideia"','"Errar faz parte"','"Posso tentar de outro jeito"'],
+  "pos_pens_responsabilidade": ['"Fiz minha parte"','"Não controlo tudo"','"Posso aprender com isso"','"Isso não é só minha responsabilidade"','"Reconheço meus limites"'],
+  "pos_comp_enfrentamento": ["Encarar a tarefa","Conversar sobre o problema","Pedir ajuda","Resolver passo a passo","Enfrentar o desconforto"],
+  "pos_comp_conexao": ["Conversar com alguém querido","Aceitar convite","Buscar contato","Demonstrar afeto","Estar presente"],
+  "pos_comp_expressao": ["Falar como me sinto","Escrever sobre o que sinto","Pedir o que preciso","Estabelecer limite","Dizer não"],
+  "pos_comp_autocuidado": ["Dormir bem","Comer com calma","Praticar atividade física","Tomar um tempo para si","Cuidar do corpo"],
+  "pos_comp_aceitacao": ["Permitir-se ser imperfeito","Reconhecer o que está fora do meu controle","Aceitar uma emoção difícil sem tentar eliminá-la","Praticar gratidão ou valorizar algo positivo no dia","Agir de acordo com meus valores mesmo com desconforto"]
+};
+
+// ----- 2. PARSER V4 (utilitário reaproveitável) -----
+function pevParsearGrupoV4(valorCelula) {
+  if (!valorCelula) return [];
+  const partes = String(valorCelula).split(AUTO_SEPARADOR).map(s => s.trim()).filter(Boolean);
+  return partes.map(p => {
+    const m = p.match(/^(.+):(\d+)$/);
+    if (m) return { item: m[1].trim(), likert: parseInt(m[2], 10) };
+    return { item: p, likert: null };
+  });
+}
+
+function pevOutroTemTexto(nomeItem) {
+  if (!nomeItem) return false;
+  const s = nomeItem.trim();
+  if (s === 'Outro' || s === 'Outro:' || /\(vazio\)/i.test(s)) return false;
+  return true;
+}
+
+// ----- 3. ESTADO -----
+const PEV_STATE = {
+  registros: [],
+  carregadoEm: 0,
+  cacheTtlMs: 30 * 1000,
+  periodoAtual: 7,
+  charts: {},
+  invalidado: false
+};
+
+function pevInvalidarCache() {
+  PEV_STATE.invalidado = true;
+}
+
+// ----- 4. ABERTURA DO PAINEL (lazy load) -----
+async function pevAbrir() {
+  const cont = document.getElementById('pevConteudo');
+  const agora = Date.now();
+  const cacheValido = !PEV_STATE.invalidado
+                      && PEV_STATE.registros.length > 0
+                      && (agora - PEV_STATE.carregadoEm < PEV_STATE.cacheTtlMs);
+
+  if (cacheValido) {
+    pevRenderizar();
+    return;
+  }
+
+  cont.innerHTML = `
+    <div class="pev-loading">
+      <div class="pev-spin"></div>
+      <div>Carregando seu painel...</div>
+    </div>`;
+
+  try {
+    const paciente = carregarSessao();
+    if (!paciente) {
+      cont.innerHTML = `
+        <div class="pev-vazio">
+          <span class="pev-vazio-icon">⚠️</span>
+          <div class="pev-vazio-titulo">Sessão expirada</div>
+          <div class="pev-vazio-texto">Faça login novamente para ver seu painel.</div>
+        </div>`;
+      return;
+    }
+    const resp = await chamarServidor('lerHistorico', { sigla: paciente.sigla });
+    if (!resp || !resp.ok) {
+      cont.innerHTML = `
+        <div class="pev-vazio">
+          <span class="pev-vazio-icon">⚠️</span>
+          <div class="pev-vazio-titulo">Não foi possível carregar o painel</div>
+          <div class="pev-vazio-texto">${(resp && resp.erro) ? escapeHtmlAuto(resp.erro) : 'Tente novamente em alguns instantes.'}</div>
+        </div>`;
+      return;
+    }
+    PEV_STATE.registros = resp.automonitoramento || [];
+    PEV_STATE.carregadoEm = agora;
+    PEV_STATE.invalidado = false;
+    pevRenderizar();
+  } catch (e) {
+    console.error('[Painel Evolução] Erro ao carregar:', e);
+    cont.innerHTML = `
+      <div class="pev-vazio">
+        <span class="pev-vazio-icon">⚠️</span>
+        <div class="pev-vazio-titulo">Falha de conexão</div>
+        <div class="pev-vazio-texto">Verifique sua internet e tente novamente.</div>
+      </div>`;
+  }
+}
+
+// ----- 5. FILTRAGEM POR PERÍODO -----
+function pevFiltrarPorPeriodo(registros, periodo) {
+  if (periodo === 'tudo') return registros.slice();
+  const limite = new Date();
+  limite.setHours(0, 0, 0, 0);
+  limite.setDate(limite.getDate() - (periodo - 1));
+  return registros.filter(r => {
+    const m = String(r.data_registro || '').match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (!m) return false;
+    const d = new Date(parseInt(m[1]), parseInt(m[2]) - 1, parseInt(m[3]));
+    return d >= limite;
+  });
+}
+
+// ----- 6. CÁLCULO DO RESUMO -----
+function pevCalcularResumo(regs) {
+  let somaHumor = 0, countHumor = 0;
+  const dias = new Set();
+  regs.forEach(r => {
+    const h = parseInt(r.humor_nivel, 10);
+    if (h >= 1 && h <= 5) { somaHumor += h; countHumor++; }
+    if (r.data_registro) dias.add(String(r.data_registro).slice(0, 10));
+  });
+  return {
+    total: regs.length,
+    humorMedio: countHumor > 0 ? (somaHumor / countHumor).toFixed(1) : '—',
+    diasAtivos: dias.size
+  };
+}
+
+// ----- 7. RENDERIZAÇÃO PRINCIPAL -----
+function pevRenderizar() {
+  const cont = document.getElementById('pevConteudo');
+  Object.keys(PEV_STATE.charts).forEach(k => {
+    if (PEV_STATE.charts[k]) { try { PEV_STATE.charts[k].destroy(); } catch(e){} }
+  });
+  PEV_STATE.charts = {};
+
+  if (PEV_STATE.registros.length === 0) {
+    cont.innerHTML = `
+      <div class="pev-vazio">
+        <span class="pev-vazio-icon">📭</span>
+        <div class="pev-vazio-titulo">Você ainda não tem registros</div>
+        <div class="pev-vazio-texto">
+          Faça seu primeiro registro de automonitoramento para começar a ver
+          seus padrões e tendências aqui no painel.
+        </div>
+      </div>`;
+    return;
+  }
+
+  const regs = pevFiltrarPorPeriodo(PEV_STATE.registros, PEV_STATE.periodoAtual);
+
+  if (regs.length === 0) {
+    cont.innerHTML = `
+      ${pevMontarSeletor()}
+      <div class="pev-vazio">
+        <span class="pev-vazio-icon">📅</span>
+        <div class="pev-vazio-titulo">Nenhum registro nesse período</div>
+        <div class="pev-vazio-texto">Tente um período mais longo para ver seus dados.</div>
+      </div>`;
+    pevBindSeletor();
+    return;
+  }
+
+  const resumo = pevCalcularResumo(regs);
+  cont.innerHTML = `
+    <div class="pev-resumo">
+      <div class="pev-resumo-card">
+        <div class="pev-resumo-num">${resumo.total}</div>
+        <div class="pev-resumo-lbl">Registros</div>
+      </div>
+      <div class="pev-resumo-card coral">
+        <div class="pev-resumo-num">${resumo.humorMedio}</div>
+        <div class="pev-resumo-lbl">Humor Médio</div>
+      </div>
+      <div class="pev-resumo-card green">
+        <div class="pev-resumo-num">${resumo.diasAtivos}</div>
+        <div class="pev-resumo-lbl">Dias Ativos</div>
+      </div>
+    </div>
+
+    ${pevMontarSeletor()}
+
+    <div class="pev-bloco">
+      <div class="pev-bloco-titulo">📈 Humor ao longo do tempo</div>
+      <div class="pev-bloco-sub">Cada ponto é um registro. Linhas tracejadas são dias sem registro.</div>
+      <div class="pev-humor-wrap">
+        <div class="pev-humor-legenda">
+          <div class="pev-humor-legenda-item"><span class="ic">😊</span><span class="nm">5</span></div>
+          <div class="pev-humor-legenda-item"><span class="ic">🙂</span><span class="nm">4</span></div>
+          <div class="pev-humor-legenda-item"><span class="ic">😐</span><span class="nm">3</span></div>
+          <div class="pev-humor-legenda-item"><span class="ic">🙁</span><span class="nm">2</span></div>
+          <div class="pev-humor-legenda-item"><span class="ic">😟</span><span class="nm">1</span></div>
+        </div>
+        <div class="pev-humor-canvas-box">
+          <canvas id="pevChartHumor"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="pev-secao-divider neg">
+      <div class="pev-secao-divider-icon">💔</div>
+      <div class="pev-secao-divider-titulo">Aspectos Negativos</div>
+      <div class="pev-secao-divider-linha"></div>
+    </div>
+
+    ${PEV_SECOES.filter(s => s.secao === 'neg').map(pevMontarBlocoBarras).join('')}
+
+    <div class="pev-secao-divider pos">
+      <div class="pev-secao-divider-icon">💚</div>
+      <div class="pev-secao-divider-titulo">Aspectos Positivos</div>
+      <div class="pev-secao-divider-linha"></div>
+    </div>
+
+    ${PEV_SECOES.filter(s => s.secao === 'pos').map(pevMontarBlocoBarras).join('')}
+  `;
+
+  pevBindSeletor();
+  pevDesenharHumor(regs);
+  PEV_SECOES.forEach(s => pevDesenharBarras(s, regs));
+}
+
+// ----- 8. SELETOR DE PERÍODO -----
+function pevMontarSeletor() {
+  const opcoes = [
+    { v: 7, lbl: '7 dias' },
+    { v: 30, lbl: '30 dias' },
+    { v: 90, lbl: '90 dias' },
+    { v: 'tudo', lbl: 'Tudo' }
+  ];
+  return `
+    <div class="pev-periodo">
+      ${opcoes.map(o => `
+        <button class="pev-periodo-btn ${o.v == PEV_STATE.periodoAtual ? 'active' : ''}"
+                data-pev-periodo="${o.v}" type="button">${o.lbl}</button>
+      `).join('')}
+    </div>`;
+}
+
+function pevBindSeletor() {
+  document.querySelectorAll('.pev-periodo-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const v = btn.dataset.pevPeriodo;
+      PEV_STATE.periodoAtual = (v === 'tudo') ? 'tudo' : parseInt(v, 10);
+      pevRenderizar();
+    });
+  });
+}
+
+// ----- 9. GRÁFICO DE HUMOR -----
+function pevDesenharHumor(regs) {
+  const pontos = regs.map(r => {
+    const m = String(r.data_registro || '').match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (!m) return null;
+    const horaRaw = String(r.hora_registro || '');
+    const mh = horaRaw.match(/T?(\d{2}):(\d{2})/);
+    const dt = new Date(parseInt(m[1]), parseInt(m[2])-1, parseInt(m[3]),
+                        mh ? parseInt(mh[1]) : 0,
+                        mh ? parseInt(mh[2]) : 0);
+    return { dt, humor: parseInt(r.humor_nivel, 10) || 3 };
+  }).filter(Boolean).sort((a, b) => a.dt - b.dt);
+
+  if (pontos.length === 0) return;
+
+  const labels = pontos.map(p => {
+    const dd = String(p.dt.getDate()).padStart(2, '0');
+    const mm = String(p.dt.getMonth() + 1).padStart(2, '0');
+    return `${dd}/${mm}`;
+  });
+  const valores = pontos.map(p => p.humor);
+
+  const corHumor = v => {
+    if (v <= 1) return '#B53A2A';
+    if (v <= 2) return '#E07A6B';
+    if (v <= 3) return '#D4A843';
+    if (v <= 4) return '#8FCBA1';
+    return '#4FA868';
+  };
+
+  const ctx = document.getElementById('pevChartHumor').getContext('2d');
+  PEV_STATE.charts.humor = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Humor',
+        data: valores,
+        borderColor: '#2C5F7C',
+        backgroundColor: '#2C5F7C',
+        borderWidth: 2.5,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        pointBackgroundColor: valores.map(v => corHumor(v)),
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        tension: 0.25,
+        segment: {
+          borderDash: ctx => {
+            const i0 = ctx.p0DataIndex, i1 = ctx.p1DataIndex;
+            const d0 = new Date(pontos[i0].dt); d0.setHours(0,0,0,0);
+            const d1 = new Date(pontos[i1].dt); d1.setHours(0,0,0,0);
+            const diff = Math.round((d1 - d0) / 86400000);
+            return diff > 1 ? [6, 6] : undefined;
+          },
+          borderColor: ctx => {
+            const i0 = ctx.p0DataIndex, i1 = ctx.p1DataIndex;
+            const d0 = new Date(pontos[i0].dt); d0.setHours(0,0,0,0);
+            const d1 = new Date(pontos[i1].dt); d1.setHours(0,0,0,0);
+            const diff = Math.round((d1 - d0) / 86400000);
+            return diff > 1 ? '#B5C2CC' : '#2C5F7C';
+          }
+        }
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: items => items[0].label,
+            label: ctx => `Humor: ${ctx.parsed.y}/5`
+          }
+        }
+      },
+      scales: {
+        y: { min: 0.5, max: 5.5, ticks: { display: false, stepSize: 1 }, grid: { color: '#EEF2F5', drawTicks: false } },
+        x: { ticks: { font: { size: 10 }, color: '#6B7B86', maxRotation: 0, autoSkip: true, maxTicksLimit: 8 }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+// ----- 10. GRÁFICOS DE BARRAS -----
+function pevMontarBlocoBarras(secao) {
+  const canvasId = `pevChartBarras_${secao.prefixo}`;
+  return `
+    <div class="pev-bloco ${secao.classe}">
+      <div class="pev-bloco-titulo">${secao.titulo}</div>
+      <div class="pev-bloco-sub">${secao.sub}</div>
+      <div class="pev-barras-canvas-box">
+        <canvas id="${canvasId}"></canvas>
+      </div>
+      <div class="pev-bloco-dica">👆 Toque numa barra para ver os detalhes</div>
+    </div>`;
+}
+
+function pevDesenharBarras(secao, regs) {
+  const canvasId = `pevChartBarras_${secao.prefixo}`;
+  const colunas = Object.keys(PEV_SUBITENS_GRUPO).filter(k => k.startsWith(secao.prefixo));
+  const contagens = colunas.map(coluna => {
+    let count = 0;
+    regs.forEach(r => {
+      const itens = pevParsearGrupoV4(r[coluna]);
+      const valid = itens.filter(it => {
+        if (/^Outro/i.test(it.item)) return pevOutroTemTexto(it.item);
+        return true;
+      });
+      if (valid.length > 0) count++;
+    });
+    return { coluna, label: PEV_TITULOS_GRUPO[coluna] || coluna, count };
+  });
+  contagens.sort((a, b) => b.count - a.count);
+
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  PEV_STATE.charts[canvasId] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: contagens.map(c => c.label),
+      datasets: [{
+        data: contagens.map(c => c.count),
+        backgroundColor: secao.cor,
+        borderRadius: 6,
+        barThickness: 18,
+        maxBarThickness: 22
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => `${ctx.parsed.x} ${ctx.parsed.x === 1 ? 'registro' : 'registros'}` } }
+      },
+      scales: {
+        x: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 }, color: '#6B7B86', precision: 0 }, grid: { color: '#EEF2F5' } },
+        y: { ticks: { font: { size: 11 }, color: '#2A3A45' }, grid: { display: false } }
+      },
+      onClick: (evt, elements) => {
+        if (elements.length === 0) return;
+        const idx = elements[0].index;
+        pevAbrirModalPizza(contagens[idx].coluna, secao, regs);
+      }
+    }
+  });
+}
+
+// ----- 11. MODAL DE PIZZA -----
+function pevAbrirModalPizza(coluna, secao, regs) {
+  const subitens = PEV_SUBITENS_GRUPO[coluna] || [];
+  const titulo = PEV_TITULOS_GRUPO[coluna] || coluna;
+
+  const contagem = {};
+  subitens.forEach(s => contagem[s] = 0);
+  let outroComTexto = 0;
+
+  regs.forEach(r => {
+    const itens = pevParsearGrupoV4(r[coluna]);
+    itens.forEach(it => {
+      if (/^Outro/i.test(it.item)) {
+        if (pevOutroTemTexto(it.item)) outroComTexto++;
+      } else if (contagem.hasOwnProperty(it.item)) {
+        contagem[it.item]++;
+      }
+    });
+  });
+
+  const labels = [];
+  const valores = [];
+  subitens.forEach(s => {
+    if (contagem[s] > 0) { labels.push(s); valores.push(contagem[s]); }
+  });
+  if (outroComTexto > 0) {
+    labels.push('Outro (com texto)');
+    valores.push(outroComTexto);
+  }
+
+  document.getElementById('pevModalTitulo').textContent = titulo;
+  document.getElementById('pevModalSub').textContent =
+    `Detalhamento dos subitens — ${PEV_STATE.periodoAtual === 'tudo' ? 'todo o histórico' : 'últimos ' + PEV_STATE.periodoAtual + ' dias'}`;
+
+  if (PEV_STATE.charts.pizza) { try { PEV_STATE.charts.pizza.destroy(); } catch(e){} }
+
+  const canvas = document.getElementById('pevModalPizzaCanvas');
+  const zerado = document.getElementById('pevModalZerado');
+  const lista = document.getElementById('pevModalLista');
+
+  if (valores.length === 0) {
+    canvas.style.display = 'none';
+    zerado.style.display = 'block';
+    lista.innerHTML = '';
+  } else {
+    canvas.style.display = 'block';
+    zerado.style.display = 'none';
+
+    const cores = pevGerarPaletaPizza(secao.cor, valores.length);
+
+    PEV_STATE.charts.pizza = new Chart(canvas.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{
+          data: valores,
+          backgroundColor: cores,
+          borderColor: '#fff',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const total = valores.reduce((a, b) => a + b, 0);
+                const pct = Math.round((ctx.parsed / total) * 100);
+                return `${ctx.label}: ${ctx.parsed} (${pct}%)`;
+              }
+            }
+          }
+        },
+        cutout: '55%'
+      }
+    });
+
+    const total = valores.reduce((a, b) => a + b, 0);
+    lista.innerHTML = labels.map((l, i) => {
+      const pct = Math.round((valores[i] / total) * 100);
+      return `
+        <div class="pev-modal-lista-item">
+          <div class="pev-modal-lista-bolinha" style="background:${cores[i]}"></div>
+          <div class="pev-modal-lista-nome">${escapeHtmlAuto(l)}</div>
+          <div class="pev-modal-lista-qtd">${valores[i]} · ${pct}%</div>
+        </div>`;
+    }).join('');
+  }
+
+  document.getElementById('pevModal').classList.add('show');
+}
+
+function pevFecharModal() {
+  document.getElementById('pevModal').classList.remove('show');
+  if (PEV_STATE.charts.pizza) {
+    try { PEV_STATE.charts.pizza.destroy(); } catch(e){}
+    PEV_STATE.charts.pizza = null;
+  }
+}
+
+function pevGerarPaletaPizza(corBase, n) {
+  const hsl = pevHexToHsl(corBase);
+  const cores = [];
+  for (let i = 0; i < n; i++) {
+    const l = Math.max(30, Math.min(75, 40 + i * (35 / Math.max(1, n - 1))));
+    cores.push(pevHslToHex(hsl.h, hsl.s, l));
+  }
+  return cores;
+}
+function pevHexToHsl(hex) {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h, s, l = (max + min) / 2;
+  if (max === min) { h = s = 0; }
+  else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h *= 60;
+  }
+  return { h, s: s * 100, l: l * 100 };
+}
+function pevHslToHex(h, s, l) {
+  s /= 100; l /= 100;
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = l - c / 2;
+  let r, g, b;
+  if (h < 60)      { r = c; g = x; b = 0; }
+  else if (h < 120){ r = x; g = c; b = 0; }
+  else if (h < 180){ r = 0; g = c; b = x; }
+  else if (h < 240){ r = 0; g = x; b = c; }
+  else if (h < 300){ r = x; g = 0; b = c; }
+  else             { r = c; g = 0; b = x; }
+  const toHex = v => Math.round((v + m) * 255).toString(16).padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+// ----- 12. EVENTOS GLOBAIS DO MODAL -----
+document.addEventListener('DOMContentLoaded', () => {
+  const overlay = document.getElementById('pevModal');
+  if (overlay) {
+    overlay.addEventListener('click', e => {
+      if (e.target.id === 'pevModal') pevFecharModal();
+    });
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      const m = document.getElementById('pevModal');
+      if (m && m.classList.contains('show')) pevFecharModal();
+    }
+  });
+});
 
 </script>
 </body>
