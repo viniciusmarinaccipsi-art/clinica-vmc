@@ -1496,9 +1496,20 @@ function renderPasso2() {
 
   html += `
     <div class="field">
-      <label>Tratamentos anteriores</label>
-      <textarea id="f_tratamentos_anteriores" placeholder="Descreva tratamentos anteriores: período, profissional responsável, local..."></textarea>
-      <div class="field-hint">Pode deixar em branco se não houver.</div>
+      <label>Você já realizou psicoterapia ou acompanhamento psiquiátrico anteriormente? <span class="req">*</span></label>
+      <div class="yesno">
+        <label><input type="radio" name="psicoterapia_anterior" value="Não" onchange="toggleCondicional('blocoTratAnterior', false)"><span>Não</span></label>
+        <label><input type="radio" name="psicoterapia_anterior" value="Sim" onchange="toggleCondicional('blocoTratAnterior', true)"><span>Sim</span></label>
+      </div>
+      <div class="field-error">Selecione uma opção</div>
+    </div>
+
+    <div id="blocoTratAnterior" class="conditional-block">
+      <div class="field">
+        <label>Descreva seus acompanhamentos anteriores <span class="req">*</span></label>
+        <textarea id="f_tratamentos_anteriores" placeholder="Ano de início, período/duração, tipo de acompanhamento (psicoterapia ou psiquiatria), profissional ou local — se desejar compartilhar. Pode listar mais de um, se houver."></textarea>
+        <div class="field-error">Descreva os acompanhamentos anteriores</div>
+      </div>
     </div>
 
     <div class="field">
@@ -1547,31 +1558,46 @@ function renderPasso2() {
 
     <div id="blocoMedPsico" class="conditional-block">
       <div class="field-hint" style="margin-bottom:10px;line-height:1.6;">
-        Marque as medicações que você <strong>usa atualmente</strong> ou <strong>usou no passado</strong>.
-        As classes estão organizadas para facilitar — você só precisa marcar o nome do medicamento.
+        Clique em cada classe para ver os medicamentos. Marque os que você
+        <strong>usa atualmente</strong> ou <strong>usou no passado</strong>.
       </div>
+      <div class="accordion" id="accMedicamentos">
   `;
 
-  // Renderiza cada classe como um bloco aberto (estilo accordion aberto)
+  // Accordion recolhido (mesmo padrão da Seção 3)
   CLASSES_MEDICAMENTOS.forEach(classe => {
     html += `
-      <div class="med-classe" id="medclasse_${classe.id}">
-        <div class="med-classe-titulo">${classe.nome}</div>
-        <div class="med-classe-body">
+      <div class="acc-item" id="accmed_${classe.id}">
+        <button type="button" class="acc-header" onclick="toggleAccordionMed('${classe.id}')">
+          <span>${classe.nome}</span>
+          <span style="display:flex;align-items:center;gap:8px;">
+            <span class="acc-count" id="countmed_${classe.id}">0</span>
+            <span class="acc-chevron">▼</span>
+          </span>
+        </button>
+        <div class="acc-body">
     `;
     classe.itens.forEach((med, idx) => {
       const medId = `${classe.id}_${idx}`;
+      const isOutro = med.toLowerCase().startsWith('outro ');
       html += `
-        <div class="med-item" id="medopt_${medId}">
+        <div class="acc-item-option" id="medopt_${medId}">
           <label class="acc-item-checkbox-label">
             <input type="checkbox"
                    data-med-classe="${classe.id}"
                    data-med-item="${escapeAttr(med)}"
                    id="chk_med_${medId}"
-                   onchange="onMedicamentoChange('${medId}')">
+                   onchange="onMedicamentoChange('${medId}', '${classe.id}')">
             <span>${escapeHtml(med)}</span>
           </label>
-          <div class="med-item-status" id="med_status_${medId}">
+          ${isOutro ? `
+            <input type="text"
+                   class="acc-item-other-text"
+                   id="outro_med_${medId}"
+                   placeholder="Escreva o nome do medicamento..."
+                   style="display:none;">
+          ` : ''}
+          <div class="acc-item-status" id="med_status_${medId}">
             <span class="acc-item-status-label">Situação:</span>
             ${STATUS_MEDICACAO.map(s => `
               <label class="acc-item-status-option">
@@ -1587,9 +1613,10 @@ function renderPasso2() {
   });
 
   html += `
+      </div>
       <div class="field" style="margin-top:14px;">
-        <label>Observações e detalhes das medicações</label>
-        <textarea id="f_medicacao_psico_detalhes" placeholder="Descreva dosagens, frequências, períodos de uso, ou medicamentos marcados como 'Outro'..."></textarea>
+        <label>Observações sobre dosagens e frequências</label>
+        <textarea id="f_medicacao_psico_detalhes" placeholder="Se quiser, descreva dosagens, horários e tempo de uso dos medicamentos marcados acima..."></textarea>
         <div class="field-hint">Opcional — útil para seu terapeuta acompanhar possíveis interações e efeitos.</div>
       </div>
     </div>
@@ -1630,6 +1657,7 @@ function renderPasso3() {
     `;
     cat.itens.forEach((item, idx) => {
       const itemId = `${cat.id}_${idx}`;
+      const isOutro = item.toLowerCase().startsWith('outro ');
       html += `
         <div class="acc-item-option" id="opt_${itemId}">
           <label class="acc-item-checkbox-label">
@@ -1640,6 +1668,13 @@ function renderPasso3() {
                    onchange="onTranstornoChange('${itemId}', '${cat.id}')">
             <span>${escapeHtml(item)}</span>
           </label>
+          ${isOutro ? `
+            <input type="text"
+                   class="acc-item-other-text"
+                   id="outro_trans_${itemId}"
+                   placeholder="Escreva o nome do transtorno..."
+                   style="display:none;">
+          ` : ''}
           <div class="acc-item-status" id="status_${itemId}">
             <span class="acc-item-status-label">Situação para "${escapeHtml(item)}":</span>
             ${STATUS_TRATAMENTO.map(s => `
@@ -1803,9 +1838,9 @@ function renderPasso4() {
 }
 
 function renderBlocoPessoaConfianca(n) {
-  const titulo = n === 1 ? '1ª Pessoa de Confiança (obrigatória)' : `${n}ª Pessoa de Confiança (opcional)`;
-  const obrigatorio = n === 1;
-  const asterisco = obrigatorio ? '<span class="req">*</span>' : '';
+  // Se o bloco está visível, nome/relação/telefone são sempre obrigatórios (e-mail opcional)
+  const titulo = n === 1 ? '1ª Pessoa de Confiança' : `${n}ª Pessoa de Confiança`;
+  const asterisco = '<span class="req">*</span>';
   const showRemove = n > 1;
 
   return `
@@ -1938,6 +1973,12 @@ function onTranstornoChange(itemId, catId) {
     // limpa radio de status
     document.querySelectorAll(`input[name="status_${itemId}"]`).forEach(r => r.checked = false);
   }
+  // Mostra/esconde o campo de texto livre para itens "Outro"
+  const outroInput = document.getElementById(`outro_trans_${itemId}`);
+  if (outroInput) {
+    outroInput.style.display = chk.checked ? 'block' : 'none';
+    if (!chk.checked) outroInput.value = '';
+  }
   // Atualiza badge de contagem na categoria
   atualizarContadorCategoria(catId);
 }
@@ -1953,7 +1994,7 @@ function atualizarContadorCategoria(catId) {
   else headerEl.classList.remove('has-selection');
 }
 
-function onMedicamentoChange(medId) {
+function onMedicamentoChange(medId, classeId) {
   const chk = document.getElementById(`chk_med_${medId}`);
   const optDiv = document.getElementById(`medopt_${medId}`);
   if (!chk || !optDiv) return;
@@ -1963,6 +2004,31 @@ function onMedicamentoChange(medId) {
     optDiv.classList.remove('selected');
     document.querySelectorAll(`input[name="med_status_${medId}"]`).forEach(r => r.checked = false);
   }
+  // Mostra/esconde campo de texto livre para "Outro"
+  const outroInput = document.getElementById(`outro_med_${medId}`);
+  if (outroInput) {
+    outroInput.style.display = chk.checked ? 'block' : 'none';
+    if (!chk.checked) outroInput.value = '';
+  }
+  // Atualiza contador da classe
+  if (classeId) atualizarContadorClasseMed(classeId);
+}
+
+function atualizarContadorClasseMed(classeId) {
+  const checks = document.querySelectorAll(`input[data-med-classe="${classeId}"]:checked`);
+  const countEl = document.getElementById(`countmed_${classeId}`);
+  const headerEl = document.querySelector(`#accmed_${classeId} .acc-header`);
+  if (!countEl || !headerEl) return;
+  const n = checks.length;
+  countEl.textContent = n;
+  if (n > 0) headerEl.classList.add('has-selection');
+  else headerEl.classList.remove('has-selection');
+}
+
+function toggleAccordionMed(classeId) {
+  const item = document.getElementById(`accmed_${classeId}`);
+  if (!item) return;
+  item.classList.toggle('open');
 }
 
 function atualizarAvisoRisco() {
@@ -2252,8 +2318,10 @@ function coletarDadosFormulario(validar = true) {
 
   // ===== PASSO 2 =====
   if (ANAM_STATE.passoAtual === 2) {
+    const psicoAnt = lerRadio('psicoterapia_anterior');
+    if (psicoAnt !== null) dados.psicoterapia_anterior = psicoAnt;
     const trat = lerInput('f_tratamentos_anteriores');
-    if (trat !== null) dados.tratamentos_anteriores = trat;
+    if (trat !== null) dados.tratamentos_anteriores = psicoAnt === 'Sim' ? trat : '';
     const proc12 = lerRadio('procedimento_medico_12m');
     if (proc12 !== null) dados.procedimento_medico_12m = proc12;
     const procDet = lerInput('f_procedimento_medico_detalhes');
@@ -2274,14 +2342,18 @@ function coletarDadosFormulario(validar = true) {
     const medAtual = [];
     if (medP === 'Sim') {
       document.querySelectorAll('input[data-med-classe]:checked').forEach(chk => {
-        const item = chk.dataset.medItem;
+        let item = chk.dataset.medItem;
         const medId = chk.id.replace('chk_med_', '');
+        // Se é "Outro", concatena o nome digitado
+        const outroInput = document.getElementById(`outro_med_${medId}`);
+        if (outroInput && outroInput.value.trim()) {
+          item = `${item}: ${outroInput.value.trim()}`;
+        }
         const statusRadio = document.querySelector(`input[name="med_status_${medId}"]:checked`);
         if (statusRadio) {
           if (statusRadio.value === 'atual') medAtual.push(item);
           else if (statusRadio.value === 'passado') medPassado.push(item);
         } else {
-          // Marcado mas sem status — assume atual por padrão conservador
           medAtual.push(item);
         }
       });
@@ -2293,6 +2365,13 @@ function coletarDadosFormulario(validar = true) {
     if (medPDet !== null) dados.medicacao_psico_detalhes = medP === 'Sim' ? medPDet : '';
 
     if (validar) {
+      if (!dados.psicoterapia_anterior) {
+        const f = document.querySelector('input[name="psicoterapia_anterior"]')?.closest('.field');
+        if (f) f.classList.add('has-error');
+        temErro = true;
+      } else if (dados.psicoterapia_anterior === 'Sim' && !dados.tratamentos_anteriores) {
+        marcarErro('f_tratamentos_anteriores');
+      }
       if (!dados.procedimento_medico_12m) {
         const f = document.querySelector('input[name="procedimento_medico_12m"]')?.closest('.field');
         if (f) f.classList.add('has-error');
@@ -2343,8 +2422,13 @@ function coletarDadosFormulario(validar = true) {
     const suspeitados = [];
 
     document.querySelectorAll('input[data-cat]:checked').forEach(chk => {
-      const item = chk.dataset.item;
+      let item = chk.dataset.item;
       const itemId = chk.id.replace('chk_', '');
+      // Se é um item "Outro", concatena o texto digitado
+      const outroInput = document.getElementById(`outro_trans_${itemId}`);
+      if (outroInput && outroInput.value.trim()) {
+        item = `${item}: ${outroInput.value.trim()}`;
+      }
       const statusRadio = document.querySelector(`input[name="status_${itemId}"]:checked`);
       if (statusRadio) {
         const status = statusRadio.value;
@@ -2353,7 +2437,6 @@ function coletarDadosFormulario(validar = true) {
         else if (status === 'sem_tratamento') sem_tratamento.push(item);
         else if (status === 'suspeita') suspeitados.push(item);
       } else {
-        // Marcado mas sem status — tratamos como suspeita (conservador)
         suspeitados.push(item);
       }
     });
@@ -2446,29 +2529,16 @@ function coletarDadosFormulario(validar = true) {
     }
 
     if (validar) {
-      // Pessoa 1 é obrigatória
-      if (!dados.pessoa_confianca_1_nome) marcarErro('f_pc_1_nome');
-      if (!dados.pessoa_confianca_1_relacao) marcarErro('f_pc_1_relacao');
-      if (!dados.pessoa_confianca_1_telefone || dados.pessoa_confianca_1_telefone.replace(/\D/g, '').length < 10) {
-        marcarErro('f_pc_1_telefone', 'Telefone inválido');
-      }
-      if (dados.pessoa_confianca_1_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dados.pessoa_confianca_1_email)) {
-        marcarErro('f_pc_1_email', 'E-mail inválido');
-      }
-
-      // Pessoas 2 e 3 — se preencheu algum campo, valida os obrigatórios
-      for (let i = 2; i <= ANAM_STATE.numPessoasConfianca; i++) {
-        const temNome = dados[`pessoa_confianca_${i}_nome`];
-        const temRel = dados[`pessoa_confianca_${i}_relacao`];
-        const temTel = dados[`pessoa_confianca_${i}_telefone`];
-        const temEmail = dados[`pessoa_confianca_${i}_email`];
-        const algoPreenchido = temNome || temRel || temTel || temEmail;
-        if (algoPreenchido) {
-          if (!temNome) marcarErro(`f_pc_${i}_nome`);
-          if (!temRel) marcarErro(`f_pc_${i}_relacao`);
-          if (!temTel || temTel.replace(/\D/g, '').length < 10) marcarErro(`f_pc_${i}_telefone`, 'Telefone inválido');
-          if (temEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(temEmail)) marcarErro(`f_pc_${i}_email`, 'E-mail inválido');
-        }
+      // Todos os blocos visíveis têm nome/relação/telefone obrigatórios
+      for (let i = 1; i <= ANAM_STATE.numPessoasConfianca; i++) {
+        const nome = dados[`pessoa_confianca_${i}_nome`];
+        const rel = dados[`pessoa_confianca_${i}_relacao`];
+        const tel = dados[`pessoa_confianca_${i}_telefone`];
+        const email = dados[`pessoa_confianca_${i}_email`];
+        if (!nome) marcarErro(`f_pc_${i}_nome`);
+        if (!rel) marcarErro(`f_pc_${i}_relacao`);
+        if (!tel || tel.replace(/\D/g, '').length < 10) marcarErro(`f_pc_${i}_telefone`, 'Telefone inválido');
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) marcarErro(`f_pc_${i}_email`, 'E-mail inválido');
       }
     }
   }
@@ -2544,7 +2614,11 @@ function restaurarValoresDoRascunho() {
   }
 
   if (ANAM_STATE.passoAtual === 2) {
-    setInput('f_tratamentos_anteriores', d.tratamentos_anteriores);
+    setRadio('psicoterapia_anterior', d.psicoterapia_anterior);
+    if (d.psicoterapia_anterior === 'Sim') {
+      toggleCondicional('blocoTratAnterior', true);
+      setInput('f_tratamentos_anteriores', d.tratamentos_anteriores);
+    }
     setRadio('procedimento_medico_12m', d.procedimento_medico_12m);
     if (d.procedimento_medico_12m === 'Sim') {
       toggleCondicional('blocoProcedimento', true);
@@ -2561,15 +2635,34 @@ function restaurarValoresDoRascunho() {
       // Restaura medicamentos marcados + status
       const restaurarMed = (listaStr, statusValor) => {
         const items = (listaStr || '').split('; ').filter(Boolean);
-        items.forEach(item => {
+        items.forEach(rawItem => {
+          // Separa "Item: texto livre" se houver
+          let itemNome = rawItem;
+          let outroTexto = '';
+          const idxSep = rawItem.indexOf(': ');
+          if (idxSep > -1) {
+            const possivelBase = rawItem.substring(0, idxSep);
+            if (possivelBase.toLowerCase().startsWith('outro ')) {
+              itemNome = possivelBase;
+              outroTexto = rawItem.substring(idxSep + 2);
+            }
+          }
           document.querySelectorAll('input[data-med-classe]').forEach(chk => {
-            if (chk.dataset.medItem === item) {
+            if (chk.dataset.medItem === itemNome) {
               chk.checked = true;
               const medId = chk.id.replace('chk_med_', '');
               const optDiv = document.getElementById(`medopt_${medId}`);
               if (optDiv) optDiv.classList.add('selected');
               const statusRadio = document.querySelector(`input[name="med_status_${medId}"][value="${statusValor}"]`);
               if (statusRadio) statusRadio.checked = true;
+              if (outroTexto) {
+                const outroInput = document.getElementById(`outro_med_${medId}`);
+                if (outroInput) {
+                  outroInput.value = outroTexto;
+                  outroInput.style.display = 'block';
+                }
+              }
+              atualizarContadorClasseMed(chk.dataset.medClasse);
             }
           });
         });
@@ -2584,16 +2677,34 @@ function restaurarValoresDoRascunho() {
     // Restaura os transtornos marcados, por status
     const restaurarPorStatus = (listaStr, statusValor) => {
       const items = (listaStr || '').split('; ').filter(Boolean);
-      items.forEach(item => {
-        // Encontra o checkbox correspondente pelo data-item
+      items.forEach(rawItem => {
+        // Separa "Item: texto livre" se houver
+        let itemNome = rawItem;
+        let outroTexto = '';
+        const idxSep = rawItem.indexOf(': ');
+        if (idxSep > -1) {
+          const possivelBase = rawItem.substring(0, idxSep);
+          if (possivelBase.toLowerCase().startsWith('outro ')) {
+            itemNome = possivelBase;
+            outroTexto = rawItem.substring(idxSep + 2);
+          }
+        }
         document.querySelectorAll('input[data-cat]').forEach(chk => {
-          if (chk.dataset.item === item) {
+          if (chk.dataset.item === itemNome) {
             chk.checked = true;
             const itemId = chk.id.replace('chk_', '');
             const optDiv = document.getElementById(`opt_${itemId}`);
             if (optDiv) optDiv.classList.add('selected');
             const statusRadio = document.querySelector(`input[name="status_${itemId}"][value="${statusValor}"]`);
             if (statusRadio) statusRadio.checked = true;
+            // Restaura texto livre do "Outro" se houver
+            if (outroTexto) {
+              const outroInput = document.getElementById(`outro_trans_${itemId}`);
+              if (outroInput) {
+                outroInput.value = outroTexto;
+                outroInput.style.display = 'block';
+              }
+            }
             atualizarContadorCategoria(chk.dataset.cat);
           }
         });
@@ -2731,7 +2842,8 @@ function renderRevisao(dados) {
 
   // Seção 2
   html += '<div class="review-section"><h4>2. Histórico de Tratamentos</h4>';
-  html += linha('Tratamentos anteriores', dados.tratamentos_anteriores);
+  html += linha('Psicoterapia / psiquiatria anterior?', dados.psicoterapia_anterior);
+  if (dados.psicoterapia_anterior === 'Sim') html += linha('Detalhes', dados.tratamentos_anteriores);
   html += linha('Procedimento médico (12m)', dados.procedimento_medico_12m);
   if (dados.procedimento_medico_12m === 'Sim') html += linha('Detalhes do procedimento', dados.procedimento_medico_detalhes);
   html += linha('Medicação não psicotrópica', dados.medicacao_nao_psico_continua);
@@ -2945,7 +3057,8 @@ function renderConsulta(dados, recemEnviado) {
 
   // Seção 2
   html += '<div class="review-section"><h4>2. Histórico de Tratamentos</h4>';
-  html += linha('Tratamentos anteriores', dados.tratamentos_anteriores);
+  html += linha('Psicoterapia / psiquiatria anterior?', dados.psicoterapia_anterior);
+  if (dados.psicoterapia_anterior === 'Sim') html += linha('Detalhes', dados.tratamentos_anteriores);
   html += linha('Procedimento médico (12m)', dados.procedimento_medico_12m);
   if (dados.procedimento_medico_12m === 'Sim') html += linha('Detalhes do procedimento', dados.procedimento_medico_detalhes);
   html += linha('Medicação não psicotrópica', dados.medicacao_nao_psico_continua);
