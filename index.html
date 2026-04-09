@@ -505,6 +505,41 @@ body{
 .risk-warning .emergency-list{margin-top:8px;}
 .risk-warning .emergency-list div{margin:3px 0;}
 
+/* ===== Medicamentos psicotrópicos (Passo 2) ===== */
+.med-classe{
+  margin:12px 0;
+  border:1px solid var(--gray-lt);
+  border-radius:var(--rs);
+  overflow:hidden;
+  background:var(--w);
+}
+.med-classe-titulo{
+  background:var(--blue);
+  color:var(--w);
+  padding:10px 14px;
+  font-family:'Quicksand',sans-serif;
+  font-size:13px;
+  font-weight:700;
+}
+.med-classe-body{
+  padding:8px 14px 10px;
+}
+.med-item{
+  padding:6px 0;
+  border-bottom:1px dashed var(--gray-lt);
+}
+.med-item:last-child{border-bottom:none;}
+.med-item-status{
+  margin:8px 0 4px 28px;
+  padding:8px 12px;
+  background:var(--blue-lt);
+  border-left:3px solid var(--blue);
+  border-radius:0 var(--rs) var(--rs) 0;
+  font-size:12px;
+  display:none;
+}
+.med-item.selected .med-item-status{display:block;animation:fadeIn .2s ease;}
+
 /* ===== Pessoa de confiança - blocos múltiplos ===== */
 .pc-block{
   background:var(--gray-bg);
@@ -817,6 +852,11 @@ body{
 // URL do Google Apps Script publicado como Web App
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx7kHrVq7KizCWCVeEhTpsBFcU36Vc1zUBWF1AuJxdPD3iO5K4LIPuZs2vXXr1OK94eAg/exec';
 const VERSAO_FRONT = 'v2';
+// Status de uso de medicação psicotrópica
+const STATUS_MEDICACAO = [
+  { valor: 'passado', label: 'Usei no passado' },
+  { valor: 'atual', label: 'Faço uso atualmente' },
+];
 
 
 /* ============================================================
@@ -931,6 +971,78 @@ const COMPLICACOES_CLINICAS = [
   'Fibromialgia',
   'Doença autoimune',
   'Câncer (atual ou em remissão)',
+];
+
+// Classes de medicamentos psicotrópicos (v2.1)
+// Cada classe contém uma lista de medicamentos com princípio ativo + nome comercial
+const CLASSES_MEDICAMENTOS = [
+  { id: 'antidepressivos', nome: 'Antidepressivos', itens: [
+    'Fluoxetina (Prozac)',
+    'Sertralina (Zoloft)',
+    'Escitalopram (Lexapro)',
+    'Citalopram (Cipramil)',
+    'Paroxetina (Aropax)',
+    'Venlafaxina (Efexor)',
+    'Desvenlafaxina (Pristiq)',
+    'Duloxetina (Cymbalta)',
+    'Bupropiona (Wellbutrin, Zetron)',
+    'Mirtazapina (Remeron)',
+    'Trazodona (Donaren)',
+    'Amitriptilina (Tryptanol)',
+    'Nortriptilina (Pamelor)',
+    'Clomipramina (Anafranil)',
+    'Vortioxetina (Brintellix, Virtuoso)',
+    'Agomelatina (Valdoxan)',
+    'Outro antidepressivo',
+  ]},
+  { id: 'ansioliticos', nome: 'Ansiolíticos', itens: [
+    'Clonazepam (Rivotril)',
+    'Alprazolam (Frontal)',
+    'Diazepam (Valium)',
+    'Lorazepam (Lorax)',
+    'Bromazepam (Lexotan)',
+    'Buspirona (Buspar)',
+    'Outro ansiolítico',
+  ]},
+  { id: 'estabilizadores', nome: 'Estabilizadores de humor', itens: [
+    'Carbonato de Lítio (Carbolitium)',
+    'Ácido Valproico (Depakene)',
+    'Divalproato de Sódio (Depakote)',
+    'Lamotrigina (Lamictal)',
+    'Carbamazepina (Tegretol)',
+    'Topiramato (Topamax)',
+    'Outro estabilizador',
+  ]},
+  { id: 'antipsicoticos', nome: 'Antipsicóticos', itens: [
+    'Risperidona (Risperdal)',
+    'Olanzapina (Zyprexa)',
+    'Quetiapina (Seroquel)',
+    'Aripiprazol (Abilify)',
+    'Ziprasidona (Geodon)',
+    'Clozapina (Leponex)',
+    'Haloperidol (Haldol)',
+    'Clorpromazina (Amplictil)',
+    'Outro antipsicótico',
+  ]},
+  { id: 'tdah', nome: 'Psicoestimulantes / Medicamentos para TDAH', itens: [
+    'Metilfenidato (Ritalina, Concerta)',
+    'Lisdexanfetamina (Venvanse)',
+    'Atomoxetina (Atentah)',
+    'Outro medicamento para TDAH',
+  ]},
+  { id: 'hipnoticos', nome: 'Hipnóticos / indutores do sono', itens: [
+    'Zolpidem (Patz, Stilnox)',
+    'Eszopiclona (Lunesta)',
+    'Zopiclona (Imovane)',
+    'Outro hipnótico',
+  ]},
+  { id: 'outros_psico', nome: 'Outros psicotrópicos', itens: [
+    'Modafinila (Stavigile)',
+    'Naltrexona (Revia)',
+    'Dissulfiram (Antabuse)',
+    'Memantina (Ebix)',
+    'Outro psicotrópico',
+  ]},
 ];
 
 // Estados brasileiros (siglas)
@@ -1249,7 +1361,6 @@ function renderPasso1() {
       <div class="field">
         <label>RG <span class="req">*</span></label>
         <input type="text" id="f_rg" maxlength="20" placeholder="00.000.000-0">
-        <div class="field-hint">Máscara padrão SP. Pode digitar em outro formato se preferir.</div>
         <div class="field-error">Campo obrigatório</div>
       </div>
       <div class="field">
@@ -1312,24 +1423,40 @@ function renderPasso1() {
       </div>
       <div class="field-row-2">
         <div class="field">
-          <label>Estado <span class="req">*</span></label>
+          <label>Estado</label>
           <select id="f_estado" disabled>
             <option value="">UF</option>
             ${ESTADOS_BR.map(uf => `<option value="${uf}">${uf}</option>`).join('')}
           </select>
-          <div class="field-error">Obrigatório</div>
+          <div class="field-hint">Preenchido automaticamente pelo CEP</div>
         </div>
         <div class="field">
-          <label>Cidade <span class="req">*</span></label>
+          <label>Cidade</label>
           <input type="text" id="f_cidade" disabled>
-          <div class="field-error">Obrigatório</div>
+          <div class="field-hint">Preenchido automaticamente pelo CEP</div>
         </div>
       </div>
       <div class="field">
-        <label>Endereço <span class="req">*</span></label>
-        <input type="text" id="f_endereco" placeholder="Rua, número, complemento, bairro">
-        <div class="field-hint">Complete com número e complemento após o CEP preencher os demais campos.</div>
-        <div class="field-error">Obrigatório</div>
+        <label>Logradouro (rua, avenida, etc.)</label>
+        <input type="text" id="f_endereco_logradouro" disabled>
+        <div class="field-hint">Preenchido automaticamente pelo CEP</div>
+      </div>
+      <div class="field">
+        <label>Bairro</label>
+        <input type="text" id="f_endereco_bairro" disabled>
+        <div class="field-hint">Preenchido automaticamente pelo CEP</div>
+      </div>
+      <div class="field-row-2">
+        <div class="field">
+          <label>Número <span class="req">*</span></label>
+          <input type="text" id="f_endereco_numero" placeholder="Ex: 123" inputmode="numeric">
+          <div class="field-error">Campo obrigatório</div>
+        </div>
+        <div class="field">
+          <label>Complemento</label>
+          <input type="text" id="f_endereco_complemento" placeholder="Ex: apto 42, bloco B">
+          <div class="field-hint">Opcional — se houver</div>
+        </div>
       </div>
     </div>
 
@@ -1347,8 +1474,8 @@ function renderPasso1() {
         </div>
       </div>
       <div class="field">
-        <label>Endereço <span class="req">*</span></label>
-        <input type="text" id="f_endereco_ext">
+        <label>Endereço completo <span class="req">*</span></label>
+        <input type="text" id="f_endereco_ext" placeholder="Rua, número, complemento, bairro">
         <div class="field-error">Obrigatório</div>
       </div>
     </div>
@@ -1358,7 +1485,9 @@ function renderPasso1() {
 
 
 /* ============================================================
-   PASSO 2 — HISTÓRICO DE TRATAMENTOS
+   PASSO 2 — HISTÓRICO DE TRATAMENTOS (reformulado v2.1)
+   Ordem: tratamentos anteriores → procedimento → medicação não
+   psicotrópica → medicação psicotrópica (com classes e exemplos)
    ============================================================ */
 function renderPasso2() {
   let html = '';
@@ -1390,19 +1519,78 @@ function renderPasso2() {
     </div>
 
     <div class="field">
-      <label>Fez uso de medicação nos últimos 12 meses? <span class="req">*</span></label>
+      <label>Faz uso contínuo de alguma medicação <strong>não psicotrópica</strong>? <span class="req">*</span></label>
       <div class="yesno">
-        <label><input type="radio" name="medicacao_12m" value="Não" onchange="toggleCondicional('blocoMedicacao', false)"><span>Não</span></label>
-        <label><input type="radio" name="medicacao_12m" value="Sim" onchange="toggleCondicional('blocoMedicacao', true)"><span>Sim</span></label>
+        <label><input type="radio" name="medicacao_nao_psico_continua" value="Não" onchange="toggleCondicional('blocoMedNaoPsico', false)"><span>Não</span></label>
+        <label><input type="radio" name="medicacao_nao_psico_continua" value="Sim" onchange="toggleCondicional('blocoMedNaoPsico', true)"><span>Sim</span></label>
+      </div>
+      <div class="field-hint">Exemplos: anti-hipertensivos, estatinas, hormônios, antidiabéticos, anticoagulantes, etc.</div>
+      <div class="field-error">Selecione uma opção</div>
+    </div>
+
+    <div id="blocoMedNaoPsico" class="conditional-block">
+      <div class="field">
+        <label>Descreva as medicações não psicotrópicas em uso contínuo <span class="req">*</span></label>
+        <textarea id="f_medicacao_nao_psico_detalhes" placeholder="Nome, dosagem e frequência, se souber..."></textarea>
+        <div class="field-error">Descreva as medicações</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Faz ou já fez uso de alguma medicação <strong>psicotrópica</strong>? <span class="req">*</span></label>
+      <div class="yesno">
+        <label><input type="radio" name="medicacao_psico" value="Não" onchange="toggleCondicional('blocoMedPsico', false)"><span>Não</span></label>
+        <label><input type="radio" name="medicacao_psico" value="Sim" onchange="toggleCondicional('blocoMedPsico', true)"><span>Sim</span></label>
       </div>
       <div class="field-error">Selecione uma opção</div>
     </div>
 
-    <div id="blocoMedicacao" class="conditional-block">
-      <div class="field">
-        <label>Quais medicações? <span class="req">*</span></label>
-        <textarea id="f_medicacao_detalhes" placeholder="Medicação, miligramas, períodos e quantidade..."></textarea>
-        <div class="field-error">Descreva as medicações</div>
+    <div id="blocoMedPsico" class="conditional-block">
+      <div class="field-hint" style="margin-bottom:10px;line-height:1.6;">
+        Marque as medicações que você <strong>usa atualmente</strong> ou <strong>usou no passado</strong>.
+        As classes estão organizadas para facilitar — você só precisa marcar o nome do medicamento.
+      </div>
+  `;
+
+  // Renderiza cada classe como um bloco aberto (estilo accordion aberto)
+  CLASSES_MEDICAMENTOS.forEach(classe => {
+    html += `
+      <div class="med-classe" id="medclasse_${classe.id}">
+        <div class="med-classe-titulo">${classe.nome}</div>
+        <div class="med-classe-body">
+    `;
+    classe.itens.forEach((med, idx) => {
+      const medId = `${classe.id}_${idx}`;
+      html += `
+        <div class="med-item" id="medopt_${medId}">
+          <label class="acc-item-checkbox-label">
+            <input type="checkbox"
+                   data-med-classe="${classe.id}"
+                   data-med-item="${escapeAttr(med)}"
+                   id="chk_med_${medId}"
+                   onchange="onMedicamentoChange('${medId}')">
+            <span>${escapeHtml(med)}</span>
+          </label>
+          <div class="med-item-status" id="med_status_${medId}">
+            <span class="acc-item-status-label">Situação:</span>
+            ${STATUS_MEDICACAO.map(s => `
+              <label class="acc-item-status-option">
+                <input type="radio" name="med_status_${medId}" value="${s.valor}">
+                <span>${s.label}</span>
+              </label>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    });
+    html += '</div></div>';
+  });
+
+  html += `
+      <div class="field" style="margin-top:14px;">
+        <label>Observações e detalhes das medicações</label>
+        <textarea id="f_medicacao_psico_detalhes" placeholder="Descreva dosagens, frequências, períodos de uso, ou medicamentos marcados como 'Outro'..."></textarea>
+        <div class="field-hint">Opcional — útil para seu terapeuta acompanhar possíveis interações e efeitos.</div>
       </div>
     </div>
   `;
@@ -1416,10 +1604,10 @@ function renderPasso2() {
 function renderPasso3() {
   let html = '';
   html += '<div class="anam-step-title">Passo 3 de 4 — Histórico de Saúde</div>';
-  html += '<div class="anam-step-sub">Diagnósticos psicológicos e condições clínicas</div>';
+  html += '<div class="anam-step-sub">Diagnósticos psiquiátricos e condições clínicas</div>';
 
-  // === TRANSTORNOS PSICOLÓGICOS ===
-  html += '<div class="anam-section-title">Transtornos psicológicos e psiquiátricos</div>';
+  // === TRANSTORNOS MENTAIS ===
+  html += '<div class="anam-section-title">Transtornos mentais</div>';
   html += `<div class="field-hint" style="margin-bottom:10px;line-height:1.6;">
     As categorias abaixo listam os principais transtornos. Clique em cada categoria para expandi-la.
     <strong>Marque apenas os itens que se aplicam a você</strong> — se nenhum se aplica, é só deixar tudo fechado.
@@ -1479,7 +1667,7 @@ function renderPasso3() {
   // Familiar com transtorno
   html += `
     <div class="field" style="margin-top:16px;">
-      <label>Algum familiar foi diagnosticado com algum transtorno psicológico/psiquiátrico? <span class="req">*</span></label>
+      <label>Algum familiar foi diagnosticado com algum transtorno mental? <span class="req">*</span></label>
       <div class="yesno">
         <label><input type="radio" name="familiar_transtorno" value="Não" onchange="toggleCondicional('blocoFamTranstorno', false)"><span>Não</span></label>
         <label><input type="radio" name="familiar_transtorno" value="Sim" onchange="toggleCondicional('blocoFamTranstorno', true)"><span>Sim</span></label>
@@ -1765,6 +1953,18 @@ function atualizarContadorCategoria(catId) {
   else headerEl.classList.remove('has-selection');
 }
 
+function onMedicamentoChange(medId) {
+  const chk = document.getElementById(`chk_med_${medId}`);
+  const optDiv = document.getElementById(`medopt_${medId}`);
+  if (!chk || !optDiv) return;
+  if (chk.checked) {
+    optDiv.classList.add('selected');
+  } else {
+    optDiv.classList.remove('selected');
+    document.querySelectorAll(`input[name="med_status_${medId}"]`).forEach(r => r.checked = false);
+  }
+}
+
 function atualizarAvisoRisco() {
   const marcados = document.querySelectorAll('input[data-risco="1"]:checked');
   const warning = document.getElementById('riskWarning');
@@ -1888,7 +2088,9 @@ async function buscarCep(cepLimpo) {
   const statusEl = document.getElementById('cepStatus');
   const estadoEl = document.getElementById('f_estado');
   const cidadeEl = document.getElementById('f_cidade');
-  const enderecoEl = document.getElementById('f_endereco');
+  const logradouroEl = document.getElementById('f_endereco_logradouro');
+  const bairroEl = document.getElementById('f_endereco_bairro');
+  const numeroEl = document.getElementById('f_endereco_numero');
 
   statusEl.textContent = 'Buscando endereço...';
   statusEl.className = 'cep-status visible';
@@ -1898,44 +2100,31 @@ async function buscarCep(cepLimpo) {
     const data = await resp.json();
 
     if (data.erro) {
-      statusEl.textContent = 'CEP não encontrado. Preencha manualmente.';
+      statusEl.textContent = 'CEP não encontrado. Verifique o número digitado.';
       statusEl.className = 'cep-status visible error';
-      // Libera campos para edição manual
-      estadoEl.disabled = false;
-      cidadeEl.disabled = false;
       return;
     }
 
-    // Preenche campos
     if (data.uf) estadoEl.value = data.uf;
     if (data.localidade) cidadeEl.value = data.localidade;
+    if (data.logradouro) logradouroEl.value = data.logradouro;
+    if (data.bairro) bairroEl.value = data.bairro;
 
-    // Endereço: combina logradouro + bairro se existirem
-    let enderecoBase = '';
-    if (data.logradouro) enderecoBase += data.logradouro;
-    if (data.bairro) enderecoBase += (enderecoBase ? ', ' : '') + data.bairro;
-
-    // Se o campo endereço está vazio, preenche; senão preserva
-    if (enderecoBase && !enderecoEl.value) {
-      enderecoEl.value = enderecoBase + ', ';
-      enderecoEl.focus();
-      // Posiciona cursor no final
-      const len = enderecoEl.value.length;
-      enderecoEl.setSelectionRange(len, len);
-    }
-
-    // Bloqueia estado/cidade (vieram do CEP)
+    // Campos bloqueados (vêm do CEP)
     estadoEl.disabled = true;
     cidadeEl.disabled = true;
+    logradouroEl.disabled = true;
+    bairroEl.disabled = true;
 
-    statusEl.textContent = '✓ Endereço encontrado. Complete com número e complemento.';
+    statusEl.textContent = '✓ Endereço encontrado. Agora preencha o número.';
     statusEl.className = 'cep-status visible success';
+
+    // Foca no campo de número automaticamente
+    if (numeroEl) numeroEl.focus();
   } catch (err) {
     console.warn('Erro ao buscar CEP:', err);
-    statusEl.textContent = 'Erro ao buscar CEP. Preencha manualmente.';
+    statusEl.textContent = 'Erro ao buscar CEP. Verifique sua conexão e tente novamente.';
     statusEl.className = 'cep-status visible error';
-    estadoEl.disabled = false;
-    cidadeEl.disabled = false;
   }
 }
 
@@ -2005,17 +2194,25 @@ function coletarDadosFormulario(validar = true) {
     if (rfb === 'Sim') {
       dados.pais = lerInput('f_pais') || '';
       dados.cep_exterior = lerInput('f_cep_exterior') || '';
-      dados.endereco = lerInput('f_endereco_ext') || '';
+      dados.endereco_exterior = lerInput('f_endereco_ext') || '';
       dados.estado = '';
       dados.cidade = '';
       dados.cep = '';
+      dados.endereco_logradouro = '';
+      dados.endereco_numero = '';
+      dados.endereco_complemento = '';
+      dados.endereco_bairro = '';
     } else if (rfb === 'Não') {
       dados.estado = lerInput('f_estado') || '';
       dados.cidade = lerInput('f_cidade') || '';
       dados.cep = lerInput('f_cep') || '';
-      dados.endereco = lerInput('f_endereco') || '';
+      dados.endereco_logradouro = lerInput('f_endereco_logradouro') || '';
+      dados.endereco_numero = lerInput('f_endereco_numero') || '';
+      dados.endereco_complemento = lerInput('f_endereco_complemento') || '';
+      dados.endereco_bairro = lerInput('f_endereco_bairro') || '';
       dados.pais = '';
       dados.cep_exterior = '';
+      dados.endereco_exterior = '';
     }
 
     if (validar) {
@@ -2039,12 +2236,16 @@ function coletarDadosFormulario(validar = true) {
       } else if (dados.reside_fora_brasil === 'Sim') {
         if (!dados.pais) marcarErro('f_pais');
         if (!dados.cep_exterior) marcarErro('f_cep_exterior');
-        if (!dados.endereco) marcarErro('f_endereco_ext');
+        if (!dados.endereco_exterior) marcarErro('f_endereco_ext');
       } else {
-        if (!dados.estado) marcarErro('f_estado');
-        if (!dados.cidade) marcarErro('f_cidade');
         if (!dados.cep || dados.cep.replace(/\D/g, '').length !== 8) marcarErro('f_cep', 'CEP inválido');
-        if (!dados.endereco) marcarErro('f_endereco');
+        if (!dados.endereco_numero) marcarErro('f_endereco_numero');
+        // estado/cidade/logradouro/bairro vêm do ViaCEP — se o paciente avançou com
+        // CEP válido mas esses campos vazios, significa que o ViaCEP falhou.
+        // Nesse caso, alertamos genericamente.
+        if (dados.cep && dados.cep.replace(/\D/g, '').length === 8 && !dados.endereco_logradouro) {
+          marcarErro('f_cep', 'Não foi possível buscar o endereço. Tente outro CEP.');
+        }
       }
     }
   }
@@ -2057,10 +2258,39 @@ function coletarDadosFormulario(validar = true) {
     if (proc12 !== null) dados.procedimento_medico_12m = proc12;
     const procDet = lerInput('f_procedimento_medico_detalhes');
     if (procDet !== null) dados.procedimento_medico_detalhes = proc12 === 'Sim' ? procDet : '';
-    const med12 = lerRadio('medicacao_12m');
-    if (med12 !== null) dados.medicacao_12m = med12;
-    const medDet = lerInput('f_medicacao_detalhes');
-    if (medDet !== null) dados.medicacao_detalhes = med12 === 'Sim' ? medDet : '';
+
+    // Medicação não psicotrópica
+    const medNP = lerRadio('medicacao_nao_psico_continua');
+    if (medNP !== null) dados.medicacao_nao_psico_continua = medNP;
+    const medNPDet = lerInput('f_medicacao_nao_psico_detalhes');
+    if (medNPDet !== null) dados.medicacao_nao_psico_detalhes = medNP === 'Sim' ? medNPDet : '';
+
+    // Medicação psicotrópica
+    const medP = lerRadio('medicacao_psico');
+    if (medP !== null) dados.medicacao_psico = medP;
+
+    // Coleta medicamentos marcados + status (só se medP === 'Sim')
+    const medPassado = [];
+    const medAtual = [];
+    if (medP === 'Sim') {
+      document.querySelectorAll('input[data-med-classe]:checked').forEach(chk => {
+        const item = chk.dataset.medItem;
+        const medId = chk.id.replace('chk_med_', '');
+        const statusRadio = document.querySelector(`input[name="med_status_${medId}"]:checked`);
+        if (statusRadio) {
+          if (statusRadio.value === 'atual') medAtual.push(item);
+          else if (statusRadio.value === 'passado') medPassado.push(item);
+        } else {
+          // Marcado mas sem status — assume atual por padrão conservador
+          medAtual.push(item);
+        }
+      });
+    }
+    dados.medicacao_psico_passado = medPassado.join('; ');
+    dados.medicacao_psico_atual = medAtual.join('; ');
+
+    const medPDet = lerInput('f_medicacao_psico_detalhes');
+    if (medPDet !== null) dados.medicacao_psico_detalhes = medP === 'Sim' ? medPDet : '';
 
     if (validar) {
       if (!dados.procedimento_medico_12m) {
@@ -2070,12 +2300,36 @@ function coletarDadosFormulario(validar = true) {
       } else if (dados.procedimento_medico_12m === 'Sim' && !dados.procedimento_medico_detalhes) {
         marcarErro('f_procedimento_medico_detalhes');
       }
-      if (!dados.medicacao_12m) {
-        const f = document.querySelector('input[name="medicacao_12m"]')?.closest('.field');
+      if (!dados.medicacao_nao_psico_continua) {
+        const f = document.querySelector('input[name="medicacao_nao_psico_continua"]')?.closest('.field');
         if (f) f.classList.add('has-error');
         temErro = true;
-      } else if (dados.medicacao_12m === 'Sim' && !dados.medicacao_detalhes) {
-        marcarErro('f_medicacao_detalhes');
+      } else if (dados.medicacao_nao_psico_continua === 'Sim' && !dados.medicacao_nao_psico_detalhes) {
+        marcarErro('f_medicacao_nao_psico_detalhes');
+      }
+      if (!dados.medicacao_psico) {
+        const f = document.querySelector('input[name="medicacao_psico"]')?.closest('.field');
+        if (f) f.classList.add('has-error');
+        temErro = true;
+      } else if (dados.medicacao_psico === 'Sim') {
+        // Valida que pelo menos um medicamento foi marcado e tem status
+        const marcados = document.querySelectorAll('input[data-med-classe]:checked');
+        if (marcados.length === 0) {
+          alert('Você indicou uso de medicação psicotrópica, mas não marcou nenhum item da lista. Por favor, marque pelo menos um medicamento ou, se não for nenhum da lista, marque "Outro" na classe apropriada e descreva no campo de observações.');
+          temErro = true;
+        } else {
+          // Valida que todos os marcados têm status
+          let faltaStatus = false;
+          marcados.forEach(chk => {
+            const medId = chk.id.replace('chk_med_', '');
+            const statusRadio = document.querySelector(`input[name="med_status_${medId}"]:checked`);
+            if (!statusRadio) faltaStatus = true;
+          });
+          if (faltaStatus) {
+            alert('Você marcou um ou mais medicamentos mas não indicou a situação de uso. Por favor, escolha "Usei no passado" ou "Faço uso atualmente" para cada item marcado.');
+            temErro = true;
+          }
+        }
       }
     }
   }
@@ -2262,11 +2516,11 @@ function restaurarValoresDoRascunho() {
       toggleEnderecoExterior(true);
       setInput('f_pais', d.pais);
       setInput('f_cep_exterior', d.cep_exterior);
-      setInput('f_endereco_ext', d.endereco);
+      setInput('f_endereco_ext', d.endereco_exterior);
     } else if (d.reside_fora_brasil === 'Não') {
       toggleEnderecoExterior(false);
       setInput('f_cep', d.cep);
-      // Se tem CEP, estado e cidade vêm dele — então preenchemos e deixamos bloqueados
+      // Se tem dados do ViaCEP, restaura e mantém bloqueados
       if (d.estado) {
         const estEl = document.getElementById('f_estado');
         if (estEl) estEl.value = d.estado;
@@ -2275,7 +2529,16 @@ function restaurarValoresDoRascunho() {
         const cidEl = document.getElementById('f_cidade');
         if (cidEl) cidEl.value = d.cidade;
       }
-      setInput('f_endereco', d.endereco);
+      if (d.endereco_logradouro) {
+        const logEl = document.getElementById('f_endereco_logradouro');
+        if (logEl) logEl.value = d.endereco_logradouro;
+      }
+      if (d.endereco_bairro) {
+        const baiEl = document.getElementById('f_endereco_bairro');
+        if (baiEl) baiEl.value = d.endereco_bairro;
+      }
+      setInput('f_endereco_numero', d.endereco_numero);
+      setInput('f_endereco_complemento', d.endereco_complemento);
     }
     if (d.data_nascimento) atualizarIdade();
   }
@@ -2287,10 +2550,33 @@ function restaurarValoresDoRascunho() {
       toggleCondicional('blocoProcedimento', true);
       setInput('f_procedimento_medico_detalhes', d.procedimento_medico_detalhes);
     }
-    setRadio('medicacao_12m', d.medicacao_12m);
-    if (d.medicacao_12m === 'Sim') {
-      toggleCondicional('blocoMedicacao', true);
-      setInput('f_medicacao_detalhes', d.medicacao_detalhes);
+    setRadio('medicacao_nao_psico_continua', d.medicacao_nao_psico_continua);
+    if (d.medicacao_nao_psico_continua === 'Sim') {
+      toggleCondicional('blocoMedNaoPsico', true);
+      setInput('f_medicacao_nao_psico_detalhes', d.medicacao_nao_psico_detalhes);
+    }
+    setRadio('medicacao_psico', d.medicacao_psico);
+    if (d.medicacao_psico === 'Sim') {
+      toggleCondicional('blocoMedPsico', true);
+      // Restaura medicamentos marcados + status
+      const restaurarMed = (listaStr, statusValor) => {
+        const items = (listaStr || '').split('; ').filter(Boolean);
+        items.forEach(item => {
+          document.querySelectorAll('input[data-med-classe]').forEach(chk => {
+            if (chk.dataset.medItem === item) {
+              chk.checked = true;
+              const medId = chk.id.replace('chk_med_', '');
+              const optDiv = document.getElementById(`medopt_${medId}`);
+              if (optDiv) optDiv.classList.add('selected');
+              const statusRadio = document.querySelector(`input[name="med_status_${medId}"][value="${statusValor}"]`);
+              if (statusRadio) statusRadio.checked = true;
+            }
+          });
+        });
+      };
+      restaurarMed(d.medicacao_psico_atual, 'atual');
+      restaurarMed(d.medicacao_psico_passado, 'passado');
+      setInput('f_medicacao_psico_detalhes', d.medicacao_psico_detalhes);
     }
   }
 
@@ -2431,12 +2717,15 @@ function renderRevisao(dados) {
   if (dados.reside_fora_brasil === 'Sim') {
     html += linha('País', dados.pais);
     html += linha('ZIP Code', dados.cep_exterior);
-    html += linha('Endereço', dados.endereco);
+    html += linha('Endereço', dados.endereco_exterior);
   } else {
+    html += linha('CEP', dados.cep);
     html += linha('Estado', dados.estado);
     html += linha('Cidade', dados.cidade);
-    html += linha('CEP', dados.cep);
-    html += linha('Endereço', dados.endereco);
+    html += linha('Logradouro', dados.endereco_logradouro);
+    html += linha('Número', dados.endereco_numero);
+    html += linha('Complemento', dados.endereco_complemento);
+    html += linha('Bairro', dados.endereco_bairro);
   }
   html += '</div>';
 
@@ -2444,9 +2733,15 @@ function renderRevisao(dados) {
   html += '<div class="review-section"><h4>2. Histórico de Tratamentos</h4>';
   html += linha('Tratamentos anteriores', dados.tratamentos_anteriores);
   html += linha('Procedimento médico (12m)', dados.procedimento_medico_12m);
-  if (dados.procedimento_medico_12m === 'Sim') html += linha('Detalhes', dados.procedimento_medico_detalhes);
-  html += linha('Medicação (12m)', dados.medicacao_12m);
-  if (dados.medicacao_12m === 'Sim') html += linha('Detalhes', dados.medicacao_detalhes);
+  if (dados.procedimento_medico_12m === 'Sim') html += linha('Detalhes do procedimento', dados.procedimento_medico_detalhes);
+  html += linha('Medicação não psicotrópica', dados.medicacao_nao_psico_continua);
+  if (dados.medicacao_nao_psico_continua === 'Sim') html += linha('Detalhes (não psico)', dados.medicacao_nao_psico_detalhes);
+  html += linha('Medicação psicotrópica', dados.medicacao_psico);
+  if (dados.medicacao_psico === 'Sim') {
+    html += linha('Em uso atual', dados.medicacao_psico_atual);
+    html += linha('Uso no passado', dados.medicacao_psico_passado);
+    html += linha('Observações', dados.medicacao_psico_detalhes);
+  }
   html += '</div>';
 
   // Seção 3
@@ -2636,12 +2931,15 @@ function renderConsulta(dados, recemEnviado) {
   if (dados.reside_fora_brasil === 'Sim') {
     html += linha('País', dados.pais);
     html += linha('ZIP Code', dados.cep_exterior);
-    html += linha('Endereço', dados.endereco);
+    html += linha('Endereço', dados.endereco_exterior);
   } else {
+    html += linha('CEP', dados.cep);
     html += linha('Estado', dados.estado);
     html += linha('Cidade', dados.cidade);
-    html += linha('CEP', dados.cep);
-    html += linha('Endereço', dados.endereco);
+    html += linha('Logradouro', dados.endereco_logradouro);
+    html += linha('Número', dados.endereco_numero);
+    html += linha('Complemento', dados.endereco_complemento);
+    html += linha('Bairro', dados.endereco_bairro);
   }
   html += '</div>';
 
@@ -2649,9 +2947,15 @@ function renderConsulta(dados, recemEnviado) {
   html += '<div class="review-section"><h4>2. Histórico de Tratamentos</h4>';
   html += linha('Tratamentos anteriores', dados.tratamentos_anteriores);
   html += linha('Procedimento médico (12m)', dados.procedimento_medico_12m);
-  if (dados.procedimento_medico_12m === 'Sim') html += linha('Detalhes', dados.procedimento_medico_detalhes);
-  html += linha('Medicação (12m)', dados.medicacao_12m);
-  if (dados.medicacao_12m === 'Sim') html += linha('Detalhes', dados.medicacao_detalhes);
+  if (dados.procedimento_medico_12m === 'Sim') html += linha('Detalhes do procedimento', dados.procedimento_medico_detalhes);
+  html += linha('Medicação não psicotrópica', dados.medicacao_nao_psico_continua);
+  if (dados.medicacao_nao_psico_continua === 'Sim') html += linha('Detalhes (não psico)', dados.medicacao_nao_psico_detalhes);
+  html += linha('Medicação psicotrópica', dados.medicacao_psico);
+  if (dados.medicacao_psico === 'Sim') {
+    html += linha('Em uso atual', dados.medicacao_psico_atual);
+    html += linha('Uso no passado', dados.medicacao_psico_passado);
+    html += linha('Observações', dados.medicacao_psico_detalhes);
+  }
   html += '</div>';
 
   // Seção 3
