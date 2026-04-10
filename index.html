@@ -8127,9 +8127,13 @@ function p5ComoUsarLido() {
 }
 
 // Decide se os cadeados devem estar ativos agora.
-// Regra: (primeira vez no Auto) E (ainda não leu o Como Usar nesta sessão)
+// Regra: se já leu o Como Usar nesta sessão, nunca bloqueia.
+// Se ainda não verificou no servidor, assume bloqueio (default seguro).
+// Se já verificou: bloqueia se primeiraVez é true.
 function p5DeveBloquear() {
-  return P5_STATE.primeiraVez === true && !p5ComoUsarLido();
+  if (p5ComoUsarLido()) return false;
+  if (!P5_STATE.verificado) return true; // default seguro até confirmar
+  return P5_STATE.primeiraVez === true;
 }
 
 // Aplica/remove os cadeados visuais nos 3 cards bloqueáveis.
