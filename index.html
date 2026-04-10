@@ -1052,6 +1052,102 @@ body{
 .histc-empty{text-align:center;padding:40px 20px;background:var(--w);border-radius:var(--r);border:2px dashed var(--gray-lt);}
 .histc-empty-icon{font-size:42px;display:block;margin-bottom:10px;opacity:.5;}
 .histc-empty-text{font-size:13px;color:var(--txt-l);line-height:1.6;}
+
+/* ============================================================
+   PACOTE 7 — Meus Registros expandidos + lupa
+   ============================================================ */
+.hist-btn-lupa{
+  width:38px;height:38px;border-radius:10px;
+  border:2px solid #E1E7EB;background:#F7F9FB;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;cursor:pointer;transition:all 0.15s;flex-shrink:0;
+}
+.hist-btn-lupa:hover{background:var(--blue-lt);border-color:var(--blue);transform:scale(1.05);}
+
+.hist-sec{margin-bottom:10px;}
+.hist-sec-head{
+  display:flex;align-items:center;gap:8px;
+  margin-bottom:6px;padding:6px 10px;border-radius:8px;
+}
+.hist-sec-head.coral{background:var(--coral-bg,#FDF0EE);}
+.hist-sec-head.green{background:var(--green-bg,#EAF7EF);}
+.hist-sec-head.amber{background:var(--amber-bg,#FFF8EC);}
+.hist-sec-icon{font-size:14px;flex-shrink:0;}
+.hist-sec-label{font-family:'Quicksand',sans-serif;font-size:13px;font-weight:700;}
+.hist-sec-head.coral .hist-sec-label{color:#9B4A3E;}
+.hist-sec-head.green .hist-sec-label{color:#3E6B4D;}
+.hist-sec-head.amber .hist-sec-label{color:#7A6228;}
+
+.hist-sec-body{
+  padding:2px 0 2px 12px;border-left:2px solid #E8ECF0;margin-left:10px;
+}
+.hist-sec-grupos{display:flex;flex-wrap:wrap;gap:4px;}
+.hist-gpill{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:3px 8px;border-radius:14px;
+  font-size:11px;font-weight:600;line-height:1.2;
+}
+.hist-gpill.coral{background:#FFF5F3;color:#9B4A3E;}
+.hist-gpill.green{background:#F0FAF3;color:#3E6B4D;}
+.hist-gpill.amber{background:#FFFAEF;color:#7A6228;}
+.hist-gpill-int{
+  background:rgba(0,0,0,0.07);border-radius:8px;
+  padding:0px 5px;font-size:10px;font-weight:800;
+}
+.hist-sit-texto{
+  font-size:12px;color:var(--txt-m);font-style:italic;
+  margin-top:4px;line-height:1.4;padding-left:12px;
+  margin-left:10px;border-left:2px solid #E8ECF0;
+  display:-webkit-box;-webkit-line-clamp:2;
+  -webkit-box-orient:vertical;overflow:hidden;
+}
+
+/* Modal de visualização ampliada */
+.hist-modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(20,30,38,0.55);
+  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+  z-index:10001;align-items:flex-start;justify-content:center;
+  padding:20px;overflow-y:auto;
+  animation:hist-fade 0.2s ease-out;
+}
+.hist-modal-overlay.show{display:flex;}
+@keyframes hist-fade{from{opacity:0;}to{opacity:1;}}
+
+.hist-modal-card{
+  background:var(--w);border-radius:18px;max-width:480px;width:100%;
+  box-shadow:0 20px 60px rgba(0,0,0,0.3);
+  animation:hist-slide 0.25s ease-out;overflow:hidden;margin:20px 0;
+}
+@keyframes hist-slide{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+
+.hist-modal-head{
+  display:flex;align-items:center;gap:12px;
+  padding:18px 20px 14px;border-bottom:3px solid var(--blue);
+}
+.hist-modal-head-emoji{font-size:30px;}
+.hist-modal-head-info{flex:1;}
+.hist-modal-head-data{font-family:'Quicksand',sans-serif;font-size:16px;font-weight:700;}
+.hist-modal-head-humor{font-size:12px;color:var(--txt-l);margin-top:2px;}
+.hist-modal-head-humor strong{
+  color:var(--blue);background:var(--blue-lt);
+  padding:1px 8px;border-radius:10px;font-size:11px;font-weight:700;
+}
+.hist-modal-fechar{
+  width:34px;height:34px;border-radius:8px;border:none;
+  background:#F5F7F9;color:var(--txt-m);font-size:20px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all 0.15s;
+}
+.hist-modal-fechar:hover{background:#E5EAEF;color:var(--txt);}
+.hist-modal-rodape{text-align:center;padding:10px 18px 18px;}
+.hist-modal-btn-fechar{
+  padding:12px 30px;border-radius:10px;border:none;
+  background:#F1F4F7;color:var(--txt-m);
+  font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;
+  cursor:pointer;transition:background 0.15s;
+}
+.hist-modal-btn-fechar:hover{background:#E5EAEF;}
 @media(max-width:600px){
   .histc-line-key{min-width:68px;font-size:10px;}
   .histc-line-val{font-size:12px;}
@@ -1062,6 +1158,80 @@ body{
 .resumo-bloco h4{font-family:'Quicksand',sans-serif;font-size:13px;font-weight:700;margin-bottom:6px;}
 .resumo-linha{font-size:12px;color:var(--txt-m);margin:3px 0;line-height:1.5;}
 .resumo-linha strong{color:var(--txt);}
+
+/* ============================================================
+   PACOTE 6 — Revisar Registro (infográfico completo)
+   ============================================================ */
+.rev-humor{
+  padding:16px 18px;border-bottom:1px solid #EDF1F4;
+  display:flex;align-items:center;gap:14px;
+}
+.rev-humor-emoji{font-size:36px;line-height:1;}
+.rev-humor-nivel{
+  font-family:'Quicksand',sans-serif;font-size:15px;font-weight:700;color:var(--txt);
+}
+.rev-humor-data{font-size:12px;color:var(--txt-l);margin-top:2px;}
+.rev-humor-obs{font-size:12px;color:var(--txt-m);margin-top:4px;font-style:italic;}
+
+.rev-secao{padding:16px 18px 10px;}
+.rev-secao-titulo{
+  font-family:'Quicksand',sans-serif;font-size:15px;font-weight:700;
+  display:flex;align-items:center;gap:8px;
+  margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid;
+}
+.rev-secao-titulo.coral{color:var(--coral);border-color:var(--coral-lt,#FCEAE7);}
+.rev-secao-titulo.green{color:var(--green);border-color:var(--green-lt,#E0F3E7);}
+
+.rev-cat{margin-bottom:14px;}
+.rev-cat-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.rev-cat-icon{
+  width:28px;height:28px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;flex-shrink:0;
+}
+.rev-cat-icon.coral{background:var(--coral-bg,#FDF0EE);}
+.rev-cat-icon.green{background:var(--green-bg,#EAF7EF);}
+.rev-cat-icon.amber{background:var(--amber-bg,#FFF8EC);}
+.rev-cat-label{
+  font-family:'Quicksand',sans-serif;font-size:13px;font-weight:700;
+  color:var(--txt);text-transform:uppercase;letter-spacing:0.3px;
+}
+.rev-sit-texto{
+  background:#F7F9FB;border-radius:10px;padding:10px 14px;
+  font-size:13.5px;color:var(--txt-m);line-height:1.5;
+  border-left:3px solid;margin-bottom:6px;
+}
+.rev-sit-texto.coral{border-color:var(--coral);}
+.rev-sit-texto.green{border-color:var(--green);}
+
+.rev-grupo{
+  background:#FAFBFC;border-radius:10px;padding:9px 12px;
+  margin-bottom:6px;border-left:3px solid transparent;
+}
+.rev-grupo.coral{border-color:var(--coral);}
+.rev-grupo.green{border-color:var(--green);}
+.rev-grupo.amber{border-color:var(--amber);}
+
+.rev-grupo-nome{font-size:13px;font-weight:700;color:var(--txt);margin-bottom:5px;}
+.rev-grupo-itens{display:flex;flex-wrap:wrap;gap:5px;}
+
+.rev-pill{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 10px;border-radius:20px;
+  font-size:12px;font-weight:600;line-height:1.3;
+}
+.rev-pill.coral{background:var(--coral-bg,#FDF0EE);color:#9B4A3E;}
+.rev-pill.green{background:var(--green-bg,#EAF7EF);color:#3E6B4D;}
+.rev-pill.amber{background:var(--amber-bg,#FFF8EC);color:#7A6228;}
+.rev-pill-valor{
+  background:rgba(0,0,0,0.08);border-radius:10px;
+  padding:1px 6px;font-size:11px;font-weight:800;
+}
+.rev-sep{height:1px;background:#EDF1F4;margin:6px 0 14px;}
+.rev-footer-note{
+  text-align:center;font-size:11px;color:var(--txt-l);
+  padding:8px 18px 4px;
+}
 
 /* Instruções */
 .instr-box{background:var(--w);border-radius:var(--r);padding:22px 20px;margin:10px 0;box-shadow:0 2px 10px rgba(0,0,0,.06);border:1px solid var(--gray-lt);}
@@ -5585,6 +5755,24 @@ body{
     <div id="autoHistLista"></div>
   </div>
 
+  <!-- Pacote 7: Modal de visualização ampliada -->
+  <div class="hist-modal-overlay" id="histModalOverlay" onclick="if(event.target===this)histFecharModal()">
+    <div class="hist-modal-card" role="dialog" aria-modal="true">
+      <div class="hist-modal-head">
+        <div class="hist-modal-head-emoji" id="histModalEmoji">😐</div>
+        <div class="hist-modal-head-info">
+          <div class="hist-modal-head-data" id="histModalData">—</div>
+          <div class="hist-modal-head-humor" id="histModalHumor">Humor: <strong>—</strong></div>
+        </div>
+        <button class="hist-modal-fechar" type="button" onclick="histFecharModal()">✕</button>
+      </div>
+      <div id="histModalConteudo"></div>
+      <div class="hist-modal-rodape">
+        <button class="hist-modal-btn-fechar" type="button" onclick="histFecharModal()">Fechar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- RESUMO -->
   <div class="section" id="sec-auto-resumo">
     <div class="nav-bar">
@@ -8764,47 +8952,169 @@ function autoAbrirResumo() {
 
   const d = AUTO_STATE.dados;
   const box = document.getElementById('autoResumoConteudo');
+
+  // ---- Mapa de emojis e labels do humor ----
+  const HUMOR_MAP = {
+    1: { emoji:'😟', label:'Muito negativo' },
+    2: { emoji:'🙁', label:'Negativo' },
+    3: { emoji:'😐', label:'Neutro' },
+    4: { emoji:'🙂', label:'Positivo' },
+    5: { emoji:'😊', label:'Muito positivo' }
+  };
+
+  // ---- Utilitário: lê o título visível de um grupo do DOM ----
+  function revTituloGrupo(chave) {
+    const el = document.querySelector('[data-grupo="' + chave + '"] .auto-group-title');
+    if (!el) return chave;
+    // Remove o prefixo numérico "1. " se existir
+    return el.textContent.replace(/^\d+\.\s*/, '').trim();
+  }
+
+  // ---- Utilitário: monta pills de um grupo ----
+  function revPillsGrupo(valorCelula, cor, temLikert) {
+    if (!valorCelula) return '';
+    const partes = String(valorCelula).split(AUTO_SEPARADOR).map(s => s.trim()).filter(Boolean);
+    if (partes.length === 0) return '';
+    let html = '';
+    partes.forEach(p => {
+      if (temLikert) {
+        const match = p.match(/^(.+):(\d)$/);
+        if (match) {
+          html += '<span class="rev-pill ' + cor + '">' + escapeHtmlAuto(match[1]) +
+            ' <span class="rev-pill-valor">' + match[2] + '</span></span>';
+        } else {
+          html += '<span class="rev-pill ' + cor + '">' + escapeHtmlAuto(p) + '</span>';
+        }
+      } else {
+        html += '<span class="rev-pill ' + cor + '">' + escapeHtmlAuto(p) + '</span>';
+      }
+    });
+    return html;
+  }
+
+  // ---- Utilitário: monta uma categoria inteira (Emoções, Físicas, etc.) ----
+  // Recebe array de chaves de grupo (ex: neg_emo_tristeza, neg_emo_ansiedade...)
+  function revCategoria(icone, label, chaves, cor, temLikert) {
+    // Filtra só grupos que foram preenchidos
+    const preenchidos = chaves.filter(k => d[k] && d[k].trim());
+    if (preenchidos.length === 0) return '';
+    let html = '<div class="rev-cat">';
+    html += '<div class="rev-cat-head">';
+    html += '<div class="rev-cat-icon ' + cor + '">' + icone + '</div>';
+    html += '<div class="rev-cat-label">' + escapeHtmlAuto(label) + '</div>';
+    html += '</div>';
+    preenchidos.forEach(k => {
+      const titulo = revTituloGrupo(k);
+      const pills = revPillsGrupo(d[k], cor, temLikert);
+      html += '<div class="rev-grupo ' + cor + '">';
+      html += '<div class="rev-grupo-nome">' + escapeHtmlAuto(titulo) + '</div>';
+      html += '<div class="rev-grupo-itens">' + pills + '</div>';
+      html += '</div>';
+    });
+    html += '</div><div class="rev-sep"></div>';
+    return html;
+  }
+
+  // ---- Início da montagem ----
   let html = '';
 
-  html += '<div class="resumo-bloco"><h4>🌡️ Checagem de Humor</h4>';
+  // Humor
+  const hn = parseInt(d.humor_nivel) || 0;
+  const hInfo = HUMOR_MAP[hn] || { emoji:'❓', label:'—' };
+  html += '<div class="rev-humor">';
+  html += '<div class="rev-humor-emoji">' + hInfo.emoji + '</div>';
+  html += '<div>';
+  html += '<div class="rev-humor-nivel">Humor: ' + (hn || '—') + '/5 — ' + hInfo.label + '</div>';
   if (d.data_registro && d.hora_registro) {
     const [y,m,dd] = d.data_registro.split('-');
-    html += `<div class="resumo-linha"><strong>Quando:</strong> ${dd}/${m}/${y} às ${d.hora_registro}</div>`;
+    html += '<div class="rev-humor-data">📅 ' + dd + '/' + m + '/' + y + ' às ' + d.hora_registro + '</div>';
   }
-  html += `<div class="resumo-linha"><strong>Humor:</strong> ${d.humor_nivel || '—'}/5</div>`;
-  if (d.humor_observacoes) html += `<div class="resumo-linha"><strong>Observações:</strong> ${escapeHtmlAuto(d.humor_observacoes)}</div>`;
-  html += '</div>';
+  if (d.humor_observacoes) {
+    html += '<div class="rev-humor-obs">"' + escapeHtmlAuto(d.humor_observacoes) + '"</div>';
+  }
+  html += '</div></div>';
 
+  // ---- REGISTRO NEGATIVO ----
   if (d.neg_preenchido === 'sim') {
-    html += '<div class="resumo-bloco"><h4 style="color:var(--coral);">💔 Registro Negativo</h4>';
-    if (d.neg_sit_o_que) html += `<div class="resumo-linha"><strong>Situação:</strong> ${escapeHtmlAuto(d.neg_sit_o_que)}</div>`;
-    const stats = autoContarGruposPreenchidos('neg_');
-    if (stats.emo) html += `<div class="resumo-linha"><strong>Emoções:</strong> ${stats.emo} grupo(s) com itens</div>`;
-    if (stats.fis) html += `<div class="resumo-linha"><strong>Reações físicas:</strong> ${stats.fis} grupo(s)</div>`;
-    if (stats.pens) html += `<div class="resumo-linha"><strong>Pensamentos:</strong> ${stats.pens} grupo(s)</div>`;
-    if (stats.dist) html += `<div class="resumo-linha"><strong>Distorções:</strong> ${stats.dist} grupo(s)</div>`;
-    if (stats.comp) html += `<div class="resumo-linha"><strong>Comportamentos:</strong> ${stats.comp} grupo(s)</div>`;
+    html += '<div class="rev-secao">';
+    html += '<div class="rev-secao-titulo coral">💔 Registro Negativo</div>';
+
+    // Situação: texto livre em cima, grupos e subitens abaixo
+    const sitTipos = ['neg_sit_tipo_interpessoais','neg_sit_tipo_desempenho','neg_sit_tipo_solidao','neg_sit_tipo_perda','neg_sit_tipo_internas'];
+    const sitPreenchidos = sitTipos.filter(k => d[k] && d[k].trim());
+    if (sitPreenchidos.length > 0 || (d.neg_sit_o_que && d.neg_sit_o_que.trim())) {
+      html += '<div class="rev-cat">';
+      html += '<div class="rev-cat-head"><div class="rev-cat-icon coral">📍</div><div class="rev-cat-label">Situação</div></div>';
+      // Texto livre primeiro
+      if (d.neg_sit_o_que && d.neg_sit_o_que.trim()) {
+        html += '<div class="rev-sit-texto coral" style="margin-bottom:8px;">' + escapeHtmlAuto(d.neg_sit_o_que) + '</div>';
+      }
+      // Depois os grupos com subitens
+      if (sitPreenchidos.length > 0) {
+        sitPreenchidos.forEach(k => {
+          const titulo = revTituloGrupo(k);
+          const partes = String(d[k]).split(AUTO_SEPARADOR).map(s => s.trim()).filter(Boolean);
+          html += '<div class="rev-grupo coral"><div class="rev-grupo-nome">' + escapeHtmlAuto(titulo) + '</div>';
+          html += '<div class="rev-grupo-itens">';
+          partes.forEach(p => {
+            html += '<span class="rev-pill coral">' + escapeHtmlAuto(p) + '</span>';
+          });
+          html += '</div></div>';
+        });
+      }
+      html += '</div><div class="rev-sep"></div>';
+    }
+
+    // Emoções
+    html += revCategoria('💔', 'Emoções', ['neg_emo_tristeza','neg_emo_ansiedade','neg_emo_raiva','neg_emo_culpa','neg_emo_ciume'], 'coral', true);
+    // Reações Físicas
+    html += revCategoria('⚡', 'Reações Físicas', ['neg_fis_ativacao','neg_fis_desativacao','neg_fis_tensao','neg_fis_digestivas','neg_fis_sono'], 'coral', true);
+    // Pensamentos
+    html += revCategoria('🌧️', 'Pensamentos', ['neg_pens_sobre_mim','neg_pens_sobre_futuro','neg_pens_sobre_outros','neg_pens_cobranca','neg_pens_culpa'], 'amber', true);
+    // Distorções
+    html += revCategoria('🔎', 'Distorções Cognitivas', ['neg_dist_previsao','neg_dist_generalizacao','neg_dist_percepcao','neg_dist_interpretacao','neg_dist_exigencia'], 'amber', false);
+    // Comportamentos
+    html += revCategoria('📉', 'Comportamentos', ['neg_comp_evitacao','neg_comp_isolamento','neg_comp_reatividade','neg_comp_entorpecimento','neg_comp_controle'], 'coral', false);
+
     html += '</div>';
   }
 
+  // ---- REGISTRO POSITIVO ----
   if (d.pos_preenchido === 'sim') {
-    html += '<div class="resumo-bloco"><h4 style="color:var(--green);">💚 Registro Positivo</h4>';
-    if (d.pos_sit_o_que) html += `<div class="resumo-linha"><strong>Situação:</strong> ${escapeHtmlAuto(d.pos_sit_o_que)}</div>`;
-    const stats = autoContarGruposPreenchidos('pos_');
-    if (stats.emo) html += `<div class="resumo-linha"><strong>Emoções:</strong> ${stats.emo} grupo(s)</div>`;
-    if (stats.fis) html += `<div class="resumo-linha"><strong>Reações físicas:</strong> ${stats.fis} grupo(s)</div>`;
-    if (stats.pens) html += `<div class="resumo-linha"><strong>Pensamentos:</strong> ${stats.pens} grupo(s)</div>`;
-    if (stats.comp) html += `<div class="resumo-linha"><strong>Comportamentos:</strong> ${stats.comp} grupo(s)</div>`;
+    html += '<div class="rev-secao">';
+    html += '<div class="rev-secao-titulo green">💚 Registro Positivo</div>';
+
+    // Situação
+    if (d.pos_sit_o_que && d.pos_sit_o_que.trim()) {
+      html += '<div class="rev-cat">';
+      html += '<div class="rev-cat-head"><div class="rev-cat-icon green">📍</div><div class="rev-cat-label">Situação</div></div>';
+      html += '<div class="rev-sit-texto green">' + escapeHtmlAuto(d.pos_sit_o_que) + '</div>';
+      html += '</div><div class="rev-sep"></div>';
+    }
+
+    // Emoções
+    html += revCategoria('💚', 'Emoções', ['pos_emo_felicidade','pos_emo_orgulho','pos_emo_conexao','pos_emo_calma','pos_emo_esperanca'], 'green', true);
+    // Reações Físicas
+    html += revCategoria('🌿', 'Reações Físicas', ['pos_fis_calma','pos_fis_energia','pos_fis_relaxamento','pos_fis_digestivo','pos_fis_atencao'], 'green', true);
+    // Pensamentos
+    html += revCategoria('☀️', 'Pensamentos', ['pos_pens_autocompaixao','pos_pens_esperanca','pos_pens_confianca','pos_pens_flexibilidade','pos_pens_responsabilidade'], 'green', true);
+    // Comportamentos
+    html += revCategoria('📈', 'Comportamentos', ['pos_comp_enfrentamento','pos_comp_conexao','pos_comp_expressao','pos_comp_autocuidado','pos_comp_aceitacao'], 'green', false);
+
     html += '</div>';
   }
 
   if (!d.neg_preenchido && !d.pos_preenchido) {
     html += '<div class="auto-sec-warn">Você ainda não preencheu nenhum registro (negativo ou positivo). Volte ao passo anterior e selecione ao menos um tipo.</div>';
   }
+
+  html += '<div class="rev-footer-note">Após enviar, este registro será salvo.</div>';
+
   box.innerHTML = html;
   abrirSecao('sec-auto-resumo');
 }
 
+// Mantida para compatibilidade (não mais usada pelo resumo, mas pode ser útil)
 function autoContarGruposPreenchidos(prefixo) {
   const stats = { emo:0, fis:0, pens:0, dist:0, comp:0 };
   for (const k of Object.keys(AUTO_STATE.dados)) {
@@ -8891,43 +9201,34 @@ async function autoAbrirHistorico() {
       </div>`;
     return;
   }
+
+  // Guarda registros para o modal poder acessar por índice
+  window._HIST_REGS = regs;
+
   const emojis = {1:'😟',2:'🙁',3:'😐',4:'🙂',5:'😊'};
   const humorLbl = {1:'Muito negativo',2:'Negativo',3:'Neutro',4:'Positivo',5:'Muito positivo'};
 
-  box.innerHTML = regs.map(r => {
-    // Data
+  box.innerHTML = regs.map((r, idx) => {
     const data = String(r.data_registro || '');
     let dataFmt = '—';
     const m = data.match(/(\d{4})-(\d{2})-(\d{2})/);
     if (m) dataFmt = `${m[3]}/${m[2]}/${m[1]}`;
     else if (data) dataFmt = data;
-
-    // Hora — fix do bug 1899-12-30T...
     const hora = autoFormatarHora(r.hora_registro);
-
     const humor = parseInt(r.humor_nivel, 10) || 3;
     const temNeg = r.neg_preenchido === 'sim';
     const temPos = r.pos_preenchido === 'sim';
 
     let bloco = '';
     if (temNeg) {
-      bloco += `<div class="histc-section neg"><div class="histc-section-ttl">💔 Registro Negativo</div>`;
-      bloco += autoLinhaHist('📍','Situação', autoDescreverSituacaoHist(r,'neg'));
-      bloco += autoLinhaHist('💔','Emoções', autoGrupoDominanteHist(r,'neg_emo_'));
-      bloco += autoLinhaHist('⚡','Físicas', autoGrupoDominanteHist(r,'neg_fis_'));
-      bloco += autoLinhaHist('🌧️','Pensamentos', autoGrupoDominanteHist(r,'neg_pens_'));
-      bloco += autoLinhaHist('🔎','Distorções', autoGrupoDominanteHist(r,'neg_dist_'));
-      bloco += autoLinhaHist('📉','Comp.', autoGrupoDominanteHist(r,'neg_comp_'));
-      bloco += `</div>`;
+      bloco += '<div class="histc-section neg"><div class="histc-section-ttl">💔 Registro Negativo</div>';
+      bloco += histSecaoExpandida(r, 'neg', 'coral');
+      bloco += '</div>';
     }
     if (temPos) {
-      bloco += `<div class="histc-section pos"><div class="histc-section-ttl">💚 Registro Positivo</div>`;
-      bloco += autoLinhaHist('📍','Situação', autoDescreverSituacaoHist(r,'pos'));
-      bloco += autoLinhaHist('💚','Emoções', autoGrupoDominanteHist(r,'pos_emo_'));
-      bloco += autoLinhaHist('🌿','Físicas', autoGrupoDominanteHist(r,'pos_fis_'));
-      bloco += autoLinhaHist('☀️','Pensamentos', autoGrupoDominanteHist(r,'pos_pens_'));
-      bloco += autoLinhaHist('📈','Comp.', autoGrupoDominanteHist(r,'pos_comp_'));
-      bloco += `</div>`;
+      bloco += '<div class="histc-section pos"><div class="histc-section-ttl">💚 Registro Positivo</div>';
+      bloco += histSecaoExpandida(r, 'pos', 'green');
+      bloco += '</div>';
     }
 
     return `
@@ -8938,12 +9239,220 @@ async function autoAbrirHistorico() {
             <div class="histc-date">${dataFmt} · ${hora}</div>
             <div class="histc-meta">Humor: <span class="humor-pill">${humor}/5 ${humorLbl[humor] || ''}</span></div>
           </div>
+          <button class="hist-btn-lupa" type="button" title="Ver registro completo" onclick="histAbrirModal(${idx})">🔍</button>
         </div>
         ${bloco}
       </div>`;
   }).join('');
 }
 
+/* ============================================================
+   PACOTE 7 — Funções auxiliares do histórico expandido
+   ============================================================ */
+
+// Lê o título de um grupo do DOM (ex: "Tristeza / Depressão")
+function histTituloGrupo(chave) {
+  const el = document.querySelector('[data-grupo="' + chave + '"] .auto-group-title');
+  if (!el) return chave;
+  return el.textContent.replace(/^\d+\.\s*/, '').trim();
+}
+
+// Monta uma seção inteira (neg ou pos) da lista expandida
+function histSecaoExpandida(r, tipo, cor) {
+  let html = '';
+  const corAmber = 'amber';
+
+  // Estrutura das categorias por tipo
+  const categorias = tipo === 'neg' ? [
+    { icon:'📍', label:'Situação', prefixo:tipo+'_sit_tipo_', cor:cor, likert:false, isSit:true },
+    { icon:'💔', label:'Emoções', prefixo:tipo+'_emo_', cor:cor, likert:true },
+    { icon:'⚡', label:'Reações Físicas', prefixo:tipo+'_fis_', cor:cor, likert:true },
+    { icon:'🌧️', label:'Pensamentos', prefixo:tipo+'_pens_', cor:corAmber, likert:true },
+    { icon:'🔎', label:'Distorções Cognitivas', prefixo:tipo+'_dist_', cor:corAmber, likert:false },
+    { icon:'📉', label:'Comportamentos', prefixo:tipo+'_comp_', cor:cor, likert:false },
+  ] : [
+    { icon:'📍', label:'Situação', prefixo:tipo+'_sit_tipo_', cor:cor, likert:false, isSit:true },
+    { icon:'💚', label:'Emoções', prefixo:tipo+'_emo_', cor:cor, likert:true },
+    { icon:'🌿', label:'Reações Físicas', prefixo:tipo+'_fis_', cor:cor, likert:true },
+    { icon:'☀️', label:'Pensamentos', prefixo:tipo+'_pens_', cor:cor, likert:true },
+    { icon:'📈', label:'Comportamentos', prefixo:tipo+'_comp_', cor:cor, likert:false },
+  ];
+
+  categorias.forEach(cat => {
+    // Encontra grupos preenchidos com este prefixo
+    const gruposPreenchidos = [];
+    for (const k of Object.keys(r)) {
+      if (!k.startsWith(cat.prefixo)) continue;
+      if (k.endsWith('_intensidade') || k.endsWith('_crenca')) continue;
+      const val = r[k] || '';
+      if (!val.trim()) continue;
+      gruposPreenchidos.push({ chave: k, valor: val });
+    }
+
+    // Para Situação: incluir texto livre
+    const textoLivre = cat.isSit ? (r[tipo + '_sit_o_que'] || '').trim() : '';
+
+    if (gruposPreenchidos.length === 0 && !textoLivre) return;
+
+    html += '<div class="hist-sec">';
+    html += '<div class="hist-sec-head ' + cat.cor + '">';
+    html += '<span class="hist-sec-icon">' + cat.icon + '</span>';
+    html += '<span class="hist-sec-label">' + escapeHtmlAuto(cat.label) + '</span>';
+    html += '</div>';
+    html += '<div class="hist-sec-body"><div class="hist-sec-grupos">';
+
+    gruposPreenchidos.forEach(g => {
+      const titulo = histTituloGrupo(g.chave);
+      // Calcular intensidade máxima do grupo (se tem Likert)
+      let intHtml = '';
+      if (cat.likert) {
+        const partes = String(g.valor).split(AUTO_SEPARADOR).map(s => s.trim()).filter(Boolean);
+        let maxLk = 0;
+        partes.forEach(p => {
+          const m2 = p.match(/:(\d+)$/);
+          if (m2) { const v = parseInt(m2[1],10); if (v > maxLk) maxLk = v; }
+        });
+        if (maxLk > 0) intHtml = ' <span class="hist-gpill-int">' + maxLk + '/5</span>';
+      }
+      html += '<span class="hist-gpill ' + cat.cor + '">' + escapeHtmlAuto(titulo) + intHtml + '</span>';
+    });
+
+    html += '</div></div>';
+
+    // Texto livre da situação (truncado)
+    if (textoLivre) {
+      html += '<div class="hist-sit-texto">' + escapeHtmlAuto(textoLivre) + '</div>';
+    }
+
+    html += '</div>';
+  });
+
+  return html;
+}
+
+// ---- Modal de visualização ampliada ----
+function histAbrirModal(idx) {
+  const regs = window._HIST_REGS;
+  if (!regs || !regs[idx]) return;
+  const r = regs[idx];
+
+  const emojis = {1:'😟',2:'🙁',3:'😐',4:'🙂',5:'😊'};
+  const humorLbl = {1:'Muito negativo',2:'Negativo',3:'Neutro',4:'Positivo',5:'Muito positivo'};
+  const humor = parseInt(r.humor_nivel, 10) || 3;
+
+  const data = String(r.data_registro || '');
+  let dataFmt = '—';
+  const dm = data.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (dm) dataFmt = dm[3] + '/' + dm[2] + '/' + dm[1];
+  const hora = autoFormatarHora(r.hora_registro);
+
+  document.getElementById('histModalEmoji').textContent = emojis[humor] || '❓';
+  document.getElementById('histModalData').textContent = dataFmt + ' · ' + hora;
+  document.getElementById('histModalHumor').innerHTML = 'Humor: <strong>' + humor + '/5 ' + (humorLbl[humor]||'') + '</strong>';
+
+  // Montar conteúdo completo (mesmo layout do Pacote 6)
+  let html = '';
+  if (r.neg_preenchido === 'sim') {
+    html += histModalSecaoCompleta(r, 'neg', 'coral', '💔 Registro Negativo');
+  }
+  if (r.pos_preenchido === 'sim') {
+    html += histModalSecaoCompleta(r, 'pos', 'green', '💚 Registro Positivo');
+  }
+
+  document.getElementById('histModalConteudo').innerHTML = html;
+  document.getElementById('histModalOverlay').classList.add('show');
+}
+
+function histFecharModal() {
+  document.getElementById('histModalOverlay').classList.remove('show');
+}
+
+// Monta uma seção completa do modal (com todos os subitens)
+function histModalSecaoCompleta(r, tipo, cor, titulo) {
+  let html = '<div class="rev-secao">';
+  html += '<div class="rev-secao-titulo ' + cor + '">' + titulo + '</div>';
+  const corAmber = 'amber';
+
+  // Situação
+  const textoLivre = (r[tipo + '_sit_o_que'] || '').trim();
+  const sitTipos = [tipo+'_sit_tipo_interpessoais',tipo+'_sit_tipo_desempenho',tipo+'_sit_tipo_solidao',tipo+'_sit_tipo_perda',tipo+'_sit_tipo_internas'];
+  const sitPreenchidos = sitTipos.filter(k => r[k] && r[k].trim());
+
+  if (textoLivre || sitPreenchidos.length > 0) {
+    html += '<div class="rev-cat">';
+    html += '<div class="rev-cat-head"><div class="rev-cat-icon ' + cor + '">📍</div><div class="rev-cat-label">Situação</div></div>';
+    if (textoLivre) {
+      html += '<div class="rev-sit-texto ' + cor + '" style="margin-bottom:8px;">' + escapeHtmlAuto(textoLivre) + '</div>';
+    }
+    sitPreenchidos.forEach(k => {
+      const tit = histTituloGrupo(k);
+      const partes = String(r[k]).split(AUTO_SEPARADOR).map(s => s.trim()).filter(Boolean);
+      html += '<div class="rev-grupo ' + cor + '"><div class="rev-grupo-nome">' + escapeHtmlAuto(tit) + '</div>';
+      html += '<div class="rev-grupo-itens">';
+      partes.forEach(p => { html += '<span class="rev-pill ' + cor + '">' + escapeHtmlAuto(p) + '</span>'; });
+      html += '</div></div>';
+    });
+    html += '</div><div class="rev-sep"></div>';
+  }
+
+  // Categorias
+  const categorias = tipo === 'neg' ? [
+    { icon:'💔', label:'Emoções', prefixos:['_emo_tristeza','_emo_ansiedade','_emo_raiva','_emo_culpa','_emo_ciume'], cor:cor, likert:true },
+    { icon:'⚡', label:'Reações Físicas', prefixos:['_fis_ativacao','_fis_desativacao','_fis_tensao','_fis_digestivas','_fis_sono'], cor:cor, likert:true },
+    { icon:'🌧️', label:'Pensamentos', prefixos:['_pens_sobre_mim','_pens_sobre_futuro','_pens_sobre_outros','_pens_cobranca','_pens_culpa'], cor:corAmber, likert:true },
+    { icon:'🔎', label:'Distorções Cognitivas', prefixos:['_dist_previsao','_dist_generalizacao','_dist_percepcao','_dist_interpretacao','_dist_exigencia'], cor:corAmber, likert:false },
+    { icon:'📉', label:'Comportamentos', prefixos:['_comp_evitacao','_comp_isolamento','_comp_reatividade','_comp_entorpecimento','_comp_controle'], cor:cor, likert:false },
+  ] : [
+    { icon:'💚', label:'Emoções', prefixos:['_emo_felicidade','_emo_orgulho','_emo_conexao','_emo_calma','_emo_esperanca'], cor:cor, likert:true },
+    { icon:'🌿', label:'Reações Físicas', prefixos:['_fis_calma','_fis_energia','_fis_relaxamento','_fis_digestivo','_fis_atencao'], cor:cor, likert:true },
+    { icon:'☀️', label:'Pensamentos', prefixos:['_pens_autocompaixao','_pens_esperanca','_pens_confianca','_pens_flexibilidade','_pens_responsabilidade'], cor:cor, likert:true },
+    { icon:'📈', label:'Comportamentos', prefixos:['_comp_enfrentamento','_comp_conexao','_comp_expressao','_comp_autocuidado','_comp_aceitacao'], cor:cor, likert:false },
+  ];
+
+  categorias.forEach(cat => {
+    const chaves = cat.prefixos.map(s => tipo + s);
+    const preenchidos = chaves.filter(k => r[k] && r[k].trim());
+    if (preenchidos.length === 0) return;
+
+    html += '<div class="rev-cat">';
+    html += '<div class="rev-cat-head"><div class="rev-cat-icon ' + cat.cor + '">' + cat.icon + '</div><div class="rev-cat-label">' + escapeHtmlAuto(cat.label) + '</div></div>';
+
+    preenchidos.forEach(k => {
+      const tit = histTituloGrupo(k);
+      const partes = String(r[k]).split(AUTO_SEPARADOR).map(s => s.trim()).filter(Boolean);
+      html += '<div class="rev-grupo ' + cat.cor + '"><div class="rev-grupo-nome">' + escapeHtmlAuto(tit) + '</div>';
+      html += '<div class="rev-grupo-itens">';
+      partes.forEach(p => {
+        if (cat.likert) {
+          const mm = p.match(/^(.+):(\d)$/);
+          if (mm) {
+            html += '<span class="rev-pill ' + cat.cor + '">' + escapeHtmlAuto(mm[1]) + ' <span class="rev-pill-valor">' + mm[2] + '</span></span>';
+          } else {
+            html += '<span class="rev-pill ' + cat.cor + '">' + escapeHtmlAuto(p) + '</span>';
+          }
+        } else {
+          html += '<span class="rev-pill ' + cat.cor + '">' + escapeHtmlAuto(p) + '</span>';
+        }
+      });
+      html += '</div></div>';
+    });
+
+    html += '</div><div class="rev-sep"></div>';
+  });
+
+  html += '</div>';
+  return html;
+}
+
+// ESC fecha modal do histórico
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') {
+    const m = document.getElementById('histModalOverlay');
+    if (m && m.classList.contains('show')) histFecharModal();
+  }
+});
+
+// Funções legadas mantidas para compatibilidade
 function autoLinhaHist(icon, key, valor) {
   const val = valor || '<span class="nodata">—</span>';
   return `<div class="histc-line"><span class="histc-line-icon">${icon}</span><span class="histc-line-key">${key}</span><span class="histc-line-val">${val}</span></div>`;
