@@ -1079,7 +1079,7 @@ body{
 .hist-sec-head.amber .hist-sec-label{color:#7A6228;}
 
 .hist-sec-body{
-  padding:2px 0 2px 12px;border-left:2px solid #E8ECF0;margin-left:10px;
+  padding:4px 0 4px 12px;border-left:2px solid #E8ECF0;margin-left:10px;
 }
 .hist-sec-grupos{display:flex;flex-wrap:wrap;gap:4px;}
 .hist-gpill{
@@ -1100,6 +1100,11 @@ body{
   margin-left:10px;border-left:2px solid #E8ECF0;
   display:-webkit-box;-webkit-line-clamp:2;
   -webkit-box-orient:vertical;overflow:hidden;
+}
+
+/* Fundo alternado para seções pares — harmoniza lista com modal */
+.hist-sec:nth-child(even) .hist-sec-body{
+  background:#FAFBFC;border-radius:8px;padding:6px 10px 6px 12px;
 }
 
 /* Modal de visualização ampliada */
@@ -9303,17 +9308,22 @@ function histSecaoExpandida(r, tipo, cor) {
 
     gruposPreenchidos.forEach(g => {
       const titulo = histTituloGrupo(g.chave);
-      // Calcular intensidade máxima do grupo (se tem Likert)
+      const partes = String(g.valor).split(AUTO_SEPARADOR).map(s => s.trim()).filter(Boolean);
+      const qtdMarcados = partes.length;
+
+      // Total de subitens do grupo: lê do DOM via pevObterSubitensGrupo
+      const totalSubs = (typeof pevObterSubitensGrupo === 'function')
+        ? pevObterSubitensGrupo(g.chave).length
+        : 0;
+
+      // Monta a pill: Nome do grupo + contagem (N/total)
       let intHtml = '';
-      if (cat.likert) {
-        const partes = String(g.valor).split(AUTO_SEPARADOR).map(s => s.trim()).filter(Boolean);
-        let maxLk = 0;
-        partes.forEach(p => {
-          const m2 = p.match(/:(\d+)$/);
-          if (m2) { const v = parseInt(m2[1],10); if (v > maxLk) maxLk = v; }
-        });
-        if (maxLk > 0) intHtml = ' <span class="hist-gpill-int">' + maxLk + '/5</span>';
+      if (totalSubs > 0) {
+        intHtml = ' <span class="hist-gpill-int">' + qtdMarcados + '/' + totalSubs + '</span>';
+      } else {
+        intHtml = ' <span class="hist-gpill-int">' + qtdMarcados + '</span>';
       }
+
       html += '<span class="hist-gpill ' + cat.cor + '">' + escapeHtmlAuto(titulo) + intHtml + '</span>';
     });
 
