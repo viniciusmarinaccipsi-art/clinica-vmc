@@ -714,6 +714,131 @@ body{
 .auto-card:active:not(:disabled):not(.locked){transform:translateY(0);}
 .auto-card:disabled,.auto-card.locked{opacity:.55;cursor:not-allowed;}
 .auto-card.locked .auto-card-title::after{content:' 🔒';font-size:13px;}
+
+/* ============================================================
+   PACOTE 5 — Cadeado no fluxo de primeira vez
+   ============================================================ */
+.p5-sub-aviso{
+  display:none;
+  background:linear-gradient(135deg,#FFF4E6,#FFFBF3);
+  border-left:4px solid var(--amber,#D4A843);
+  border-radius:10px;
+  padding:12px 14px;
+  margin:0 0 14px 0;
+  font-size:13px;
+  color:#6B4E1F;
+  font-weight:500;
+  line-height:1.45;
+}
+.p5-sub-aviso.show{display:block;}
+
+.p5-modal-overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(20,30,38,0.55);
+  -webkit-backdrop-filter:blur(3px);
+  backdrop-filter:blur(3px);
+  z-index:10000;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  animation:p5-fade 0.2s ease-out;
+}
+.p5-modal-overlay.show{display:flex;}
+@keyframes p5-fade{from{opacity:0;}to{opacity:1;}}
+
+.p5-modal-card{
+  background:#FFFFFF;
+  border-radius:18px;
+  max-width:440px;
+  width:100%;
+  box-shadow:0 20px 60px rgba(0,0,0,0.3);
+  animation:p5-slide 0.25s ease-out;
+  overflow:hidden;
+}
+@keyframes p5-slide{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+
+.p5-modal-head{
+  padding:22px 22px 6px;
+  text-align:center;
+}
+.p5-modal-icone{font-size:36px;display:block;margin-bottom:6px;}
+.p5-modal-titulo{
+  font-family:'Quicksand',sans-serif;
+  font-size:19px;
+  font-weight:700;
+  color:#2A3A45;
+}
+.p5-modal-body{
+  padding:10px 22px 18px;
+  font-size:14px;
+  color:var(--txt-m,#556);
+  line-height:1.55;
+  text-align:center;
+}
+.p5-modal-acoes{
+  display:flex;
+  gap:10px;
+  padding:4px 22px 22px;
+  flex-wrap:wrap;
+}
+.p5-btn{
+  flex:1 1 auto;
+  min-width:130px;
+  padding:12px 16px;
+  border-radius:10px;
+  border:none;
+  font-family:'Nunito',sans-serif;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  transition:transform .12s,box-shadow .12s,background .12s;
+}
+.p5-btn-primary{
+  background:linear-gradient(135deg,var(--blue,#2C5F7C),#3a7594);
+  color:#fff;
+}
+.p5-btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(44,95,124,0.25);}
+.p5-btn-secondary{
+  background:#F1F4F7;
+  color:#4A5A66;
+}
+.p5-btn-secondary:hover{background:#E5EAEF;}
+
+.p5-entendi-box{
+  margin-top:18px;
+  padding:18px 16px;
+  background:linear-gradient(135deg,#EAF7EF,#F5FBF7);
+  border-left:4px solid var(--green,#6BBF8A);
+  border-radius:12px;
+  text-align:center;
+  display:none;
+}
+.p5-entendi-box.show{display:block;}
+.p5-entendi-texto{
+  font-size:13px;
+  color:#3E5E48;
+  margin-bottom:12px;
+  line-height:1.5;
+}
+.p5-btn-entendi{
+  background:linear-gradient(135deg,var(--green,#6BBF8A),#5aa876);
+  color:#fff;
+  border:none;
+  padding:14px 26px;
+  border-radius:12px;
+  font-family:'Quicksand',sans-serif;
+  font-size:15px;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:0 4px 12px rgba(107,191,138,0.3);
+  transition:transform .12s,box-shadow .12s;
+}
+.p5-btn-entendi:hover{
+  transform:translateY(-1px);
+  box-shadow:0 6px 18px rgba(107,191,138,0.4);
+}
 .auto-card-icon{font-size:28px;margin-bottom:6px;display:block;}
 .auto-card-title{font-family:'Quicksand',sans-serif;font-size:15px;font-weight:700;margin-bottom:3px;}
 .auto-card-desc{font-size:11.5px;color:var(--txt-l);line-height:1.5;padding-right:90px;}
@@ -1395,31 +1520,52 @@ body{
       <button class="btn-back" onclick="abrirSecao('sec-menu')">← Menu</button>
       <span class="nav-title">Módulo 2 — Automonitoramento</span>
     </div>
+    <!-- Pacote 5: aviso de primeira vez (só aparece se paciente nunca fez Auto) -->
+    <div class="p5-sub-aviso" id="p5SubAviso">
+      🔒 Antes de começar, leia o "Como Usar Este Registro". Depois você poderá usar todas as funções.
+    </div>
     <div class="auto-grid">
-      <button class="auto-card blue" type="button" onclick="abrirSecao('sec-auto-instrucoes')">
+      <button class="auto-card blue" id="autoCardComoUsar" type="button" onclick="abrirSecao('sec-auto-instrucoes')">
         <span class="auto-card-icon">📖</span>
         <div class="auto-card-title">Como Usar Este Registro</div>
         <div class="auto-card-desc">Entenda a estrutura, as escalas e como preencher</div>
         <span class="auto-card-arrow">›</span>
       </button>
-      <button class="auto-card blue" type="button" onclick="autoIniciarNovoRegistro()" style="border-color:var(--blue);background:linear-gradient(135deg,var(--blue-lt),var(--w));">
+      <button class="auto-card blue" id="autoCardIniciar" type="button" onclick="p5ClicarCardBloquevel('iniciar')" style="border-color:var(--blue);background:linear-gradient(135deg,var(--blue-lt),var(--w));">
         <span class="auto-card-icon">🌡️</span>
         <div class="auto-card-title">Iniciar Novo Registro</div>
         <div class="auto-card-desc">Registre a data, avalie seu humor e escolha o tipo de registro</div>
         <span class="auto-card-arrow">›</span>
       </button>
-      <button class="auto-card amber" type="button" onclick="abrirSecao('sec-auto-painel')">
+      <button class="auto-card amber" id="autoCardPainel" type="button" onclick="p5ClicarCardBloquevel('painel')">
         <span class="auto-card-icon">📊</span>
         <div class="auto-card-title">Painel de Evolução</div>
         <div class="auto-card-desc">Gráficos e insights sobre seus registros</div>
         <span class="auto-card-arrow">›</span>
       </button>
-      <button class="auto-card gray" type="button" onclick="autoAbrirHistorico()">
+      <button class="auto-card gray" id="autoCardHistorico" type="button" onclick="p5ClicarCardBloquevel('historico')">
         <span class="auto-card-icon">📚</span>
         <div class="auto-card-title">Meus Registros Anteriores</div>
         <div class="auto-card-desc">Consulte seu histórico de automonitoramento</div>
         <span class="auto-card-arrow">›</span>
       </button>
+    </div>
+  </div>
+
+  <!-- Pacote 5: Modal ao clicar em card travado -->
+  <div class="p5-modal-overlay" id="p5Modal" onclick="if(event.target===this)p5FecharModal()">
+    <div class="p5-modal-card" role="dialog" aria-modal="true" aria-labelledby="p5ModalTitulo">
+      <div class="p5-modal-head">
+        <span class="p5-modal-icone">🔒</span>
+        <div class="p5-modal-titulo" id="p5ModalTitulo">Antes de começar</div>
+      </div>
+      <div class="p5-modal-body">
+        Leia primeiro o "Como Usar Este Registro". Em poucos passos, vamos explicar como o registro funciona e orientar sobre como você poderá respondê-lo.
+      </div>
+      <div class="p5-modal-acoes">
+        <button class="p5-btn p5-btn-secondary" type="button" onclick="p5FecharModal()">Fechar</button>
+        <button class="p5-btn p5-btn-primary" type="button" onclick="p5IrParaComoUsar()">Ir para Como Usar →</button>
+      </div>
     </div>
   </div>
 
@@ -1457,6 +1603,12 @@ body{
       <p style="font-size:10.5px;color:var(--txt-l);margin-bottom:8px;">↑ Emoções agradáveis e reações de bem-estar</p>
       <div class="auto-scale amber"><span>① Não acredito</span><span>② Pouco</span><span>③ Moderado</span><span>④ Muito</span><span>⑤ Totalmente</span></div>
       <p style="font-size:10.5px;color:var(--txt-l);">↑ Pensamentos (grau de crença)</p>
+
+      <!-- Pacote 5: botão "Entendi" — só aparece na primeira vez -->
+      <div class="p5-entendi-box" id="p5EntendiBox">
+        <div class="p5-entendi-texto">Agora que você já sabe como funciona, pode começar seu primeiro registro.</div>
+        <button class="p5-btn-entendi" type="button" onclick="p5MarcarComoUsarLido()">✓ Entendi, estou pronto para começar →</button>
+      </div>
     </div>
   </div>
 
@@ -5719,6 +5871,12 @@ function abrirSecao(idSecao) {
   if (idSecao === 'sec-auto-painel' && typeof pevAbrir === 'function') {
     pevAbrir();
   }
+  // Pacote 5: ao abrir a home do Módulo 2, verifica se precisa travar
+  if (idSecao === 'sec-automonitoramento' && typeof p5VerificarPrimeiraVez === 'function') {
+    p5VerificarPrimeiraVez().then(() => p5AplicarCadeados());
+    // Aplica já o estado atual (síncrono) enquanto a verificação roda
+    p5AplicarCadeados();
+  }
 }
 
 function abrirModulo(modulo) {
@@ -5827,6 +5985,12 @@ async function fazerLogin() {
 
 function logout() {
   limparSessao();
+  // Pacote 5: reseta estado de primeira vez ao deslogar
+  if (typeof P5_STATE !== 'undefined') {
+    P5_STATE.verificado = false;
+    P5_STATE.primeiraVez = false;
+    P5_STATE.carregando = false;
+  }
   atualizarBadgeUsuario();
   abrirSecao('sec-login');
 }
@@ -7915,6 +8079,133 @@ async function autoVerificarPrimeiroNeg() {
   } catch(e) { console.warn('Falha ao verificar histórico:', e); }
 }
 
+/* ============================================================
+   PACOTE 5 — Cadeado no fluxo de primeira vez
+   ============================================================
+   Obriga o paciente que nunca preencheu Automonitoramento a passar
+   pelo "Como Usar Este Registro" antes de liberar os outros 3 cards.
+   - Detecção: ZERO registros de Auto (anamnese é irrelevante)
+   - Persistência: sessionStorage apenas
+   - Reusa CSS .auto-card.locked que já existe
+   - Zero mudança na planilha ou no Apps Script
+   ============================================================ */
+
+// Estado local do pacote 5
+const P5_STATE = {
+  verificado: false,       // já consultou o servidor?
+  primeiraVez: false,      // paciente nunca fez nenhum registro de Auto?
+  carregando: false        // evita chamadas paralelas
+};
+
+// Verifica se o paciente é "primeira vez" (zero registros de Auto).
+// Usa o mesmo padrão de autoVerificarPrimeiroNeg: chama lerHistorico
+// e olha resp.automonitoramento. Roda só uma vez por sessão.
+async function p5VerificarPrimeiraVez() {
+  if (P5_STATE.verificado || P5_STATE.carregando) return;
+  const paciente = carregarSessao();
+  if (!paciente) return;
+  P5_STATE.carregando = true;
+  try {
+    const resp = await chamarServidor('lerHistorico', { sigla: paciente.sigla });
+    if (resp && resp.ok) {
+      const regs = resp.automonitoramento || [];
+      // "Primeira vez" = nenhum registro de Auto de nenhum tipo.
+      // Aceita qualquer registro como válido (neg, pos ou misto).
+      P5_STATE.primeiraVez = regs.length === 0;
+      P5_STATE.verificado = true;
+    }
+  } catch(e) {
+    console.warn('[P5] Falha ao verificar histórico:', e);
+  } finally {
+    P5_STATE.carregando = false;
+  }
+}
+
+// Verifica se o paciente já leu o Como Usar nesta sessão
+function p5ComoUsarLido() {
+  return sessionStorage.getItem('autoComoUsarLido') === '1';
+}
+
+// Decide se os cadeados devem estar ativos agora.
+// Regra: (primeira vez no Auto) E (ainda não leu o Como Usar nesta sessão)
+function p5DeveBloquear() {
+  return P5_STATE.primeiraVez === true && !p5ComoUsarLido();
+}
+
+// Aplica/remove os cadeados visuais nos 3 cards bloqueáveis.
+// "Como Usar" nunca é travado. Também controla o subtítulo de aviso
+// e o botão "Entendi" no fim do Como Usar.
+function p5AplicarCadeados() {
+  const bloquear = p5DeveBloquear();
+  const ids = ['autoCardIniciar', 'autoCardPainel', 'autoCardHistorico'];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (bloquear) {
+      el.classList.add('locked');
+    } else {
+      el.classList.remove('locked');
+    }
+  });
+  // Subtítulo de aviso na home do Módulo 2
+  const sub = document.getElementById('p5SubAviso');
+  if (sub) sub.classList.toggle('show', bloquear);
+  // Botão "Entendi" no fim do Como Usar — só para primeira vez
+  const entendi = document.getElementById('p5EntendiBox');
+  if (entendi) entendi.classList.toggle('show', bloquear);
+}
+
+// Handler dos 3 cards bloqueáveis. Se estiver travado, abre o modal.
+// Caso contrário, delega para a ação original de cada card.
+function p5ClicarCardBloquevel(qual) {
+  const el = document.getElementById(
+    qual === 'iniciar'  ? 'autoCardIniciar'  :
+    qual === 'painel'   ? 'autoCardPainel'   :
+    qual === 'historico'? 'autoCardHistorico': null
+  );
+  if (el && el.classList.contains('locked')) {
+    p5AbrirModal();
+    return;
+  }
+  // Não travado: comportamento original
+  if (qual === 'iniciar')   { autoIniciarNovoRegistro(); return; }
+  if (qual === 'painel')    { abrirSecao('sec-auto-painel'); return; }
+  if (qual === 'historico') { autoAbrirHistorico(); return; }
+}
+
+function p5AbrirModal() {
+  const m = document.getElementById('p5Modal');
+  if (m) m.classList.add('show');
+}
+
+function p5FecharModal() {
+  const m = document.getElementById('p5Modal');
+  if (m) m.classList.remove('show');
+}
+
+function p5IrParaComoUsar() {
+  p5FecharModal();
+  abrirSecao('sec-auto-instrucoes');
+}
+
+// Chamado pelo botão verde no fim do Como Usar.
+// Marca a flag, remove os cadeados e volta para o menu do Módulo 2.
+function p5MarcarComoUsarLido() {
+  sessionStorage.setItem('autoComoUsarLido', '1');
+  p5AplicarCadeados();
+  abrirSecao('sec-automonitoramento');
+}
+
+// Fechar modal com ESC
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') {
+    const m = document.getElementById('p5Modal');
+    if (m && m.classList.contains('show')) p5FecharModal();
+  }
+});
+
+/* Fim do Pacote 5 */
+
 function autoPreencherDataHoraAgora() {
   const agora = new Date();
   const p2 = n => String(n).padStart(2,'0');
@@ -8566,6 +8857,9 @@ async function autoEnviarRegistro() {
   autoResetState();
   // Painel de Evolução: força recarregamento na próxima visita
   if (typeof pevInvalidarCache === 'function') pevInvalidarCache();
+  // Pacote 5: paciente deixou de ser "primeira vez", força nova verificação
+  P5_STATE.verificado = false;
+  P5_STATE.primeiraVez = false;
   alert('✓ Registro salvo com sucesso!');
   abrirSecao('sec-automonitoramento');
 }
