@@ -230,6 +230,10 @@ body{
 .alert-success{background:var(--green-bg);color:#3F8B5A;border:1px solid #D0EDDA;}
 .alert-warn{background:var(--amber-bg);color:#9A7820;border:1px solid #F0E0A8;}
 .alert.hidden{display:none;}
+/* Pacote 9: regra geral .hidden — antes era restrita só a .alert,
+   o que fazia o badge "✓ Preenchida" da anamnese aparecer mesmo
+   quando ela não tinha sido preenchida. */
+.hidden{display:none !important;}
 
 .login-footer{
   text-align:center;margin-top:24px;
@@ -8695,6 +8699,15 @@ function autoResetState() {
 
   // Limpa DOM
   document.querySelectorAll('[data-auto-campo]').forEach(el => el.value = '');
+  // Pacote 9: limpar também as caixas de texto do Pacote 8 (Pensamentos e Comportamentos)
+  // O reset original só pegava [data-auto-campo], deixando os campos novos com valor antigo.
+  document.querySelectorAll('[data-auto-campo-pens], [data-auto-campo-comp]').forEach(el => el.value = '');
+  // Remove caixas extras de pensamentos criadas pelo botão "+ Adicionar outro pensamento"
+  document.querySelectorAll('.p8-pens-extra').forEach(el => el.remove());
+  // Pacote 8: também limpa as caixas de Pensamentos (múltiplas) e Comportamentos
+  document.querySelectorAll('[data-auto-campo-pens], [data-auto-campo-comp]').forEach(el => el.value = '');
+  // Pacote 8: remove caixas extras de pensamentos criadas pelo botão "+"
+  document.querySelectorAll('.p8-pens-extra').forEach(el => el.remove());
   document.querySelectorAll('[data-grupo]').forEach(gr => {
     gr.classList.remove('open','has-data');
     gr.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
@@ -10045,35 +10058,44 @@ function histSecaoExpandida(r, tipo, cor) {
 
 // ---- Modal de visualização ampliada ----
 function histAbrirModal(idx) {
-  const regs = window._HIST_REGS;
-  if (!regs || !regs[idx]) return;
-  const r = regs[idx];
+  try {
+    const regs = window._HIST_REGS;
+    if (!regs || !regs[idx]) {
+      console.warn('[histAbrirModal] Registro não encontrado no índice', idx, 'regs.length=', regs ? regs.length : 0);
+      alert('Não foi possível abrir este registro. Tente recarregar a página.');
+      return;
+    }
+    const r = regs[idx];
 
-  const emojis = {1:'😟',2:'🙁',3:'😐',4:'🙂',5:'😊'};
-  const humorLbl = {1:'Muito negativo',2:'Negativo',3:'Neutro',4:'Positivo',5:'Muito positivo'};
-  const humor = parseInt(r.humor_nivel, 10) || 3;
+    const emojis = {1:'😟',2:'🙁',3:'😐',4:'🙂',5:'😊'};
+    const humorLbl = {1:'Muito negativo',2:'Negativo',3:'Neutro',4:'Positivo',5:'Muito positivo'};
+    const humor = parseInt(r.humor_nivel, 10) || 3;
 
-  const data = String(r.data_registro || '');
-  let dataFmt = '—';
-  const dm = data.match(/(\d{4})-(\d{2})-(\d{2})/);
-  if (dm) dataFmt = dm[3] + '/' + dm[2] + '/' + dm[1];
-  const hora = autoFormatarHora(r.hora_registro);
+    const data = String(r.data_registro || '');
+    let dataFmt = '—';
+    const dm = data.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (dm) dataFmt = dm[3] + '/' + dm[2] + '/' + dm[1];
+    const hora = autoFormatarHora(r.hora_registro);
 
-  document.getElementById('histModalEmoji').textContent = emojis[humor] || '❓';
-  document.getElementById('histModalData').textContent = dataFmt + ' · ' + hora;
-  document.getElementById('histModalHumor').innerHTML = 'Humor: <strong>' + humor + '/5 ' + (humorLbl[humor]||'') + '</strong>';
+    document.getElementById('histModalEmoji').textContent = emojis[humor] || '❓';
+    document.getElementById('histModalData').textContent = dataFmt + ' · ' + hora;
+    document.getElementById('histModalHumor').innerHTML = 'Humor: <strong>' + humor + '/5 ' + (humorLbl[humor]||'') + '</strong>';
 
-  // Montar conteúdo completo (mesmo layout do Pacote 6)
-  let html = '';
-  if (r.neg_preenchido === 'sim') {
-    html += histModalSecaoCompleta(r, 'neg', 'coral', '💔 Registro Negativo');
+    // Montar conteúdo completo (mesmo layout do Pacote 6)
+    let html = '';
+    if (r.neg_preenchido === 'sim') {
+      html += histModalSecaoCompleta(r, 'neg', 'coral', '💔 Registro Negativo');
+    }
+    if (r.pos_preenchido === 'sim') {
+      html += histModalSecaoCompleta(r, 'pos', 'green', '💚 Registro Positivo');
+    }
+
+    document.getElementById('histModalConteudo').innerHTML = html;
+    document.getElementById('histModalOverlay').classList.add('show');
+  } catch (err) {
+    console.error('[histAbrirModal] Erro:', err);
+    alert('Erro ao abrir o registro: ' + (err && err.message || err));
   }
-  if (r.pos_preenchido === 'sim') {
-    html += histModalSecaoCompleta(r, 'pos', 'green', '💚 Registro Positivo');
-  }
-
-  document.getElementById('histModalConteudo').innerHTML = html;
-  document.getElementById('histModalOverlay').classList.add('show');
 }
 
 function histFecharModal() {
@@ -10086,10 +10108,11 @@ function histModalSecaoCompleta(r, tipo, cor, titulo) {
   html += '<div class="rev-secao-titulo ' + cor + '">' + titulo + '</div>';
   const corAmber = 'amber';
 
+  // Pacote 8 v4: blindar contra valores não-string (mesmo padrão do histSecaoExpandida)
   // Situação
-  const textoLivre = (r[tipo + '_sit_o_que'] || '').trim();
+  const textoLivre = String(r[tipo + '_sit_o_que'] || '').trim();
   const sitTipos = [tipo+'_sit_tipo_interpessoais',tipo+'_sit_tipo_desempenho',tipo+'_sit_tipo_solidao',tipo+'_sit_tipo_perda',tipo+'_sit_tipo_internas'];
-  const sitPreenchidos = sitTipos.filter(k => r[k] && r[k].trim());
+  const sitPreenchidos = sitTipos.filter(k => r[k] != null && String(r[k]).trim());
 
   if (textoLivre || sitPreenchidos.length > 0) {
     html += '<div class="rev-cat">';
@@ -10125,9 +10148,10 @@ function histModalSecaoCompleta(r, tipo, cor, titulo) {
 
   categorias.forEach(cat => {
     const chaves = cat.prefixos.map(s => tipo + s);
-    const preenchidos = chaves.filter(k => r[k] && r[k].trim());
-    // Pacote 8: pega texto livre se essa categoria tem
-    const textoCatLivre = cat.textoChave ? (r[tipo + cat.textoChave] || '').trim() : '';
+    // Pacote 8 v4: blindar contra valores não-string
+    const preenchidos = chaves.filter(k => r[k] != null && String(r[k]).trim());
+    // Pacote 8: pega texto livre se essa categoria tem (também blindado)
+    const textoCatLivre = cat.textoChave ? String(r[tipo + cat.textoChave] || '').trim() : '';
     if (preenchidos.length === 0 && !textoCatLivre) return;
 
     html += '<div class="rev-cat">';
