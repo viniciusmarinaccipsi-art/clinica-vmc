@@ -1259,14 +1259,12 @@ body{
    PACOTE 8 — Caixas de texto livre + Card consulta + Sumário expandido
    ============================================================ */
 
-/* Caixa de texto livre antes dos grupos (Pensamentos / Comportamentos) */
-.p8-texto-wrap{margin-bottom:14px;}
-.p8-texto-wrap .auto-field{margin-bottom:6px;}
-.p8-pens-container{display:flex;flex-direction:column;gap:6px;}
-.p8-pens-caixa{position:relative;}
-.p8-pens-caixa textarea{width:100%;}
+/* Container de pensamentos (suporta múltiplas caixas) */
+.p8-pens-container{display:flex;flex-direction:column;gap:8px;}
+.p8-pens-extra{position:relative;}
+.p8-pens-extra textarea{width:100%;padding-right:36px;}
 .p8-pens-remover{
-  position:absolute;top:4px;right:4px;
+  position:absolute;top:8px;right:8px;
   width:24px;height:24px;border-radius:50%;
   border:none;background:#F1F4F7;color:var(--txt-l);
   cursor:pointer;font-size:14px;line-height:1;
@@ -1280,7 +1278,7 @@ body{
   padding:10px 14px;font-family:'Nunito',sans-serif;
   font-size:13px;font-weight:700;color:var(--coral);
   cursor:pointer;width:100%;text-align:center;
-  transition:all 0.15s;margin-top:6px;
+  transition:all 0.15s;margin-top:8px;
 }
 .p8-pens-add:hover{background:#FDF0EE;border-color:var(--coral);}
 .p8-pens-add.green{color:var(--green);}
@@ -3577,12 +3575,10 @@ body{
       <!-- Pacote 8: Caixa(s) de texto livre para descrever pensamentos.
            Backend: quando reset, criar coluna neg_pens_o_que (texto único,
            múltiplos pensamentos separados por " | "). -->
-      <div class="p8-texto-wrap">
-        <div class="auto-field"><label>Quais pensamentos passaram pela sua mente?</label></div>
+      <div class="auto-field">
+        <label>Quais pensamentos passaram pela sua mente? <span class="req">*</span></label>
         <div class="p8-pens-container" id="negPensContainer" data-tipo="neg">
-          <div class="p8-pens-caixa">
-            <textarea data-auto-campo-pens="neg" rows="3" placeholder="O que estava passando pela minha mente instantes antes de eu começar a me sentir assim? Que imagens ou lembranças tenho nesta situação?"></textarea>
-          </div>
+          <textarea data-auto-campo-pens="neg" rows="4" placeholder="O que estava passando pela minha mente instantes antes de eu começar a me sentir assim? Que imagens ou lembranças tenho nesta situação?"></textarea>
         </div>
         <button type="button" class="p8-pens-add" onclick="p8AdicionarPensamento('neg')">+ Adicionar outro pensamento</button>
       </div>
@@ -4315,11 +4311,9 @@ body{
       </div>
 
       <!-- Pacote 8: Caixa de texto livre para descrever comportamento -->
-      <div class="p8-texto-wrap">
-        <div class="auto-field"><label>Como você reagiu a essa situação?</label></div>
-        <div class="p8-pens-caixa">
-          <textarea data-auto-campo-comp="neg" rows="3" placeholder="O que você fez nessa situação? Como você agiu ou reagiu diante disso?"></textarea>
-        </div>
+      <div class="auto-field">
+        <label>Como você reagiu a essa situação? <span class="req">*</span></label>
+        <textarea data-auto-campo-comp="neg" rows="4" placeholder="O que você fez nessa situação? Como você agiu ou reagiu diante disso?"></textarea>
       </div>
 
       <div class="auto-group coral" data-grupo="neg_comp_evitacao" data-tem-likert="0" style="background:var(--coral-bg);border-color:var(--coral);">
@@ -5525,12 +5519,10 @@ body{
       <div class="auto-scale green"><span>① Não acredito</span><span>② Pouco</span><span>③ Moderadamente</span><span>④ Muito</span><span>⑤ Totalmente</span></div>
 
       <!-- Pacote 8: Caixa(s) de texto livre para descrever pensamentos positivos -->
-      <div class="p8-texto-wrap">
-        <div class="auto-field"><label>Quais pensamentos passaram pela sua mente?</label></div>
+      <div class="auto-field">
+        <label>Quais pensamentos passaram pela sua mente? <span class="req">*</span></label>
         <div class="p8-pens-container" id="posPensContainer" data-tipo="pos">
-          <div class="p8-pens-caixa">
-            <textarea data-auto-campo-pens="pos" rows="3" placeholder="O que estava passando pela minha mente instantes antes de eu começar a me sentir assim? Que imagens ou lembranças tenho nesta situação?"></textarea>
-          </div>
+          <textarea data-auto-campo-pens="pos" rows="4" placeholder="O que estava passando pela minha mente instantes antes de eu começar a me sentir assim? Que imagens ou lembranças tenho nesta situação?"></textarea>
         </div>
         <button type="button" class="p8-pens-add green" onclick="p8AdicionarPensamento('pos')">+ Adicionar outro pensamento</button>
       </div>
@@ -6029,11 +6021,9 @@ body{
       </div>
 
       <!-- Pacote 8: Caixa de texto livre para descrever comportamento -->
-      <div class="p8-texto-wrap">
-        <div class="auto-field"><label>Como você reagiu a essa situação?</label></div>
-        <div class="p8-pens-caixa">
-          <textarea data-auto-campo-comp="pos" rows="3" placeholder="O que você fez nessa situação? Como você agiu ou reagiu diante disso?"></textarea>
-        </div>
+      <div class="auto-field">
+        <label>Como você reagiu a essa situação? <span class="req">*</span></label>
+        <textarea data-auto-campo-comp="pos" rows="4" placeholder="O que você fez nessa situação? Como você agiu ou reagiu diante disso?"></textarea>
       </div>
 
       <div class="auto-group green" data-grupo="pos_comp_enfrentamento" data-tem-likert="0" style="background:var(--green-bg);border-color:var(--green);">
@@ -8885,24 +8875,19 @@ const P8_STATE = {
 function p8AdicionarPensamento(tipo) {
   const container = document.getElementById(tipo + 'PensContainer');
   if (!container) return;
-  const nova = document.createElement('div');
-  nova.className = 'p8-pens-caixa';
+  const wrap = document.createElement('div');
+  wrap.className = 'p8-pens-extra';
   const placeholder = 'O que estava passando pela minha mente instantes antes de eu começar a me sentir assim? Que imagens ou lembranças tenho nesta situação?';
-  nova.innerHTML = '<textarea data-auto-campo-pens="' + tipo + '" rows="3" placeholder="' + placeholder + '"></textarea>' +
+  wrap.innerHTML = '<textarea data-auto-campo-pens="' + tipo + '" rows="4" placeholder="' + placeholder + '"></textarea>' +
     '<button type="button" class="p8-pens-remover" title="Remover este pensamento" onclick="p8RemoverPensamento(this)">×</button>';
-  container.appendChild(nova);
-  // Foca no novo textarea
-  const ta = nova.querySelector('textarea');
+  container.appendChild(wrap);
+  const ta = wrap.querySelector('textarea');
   if (ta) ta.focus();
 }
 
 function p8RemoverPensamento(btn) {
-  const caixa = btn.closest('.p8-pens-caixa');
-  if (!caixa) return;
-  const container = caixa.parentElement;
-  // Não permite remover se for a única caixa
-  if (container.querySelectorAll('.p8-pens-caixa').length <= 1) return;
-  caixa.remove();
+  const wrap = btn.closest('.p8-pens-extra');
+  if (wrap) wrap.remove();
 }
 
 // Abre/fecha um accordion psicoeducativo e marca como lido
@@ -9140,6 +9125,26 @@ function autoValidarSecao(idSecao) {
       return { ok: false, msg: 'Preencha pelo menos o campo "O que aconteceu?"' };
     }
     return { ok: true };
+  }
+
+  // Pacote 8: Pensamentos exige a primeira caixa de texto preenchida
+  if (idSecao === 'sec-auto-pens-a' || idSecao === 'sec-auto-pens-b') {
+    const tipo = idSecao === 'sec-auto-pens-a' ? 'neg' : 'pos';
+    const caixas = sec.querySelectorAll(`[data-auto-campo-pens="${tipo}"]`);
+    let temTexto = false;
+    caixas.forEach(c => { if (c.value.trim()) temTexto = true; });
+    if (!temTexto) {
+      return { ok: false, msg: 'Descreva pelo menos um pensamento na caixa de texto antes de avançar.' };
+    }
+  }
+
+  // Pacote 8: Comportamentos exige a caixa de texto preenchida
+  if (idSecao === 'sec-auto-comp-a' || idSecao === 'sec-auto-comp-b') {
+    const tipo = idSecao === 'sec-auto-comp-a' ? 'neg' : 'pos';
+    const caixa = sec.querySelector(`[data-auto-campo-comp="${tipo}"]`);
+    if (!caixa || !caixa.value.trim()) {
+      return { ok: false, msg: 'Descreva como você reagiu na caixa de texto antes de avançar.' };
+    }
   }
 
   // Outras seções: pelo menos um grupo precisa ter item marcado (E Likert se aplicável)
@@ -9590,6 +9595,43 @@ function autoAbrirResumo() {
     return html;
   }
 
+  // ---- Utilitário: renderiza bloco(s) de texto livre antes dos grupos ----
+  // Aceita 1 texto único (string) ou múltiplos separados por " | "
+  function revBlocoTextoLivre(texto, cor) {
+    if (!texto || !String(texto).trim()) return '';
+    const partes = String(texto).split(' | ').map(s => s.trim()).filter(Boolean);
+    let html = '';
+    partes.forEach(p => {
+      html += '<div class="rev-sit-texto ' + cor + '" style="margin-bottom:6px;">' + escapeHtmlAuto(p) + '</div>';
+    });
+    return html;
+  }
+
+  // ---- Utilitário: categoria com texto livre antes (Pensamentos/Comportamentos) ----
+  function revCategoriaComTexto(icone, label, textoLivre, chaves, cor, temLikert) {
+    const preenchidos = chaves.filter(k => d[k] && d[k].trim());
+    const temTextoLivre = textoLivre && String(textoLivre).trim();
+    if (preenchidos.length === 0 && !temTextoLivre) return '';
+    let html = '<div class="rev-cat">';
+    html += '<div class="rev-cat-head">';
+    html += '<div class="rev-cat-icon ' + cor + '">' + icone + '</div>';
+    html += '<div class="rev-cat-label">' + escapeHtmlAuto(label) + '</div>';
+    html += '</div>';
+    // Texto livre PRIMEIRO
+    html += revBlocoTextoLivre(textoLivre, cor);
+    // Depois os grupos
+    preenchidos.forEach(k => {
+      const titulo = revTituloGrupo(k);
+      const pills = revPillsGrupo(d[k], cor, temLikert);
+      html += '<div class="rev-grupo ' + cor + '">';
+      html += '<div class="rev-grupo-nome">' + escapeHtmlAuto(titulo) + '</div>';
+      html += '<div class="rev-grupo-itens">' + pills + '</div>';
+      html += '</div>';
+    });
+    html += '</div><div class="rev-sep"></div>';
+    return html;
+  }
+
   // ---- Início da montagem ----
   let html = '';
 
@@ -9644,12 +9686,12 @@ function autoAbrirResumo() {
     html += revCategoria('💔', 'Emoções', ['neg_emo_tristeza','neg_emo_ansiedade','neg_emo_raiva','neg_emo_culpa','neg_emo_ciume'], 'coral', true);
     // Reações Físicas
     html += revCategoria('⚡', 'Reações Físicas', ['neg_fis_ativacao','neg_fis_desativacao','neg_fis_tensao','neg_fis_digestivas','neg_fis_sono'], 'coral', true);
-    // Pensamentos
-    html += revCategoria('🌧️', 'Pensamentos', ['neg_pens_sobre_mim','neg_pens_sobre_futuro','neg_pens_sobre_outros','neg_pens_cobranca','neg_pens_culpa'], 'amber', true);
+    // Pensamentos (com texto livre)
+    html += revCategoriaComTexto('🌧️', 'Pensamentos', d.neg_pens_o_que, ['neg_pens_sobre_mim','neg_pens_sobre_futuro','neg_pens_sobre_outros','neg_pens_cobranca','neg_pens_culpa'], 'amber', true);
     // Distorções
     html += revCategoria('🔎', 'Distorções Cognitivas', ['neg_dist_previsao','neg_dist_generalizacao','neg_dist_percepcao','neg_dist_interpretacao','neg_dist_exigencia'], 'amber', false);
-    // Comportamentos
-    html += revCategoria('📉', 'Comportamentos', ['neg_comp_evitacao','neg_comp_isolamento','neg_comp_reatividade','neg_comp_entorpecimento','neg_comp_controle'], 'coral', false);
+    // Comportamentos (com texto livre)
+    html += revCategoriaComTexto('📉', 'Comportamentos', d.neg_comp_o_que, ['neg_comp_evitacao','neg_comp_isolamento','neg_comp_reatividade','neg_comp_entorpecimento','neg_comp_controle'], 'coral', false);
 
     html += '</div>';
   }
@@ -9671,10 +9713,10 @@ function autoAbrirResumo() {
     html += revCategoria('💚', 'Emoções', ['pos_emo_felicidade','pos_emo_orgulho','pos_emo_conexao','pos_emo_calma','pos_emo_esperanca'], 'green', true);
     // Reações Físicas
     html += revCategoria('🌿', 'Reações Físicas', ['pos_fis_calma','pos_fis_energia','pos_fis_relaxamento','pos_fis_digestivo','pos_fis_atencao'], 'green', true);
-    // Pensamentos
-    html += revCategoria('☀️', 'Pensamentos', ['pos_pens_autocompaixao','pos_pens_esperanca','pos_pens_confianca','pos_pens_flexibilidade','pos_pens_responsabilidade'], 'green', true);
-    // Comportamentos
-    html += revCategoria('📈', 'Comportamentos', ['pos_comp_enfrentamento','pos_comp_conexao','pos_comp_expressao','pos_comp_autocuidado','pos_comp_aceitacao'], 'green', false);
+    // Pensamentos (com texto livre)
+    html += revCategoriaComTexto('☀️', 'Pensamentos', d.pos_pens_o_que, ['pos_pens_autocompaixao','pos_pens_esperanca','pos_pens_confianca','pos_pens_flexibilidade','pos_pens_responsabilidade'], 'green', true);
+    // Comportamentos (com texto livre)
+    html += revCategoriaComTexto('📈', 'Comportamentos', d.pos_comp_o_que, ['pos_comp_enfrentamento','pos_comp_conexao','pos_comp_expressao','pos_comp_autocuidado','pos_comp_aceitacao'], 'green', false);
 
     html += '</div>';
   }
@@ -9899,10 +9941,8 @@ function histSecaoExpandida(r, tipo, cor) {
 
     html += '</div></div>';
 
-    // Texto livre da situação (truncado)
-    if (textoLivre) {
-      html += '<div class="hist-sit-texto">' + escapeHtmlAuto(textoLivre) + '</div>';
-    }
+    // Pacote 8: texto livre da Situação NÃO aparece mais na lista resumida.
+    // Aparece apenas no modal ampliado (lupa). Mantém a lista limpa.
 
     html += '</div>';
   });
@@ -9976,26 +10016,37 @@ function histModalSecaoCompleta(r, tipo, cor, titulo) {
   }
 
   // Categorias
+  // Pacote 8: 'temTexto' indica que essa categoria pode ter texto livre antes
   const categorias = tipo === 'neg' ? [
     { icon:'💔', label:'Emoções', prefixos:['_emo_tristeza','_emo_ansiedade','_emo_raiva','_emo_culpa','_emo_ciume'], cor:cor, likert:true },
     { icon:'⚡', label:'Reações Físicas', prefixos:['_fis_ativacao','_fis_desativacao','_fis_tensao','_fis_digestivas','_fis_sono'], cor:cor, likert:true },
-    { icon:'🌧️', label:'Pensamentos', prefixos:['_pens_sobre_mim','_pens_sobre_futuro','_pens_sobre_outros','_pens_cobranca','_pens_culpa'], cor:corAmber, likert:true },
+    { icon:'🌧️', label:'Pensamentos', prefixos:['_pens_sobre_mim','_pens_sobre_futuro','_pens_sobre_outros','_pens_cobranca','_pens_culpa'], cor:corAmber, likert:true, textoChave:'_pens_o_que' },
     { icon:'🔎', label:'Distorções Cognitivas', prefixos:['_dist_previsao','_dist_generalizacao','_dist_percepcao','_dist_interpretacao','_dist_exigencia'], cor:corAmber, likert:false },
-    { icon:'📉', label:'Comportamentos', prefixos:['_comp_evitacao','_comp_isolamento','_comp_reatividade','_comp_entorpecimento','_comp_controle'], cor:cor, likert:false },
+    { icon:'📉', label:'Comportamentos', prefixos:['_comp_evitacao','_comp_isolamento','_comp_reatividade','_comp_entorpecimento','_comp_controle'], cor:cor, likert:false, textoChave:'_comp_o_que' },
   ] : [
     { icon:'💚', label:'Emoções', prefixos:['_emo_felicidade','_emo_orgulho','_emo_conexao','_emo_calma','_emo_esperanca'], cor:cor, likert:true },
     { icon:'🌿', label:'Reações Físicas', prefixos:['_fis_calma','_fis_energia','_fis_relaxamento','_fis_digestivo','_fis_atencao'], cor:cor, likert:true },
-    { icon:'☀️', label:'Pensamentos', prefixos:['_pens_autocompaixao','_pens_esperanca','_pens_confianca','_pens_flexibilidade','_pens_responsabilidade'], cor:cor, likert:true },
-    { icon:'📈', label:'Comportamentos', prefixos:['_comp_enfrentamento','_comp_conexao','_comp_expressao','_comp_autocuidado','_comp_aceitacao'], cor:cor, likert:false },
+    { icon:'☀️', label:'Pensamentos', prefixos:['_pens_autocompaixao','_pens_esperanca','_pens_confianca','_pens_flexibilidade','_pens_responsabilidade'], cor:cor, likert:true, textoChave:'_pens_o_que' },
+    { icon:'📈', label:'Comportamentos', prefixos:['_comp_enfrentamento','_comp_conexao','_comp_expressao','_comp_autocuidado','_comp_aceitacao'], cor:cor, likert:false, textoChave:'_comp_o_que' },
   ];
 
   categorias.forEach(cat => {
     const chaves = cat.prefixos.map(s => tipo + s);
     const preenchidos = chaves.filter(k => r[k] && r[k].trim());
-    if (preenchidos.length === 0) return;
+    // Pacote 8: pega texto livre se essa categoria tem
+    const textoCatLivre = cat.textoChave ? (r[tipo + cat.textoChave] || '').trim() : '';
+    if (preenchidos.length === 0 && !textoCatLivre) return;
 
     html += '<div class="rev-cat">';
     html += '<div class="rev-cat-head"><div class="rev-cat-icon ' + cat.cor + '">' + cat.icon + '</div><div class="rev-cat-label">' + escapeHtmlAuto(cat.label) + '</div></div>';
+
+    // Pacote 8: texto livre vem PRIMEIRO (suporta múltiplos pensamentos separados por " | ")
+    if (textoCatLivre) {
+      const partesTxt = textoCatLivre.split(' | ').map(s => s.trim()).filter(Boolean);
+      partesTxt.forEach(p => {
+        html += '<div class="rev-sit-texto ' + cat.cor + '" style="margin-bottom:6px;">' + escapeHtmlAuto(p) + '</div>';
+      });
+    }
 
     preenchidos.forEach(k => {
       const tit = histTituloGrupo(k);
