@@ -1254,6 +1254,182 @@ body{
 .panel-soon-icon{font-size:56px;display:block;margin-bottom:14px;}
 .panel-soon-title{font-family:'Quicksand',sans-serif;font-size:18px;font-weight:700;color:var(--blue);margin-bottom:8px;}
 .panel-soon-text{font-size:13px;color:var(--txt-m);line-height:1.6;max-width:400px;margin:0 auto;}
+
+/* ============================================================
+   PACOTE 8 — Caixas de texto livre + Card consulta + Sumário expandido
+   ============================================================ */
+
+/* Caixa de texto livre antes dos grupos (Pensamentos / Comportamentos) */
+.p8-texto-wrap{margin-bottom:14px;}
+.p8-texto-wrap .auto-field{margin-bottom:6px;}
+.p8-pens-container{display:flex;flex-direction:column;gap:6px;}
+.p8-pens-caixa{position:relative;}
+.p8-pens-caixa textarea{width:100%;}
+.p8-pens-remover{
+  position:absolute;top:4px;right:4px;
+  width:24px;height:24px;border-radius:50%;
+  border:none;background:#F1F4F7;color:var(--txt-l);
+  cursor:pointer;font-size:14px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;
+}
+.p8-pens-remover:hover{background:#FFE5E0;color:#C24A3B;}
+.p8-pens-add{
+  background:linear-gradient(135deg,#FAFBFC,#F1F4F7);
+  border:1.5px dashed #C8D1DA;border-radius:10px;
+  padding:10px 14px;font-family:'Nunito',sans-serif;
+  font-size:13px;font-weight:700;color:var(--coral);
+  cursor:pointer;width:100%;text-align:center;
+  transition:all 0.15s;margin-top:6px;
+}
+.p8-pens-add:hover{background:#FDF0EE;border-color:var(--coral);}
+.p8-pens-add.green{color:var(--green);}
+.p8-pens-add.green:hover{background:var(--green-bg,#EAF7EF);border-color:var(--green);}
+
+/* Card de consulta colapsável (perguntas-guia por emoção) */
+.p8-consulta{
+  background:linear-gradient(135deg,#FFF8EC,#FFFCF5);
+  border:1.5px solid #E8D5A0;border-radius:12px;
+  margin:14px 0 16px;overflow:hidden;
+  transition:all 0.2s;
+}
+.p8-consulta-head{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 14px;cursor:pointer;
+  user-select:none;
+}
+.p8-consulta-icon{font-size:20px;flex-shrink:0;}
+.p8-consulta-titulo{
+  flex:1;font-family:'Quicksand',sans-serif;
+  font-size:13.5px;font-weight:700;color:#7A6228;
+}
+.p8-consulta-chevron{
+  font-size:18px;color:#A88B40;
+  transition:transform 0.2s;
+}
+.p8-consulta.open .p8-consulta-chevron{transform:rotate(90deg);}
+.p8-consulta-body{
+  display:none;padding:0 14px 14px;
+  border-top:1px solid #E8D5A0;
+}
+.p8-consulta.open .p8-consulta-body{display:block;padding-top:12px;}
+.p8-consulta-intro{
+  font-size:12px;color:#7A6228;line-height:1.5;
+  margin-bottom:12px;font-style:italic;
+}
+.p8-consulta-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:10px;
+}
+.p8-consulta-card{
+  background:rgba(255,255,255,0.7);border-radius:10px;
+  padding:10px 12px;border-left:3px solid;
+}
+.p8-consulta-card.coral{border-color:var(--coral);}
+.p8-consulta-card.amber{border-color:var(--amber);}
+.p8-consulta-card.green{border-color:var(--green);}
+.p8-consulta-card.blue{border-color:var(--blue);}
+.p8-consulta-card.purple{border-color:#8B7AB8;}
+.p8-consulta-card-titulo{
+  font-family:'Quicksand',sans-serif;font-size:11.5px;
+  font-weight:700;text-transform:uppercase;
+  letter-spacing:0.4px;margin-bottom:6px;
+  color:var(--txt);
+}
+.p8-consulta-card-perguntas{
+  font-size:12px;color:var(--txt-m);
+  line-height:1.5;font-style:italic;
+}
+.p8-consulta-card-perguntas p{margin:0 0 4px;}
+
+/* Acordeons psicoeducativos no fim do "Como Usar" */
+.p8-edu-intro{
+  margin:24px 0 16px;padding:14px 16px;
+  background:linear-gradient(135deg,var(--blue-lt),#F5FAFC);
+  border-left:4px solid var(--blue);border-radius:10px;
+  font-size:13px;color:var(--txt-m);line-height:1.55;
+}
+.p8-edu-intro strong{color:var(--blue);}
+.p8-edu-progresso{
+  display:flex;align-items:center;justify-content:space-between;
+  margin:10px 0 14px;padding:10px 14px;
+  background:#F7F9FB;border-radius:10px;
+  font-size:12.5px;color:var(--txt-m);font-weight:600;
+}
+.p8-edu-progresso-num{
+  background:var(--blue);color:#fff;
+  padding:2px 10px;border-radius:12px;
+  font-weight:800;font-size:12px;
+}
+.p8-edu-acc{
+  background:var(--w);border:1.5px solid #E1E7EB;
+  border-radius:12px;margin-bottom:8px;overflow:hidden;
+  transition:all 0.2s;
+}
+.p8-edu-acc.lida{border-color:var(--green);background:#FAFCFB;}
+.p8-edu-head{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 16px;cursor:pointer;user-select:none;
+}
+.p8-edu-icon{
+  width:34px;height:34px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+}
+.p8-edu-icon.green{background:var(--green-bg,#EAF7EF);}
+.p8-edu-icon.blue{background:var(--blue-lt);}
+.p8-edu-icon.coral{background:var(--coral-bg,#FDF0EE);}
+.p8-edu-icon.amber{background:var(--amber-bg,#FFF8EC);}
+.p8-edu-titulo{
+  flex:1;font-family:'Quicksand',sans-serif;
+  font-size:14.5px;font-weight:700;color:var(--txt);
+}
+.p8-edu-check{
+  font-size:18px;color:var(--green);
+  display:none;flex-shrink:0;
+}
+.p8-edu-acc.lida .p8-edu-check{display:block;}
+.p8-edu-chevron{
+  font-size:18px;color:var(--txt-l);
+  transition:transform 0.2s;flex-shrink:0;
+}
+.p8-edu-acc.open .p8-edu-chevron{transform:rotate(90deg);}
+.p8-edu-body{
+  display:none;padding:0 18px 18px;
+  border-top:1px solid #E8ECF0;
+  font-size:13.5px;color:var(--txt-m);line-height:1.65;
+}
+.p8-edu-acc.open .p8-edu-body{display:block;padding-top:14px;}
+.p8-edu-body p{margin:0 0 10px;}
+.p8-edu-body p:last-child{margin-bottom:0;}
+.p8-edu-body strong{color:var(--txt);}
+.p8-edu-body h4{
+  font-family:'Quicksand',sans-serif;font-size:13.5px;
+  color:var(--txt);margin:14px 0 6px;font-weight:700;
+}
+.p8-edu-body ul{margin:6px 0 10px 20px;padding:0;}
+.p8-edu-body li{margin-bottom:6px;}
+.p8-edu-body blockquote{
+  background:#F7F9FB;border-left:3px solid var(--blue);
+  padding:10px 14px;margin:10px 0;border-radius:6px;
+  font-style:italic;color:var(--txt-m);
+}
+.p8-edu-exemplo{
+  background:linear-gradient(135deg,#FFF8EC,#FFFCF5);
+  border-left:3px solid var(--amber);border-radius:8px;
+  padding:10px 14px;margin:10px 0;font-size:12.5px;
+  color:#7A6228;
+}
+.p8-edu-exemplo strong{color:#5A4818;}
+
+/* Botão "Entendi" desabilitado quando ainda não leu tudo */
+.p5-btn-entendi.p8-disabled{
+  opacity:0.55;cursor:not-allowed;
+  background:linear-gradient(135deg,#B8C8C0,#A5B6AD);
+  box-shadow:none;
+}
+.p5-btn-entendi.p8-disabled:hover{transform:none;box-shadow:none;}
+
 /* ============================================================
    PAINEL DE EVOLUÇÃO — CSS isolado com prefixo pev-
    Pacote 2 · Etapa 2.4 · Adição não destrutiva
@@ -1767,8 +1943,9 @@ body{
       <h3>Como funciona o preenchimento</h3>
       <ul>
         <li><strong>Na primeira vez</strong>, você precisa seguir as etapas em ordem (da Situação aos Comportamentos). Depois, pode navegar livremente.</li>
-        <li><strong>Clique no título de cada grupo</strong> para abrir as opções. Marque os itens que correspondem à sua experiência.</li>
-        <li><strong>Nas seções de Emoções, Reações Físicas e Pensamentos</strong>, para toda opção selecionada aparecerá uma escala de intensidade que deverá ser preenchida.</li>
+        <li><strong>Em cada seção</strong>, descreva o que aconteceu nas caixas de texto e clique no título de cada grupo para abrir as opções. Marque os itens que correspondem à sua experiência.</li>
+        <li><strong>Nas seções de Emoções, Reações Físicas e Pensamentos</strong>, para toda opção selecionada aparecerá uma escala que deverá ser preenchida — ela mede a intensidade do que você sentiu ou o quanto você acredita naquele pensamento.</li>
+        <li><strong>Na seção de Pensamentos</strong>, você pode adicionar mais de uma caixa de texto. Use o botão "+" para registrar um pensamento por vez, em vez de juntar tudo em uma só.</li>
         <li><strong>Registro Negativo primeiro.</strong> Na sua primeira experiência, o Registro Positivo só abre depois que você completar o primeiro negativo.</li>
       </ul>
       <h3>Escalas</h3>
@@ -1777,12 +1954,210 @@ body{
       <div class="auto-scale green"><span>① Nada</span><span>② Pouco</span><span>③ Moderado</span><span>④ Muito</span><span>⑤ Pleno</span></div>
       <p style="font-size:10.5px;color:var(--txt-l);margin-bottom:8px;">↑ Emoções agradáveis e reações de bem-estar</p>
       <div class="auto-scale amber"><span>① Não acredito</span><span>② Pouco</span><span>③ Moderado</span><span>④ Muito</span><span>⑤ Totalmente</span></div>
-      <p style="font-size:10.5px;color:var(--txt-l);">↑ Pensamentos (grau de crença)</p>
+      <p style="font-size:10.5px;color:var(--txt-l);">↑ Pensamentos — o quanto você acredita neles</p>
 
-      <!-- Pacote 5: botão "Entendi" — só aparece na primeira vez -->
+      <!-- ============================================================
+           PACOTE 8 — Conteúdo psicoeducativo expandido (6 seções)
+           ============================================================
+           Para destravar o botão "Entendi", o paciente precisa abrir
+           todas as 6 seções pelo menos uma vez. Default seguro: o
+           botão começa desabilitado e só libera após leitura completa.
+      -->
+      <div class="p8-edu-intro">
+        <strong>📚 Saiba mais sobre o registro</strong><br>
+        Antes de começar, leia as 6 seções abaixo. Elas vão te ajudar a entender melhor cada parte do registro e como aproveitar essa ferramenta.
+      </div>
+
+      <div class="p8-edu-progresso">
+        <span>Sua leitura</span>
+        <span class="p8-edu-progresso-num"><span id="p8EduLidas">0</span> de 6 lidas</span>
+      </div>
+
+      <!-- SEÇÃO 1 -->
+      <div class="p8-edu-acc" data-edu-idx="1">
+        <div class="p8-edu-head" onclick="p8AbrirEdu(this)">
+          <div class="p8-edu-icon green">🌱</div>
+          <div class="p8-edu-titulo">1. O que é este registro e por que ele importa</div>
+          <div class="p8-edu-check">✓</div>
+          <div class="p8-edu-chevron">›</div>
+        </div>
+        <div class="p8-edu-body">
+          <p>O <strong>Registro de Automonitoramento</strong> é uma das ferramentas mais importantes da Terapia Cognitivo-Comportamental (TCC). Ele não é um diário comum nem um simples espaço para desabafar — é um instrumento clínico que ajuda você a <strong>observar com mais clareza o que acontece dentro de você</strong>, especialmente nos momentos em que tudo parece confuso ou intenso demais.</p>
+          <p>Quando vivenciamos uma situação difícil, é comum sentirmos uma mistura de emoções, sensações no corpo, pensamentos rápidos e impulsos para agir. Tudo isso acontece em poucos segundos, e muitas vezes nem percebemos com clareza o que está se passando. O registro convida você a <strong>pausar, olhar com calma e nomear cada um desses elementos</strong>.</p>
+          <p>Com o tempo, à medida que você vai preenchendo os registros, começa a perceber <strong>padrões</strong>: emoções que se repetem, pensamentos que aparecem em situações parecidas, reações do corpo que sinalizam algo importante, comportamentos que ajudam ou que atrapalham. Esses padrões são preciosos — são eles que vão guiar o trabalho terapêutico.</p>
+          <p><strong>Importante:</strong> este registro não substitui a terapia. Ele é um complemento que enriquece o trabalho que estamos fazendo juntos no consultório. Os dados que você registra aqui podem ser conversados nas sessões e usados como ponto de partida para reflexões mais profundas.</p>
+          <blockquote>Pense neste registro como um <strong>espelho gentil</strong>: ele não julga, não corrige — apenas reflete o que você está vivendo, para que você possa enxergar com mais clareza.</blockquote>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 2 -->
+      <div class="p8-edu-acc" data-edu-idx="2">
+        <div class="p8-edu-head" onclick="p8AbrirEdu(this)">
+          <div class="p8-edu-icon blue">🧠</div>
+          <div class="p8-edu-titulo">2. O modelo da TCC: a conexão entre cinco elementos</div>
+          <div class="p8-edu-check">✓</div>
+          <div class="p8-edu-chevron">›</div>
+        </div>
+        <div class="p8-edu-body">
+          <p>A Terapia Cognitivo-Comportamental se baseia em uma ideia central: <strong>o que sentimos, pensamos e fazemos está profundamente conectado</strong>. Esses elementos não são separados — eles se influenciam o tempo todo, formando uma teia que constrói nossa experiência.</p>
+          <p>O modelo da TCC organiza essa teia em <strong>cinco elementos principais</strong>:</p>
+          <p><strong>1. Situação</strong> — O que acontece. Pode ser algo externo (uma conversa, um acontecimento, um lugar) ou interno (uma lembrança, uma sensação, um pensamento que surge do nada).</p>
+          <p><strong>2. Pensamentos</strong> — O que passa pela sua mente diante daquela situação. São interpretações, julgamentos, previsões, lembranças, imagens.</p>
+          <p><strong>3. Emoções</strong> — O que você sente. Tristeza, ansiedade, raiva, alegria, culpa, vergonha — emoções são respostas naturais às nossas interpretações.</p>
+          <p><strong>4. Reações Físicas</strong> — Como seu corpo responde. Coração acelerado, tensão muscular, cansaço, lágrimas, calor, formigamento. O corpo é parte da experiência emocional.</p>
+          <p><strong>5. Comportamentos</strong> — O que você faz (ou deixa de fazer). Suas ações, escolhas, evitações, gestos.</p>
+          <blockquote><strong>Situação</strong> → você interpreta de algum jeito (<strong>pensamento</strong>) → essa interpretação dispara uma <strong>emoção</strong> → o corpo responde (<strong>reação física</strong>) → e você reage com algum <strong>comportamento</strong>.</blockquote>
+          <div class="p8-edu-exemplo">
+            <strong>Exemplo prático:</strong> Imagine que você manda uma mensagem para um amigo (situação) e ele demora horas para responder. Você pensa: "Ele está bravo comigo, eu fiz algo errado" (pensamento). Isso desperta ansiedade e tristeza (emoções). Seu coração acelera e você sente um peso no peito (reação física). Você decide não falar mais com ele e fica olhando o celular o tempo todo (comportamento).
+          </div>
+          <p>Note que <strong>a situação em si não causou a reação</strong> — foi a <strong>interpretação que você fez dela</strong> que desencadeou tudo o que veio depois. Esse é o coração da TCC: aprender a perceber as próprias interpretações é o primeiro passo para mudar como nos sentimos e agimos.</p>
+          <p>E aqui vai algo fundamental: <strong>essa relação não é uma rua de mão única</strong>. Mudar um elemento pode mudar todos os outros. Mudar como você pensa pode aliviar uma emoção. Mudar um comportamento pode transformar uma sensação corporal. Por isso o registro pede para você observar todos os cinco — eles são partes de um mesmo movimento.</p>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 3 -->
+      <div class="p8-edu-acc" data-edu-idx="3">
+        <div class="p8-edu-head" onclick="p8AbrirEdu(this)">
+          <div class="p8-edu-icon coral">📝</div>
+          <div class="p8-edu-titulo">3. Como preencher cada parte do registro</div>
+          <div class="p8-edu-check">✓</div>
+          <div class="p8-edu-chevron">›</div>
+        </div>
+        <div class="p8-edu-body">
+          <p>O registro é organizado em etapas, e cada etapa corresponde a um dos elementos do modelo da TCC. Aqui vai uma orientação para cada parte:</p>
+
+          <h4>📍 Situação</h4>
+          <p>Descreva o que aconteceu de forma <strong>objetiva e sem julgamento</strong>. Pense como se estivesse contando para alguém o que viu acontecer, sem adicionar interpretações ou explicações ainda.</p>
+          <div class="p8-edu-exemplo">
+            <strong>Em vez de:</strong> "Meu chefe foi um idiota comigo"<br>
+            <strong>Tente:</strong> "Meu chefe me chamou na sala dele e disse que o relatório precisava ser refeito"
+          </div>
+          <p>Você também pode marcar o <strong>tipo de situação</strong> que melhor descreve o contexto (interpessoal, desempenho, solidão, perda, situação interna).</p>
+
+          <h4>💔 / 💚 Emoções</h4>
+          <p>Marque as emoções que você sentiu e avalie a <strong>intensidade</strong> de cada uma em uma escala de 1 a 5. Não tem certo nem errado — o importante é se aproximar do que você realmente sentiu, mesmo que seja difícil nomear.</p>
+          <p>Se você sentiu várias emoções ao mesmo tempo, marque todas. É comum sentir tristeza e raiva juntas, ou ansiedade e culpa. As emoções raramente vêm sozinhas.</p>
+
+          <h4>⚡ / 🌿 Reações Físicas</h4>
+          <p>Como seu corpo reagiu? Marque as sensações que percebeu (tensão, cansaço, coração acelerado, dor de cabeça, etc.) e indique a intensidade de cada uma. O corpo costuma falar mesmo quando não temos palavras para o que sentimos — observá-lo é uma forma poderosa de autoconhecimento.</p>
+
+          <h4>🌧️ / ☀️ Pensamentos</h4>
+          <p><strong>Esta é uma das partes mais importantes do registro.</strong> Pensamentos automáticos são aquelas frases ou imagens que passam pela mente em frações de segundo, muitas vezes sem que percebamos. Eles costumam ser tão rápidos que parecem verdades absolutas.</p>
+          <p>A dica aqui é: <strong>fragmente um pensamento por vez</strong>. Em vez de tentar resumir tudo em uma única frase, escreva cada pensamento separadamente. Você pode adicionar quantas caixas de pensamento precisar.</p>
+          <p>Para cada pensamento, avalie em uma escala de 1 a 5 <strong>o quanto você acredita nele</strong> naquele momento. Esse número não é fixo — é uma fotografia daquele instante. Em outro momento, você pode acreditar mais ou menos no mesmo pensamento.</p>
+
+          <h4>🔎 Distorções Cognitivas</h4>
+          <p>Distorções são <strong>padrões de pensamento que distorcem a realidade</strong>. São formas habituais de interpretar o mundo que costumam nos fazer sofrer mais do que precisaríamos. Exemplos: catastrofização (imaginar o pior), leitura mental (achar que sabemos o que o outro pensa), pensamento tudo-ou-nada (ver as coisas em preto e branco).</p>
+          <p>Marque as distorções que você reconhece nos seus pensamentos. Identificá-las é um exercício de <strong>autoconsciência cognitiva</strong> — não para se julgar, mas para perceber que aquele pensamento pode não ser uma verdade absoluta.</p>
+
+          <h4>📉 / 📈 Comportamentos</h4>
+          <p>O que você fez diante dessa situação? Descreva sua reação de forma objetiva — pode ter sido uma ação visível (sair do lugar, gritar, chorar) ou uma decisão interna (decidir não responder, evitar o contato, se isolar).</p>
+          <p>Não há comportamentos "certos" ou "errados" no registro. O que existe são <strong>comportamentos que ajudam</strong> (funcionais) e <strong>comportamentos que atrapalham</strong> (disfuncionais), e mesmo os disfuncionais existem por um motivo: muitas vezes são tentativas de aliviar um sofrimento. Reconhecê-los é o primeiro passo para escolher diferente nas próximas vezes.</p>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 4 -->
+      <div class="p8-edu-acc" data-edu-idx="4">
+        <div class="p8-edu-head" onclick="p8AbrirEdu(this)">
+          <div class="p8-edu-icon amber">💔💚</div>
+          <div class="p8-edu-titulo">4. Negativo e Positivo: por que registrar os dois</div>
+          <div class="p8-edu-check">✓</div>
+          <div class="p8-edu-chevron">›</div>
+        </div>
+        <div class="p8-edu-body">
+          <p>Você vai notar que o registro tem dois lados: o <strong>Registro Negativo</strong> (para momentos difíceis) e o <strong>Registro Positivo</strong> (para momentos bons). É natural perguntar: "Mas se a TCC trabalha com sofrimento, por que registrar coisas boas?"</p>
+          <p>A resposta é simples: <strong>porque os dois lados nos ensinam coisas diferentes e igualmente importantes</strong>.</p>
+
+          <h4>Por que registrar momentos difíceis</h4>
+          <ul>
+            <li>Ajuda a reconhecer <strong>padrões problemáticos</strong> que se repetem</li>
+            <li>Permite observar <strong>quais pensamentos e crenças</strong> estão por trás do sofrimento</li>
+            <li>Mostra <strong>quais situações</strong> costumam disparar reações intensas</li>
+            <li>Cria material concreto para trabalhar na terapia</li>
+            <li>Reduz a sensação de que a emoção difícil é "do nada" — você passa a entender o que a desencadeia</li>
+          </ul>
+
+          <h4>Por que registrar momentos bons</h4>
+          <ul>
+            <li>Ajuda a identificar <strong>recursos pessoais</strong> — coisas que você já faz bem</li>
+            <li>Mostra <strong>o que funciona</strong> para você, quando se sente bem</li>
+            <li>Reforça a percepção de <strong>emoções positivas</strong>, que muitas vezes passam despercebidas</li>
+            <li>Equilibra o foco: nosso cérebro tende a dar mais atenção ao negativo, e registrar o positivo é um exercício de <strong>reequilíbrio</strong></li>
+            <li>Cria um arquivo de memórias e estratégias que você pode revisitar nos momentos difíceis</li>
+          </ul>
+
+          <h4>Os dois lados formam um retrato completo</h4>
+          <p>Quando você registra apenas os momentos difíceis, corre o risco de ter uma visão distorcida de si mesmo — como se a vida fosse só sofrimento. Quando registra apenas os momentos bons, perde a oportunidade de entender e transformar o que dói. <strong>Os dois lados juntos</strong> formam um retrato mais honesto e útil do seu funcionamento emocional.</p>
+          <blockquote>Pense assim: o registro negativo te ajuda a <strong>entender o que precisa de cuidado</strong>. O registro positivo te ajuda a <strong>lembrar do que já funciona</strong>.</blockquote>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 5 -->
+      <div class="p8-edu-acc" data-edu-idx="5">
+        <div class="p8-edu-head" onclick="p8AbrirEdu(this)">
+          <div class="p8-edu-icon blue">📊</div>
+          <div class="p8-edu-titulo">5. Como funcionam as escalas</div>
+          <div class="p8-edu-check">✓</div>
+          <div class="p8-edu-chevron">›</div>
+        </div>
+        <div class="p8-edu-body">
+          <p>Algumas partes do registro pedem para você avaliar a <strong>intensidade</strong> do que sentiu. Existem dois tipos de escala, e cada uma tem um significado diferente:</p>
+
+          <h4>Escala de Intensidade (Emoções e Reações Físicas)</h4>
+          <p>Vai de <strong>1 a 5</strong>, onde:</p>
+          <ul>
+            <li><strong>1</strong> = Nenhum / Nada</li>
+            <li><strong>2</strong> = Pouco</li>
+            <li><strong>3</strong> = Moderado</li>
+            <li><strong>4</strong> = Muito</li>
+            <li><strong>5</strong> = Extremo / Pleno</li>
+          </ul>
+          <p>Use para indicar o <strong>quanto</strong> você sentiu uma emoção ou reação física. Não tente ser perfeito — escolha o número que mais se aproxima da sua experiência naquele momento.</p>
+
+          <h4>Escala "O quanto acredito nesse pensamento" (Pensamentos)</h4>
+          <p>Vai de <strong>1 a 5</strong>, onde:</p>
+          <ul>
+            <li><strong>1</strong> = Não acredito</li>
+            <li><strong>2</strong> = Pouco</li>
+            <li><strong>3</strong> = Moderado</li>
+            <li><strong>4</strong> = Muito</li>
+            <li><strong>5</strong> = Totalmente</li>
+          </ul>
+          <p>Use para indicar <strong>o quanto aquele pensamento parecia verdadeiro</strong> para você naquele momento. Esse número é importante porque mostra o <strong>grau de convicção</strong> que você tinha — e ele pode mudar com o tempo.</p>
+
+          <h4>Por que medir importa</h4>
+          <p>Quantificar suas experiências internas pode parecer estranho no começo, mas tem um propósito clínico: permite <strong>acompanhar mudanças ao longo do tempo</strong>. Uma tristeza que era 5/5 há um mês e agora é 3/5 mostra um movimento real, mesmo quando você não percebe a mudança no dia a dia.</p>
+          <p>As escalas também ajudam você a <strong>diferenciar nuances</strong>: nem toda ansiedade é igual, nem toda alegria tem a mesma profundidade. Aprender a sentir essas diferenças é parte do processo terapêutico.</p>
+        </div>
+      </div>
+
+      <!-- SEÇÃO 6 -->
+      <div class="p8-edu-acc" data-edu-idx="6">
+        <div class="p8-edu-head" onclick="p8AbrirEdu(this)">
+          <div class="p8-edu-icon green">💡</div>
+          <div class="p8-edu-titulo">6. Dicas para um bom preenchimento</div>
+          <div class="p8-edu-check">✓</div>
+          <div class="p8-edu-chevron">›</div>
+        </div>
+        <div class="p8-edu-body">
+          <p>Algumas sugestões para aproveitar melhor o registro:</p>
+          <p><strong>Faça o mais próximo possível do momento.</strong> Quanto mais perto da experiência, mais fiéis serão suas respostas. Memórias de eventos antigos tendem a ser distorcidas pelo tempo.</p>
+          <p><strong>Não tem certo nem errado.</strong> O registro não é uma prova. O importante é a <strong>sinceridade</strong>, não a precisão técnica. Escreva e marque o que parecer mais próximo da sua experiência.</p>
+          <p><strong>Se não souber nomear o que sentiu, escolha o mais próximo.</strong> Às vezes a emoção parece confusa ou misturada. Nesses casos, marque a opção que mais se aproxima — você pode usar o campo "Outro" para descrever com suas próprias palavras.</p>
+          <p><strong>Use o "Outro" sempre que precisar.</strong> Se um item não aparece na lista de opções, use o campo "Outro" e descreva com suas próprias palavras. Sua experiência é única.</p>
+          <p><strong>Não precisa preencher tudo de uma vez.</strong> Você pode salvar e voltar depois. Se uma seção do registro estiver pesada, faça uma pausa.</p>
+          <p><strong>Fragmente os pensamentos.</strong> Em vez de tentar resumir tudo em uma frase, escreva cada pensamento separadamente. Use o botão "+" para adicionar quantos pensamentos precisar. Cada pensamento merece sua própria caixa.</p>
+          <p><strong>Se sentir-se sobrecarregado, pause.</strong> O registro é uma ferramenta de cuidado, não de mais sofrimento. Se em algum momento o preenchimento estiver disparando emoções muito intensas, faça uma pausa. Respire. Volte quando se sentir mais calmo.</p>
+          <p><strong>Conversa na sessão.</strong> Os registros que você fizer aqui podem ser conversados nas sessões. Eles são pontos de partida valiosos para nosso trabalho conjunto. Não é obrigatório mostrar tudo — mas, quando quiser, eles estão lá.</p>
+        </div>
+      </div>
+
+      <!-- Pacote 5: botão "Entendi" — só aparece na primeira vez.
+           Pacote 8: agora também precisa que todas as 6 seções acima
+           tenham sido abertas. Botão começa com classe p8-disabled. -->
       <div class="p5-entendi-box" id="p5EntendiBox">
-        <div class="p5-entendi-texto">Agora que você já sabe como funciona, pode começar seu primeiro registro.</div>
-        <button class="p5-btn-entendi" type="button" onclick="p5MarcarComoUsarLido()">✓ Entendi, estou pronto para começar →</button>
+        <div class="p5-entendi-texto">Você está dando um passo importante ao se dispor a olhar para si mesmo com essa qualidade de atenção. Quando se sentir pronto, clique no botão abaixo para começar.</div>
+        <button class="p5-btn-entendi p8-disabled" id="p8BtnEntendi" type="button" onclick="p8ClicarEntendi()">✓ Entendi, estou pronto para começar →</button>
       </div>
     </div>
   </div>
@@ -3194,10 +3569,72 @@ body{
         <div class="auto-sec-icon" style="background:var(--coral-bg);color:var(--coral);">🌧️</div>
         <div>
           <div class="auto-sec-title" style="color:var(--coral);">Pensamentos Desadaptativos <span class="req">*</span></div>
-          <div class="auto-sec-sub">Identifique pensamentos negativos e avalie o quanto acreditou neles</div>
+          <div class="auto-sec-sub">Identifique pensamentos negativos e avalie o quanto você acredita nesses pensamentos</div>
         </div>
       </div>
       <div class="auto-scale coral"><span>① Não acredito</span><span>② Pouco</span><span>③ Moderadamente</span><span>④ Muito</span><span>⑤ Totalmente</span></div>
+
+      <!-- Pacote 8: Caixa(s) de texto livre para descrever pensamentos.
+           Backend: quando reset, criar coluna neg_pens_o_que (texto único,
+           múltiplos pensamentos separados por " | "). -->
+      <div class="p8-texto-wrap">
+        <div class="auto-field"><label>Quais pensamentos passaram pela sua mente?</label></div>
+        <div class="p8-pens-container" id="negPensContainer" data-tipo="neg">
+          <div class="p8-pens-caixa">
+            <textarea data-auto-campo-pens="neg" rows="3" placeholder="O que estava passando pela minha mente instantes antes de eu começar a me sentir assim? Que imagens ou lembranças tenho nesta situação?"></textarea>
+          </div>
+        </div>
+        <button type="button" class="p8-pens-add" onclick="p8AdicionarPensamento('neg')">+ Adicionar outro pensamento</button>
+      </div>
+
+      <!-- Pacote 8: Card de consulta colapsável com perguntas-guia por emoção -->
+      <div class="p8-consulta" id="negPensConsulta">
+        <div class="p8-consulta-head" onclick="this.parentElement.classList.toggle('open')">
+          <span class="p8-consulta-icon">💡</span>
+          <span class="p8-consulta-titulo">Precisa de ajuda? Veja perguntas que podem guiar sua reflexão</span>
+          <span class="p8-consulta-chevron">›</span>
+        </div>
+        <div class="p8-consulta-body">
+          <div class="p8-consulta-intro">Dependendo da emoção que você sentiu, algumas perguntas podem ajudar a identificar o pensamento por trás dela:</div>
+          <div class="p8-consulta-grid">
+            <div class="p8-consulta-card coral">
+              <div class="p8-consulta-card-titulo">Tristeza / Depressão</div>
+              <div class="p8-consulta-card-perguntas">
+                <p>"O que isso significa sobre mim?"</p>
+                <p>"O que isso diz sobre minha vida ou meu futuro?"</p>
+              </div>
+            </div>
+            <div class="p8-consulta-card blue">
+              <div class="p8-consulta-card-titulo">Ansiedade / Medo</div>
+              <div class="p8-consulta-card-perguntas">
+                <p>"O que temo que possa acontecer?"</p>
+                <p>"Qual a pior coisa que poderia acontecer?"</p>
+              </div>
+            </div>
+            <div class="p8-consulta-card amber">
+              <div class="p8-consulta-card-titulo">Raiva / Irritação</div>
+              <div class="p8-consulta-card-perguntas">
+                <p>"Fui tratado de forma injusta ou desrespeitosa?"</p>
+                <p>"O que isso diz sobre essa pessoa ou as pessoas em geral?"</p>
+              </div>
+            </div>
+            <div class="p8-consulta-card purple">
+              <div class="p8-consulta-card-titulo">Culpa / Vergonha</div>
+              <div class="p8-consulta-card-perguntas">
+                <p>"Fiz algo errado ou magoei alguém?"</p>
+                <p>"O que penso sobre mim por ter feito ou sentido isso?"</p>
+              </div>
+            </div>
+            <div class="p8-consulta-card green">
+              <div class="p8-consulta-card-titulo">Ciúme / Inveja</div>
+              <div class="p8-consulta-card-perguntas">
+                <p>"O que temo perder ou que está ameaçado?"</p>
+                <p>"O que penso sobre mim quando me comparo com outra pessoa?"</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div class="auto-group coral" data-grupo="neg_pens_sobre_mim" data-tem-likert="1" style="background:var(--coral-bg);border-color:var(--coral);">
         <div class="auto-group-head" onclick="autoToggleGrupo(this)">
@@ -3212,7 +3649,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Não sou bom o suficiente&quot;"> &quot;Não sou bom o suficiente&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3225,7 +3662,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Há algo de errado comigo&quot;"> &quot;Há algo de errado comigo&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3238,7 +3675,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Sou um fracasso / incompetente&quot;"> &quot;Sou um fracasso / incompetente&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3251,7 +3688,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Não mereço ser amado / valorizado&quot;"> &quot;Não mereço ser amado / valorizado&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3264,7 +3701,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Sou fraco / não consigo lidar com as coisas&quot;"> &quot;Sou fraco / não consigo lidar com as coisas&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3281,7 +3718,7 @@ body{
             <input class="auto-option-other-inp" type="text" placeholder="especifique...">
           </div>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3307,7 +3744,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;E se tudo der errado?&quot;"> &quot;E se tudo der errado?&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3320,7 +3757,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;O futuro é sem esperança&quot;"> &quot;O futuro é sem esperança&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3333,7 +3770,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Algo terrível vai acontecer&quot;"> &quot;Algo terrível vai acontecer&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3346,7 +3783,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Nunca vou melhorar / sair dessa&quot;"> &quot;Nunca vou melhorar / sair dessa&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3359,7 +3796,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Não vou conseguir lidar com isso&quot;"> &quot;Não vou conseguir lidar com isso&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3376,7 +3813,7 @@ body{
             <input class="auto-option-other-inp" type="text" placeholder="especifique...">
           </div>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3402,7 +3839,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Ninguém se importa comigo&quot;"> &quot;Ninguém se importa comigo&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3415,7 +3852,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Não posso confiar em ninguém&quot;"> &quot;Não posso confiar em ninguém&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3428,7 +3865,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Vão me rejeitar / abandonar&quot;"> &quot;Vão me rejeitar / abandonar&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3441,7 +3878,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Estão sendo injustos / me desrespeitando&quot;"> &quot;Estão sendo injustos / me desrespeitando&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3454,7 +3891,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;As pessoas me julgam / não gostam de mim&quot;"> &quot;As pessoas me julgam / não gostam de mim&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3471,7 +3908,7 @@ body{
             <input class="auto-option-other-inp" type="text" placeholder="especifique...">
           </div>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3497,7 +3934,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Não posso errar / falhar&quot;"> &quot;Não posso errar / falhar&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3510,7 +3947,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Eu deveria dar conta de tudo&quot;"> &quot;Eu deveria dar conta de tudo&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3523,7 +3960,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Eu deveria ser mais forte / melhor&quot;"> &quot;Eu deveria ser mais forte / melhor&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3536,7 +3973,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;As pessoas deveriam agir de outra forma&quot;"> &quot;As pessoas deveriam agir de outra forma&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3549,7 +3986,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Se eu não fizer perfeitamente, não vale nada&quot;"> &quot;Se eu não fizer perfeitamente, não vale nada&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3566,7 +4003,7 @@ body{
             <input class="auto-option-other-inp" type="text" placeholder="especifique...">
           </div>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3592,7 +4029,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;A culpa é minha&quot;"> &quot;A culpa é minha&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3605,7 +4042,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Decepcionei as pessoas&quot;"> &quot;Decepcionei as pessoas&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3618,7 +4055,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Mereço o que está acontecendo comigo&quot;"> &quot;Mereço o que está acontecendo comigo&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3631,7 +4068,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Eu não deveria ter feito / dito aquilo&quot;"> &quot;Eu não deveria ter feito / dito aquilo&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3644,7 +4081,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Se soubessem quem eu realmente sou, me rejeitariam&quot;"> &quot;Se soubessem quem eu realmente sou, me rejeitariam&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3661,7 +4098,7 @@ body{
             <input class="auto-option-other-inp" type="text" placeholder="especifique...">
           </div>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -3874,6 +4311,14 @@ body{
         <div>
           <div class="auto-sec-title" style="color:var(--coral);">Comportamentos Disfuncionais <span class="req">*</span></div>
           <div class="auto-sec-sub">Identifique reações ou atitudes que pioraram a situação</div>
+        </div>
+      </div>
+
+      <!-- Pacote 8: Caixa de texto livre para descrever comportamento -->
+      <div class="p8-texto-wrap">
+        <div class="auto-field"><label>Como você reagiu a essa situação?</label></div>
+        <div class="p8-pens-caixa">
+          <textarea data-auto-campo-comp="neg" rows="3" placeholder="O que você fez nessa situação? Como você agiu ou reagiu diante disso?"></textarea>
         </div>
       </div>
 
@@ -5079,6 +5524,17 @@ body{
       </div>
       <div class="auto-scale green"><span>① Não acredito</span><span>② Pouco</span><span>③ Moderadamente</span><span>④ Muito</span><span>⑤ Totalmente</span></div>
 
+      <!-- Pacote 8: Caixa(s) de texto livre para descrever pensamentos positivos -->
+      <div class="p8-texto-wrap">
+        <div class="auto-field"><label>Quais pensamentos passaram pela sua mente?</label></div>
+        <div class="p8-pens-container" id="posPensContainer" data-tipo="pos">
+          <div class="p8-pens-caixa">
+            <textarea data-auto-campo-pens="pos" rows="3" placeholder="O que estava passando pela minha mente instantes antes de eu começar a me sentir assim? Que imagens ou lembranças tenho nesta situação?"></textarea>
+          </div>
+        </div>
+        <button type="button" class="p8-pens-add green" onclick="p8AdicionarPensamento('pos')">+ Adicionar outro pensamento</button>
+      </div>
+
       <div class="auto-group green" data-grupo="pos_pens_autocompaixao" data-tem-likert="1" style="background:var(--green-bg);border-color:var(--green);">
         <div class="auto-group-head" onclick="autoToggleGrupo(this)">
           <div class="auto-group-head-main">
@@ -5092,7 +5548,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Mereço cuidar de mim&quot;"> &quot;Mereço cuidar de mim&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5105,7 +5561,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Errar faz parte de ser humano&quot;"> &quot;Errar faz parte de ser humano&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5118,7 +5574,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Tenho qualidades e pontos fortes&quot;"> &quot;Tenho qualidades e pontos fortes&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5131,7 +5587,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Posso aprender com esta experiência&quot;"> &quot;Posso aprender com esta experiência&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5144,7 +5600,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Estou fazendo o melhor que posso neste momento&quot;"> &quot;Estou fazendo o melhor que posso neste momento&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5161,7 +5617,7 @@ body{
             <input class="auto-option-other-inp" type="text" placeholder="especifique...">
           </div>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5187,7 +5643,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;O futuro ainda está aberto&quot;"> &quot;O futuro ainda está aberto&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5200,7 +5656,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Isso é temporário — vai passar&quot;"> &quot;Isso é temporário — vai passar&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5213,7 +5669,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Posso dar um passo de cada vez&quot;"> &quot;Posso dar um passo de cada vez&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5226,7 +5682,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Já enfrentei coisas difíceis antes e superei&quot;"> &quot;Já enfrentei coisas difíceis antes e superei&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5239,7 +5695,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Existem coisas que posso fazer para melhorar&quot;"> &quot;Existem coisas que posso fazer para melhorar&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5256,7 +5712,7 @@ body{
             <input class="auto-option-other-inp" type="text" placeholder="especifique...">
           </div>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5282,7 +5738,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Posso dar o benefício da dúvida&quot;"> &quot;Posso dar o benefício da dúvida&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5295,7 +5751,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Posso pedir ajuda sem ser um fardo&quot;"> &quot;Posso pedir ajuda sem ser um fardo&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5308,7 +5764,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Existem pessoas que se importam comigo&quot;"> &quot;Existem pessoas que se importam comigo&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5321,7 +5777,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Talvez a pessoa não tenha tido a intenção de me magoar&quot;"> &quot;Talvez a pessoa não tenha tido a intenção de me magoar&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5334,7 +5790,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Nem tudo é sobre mim — as pessoas têm seus próprios problemas&quot;"> &quot;Nem tudo é sobre mim — as pessoas têm seus próprios problemas&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5351,7 +5807,7 @@ body{
             <input class="auto-option-other-inp" type="text" placeholder="especifique...">
           </div>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5377,7 +5833,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Nem tudo depende de mim&quot;"> &quot;Nem tudo depende de mim&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5390,7 +5846,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Bom o suficiente também é bom&quot;"> &quot;Bom o suficiente também é bom&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5403,7 +5859,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;As pessoas são diferentes — e tudo bem&quot;"> &quot;As pessoas são diferentes — e tudo bem&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5416,7 +5872,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Posso aceitar o que não está no meu controle&quot;"> &quot;Posso aceitar o que não está no meu controle&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5429,7 +5885,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Posso fazer o meu melhor sem exigir perfeição&quot;"> &quot;Posso fazer o meu melhor sem exigir perfeição&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5446,7 +5902,7 @@ body{
             <input class="auto-option-other-inp" type="text" placeholder="especifique...">
           </div>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5472,7 +5928,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Posso reparar sem me destruir&quot;"> &quot;Posso reparar sem me destruir&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5485,7 +5941,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Um erro não define quem eu sou&quot;"> &quot;Um erro não define quem eu sou&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5498,7 +5954,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;A responsabilidade é compartilhada&quot;"> &quot;A responsabilidade é compartilhada&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5511,7 +5967,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Posso me perdoar e seguir em frente&quot;"> &quot;Posso me perdoar e seguir em frente&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5524,7 +5980,7 @@ body{
         <div class="auto-option">
           <label class="auto-option-lbl"><input type="checkbox" data-item="&quot;Fiz o que pude com o que sabia na época&quot;"> &quot;Fiz o que pude com o que sabia na época&quot;</label>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5541,7 +5997,7 @@ body{
             <input class="auto-option-other-inp" type="text" placeholder="especifique...">
           </div>
           <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Crença:</span>
+            <span class="auto-item-likert-label">Acredito:</span>
             <div class="auto-item-likert-btns">
               <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
               <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
@@ -5569,6 +6025,14 @@ body{
         <div>
           <div class="auto-sec-title" style="color:var(--green);">Comportamentos Funcionais <span class="req">*</span></div>
           <div class="auto-sec-sub">Identifique reações ou atitudes que ajudaram</div>
+        </div>
+      </div>
+
+      <!-- Pacote 8: Caixa de texto livre para descrever comportamento -->
+      <div class="p8-texto-wrap">
+        <div class="auto-field"><label>Como você reagiu a essa situação?</label></div>
+        <div class="p8-pens-caixa">
+          <textarea data-auto-campo-comp="pos" rows="3" placeholder="O que você fez nessa situação? Como você agiu ou reagiu diante disso?"></textarea>
         </div>
       </div>
 
@@ -8403,6 +8867,86 @@ document.addEventListener('keydown', function(e){
 
 /* Fim do Pacote 5 */
 
+/* ============================================================
+   PACOTE 8 — Caixas múltiplas + Card consulta + Sumário expandido
+   ============================================================
+   - Adiciona caixas de texto livre em Pensamentos e Comportamentos
+   - Permite múltiplas caixas em Pensamentos (botão "+")
+   - Card de consulta colapsável com perguntas-guia por emoção
+   - 6 accordions psicoeducativos no fim do "Como Usar"
+   - Botão "Entendi" só destrava após abrir as 6 seções
+   ============================================================ */
+
+const P8_STATE = {
+  eduLidas: new Set()
+};
+
+// Adiciona uma nova caixa de texto de pensamento (Negativo ou Positivo)
+function p8AdicionarPensamento(tipo) {
+  const container = document.getElementById(tipo + 'PensContainer');
+  if (!container) return;
+  const nova = document.createElement('div');
+  nova.className = 'p8-pens-caixa';
+  const placeholder = 'O que estava passando pela minha mente instantes antes de eu começar a me sentir assim? Que imagens ou lembranças tenho nesta situação?';
+  nova.innerHTML = '<textarea data-auto-campo-pens="' + tipo + '" rows="3" placeholder="' + placeholder + '"></textarea>' +
+    '<button type="button" class="p8-pens-remover" title="Remover este pensamento" onclick="p8RemoverPensamento(this)">×</button>';
+  container.appendChild(nova);
+  // Foca no novo textarea
+  const ta = nova.querySelector('textarea');
+  if (ta) ta.focus();
+}
+
+function p8RemoverPensamento(btn) {
+  const caixa = btn.closest('.p8-pens-caixa');
+  if (!caixa) return;
+  const container = caixa.parentElement;
+  // Não permite remover se for a única caixa
+  if (container.querySelectorAll('.p8-pens-caixa').length <= 1) return;
+  caixa.remove();
+}
+
+// Abre/fecha um accordion psicoeducativo e marca como lido
+function p8AbrirEdu(headEl) {
+  const acc = headEl.closest('.p8-edu-acc');
+  if (!acc) return;
+  acc.classList.toggle('open');
+  // Marca como lida (não desmarca quando fecha)
+  if (!acc.classList.contains('lida')) {
+    acc.classList.add('lida');
+    const idx = acc.getAttribute('data-edu-idx');
+    P8_STATE.eduLidas.add(idx);
+    p8AtualizarProgresso();
+  }
+}
+
+function p8AtualizarProgresso() {
+  const num = document.getElementById('p8EduLidas');
+  if (num) num.textContent = P8_STATE.eduLidas.size;
+  // Se leu todas as 6, libera o botão
+  const btn = document.getElementById('p8BtnEntendi');
+  if (btn && P8_STATE.eduLidas.size >= 6) {
+    btn.classList.remove('p8-disabled');
+  }
+}
+
+// Clique no botão "Entendi" — verifica se leu tudo
+function p8ClicarEntendi() {
+  if (P8_STATE.eduLidas.size < 6) {
+    const faltam = 6 - P8_STATE.eduLidas.size;
+    alert('📖 Você ainda não leu todas as seções.\n\n' +
+          'Faltam ' + faltam + ' de 6 seções para você abrir e ler. ' +
+          'Cada seção contém informações importantes sobre como aproveitar o registro.\n\n' +
+          'Por favor, abra cada uma antes de continuar.');
+    return;
+  }
+  // Tudo lido: marca flag e prossegue (mesma ação do Pacote 5)
+  if (typeof p5MarcarComoUsarLido === 'function') {
+    p5MarcarComoUsarLido();
+  }
+}
+
+/* Fim do Pacote 8 */
+
 function autoPreencherDataHoraAgora() {
   const agora = new Date();
   const p2 = n => String(n).padStart(2,'0');
@@ -8661,6 +9205,32 @@ function autoColetarDadosDaSecao(idSecao) {
   // Campos texto livre
   sec.querySelectorAll('[data-auto-campo]').forEach(el => {
     AUTO_STATE.dados[el.getAttribute('data-auto-campo')] = el.value.trim();
+  });
+
+  // Pacote 8: caixas múltiplas de Pensamentos (data-auto-campo-pens)
+  // Junta todas as caixas com " | " e salva em neg_pens_o_que / pos_pens_o_que.
+  // Backend: criar essas colunas no reset.
+  sec.querySelectorAll('[data-auto-campo-pens]').forEach(el => {
+    // Coleta todas as caixas do mesmo tipo (apenas uma vez por tipo)
+    const tipo = el.getAttribute('data-auto-campo-pens');
+    const chave = tipo + '_pens_o_que';
+    if (AUTO_STATE.dados[chave + '__coletado']) return;
+    const todas = sec.querySelectorAll('[data-auto-campo-pens="' + tipo + '"]');
+    const textos = [];
+    todas.forEach(t => { const v = t.value.trim(); if (v) textos.push(v); });
+    AUTO_STATE.dados[chave] = textos.join(' | ');
+    AUTO_STATE.dados[chave + '__coletado'] = true;
+  });
+  // Limpa flag temporária
+  Object.keys(AUTO_STATE.dados).forEach(k => {
+    if (k.endsWith('__coletado')) delete AUTO_STATE.dados[k];
+  });
+
+  // Pacote 8: caixa única de Comportamentos (data-auto-campo-comp)
+  // Backend: criar coluna neg_comp_o_que / pos_comp_o_que no reset.
+  sec.querySelectorAll('[data-auto-campo-comp]').forEach(el => {
+    const tipo = el.getAttribute('data-auto-campo-comp');
+    AUTO_STATE.dados[tipo + '_comp_o_que'] = el.value.trim();
   });
 
   // Grupos
