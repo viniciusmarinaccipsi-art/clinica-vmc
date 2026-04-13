@@ -1988,7 +1988,7 @@ body{
       <p style="font-size:10.5px;color:var(--txt-l);margin-bottom:8px;">↑ Emoções desagradáveis e reações de desconforto</p>
       <div class="auto-scale green"><span>① Nada</span><span>② Pouco</span><span>③ Moderado</span><span>④ Muito</span><span>⑤ Pleno</span></div>
       <p style="font-size:10.5px;color:var(--txt-l);margin-bottom:8px;">↑ Emoções agradáveis e reações de bem-estar</p>
-      <div class="auto-scale amber"><span>① Não acredito</span><span>② Pouco</span><span>③ Moderado</span><span>④ Muito</span><span>⑤ Totalmente</span></div>
+      <div class="auto-scale amber"><span>① Nada</span><span>② Pouco</span><span>③ Moderado</span><span>④ Muito</span><span>⑤ Totalmente</span></div>
       <p style="font-size:10.5px;color:var(--txt-l);">↑ Pensamentos — o quanto você acredita neles</p>
 
       <!-- ============================================================
@@ -2000,7 +2000,7 @@ body{
       -->
       <div class="p8-edu-intro">
         <strong>📚 Saiba mais sobre o registro</strong><br>
-        Antes de começar, leia as 6 seções abaixo. Elas vão te ajudar a entender melhor cada parte do registro e como aproveitar essa ferramenta.
+        Se quiser, explore as 6 seções abaixo para entender melhor cada parte do registro e como aproveitar essa ferramenta. A leitura é opcional, mas recomendada.
       </div>
 
       <div class="p8-edu-progresso">
@@ -2188,11 +2188,11 @@ body{
       </div>
 
       <!-- Pacote 5: botão "Entendi" — só aparece na primeira vez.
-           Pacote 8: agora também precisa que todas as 6 seções acima
-           tenham sido abertas. Botão começa com classe p8-disabled. -->
+           Pacote 9 v3: leitura das 6 seções é SUGESTÃO, não obrigatória.
+           O botão começa habilitado e o paciente pode clicar a qualquer momento. -->
       <div class="p5-entendi-box" id="p5EntendiBox">
         <div class="p5-entendi-texto">Você está dando um passo importante ao se dispor a olhar para si mesmo com essa qualidade de atenção. Quando se sentir pronto, clique no botão abaixo para começar.</div>
-        <button class="p5-btn-entendi p8-disabled" id="p8BtnEntendi" type="button" onclick="p8ClicarEntendi()">✓ Entendi, estou pronto para começar →</button>
+        <button class="p5-btn-entendi" id="p8BtnEntendi" type="button" onclick="p8ClicarEntendi()">✓ Entendi, estou pronto para começar →</button>
       </div>
     </div>
   </div>
@@ -3607,7 +3607,7 @@ body{
           <div class="auto-sec-sub">Identifique pensamentos negativos e avalie o quanto você acredita nesses pensamentos</div>
         </div>
       </div>
-      <div class="auto-scale coral"><span>① Não acredito</span><span>② Pouco</span><span>③ Moderadamente</span><span>④ Muito</span><span>⑤ Totalmente</span></div>
+      <div class="auto-scale coral"><span>① Nada</span><span>② Pouco</span><span>③ Moderadamente</span><span>④ Muito</span><span>⑤ Totalmente</span></div>
 
       <!-- Pacote 8: Caixa(s) de texto livre para descrever pensamentos.
            Backend: quando reset, criar coluna neg_pens_o_que (texto único,
@@ -3668,6 +3668,8 @@ body{
           </div>
         </div>
       </div>
+
+      <h3 style="font-family:'Quicksand',sans-serif;font-size:14px;color:var(--coral);margin:18px 0 6px;">Tipo de Pensamento</h3>
 
       <div class="auto-group coral" data-grupo="neg_pens_sobre_mim" data-tem-likert="1" style="background:var(--coral-bg);border-color:var(--coral);">
         <div class="auto-group-head" onclick="autoToggleGrupo(this)">
@@ -4352,6 +4354,8 @@ body{
         <label>Como você reagiu a essa situação? <span class="req">*</span></label>
         <textarea data-auto-campo-comp="neg" rows="4" placeholder="O que você fez nessa situação? Como você agiu ou reagiu diante disso?"></textarea>
       </div>
+
+      <h3 style="font-family:'Quicksand',sans-serif;font-size:14px;color:var(--coral);margin:18px 0 6px;">Tipo de Comportamento</h3>
 
       <div class="auto-group coral" data-grupo="neg_comp_evitacao" data-tem-likert="0" style="background:var(--coral-bg);border-color:var(--coral);">
         <div class="auto-group-head" onclick="autoToggleGrupo(this)">
@@ -5550,10 +5554,10 @@ body{
         <div class="auto-sec-icon" style="background:var(--green-bg);color:var(--green);">☀️</div>
         <div>
           <div class="auto-sec-title" style="color:var(--green);">Pensamentos Adaptativos <span class="req">*</span></div>
-          <div class="auto-sec-sub">Identifique pensamentos mais equilibrados</div>
+          <div class="auto-sec-sub">Identifique pensamentos positivos e avalie o quanto você acredita nesses pensamentos</div>
         </div>
       </div>
-      <div class="auto-scale green"><span>① Não acredito</span><span>② Pouco</span><span>③ Moderadamente</span><span>④ Muito</span><span>⑤ Totalmente</span></div>
+      <div class="auto-scale green"><span>① Nada</span><span>② Pouco</span><span>③ Moderadamente</span><span>④ Muito</span><span>⑤ Totalmente</span></div>
 
       <!-- Pacote 8: Caixa(s) de texto livre para descrever pensamentos positivos -->
       <div class="auto-field">
@@ -5563,6 +5567,8 @@ body{
         </div>
         <button type="button" class="p8-pens-add green" onclick="p8AdicionarPensamento('pos')">+ Adicionar outro pensamento</button>
       </div>
+
+      <h3 style="font-family:'Quicksand',sans-serif;font-size:14px;color:var(--green);margin:18px 0 6px;">Tipo de Pensamento</h3>
 
       <div class="auto-group green" data-grupo="pos_pens_autocompaixao" data-tem-likert="1" style="background:var(--green-bg);border-color:var(--green);">
         <div class="auto-group-head" onclick="autoToggleGrupo(this)">
@@ -6062,6 +6068,8 @@ body{
         <label>Como você reagiu a essa situação? <span class="req">*</span></label>
         <textarea data-auto-campo-comp="pos" rows="4" placeholder="O que você fez nessa situação? Como você agiu ou reagiu diante disso?"></textarea>
       </div>
+
+      <h3 style="font-family:'Quicksand',sans-serif;font-size:14px;color:var(--green);margin:18px 0 6px;">Tipo de Comportamento</h3>
 
       <div class="auto-group green" data-grupo="pos_comp_enfrentamento" data-tem-likert="0" style="background:var(--green-bg);border-color:var(--green);">
         <div class="auto-group-head" onclick="autoToggleGrupo(this)">
@@ -8963,17 +8971,9 @@ function p8AtualizarProgresso() {
   }
 }
 
-// Clique no botão "Entendi" — verifica se leu tudo
+// Clique no botão "Entendi" — Pacote 9 v3: leitura é SUGESTÃO, não obrigatória.
+// O botão sempre avança; o contador "X de 6" fica como feedback visual positivo.
 function p8ClicarEntendi() {
-  if (P8_STATE.eduLidas.size < 6) {
-    const faltam = 6 - P8_STATE.eduLidas.size;
-    alert('📖 Você ainda não leu todas as seções.\n\n' +
-          'Faltam ' + faltam + ' de 6 seções para você abrir e ler. ' +
-          'Cada seção contém informações importantes sobre como aproveitar o registro.\n\n' +
-          'Por favor, abra cada uma antes de continuar.');
-    return;
-  }
-  // Tudo lido: marca flag e prossegue (mesma ação do Pacote 5)
   if (typeof p5MarcarComoUsarLido === 'function') {
     p5MarcarComoUsarLido();
   }
