@@ -103,6 +103,7 @@ body{
 .card-green{border-color:#D0EDDA;}.card-green .card-title{color:var(--green);}
 .card-amber{border-color:var(--amber-bg);}.card-amber .card-title{color:var(--amber);}
 .card-gray{border-color:var(--gray-lt);}.card-gray .card-title{color:var(--gray);}
+.card-purple{border-color:#D9CCE8;}.card-purple .card-title{color:#8B6FB8;}
 
 /* ===== Seções ===== */
 .section{display:none;animation:fadeIn .3s ease;}
@@ -734,6 +735,23 @@ body{
 .auto-card:disabled,.auto-card.locked{opacity:.55;cursor:not-allowed;}
 .auto-card.locked .auto-card-title::after{content:' 🔒';font-size:13px;}
 
+/* Pacote 10: Card selecionado no Passo 2 de 2 */
+.auto-card.p10-selected{
+  box-shadow:0 0 0 3px var(--blue),0 8px 24px rgba(44,95,124,0.22);
+  transform:translateY(-2px);
+}
+.auto-card.coral.p10-selecionado{box-shadow:0 0 0 3px var(--coral),0 8px 24px rgba(224,122,107,0.22);}
+.auto-card.green.p10-selecionado{box-shadow:0 0 0 3px var(--green),0 8px 24px rgba(107,191,138,0.22);}
+/* Botão "Começar registro" desabilitado quando nenhum card foi escolhido */
+.p10-btn-comecar[disabled],
+.p10-btn-comecar.p10-disabled{
+  opacity:.5;cursor:not-allowed;
+  background:linear-gradient(135deg,#B8C8C0,#A5B6AD) !important;
+  box-shadow:none !important;
+}
+.p10-btn-comecar[disabled]:hover,
+.p10-btn-comecar.p10-disabled:hover{transform:none !important;}
+
 /* ============================================================
    PACOTE 5 — Cadeado no fluxo de primeira vez
    ============================================================ */
@@ -985,6 +1003,36 @@ body{
 .auto-btn-next:disabled{opacity:.5;cursor:not-allowed;}
 .auto-btn-next.coral{background:var(--coral);}
 .auto-btn-next.coral:hover:not(:disabled){background:#C66858;box-shadow:0 4px 12px rgba(224,122,107,.25);}
+
+/* Pacote 10 — Mudança 3: navegação dupla Anterior + Próximo lado a lado */
+.auto-nav-duplo{
+  display:flex;gap:10px;margin-top:18px;align-items:stretch;
+}
+.auto-nav-duplo .auto-btn-next{
+  margin-top:0;flex:1;
+}
+.auto-nav-duplo .auto-btn-prev{
+  flex:0 0 40%;padding:14px;border:2px solid transparent;
+  border-radius:var(--rs);font-family:'Nunito',sans-serif;
+  font-size:14px;font-weight:700;cursor:pointer;
+  transition:all .2s;background:var(--gray-bg);color:var(--txt-m);
+}
+.auto-nav-duplo .auto-btn-prev:hover{
+  background:var(--gray-lt);transform:translateY(-1px);
+}
+.auto-nav-duplo .auto-btn-prev.coral{
+  background:#FDF0EE;color:var(--coral);border-color:#F5D0CA;
+}
+.auto-nav-duplo .auto-btn-prev.coral:hover{background:#FADFDA;}
+.auto-nav-duplo .auto-btn-prev.green{
+  background:#EAF7EF;color:var(--green);border-color:#D0EDDA;
+}
+.auto-nav-duplo .auto-btn-prev.green:hover{background:#D8F0E1;}
+@media (max-width:420px){
+  .auto-nav-duplo{flex-direction:column;}
+  .auto-nav-duplo .auto-btn-prev,
+  .auto-nav-duplo .auto-btn-next{flex:1;width:100%;}
+}
 .auto-btn-next.green{background:var(--green);}
 .auto-btn-next.green:hover:not(:disabled){background:#58A775;box-shadow:0 4px 12px rgba(107,191,138,.25);}
 .auto-btn-next.gray{background:var(--gray);}
@@ -1849,23 +1897,30 @@ body{
         <span class="card-lock-badge">🔒 Bloqueado</span>
       </button>
 
+      <button class="card card-purple" disabled>
+        <span class="card-icon">🧩</span>
+        <div class="card-title">3. Formulação Cognitivo-Comportamental</div>
+        <div class="card-desc">Distorções cognitivas, crenças, conceituação clínica e formulação do caso</div>
+        <span class="card-badge-soon">Em breve</span>
+      </button>
+
       <button class="card card-green" disabled>
         <span class="card-icon">📋</span>
-        <div class="card-title">3. Escalas e Inventários</div>
+        <div class="card-title">4. Escalas e Inventários</div>
         <div class="card-desc">Instrumentos clínicos padronizados</div>
         <span class="card-badge-soon">Em breve</span>
       </button>
 
       <button class="card card-amber" disabled>
         <span class="card-icon">📚</span>
-        <div class="card-title">4. Psicoeducação</div>
+        <div class="card-title">5. Psicoeducação</div>
         <div class="card-desc">Materiais educativos sobre TCC</div>
         <span class="card-badge-soon">Em breve</span>
       </button>
 
       <button class="card card-gray" disabled>
         <span class="card-icon">🛠️</span>
-        <div class="card-title">5. Intervenções Cognitivas e Comportamentais</div>
+        <div class="card-title">6. Intervenções Cognitivas e Comportamentais</div>
         <div class="card-desc">Exercícios e técnicas terapêuticas</div>
         <span class="card-badge-soon">Em breve</span>
       </button>
@@ -2294,21 +2349,23 @@ body{
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
     <div class="anam-card">
       <h3 style="font-family:'Quicksand',sans-serif;font-size:16px;color:var(--blue);text-align:center;margin:0 0 6px;">Qual registro deseja preencher?</h3>
-      <p id="autoPasso2Sub" style="font-size:12px;color:var(--txt-l);text-align:center;margin-bottom:16px;">Você pode preencher um, outro ou ambos.</p>
+      <p id="autoPasso2Sub" style="font-size:12px;color:var(--txt-l);text-align:center;margin-bottom:16px;">Selecione um tipo e clique em "Começar registro" abaixo.</p>
       <div class="auto-split">
-        <button class="auto-card coral" id="autoCardNeg" type="button" onclick="autoAbrirMenuTipo('neg')">
+        <button class="auto-card coral" id="autoCardNeg" type="button" onclick="autoSelecionarTipo('neg')">
           <span class="auto-card-icon">💔</span>
           <div class="auto-card-title">Registro Negativo</div>
           <div class="auto-card-desc" style="padding-right:0;">Situações conflituosas → emoções desagradáveis, pensamentos desadaptativos e comportamentos disfuncionais</div>
         </button>
-        <button class="auto-card green" id="autoCardPos" type="button" onclick="autoAbrirMenuTipo('pos')">
+        <button class="auto-card green" id="autoCardPos" type="button" onclick="autoSelecionarTipo('pos')">
           <span class="auto-card-icon">💚</span>
           <div class="auto-card-title">Registro Positivo</div>
           <div class="auto-card-desc" style="padding-right:0;">Situações conflituosas ou harmoniosas → emoções agradáveis, pensamentos adaptativos e comportamentos funcionais</div>
         </button>
       </div>
-      <button class="auto-btn-next" onclick="autoAbrirResumo()" style="margin-top:20px;">
-        Finalizar e Revisar →
+      <!-- Pacote 10: botão novo "Começar registro →" — substitui o antigo "Finalizar e Revisar".
+           Começa desabilitado. Só libera depois que o paciente seleciona um card. -->
+      <button class="auto-btn-next p10-btn-comecar p10-disabled" id="p10BtnComecar" type="button" onclick="autoComecarRegistro()" style="margin-top:20px;">
+        Começar registro →
       </button>
     </div>
   </div>
@@ -3095,7 +3152,10 @@ body{
         </div>
         </div>
       </div>
-      <button class="auto-btn-next coral" onclick="autoAvancarSequencial('neg','sec-auto-fis-a')">Próximo: Reações Físicas →</button>
+      <div class="auto-nav-duplo">
+        <button class="auto-btn-prev coral" onclick="abrirSecao('sec-auto-sit-a')">← Anterior: Situação</button>
+        <button class="auto-btn-next coral" onclick="autoAvancarSequencial('neg','sec-auto-fis-a')">Próximo: Reações Físicas →</button>
+      </div>
     </div>
   </div>
 
@@ -3589,7 +3649,10 @@ body{
         </div>
         </div>
       </div>
-      <button class="auto-btn-next coral" onclick="autoAvancarSequencial('neg','sec-auto-pens-a')">Próximo: Pensamentos Desadaptativos →</button>
+      <div class="auto-nav-duplo">
+        <button class="auto-btn-prev coral" onclick="abrirSecao('sec-auto-emo-a')">← Anterior: Emoções Desagradáveis</button>
+        <button class="auto-btn-next coral" onclick="autoAvancarSequencial('neg','sec-auto-pens-a')">Próximo: Pensamentos Desadaptativos →</button>
+      </div>
     </div>
   </div>
 
@@ -4145,7 +4208,10 @@ body{
         </div>
         </div>
       </div>
-      <button class="auto-btn-next coral" onclick="autoAvancarSequencial('neg','sec-auto-distorcoes')">Próximo: Distorções Cognitivas →</button>
+      <div class="auto-nav-duplo">
+        <button class="auto-btn-prev coral" onclick="abrirSecao('sec-auto-fis-a')">← Anterior: Reações Físicas</button>
+        <button class="auto-btn-next coral" onclick="autoAvancarSequencial('neg','sec-auto-distorcoes')">Próximo: Distorções Cognitivas →</button>
+      </div>
     </div>
   </div>
 
@@ -4330,7 +4396,10 @@ body{
         </div>
       </div>
 
-      <button class="auto-btn-next coral" onclick="autoAvancarSequencial('neg','sec-auto-comp-a')">Próximo: Comportamentos Disfuncionais →</button>
+      <div class="auto-nav-duplo">
+        <button class="auto-btn-prev coral" onclick="abrirSecao('sec-auto-pens-a')">← Anterior: Pensamentos Desadaptativos</button>
+        <button class="auto-btn-next coral" onclick="autoAvancarSequencial('neg','sec-auto-comp-a')">Próximo: Comportamentos Disfuncionais →</button>
+      </div>
     </div>
   </div>
 
@@ -4531,7 +4600,10 @@ body{
         </div>
         </div>
       </div>
-      <button class="auto-btn-next coral" onclick="autoVoltarMenuSecao('neg')">← Voltar ao Menu</button>
+      <div class="auto-nav-duplo">
+        <button class="auto-btn-prev coral" onclick="abrirSecao('sec-auto-distorcoes')">← Anterior: Distorções Cognitivas</button>
+        <button class="auto-btn-next coral" onclick="autoFinalizarTipo('neg')">✓ Concluir e Revisar →</button>
+      </div>
     </div>
   </div>
 
@@ -5045,7 +5117,10 @@ body{
         </div>
         </div>
       </div>
-      <button class="auto-btn-next green" onclick="autoAvancarSequencial('pos','sec-auto-fis-b')">Próximo: Reações Físicas →</button>
+      <div class="auto-nav-duplo">
+        <button class="auto-btn-prev green" onclick="abrirSecao('sec-auto-sit-b')">← Anterior: Situação</button>
+        <button class="auto-btn-next green" onclick="autoAvancarSequencial('pos','sec-auto-fis-b')">Próximo: Reações Físicas →</button>
+      </div>
     </div>
   </div>
 
@@ -5539,7 +5614,10 @@ body{
         </div>
         </div>
       </div>
-      <button class="auto-btn-next green" onclick="autoAvancarSequencial('pos','sec-auto-pens-b')">Próximo: Pensamentos Adaptativos →</button>
+      <div class="auto-nav-duplo">
+        <button class="auto-btn-prev green" onclick="abrirSecao('sec-auto-emo-b')">← Anterior: Emoções Agradáveis</button>
+        <button class="auto-btn-next green" onclick="autoAvancarSequencial('pos','sec-auto-pens-b')">Próximo: Pensamentos Adaptativos →</button>
+      </div>
     </div>
   </div>
 
@@ -6044,7 +6122,10 @@ body{
         </div>
         </div>
       </div>
-      <button class="auto-btn-next green" onclick="autoAvancarSequencial('pos','sec-auto-comp-b')">Próximo: Comportamentos Funcionais →</button>
+      <div class="auto-nav-duplo">
+        <button class="auto-btn-prev green" onclick="abrirSecao('sec-auto-fis-b')">← Anterior: Reações Físicas</button>
+        <button class="auto-btn-next green" onclick="autoAvancarSequencial('pos','sec-auto-comp-b')">Próximo: Comportamentos Funcionais →</button>
+      </div>
     </div>
   </div>
 
@@ -6245,7 +6326,10 @@ body{
         </div>
         </div>
       </div>
-      <button class="auto-btn-next green" onclick="autoVoltarMenuSecao('pos')">← Voltar ao Menu</button>
+      <div class="auto-nav-duplo">
+        <button class="auto-btn-prev green" onclick="abrirSecao('sec-auto-pens-b')">← Anterior: Pensamentos Adaptativos</button>
+        <button class="auto-btn-next green" onclick="autoFinalizarTipo('pos')">✓ Concluir e Revisar →</button>
+      </div>
     </div>
   </div>
 
@@ -6295,7 +6379,7 @@ body{
       <button class="auto-btn-next" id="autoBtnEnviar" onclick="autoEnviarRegistro()" style="margin-top:18px;">
         📤 Enviar Registro
       </button>
-      <button class="auto-btn-next gray" onclick="abrirSecao('sec-auto-passo2')" style="margin-top:8px;">
+      <button class="auto-btn-next gray" onclick="autoVoltarEditarRevisar()" style="margin-top:8px;">
         ← Voltar e Editar
       </button>
     </div>
@@ -9072,7 +9156,59 @@ function autoIrParaPasso2() {
   autoSalvarRascunho();
   abrirSecao('sec-auto-passo2');
   autoAplicarBloqueioPositivo();
+  // Pacote 10: resetar seleção ao entrar no Passo 2
+  p10ResetarSelecao();
 }
+
+// ============================================================
+// PACOTE 10 — Seleção de tipo no Passo 2 + botão "Começar registro"
+// ============================================================
+
+// Reseta a seleção visual e o botão (ao entrar no Passo 2)
+function p10ResetarSelecao() {
+  const cardNeg = document.getElementById('autoCardNeg');
+  const cardPos = document.getElementById('autoCardPos');
+  const btn = document.getElementById('p10BtnComecar');
+  if (cardNeg) cardNeg.classList.remove('p10-selecionado');
+  if (cardPos) cardPos.classList.remove('p10-selecionado');
+  if (btn) {
+    btn.classList.add('p10-disabled');
+    btn.removeAttribute('data-tipo');
+  }
+}
+
+// Chamada ao clicar em um card (Negativo ou Positivo)
+function autoSelecionarTipo(tipo) {
+  // Respeita o bloqueio do Positivo na primeira vez (Pacote 5 já configurou)
+  if (tipo === 'pos') {
+    const cardPos = document.getElementById('autoCardPos');
+    if (cardPos && cardPos.classList.contains('locked')) return;
+  }
+  const cardNeg = document.getElementById('autoCardNeg');
+  const cardPos = document.getElementById('autoCardPos');
+  const btn = document.getElementById('p10BtnComecar');
+
+  // Marca visualmente o card escolhido e desmarca o outro
+  if (cardNeg) cardNeg.classList.toggle('p10-selecionado', tipo === 'neg');
+  if (cardPos) cardPos.classList.toggle('p10-selecionado', tipo === 'pos');
+
+  // Habilita o botão e guarda o tipo
+  if (btn) {
+    btn.classList.remove('p10-disabled');
+    btn.setAttribute('data-tipo', tipo);
+  }
+}
+
+// Chamada ao clicar em "Começar registro →"
+function autoComecarRegistro() {
+  const btn = document.getElementById('p10BtnComecar');
+  if (!btn || btn.classList.contains('p10-disabled')) return;
+  const tipo = btn.getAttribute('data-tipo');
+  if (!tipo) return;
+  autoAbrirMenuTipo(tipo);
+}
+
+/* Fim do Pacote 10 — Mudança 1 */
 
 function autoAplicarBloqueioPositivo() {
   // Na 1ª vez, positivo fica trancado até concluir 1º negativo
@@ -9593,9 +9729,21 @@ function autoFinalizarTipo(tipo) {
     autoColetarDadosDaSecao(sid);
   }
   AUTO_STATE.dados[tipo + '_preenchido'] = 'sim';
+  // Pacote 10 v2: guarda o último tipo finalizado para o "Voltar e Editar"
+  // do Revisar saber para qual menu retornar
+  AUTO_STATE.ultimoTipoFinalizado = tipo;
   autoSalvarRascunho();
-  abrirSecao('sec-auto-passo2');
-  autoAplicarBloqueioPositivo();
+  // Pacote 10 — Mudança 2: ir direto para Revisar Registro em vez de voltar ao Passo 2.
+  // O "← Voltar e Editar" no Revisar volta ao menu do registro correspondente
+  // (ver função autoVoltarEditarRevisar).
+  autoAbrirResumo();
+}
+
+// Pacote 10 v2 — chamada pelo botão "← Voltar e Editar" no Revisar Registro
+function autoVoltarEditarRevisar() {
+  const tipo = AUTO_STATE.ultimoTipoFinalizado || 'neg';
+  const destino = tipo === 'pos' ? 'sec-auto-menu-pos' : 'sec-auto-menu-neg';
+  abrirSecao(destino);
 }
 
 // ============================================================
