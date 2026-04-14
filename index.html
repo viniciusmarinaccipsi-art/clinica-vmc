@@ -10343,13 +10343,41 @@ function autoLinhaHist(icon, key, valor) {
 }
 
 function autoFormatarHora(raw) {
-  if (!raw) return '—';
-  const s = String(raw);
-  // Fix do bug: Google Sheets serializa hora como 1899-12-30T07:15:28.000Z
-  const m = s.match(/T(\d{2}):(\d{2})/);
-  if (m) return `${m[1]}:${m[2]}`;
-  // Formato normal HH:MM
+  if (!raw && raw !== 0) return '—';
+
+  // Caso 1: já veio como objeto Date (Apps Script serializa TIME assim às vezes)
+  // O Google Sheets guarda TIME como 1899-12-30 em UTC. Usar getUTCHours()
+  // para pegar o valor original digitado pelo paciente, sem conversão de fuso.
+  if (raw instanceof Date) {
+    const h = String(raw.getUTCHours()).padStart(2,'0');
+    const m = String(raw.getUTCMinutes()).padStart(2,'0');
+    return `${h}:${m}`;
+  }
+
+  const s = String(raw).trim();
+  if (!s) return '—';
+
+  // Caso 2: string ISO tipo "1899-12-30T20:22:00.000Z" — extrai HH:MM depois do T
+  // Essa regex funciona para o formato padrão do Google Sheets ao serializar TIME.
+  const mIso = s.match(/T(\d{2}):(\d{2})/);
+  if (mIso) return `${mIso[1]}:${mIso[2]}`;
+
+  // Caso 3: formato simples "HH:MM" ou "HH:MM:SS" (o que o frontend envia)
   if (/^\d{2}:\d{2}/.test(s)) return s.substring(0,5);
+
+  // Caso 4: string de Date localizada tipo "Mon Apr 14 2026 23:22:28 GMT-0300..."
+  // Essa string já veio convertida de UTC para local (+3h em Campinas),
+  // então precisamos subtrair o offset do fuso para voltar ao horário original.
+  // Tentamos fazer new Date(s) e pegar o getUTCHours().
+  try {
+    const d = new Date(s);
+    if (!isNaN(d.getTime())) {
+      const h = String(d.getUTCHours()).padStart(2,'0');
+      const m = String(d.getUTCMinutes()).padStart(2,'0');
+      return `${h}:${m}`;
+    }
+  } catch (e) {}
+
   return s;
 }
 
