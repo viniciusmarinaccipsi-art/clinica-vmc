@@ -10078,21 +10078,10 @@ async function autoAbrirHistorico() {
       else if (data) dataFmt = data;
       const hora = autoFormatarHora(r.hora_registro);
       const humor = parseInt(r.humor_nivel, 10) || 3;
-      const temNeg = r.neg_preenchido === 'sim';
-      const temPos = r.pos_preenchido === 'sim';
 
-      let bloco = '';
-      if (temNeg) {
-        bloco += '<div class="histc-section neg"><div class="histc-section-ttl">💔 Registro Negativo</div>';
-        bloco += histSecaoExpandida(r, 'neg', 'coral');
-        bloco += '</div>';
-      }
-      if (temPos) {
-        bloco += '<div class="histc-section pos"><div class="histc-section-ttl">💚 Registro Positivo</div>';
-        bloco += histSecaoExpandida(r, 'pos', 'green');
-        bloco += '</div>';
-      }
-
+      // Pacote 10 v4 — Lista compacta: só cabeçalho com data/humor/lupa.
+      // As funções histSecaoExpandida/histTituloGrupo continuam existindo
+      // (usadas pelo modal da lupa), só não são mais chamadas aqui.
       return `
         <div class="histc">
           <div class="histc-head">
@@ -10103,7 +10092,6 @@ async function autoAbrirHistorico() {
             </div>
             <button class="hist-btn-lupa" type="button" title="Ver registro completo" onclick="histAbrirModal(${idx})">🔍</button>
           </div>
-          ${bloco}
         </div>`;
     }).join('');
   } catch (err) {
