@@ -2038,10 +2038,10 @@ body{
         <li><strong>Registro Negativo primeiro.</strong> Na sua primeira experiência, o Registro Positivo só abre depois que você completar o primeiro negativo.</li>
       </ul>
       <h3>Escalas</h3>
-      <div class="auto-scale coral"><span>① Nenhum</span><span>② Pouco</span><span>③ Moderado</span><span>④ Muito</span><span>⑤ Extremo</span></div>
-      <p style="font-size:10.5px;color:var(--txt-l);margin-bottom:8px;">↑ Emoções desagradáveis e reações de desconforto</p>
-      <div class="auto-scale green"><span>① Nada</span><span>② Pouco</span><span>③ Moderado</span><span>④ Muito</span><span>⑤ Pleno</span></div>
-      <p style="font-size:10.5px;color:var(--txt-l);margin-bottom:8px;">↑ Emoções agradáveis e reações de bem-estar</p>
+      <div class="auto-scale coral"><span>① Nenhum</span><span>② Pouco</span><span>③ Moderado</span><span>④ Muito</span><span>⑤ Intenso</span></div>
+      <p style="font-size:10.5px;color:var(--txt-l);margin-bottom:8px;">↑ Emoções (desagradáveis e agradáveis)</p>
+      <div class="auto-scale green"><span>① Nenhum</span><span>② Pouco</span><span>③ Moderado</span><span>④ Muito</span><span>⑤ Extremo</span></div>
+      <p style="font-size:10.5px;color:var(--txt-l);margin-bottom:8px;">↑ Reações físicas (mal-estar e bem-estar)</p>
       <div class="auto-scale amber"><span>① Nada</span><span>② Pouco</span><span>③ Moderado</span><span>④ Muito</span><span>⑤ Totalmente</span></div>
       <p style="font-size:10.5px;color:var(--txt-l);">↑ Pensamentos — o quanto você acredita neles</p>
 
@@ -2186,29 +2186,40 @@ body{
           <div class="p8-edu-chevron">›</div>
         </div>
         <div class="p8-edu-body">
-          <p>Algumas partes do registro pedem para você avaliar a <strong>intensidade</strong> do que sentiu. Existem dois tipos de escala, e cada uma tem um significado diferente:</p>
+          <p>Algumas partes do registro pedem para você avaliar a <strong>intensidade</strong> do que sentiu. O sistema usa <strong>três escalas diferentes</strong>, cada uma adequada ao que está sendo medido:</p>
 
-          <h4>Escala de Intensidade (Emoções e Reações Físicas)</h4>
+          <h4>Escala de Emoções (desagradáveis e agradáveis)</h4>
           <p>Vai de <strong>1 a 5</strong>, onde:</p>
           <ul>
-            <li><strong>1</strong> = Nenhum / Nada</li>
+            <li><strong>1</strong> = Nenhum</li>
             <li><strong>2</strong> = Pouco</li>
             <li><strong>3</strong> = Moderado</li>
             <li><strong>4</strong> = Muito</li>
-            <li><strong>5</strong> = Extremo / Pleno</li>
+            <li><strong>5</strong> = Intenso</li>
           </ul>
-          <p>Use para indicar o <strong>quanto</strong> você sentiu uma emoção ou reação física. Não tente ser perfeito — escolha o número que mais se aproxima da sua experiência naquele momento.</p>
+          <p>Use para indicar o <strong>quanto</strong> você sentiu uma emoção naquele momento.</p>
 
-          <h4>Escala "O quanto acredito nesse pensamento" (Pensamentos)</h4>
+          <h4>Escala de Reações Físicas (mal-estar e bem-estar)</h4>
           <p>Vai de <strong>1 a 5</strong>, onde:</p>
           <ul>
-            <li><strong>1</strong> = Não acredito</li>
+            <li><strong>1</strong> = Nenhum</li>
+            <li><strong>2</strong> = Pouco</li>
+            <li><strong>3</strong> = Moderado</li>
+            <li><strong>4</strong> = Muito</li>
+            <li><strong>5</strong> = Extremo</li>
+          </ul>
+          <p>Use para indicar o <strong>quanto</strong> uma sensação corporal foi perceptível. A palavra "Extremo" aparece nos dois lados (mal-estar extremo ou bem-estar extremo) porque se refere à intensidade da sensação, não ao seu valor positivo ou negativo.</p>
+
+          <h4>Escala de Pensamentos (o quanto você acredita)</h4>
+          <p>Vai de <strong>1 a 5</strong>, onde:</p>
+          <ul>
+            <li><strong>1</strong> = Nada</li>
             <li><strong>2</strong> = Pouco</li>
             <li><strong>3</strong> = Moderado</li>
             <li><strong>4</strong> = Muito</li>
             <li><strong>5</strong> = Totalmente</li>
           </ul>
-          <p>Use para indicar <strong>o quanto aquele pensamento parecia verdadeiro</strong> para você naquele momento. Esse número é importante porque mostra o <strong>grau de convicção</strong> que você tinha — e ele pode mudar com o tempo.</p>
+          <p>Use para indicar <strong>o quanto aquele pensamento parecia verdadeiro</strong> para você naquele momento. Esse número mostra o <strong>grau de convicção</strong> — e ele pode mudar com o tempo.</p>
 
           <h4>Por que medir importa</h4>
           <p>Quantificar suas experiências internas pode parecer estranho no começo, mas tem um propósito clínico: permite <strong>acompanhar mudanças ao longo do tempo</strong>. Uma tristeza que era 5/5 há um mês e agora é 3/5 mostra um movimento real, mesmo quando você não percebe a mudança no dia a dia.</p>
@@ -6456,6 +6467,17 @@ function abrirSecao(idSecao) {
     // Aplica já o estado atual (síncrono) enquanto a verificação roda
     p5AplicarCadeados();
   }
+  // Pacote 11.5: ao abrir o Como Usar, se o paciente já é veterano
+  // confirmado (P5_STATE.primeiraVez === false), as 6 seções psicoeducativas
+  // aparecem marcadas como lidas automaticamente. Se ainda não verificou,
+  // roda agora para garantir — reusa o mesmo lerHistorico do Pacote 5.
+  if (idSecao === 'sec-auto-instrucoes' && typeof p5VerificarPrimeiraVez === 'function') {
+    p5VerificarPrimeiraVez().then(() => {
+      if (P5_STATE.verificado && !P5_STATE.primeiraVez && typeof p11_5MarcarEduLidasParaVeterano === 'function') {
+        p11_5MarcarEduLidasParaVeterano();
+      }
+    });
+  }
 }
 
 function abrirModulo(modulo) {
@@ -8729,6 +8751,11 @@ function p5DeveBloquear() {
 // Aplica/remove os cadeados visuais nos 3 cards bloqueáveis.
 // "Como Usar" nunca é travado. Também controla o subtítulo de aviso
 // e o botão "Entendi" no fim do Como Usar.
+// PACOTE 11.5: quando o paciente é veterano (tem registros de Auto),
+// as 6 seções psicoeducativas são marcadas como lidas automaticamente.
+// Isso reusa o lerHistorico que o Pacote 5 já chama — zero chamada extra,
+// zero coluna nova na planilha. Lógica: "se tem registros, já passou por
+// aqui antes e pode ver tudo como lido".
 function p5AplicarCadeados() {
   const bloquear = p5DeveBloquear();
   const ids = ['autoCardIniciar', 'autoCardPainel', 'autoCardHistorico'];
@@ -8747,6 +8774,13 @@ function p5AplicarCadeados() {
   // Botão "Entendi" no fim do Como Usar — só para primeira vez
   const entendi = document.getElementById('p5EntendiBox');
   if (entendi) entendi.classList.toggle('show', bloquear);
+  // Pacote 11.5: paciente veterano já viu o Como Usar antes.
+  // Marca automaticamente as 6 seções psicoeducativas como lidas.
+  if (P5_STATE.verificado && !P5_STATE.primeiraVez) {
+    if (typeof p11_5MarcarEduLidasParaVeterano === 'function') {
+      p11_5MarcarEduLidasParaVeterano();
+    }
+  }
 }
 
 // Handler dos 3 cards bloqueáveis. Se estiver travado, abre o modal.
@@ -8855,6 +8889,32 @@ function p8AtualizarProgresso() {
   if (btn && P8_STATE.eduLidas.size >= 6) {
     btn.classList.remove('p8-disabled');
   }
+}
+
+/* ============================================================
+   PACOTE 11.5 — Persistência de "lido" para veteranos
+   ============================================================
+   Paciente que já fez ≥1 registro de Auto não precisa ver as
+   6 seções psicoeducativas como "não lidas" a cada login.
+   Reusa a detecção de veterano que o Pacote 5 já faz via
+   lerHistorico — zero chamada extra, zero coluna nova.
+   Chamado por p5AplicarCadeados quando P5_STATE.primeiraVez
+   é false (veterano confirmado).
+   ============================================================ */
+function p11_5MarcarEduLidasParaVeterano() {
+  // Idempotente — se já foi marcado, não faz nada
+  if (P8_STATE.eduLidas.size >= 6) return;
+  // Marca visualmente cada accordion psicoeducativo (seções 1-6)
+  const accs = document.querySelectorAll('.p8-edu-acc');
+  accs.forEach(acc => {
+    const idx = acc.getAttribute('data-edu-idx');
+    if (idx && !acc.classList.contains('lida')) {
+      acc.classList.add('lida');
+      P8_STATE.eduLidas.add(idx);
+    }
+  });
+  // Atualiza contador "X de 6 lidas" e libera botão
+  p8AtualizarProgresso();
 }
 
 // Clique no botão "Entendi" — Pacote 9 v3: leitura é SUGESTÃO, não obrigatória.
