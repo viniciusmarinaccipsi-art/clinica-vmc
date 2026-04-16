@@ -2025,9 +2025,8 @@ body{
         <tr><td>🌡️ Checagem</td><td>Avaliação rápida do humor</td></tr>
         <tr><td>📍 Situação</td><td>O que estava acontecendo</td></tr>
         <tr><td>💔/💚 Emoções</td><td>Desagradáveis ou Agradáveis</td></tr>
-        <tr><td>⚡/🌿 Reações Físicas</td><td>Desconforto ou Bem-Estar</td></tr>
+        <tr><td>⚡/🌿 Reações Físicas</td><td>Mal-Estar ou Bem-Estar</td></tr>
         <tr><td>🌧️/☀️ Pensamentos</td><td>Desadaptativos ou Adaptativos</td></tr>
-        <tr><td>🔎 Distorções</td><td>Padrões de pensamento</td></tr>
         <tr><td>📉/📈 Comportamentos</td><td>Disfuncionais ou Funcionais</td></tr>
       </table>
       <h3>Como funciona o preenchimento</h3>
@@ -2135,10 +2134,6 @@ body{
           <p><strong>Esta é uma das partes mais importantes do registro.</strong> Pensamentos automáticos são aquelas frases ou imagens que passam pela mente em frações de segundo, muitas vezes sem que percebamos. Eles costumam ser tão rápidos que parecem verdades absolutas.</p>
           <p>A dica aqui é: <strong>fragmente um pensamento por vez</strong>. Em vez de tentar resumir tudo em uma única frase, escreva cada pensamento separadamente. Você pode adicionar quantas caixas de pensamento precisar.</p>
           <p>Para cada pensamento, avalie em uma escala de 1 a 5 <strong>o quanto você acredita nele</strong> naquele momento. Esse número não é fixo — é uma fotografia daquele instante. Em outro momento, você pode acreditar mais ou menos no mesmo pensamento.</p>
-
-          <h4>🔎 Distorções Cognitivas</h4>
-          <p>Distorções são <strong>padrões de pensamento que distorcem a realidade</strong>. São formas habituais de interpretar o mundo que costumam nos fazer sofrer mais do que precisaríamos. Exemplos: catastrofização (imaginar o pior), leitura mental (achar que sabemos o que o outro pensa), pensamento tudo-ou-nada (ver as coisas em preto e branco).</p>
-          <p>Marque as distorções que você reconhece nos seus pensamentos. Identificá-las é um exercício de <strong>autoconsciência cognitiva</strong> — não para se julgar, mas para perceber que aquele pensamento pode não ser uma verdade absoluta.</p>
 
           <h4>📉 / 📈 Comportamentos</h4>
           <p>O que você fez diante dessa situação? Descreva sua reação de forma objetiva — pode ter sido uma ação visível (sair do lugar, gritar, chorar) ou uma decisão interna (decidir não responder, evitar o contato, se isolar).</p>
@@ -2389,7 +2384,6 @@ body{
             <div class="gbar-step"><span class="gbar-step-icon">💔</span></div>
             <div class="gbar-step"><span class="gbar-step-icon">⚡</span></div>
             <div class="gbar-step"><span class="gbar-step-icon">🌧️</span></div>
-            <div class="gbar-step"><span class="gbar-step-icon">🔎</span></div>
             <div class="gbar-step"><span class="gbar-step-icon">📉</span></div>
           </div>
           <div class="gbar-key">🗝️</div>
@@ -2401,10 +2395,9 @@ body{
         <div class="gbar-label">Emoções</div>
         <div class="gbar-label">Físicas</div>
         <div class="gbar-label">Pensam.</div>
-        <div class="gbar-label">Distorc.</div>
         <div class="gbar-label">Comport.</div>
       </div>
-      <div class="gbar-counter"><strong>0</strong> de 6 etapas concluídas</div>
+      <div class="gbar-counter"><strong>0</strong> de 5 etapas concluídas</div>
     </div>
 
     <div class="auto-grid">
@@ -2436,14 +2429,7 @@ body{
         <span class="auto-progress" id="autoProg-pens-a">Preenchido</span>
         <span class="auto-card-arrow">›</span>
       </button>
-      <button class="auto-card amber" data-sec-idx="4" data-sec-tipo="neg" type="button" onclick="autoEntrarSecao('sec-auto-distorcoes',4,'neg')">
-        <span class="auto-card-icon">🔎</span>
-        <div class="auto-card-title">Distorções Cognitivas</div>
-        <div class="auto-card-desc">Reconheça padrões de pensamento</div>
-        <span class="auto-progress" id="autoProg-distorcoes">Preenchido</span>
-        <span class="auto-card-arrow">›</span>
-      </button>
-      <button class="auto-card coral" data-sec-idx="5" data-sec-tipo="neg" type="button" onclick="autoEntrarSecao('sec-auto-comp-a',5,'neg')">
+      <button class="auto-card coral" data-sec-idx="4" data-sec-tipo="neg" type="button" onclick="autoEntrarSecao('sec-auto-comp-a',4,'neg')">
         <span class="auto-card-icon">📉</span>
         <div class="auto-card-title">Comportamentos Disfuncionais</div>
         <div class="auto-card-desc">Atitudes que pioraram a situação</div>
@@ -4212,194 +4198,6 @@ body{
       </div>
       <div class="auto-nav-duplo">
         <button class="auto-btn-prev coral" onclick="abrirSecao('sec-auto-fis-a')">← Anterior: Reações Físicas</button>
-        <button class="auto-btn-next coral" onclick="autoAvancarSequencial('neg','sec-auto-distorcoes')">Próximo: Distorções Cognitivas →</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="section" id="sec-auto-distorcoes">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-auto-menu-neg')">← Menu</button>
-      <span class="nav-title">Distorções Cognitivas</span>
-    </div>
-    <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
-    <div class="anam-card">
-      <div class="auto-sec-header" style="border-color:var(--amber);">
-        <div class="auto-sec-icon" style="background:var(--amber-bg);color:var(--amber);">🔎</div>
-        <div>
-          <div class="auto-sec-title" style="color:var(--amber);">Distorções Cognitivas <span class="req">*</span></div>
-          <div class="auto-sec-sub">Reconheça padrões automáticos de pensamento</div>
-        </div>
-      </div>
-      <p style="font-size:12px;color:var(--txt-m);font-style:italic;margin:8px 0 12px;">Distorções cognitivas são "erros de pensamento" — formas automáticas e enviesadas de interpretar as situações.</p>
-
-      <div class="auto-group amber" data-grupo="neg_dist_previsao" data-tem-likert="0" style="background:var(--amber-bg);border-color:var(--amber);">
-        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
-          <div class="auto-group-head-main">
-            <div class="auto-group-title">1. Erros de Previsão</div>
-            <div class="auto-group-desc">&quot;Quando minha mente prevê o futuro de forma negativa.&quot;</div>
-            <div class="auto-group-summary"></div>
-          </div>
-          <div class="auto-group-chevron">›</div>
-        </div>
-        <div class="auto-group-body">
-        <div class="auto-dist-item">
-          <label class="auto-dist-lbl"><input type="checkbox" data-item="Catastrofização"> Catastrofização</label>
-          <div class="auto-dist-def">Acreditar que o que vai acontecer será terrível e insuportável.</div>
-          <div class="auto-dist-ex">&quot;Se eu errar, vai ser um desastre completo&quot;</div>
-          <div class="auto-dist-ex">&quot;Não vou aguentar se isso acontecer&quot;</div>
-        </div>
-        <div class="auto-dist-item">
-          <label class="auto-dist-lbl"><input type="checkbox" data-item="Adivinhação do futuro"> Adivinhação do futuro</label>
-          <div class="auto-dist-def">Prever resultados negativos sem evidências suficientes.</div>
-          <div class="auto-dist-ex">&quot;Tenho certeza de que vou ser reprovado&quot;</div>
-          <div class="auto-dist-ex">&quot;Esse relacionamento vai acabar mal&quot;</div>
-        </div>
-        <div class="auto-dist-item">
-          <label class="auto-dist-lbl"><input type="checkbox" data-item="Pensamento &quot;e se...?&quot;"> Pensamento &quot;e se...?&quot;</label>
-          <div class="auto-dist-def">Fazer perguntas negativas sem nunca se satisfazer.</div>
-          <div class="auto-dist-ex">&quot;E se eu perder o emprego?&quot;</div>
-          <div class="auto-dist-ex">&quot;E se minha ansiedade piorar?&quot;</div>
-        </div>
-        <div class="auto-option-other"><input type="checkbox"><span class="auto-option-other-lbl">Outro:</span><input class="auto-option-other-inp" type="text" placeholder="especifique..."></div>
-          <span class="auto-emotion-tag">→ ansiedade, medo e preocupação</span>
-        </div>
-      </div>
-
-      <div class="auto-group amber" data-grupo="neg_dist_generalizacao" data-tem-likert="0" style="background:var(--amber-bg);border-color:var(--amber);">
-        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
-          <div class="auto-group-head-main">
-            <div class="auto-group-title">2. Erros de Generalização</div>
-            <div class="auto-group-desc">&quot;Quando minha mente transforma um evento em regra absoluta.&quot;</div>
-            <div class="auto-group-summary"></div>
-          </div>
-          <div class="auto-group-chevron">›</div>
-        </div>
-        <div class="auto-group-body">
-        <div class="auto-dist-item">
-          <label class="auto-dist-lbl"><input type="checkbox" data-item="Pensamento dicotômico"> Pensamento dicotômico</label>
-          <div class="auto-dist-def">Ver tudo em duas categorias extremas, tudo ou nada.</div>
-          <div class="auto-dist-ex">&quot;Se não for perfeito, é um fracasso&quot;</div>
-          <div class="auto-dist-ex">&quot;Ou gostam de mim, ou me rejeitam&quot;</div>
-        </div>
-        <div class="auto-dist-item">
-          <label class="auto-dist-lbl"><input type="checkbox" data-item="Supergeneralização"> Supergeneralização</label>
-          <div class="auto-dist-def">Tirar conclusão ampla a partir de um único evento.</div>
-          <div class="auto-dist-ex">&quot;Isso sempre acontece comigo&quot;</div>
-          <div class="auto-dist-ex">&quot;Errei — nunca faço nada direito&quot;</div>
-        </div>
-        <div class="auto-dist-item">
-          <label class="auto-dist-lbl"><input type="checkbox" data-item="Rotulação"> Rotulação</label>
-          <div class="auto-dist-def">Colocar rótulo fixo em si ou nos outros.</div>
-          <div class="auto-dist-ex">&quot;Sou um fracasso&quot;</div>
-          <div class="auto-dist-ex">&quot;Ele é egoísta&quot;</div>
-        </div>
-        <div class="auto-option-other"><input type="checkbox"><span class="auto-option-other-lbl">Outro:</span><input class="auto-option-other-inp" type="text" placeholder="especifique..."></div>
-          <span class="auto-emotion-tag">→ tristeza, depressão e desesperança</span>
-        </div>
-      </div>
-
-      <div class="auto-group amber" data-grupo="neg_dist_percepcao" data-tem-likert="0" style="background:var(--amber-bg);border-color:var(--amber);">
-        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
-          <div class="auto-group-head-main">
-            <div class="auto-group-title">3. Erros de Percepção e Atenção</div>
-            <div class="auto-group-desc">&quot;Quando minha mente seleciona apenas o negativo.&quot;</div>
-            <div class="auto-group-summary"></div>
-          </div>
-          <div class="auto-group-chevron">›</div>
-        </div>
-        <div class="auto-group-body">
-        <div class="auto-dist-item">
-          <label class="auto-dist-lbl"><input type="checkbox" data-item="Filtro negativo"> Filtro negativo</label>
-          <div class="auto-dist-def">Focar exclusivamente nos aspectos negativos.</div>
-          <div class="auto-dist-ex">&quot;Só consigo pensar na crítica&quot;</div>
-          <div class="auto-dist-ex">&quot;Só vejo o que está dando errado&quot;</div>
-        </div>
-        <div class="auto-dist-item">
-          <label class="auto-dist-lbl"><input type="checkbox" data-item="Desqualificação do positivo"> Desqualificação do positivo</label>
-          <div class="auto-dist-def">Descartar conquistas ou qualidades positivas.</div>
-          <div class="auto-dist-ex">&quot;Passei, mas qualquer um passaria&quot;</div>
-          <div class="auto-dist-ex">&quot;Elogiou só por educação&quot;</div>
-        </div>
-        <div class="auto-dist-item">
-          <label class="auto-dist-lbl"><input type="checkbox" data-item="Maximização / minimização"> Maximização / minimização</label>
-          <div class="auto-dist-def">Ampliar o negativo e diminuir o positivo.</div>
-          <div class="auto-dist-ex">&quot;Meu erro foi enorme, conquistas não contam&quot;</div>
-          <div class="auto-dist-ex">&quot;Problema gravíssimo; coisas boas são insignificantes&quot;</div>
-        </div>
-        <div class="auto-option-other"><input type="checkbox"><span class="auto-option-other-lbl">Outro:</span><input class="auto-option-other-inp" type="text" placeholder="especifique..."></div>
-          <span class="auto-emotion-tag">→ solidão, insatisfação e desânimo</span>
-        </div>
-      </div>
-
-      <div class="auto-group amber" data-grupo="neg_dist_interpretacao" data-tem-likert="0" style="background:var(--amber-bg);border-color:var(--amber);">
-        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
-          <div class="auto-group-head-main">
-            <div class="auto-group-title">4. Erros de Interpretação</div>
-            <div class="auto-group-desc">&quot;Quando minha mente tira conclusões sem provas.&quot;</div>
-            <div class="auto-group-summary"></div>
-          </div>
-          <div class="auto-group-chevron">›</div>
-        </div>
-        <div class="auto-group-body">
-        <div class="auto-dist-item">
-          <label class="auto-dist-lbl"><input type="checkbox" data-item="Leitura mental"> Leitura mental</label>
-          <div class="auto-dist-def">Acreditar que sabe o que os outros pensam.</div>
-          <div class="auto-dist-ex">&quot;Ele acha que sou incompetente&quot;</div>
-          <div class="auto-dist-ex">&quot;Estavam me julgando&quot;</div>
-        </div>
-        <div class="auto-dist-item">
-          <label class="auto-dist-lbl"><input type="checkbox" data-item="Personalização"> Personalização</label>
-          <div class="auto-dist-def">Assumir responsabilidade excessiva por eventos negativos.</div>
-          <div class="auto-dist-ex">&quot;Meu casamento acabou porque eu falhei&quot;</div>
-          <div class="auto-dist-ex">&quot;Foi grosseiro — devo ter feito algo errado&quot;</div>
-        </div>
-        <div class="auto-dist-item">
-          <label class="auto-dist-lbl"><input type="checkbox" data-item="Raciocínio emocional"> Raciocínio emocional</label>
-          <div class="auto-dist-def">Tratar sentimentos como prova de verdade.</div>
-          <div class="auto-dist-ex">&quot;Me sinto um fracasso, então sou&quot;</div>
-          <div class="auto-dist-ex">&quot;Sinto que ninguém gosta de mim&quot;</div>
-        </div>
-        <div class="auto-option-other"><input type="checkbox"><span class="auto-option-other-lbl">Outro:</span><input class="auto-option-other-inp" type="text" placeholder="especifique..."></div>
-          <span class="auto-emotion-tag">→ culpa, vergonha e ciúme</span>
-        </div>
-      </div>
-
-      <div class="auto-group amber" data-grupo="neg_dist_exigencia" data-tem-likert="0" style="background:var(--amber-bg);border-color:var(--amber);">
-        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
-          <div class="auto-group-head-main">
-            <div class="auto-group-title">5. Erros de Exigência</div>
-            <div class="auto-group-desc">&quot;Quando minha mente impõe regras rígidas.&quot;</div>
-            <div class="auto-group-summary"></div>
-          </div>
-          <div class="auto-group-chevron">›</div>
-        </div>
-        <div class="auto-group-body">
-        <div class="auto-dist-item">
-          <label class="auto-dist-lbl"><input type="checkbox" data-item="Declarações &quot;deveria&quot;"> Declarações &quot;deveria&quot;</label>
-          <div class="auto-dist-def">Impor regras inflexíveis.</div>
-          <div class="auto-dist-ex">&quot;Deveria dar conta de tudo sem ajuda&quot;</div>
-          <div class="auto-dist-ex">&quot;Deveriam me tratar com respeito&quot;</div>
-        </div>
-        <div class="auto-dist-item">
-          <label class="auto-dist-lbl"><input type="checkbox" data-item="Comparações injustas"> Comparações injustas</label>
-          <div class="auto-dist-def">Comparar-se usando padrões irrealistas.</div>
-          <div class="auto-dist-ex">&quot;Ela é muito mais competente&quot;</div>
-          <div class="auto-dist-ex">&quot;Todos têm a vida resolvida, menos eu&quot;</div>
-        </div>
-        <div class="auto-dist-item">
-          <label class="auto-dist-lbl"><input type="checkbox" data-item="Foco no julgamento"> Foco no julgamento</label>
-          <div class="auto-dist-def">Avaliar a si e aos outros em termos absolutos.</div>
-          <div class="auto-dist-ex">&quot;Não tive bom desempenho — sou inferior&quot;</div>
-          <div class="auto-dist-ex">&quot;Se não me sair bem, não vale tentar&quot;</div>
-        </div>
-        <div class="auto-option-other"><input type="checkbox"><span class="auto-option-other-lbl">Outro:</span><input class="auto-option-other-inp" type="text" placeholder="especifique..."></div>
-          <span class="auto-emotion-tag">→ raiva, irritação e frustração</span>
-        </div>
-      </div>
-
-      <div class="auto-nav-duplo">
-        <button class="auto-btn-prev coral" onclick="abrirSecao('sec-auto-pens-a')">← Anterior: Pensamentos Desadaptativos</button>
         <button class="auto-btn-next coral" onclick="autoAvancarSequencial('neg','sec-auto-comp-a')">Próximo: Comportamentos Disfuncionais →</button>
       </div>
     </div>
@@ -4604,7 +4402,7 @@ body{
         </div>
       </div>
       <div class="auto-nav-duplo">
-        <button class="auto-btn-prev coral" onclick="abrirSecao('sec-auto-distorcoes')">← Anterior: Distorções Cognitivas</button>
+        <button class="auto-btn-prev coral" onclick="abrirSecao('sec-auto-pens-a')">← Anterior: Pensamentos Desadaptativos</button>
         <button class="auto-btn-next coral" onclick="autoFinalizarTipo('neg')">✓ Concluir e Revisar →</button>
       </div>
     </div>
@@ -8762,7 +8560,6 @@ const AUTO_SEC_MAP = {
   'sec-auto-emo-a': 'emo-a',
   'sec-auto-fis-a': 'fis-a',
   'sec-auto-pens-a': 'pens-a',
-  'sec-auto-distorcoes': 'distorcoes',
   'sec-auto-comp-a': 'comp-a',
   'sec-auto-sit-b': 'sit-b',
   'sec-auto-emo-b': 'emo-b',
@@ -8772,7 +8569,7 @@ const AUTO_SEC_MAP = {
 };
 
 // Sequências obrigatórias
-const AUTO_SEQ_NEG = ['sec-auto-sit-a','sec-auto-emo-a','sec-auto-fis-a','sec-auto-pens-a','sec-auto-distorcoes','sec-auto-comp-a'];
+const AUTO_SEQ_NEG = ['sec-auto-sit-a','sec-auto-emo-a','sec-auto-fis-a','sec-auto-pens-a','sec-auto-comp-a'];
 const AUTO_SEQ_POS = ['sec-auto-sit-b','sec-auto-emo-b','sec-auto-fis-b','sec-auto-pens-b','sec-auto-comp-b'];
 
 // Estado global do módulo
@@ -9647,7 +9444,6 @@ function autoAtualizarProgressoMenus() {
     ['emo-a','sec-auto-emo-a','autoProg-emo-a'],
     ['fis-a','sec-auto-fis-a','autoProg-fis-a'],
     ['pens-a','sec-auto-pens-a','autoProg-pens-a'],
-    ['distorcoes','sec-auto-distorcoes','autoProg-distorcoes'],
     ['comp-a','sec-auto-comp-a','autoProg-comp-a'],
     ['sit-b','sec-auto-sit-b','autoProg-sit-b'],
     ['emo-b','sec-auto-emo-b','autoProg-emo-b'],
@@ -9727,7 +9523,7 @@ function autoAtualizarBarra(tipo) {
 function autoFinalizarTipo(tipo) {
   // Coleta de todas as sub-seções daquele tipo
   const secoesPorTipo = {
-    'neg': ['sec-auto-sit-a','sec-auto-emo-a','sec-auto-fis-a','sec-auto-pens-a','sec-auto-distorcoes','sec-auto-comp-a'],
+    'neg': ['sec-auto-sit-a','sec-auto-emo-a','sec-auto-fis-a','sec-auto-pens-a','sec-auto-comp-a'],
     'pos': ['sec-auto-sit-b','sec-auto-emo-b','sec-auto-fis-b','sec-auto-pens-b','sec-auto-comp-b'],
   };
   for (const sid of secoesPorTipo[tipo]) {
@@ -9756,7 +9552,7 @@ function autoVoltarEditarRevisar() {
 // ============================================================
 function autoAbrirResumo() {
   // Coleta final
-  const todas = ['sec-auto-sit-a','sec-auto-emo-a','sec-auto-fis-a','sec-auto-pens-a','sec-auto-distorcoes','sec-auto-comp-a',
+  const todas = ['sec-auto-sit-a','sec-auto-emo-a','sec-auto-fis-a','sec-auto-pens-a','sec-auto-comp-a',
                  'sec-auto-sit-b','sec-auto-emo-b','sec-auto-fis-b','sec-auto-pens-b','sec-auto-comp-b'];
   todas.forEach(autoColetarDadosDaSecao);
 
@@ -9927,8 +9723,6 @@ function autoAbrirResumo() {
     html += revCategoria('⚡', 'Reações Físicas', ['neg_fis_ativacao','neg_fis_desativacao','neg_fis_tensao','neg_fis_digestivas','neg_fis_sono'], 'coral', true);
     // Pensamentos (com texto livre)
     html += revCategoriaComTexto('🌧️', 'Pensamentos', d.neg_pens_o_que, ['neg_pens_sobre_mim','neg_pens_sobre_futuro','neg_pens_sobre_outros','neg_pens_cobranca','neg_pens_culpa'], 'amber', true);
-    // Distorções
-    html += revCategoria('🔎', 'Distorções Cognitivas', ['neg_dist_previsao','neg_dist_generalizacao','neg_dist_percepcao','neg_dist_interpretacao','neg_dist_exigencia'], 'amber', false);
     // Comportamentos (com texto livre)
     html += revCategoriaComTexto('📉', 'Comportamentos', d.neg_comp_o_que, ['neg_comp_evitacao','neg_comp_isolamento','neg_comp_reatividade','neg_comp_entorpecimento','neg_comp_controle'], 'coral', false);
 
@@ -10127,7 +9921,6 @@ function histSecaoExpandida(r, tipo, cor) {
     { icon:'💔', label:'Emoções', prefixo:tipo+'_emo_', cor:cor, likert:true },
     { icon:'⚡', label:'Reações Físicas', prefixo:tipo+'_fis_', cor:cor, likert:true },
     { icon:'🌧️', label:'Pensamentos', prefixo:tipo+'_pens_', cor:corAmber, likert:true },
-    { icon:'🔎', label:'Distorções Cognitivas', prefixo:tipo+'_dist_', cor:corAmber, likert:false },
     { icon:'📉', label:'Comportamentos', prefixo:tipo+'_comp_', cor:cor, likert:false },
   ] : [
     { icon:'📍', label:'Situação', prefixo:tipo+'_sit_tipo_', cor:cor, likert:false, isSit:true },
@@ -10278,7 +10071,6 @@ function histModalSecaoCompleta(r, tipo, cor, titulo) {
     { icon:'💔', label:'Emoções', prefixos:['_emo_tristeza','_emo_ansiedade','_emo_raiva','_emo_culpa','_emo_ciume'], cor:cor, likert:true },
     { icon:'⚡', label:'Reações Físicas', prefixos:['_fis_ativacao','_fis_desativacao','_fis_tensao','_fis_digestivas','_fis_sono'], cor:cor, likert:true },
     { icon:'🌧️', label:'Pensamentos', prefixos:['_pens_sobre_mim','_pens_sobre_futuro','_pens_sobre_outros','_pens_cobranca','_pens_culpa'], cor:corAmber, likert:true, textoChave:'_pens_o_que' },
-    { icon:'🔎', label:'Distorções Cognitivas', prefixos:['_dist_previsao','_dist_generalizacao','_dist_percepcao','_dist_interpretacao','_dist_exigencia'], cor:corAmber, likert:false },
     { icon:'📉', label:'Comportamentos', prefixos:['_comp_evitacao','_comp_isolamento','_comp_reatividade','_comp_entorpecimento','_comp_controle'], cor:cor, likert:false, textoChave:'_comp_o_que' },
   ] : [
     { icon:'💚', label:'Emoções', prefixos:['_emo_felicidade','_emo_orgulho','_emo_conexao','_emo_calma','_emo_esperanca'], cor:cor, likert:true },
@@ -10588,9 +10380,6 @@ const PEV_SECOES = [
   { secao: 'neg', prefixo: 'neg_pens_', titulo: 'Pensamentos Desadaptativos',
     sub: 'Quais tipos de pensamento aparecem mais',
     cor: '#E07A6B', classe: 'coral' },
-  { secao: 'neg', prefixo: 'neg_dist_', titulo: 'Distorções Cognitivas',
-    sub: 'Quais distorções aparecem com mais frequência',
-    cor: '#D4A843', classe: 'amber' },
   { secao: 'neg', prefixo: 'neg_comp_', titulo: 'Comportamentos Disfuncionais',
     sub: 'Quais reações comportamentais aparecem mais',
     cor: '#E07A6B', classe: 'coral' },
