@@ -753,6 +753,180 @@ body{
 .p10-btn-comecar.p10-disabled:hover{transform:none !important;}
 
 /* ============================================================
+   PACOTE 11.4a — Cabeçalho Cumulativo (Registro Negativo)
+   3 camadas: bloco fixo / tabs / trilha textual — layout COMPACTO
+   Prefixado com p11- para isolamento
+   ============================================================ */
+.p11-header{
+  background:transparent;
+  margin:0 0 10px 0;
+  border-radius:8px;
+  overflow:hidden;
+  border:1px solid var(--border,#DDE4EA);
+}
+.p11-c1{
+  display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px;
+  padding:6px 10px;background:#F4F6F8;
+  border-bottom:1px solid #E3E8ED;
+  font-size:12px;line-height:1.3;
+}
+.p11-c1-bloco{display:inline-flex;align-items:center;gap:4px;}
+.p11-humor-emoji{font-size:15px;line-height:1;}
+.p11-humor-lbl{color:#5A6B7A;font-weight:600;font-size:12px;}
+.p11-humor-lbl strong{color:#2C3E50;}
+.p11-atual{color:var(--coral,#E07A6B);font-weight:700;font-size:12px;}
+.p11-atual-ic{font-size:11px;}
+.p11-sep{color:#8A9BA8;font-weight:600;}
+.p11-modal-btn{
+  margin-left:auto;display:inline-flex;align-items:center;gap:3px;
+  padding:3px 8px;background:var(--blue,#2C5F7C);color:white;
+  border:none;border-radius:10px;font-family:inherit;font-size:11px;
+  font-weight:700;cursor:pointer;transition:all .15s;
+  flex-shrink:0;line-height:1;
+}
+.p11-modal-btn:hover{background:#234B61;transform:scale(1.05);}
+.p11-modal-btn-ic{font-size:11px;}
+
+/* Camada 2 — tabs horizontais (compacto) */
+.p11-c2{
+  display:flex;gap:4px;overflow-x:auto;
+  padding:6px 8px;background:white;
+  border-bottom:1px solid #E3E8ED;
+  scrollbar-width:thin;
+}
+.p11-tab{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:4px 10px 4px 12px;background:white;
+  border:1px solid var(--border,#DDE4EA);border-radius:999px;
+  cursor:pointer;font-family:inherit;font-size:11.5px;font-weight:600;
+  color:#5A6B7A;white-space:nowrap;transition:all .18s;
+  line-height:1.2;
+}
+.p11-tab:hover{border-color:var(--coral,#E07A6B);color:var(--coral,#E07A6B);}
+.p11-tab.filled{
+  border-left:3px solid var(--blue,#2C5F7C);
+  background:#E8F0F5;color:var(--blue,#2C5F7C);padding-left:9px;
+}
+.p11-tab.filled::after{
+  content:"✓";color:var(--blue,#2C5F7C);font-weight:700;
+  margin-left:2px;font-size:10px;
+}
+.p11-tab.current{
+  background:var(--coral,#E07A6B);color:white;
+  border-color:var(--coral,#E07A6B);
+  box-shadow:0 1px 4px rgba(224,122,107,.3);
+}
+.p11-tab.current::after{content:none;}
+.p11-tab.locked{opacity:.4;cursor:not-allowed;}
+.p11-tab.locked:hover{border-color:var(--border,#DDE4EA);color:#5A6B7A;}
+
+/* Camada 3 — trilha cumulativa (compacto) */
+.p11-c3{background:#F4F6F8;}
+.p11-c3-linha{
+  display:flex;align-items:baseline;gap:4px;
+  padding:5px 10px;border-bottom:1px solid #E3E8ED;
+  cursor:pointer;font-size:12px;line-height:1.35;
+  transition:background .15s;
+}
+.p11-c3-linha:last-of-type{border-bottom:none;}
+.p11-c3-linha:hover{background:rgba(44,95,124,.04);}
+.p11-c3-ic{font-size:12px;flex-shrink:0;line-height:1;}
+.p11-c3-cat{
+  font-weight:700;color:#5A6B7A;flex-shrink:0;
+  font-family:'Quicksand',sans-serif;font-size:11.5px;
+}
+.p11-c3-grps{color:#2C3E50;flex:1;word-break:break-word;font-size:11.5px;}
+.p11-c3-grp{font-weight:600;}
+.p11-c3-dot{color:#8A9BA8;margin:0 2px;}
+.p11-c3-chv{
+  color:#8A9BA8;font-size:15px;font-weight:bold;
+  transition:transform .2s;margin-left:4px;flex-shrink:0;
+  line-height:1;
+}
+.p11-c3-linha.expanded .p11-c3-chv{transform:rotate(90deg);}
+.p11-c3-det{
+  max-height:0;overflow:hidden;transition:max-height .3s ease;
+  background:white;
+}
+.p11-c3-linha.expanded + .p11-c3-det{
+  max-height:800px;border-top:1px solid #E3E8ED;
+  border-bottom:1px solid #E3E8ED;
+}
+.p11-c3-det-in{padding:8px 12px 10px 28px;font-size:12px;}
+.p11-texto{
+  background:#F4F6F8;padding:6px 8px;border-radius:4px;
+  font-style:italic;color:#5A6B7A;margin:0 0 6px;
+  font-size:12px;line-height:1.45;
+}
+.p11-sub{margin:5px 0 2px;}
+.p11-sub-nm{font-weight:700;color:#2C3E50;font-size:12px;margin-bottom:2px;}
+.p11-pills{display:flex;flex-wrap:wrap;gap:3px;margin-top:2px;}
+.p11-pill{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:2px 7px;background:#FCEEEB;color:var(--coral,#E07A6B);
+  border-radius:9px;font-size:11px;font-weight:600;
+}
+.p11-pill.amber{background:#FAF3E0;color:var(--amber,#D4A843);}
+.p11-pill-b{
+  background:var(--coral,#E07A6B);color:white;padding:0 4px;
+  border-radius:7px;font-size:9.5px;font-weight:700;
+  min-width:12px;text-align:center;
+}
+.p11-pill.amber .p11-pill-b{background:var(--amber,#D4A843);}
+
+/* Modal do +N */
+.p11-mov{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,.55);display:none;
+  align-items:flex-start;justify-content:center;
+  z-index:100;padding:30px 16px;overflow-y:auto;
+}
+.p11-mov.show{display:flex;}
+.p11-mbox{
+  background:white;border-radius:14px;max-width:680px;width:100%;
+  max-height:90vh;overflow-y:auto;
+  box-shadow:0 10px 40px rgba(0,0,0,.25);
+}
+.p11-mhead{
+  padding:16px 20px;border-bottom:1px solid #E3E8ED;
+  display:flex;justify-content:space-between;align-items:center;
+  background:var(--blue,#2C5F7C);color:white;
+  border-radius:14px 14px 0 0;position:sticky;top:0;
+}
+.p11-mtitle{
+  font-family:'Quicksand',sans-serif;font-weight:700;
+  font-size:15px;margin:0;display:inline-flex;align-items:center;gap:8px;
+}
+.p11-mclose{
+  background:rgba(255,255,255,.2);border:none;color:white;
+  width:28px;height:28px;border-radius:50%;cursor:pointer;
+  font-size:17px;font-weight:bold;line-height:1;
+}
+.p11-mbody{padding:16px 18px 24px;}
+
+/* Tooltip de tab bloqueada */
+.p11-tooltip{
+  position:fixed;background:#2C3E50;color:white;
+  padding:6px 12px;border-radius:6px;font-size:11.5px;
+  z-index:200;pointer-events:none;opacity:0;
+  transition:opacity .15s;box-shadow:0 2px 8px rgba(0,0,0,.2);
+}
+.p11-tooltip.show{opacity:1;}
+
+@media (max-width:540px){
+  .p11-c1{font-size:11.5px;gap:5px;padding:5px 8px;}
+  .p11-humor-emoji{font-size:14px;}
+  .p11-humor-lbl, .p11-atual{font-size:11.5px;}
+  .p11-modal-btn{padding:3px 7px;font-size:10.5px;}
+  .p11-c2{padding:5px 6px;}
+  .p11-tab{padding:3px 9px 3px 10px;font-size:11px;}
+  .p11-tab.filled{padding-left:7px;}
+  .p11-c3-linha{padding:5px 8px;font-size:11.5px;flex-wrap:wrap;}
+  .p11-c3-grps{min-width:calc(100% - 20px);padding-left:18px;margin-top:1px;font-size:11.5px;}
+  .p11-c3-det-in{padding:6px 10px 8px 20px;}
+}
+
+/* ============================================================
    PACOTE 5 — Cadeado no fluxo de primeira vez
    ============================================================ */
 .p5-sub-aviso{
@@ -2452,7 +2626,7 @@ body{
       ✓ Concluir Registro Negativo
     </button>
     <p style="font-size:11px;color:var(--txt-l);text-align:center;margin-top:8px;">
-      Complete ao menos a Situação para concluir.
+      Complete todas as seções para concluir.
     </p>
   </div>
 
@@ -2531,7 +2705,7 @@ body{
       ✓ Concluir Registro Positivo
     </button>
     <p style="font-size:11px;color:var(--txt-l);text-align:center;margin-top:8px;">
-      Complete ao menos a Situação para concluir.
+      Complete todas as seções para concluir.
     </p>
   </div>
 
@@ -2543,6 +2717,8 @@ body{
       <button class="btn-back" onclick="abrirSecao('sec-auto-menu-neg')">← Menu</button>
       <span class="nav-title">Situação</span>
     </div>
+    <!-- Pacote 11.4a: cabeçalho cumulativo (renderizado via JS) -->
+    <div class="p11-header" id="p11aHdr-sit-a" style="display:none;"></div>
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
     <div class="anam-card">
       <div class="auto-sec-header" style="border-color:var(--gray);">
@@ -2665,6 +2841,8 @@ body{
       <button class="btn-back" onclick="abrirSecao('sec-auto-menu-neg')">← Menu</button>
       <span class="nav-title">Emoções Desagradáveis</span>
     </div>
+    <!-- Pacote 11.4a: cabeçalho cumulativo -->
+    <div class="p11-header" id="p11aHdr-emo-a" style="display:none;"></div>
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
     <div class="anam-card">
       <div class="auto-sec-header" style="border-color:var(--coral);">
@@ -3162,6 +3340,8 @@ body{
       <button class="btn-back" onclick="abrirSecao('sec-auto-menu-neg')">← Menu</button>
       <span class="nav-title">Reações Físicas</span>
     </div>
+    <!-- Pacote 11.4a: cabeçalho cumulativo -->
+    <div class="p11-header" id="p11aHdr-fis-a" style="display:none;"></div>
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
     <div class="anam-card">
       <div class="auto-sec-header" style="border-color:var(--coral);">
@@ -3659,6 +3839,8 @@ body{
       <button class="btn-back" onclick="abrirSecao('sec-auto-menu-neg')">← Menu</button>
       <span class="nav-title">Pensamentos Desadaptativos</span>
     </div>
+    <!-- Pacote 11.4a: cabeçalho cumulativo -->
+    <div class="p11-header" id="p11aHdr-pens-a" style="display:none;"></div>
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
     <div class="anam-card">
       <div class="auto-sec-header" style="border-color:var(--coral);">
@@ -4219,6 +4401,8 @@ body{
       <button class="btn-back" onclick="abrirSecao('sec-auto-menu-neg')">← Menu</button>
       <span class="nav-title">Comportamentos Disfuncionais</span>
     </div>
+    <!-- Pacote 11.4a: cabeçalho cumulativo -->
+    <div class="p11-header" id="p11aHdr-comp-a" style="display:none;"></div>
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
     <div class="anam-card">
       <div class="auto-sec-header" style="border-color:var(--coral);">
@@ -6477,6 +6661,19 @@ function abrirSecao(idSecao) {
         p11_5MarcarEduLidasParaVeterano();
       }
     });
+  }
+  // Pacote 11.4a: ao abrir qualquer das 5 seções do Registro Negativo,
+  // renderiza o cabeçalho cumulativo (humor + tabs + trilha textual).
+  // O estado de "primeira vez" determina se tabs futuras ficam bloqueadas.
+  if (['sec-auto-sit-a','sec-auto-emo-a','sec-auto-fis-a','sec-auto-pens-a','sec-auto-comp-a'].indexOf(idSecao) !== -1) {
+    if (typeof p11aRenderizarCabecalho === 'function') {
+      // Garante que P5_STATE está verificado (para tabs locked no modo primeira vez)
+      if (typeof p5VerificarPrimeiraVez === 'function' && typeof P5_STATE !== 'undefined' && !P5_STATE.verificado) {
+        p5VerificarPrimeiraVez().then(() => p11aRenderizarCabecalho(idSecao));
+      }
+      // Renderiza imediatamente também (estado corrente), para não esperar o servidor
+      setTimeout(() => p11aRenderizarCabecalho(idSecao), 30);
+    }
   }
 }
 
@@ -8928,6 +9125,292 @@ function p8ClicarEntendi() {
 /* Fim do Pacote 8 */
 
 /* ============================================================
+   PACOTE 11.4a — Cabeçalho Cumulativo (Registro Negativo)
+   ============================================================
+   3 camadas renderizadas no topo de cada seção do Negativo:
+   1) Bloco fixo: humor inicial + seção atual + botão +N (modal)
+   2) Tabs horizontais com 3 estados (atual/preenchida/futura)
+   3) Trilha cumulativa textual com expansão individual
+   
+   Dados são lidos em runtime do DOM + AUTO_STATE.dados.
+   Funções de render reutilizam revPillsGrupo/revTituloGrupo
+   que estão dentro de autoAbrirResumo (extração se necessário).
+   ============================================================ */
+
+// Mapa de humor para emojis e rótulos (espelha HUMOR_MAP do Pacote 6)
+const P11A_HUMOR = {
+  1: { emoji:'😟', label:'Muito negativo' },
+  2: { emoji:'🙁', label:'Negativo' },
+  3: { emoji:'😐', label:'Neutro' },
+  4: { emoji:'🙂', label:'Positivo' },
+  5: { emoji:'😊', label:'Muito positivo' }
+};
+
+// Configuração das 5 seções do Negativo (ordem clínica)
+const P11A_NEG_SECOES = [
+  { id:'sit-a',  fullId:'sec-auto-sit-a',  icone:'📍', nome:'Situação',
+    titulo:'Situações', prefGrupos:'neg_sit_tipo_', abreviarGrupos:true,
+    chaves:['neg_sit_tipo_interpessoais','neg_sit_tipo_desempenho','neg_sit_tipo_solidao','neg_sit_tipo_perda','neg_sit_tipo_internas'],
+    textoLivre:'neg_sit_o_que', temLikert:false, cor:'coral' },
+  { id:'emo-a',  fullId:'sec-auto-emo-a',  icone:'💔', nome:'Emoções',
+    titulo:'Emoções',
+    chaves:['neg_emo_tristeza','neg_emo_ansiedade','neg_emo_raiva','neg_emo_culpa','neg_emo_ciume'],
+    textoLivre:null, temLikert:true, cor:'coral' },
+  { id:'fis-a',  fullId:'sec-auto-fis-a',  icone:'⚡', nome:'Reações Físicas',
+    titulo:'Reações Físicas',
+    chaves:['neg_fis_ativacao','neg_fis_desativacao','neg_fis_tensao','neg_fis_digestivas','neg_fis_sono'],
+    textoLivre:null, temLikert:true, cor:'coral' },
+  { id:'pens-a', fullId:'sec-auto-pens-a', icone:'🌧️', nome:'Pensamentos',
+    titulo:'Pensamentos', abreviarGrupos:true,
+    chaves:['neg_pens_sobre_mim','neg_pens_sobre_futuro','neg_pens_sobre_outros','neg_pens_cobranca','neg_pens_culpa'],
+    textoLivre:'neg_pens_o_que', temLikert:true, cor:'amber' },
+  { id:'comp-a', fullId:'sec-auto-comp-a', icone:'📉', nome:'Comportamentos',
+    titulo:'Comportamentos',
+    chaves:['neg_comp_evitacao','neg_comp_isolamento','neg_comp_reatividade','neg_comp_entorpecimento','neg_comp_controle'],
+    textoLivre:'neg_comp_o_que', temLikert:false, cor:'coral' }
+];
+
+// Escapa HTML (usa escapeHtmlAuto se existir, senão versão local)
+function p11aEscape(s) {
+  if (typeof escapeHtmlAuto === 'function') return escapeHtmlAuto(String(s || ''));
+  return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// Lê o título visível de um grupo direto do DOM (fonte única de verdade — Pacote 2.1)
+function p11aTituloGrupo(chave) {
+  const el = document.querySelector('[data-grupo="' + chave + '"] .auto-group-title');
+  if (!el) return chave;
+  return el.textContent.replace(/^\d+\.\s*/, '').trim();
+}
+
+// Abrevia título de grupo no cabeçalho cumulativo (economiza espaço horizontal).
+// - Pensamentos: "Pensamentos sobre Mim Mesmo (Autocrítica)" -> "Sobre Mim (Autocrítica)"
+// - Situações: "Situações Interpessoais" -> "Interpessoais"
+//              "Situações de Solidão / Inatividade" -> "Solidão / Inatividade"
+//              "Situações Internas (sem evento externo claro)" -> "Internas"
+function p11aAbreviarPens(titulo) {
+  let t = titulo
+    .replace(/^Situações de /i, '')
+    .replace(/^Situações /i, '')
+    .replace(/^Pensamentos sobre (a |o )?/i, 'Sobre ')
+    .replace(/^Pensamentos de /i, '')
+    .replace(/^Pensamentos /i, '');
+  // Situações Internas (sem evento externo claro) -> Internas
+  t = t.replace(/^Internas \(sem evento externo claro\)$/i, 'Internas');
+  return t;
+}
+
+// Coleta os dados atuais do DOM do Registro Negativo
+// Retorna: { humorNota, humorObs, secoesPreenchidas: {id: true/false}, grupos: {chave: "Item:4|..."}, textosLivres: {chave: "..."} }
+function p11aColetarDados() {
+  // Garante que AUTO_STATE.dados esteja atualizado com o DOM
+  P11A_NEG_SECOES.forEach(s => {
+    if (typeof autoColetarDadosDaSecao === 'function') {
+      autoColetarDadosDaSecao(s.fullId);
+    }
+  });
+  const d = (typeof AUTO_STATE !== 'undefined' && AUTO_STATE && AUTO_STATE.dados) ? AUTO_STATE.dados : {};
+  const humorNota = parseInt(d.humor_nota || d.humor_nivel || 3, 10) || 3;
+  return {
+    humorNota,
+    humorObs: d.humor_observacao || '',
+    dados: d
+  };
+}
+
+// Retorna true se a seção tem pelo menos 1 dado (qualquer chave do grupo ou texto livre)
+function p11aSecaoPreenchida(secao, d) {
+  for (const k of secao.chaves) {
+    if (d[k] && String(d[k]).trim()) return true;
+  }
+  if (secao.textoLivre && d[secao.textoLivre] && String(d[secao.textoLivre]).trim()) return true;
+  return false;
+}
+
+// Retorna array de grupos preenchidos com seus títulos (do DOM)
+function p11aGruposPreenchidos(secao, d) {
+  const out = [];
+  secao.chaves.forEach(k => {
+    const val = d[k];
+    if (!val || !String(val).trim()) return;
+    let titulo = p11aTituloGrupo(k);
+    if (secao.abreviarGrupos) titulo = p11aAbreviarPens(titulo);
+    out.push({ chave:k, titulo, valor:val });
+  });
+  return out;
+}
+
+// Monta pills de um grupo (inspirado no revPillsGrupo do Pacote 6)
+function p11aPillsGrupo(valor, temLikert, cor) {
+  if (!valor) return '';
+  const sep = (typeof AUTO_SEPARADOR !== 'undefined') ? AUTO_SEPARADOR : ' | ';
+  const partes = String(valor).split(sep).map(s => s.trim()).filter(Boolean);
+  if (partes.length === 0) return '';
+  const classeCor = cor === 'amber' ? ' amber' : '';
+  let html = '';
+  partes.forEach(p => {
+    if (temLikert) {
+      const m = p.match(/^(.+):(\d)$/);
+      if (m) {
+        html += '<span class="p11-pill' + classeCor + '">' + p11aEscape(m[1]) +
+          ' <span class="p11-pill-b">' + m[2] + '</span></span>';
+      } else {
+        html += '<span class="p11-pill' + classeCor + '">' + p11aEscape(p) + '</span>';
+      }
+    } else {
+      html += '<span class="p11-pill' + classeCor + '">' + p11aEscape(p) + '</span>';
+    }
+  });
+  return html;
+}
+
+// Monta o bloco expandido de uma seção (detalhes inline)
+function p11aMontarDetalhes(secao, d) {
+  let html = '<div class="p11-c3-det-in">';
+  // Texto livre (se houver)
+  if (secao.textoLivre && d[secao.textoLivre] && String(d[secao.textoLivre]).trim()) {
+    html += '<div class="p11-texto">' + p11aEscape(d[secao.textoLivre]) + '</div>';
+  }
+  // Subgrupos
+  const grupos = p11aGruposPreenchidos(secao, d);
+  grupos.forEach(g => {
+    html += '<div class="p11-sub">';
+    html += '<div class="p11-sub-nm">' + p11aEscape(g.titulo) + '</div>';
+    html += '<div class="p11-pills">' + p11aPillsGrupo(g.valor, secao.temLikert, secao.cor) + '</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+// Renderiza o cabeçalho completo para uma seção atual
+function p11aRenderizarCabecalho(idSecaoAtual) {
+  // idSecaoAtual é o ID completo (ex: "sec-auto-emo-a"); extrai o short id
+  const mSec = P11A_NEG_SECOES.find(s => s.fullId === idSecaoAtual);
+  if (!mSec) return;
+  const hdrEl = document.getElementById('p11aHdr-' + mSec.id);
+  if (!hdrEl) return;
+
+  // Coleta dados do registro
+  const coleta = p11aColetarDados();
+  const d = coleta.dados;
+  const humor = P11A_HUMOR[coleta.humorNota] || P11A_HUMOR[3];
+
+  // Determina status de cada seção (preenchida | atual | futura)
+  const status = {};
+  let passouAtual = false;
+  P11A_NEG_SECOES.forEach(s => {
+    if (s.id === mSec.id) {
+      status[s.id] = 'current';
+      passouAtual = true;
+    } else if (!passouAtual) {
+      status[s.id] = p11aSecaoPreenchida(s, d) ? 'filled' : 'future-before';
+    } else {
+      status[s.id] = p11aSecaoPreenchida(s, d) ? 'filled' : 'future-after';
+    }
+  });
+
+  // Primeira vez = tabs futuras bloqueadas
+  const primeiraVez = (typeof P5_STATE !== 'undefined' && P5_STATE.verificado && P5_STATE.primeiraVez === true);
+
+  // ===== Camada 1 =====
+  let c1 = '<div class="p11-c1">';
+  c1 += '<span class="p11-c1-bloco">🌡️ <span class="p11-humor-lbl"><strong>Humor:</strong></span> ';
+  c1 += '<span class="p11-humor-emoji">' + humor.emoji + '</span> ';
+  c1 += '<span class="p11-humor-lbl">(' + humor.label + ')</span></span>';
+  c1 += '<span class="p11-sep">·</span>';
+  c1 += '<span class="p11-c1-bloco p11-atual"><span class="p11-atual-ic">✏️</span> Preenchendo: ' + p11aEscape(mSec.nome) + '</span>';
+  // Contador +N: seções preenchidas anteriores (filled) que não são a atual
+  const nPrev = Object.values(status).filter(v => v === 'filled').length;
+  if (nPrev >= 1) {
+    c1 += '<button class="p11-modal-btn" type="button" onclick="p11aAbrirModal()"><span class="p11-modal-btn-ic">📋</span> +' + nPrev + '</button>';
+  }
+  c1 += '</div>';
+
+  // ===== Camada 2 =====
+  let c2 = '<div class="p11-c2">';
+  P11A_NEG_SECOES.forEach(s => {
+    const st = status[s.id];
+    let cls = 'p11-tab';
+    if (st === 'current') cls += ' current';
+    else if (st === 'filled') cls += ' filled';
+    else if (primeiraVez) cls += ' locked';
+    const clickable = (st === 'filled') || (st === 'current') || !primeiraVez;
+    const onclick = clickable
+      ? ' onclick="p11aNavegarTab(\'' + s.fullId + '\', this)"'
+      : ' onclick="p11aTooltipBloqueio(this)"';
+    c2 += '<span class="' + cls + '"' + onclick + '>' + s.icone + ' ' + p11aEscape(s.nome) + '</span>';
+  });
+  c2 += '</div>';
+
+  // ===== Camada 3 =====
+  let c3 = '';
+  const preenchidasAntes = P11A_NEG_SECOES.filter(s => status[s.id] === 'filled');
+  if (preenchidasAntes.length > 0) {
+    c3 += '<div class="p11-c3">';
+    preenchidasAntes.forEach(s => {
+      const grupos = p11aGruposPreenchidos(s, d);
+      const nomesGrupos = grupos.map(g => '<span class="p11-c3-grp">' + p11aEscape(g.titulo) + '</span>').join('<span class="p11-c3-dot">·</span>');
+      c3 += '<div class="p11-c3-linha" onclick="p11aToggleLinha(this)" data-sec="' + s.id + '">';
+      c3 += '<span class="p11-c3-ic">' + s.icone + '</span>';
+      c3 += '<span class="p11-c3-cat">' + p11aEscape(s.titulo) + ':</span>';
+      c3 += '<span class="p11-c3-grps">' + (nomesGrupos || '<em style="color:#8A9BA8;">(preenchida)</em>') + '</span>';
+      c3 += '<span class="p11-c3-chv">›</span>';
+      c3 += '</div>';
+      c3 += '<div class="p11-c3-det">' + p11aMontarDetalhes(s, d) + '</div>';
+    });
+    c3 += '</div>';
+  }
+
+  hdrEl.innerHTML = c1 + c2 + c3;
+  hdrEl.style.display = 'block';
+}
+
+// Clique em linha da Camada 3 — expande/colapsa detalhes
+function p11aToggleLinha(el) {
+  el.classList.toggle('expanded');
+}
+
+// Clique em tab da Camada 2 — navega para seção
+function p11aNavegarTab(fullId, tabEl) {
+  if (tabEl && tabEl.classList.contains('current')) return; // já está nela
+  if (tabEl && tabEl.classList.contains('locked')) {
+    p11aTooltipBloqueio(tabEl);
+    return;
+  }
+  if (typeof abrirSecao === 'function') abrirSecao(fullId);
+}
+
+// Tooltip de tab bloqueada
+function p11aTooltipBloqueio(tab) {
+  let tip = document.getElementById('p11aTooltip');
+  if (!tip) {
+    tip = document.createElement('div');
+    tip.id = 'p11aTooltip';
+    tip.className = 'p11-tooltip';
+    document.body.appendChild(tip);
+  }
+  tip.textContent = '🔒 Preencha a seção anterior primeiro';
+  const rect = tab.getBoundingClientRect();
+  tip.style.left = rect.left + 'px';
+  tip.style.top = (rect.bottom + 10) + 'px';
+  tip.classList.add('show');
+  setTimeout(() => tip.classList.remove('show'), 1800);
+}
+
+// Abre modal do +N — reusa autoAbrirResumo (Pacote 6), mas só a parte visual
+function p11aAbrirModal() {
+  // Reusa o resumo do Pacote 6 (autoAbrirResumo já monta o infográfico)
+  if (typeof autoAbrirResumo === 'function') {
+    autoAbrirResumo();
+    // autoAbrirResumo provavelmente mostra uma seção dedicada; não ideal pra modal
+    // Como fallback: o próprio resumo já serve como "ver registro completo"
+  }
+}
+
+/* Fim do Pacote 11.4a */
+
+/* ============================================================
    PACOTE 9 — Cadeado da Anamnese no Menu Principal
    ============================================================
    - Após login, paciente sempre vai para o menu principal
@@ -9201,12 +9684,22 @@ function autoValidarSecao(idSecao) {
   const sec = document.getElementById(idSecao);
   if (!sec) return { ok: true };
 
-  // Seções de situação: precisam ter pelo menos o campo "O que aconteceu?" preenchido
+  // Seções de situação: precisam ter (1) campo "O que aconteceu?" preenchido
+  // E (2) pelo menos 1 opção marcada em algum tipo de contexto (Pacote 11.4a)
   if (idSecao === 'sec-auto-sit-a' || idSecao === 'sec-auto-sit-b') {
     const prefixo = idSecao === 'sec-auto-sit-a' ? 'neg' : 'pos';
     const oQue = sec.querySelector(`[data-auto-campo="${prefixo}_sit_o_que"]`);
     if (!oQue || !oQue.value.trim()) {
-      return { ok: false, msg: 'Preencha pelo menos o campo "O que aconteceu?"' };
+      return { ok: false, msg: 'Preencha o campo "O que aconteceu?" antes de avançar.' };
+    }
+    // Conta opções marcadas em qualquer grupo de tipo de situação
+    const gruposSit = sec.querySelectorAll('[data-grupo]');
+    let temOpcaoMarcada = false;
+    for (const gr of gruposSit) {
+      if (autoContarItensMarcados(gr) > 0) { temOpcaoMarcada = true; break; }
+    }
+    if (!temOpcaoMarcada) {
+      return { ok: false, msg: 'Marque pelo menos uma opção em algum tipo de contexto antes de avançar.' };
     }
     return { ok: true };
   }
@@ -9222,13 +9715,24 @@ function autoValidarSecao(idSecao) {
     }
   }
 
-  // Pacote 8: Comportamentos exige a caixa de texto preenchida
+  // Pacote 8 + 11.4a: Comportamentos exige (1) caixa de texto preenchida
+  // E (2) pelo menos 1 opção marcada em algum grupo
   if (idSecao === 'sec-auto-comp-a' || idSecao === 'sec-auto-comp-b') {
     const tipo = idSecao === 'sec-auto-comp-a' ? 'neg' : 'pos';
     const caixa = sec.querySelector(`[data-auto-campo-comp="${tipo}"]`);
     if (!caixa || !caixa.value.trim()) {
       return { ok: false, msg: 'Descreva como você reagiu na caixa de texto antes de avançar.' };
     }
+    // Verifica se há pelo menos 1 opção marcada em algum grupo
+    const gruposComp = sec.querySelectorAll('[data-grupo]');
+    let temOpcaoMarcada = false;
+    for (const gr of gruposComp) {
+      if (autoContarItensMarcados(gr) > 0) { temOpcaoMarcada = true; break; }
+    }
+    if (!temOpcaoMarcada) {
+      return { ok: false, msg: 'Marque pelo menos uma opção em algum tipo de comportamento antes de avançar.' };
+    }
+    return { ok: true };
   }
 
   // Outras seções: pelo menos um grupo precisa ter item marcado (E Likert se aplicável)
