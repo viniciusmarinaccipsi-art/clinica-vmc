@@ -9398,17 +9398,59 @@ function p11aTooltipBloqueio(tab) {
   setTimeout(() => tip.classList.remove('show'), 1800);
 }
 
-// Abre modal do +N — reusa autoAbrirResumo (Pacote 6), mas só a parte visual
+// Abre o modal do botão +N — NÃO navega pra tela Revisar.
+// Estratégia: chama autoAbrirResumo() pra popular #autoResumoConteudo,
+// captura o HTML, volta à seção original e clona o conteúdo no modal.
 function p11aAbrirModal() {
-  // Reusa o resumo do Pacote 6 (autoAbrirResumo já monta o infográfico)
+  // 1) Lembra a seção atualmente visível (pra não perder o lugar do paciente)
+  let secaoAtualId = null;
+  document.querySelectorAll('.section.active').forEach(el => {
+    if (!secaoAtualId) secaoAtualId = el.id;
+  });
+
+  // 2) Chama autoAbrirResumo que popula #autoResumoConteudo e faz abrirSecao('sec-auto-resumo')
   if (typeof autoAbrirResumo === 'function') {
-    autoAbrirResumo();
-    // autoAbrirResumo provavelmente mostra uma seção dedicada; não ideal pra modal
-    // Como fallback: o próprio resumo já serve como "ver registro completo"
+    try {
+      autoAbrirResumo();
+    } catch(e) {
+      console.warn('[p11a] Erro ao montar resumo:', e);
+    }
   }
+
+  // 3) Captura o HTML do resumo gerado
+  const fonte = document.getElementById('autoResumoConteudo');
+  const destino = document.getElementById('p11aModalConteudo');
+  if (fonte && destino) {
+    // Remove o rodapé "Após enviar, este registro será salvo." — não se aplica aqui
+    let html = fonte.innerHTML;
+    html = html.replace(/<div class="rev-footer-note">[^<]*<\/div>/g, '');
+    destino.innerHTML = html;
+  }
+
+  // 4) Volta à seção original (autoAbrirResumo trocou pra sec-auto-resumo — desfaz)
+  if (secaoAtualId && secaoAtualId !== 'sec-auto-resumo' && typeof abrirSecao === 'function') {
+    abrirSecao(secaoAtualId);
+  }
+
+  // 5) Abre o modal
+  const mov = document.getElementById('p11aModal');
+  if (mov) mov.classList.add('show');
 }
 
-/* Fim do Pacote 11.4a */
+function p11aFecharModal() {
+  const mov = document.getElementById('p11aModal');
+  if (mov) mov.classList.remove('show');
+}
+
+// Fechar modal com ESC
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') {
+    const m = document.getElementById('p11aModal');
+    if (m && m.classList.contains('show')) p11aFecharModal();
+  }
+});
+
+/* Fim do Pacote 11.6 (cabeçalho cumulativo / ex-11.4a) */
 
 /* ============================================================
    PACOTE 9 — Cadeado da Anamnese no Menu Principal
@@ -10085,22 +10127,35 @@ function autoAtualizarBarra(tipo) {
 // FINALIZAR TIPO (neg ou pos)
 // ============================================================
 function autoFinalizarTipo(tipo) {
-  // Coleta de todas as sub-seções daquele tipo
+  // Pacote 11.6: validar TODAS as 5 seções antes de permitir concluir.
+  // Regra clínica: não faz sentido enviar registro pela metade.
   const secoesPorTipo = {
     'neg': ['sec-auto-sit-a','sec-auto-emo-a','sec-auto-fis-a','sec-auto-pens-a','sec-auto-comp-a'],
     'pos': ['sec-auto-sit-b','sec-auto-emo-b','sec-auto-fis-b','sec-auto-pens-b','sec-auto-comp-b'],
   };
+  const nomesAmigaveis = {
+    'sec-auto-sit-a':'Situação','sec-auto-emo-a':'Emoções Desagradáveis',
+    'sec-auto-fis-a':'Reações Físicas','sec-auto-pens-a':'Pensamentos Desadaptativos','sec-auto-comp-a':'Comportamentos Disfuncionais',
+    'sec-auto-sit-b':'Situação','sec-auto-emo-b':'Emoções Agradáveis',
+    'sec-auto-fis-b':'Reações Físicas','sec-auto-pens-b':'Pensamentos Adaptativos','sec-auto-comp-b':'Comportamentos Funcionais'
+  };
+  // Valida cada seção em ordem. Se alguma falhar, leva o paciente até ela com alerta.
+  for (const sid of secoesPorTipo[tipo]) {
+    const valid = (typeof autoValidarSecao === 'function') ? autoValidarSecao(sid) : { ok: true };
+    if (!valid.ok) {
+      const nome = nomesAmigaveis[sid] || sid;
+      alert('⚠️ Complete a seção "' + nome + '" antes de concluir o registro.\n\n' + (valid.msg || 'Preencha os campos obrigatórios.'));
+      if (typeof abrirSecao === 'function') abrirSecao(sid);
+      return;
+    }
+  }
+  // Todas validadas — prossegue com o fluxo original
   for (const sid of secoesPorTipo[tipo]) {
     autoColetarDadosDaSecao(sid);
   }
   AUTO_STATE.dados[tipo + '_preenchido'] = 'sim';
-  // Pacote 10 v2: guarda o último tipo finalizado para o "Voltar e Editar"
-  // do Revisar saber para qual menu retornar
   AUTO_STATE.ultimoTipoFinalizado = tipo;
   autoSalvarRascunho();
-  // Pacote 10 — Mudança 2: ir direto para Revisar Registro em vez de voltar ao Passo 2.
-  // O "← Voltar e Editar" no Revisar volta ao menu do registro correspondente
-  // (ver função autoVoltarEditarRevisar).
   autoAbrirResumo();
 }
 
@@ -11558,5 +11613,18 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 </script>
+
+<!-- ============================================================
+     PACOTE 11.6 — Modal do botão +N (preview do registro até aqui)
+     ============================================================ -->
+<div class="p11-mov" id="p11aModal" onclick="if(event.target===this)p11aFecharModal()">
+  <div class="p11-mbox">
+    <div class="p11-mhead">
+      <h3 class="p11-mtitle">📋 O que você já preencheu</h3>
+      <button class="p11-mclose" type="button" onclick="p11aFecharModal()">×</button>
+    </div>
+    <div class="p11-mbody" id="p11aModalConteudo"></div>
+  </div>
+</div>
 </body>
 </html>
