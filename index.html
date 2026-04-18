@@ -1978,6 +1978,258 @@ body{
   .pev-barras-canvas-box { height: 180px; }
 }
 
+/* ============================================================
+   MÓDULO 4 — ESCALAS E INVENTÁRIOS (Pacote 12.2)
+   Prefixo: esc-* (CSS) / esc* / ESC_* (JS)
+   ============================================================ */
+
+/* Cards do menu de escalas — reuso do padrão .auto-card */
+.esc-grid{display:grid;gap:12px;margin-top:12px;}
+.esc-card{
+  background:var(--w);border-radius:var(--r);padding:18px;
+  cursor:pointer;transition:all .25s;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+  border:2px solid transparent;position:relative;overflow:hidden;
+  text-align:left;width:100%;font-family:'Nunito',sans-serif;display:block;
+}
+.esc-card:hover:not(:disabled):not(.locked){transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.08);}
+.esc-card:active:not(:disabled):not(.locked){transform:translateY(0);}
+.esc-card:disabled,.esc-card.locked{opacity:.55;cursor:not-allowed;}
+.esc-card.locked .esc-card-title::after{content:' 🔒';font-size:13px;}
+.esc-card-icon{font-size:28px;margin-bottom:6px;display:block;}
+.esc-card-title{font-family:'Quicksand',sans-serif;font-size:15px;font-weight:700;margin-bottom:3px;}
+.esc-card-desc{font-size:11.5px;color:var(--txt-l);line-height:1.5;padding-right:90px;}
+.esc-card-meta{font-size:11px;color:var(--txt-l);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;}
+.esc-card-meta span{background:var(--gray-bg);padding:2px 8px;border-radius:10px;}
+.esc-card-arrow{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:20px;color:var(--gray-lt);transition:all .2s;}
+.esc-card:hover:not(:disabled):not(.locked) .esc-card-arrow{right:10px;color:var(--txt-l);}
+
+.esc-card.blue{border-color:var(--blue-lt);}.esc-card.blue .esc-card-title{color:var(--blue);}
+.esc-card.coral{border-color:#F5D0CA;}.esc-card.coral .esc-card-title{color:var(--coral);}
+.esc-card.green{border-color:#D0EDDA;}.esc-card.green .esc-card-title{color:var(--green);}
+.esc-card.amber{border-color:#F0E0A8;}.esc-card.amber .esc-card-title{color:var(--amber);}
+.esc-card.purple{border-color:#D9CEEA;}.esc-card.purple .esc-card-title{color:var(--purple);}
+.esc-card.gray{border-color:var(--gray-lt);}.esc-card.gray .esc-card-title{color:var(--gray);}
+
+.esc-card-badge{
+  position:absolute;top:14px;right:14px;
+  background:var(--gray-lt);color:var(--txt-l);
+  padding:3px 10px;border-radius:12px;font-size:10.5px;font-weight:700;
+}
+.esc-card-badge.soon{background:#FFF2CC;color:#8B6914;}
+.esc-card-badge.nova{background:#DBF3E3;color:#2D7A4A;}
+
+/* Subtítulo de aviso primeira vez (leitura do "Como Usar" obrigatória) */
+.esc-sub-aviso{
+  background:var(--amber-bg);border-left:4px solid var(--amber);
+  padding:10px 14px;border-radius:var(--rs);margin-bottom:14px;
+  font-size:13px;color:#8B6914;line-height:1.5;
+  display:none;
+}
+.esc-sub-aviso.show{display:block;}
+
+/* Tela de instruções (Como Usar) */
+.esc-intro-card{
+  background:var(--w);border-radius:var(--r);padding:18px;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:14px;
+  border-left:4px solid var(--blue);
+}
+.esc-intro-card h2{font-family:'Quicksand',sans-serif;font-size:18px;color:var(--blue);margin-bottom:10px;}
+.esc-intro-card h3{font-family:'Quicksand',sans-serif;font-size:15px;color:var(--txt);margin:14px 0 6px;}
+.esc-intro-card p{font-size:14px;line-height:1.6;color:var(--txt-m);margin-bottom:8px;}
+.esc-intro-card ul{margin-left:20px;font-size:14px;line-height:1.7;color:var(--txt-m);}
+.esc-intro-card strong{color:var(--txt);}
+.esc-intro-disclaimer{
+  background:var(--amber-bg);border-left:4px solid var(--amber);
+  padding:10px 14px;border-radius:var(--rs);font-size:13px;
+  color:#6B4F0A;line-height:1.5;margin-top:14px;
+}
+.esc-btn-entendi{
+  background:var(--green);color:white;border:none;
+  padding:14px 20px;border-radius:var(--rs);
+  font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;
+  cursor:pointer;width:100%;margin-top:14px;transition:all .2s;
+}
+.esc-btn-entendi:hover{background:#5BAD7B;transform:translateY(-1px);}
+
+/* Tela de aplicação da escala */
+.esc-aplic-head{
+  background:var(--w);border-radius:var(--r);padding:16px;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:14px;
+  border-left:4px solid var(--coral);
+}
+.esc-aplic-head h2{font-family:'Quicksand',sans-serif;font-size:18px;color:var(--coral);margin-bottom:6px;}
+.esc-aplic-head .esc-subtitulo{font-size:13px;color:var(--txt-l);margin-bottom:10px;}
+.esc-aplic-head .esc-enunciado{
+  font-size:14.5px;line-height:1.6;color:var(--txt);
+  background:var(--coral-bg);padding:10px 14px;border-radius:var(--rs);font-weight:600;
+}
+.esc-aplic-progresso{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;background:var(--gray-bg);
+  border-radius:var(--rs);margin-bottom:12px;
+  font-size:12.5px;color:var(--txt-m);font-weight:600;
+}
+.esc-aplic-barra{height:4px;background:var(--gray-lt);border-radius:2px;overflow:hidden;flex:1;margin:0 10px;}
+.esc-aplic-barra-fill{height:100%;background:var(--coral);transition:width .3s;}
+
+/* Item de escala */
+.esc-item{
+  background:var(--w);border-radius:var(--r);padding:14px 16px;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:10px;
+  border:1px solid var(--gray-lt);
+}
+.esc-item-head{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;}
+.esc-item-num{
+  background:var(--coral);color:white;
+  min-width:24px;height:24px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;flex-shrink:0;
+}
+.esc-item-texto{font-size:14.5px;line-height:1.5;color:var(--txt);flex:1;}
+.esc-item-opcoes{display:flex;gap:6px;flex-wrap:wrap;}
+.esc-opcao{
+  flex:1;min-width:120px;
+  background:var(--gray-bg);border:2px solid var(--gray-lt);
+  padding:10px 12px;border-radius:var(--rs);
+  cursor:pointer;font-family:'Nunito',sans-serif;
+  font-size:13px;color:var(--txt-m);
+  transition:all .2s;text-align:center;font-weight:600;
+}
+.esc-opcao:hover{border-color:var(--coral);background:var(--coral-bg);}
+.esc-opcao.selecionada{
+  background:var(--coral);color:white;border-color:var(--coral);
+  box-shadow:0 2px 8px rgba(224,122,107,.3);
+}
+.esc-opcao-num{display:block;font-size:16px;font-weight:800;margin-bottom:2px;}
+
+/* Alerta inline de ideação (Camada 1) */
+.esc-alerta-inline{
+  margin-top:12px;padding:14px;
+  background:#FFF4F4;border:2px solid var(--red);
+  border-radius:var(--rs);
+  display:none;
+}
+.esc-alerta-inline.show{display:block;animation:fadeIn .3s;}
+.esc-alerta-inline-head{
+  display:flex;align-items:center;gap:8px;
+  color:var(--red);font-weight:700;
+  font-family:'Quicksand',sans-serif;font-size:15px;margin-bottom:8px;
+}
+.esc-alerta-inline-texto{font-size:13.5px;line-height:1.6;color:var(--txt);margin-bottom:10px;}
+.esc-alerta-inline-contatos{
+  background:white;padding:10px 12px;border-radius:var(--rs);
+  font-size:13px;line-height:1.7;
+}
+.esc-alerta-inline-contatos strong{color:var(--red);}
+
+/* Item funcional (destaque azul) */
+.esc-item-funcional{
+  background:var(--blue-lt);border-left:4px solid var(--blue);
+  padding:14px 16px;border-radius:var(--rs);margin-bottom:10px;margin-top:20px;
+}
+.esc-item-funcional .esc-item-head{margin-bottom:10px;}
+.esc-item-funcional .esc-item-num{background:var(--blue);}
+.esc-item-funcional-label{
+  font-size:11px;text-transform:uppercase;letter-spacing:.5px;
+  color:var(--blue);font-weight:700;margin-bottom:4px;
+}
+.esc-item-funcional .esc-opcao:hover{border-color:var(--blue);background:var(--blue-lt);}
+.esc-item-funcional .esc-opcao.selecionada{background:var(--blue);border-color:var(--blue);}
+
+/* Botões de navegação do módulo */
+.esc-nav{display:flex;gap:10px;margin-top:20px;}
+.esc-btn{
+  flex:1;padding:14px;border:none;border-radius:var(--rs);
+  font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;
+  cursor:pointer;transition:all .2s;
+}
+.esc-btn-primary{background:var(--coral);color:white;}
+.esc-btn-primary:hover{background:#CC6A5C;transform:translateY(-1px);}
+.esc-btn-primary:disabled{background:var(--gray-lt);color:var(--txt-l);cursor:not-allowed;transform:none;}
+.esc-btn-secondary{background:white;color:var(--txt-m);border:2px solid var(--gray-lt);}
+.esc-btn-secondary:hover{border-color:var(--blue);color:var(--blue);}
+
+/* Tela de resultado */
+.esc-result-header{
+  background:linear-gradient(135deg,var(--blue),#1F4A63);
+  color:white;padding:24px 20px;border-radius:var(--r);
+  margin-bottom:16px;text-align:center;
+  box-shadow:0 4px 12px rgba(44,95,124,.25);
+}
+.esc-result-header h2{font-family:'Quicksand',sans-serif;font-size:18px;margin-bottom:4px;font-weight:600;opacity:.95;}
+.esc-result-header .esc-result-data{font-size:12.5px;opacity:.85;margin-bottom:16px;}
+.esc-result-escore{font-family:'Quicksand',sans-serif;font-size:52px;font-weight:700;line-height:1;margin-bottom:4px;}
+.esc-result-escore-max{font-size:20px;font-weight:400;opacity:.7;}
+.esc-result-faixa{
+  display:inline-block;padding:6px 16px;border-radius:20px;
+  font-size:14px;font-weight:700;margin-top:10px;
+}
+.esc-result-faixa.verde{background:rgba(107,191,138,.25);color:#D0EDDA;}
+.esc-result-faixa.amarelo{background:rgba(212,168,67,.25);color:#FFF2CC;}
+.esc-result-faixa.laranja{background:rgba(224,122,107,.3);color:#FFD4CC;}
+.esc-result-faixa.vermelho{background:rgba(217,68,68,.3);color:#FFCCCC;}
+.esc-result-card{
+  background:var(--w);border-radius:var(--r);padding:18px;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:12px;
+  border-left:4px solid var(--blue);
+}
+.esc-result-card h3{font-family:'Quicksand',sans-serif;font-size:15px;color:var(--blue);margin-bottom:8px;}
+.esc-result-card p{font-size:14px;line-height:1.6;color:var(--txt-m);margin-bottom:6px;}
+.esc-result-card ul{margin-left:20px;font-size:13.5px;line-height:1.7;color:var(--txt-m);}
+.esc-result-funcional{
+  background:var(--blue-lt);border-left:4px solid var(--blue);
+  padding:12px 14px;border-radius:var(--rs);
+  font-size:13.5px;line-height:1.5;
+}
+.esc-result-funcional strong{color:var(--blue);}
+.esc-result-disclaimer{
+  background:var(--amber-bg);border-left:4px solid var(--amber);
+  padding:12px 14px;border-radius:var(--rs);font-size:12.5px;
+  color:#6B4F0A;line-height:1.5;margin-top:12px;
+}
+
+/* Tela/bloco de alerta vermelho (Camada 2) */
+.esc-alerta-tela{
+  background:linear-gradient(135deg,#D94444,#A83535);
+  color:white;padding:24px 20px;border-radius:var(--r);
+  margin-bottom:16px;text-align:center;
+  box-shadow:0 4px 16px rgba(217,68,68,.3);
+  display:none;
+}
+.esc-alerta-tela.show{display:block;}
+.esc-alerta-tela h2{font-family:'Quicksand',sans-serif;font-size:20px;margin-bottom:10px;font-weight:700;}
+.esc-alerta-tela p{font-size:14.5px;line-height:1.6;margin-bottom:14px;opacity:.95;}
+.esc-alerta-tela-contato{
+  background:rgba(255,255,255,.15);
+  padding:14px;border-radius:var(--rs);margin-top:12px;text-align:left;
+}
+.esc-alerta-tela-contato-titulo{font-family:'Quicksand',sans-serif;font-size:14px;font-weight:700;margin-bottom:4px;}
+.esc-alerta-tela-contato-desc{font-size:12px;opacity:.85;margin-bottom:8px;}
+.esc-alerta-tela-contato-numero{
+  display:inline-block;background:white;color:var(--red);
+  padding:6px 14px;border-radius:var(--rs);
+  font-family:'Quicksand',sans-serif;font-size:20px;
+  font-weight:700;letter-spacing:1px;
+}
+
+/* Tela de sucesso pós-envio */
+.esc-sucesso{
+  background:var(--green-bg);border:2px solid var(--green);
+  padding:20px;border-radius:var(--r);margin-bottom:14px;
+  text-align:center;color:var(--txt);
+}
+.esc-sucesso h3{font-family:'Quicksand',sans-serif;color:#2D7A4A;font-size:18px;margin-bottom:8px;}
+.esc-sucesso p{font-size:14px;line-height:1.6;}
+
+/* Responsividade mobile */
+@media (max-width: 520px) {
+  .esc-opcao { flex: 1 1 48%; min-width: 0; font-size: 12px; padding: 8px 6px; }
+  .esc-opcao-num { font-size: 14px; }
+  .esc-item-texto { font-size: 13.5px; }
+  .esc-result-escore { font-size: 42px; }
+}
+
 </style>
 </head>
 <body>
@@ -2078,11 +2330,12 @@ body{
         <span class="card-badge-soon">Em breve</span>
       </button>
 
-      <button class="card card-green" disabled>
+      <button class="card card-green" id="cardEscalas" onclick="abrirModulo('escalas')">
         <span class="card-icon">📋</span>
         <div class="card-title">4. Escalas e Inventários</div>
-        <div class="card-desc">Instrumentos clínicos padronizados</div>
-        <span class="card-badge-soon">Em breve</span>
+        <div class="card-desc">Instrumentos clínicos padronizados (PHQ-9, GAD-7 e outros)</div>
+        <span class="card-arrow">›</span>
+        <span class="card-lock-badge">🔒 Bloqueado</span>
       </button>
 
       <button class="card card-amber" disabled>
@@ -6383,6 +6636,255 @@ body{
     </div>
   </div>
 
+  <!-- ============================================================ -->
+  <!-- MÓDULO 4 — ESCALAS E INVENTÁRIOS (Pacote 12.2)               -->
+  <!-- ============================================================ -->
+
+  <!-- Menu do Módulo 4 -->
+  <div class="section" id="sec-escalas">
+    <div class="nav-bar">
+      <button class="btn-back" onclick="abrirSecao('sec-menu')">← Menu</button>
+      <span class="nav-title">Módulo 4 — Escalas e Inventários</span>
+    </div>
+
+    <div class="esc-sub-aviso" id="escSubAviso">
+      🔒 Antes de começar, leia o "Como Usar as Escalas". Depois você poderá aplicar as escalas disponíveis.
+    </div>
+
+    <div class="esc-grid">
+
+      <button class="esc-card blue" id="escCardComoUsar" type="button" onclick="abrirSecao('sec-escalas-instrucoes')">
+        <span class="esc-card-icon">📖</span>
+        <div class="esc-card-title">Como Usar as Escalas</div>
+        <div class="esc-card-desc">Entenda o que são, como preencher e como seu terapeuta usa os resultados</div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card coral" id="escCardPHQ9" type="button" onclick="escClicarCardEscala('PHQ-9')">
+        <span class="esc-card-icon">😔</span>
+        <div class="esc-card-title">PHQ-9 — Sintomas Depressivos</div>
+        <div class="esc-card-desc">Avalia sintomas depressivos das últimas 2 semanas</div>
+        <div class="esc-card-meta">
+          <span>9 itens</span><span>3-5 min</span><span>Últimos 15 dias</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card amber" disabled>
+        <span class="esc-card-icon">😰</span>
+        <div class="esc-card-title">GAD-7 — Ansiedade Generalizada</div>
+        <div class="esc-card-desc">Avalia sintomas de ansiedade das últimas 2 semanas</div>
+        <div class="esc-card-meta">
+          <span>7 itens</span><span>2-3 min</span><span>Últimos 15 dias</span>
+        </div>
+        <span class="esc-card-badge soon">Em breve</span>
+      </button>
+
+      <button class="esc-card purple" disabled>
+        <span class="esc-card-icon">🤯</span>
+        <div class="esc-card-title">DASS-21 — Depressão, Ansiedade e Estresse</div>
+        <div class="esc-card-desc">Visão ampla em três subescalas (última semana)</div>
+        <div class="esc-card-meta">
+          <span>21 itens</span><span>5-7 min</span><span>Última semana</span>
+        </div>
+        <span class="esc-card-badge soon">Em breve</span>
+      </button>
+
+      <button class="esc-card green" disabled>
+        <span class="esc-card-icon">😤</span>
+        <div class="esc-card-title">PSS-10 — Estresse Percebido</div>
+        <div class="esc-card-desc">Percepção subjetiva de estresse no último mês</div>
+        <div class="esc-card-meta">
+          <span>10 itens</span><span>3-5 min</span><span>Último mês</span>
+        </div>
+        <span class="esc-card-badge soon">Em breve</span>
+      </button>
+
+      <button class="esc-card gray" disabled>
+        <span class="esc-card-icon">🤔</span>
+        <div class="esc-card-title">SRQ-20 — Rastreamento Geral</div>
+        <div class="esc-card-desc">Rastreamento de transtornos mentais comuns</div>
+        <div class="esc-card-meta">
+          <span>20 itens</span><span>5 min</span><span>Últimos 30 dias</span>
+        </div>
+        <span class="esc-card-badge soon">Em breve</span>
+      </button>
+
+      <button class="esc-card blue" disabled style="margin-top:8px;">
+        <span class="esc-card-icon">📈</span>
+        <div class="esc-card-title">Meu Histórico de Escalas</div>
+        <div class="esc-card-desc">Resultados anteriores e gráfico de evolução ao longo do tempo</div>
+        <span class="esc-card-badge soon">Pacote 12.3</span>
+      </button>
+
+    </div>
+  </div>
+
+  <!-- Modal ao clicar em card de escala sem ter lido "Como Usar" -->
+  <div class="p5-modal-overlay" id="escModalComoUsar" onclick="if(event.target===this)escFecharModalComoUsar()">
+    <div class="p5-modal-card" role="dialog" aria-modal="true">
+      <div class="p5-modal-head">
+        <span class="p5-modal-icone">🔒</span>
+        <div class="p5-modal-titulo">Antes de começar</div>
+      </div>
+      <div class="p5-modal-body">
+        Leia primeiro o "Como Usar as Escalas". Em poucos passos, vamos explicar como os instrumentos funcionam e o que você verá depois de respondê-los.
+      </div>
+      <div class="p5-modal-acoes">
+        <button class="p5-btn p5-btn-secondary" type="button" onclick="escFecharModalComoUsar()">Fechar</button>
+        <button class="p5-btn p5-btn-primary" type="button" onclick="escIrParaComoUsar()">Ir para Como Usar →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tela "Como Usar as Escalas" -->
+  <div class="section" id="sec-escalas-instrucoes">
+    <div class="nav-bar">
+      <button class="btn-back" onclick="abrirSecao('sec-escalas')">← Voltar</button>
+      <span class="nav-title">Como Usar as Escalas</span>
+    </div>
+
+    <div class="esc-intro-card">
+      <h2>📖 Sobre as Escalas e Inventários</h2>
+
+      <h3>🎯 O que são?</h3>
+      <p>Escalas e inventários são <strong>questionários padronizados</strong> usados na psicologia para avaliar sintomas específicos (como depressão, ansiedade e estresse) de forma estruturada. Não são testes de personalidade, nem "quizzes": são instrumentos clínicos validados cientificamente.</p>
+
+      <h3>🤔 Para que servem?</h3>
+      <ul>
+        <li><strong>Fotografar o momento:</strong> mostrar como você está em relação aos sintomas naquele período</li>
+        <li><strong>Acompanhar a evolução:</strong> aplicadas em diferentes momentos, revelam se os sintomas estão melhorando, piorando ou estáveis</li>
+        <li><strong>Apoiar decisões clínicas:</strong> ajudar o terapeuta a ajustar o plano terapêutico</li>
+        <li><strong>Facilitar a conversa:</strong> dar nome aos sentimentos e criar um vocabulário compartilhado com o terapeuta</li>
+      </ul>
+
+      <h3>📝 Como responder?</h3>
+      <ul>
+        <li>Reserve um momento tranquilo — leva poucos minutos</li>
+        <li>Responda com <strong>sinceridade e sem julgar as respostas</strong></li>
+        <li>Cada escala pergunta sobre um período específico (últimos 15 dias, última semana ou último mês) — preste atenção ao enunciado</li>
+        <li>Não há resposta certa ou errada</li>
+        <li>Se ficar em dúvida entre duas opções, escolha a que sente mais próxima agora</li>
+      </ul>
+
+      <h3>🔍 O que você verá depois de responder?</h3>
+      <ul>
+        <li>Seu <strong>escore total</strong> (pontuação)</li>
+        <li>A <strong>faixa interpretativa</strong> correspondente (ex: "sintomas leves")</li>
+        <li>Um <strong>texto educativo</strong> explicando o que isso significa</li>
+        <li>A partir da 2ª aplicação da mesma escala: um <strong>gráfico de evolução</strong> ao longo do tempo</li>
+      </ul>
+
+      <div class="esc-intro-disclaimer">
+        ⚠️ <strong>Importante:</strong> Os resultados destas escalas são <strong>medidas de rastreamento</strong> — não substituem avaliação diagnóstica realizada pelo seu psicólogo. São uma ferramenta de apoio ao tratamento, não um diagnóstico automático.
+      </div>
+
+      <button class="esc-btn-entendi" id="escBtnEntendi" onclick="escClicarEntendi()">✓ Entendi — Quero ver as escalas disponíveis</button>
+    </div>
+  </div>
+
+  <!-- Tela de aplicação da escala (dinâmica — renderizada por JS) -->
+  <div class="section" id="sec-escalas-aplicar">
+    <div class="nav-bar">
+      <button class="btn-back" onclick="escCancelarAplicacao()">← Cancelar</button>
+      <span class="nav-title" id="escAplicarTitulo">Aplicar escala</span>
+    </div>
+
+    <div class="esc-aplic-head">
+      <h2 id="escAplicarHead"></h2>
+      <div class="esc-subtitulo" id="escAplicarSub"></div>
+      <div class="esc-enunciado" id="escAplicarEnunciado"></div>
+    </div>
+
+    <div class="esc-aplic-progresso">
+      <span id="escProgressoLabel">0 de 0 respondidos</span>
+      <div class="esc-aplic-barra"><div class="esc-aplic-barra-fill" id="escProgressoBarra" style="width:0%"></div></div>
+      <span id="escProgressoPct">0%</span>
+    </div>
+
+    <div id="escItens"></div>
+
+    <div class="esc-nav">
+      <button class="esc-btn esc-btn-secondary" onclick="escCancelarAplicacao()">← Cancelar</button>
+      <button class="esc-btn esc-btn-primary" id="escBtnEnviar" disabled onclick="escEnviarEscala()">Ver meu resultado →</button>
+    </div>
+  </div>
+
+  <!-- Tela de resultado da escala -->
+  <div class="section" id="sec-escalas-resultado">
+    <div class="nav-bar">
+      <button class="btn-back" onclick="abrirSecao('sec-escalas')">← Voltar ao menu</button>
+      <span class="nav-title">Resultado</span>
+    </div>
+
+    <!-- Alerta de risco (Camada 2) — só aparece se houver ideação -->
+    <div class="esc-alerta-tela" id="escBlocoAlertaRisco">
+      <h2>💙 Você não está sozinho(a)</h2>
+      <p>Percebemos que você indicou ter tido pensamentos difíceis. Queremos lembrar que <strong>existe ajuda disponível agora</strong>, 24 horas por dia, gratuita e com sigilo.</p>
+
+      <div class="esc-alerta-tela-contato">
+        <div class="esc-alerta-tela-contato-titulo">☎️ CVV — Centro de Valorização da Vida</div>
+        <div class="esc-alerta-tela-contato-desc">Apoio emocional e prevenção do suicídio · 24h · Gratuito</div>
+        <span class="esc-alerta-tela-contato-numero">188</span>
+      </div>
+
+      <div class="esc-alerta-tela-contato">
+        <div class="esc-alerta-tela-contato-titulo">🚑 SAMU</div>
+        <div class="esc-alerta-tela-contato-desc">Emergência médica · 24h · Gratuito</div>
+        <span class="esc-alerta-tela-contato-numero">192</span>
+      </div>
+
+      <p style="margin-top:16px;font-size:13px;opacity:.9;">
+        Seu psicólogo foi informado automaticamente e entrará em contato.
+      </p>
+    </div>
+
+    <!-- Cabeçalho do resultado -->
+    <div class="esc-result-header">
+      <h2 id="escResultTitulo"></h2>
+      <div class="esc-result-data" id="escResultData"></div>
+      <div class="esc-result-escore">
+        <span id="escResultEscore">0</span><span class="esc-result-escore-max" id="escResultEscoreMax">/27</span>
+      </div>
+      <div class="esc-result-faixa" id="escResultFaixa"></div>
+    </div>
+
+    <!-- Texto educativo -->
+    <div class="esc-result-card">
+      <h3 id="escResultEduTitulo"></h3>
+      <p id="escResultEduDesc"></p>
+      <p id="escResultEduSugestao"></p>
+    </div>
+
+    <!-- Subescalas (só aparece para DASS-21 no futuro) -->
+    <div class="esc-result-card" id="escResultSubescalas" style="display:none;">
+      <h3>📊 Subescalas</h3>
+      <div id="escResultSubescalasConteudo"></div>
+    </div>
+
+    <!-- Faixas de classificação -->
+    <div class="esc-result-card">
+      <h3>📊 Sobre a faixa de classificação</h3>
+      <ul id="escResultFaixas"></ul>
+    </div>
+
+    <!-- Impacto funcional -->
+    <div class="esc-result-card" id="escResultFuncionalCard">
+      <h3>🎯 Impacto funcional</h3>
+      <div class="esc-result-funcional" id="escResultFuncional"></div>
+    </div>
+
+    <div class="esc-result-disclaimer">
+      ⚠️ <strong>Lembrete:</strong> Este resultado é uma medida de rastreamento e <strong>não substitui avaliação diagnóstica</strong> realizada pelo seu psicólogo. É uma ferramenta de apoio ao acompanhamento terapêutico.
+    </div>
+
+    <div class="esc-nav">
+      <button class="esc-btn esc-btn-primary" onclick="abrirSecao('sec-escalas')">Voltar ao menu de Escalas</button>
+    </div>
+  </div>
+
+  <!-- Fim do Pacote 12.2 (Módulo 4 — Escalas e Inventários) -->
+
 </div>
 
 <script>
@@ -6689,6 +7191,15 @@ function abrirModulo(modulo) {
       return;
     }
     abrirSecao('sec-automonitoramento');
+  } else if (modulo === 'escalas') {
+    // Pacote 12.2: mesma regra do Automonitoramento — exige anamnese
+    const paciente = carregarSessao();
+    if (paciente && !paciente.anamnese_preenchida) {
+      p9AbrirModal();
+      return;
+    }
+    abrirSecao('sec-escalas');
+    escAbrirMenu();
   }
 }
 
@@ -6728,14 +7239,18 @@ function atualizarMenuConformeSessao() {
   const aviso = document.getElementById('avisoAnamnesePendente');
   // Pacote 9: cadeado no card do Automonitoramento
   const cardAutomon = document.getElementById('cardAutomon');
+  // Pacote 12.2: cadeado no card de Escalas (mesma regra — exige anamnese)
+  const cardEscalas = document.getElementById('cardEscalas');
   if (paciente.anamnese_preenchida) {
     badgeDone.classList.remove('hidden');
     aviso.classList.add('hidden');
     if (cardAutomon) cardAutomon.classList.remove('locked');
+    if (cardEscalas) cardEscalas.classList.remove('locked');
   } else {
     badgeDone.classList.add('hidden');
     aviso.classList.remove('hidden');
     if (cardAutomon) cardAutomon.classList.add('locked');
+    if (cardEscalas) cardEscalas.classList.add('locked');
   }
 }
 
@@ -6792,6 +7307,15 @@ function logout() {
     P5_STATE.primeiraVez = false;
     P5_STATE.carregando = false;
   }
+  // Pacote 12.2: reseta estado do Módulo 4 (Escalas)
+  if (typeof ESC_STATE !== 'undefined') {
+    ESC_STATE.verificado = false;
+    ESC_STATE.temEscalas = false;
+    ESC_STATE.carregando = false;
+    ESC_STATE.escalaAtual = null;
+    ESC_STATE.respostas = {};
+  }
+  try { sessionStorage.removeItem('escComoUsarLido'); } catch(e){}
   atualizarBadgeUsuario();
   abrirSecao('sec-login');
 }
@@ -11611,6 +12135,548 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+
+/* ============================================================
+   MÓDULO 4 — ESCALAS E INVENTÁRIOS (Pacote 12.2)
+   Prefixo: esc* / ESC_*
+   ============================================================ */
+
+// Versão dos instrumentos (permite atualizar textos sem quebrar histórico)
+const ESC_VERSAO_INSTRUMENTO = 'v1';
+
+// Chave sessionStorage para flag "leu Como Usar"
+const ESC_FLAG_COMO_USAR = 'escComoUsarLido';
+
+// Estado do módulo (derivado do servidor)
+const ESC_STATE = {
+  carregando: false,
+  verificado: false,
+  temEscalas: false,       // paciente já aplicou alguma escala? (veterano)
+  escalaAtual: null,       // código da escala em preenchimento
+  respostas: {},           // { item_01: 0, item_02: 3, ..., item_funcional: 2 }
+  inicioPreenchimento: null
+};
+
+// ===== Dicionário de escalas (só PHQ-9 implementado no Pacote 12.2) =====
+const ESC_ESCALAS = {
+  'PHQ-9': {
+    nomeCompleto: 'PHQ-9 — Sintomas Depressivos',
+    emoji: '😔',
+    corPrefix: 'coral',
+    enunciado: 'Durante as últimas 2 semanas, com que frequência você foi incomodado(a) por qualquer um dos problemas abaixo?',
+    subtitulo: '9 itens · 3 a 5 minutos · Pensando nas <strong>últimas 2 semanas</strong>',
+    escoreMax: 27,
+    opcoes: [
+      { valor: 0, label: 'Nenhuma vez' },
+      { valor: 1, label: 'Vários dias' },
+      { valor: 2, label: 'Mais da metade dos dias' },
+      { valor: 3, label: 'Quase todos os dias' }
+    ],
+    itens: [
+      { id: 1, texto: 'Pouco interesse ou pouco prazer em fazer as coisas' },
+      { id: 2, texto: 'Se sentir "para baixo", deprimido(a) ou sem perspectiva' },
+      { id: 3, texto: 'Dificuldade para pegar no sono ou permanecer dormindo, ou dormir mais do que de costume' },
+      { id: 4, texto: 'Se sentir cansado(a) ou com pouca energia' },
+      { id: 5, texto: 'Falta de apetite ou comendo demais' },
+      { id: 6, texto: 'Se sentir mal consigo mesmo(a) — ou achar que você é um(a) fracassado(a) ou que decepcionou sua família ou você mesmo(a)' },
+      { id: 7, texto: 'Dificuldade para se concentrar nas coisas, como ler o jornal ou ver televisão' },
+      { id: 8, texto: 'Lentidão para se movimentar ou falar, a ponto das outras pessoas perceberem? Ou o oposto — estar tão agitado(a) ou irrequieto(a) que você fica andando de um lado para o outro muito mais do que de costume' },
+      { id: 9, texto: 'Pensar em se ferir de alguma maneira ou que seria melhor estar morto(a)', critico: true, itemRiscoKey: 'PHQ9_item9' }
+    ],
+    itemFuncional: {
+      texto: 'Se você assinalou qualquer um dos problemas acima, o quanto esses problemas tornaram difícil para você realizar seu trabalho, tomar conta das coisas em casa ou se relacionar com as pessoas?',
+      opcoes: [
+        'Nem um pouco difícil',
+        'Um pouco difícil',
+        'Muito difícil',
+        'Extremamente difícil'
+      ]
+    },
+    // Faixas de interpretação (ordem importa — maior primeiro para facilitar busca)
+    faixas: [
+      { min: 20, max: 27, rotulo: 'Depressão grave', cor: 'vermelho',
+        titulo: '🔴 O que isso significa?',
+        descricao: 'Seu escore indica <strong>sintomas depressivos graves</strong> nas últimas 2 semanas. Este resultado é um alerta importante que merece atenção imediata.',
+        sugestao: 'Entre em contato com seu terapeuta o quanto antes. Ele vai definir com você os próximos passos — que podem incluir intensificação do acompanhamento e avaliação médica.' },
+      { min: 15, max: 19, rotulo: 'Depressão moderadamente grave', cor: 'laranja',
+        titulo: '🟠 O que isso significa?',
+        descricao: 'Seu escore indica <strong>sintomas depressivos moderadamente graves</strong> nas últimas 2 semanas. Este nível de sofrimento merece atenção clínica ampliada.',
+        sugestao: 'Informe seu terapeuta o mais breve possível. Ele pode considerar intensificação do acompanhamento e, se pertinente, avaliação médica complementar.' },
+      { min: 10, max: 14, rotulo: 'Depressão moderada', cor: 'laranja',
+        titulo: '🟠 O que isso significa?',
+        descricao: 'Seu escore indica <strong>sintomas depressivos moderados</strong> nas últimas 2 semanas. Este é um sinal importante de que o tratamento atual merece atenção especial.',
+        sugestao: 'Traga este resultado para sua próxima sessão. Seu terapeuta vai discutir com você possíveis ajustes no plano terapêutico e estratégias para as próximas semanas.' },
+      { min: 5, max: 9, rotulo: 'Depressão leve', cor: 'amarelo',
+        titulo: '🟡 O que isso significa?',
+        descricao: 'Seu escore indica <strong>sintomas depressivos leves</strong> nas últimas 2 semanas. Isso não significa um diagnóstico de depressão — são sintomas que merecem atenção e acompanhamento, mas que geralmente respondem bem ao trabalho terapêutico.',
+        sugestao: 'Converse com seu terapeuta sobre o que você tem sentido. Use também o Registro de Automonitoramento para identificar situações, pensamentos e comportamentos associados ao seu humor.' },
+      { min: 0, max: 4, rotulo: 'Sintomas mínimos ou ausentes', cor: 'verde',
+        titulo: '🟢 O que isso significa?',
+        descricao: 'Seu escore indica <strong>sintomas mínimos ou ausentes</strong> nas últimas 2 semanas. Continue com os cuidados de rotina e, se notar piora, converse com seu terapeuta.',
+        sugestao: 'Aproveite este momento para fortalecer hábitos que te fazem bem. Você também pode usar o Registro de Automonitoramento para celebrar e mapear o que está funcionando bem.' }
+    ],
+    faixasLista: [
+      '<strong>0-4</strong> — Sintomas mínimos ou ausentes',
+      '<strong>5-9</strong> — Depressão leve',
+      '<strong>10-14</strong> — Depressão moderada',
+      '<strong>15-19</strong> — Depressão moderadamente grave',
+      '<strong>20-27</strong> — Depressão grave'
+    ]
+  }
+  // Futuras escalas (GAD-7, DASS-21, PSS-10, SRQ-20) seguirão este padrão
+};
+
+// ============================================================
+// FLUXO DE ENTRADA DO MÓDULO
+// ============================================================
+
+/**
+ * Abre o menu do Módulo 4 — chamado pelo roteador abrirModulo('escalas').
+ * Verifica no servidor se o paciente já tem escalas aplicadas para
+ * ajustar o comportamento de "primeira vez" (similar ao Pacote 5 do Auto).
+ */
+async function escAbrirMenu() {
+  // Reuso do padrão Pacote 5/11.5: derivar "é primeira vez?" do servidor.
+  // Default seguro: enquanto não verificou, trata como primeira vez.
+  escAplicarAvisoPrimeiraVez();
+
+  if (!ESC_STATE.verificado && !ESC_STATE.carregando) {
+    ESC_STATE.carregando = true;
+    try {
+      const paciente = carregarSessao();
+      if (!paciente || !paciente.sigla) {
+        console.warn('[Escalas] Sem sessão — não foi possível verificar histórico');
+        return;
+      }
+      const resp = await chamarServidor('lerEscalas', { sigla: paciente.sigla });
+      if (resp && resp.ok) {
+        ESC_STATE.temEscalas = (resp.total || 0) > 0;
+        ESC_STATE.verificado = true;
+
+        // Se é veterano, auto-marca a flag "leu Como Usar" (padrão 11.5)
+        if (ESC_STATE.temEscalas) {
+          sessionStorage.setItem(ESC_FLAG_COMO_USAR, '1');
+        }
+      }
+    } catch (e) {
+      console.warn('[Escalas] lerEscalas falhou:', e);
+    } finally {
+      ESC_STATE.carregando = false;
+      escAplicarAvisoPrimeiraVez();
+    }
+  }
+}
+
+/**
+ * Aplica/remove o aviso de primeira vez no menu do Módulo 4.
+ * Mostra o aviso se:
+ *   (a) paciente nunca aplicou uma escala E
+ *   (b) ainda não clicou em "Entendi" na tela Como Usar
+ */
+function escAplicarAvisoPrimeiraVez() {
+  const aviso = document.getElementById('escSubAviso');
+  if (!aviso) return;
+  const comoUsarLido = sessionStorage.getItem(ESC_FLAG_COMO_USAR) === '1';
+  const deveMostrar = !comoUsarLido && !ESC_STATE.temEscalas;
+  aviso.classList.toggle('show', deveMostrar);
+}
+
+/**
+ * Clique em um card de escala. Se o paciente ainda não leu "Como Usar"
+ * E é primeira vez, abre o modal bloqueando. Caso contrário, inicia a aplicação.
+ */
+function escClicarCardEscala(codigoEscala) {
+  const comoUsarLido = sessionStorage.getItem(ESC_FLAG_COMO_USAR) === '1';
+  if (!comoUsarLido && !ESC_STATE.temEscalas) {
+    escAbrirModalComoUsar();
+    return;
+  }
+  escIniciarAplicacao(codigoEscala);
+}
+
+function escAbrirModalComoUsar() {
+  const m = document.getElementById('escModalComoUsar');
+  if (m) m.classList.add('show');
+}
+
+function escFecharModalComoUsar() {
+  const m = document.getElementById('escModalComoUsar');
+  if (m) m.classList.remove('show');
+}
+
+function escIrParaComoUsar() {
+  escFecharModalComoUsar();
+  abrirSecao('sec-escalas-instrucoes');
+}
+
+/**
+ * Clique no botão verde "✓ Entendi" da tela Como Usar.
+ * Marca flag e volta ao menu.
+ */
+function escClicarEntendi() {
+  sessionStorage.setItem(ESC_FLAG_COMO_USAR, '1');
+  abrirSecao('sec-escalas');
+  escAplicarAvisoPrimeiraVez();
+}
+
+// ============================================================
+// APLICAÇÃO DA ESCALA
+// ============================================================
+
+/**
+ * Inicia o preenchimento de uma escala.
+ * Limpa estado anterior, renderiza itens e vai para a tela de aplicação.
+ */
+function escIniciarAplicacao(codigoEscala) {
+  const def = ESC_ESCALAS[codigoEscala];
+  if (!def) {
+    alert('Escala não encontrada: ' + codigoEscala);
+    return;
+  }
+
+  ESC_STATE.escalaAtual = codigoEscala;
+  ESC_STATE.respostas = {};
+  ESC_STATE.inicioPreenchimento = Date.now();
+
+  // Preenche cabeçalho
+  document.getElementById('escAplicarTitulo').textContent = codigoEscala;
+  document.getElementById('escAplicarHead').innerHTML = def.emoji + ' ' + def.nomeCompleto;
+  document.getElementById('escAplicarSub').innerHTML = def.subtitulo;
+  document.getElementById('escAplicarEnunciado').textContent = def.enunciado;
+
+  // Renderiza itens
+  escRenderItens(def);
+
+  // Reseta progresso
+  escAtualizarProgresso();
+
+  abrirSecao('sec-escalas-aplicar');
+}
+
+/**
+ * Renderiza os itens da escala na tela de aplicação.
+ */
+function escRenderItens(def) {
+  const cont = document.getElementById('escItens');
+  let html = '';
+
+  def.itens.forEach(item => {
+    html += '<div class="esc-item" id="escItemBox-' + item.id + '">';
+    html += '<div class="esc-item-head">';
+    html += '<div class="esc-item-num">' + item.id + '</div>';
+    html += '<div class="esc-item-texto">' + escapeHtmlAuto(item.texto) + '</div>';
+    html += '</div>';
+    html += '<div class="esc-item-opcoes">';
+    def.opcoes.forEach(o => {
+      html += '<button type="button" class="esc-opcao" ' +
+              'data-item="' + item.id + '" data-valor="' + o.valor + '" ' +
+              'onclick="escSelecionarOpcao(' + item.id + ', ' + o.valor + ', ' + (item.critico ? 'true' : 'false') + ')">';
+      html += '<span class="esc-opcao-num">' + o.valor + '</span>';
+      html += escapeHtmlAuto(o.label);
+      html += '</button>';
+    });
+    html += '</div>';
+
+    // Caixa de alerta inline (Camada 1) — só para itens críticos
+    if (item.critico) {
+      html += '<div class="esc-alerta-inline" id="escAlertaItem-' + item.id + '">';
+      html += '<div class="esc-alerta-inline-head">💙 Estamos aqui com você</div>';
+      html += '<div class="esc-alerta-inline-texto">';
+      html += 'Obrigado por compartilhar algo tão difícil. Pensamentos como esse podem aparecer em momentos de muito sofrimento, e existe ajuda disponível agora.';
+      html += '</div>';
+      html += '<div class="esc-alerta-inline-contatos">';
+      html += '☎️ <strong>CVV 188</strong> · Apoio emocional, 24h, gratuito<br>';
+      html += '🚑 <strong>SAMU 192</strong> · Emergência médica, 24h, gratuito';
+      html += '</div>';
+      html += '</div>';
+    }
+
+    html += '</div>';
+  });
+
+  // Item funcional (se houver)
+  if (def.itemFuncional) {
+    html += '<div class="esc-item esc-item-funcional">';
+    html += '<div class="esc-item-funcional-label">Item complementar (não pontua)</div>';
+    html += '<div class="esc-item-head">';
+    html += '<div class="esc-item-num">F</div>';
+    html += '<div class="esc-item-texto">' + escapeHtmlAuto(def.itemFuncional.texto) + '</div>';
+    html += '</div>';
+    html += '<div class="esc-item-opcoes">';
+    def.itemFuncional.opcoes.forEach((txt, i) => {
+      html += '<button type="button" class="esc-opcao" ' +
+              'data-item="funcional" data-valor="' + i + '" ' +
+              'onclick="escSelecionarOpcao(\'funcional\', ' + i + ', false)">';
+      html += '<span class="esc-opcao-num">' + i + '</span>';
+      html += escapeHtmlAuto(txt);
+      html += '</button>';
+    });
+    html += '</div>';
+    html += '</div>';
+  }
+
+  cont.innerHTML = html;
+}
+
+/**
+ * Callback ao selecionar uma opção em um item.
+ */
+function escSelecionarOpcao(itemId, valor, critico) {
+  ESC_STATE.respostas[itemId] = valor;
+
+  // Atualiza visual dos botões do item
+  document.querySelectorAll('.esc-opcao[data-item="' + itemId + '"]').forEach(b => {
+    b.classList.toggle('selecionada', parseInt(b.dataset.valor) === valor);
+  });
+
+  // Alerta inline para item crítico
+  if (critico) {
+    const caixa = document.getElementById('escAlertaItem-' + itemId);
+    if (caixa) caixa.classList.toggle('show', valor >= 1);
+  }
+
+  escAtualizarProgresso();
+}
+
+/**
+ * Atualiza barra de progresso e habilita/desabilita botão "Ver meu resultado".
+ */
+function escAtualizarProgresso() {
+  const def = ESC_ESCALAS[ESC_STATE.escalaAtual];
+  if (!def) return;
+
+  const totalItensObrig = def.itens.length;
+  const totalComFuncional = totalItensObrig + (def.itemFuncional ? 1 : 0);
+
+  // Conta respondidos obrigatórios (exclui funcional do obrigatório)
+  const respondidosObrig = def.itens.filter(i => ESC_STATE.respostas[i.id] !== undefined).length;
+
+  // Progresso mostrado inclui funcional (o paciente vê que ele existe)
+  const preenchidosVisual = Object.keys(ESC_STATE.respostas).length;
+  const pct = Math.round((preenchidosVisual / totalComFuncional) * 100);
+
+  document.getElementById('escProgressoLabel').textContent =
+    preenchidosVisual + ' de ' + totalComFuncional + ' respondidos';
+  document.getElementById('escProgressoPct').textContent = pct + '%';
+  document.getElementById('escProgressoBarra').style.width = pct + '%';
+
+  // Habilita botão apenas com todos os itens obrigatórios respondidos
+  document.getElementById('escBtnEnviar').disabled = respondidosObrig < totalItensObrig;
+}
+
+/**
+ * Cancelar aplicação — volta ao menu e limpa estado.
+ */
+function escCancelarAplicacao() {
+  const preenchidos = Object.keys(ESC_STATE.respostas).length;
+  if (preenchidos > 0) {
+    if (!confirm('Você preencheu ' + preenchidos + ' resposta(s). Se sair agora, elas serão descartadas. Tem certeza?')) {
+      return;
+    }
+  }
+  ESC_STATE.escalaAtual = null;
+  ESC_STATE.respostas = {};
+  ESC_STATE.inicioPreenchimento = null;
+  abrirSecao('sec-escalas');
+}
+
+// ============================================================
+// CÁLCULO DE ESCORE E ENVIO
+// ============================================================
+
+/**
+ * Calcula o escore e detecta alerta de risco para a escala atual.
+ * Retorna objeto pronto para gravação na planilha.
+ */
+function escCalcularEscoreEAlerta(codigoEscala, respostas) {
+  const def = ESC_ESCALAS[codigoEscala];
+  let escoreTotal = 0;
+  let alertaFlag = 'NAO';
+  let alertaItem = '';
+  let alertaValor = '';
+
+  def.itens.forEach(item => {
+    const v = parseInt(respostas[item.id]) || 0;
+    escoreTotal += v;
+
+    // Detecção de alerta de risco (item crítico)
+    if (item.critico && v >= 1) {
+      alertaFlag = 'SIM';
+      alertaItem = item.itemRiscoKey || ('item_' + item.id);
+      alertaValor = String(v);
+    }
+  });
+
+  // Encontra faixa de classificação
+  const faixa = def.faixas.find(f => escoreTotal >= f.min && escoreTotal <= f.max) || def.faixas[0];
+
+  return {
+    escoreTotal: escoreTotal,
+    faixa: faixa,
+    alertaFlag: alertaFlag,
+    alertaItem: alertaItem,
+    alertaValor: alertaValor
+  };
+}
+
+/**
+ * Envia a escala para o servidor e, se der tudo certo, mostra resultado.
+ */
+async function escEnviarEscala() {
+  const codigo = ESC_STATE.escalaAtual;
+  const def = ESC_ESCALAS[codigo];
+  if (!def) return;
+
+  const paciente = carregarSessao();
+  if (!paciente || !paciente.sigla) {
+    alert('Sessão expirada. Faça login novamente.');
+    return;
+  }
+
+  const btn = document.getElementById('escBtnEnviar');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  try {
+    const calc = escCalcularEscoreEAlerta(codigo, ESC_STATE.respostas);
+
+    // Monta payload — nomes de coluna iguais aos da aba "Escalas"
+    const dados = {
+      instrumento: codigo,
+      versao_instrumento: ESC_VERSAO_INSTRUMENTO,
+      data_aplicacao: escDataHojeISO(),
+      escore_total: calc.escoreTotal,
+      escore_depressao: '',   // reservado para DASS-21 futuro
+      escore_ansiedade: '',
+      escore_estresse: '',
+      faixa: calc.faixa.rotulo,
+      alerta_risco_flag: calc.alertaFlag,
+      alerta_risco_item: calc.alertaItem,
+      alerta_risco_valor: calc.alertaValor,
+      observacoes: '',
+      tempo_preenchimento_seg: ESC_STATE.inicioPreenchimento
+        ? Math.round((Date.now() - ESC_STATE.inicioPreenchimento) / 1000)
+        : ''
+    };
+
+    // Respostas numeradas (item_01 a item_21, preenche só os que a escala usa)
+    def.itens.forEach(item => {
+      const col = 'item_' + String(item.id).padStart(2, '0');
+      dados[col] = (ESC_STATE.respostas[item.id] !== undefined) ? ESC_STATE.respostas[item.id] : '';
+    });
+
+    // Item funcional
+    if (def.itemFuncional) {
+      const vF = ESC_STATE.respostas['funcional'];
+      if (vF !== undefined) {
+        dados.item_funcional = vF;
+        dados.item_funcional_texto = def.itemFuncional.opcoes[vF] || '';
+      } else {
+        dados.item_funcional = '';
+        dados.item_funcional_texto = '';
+      }
+    }
+
+    // Envia (inclui sigla explicitamente — padrão do salvarAutomonitoramento)
+    const resp = await chamarServidor('salvarEscala', {
+      sigla: paciente.sigla,
+      dados: dados
+    });
+    if (!resp || !resp.ok) {
+      throw new Error((resp && resp.erro) ? resp.erro : 'Erro ao salvar escala');
+    }
+
+    // Atualiza flag de veterano localmente (destrava cards)
+    ESC_STATE.temEscalas = true;
+    sessionStorage.setItem(ESC_FLAG_COMO_USAR, '1');
+
+    // Mostra resultado
+    escMostrarResultado(codigo, calc, ESC_STATE.respostas);
+
+  } catch (erro) {
+    alert('Não foi possível salvar a escala: ' + String(erro));
+    btn.disabled = false;
+    btn.textContent = 'Ver meu resultado →';
+  }
+}
+
+// ============================================================
+// TELA DE RESULTADO
+// ============================================================
+
+function escMostrarResultado(codigo, calc, respostas) {
+  const def = ESC_ESCALAS[codigo];
+
+  // Alerta de risco (Camada 2) — bloco vermelho no topo
+  const blocoAlerta = document.getElementById('escBlocoAlertaRisco');
+  blocoAlerta.classList.toggle('show', calc.alertaFlag === 'SIM');
+
+  // Cabeçalho
+  document.getElementById('escResultTitulo').innerHTML = def.emoji + ' ' + def.nomeCompleto;
+  document.getElementById('escResultData').textContent = escFormatarDataBr(new Date());
+  document.getElementById('escResultEscore').textContent = calc.escoreTotal;
+  document.getElementById('escResultEscoreMax').textContent = '/' + def.escoreMax;
+
+  // Faixa com cor
+  const elFaixa = document.getElementById('escResultFaixa');
+  elFaixa.textContent = calc.faixa.rotulo;
+  elFaixa.className = 'esc-result-faixa ' + calc.faixa.cor;
+
+  // Texto educativo por faixa
+  document.getElementById('escResultEduTitulo').innerHTML = calc.faixa.titulo;
+  document.getElementById('escResultEduDesc').innerHTML = calc.faixa.descricao;
+  document.getElementById('escResultEduSugestao').innerHTML = calc.faixa.sugestao;
+
+  // Faixas de classificação
+  const ulFaixas = document.getElementById('escResultFaixas');
+  ulFaixas.innerHTML = def.faixasLista.map(f => '<li>' + f + '</li>').join('');
+
+  // Subescalas (oculto por enquanto — só DASS-21 futuro)
+  document.getElementById('escResultSubescalas').style.display = 'none';
+
+  // Impacto funcional (só se a escala tem item funcional)
+  const cardFunc = document.getElementById('escResultFuncionalCard');
+  const elFunc = document.getElementById('escResultFuncional');
+  if (def.itemFuncional) {
+    cardFunc.style.display = 'block';
+    const vF = respostas['funcional'];
+    if (vF !== undefined && vF !== null && vF !== '') {
+      const rotulo = def.itemFuncional.opcoes[vF] || '';
+      elFunc.innerHTML = '<strong>' + escapeHtmlAuto(rotulo) + '</strong> — Você indicou que os problemas dessas últimas semanas tornaram <strong>' +
+        escapeHtmlAuto(rotulo.toLowerCase()) + '</strong> realizar trabalho, cuidar das tarefas de casa ou se relacionar com pessoas. Este é um dado importante que o terapeuta levará em conta.';
+    } else {
+      elFunc.innerHTML = '<em>Você não respondeu o item sobre impacto funcional. Esse item é opcional, mas ajuda seu terapeuta a entender melhor o cenário.</em>';
+    }
+  } else {
+    cardFunc.style.display = 'none';
+  }
+
+  abrirSecao('sec-escalas-resultado');
+}
+
+// ============================================================
+// UTILITÁRIOS
+// ============================================================
+
+function escDataHojeISO() {
+  const d = new Date();
+  const yy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return yy + '-' + mm + '-' + dd;
+}
+
+function escFormatarDataBr(d) {
+  const meses = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+                 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mi = String(d.getMinutes()).padStart(2, '0');
+  return 'Aplicado em ' + d.getDate() + ' de ' + meses[d.getMonth()] +
+         ' de ' + d.getFullYear() + ', ' + hh + ':' + mi;
+}
+
+/* Fim do Pacote 12.2 (Módulo 4 — Escalas e Inventários) */
 
 </script>
 
