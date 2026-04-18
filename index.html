@@ -2695,6 +2695,619 @@ body{
   .eschm-escore-num { font-size: 36px; }
 }
 
+/* ============================================================
+   PACOTE 12.7.1 — Alerta compacto em grid 2 colunas
+   + Harmonização do modal do histórico com a tela imediata
+   ============================================================ */
+
+/* Grid CVV/SAMU lado a lado */
+.esc-alerta-tela-contatos-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+  margin-bottom: 12px;
+}
+.esc-alerta-tela-contatos-grid .esc-alerta-tela-contato {
+  margin-top: 0;
+  padding: 12px 10px;
+  text-align: center;
+}
+.esc-alerta-tela-contatos-grid .esc-alerta-tela-contato-desc {
+  min-height: 28px;
+  margin-bottom: 10px;
+  font-size: 11.5px;
+}
+.esc-alerta-tela-contatos-grid .esc-alerta-tela-contato-numero {
+  font-size: 18px;
+  padding: 5px 14px;
+}
+
+/* Wrapper do alerta dentro do modal do histórico (versão mais compacta) */
+.eschm-alerta-wrapper { margin-bottom: 14px; }
+.eschm-alerta-wrapper .esc-alerta-tela {
+  display: block;
+  padding: 18px 16px;
+  margin-bottom: 0;
+}
+.eschm-alerta-wrapper .esc-alerta-tela h2 {
+  font-size: 17px;
+  margin-bottom: 8px;
+}
+.eschm-alerta-wrapper .esc-alerta-tela > p {
+  font-size: 13px;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+.eschm-alerta-wrapper .esc-alerta-tela-contatos-grid {
+  margin-top: 8px;
+  margin-bottom: 10px;
+}
+.eschm-alerta-wrapper .esc-alerta-tela-contato-titulo { font-size: 13px; }
+.eschm-alerta-wrapper .esc-alerta-tela-contato-desc { font-size: 11px; min-height: 24px; }
+.eschm-alerta-wrapper .esc-alerta-tela-contato-numero {
+  font-size: 17px;
+  padding: 4px 12px;
+}
+.eschm-alerta-wrapper .esc-alerta-tela p:last-child {
+  font-size: 12.5px;
+  margin-top: 10px;
+  margin-bottom: 0;
+}
+
+/* Bloco de contexto do item crítico (só no modal do histórico) */
+.eschm-alerta-contexto {
+  background: rgba(255,255,255,.15);
+  padding: 10px 12px;
+  border-radius: var(--rs);
+  font-size: 12.5px;
+  line-height: 1.5;
+  text-align: left;
+  margin-bottom: 10px;
+}
+.eschm-alerta-contexto em {
+  font-style: italic;
+  opacity: .95;
+}
+
+/* Mobile muito estreito: volta para 1 coluna */
+@media (max-width: 420px) {
+  .esc-alerta-tela-contatos-grid { grid-template-columns: 1fr; gap: 8px; }
+  .esc-alerta-tela-contatos-grid .esc-alerta-tela-contato-desc { min-height: 0; }
+  .eschm-alerta-wrapper .esc-alerta-tela-contato-desc { min-height: 0; }
+}
+
+/* 12.7.1 — No modal do histórico, quando pede o "erase" do esch-header-box
+   (data fica embutida no header sticky do modal), escondemos a box azul duplicada */
+.eschm-header-box-oculta { display: none; }
+
+/* ============================================================
+   PACOTE 12.7.2 — Padronização unificada das telas de resultado
+   Serve tanto tela imediata quanto modal do histórico.
+   Reusa paleta e tipografia do sistema.
+   Prefixo: .rr-* (result renderer)
+   ============================================================ */
+
+/* FIX do bug do header sticky sobreposto pela caixa vermelha (12.7.2) */
+.p11-mhead { z-index: 10; }
+
+/* Container base do conteúdo de resultado */
+.rr-container {
+  /* Sem padding/margin — quem chama decide o espaçamento externo */
+}
+
+/* ---------- 1. Data/hora no topo (caixa azul clara) ---------- */
+.rr-data-box {
+  background: var(--blue-lt);
+  text-align: center;
+  padding: 12px 14px;
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+.rr-data-txt {
+  font-size: 13px;
+  color: var(--blue);
+  font-weight: 600;
+}
+
+/* ---------- Contexto longitudinal ---------- */
+.rr-contexto-lng {
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--gray);
+  margin: -8px 0 14px;
+  padding: 8px 14px;
+  background: var(--gray-bg);
+  border-radius: 10px;
+  line-height: 1.4;
+}
+.rr-contexto-lng strong { color: var(--txt); }
+
+/* ---------- 3. Cabeçalho com escore (gradiente azul) ---------- */
+.rr-header {
+  background: linear-gradient(135deg, var(--blue), #3a7594);
+  color: white;
+  padding: 22px 18px;
+  border-radius: var(--r);
+  text-align: center;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 16px rgba(44,95,124,.2);
+}
+.rr-header h2 {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  line-height: 1.3;
+}
+.rr-header-escore {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 14px;
+}
+.rr-header-escore-max {
+  font-size: 24px;
+  opacity: .65;
+  vertical-align: super;
+}
+.rr-header-faixa {
+  display: inline-block;
+  background: rgba(255,255,255,.2);
+  padding: 6px 18px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 13.5px;
+}
+
+/* ---------- DASS-21: 3 boxes coloridos abaixo do cabeçalho ---------- */
+.rr-subescalas-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.rr-sub-box {
+  padding: 14px 8px;
+  border-radius: 12px;
+  text-align: center;
+  border: 1.5px solid var(--gray-lt);
+}
+.rr-sub-box.coral { background: var(--coral-bg); border-color: #F5D0CA; }
+.rr-sub-box.amber { background: var(--amber-bg); border-color: #F0E0A8; }
+.rr-sub-box.green { background: var(--green-bg); border-color: #D0EDDA; }
+.rr-sub-icone { font-size: 20px; display: block; margin-bottom: 4px; }
+.rr-sub-nome {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: .3px;
+  margin-bottom: 4px;
+}
+.rr-sub-box.coral .rr-sub-nome { color: var(--coral); }
+.rr-sub-box.amber .rr-sub-nome { color: #A8842F; }
+.rr-sub-box.green .rr-sub-nome { color: var(--green); }
+.rr-sub-escore {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+}
+.rr-sub-box.coral .rr-sub-escore { color: var(--coral); }
+.rr-sub-box.amber .rr-sub-escore { color: #A8842F; }
+.rr-sub-box.green .rr-sub-escore { color: var(--green); }
+.rr-sub-faixa {
+  font-size: 10.5px;
+  font-weight: 700;
+  margin-top: 8px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  display: inline-block;
+}
+
+@media (max-width: 420px) {
+  .rr-subescalas-grid { gap: 5px; }
+  .rr-sub-box { padding: 10px 4px; }
+  .rr-sub-escore { font-size: 24px; }
+  .rr-sub-faixa { font-size: 9.5px; padding: 2px 6px; }
+  .rr-sub-nome { font-size: 10px; }
+}
+
+/* ---------- 4, 5, 6. Cards educativos (reusa visual .esc-result-card) ---------- */
+.rr-card {
+  background: white;
+  border-radius: var(--r);
+  padding: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  margin-bottom: 12px;
+  border-left: 4px solid var(--blue);
+}
+.rr-card h3 {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 15px;
+  color: var(--blue);
+  margin-bottom: 10px;
+}
+.rr-card p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--txt-m);
+  margin-bottom: 8px;
+}
+.rr-card p:last-child { margin-bottom: 0; }
+.rr-card ul {
+  list-style: none;
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: var(--txt-m);
+  padding: 0;
+  margin: 0;
+}
+.rr-card ul li {
+  padding-left: 0;
+}
+.rr-card ul li::before {
+  content: '•';
+  color: var(--blue);
+  margin-right: 10px;
+  font-weight: 700;
+}
+.rr-card ul li.rr-faixa-tabela-wrapper::before { display: none; }
+.rr-card-funcional {
+  background: var(--blue-lt);
+  border-left: 4px solid var(--blue);
+  padding: 12px 14px;
+  border-radius: var(--rs);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.rr-card-funcional strong { color: var(--blue); }
+
+/* Tabela comparativa de faixas (DASS-21) */
+.rr-faixa-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+.rr-faixa-tabela tr.rr-faixa-tabela-head {
+  background: var(--gray-bg);
+  font-weight: 700;
+}
+.rr-faixa-tabela td {
+  padding: 6px 8px;
+}
+.rr-faixa-tabela td.col-nivel {
+  font-weight: 700;
+  text-align: left;
+}
+.rr-faixa-tabela td.col-num {
+  text-align: center;
+}
+.rr-faixa-tabela tr.rr-faixa-tabela-body {
+  border-top: 1px solid var(--gray-lt);
+}
+
+/* ---------- 7. Botão "Minhas respostas" (abre sub-modal) ---------- */
+.rr-respostas-btn {
+  width: 100%;
+  background: white;
+  border: 1.5px solid var(--gray-lt);
+  border-left: 4px solid var(--blue);
+  padding: 14px 16px;
+  border-radius: var(--r);
+  font: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--txt);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  transition: all .15s;
+  text-align: left;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+.rr-respostas-btn:hover {
+  background: var(--blue-lt);
+}
+.rr-respostas-btn-ico { font-size: 18px; margin-right: 10px; }
+.rr-respostas-btn-lbl { flex: 1; }
+.rr-respostas-btn-seta { color: var(--gray); font-size: 18px; }
+.rr-respostas-btn-total {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray);
+  background: var(--gray-bg);
+  padding: 3px 10px;
+  border-radius: 12px;
+  margin-right: 10px;
+}
+
+/* ---------- 8. Tempo de preenchimento ---------- */
+.rr-tempo {
+  padding: 10px 14px;
+  background: var(--gray-bg);
+  border-radius: var(--rs);
+  font-size: 12px;
+  color: var(--gray);
+  margin-bottom: 12px;
+}
+.rr-tempo strong { color: var(--txt); font-weight: 600; }
+
+/* ---------- 9. Lembrete ---------- */
+.rr-lembrete {
+  background: var(--amber-bg);
+  border-left: 4px solid var(--amber);
+  padding: 12px 14px;
+  border-radius: var(--rs);
+  font-size: 12.5px;
+  color: #6B4F0A;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+.rr-lembrete strong { color: #5A3F00; }
+
+/* ---------- Ações (só na tela imediata) ---------- */
+.rr-acoes {
+  margin-top: 14px;
+  text-align: center;
+}
+
+/* ============================================================
+   PACOTE 12.7.2 — Contexto do alerta (reusa visual da tela imediata)
+   Um único bloco vermelho que serve as duas telas, com contexto
+   específico (item crítico) só no modo histórico.
+   ============================================================ */
+.rr-alerta {
+  background: linear-gradient(135deg, #D94444, #A83535);
+  color: white;
+  padding: 20px 18px;
+  border-radius: var(--r);
+  margin-bottom: 14px;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(217,68,68,.3);
+}
+.rr-alerta h2 {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.rr-alerta-intro {
+  font-size: 13.5px;
+  line-height: 1.55;
+  margin-bottom: 12px;
+}
+.rr-alerta-intro strong { font-weight: 700; }
+.rr-alerta-contexto {
+  background: rgba(255,255,255,.15);
+  padding: 10px 12px;
+  border-radius: var(--rs);
+  font-size: 12.5px;
+  line-height: 1.5;
+  text-align: left;
+  margin-bottom: 12px;
+}
+.rr-alerta-contexto em {
+  font-style: italic;
+  opacity: .95;
+}
+.rr-alerta-contatos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 10px 0 14px;
+}
+.rr-alerta-contato {
+  background: rgba(255,255,255,.15);
+  padding: 12px 10px;
+  border-radius: var(--rs);
+}
+.rr-alerta-contato-titulo {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.rr-alerta-contato-desc {
+  font-size: 11px;
+  opacity: .85;
+  margin-bottom: 10px;
+  min-height: 26px;
+}
+.rr-alerta-contato-num {
+  display: inline-block;
+  background: white;
+  color: var(--red);
+  padding: 4px 12px;
+  border-radius: var(--rs);
+  font-family: 'Quicksand', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.rr-alerta-rodape {
+  margin-top: 14px;
+  font-size: 12.5px;
+  opacity: .92;
+  line-height: 1.55;
+}
+.rr-alerta-rodape p { margin-bottom: 6px; }
+.rr-alerta-rodape p:last-child { margin-bottom: 0; }
+
+@media (max-width: 420px) {
+  .rr-alerta-contatos { grid-template-columns: 1fr; }
+  .rr-alerta-contato-desc { min-height: 0; }
+}
+
+/* ============================================================
+   PACOTE 12.7.2 — Sub-modal "Minhas respostas"
+   Overlay sobre a tela atual. Tem cabeçalho próprio (sticky)
+   com botão "← Voltar", conteúdo scrollável, ESC fecha.
+   ============================================================ */
+.rr-submodal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(20,30,38,.55);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  z-index: 10100; /* acima do modal do histórico (10000) */
+  padding: 20px 12px;
+  overflow-y: auto;
+}
+.rr-submodal-overlay.show {
+  display: block;
+}
+.rr-submodal-box {
+  background: white;
+  border-radius: 14px;
+  max-width: 680px;
+  margin: 0 auto;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 14px 48px rgba(0,0,0,.3);
+}
+.rr-submodal-head {
+  padding: 14px 16px;
+  background: var(--blue);
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 14px 14px 0 0;
+  flex-shrink: 0;
+}
+.rr-submodal-voltar {
+  background: rgba(255,255,255,.2);
+  border: none;
+  color: white;
+  padding: 5px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  transition: background .15s;
+}
+.rr-submodal-voltar:hover {
+  background: rgba(255,255,255,.3);
+}
+.rr-submodal-titulo {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  flex: 1;
+}
+.rr-submodal-close {
+  background: rgba(255,255,255,.2);
+  border: none;
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 17px;
+  font-weight: bold;
+  line-height: 1;
+}
+.rr-submodal-body {
+  padding: 16px 18px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+.rr-submodal-intro {
+  font-size: 12.5px;
+  color: var(--gray);
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: var(--gray-bg);
+  border-radius: 8px;
+  line-height: 1.4;
+}
+
+/* Itens dentro do sub-modal */
+.rr-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--gray-lt);
+}
+.rr-item:last-child { border-bottom: none; }
+.rr-item-num {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: var(--gray-bg);
+  color: var(--gray);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+}
+.rr-item.critico .rr-item-num {
+  background: var(--red);
+  color: white;
+}
+.rr-item-texto {
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--txt);
+}
+.rr-item-resposta {
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--gray);
+}
+.rr-item-resposta strong { color: var(--txt); font-weight: 700; }
+.rr-item-nota-critica {
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: var(--red-bg);
+  border-left: 3px solid var(--red);
+  border-radius: 6px;
+  font-size: 11.5px;
+  color: #7F1D1D;
+  line-height: 1.4;
+}
+
+/* ============================================================
+   12.7.2 — Estado disabled do botão "Ver meu resultado →"
+   com mini spinner durante o envio (não muda o texto).
+   ============================================================ */
+.esc-btn-primary.rr-enviando {
+  opacity: .7;
+  cursor: wait;
+  position: relative;
+}
+.esc-btn-primary.rr-enviando::after {
+  content: '';
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-left: 10px;
+  border: 2px solid rgba(255,255,255,.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: rr-spin .7s linear infinite;
+  vertical-align: middle;
+}
+@keyframes rr-spin {
+  to { transform: rotate(360deg); }
+}
+
 </style>
 </head>
 <body>
@@ -7307,75 +7920,31 @@ body{
   </div>
 
   <!-- Tela de resultado da escala -->
+  <!-- Pacote 12.7.2: conteúdo passou a ser renderizado dinamicamente.
+       Toda a estrutura antiga (alerta manual, cabeçalho fixo, cards com IDs)
+       foi substituída por um único container. A função
+       escRenderizarConteudoResultado monta o HTML unificado que também é
+       usado no modal do histórico. -->
   <div class="section" id="sec-escalas-resultado">
     <div class="nav-bar">
       <button class="btn-back" onclick="abrirSecao('sec-escalas')">← Voltar ao menu</button>
       <span class="nav-title">Resultado</span>
     </div>
-
-    <!-- Alerta de risco (Camada 2) — só aparece se houver ideação -->
-    <div class="esc-alerta-tela" id="escBlocoAlertaRisco">
-      <h2>💙 Você não está sozinho(a)</h2>
-      <p>Percebemos que você indicou ter tido pensamentos difíceis. Queremos lembrar que <strong>existe ajuda disponível agora</strong>, 24 horas por dia, gratuita e com sigilo.</p>
-
-      <div class="esc-alerta-tela-contato">
-        <div class="esc-alerta-tela-contato-titulo">☎️ CVV — Centro de Valorização da Vida</div>
-        <div class="esc-alerta-tela-contato-desc">Apoio emocional e prevenção do suicídio · 24h · Gratuito</div>
-        <span class="esc-alerta-tela-contato-numero">188</span>
-      </div>
-
-      <div class="esc-alerta-tela-contato">
-        <div class="esc-alerta-tela-contato-titulo">🚑 SAMU</div>
-        <div class="esc-alerta-tela-contato-desc">Emergência médica · 24h · Gratuito</div>
-        <span class="esc-alerta-tela-contato-numero">192</span>
-      </div>
-
-      <p style="margin-top:16px;font-size:13px;opacity:.9;">
-        Seu psicólogo foi informado automaticamente e entrará em contato.
-      </p>
-    </div>
-
-    <!-- Cabeçalho do resultado -->
-    <div class="esc-result-header">
-      <h2 id="escResultTitulo"></h2>
-      <div class="esc-result-data" id="escResultData"></div>
-      <div class="esc-result-escore">
-        <span id="escResultEscore">0</span><span class="esc-result-escore-max" id="escResultEscoreMax">/27</span>
-      </div>
-      <div class="esc-result-faixa" id="escResultFaixa"></div>
-    </div>
-
-    <!-- Texto educativo -->
-    <div class="esc-result-card">
-      <h3 id="escResultEduTitulo"></h3>
-      <p id="escResultEduDesc"></p>
-      <p id="escResultEduSugestao"></p>
-    </div>
-
-    <!-- Subescalas (só aparece para DASS-21 no futuro) -->
-    <div class="esc-result-card" id="escResultSubescalas" style="display:none;">
-      <h3>📊 Subescalas</h3>
-      <div id="escResultSubescalasConteudo"></div>
-    </div>
-
-    <!-- Faixas de classificação -->
-    <div class="esc-result-card">
-      <h3>📊 Sobre a faixa de classificação</h3>
-      <ul id="escResultFaixas"></ul>
-    </div>
-
-    <!-- Impacto funcional -->
-    <div class="esc-result-card" id="escResultFuncionalCard">
-      <h3>🎯 Impacto funcional</h3>
-      <div class="esc-result-funcional" id="escResultFuncional"></div>
-    </div>
-
-    <div class="esc-result-disclaimer">
-      ⚠️ <strong>Lembrete:</strong> Este resultado é uma medida de rastreamento e <strong>não substitui avaliação diagnóstica</strong> realizada pelo seu psicólogo. É uma ferramenta de apoio ao acompanhamento terapêutico.
-    </div>
-
+    <div id="escResultContainer" class="rr-container"></div>
     <div class="esc-nav">
       <button class="esc-btn esc-btn-primary" onclick="abrirSecao('sec-escalas')">Voltar ao menu de Escalas</button>
+    </div>
+  </div>
+
+  <!-- Pacote 12.7.2: Sub-modal "Minhas respostas" (serve tela imediata E histórico) -->
+  <div class="rr-submodal-overlay" id="rrSubmodalRespostas" onclick="if(event.target===this)rrFecharSubmodalRespostas()">
+    <div class="rr-submodal-box" role="dialog" aria-modal="true" aria-labelledby="rrSubmodalTitulo">
+      <div class="rr-submodal-head">
+        <button class="rr-submodal-voltar" type="button" onclick="rrFecharSubmodalRespostas()" aria-label="Voltar">← Voltar</button>
+        <span class="rr-submodal-titulo" id="rrSubmodalTitulo">📝 Minhas respostas</span>
+        <button class="rr-submodal-close" type="button" onclick="rrFecharSubmodalRespostas()" aria-label="Fechar">×</button>
+      </div>
+      <div class="rr-submodal-body" id="rrSubmodalBody"></div>
     </div>
   </div>
 
@@ -13318,8 +13887,10 @@ async function escEnviarEscala() {
   }
 
   const btn = document.getElementById('escBtnEnviar');
+  // Pacote 12.7.2: não muda o texto durante o envio.
+  // Apenas desabilita + adiciona classe rr-enviando (CSS faz o spinner).
   btn.disabled = true;
-  btn.textContent = 'Enviando...';
+  btn.classList.add('rr-enviando');
 
   try {
     const calc = escCalcularEscoreEAlerta(codigo, ESC_STATE.respostas);
@@ -13393,125 +13964,631 @@ async function escEnviarEscala() {
   } catch (erro) {
     alert('Não foi possível salvar a escala: ' + String(erro));
     btn.disabled = false;
-    btn.textContent = 'Ver meu resultado →';
+    btn.classList.remove('rr-enviando');
+    // Texto já é "Ver meu resultado →" no HTML — só remove o spinner
   }
 }
 
 // ============================================================
-// TELA DE RESULTADO
+// TELA DE RESULTADO (Pacote 12.7.2 - refatorado)
+// Usa o renderer unificado escRenderizarConteudoResultado que
+// também serve o modal do histórico de escalas.
 // ============================================================
 
 function escMostrarResultado(codigo, calc, respostas) {
   const def = ESC_ESCALAS[codigo];
+  if (!def) return;
 
-  // Alerta de risco (Camada 2) — bloco vermelho no topo
-  const blocoAlerta = document.getElementById('escBlocoAlertaRisco');
-  blocoAlerta.classList.toggle('show', calc.alertaFlag === 'SIM');
+  // Monta um "registro" sintético a partir do calc+respostas,
+  // no mesmo shape do que lerEscalas devolve. Isso permite usar
+  // o mesmo renderer nas duas telas.
+  const reg = {
+    instrumento: codigo,
+    data_aplicacao: escDataHojeISO(),
+    timestamp: new Date().toISOString(),
+    escore_total: calc.escoreTotal,
+    faixa: calc.faixa ? calc.faixa.rotulo : (
+      calc.subescalas
+        ? ('Dep:' + calc.subescalas.depressao.faixa.rotulo +
+           ' | Ans:' + calc.subescalas.ansiedade.faixa.rotulo +
+           ' | Est:' + calc.subescalas.estresse.faixa.rotulo)
+        : ''
+    ),
+    escore_depressao: (calc.subescalas && calc.subescalas.depressao) ? calc.subescalas.depressao.escore : '',
+    escore_ansiedade: (calc.subescalas && calc.subescalas.ansiedade) ? calc.subescalas.ansiedade.escore : '',
+    escore_estresse:  (calc.subescalas && calc.subescalas.estresse)  ? calc.subescalas.estresse.escore  : '',
+    alerta_risco_flag: calc.alertaFlag,
+    alerta_risco_item: calc.alertaItem,
+    alerta_risco_valor: calc.alertaValor,
+    item_funcional: (respostas && respostas['funcional'] !== undefined) ? respostas['funcional'] : '',
+    item_funcional_texto: (function(){
+      if (!def.itemFuncional || !respostas) return '';
+      const v = respostas['funcional'];
+      if (v === undefined || v === null || v === '') return '';
+      return def.itemFuncional.opcoes[v] || '';
+    })(),
+    tempo_preenchimento_seg: ESC_STATE.inicioPreenchimento
+      ? Math.round((Date.now() - ESC_STATE.inicioPreenchimento) / 1000)
+      : '',
+    observacoes: ''
+  };
 
-  // Cabeçalho (título e data são iguais em todas as escalas)
-  document.getElementById('escResultTitulo').innerHTML = def.emoji + ' ' + def.nomeCompleto;
-  document.getElementById('escResultData').textContent = escFormatarDataBr(new Date());
+  // Preenche todas as colunas item_01..item_21 (só as que a escala usa)
+  def.itens.forEach(function(item){
+    const col = 'item_' + String(item.id).padStart(2, '0');
+    reg[col] = (respostas && respostas[item.id] !== undefined) ? respostas[item.id] : '';
+  });
 
-  const headerEscore = document.querySelector('.esc-result-header .esc-result-escore');
-  const elFaixaUnica = document.getElementById('escResultFaixa');
-  const cardSubescalas = document.getElementById('escResultSubescalas');
-  const subescalasConteudo = document.getElementById('escResultSubescalasConteudo');
-  const ulFaixas = document.getElementById('escResultFaixas');
+  // Calcula contexto longitudinal a partir do cache do histórico
+  const contexto = escCalcularContextoLongitudinal(codigo, reg);
 
-  if (calc.subescalas) {
-    // ============ Caminho multi-subescala (DASS-21) ============
-    // Oculta o escore único grande e a faixa única
-    if (headerEscore) headerEscore.style.display = 'none';
-    if (elFaixaUnica) elFaixaUnica.style.display = 'none';
-
-    // Mostra bloco de subescalas com 3 boxes (um por subescala)
-    cardSubescalas.style.display = 'block';
-    const meta = def.subescalasMeta || {};
-    let html = '';
-    // Ordem fixa: depressao, ansiedade, estresse (ou o que estiver definido)
-    const ordem = Object.keys(meta).length ? Object.keys(meta) : Object.keys(calc.subescalas);
-    ordem.forEach(k => {
-      const sub = calc.subescalas[k];
-      if (!sub) return;
-      const m = meta[k] || { nome: k, icone: '', corPrefix: 'gray' };
-      html += '<div class="esc-sub-box esc-sub-' + m.corPrefix + '">';
-      html +=   '<div class="esc-sub-head"><span class="esc-sub-icone">' + m.icone + '</span>';
-      html +=   '<span class="esc-sub-nome">' + m.nome + '</span></div>';
-      html +=   '<div class="esc-sub-escore">' + sub.escore + '</div>';
-      html +=   '<div class="esc-sub-faixa ' + sub.faixa.cor + '">' + sub.faixa.rotulo + '</div>';
-      html += '</div>';
-    });
-    subescalasConteudo.innerHTML = html;
-
-    // Texto educativo geral (não varia por faixa no DASS-21)
-    document.getElementById('escResultEduTitulo').innerHTML = def.eduGeralTitulo || '🧠 O que isso significa?';
-    document.getElementById('escResultEduDesc').innerHTML = def.eduGeralDesc || '';
-    document.getElementById('escResultEduSugestao').innerHTML = def.eduGeralSugestao || '';
-
-    // Lista de faixas — para DASS-21 mostra uma tabela enxuta
-    const fs = def.faixasSubescalas || {};
-    let faixasHtml = '<li style="list-style:none;margin-left:-20px;"><table style="width:100%;border-collapse:collapse;font-size:12.5px;">';
-    faixasHtml += '<tr style="font-weight:700;background:var(--gray-bg);"><td style="padding:6px 8px;">Nível</td>';
-    ordem.forEach(k => {
-      faixasHtml += '<td style="padding:6px 8px;text-align:center;">' + (meta[k] ? meta[k].nome : k) + '</td>';
-    });
-    faixasHtml += '</tr>';
-    // Monta linhas — pega a primeira subescala como referência de rótulos
-    const refK = ordem[0];
-    const refFaixas = (fs[refK] || []).slice().reverse(); // do menor (Normal) ao maior (Extremo)
-    refFaixas.forEach(fRef => {
-      faixasHtml += '<tr style="border-top:1px solid var(--gray-lt);"><td style="padding:6px 8px;font-weight:700;">' + fRef.rotulo + '</td>';
-      ordem.forEach(k => {
-        const fSub = (fs[k] || []).find(x => x.rotulo === fRef.rotulo);
-        const txt = fSub ? (fSub.min + '-' + (fSub.max >= 99 ? '+' : fSub.max)) : '—';
-        faixasHtml += '<td style="padding:6px 8px;text-align:center;">' + txt + '</td>';
-      });
-      faixasHtml += '</tr>';
-    });
-    faixasHtml += '</table></li>';
-    ulFaixas.innerHTML = faixasHtml;
-
-  } else {
-    // ============ Caminho escore único (PHQ-9, GAD-7, PSS-10) ============
-    if (headerEscore) headerEscore.style.display = '';
-    if (elFaixaUnica) elFaixaUnica.style.display = '';
-    cardSubescalas.style.display = 'none';
-
-    document.getElementById('escResultEscore').textContent = calc.escoreTotal;
-    document.getElementById('escResultEscoreMax').textContent = '/' + def.escoreMax;
-
-    // Faixa com cor
-    elFaixaUnica.textContent = calc.faixa.rotulo;
-    elFaixaUnica.className = 'esc-result-faixa ' + calc.faixa.cor;
-
-    // Texto educativo por faixa
-    document.getElementById('escResultEduTitulo').innerHTML = calc.faixa.titulo;
-    document.getElementById('escResultEduDesc').innerHTML = calc.faixa.descricao;
-    document.getElementById('escResultEduSugestao').innerHTML = calc.faixa.sugestao;
-
-    // Lista de faixas
-    ulFaixas.innerHTML = def.faixasLista.map(f => '<li>' + f + '</li>').join('');
-  }
-
-  // Impacto funcional (só se a escala tem item funcional) — comum aos dois caminhos
-  const cardFunc = document.getElementById('escResultFuncionalCard');
-  const elFunc = document.getElementById('escResultFuncional');
-  if (def.itemFuncional) {
-    cardFunc.style.display = 'block';
-    const vF = respostas['funcional'];
-    if (vF !== undefined && vF !== null && vF !== '') {
-      const rotulo = def.itemFuncional.opcoes[vF] || '';
-      elFunc.innerHTML = '<strong>' + escapeHtmlAuto(rotulo) + '</strong> — Você indicou que os problemas dessas últimas semanas tornaram <strong>' +
-        escapeHtmlAuto(rotulo.toLowerCase()) + '</strong> realizar trabalho, cuidar das tarefas de casa ou se relacionar com pessoas. Este é um dado importante que o terapeuta levará em conta.';
-    } else {
-      elFunc.innerHTML = '<em>Você não respondeu o item sobre impacto funcional. Esse item é opcional, mas ajuda seu terapeuta a entender melhor o cenário.</em>';
-    }
-  } else {
-    cardFunc.style.display = 'none';
-  }
+  // Renderiza conteúdo no container da tela imediata
+  const container = document.getElementById('escResultContainer');
+  container.innerHTML = escRenderizarConteudoResultado(reg, def, 'imediata', contexto);
 
   abrirSecao('sec-escalas-resultado');
 }
+
+// ============================================================
+// RENDERER UNIFICADO (Pacote 12.7.2)
+// Monta o HTML completo do conteúdo de resultado.
+// modo: 'imediata' (tela pós-aplicação) | 'historico' (modal)
+// contexto: { ordinalTexto, ultimaFaz, total } | null
+// ============================================================
+function escRenderizarConteudoResultado(reg, def, modo, contexto) {
+  const cod = String(reg.instrumento || '');
+  const temAlerta = String(reg.alerta_risco_flag || '').toUpperCase() === 'SIM';
+  const eDass = (cod === 'DASS-21');
+
+  let html = '';
+
+  // ---- 1. Data/hora ----
+  html += escRrBlocoData(reg, modo);
+
+  // ---- Contexto longitudinal (se houver) ----
+  if (contexto && contexto.ordinalTexto) {
+    html += '<div class="rr-contexto-lng">' + contexto.ordinalTexto + '</div>';
+  }
+
+  // ---- 2. Alerta de risco (se houver) ----
+  if (temAlerta) {
+    html += escRrBlocoAlerta(reg, def, modo);
+  }
+
+  // ---- 3. Cabeçalho com escore ----
+  if (eDass) {
+    // DASS-21: cabeçalho enxuto + 3 boxes abaixo
+    html += '<div class="rr-header">';
+    html +=   '<h2>' + escapeHtmlAuto(def.emoji || '') + ' ' + escapeHtmlAuto(def.nomeCompleto || cod) + '</h2>';
+    html += '</div>';
+    html += escRrBlocoSubescalasDass(reg, def);
+  } else {
+    html += escRrBlocoHeaderEscore(reg, def);
+  }
+
+  // ---- 4. "O que isso significa?" ----
+  html += escRrBlocoOQueSignifica(cod, def, reg);
+
+  // ---- 5. "Sobre a faixa de classificação" ----
+  html += escRrBlocoSobreFaixa(cod, def, reg);
+
+  // ---- 6. Impacto funcional (só se a escala tem) ----
+  html += escRrBlocoImpactoFuncional(def, reg);
+
+  // ---- 7. Botão "Minhas respostas" ----
+  html += escRrBotaoRespostas(cod, def, reg, modo);
+
+  // ---- 8. Tempo de preenchimento ----
+  html += escRrBlocoTempo(reg);
+
+  // ---- 9. Lembrete ----
+  html += escRrBlocoLembrete();
+
+  return html;
+}
+
+// ============================================================
+// BLOCOS INDIVIDUAIS (cada função retorna HTML ou '')
+// ============================================================
+
+function escRrBlocoData(reg, modo) {
+  // Se for modal do histórico, lemos data do registro.
+  // Se for tela imediata, geramos "agora".
+  let texto;
+  if (modo === 'imediata') {
+    const d = new Date();
+    texto = escFormatarDataHoraBr(d);
+  } else {
+    texto = escRrFormatarDataRegistro(reg);
+  }
+  return '<div class="rr-data-box">' +
+           '<div class="rr-data-txt">📅 Aplicado em ' + escapeHtmlAuto(texto) + '</div>' +
+         '</div>';
+}
+
+// Formata data+hora no padrão pedido: "18 de abril de 2026, 12:44"
+function escFormatarDataHoraBr(d) {
+  const meses = ['janeiro','fevereiro','março','abril','maio','junho',
+                 'julho','agosto','setembro','outubro','novembro','dezembro'];
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mi = String(d.getMinutes()).padStart(2, '0');
+  return d.getDate() + ' de ' + meses[d.getMonth()] +
+         ' de ' + d.getFullYear() + ', ' + hh + ':' + mi;
+}
+
+// Formata data+hora a partir do registro do servidor (mesmos fallbacks que escHistFormatarDataHoraHtml)
+function escRrFormatarDataRegistro(reg) {
+  const meses = ['janeiro','fevereiro','março','abril','maio','junho',
+                 'julho','agosto','setembro','outubro','novembro','dezembro'];
+  let textoData = '—';
+  let textoHora = '';
+
+  const m = String(reg.data_aplicacao || '').match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (m) {
+    textoData = parseInt(m[3]) + ' de ' + meses[parseInt(m[2]) - 1] + ' de ' + parseInt(m[1]);
+  } else if (reg.timestamp) {
+    try {
+      const d = (reg.timestamp instanceof Date) ? reg.timestamp : new Date(reg.timestamp);
+      if (!isNaN(d.getTime())) {
+        textoData = d.getDate() + ' de ' + meses[d.getMonth()] + ' de ' + d.getFullYear();
+      }
+    } catch (e) {}
+  }
+
+  if (reg.timestamp) {
+    try {
+      const d = (reg.timestamp instanceof Date) ? reg.timestamp : new Date(reg.timestamp);
+      if (!isNaN(d.getTime())) {
+        const hh = String(d.getHours()).padStart(2,'0');
+        const mm = String(d.getMinutes()).padStart(2,'0');
+        textoHora = ', ' + hh + ':' + mm;
+      }
+    } catch (e) {}
+  }
+
+  return textoData + textoHora;
+}
+
+// --- Alerta de risco ---
+function escRrBlocoAlerta(reg, def, modo) {
+  const itemKey = String(reg.alerta_risco_item || '');
+  const valor = reg.alerta_risco_valor;
+
+  let itemTexto = '';
+  if (def && def.itens) {
+    const critico = def.itens.find(function(x){ return x.critico || (x.itemRiscoKey === itemKey); });
+    if (critico) itemTexto = critico.texto;
+  }
+
+  let valorTxt = '';
+  if (def && def.dicotomica) {
+    valorTxt = (Number(valor) === 1) ? 'Sim' : 'Não';
+  } else if (def && def.opcoes && def.opcoes.length) {
+    const op = def.opcoes.find(function(x){ return Number(x.valor) === Number(valor); });
+    if (op) valorTxt = op.label;
+    else if (valor !== undefined && valor !== '') valorTxt = String(valor);
+  } else {
+    valorTxt = String(valor || '');
+  }
+
+  // Contexto (bloco branco-transparente) só no modo histórico
+  let contextoHtml = '';
+  if (modo === 'historico' && itemTexto) {
+    contextoHtml = '<div class="rr-alerta-contexto">' +
+                     'Neste dia você marcou <strong>' + escapeHtmlAuto(valorTxt || 'uma resposta de atenção') +
+                     '</strong> no item: <em>"' + escapeHtmlAuto(itemTexto) + '"</em>.' +
+                   '</div>';
+  }
+
+  // Rodapé — texto adaptado ao modo
+  let rodapeHtml;
+  if (modo === 'historico') {
+    rodapeHtml =
+      '<p>Seu psicólogo(a) verá este resultado até a próxima consulta.</p>' +
+      '<p>Se esses pensamentos ou sensações estiverem voltando, fale com seu psicólogo(a) o quanto antes ou procure alguém de confiança que possa te acolher neste momento.</p>';
+  } else {
+    rodapeHtml =
+      '<p>Seu psicólogo(a) verá este resultado até a próxima consulta.</p>' +
+      '<p>Se precisar de apoio antes, entre em contato com ele(a) ou com alguém de confiança que possa te acolher neste momento.</p>';
+  }
+
+  return '<div class="rr-alerta">' +
+    '<h2>💙 Você não está sozinho(a)</h2>' +
+    '<p class="rr-alerta-intro">' +
+      'Percebemos que você indicou ter tido pensamentos difíceis.<br>' +
+      '<strong>Existe ajuda disponível agora</strong>, 24h por dia, gratuita e com sigilo.' +
+    '</p>' +
+    contextoHtml +
+    '<div class="rr-alerta-contatos">' +
+      '<div class="rr-alerta-contato">' +
+        '<div class="rr-alerta-contato-titulo">☎️ CVV</div>' +
+        '<div class="rr-alerta-contato-desc">Apoio emocional · 24h · Gratuito</div>' +
+        '<span class="rr-alerta-contato-num">188</span>' +
+      '</div>' +
+      '<div class="rr-alerta-contato">' +
+        '<div class="rr-alerta-contato-titulo">🚑 SAMU</div>' +
+        '<div class="rr-alerta-contato-desc">Emergência médica · 24h · Gratuito</div>' +
+        '<span class="rr-alerta-contato-num">192</span>' +
+      '</div>' +
+    '</div>' +
+    '<div class="rr-alerta-rodape">' + rodapeHtml + '</div>' +
+  '</div>';
+}
+
+// --- Cabeçalho com escore (escore único) ---
+function escRrBlocoHeaderEscore(reg, def) {
+  const escore = (reg.escore_total !== '' && reg.escore_total !== null && reg.escore_total !== undefined)
+    ? reg.escore_total : '—';
+  const escoreMax = (def && def.escoreMax) ? def.escoreMax : '';
+  const faixaRotulo = String(reg.faixa || '');
+
+  return '<div class="rr-header">' +
+    '<h2>' + escapeHtmlAuto(def.emoji || '') + ' ' + escapeHtmlAuto(def.nomeCompleto || '') + '</h2>' +
+    '<div class="rr-header-escore">' + escapeHtmlAuto(String(escore)) +
+      (escoreMax ? '<span class="rr-header-escore-max">/' + escapeHtmlAuto(String(escoreMax)) + '</span>' : '') +
+    '</div>' +
+    (faixaRotulo ? '<span class="rr-header-faixa">' + escapeHtmlAuto(faixaRotulo) + '</span>' : '') +
+  '</div>';
+}
+
+// --- DASS-21: 3 boxes coloridos ---
+function escRrBlocoSubescalasDass(reg, def) {
+  const meta = def.subescalasMeta || {};
+  const ordem = Object.keys(meta).length ? Object.keys(meta) : ['depressao', 'ansiedade', 'estresse'];
+
+  const valores = {
+    depressao: reg.escore_depressao,
+    ansiedade: reg.escore_ansiedade,
+    estresse:  reg.escore_estresse
+  };
+
+  let html = '<div class="rr-subescalas-grid">';
+  ordem.forEach(function(k){
+    const m = meta[k] || { nome: k, icone: '', corPrefix: 'gray' };
+    const escore = valores[k];
+    const escoreDisp = (escore !== '' && escore !== null && escore !== undefined) ? escore : '—';
+    const faixaCor = escHistCorSubFaixa(k, escore);
+    const faixaRot = escHistRotuloSubFaixa(k, escore);
+
+    html += '<div class="rr-sub-box ' + m.corPrefix + '">';
+    html +=   '<span class="rr-sub-icone">' + escapeHtmlAuto(m.icone || '') + '</span>';
+    html +=   '<div class="rr-sub-nome">' + escapeHtmlAuto(m.nome || k) + '</div>';
+    html +=   '<div class="rr-sub-escore">' + escapeHtmlAuto(String(escoreDisp)) + '</div>';
+    if (faixaRot) {
+      html +=   '<div class="rr-sub-faixa esch-faixa ' + faixaCor + '">' + escapeHtmlAuto(faixaRot) + '</div>';
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+// --- "O que isso significa?" ---
+function escRrBlocoOQueSignifica(cod, def, reg) {
+  if (!def) return '';
+
+  if (cod === 'DASS-21') {
+    const titulo = def.eduGeralTitulo || '🌟 O que isso significa?';
+    const desc = def.eduGeralDesc || '';
+    const sug  = def.eduGeralSugestao || '';
+    if (!desc && !sug) return '';
+    return '<div class="rr-card">' +
+             '<h3>' + titulo + '</h3>' +
+             (desc ? '<p>' + desc + '</p>' : '') +
+             (sug  ? '<p>' + sug  + '</p>' : '') +
+           '</div>';
+  }
+
+  // Escore único: busca faixa
+  const f = escHistEncontrarFaixa(cod, def, reg);
+  if (!f) return '';
+  const titulo = f.titulo || '🌟 O que isso significa?';
+  const desc = f.descricao || '';
+  const sug  = f.sugestao || '';
+  if (!desc && !sug) return '';
+  return '<div class="rr-card">' +
+           '<h3>' + titulo + '</h3>' +
+           (desc ? '<p>' + desc + '</p>' : '') +
+           (sug  ? '<p>' + sug  + '</p>' : '') +
+         '</div>';
+}
+
+// --- "Sobre a faixa de classificação" ---
+function escRrBlocoSobreFaixa(cod, def, reg) {
+  if (!def) return '';
+
+  // DASS-21: tabela comparativa 3 colunas
+  if (cod === 'DASS-21') {
+    const meta = def.subescalasMeta || {};
+    const fs = def.faixasSubescalas || {};
+    const ordem = Object.keys(meta).length ? Object.keys(meta) : Object.keys(fs);
+    if (!ordem.length) return '';
+
+    let tab = '<table class="rr-faixa-tabela">';
+    tab += '<tr class="rr-faixa-tabela-head"><td class="col-nivel">Nível</td>';
+    ordem.forEach(function(k){
+      tab += '<td class="col-num">' + escapeHtmlAuto(meta[k] ? meta[k].nome : k) + '</td>';
+    });
+    tab += '</tr>';
+
+    const refK = ordem[0];
+    const refFaixas = (fs[refK] || []).slice().reverse();
+    refFaixas.forEach(function(fRef){
+      tab += '<tr class="rr-faixa-tabela-body"><td class="col-nivel">' + escapeHtmlAuto(fRef.rotulo) + '</td>';
+      ordem.forEach(function(k){
+        const fSub = (fs[k] || []).find(function(x){ return x.rotulo === fRef.rotulo; });
+        const txt = fSub ? (fSub.min + '-' + (fSub.max >= 99 ? '+' : fSub.max)) : '—';
+        tab += '<td class="col-num">' + escapeHtmlAuto(txt) + '</td>';
+      });
+      tab += '</tr>';
+    });
+    tab += '</table>';
+
+    return '<div class="rr-card">' +
+             '<h3>📊 Sobre a faixa de classificação</h3>' +
+             '<ul><li class="rr-faixa-tabela-wrapper">' + tab + '</li></ul>' +
+           '</div>';
+  }
+
+  // Escore único: lista
+  if (!def.faixasLista || !def.faixasLista.length) return '';
+  let itens = '';
+  def.faixasLista.forEach(function(linha){
+    itens += '<li>' + linha + '</li>';
+  });
+  return '<div class="rr-card">' +
+           '<h3>📊 Sobre a faixa de classificação</h3>' +
+           '<ul>' + itens + '</ul>' +
+         '</div>';
+}
+
+// --- Impacto funcional ---
+function escRrBlocoImpactoFuncional(def, reg) {
+  if (!def || !def.itemFuncional) return '';
+
+  const textoFunc = String(reg.item_funcional_texto || '').trim();
+  if (!textoFunc) {
+    // Ainda mostra o bloco com uma nota discreta quando o paciente não respondeu
+    return '<div class="rr-card">' +
+             '<h3>🎯 Impacto funcional</h3>' +
+             '<div class="rr-card-funcional">' +
+               '<em>Você não respondeu o item sobre impacto funcional. Esse item é opcional, mas ajuda seu terapeuta a entender melhor o cenário.</em>' +
+             '</div>' +
+           '</div>';
+  }
+
+  return '<div class="rr-card">' +
+           '<h3>🎯 Impacto funcional</h3>' +
+           '<div class="rr-card-funcional">' +
+             '<strong>' + escapeHtmlAuto(textoFunc) + '</strong> — Você indicou que os problemas dessas últimas semanas tornaram <strong>' +
+             escapeHtmlAuto(textoFunc.toLowerCase()) + '</strong> realizar trabalho, cuidar das tarefas de casa ou se relacionar com pessoas. Este é um dado importante que o terapeuta levará em conta.' +
+           '</div>' +
+         '</div>';
+}
+
+// --- Botão "Minhas respostas" ---
+// Usa uma chave temporária em window.RR_RESPOSTAS_CACHE para evitar passar
+// objetos JS em atributos onclick. Quando o paciente clica no botão,
+// rrAbrirSubmodalRespostas(chave) lê o registro do cache e monta o HTML.
+function escRrBotaoRespostas(cod, def, reg, modo) {
+  if (!def || !def.itens || !def.itens.length) return '';
+
+  // Guarda a referência num cache global (simples) com chave única
+  if (!window.RR_RESPOSTAS_CACHE) window.RR_RESPOSTAS_CACHE = {};
+  const chave = 'k_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+  window.RR_RESPOSTAS_CACHE[chave] = { cod: cod, reg: reg, modo: modo };
+
+  const total = def.itens.length + (def.itemFuncional ? 1 : 0);
+  return '<button class="rr-respostas-btn" type="button" onclick="rrAbrirSubmodalRespostas(\'' + chave + '\')">' +
+           '<span class="rr-respostas-btn-ico">📝</span>' +
+           '<span class="rr-respostas-btn-lbl">Ver minhas respostas</span>' +
+           '<span class="rr-respostas-btn-total">' + total + ' itens</span>' +
+           '<span class="rr-respostas-btn-seta">›</span>' +
+         '</button>';
+}
+
+// --- Tempo de preenchimento ---
+function escRrBlocoTempo(reg) {
+  const tempo = Number(reg.tempo_preenchimento_seg);
+  if (isNaN(tempo) || tempo <= 0) return '';
+
+  const min = Math.floor(tempo / 60);
+  const seg = tempo % 60;
+  const txt = (min >= 1) ? (min + ' min ' + seg + ' s') : (seg + ' s');
+
+  return '<div class="rr-tempo">⏱️ <strong>Tempo de preenchimento:</strong> ' + escapeHtmlAuto(txt) + '</div>';
+}
+
+// --- Lembrete (disclaimer) ---
+function escRrBlocoLembrete() {
+  return '<div class="rr-lembrete">' +
+    '⚠️ <strong>Lembrete:</strong> Este resultado é uma medida de rastreamento e ferramenta de apoio ao acompanhamento psicoterapêutico. Ele não substitui uma avaliação clínica e requer a validação do seu psicólogo(a).' +
+  '</div>';
+}
+
+// ============================================================
+// Contexto longitudinal: "Esta é sua Nª aplicação, última há X dias"
+// Lê de ESC_HIST_STATE (se já carregado) ou retorna null silenciosamente.
+// ============================================================
+function escCalcularContextoLongitudinal(codigo, regAtual) {
+  try {
+    // Tenta ler do cache do histórico (já populado pela tela "Meu Histórico")
+    const lista = (window.ESC_HIST_STATE && ESC_HIST_STATE.registros) ? ESC_HIST_STATE.registros : [];
+    // Filtra a mesma escala
+    const mesmaEscala = lista.filter(function(r){
+      return String(r.instrumento || '') === codigo;
+    });
+
+    // Adiciona (ou não) a aplicação atual ao contexto
+    // No modo tela imediata, a atual ainda não está no cache (foi invalidado);
+    // no modo histórico, já está. Usamos heurística: se regAtual tem timestamp
+    // muito recente (< 10s), consideramos que é a atual que acabou de ser salva.
+    let ordinal = mesmaEscala.length;
+    // Se ainda não apareceu no cache, contamos a atual também
+    const agora = Date.now();
+    const regAtualMs = regAtual.timestamp ? (new Date(regAtual.timestamp)).getTime() : agora;
+    const isNova = (agora - regAtualMs) < 10000; // < 10s
+    const jaEstaNaLista = mesmaEscala.some(function(r){
+      return r.timestamp && Math.abs((new Date(r.timestamp)).getTime() - regAtualMs) < 5000;
+    });
+
+    if (isNova && !jaEstaNaLista) ordinal = mesmaEscala.length + 1;
+
+    if (ordinal < 2) return null; // primeira aplicação, sem contexto
+
+    // Encontra a aplicação imediatamente anterior (diferente da atual)
+    const anteriores = mesmaEscala
+      .map(function(r){
+        const t = r.timestamp ? (new Date(r.timestamp)).getTime() : 0;
+        return { reg: r, t: t };
+      })
+      .filter(function(x){ return x.t > 0 && Math.abs(x.t - regAtualMs) > 5000 && x.t < regAtualMs; })
+      .sort(function(a, b){ return b.t - a.t; });
+
+    if (!anteriores.length) {
+      // Fallback: contamos pela lista mesmo, mas sem "há X dias"
+      return {
+        ordinalTexto: 'Esta é sua <strong>' + escOrdinalTexto(ordinal) + ' aplicação</strong> desta escala.',
+        total: ordinal
+      };
+    }
+
+    const msDia = 24 * 60 * 60 * 1000;
+    const difDias = Math.floor((regAtualMs - anteriores[0].t) / msDia);
+    let textoTempo;
+    if (difDias === 0) {
+      textoTempo = 'A última foi <strong>hoje</strong>.';
+    } else if (difDias === 1) {
+      textoTempo = 'A última foi <strong>ontem</strong>.';
+    } else {
+      textoTempo = 'A última foi <strong>há ' + difDias + ' dias</strong>.';
+    }
+
+    return {
+      ordinalTexto: 'Esta é sua <strong>' + escOrdinalTexto(ordinal) + ' aplicação</strong>. ' + textoTempo,
+      total: ordinal
+    };
+  } catch (e) {
+    console.warn('[12.7.2] Erro ao calcular contexto longitudinal:', e);
+    return null;
+  }
+}
+
+function escOrdinalTexto(n) {
+  if (n === 1) return '1ª';
+  if (n === 2) return '2ª';
+  if (n === 3) return '3ª';
+  return n + 'ª';
+}
+
+// ============================================================
+// SUB-MODAL "Minhas respostas" (Pacote 12.7.2)
+// ============================================================
+function rrAbrirSubmodalRespostas(chave) {
+  const cache = window.RR_RESPOSTAS_CACHE && window.RR_RESPOSTAS_CACHE[chave];
+  if (!cache) {
+    console.warn('[12.7.2] Cache de respostas não encontrado:', chave);
+    return;
+  }
+  const cod = cache.cod;
+  const def = ESC_ESCALAS[cod];
+  const reg = cache.reg;
+
+  const titulo = document.getElementById('rrSubmodalTitulo');
+  const body = document.getElementById('rrSubmodalBody');
+  const overlay = document.getElementById('rrSubmodalRespostas');
+  if (!titulo || !body || !overlay) return;
+
+  titulo.innerHTML = '📝 Minhas respostas · ' + escapeHtmlAuto(cod);
+
+  // Intro didática
+  const totalItens = def.itens.length + (def.itemFuncional ? 1 : 0);
+  const introHtml = '<div class="rr-submodal-intro">' +
+    'Lista completa das respostas desta aplicação (' + totalItens + ' ' + (totalItens === 1 ? 'item' : 'itens') + '). ' +
+    'Itens marcados em vermelho indicam atenção clínica.' +
+  '</div>';
+
+  body.innerHTML = introHtml + rrRenderRespostasItens(cod, def, reg);
+  overlay.classList.add('show');
+}
+
+function rrFecharSubmodalRespostas() {
+  const overlay = document.getElementById('rrSubmodalRespostas');
+  if (overlay) overlay.classList.remove('show');
+}
+
+// Fechar com ESC
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') {
+    const overlay = document.getElementById('rrSubmodalRespostas');
+    if (overlay && overlay.classList.contains('show')) rrFecharSubmodalRespostas();
+  }
+});
+
+// Renderiza os itens dentro do sub-modal
+function rrRenderRespostasItens(cod, def, reg) {
+  if (!def || !def.itens) return '';
+
+  let html = '';
+  def.itens.forEach(function(item){
+    const col = 'item_' + String(item.id).padStart(2, '0');
+    const valor = reg[col];
+    const temValor = !(valor === '' || valor === null || valor === undefined);
+
+    let rotulo = '—';
+    let complemento = '';
+    if (temValor) {
+      if (def.dicotomica) {
+        rotulo = (Number(valor) === 1) ? 'Sim' : 'Não';
+      } else if (def.opcoes && def.opcoes.length) {
+        const op = def.opcoes.find(function(x){ return Number(x.valor) === Number(valor); });
+        if (op) {
+          rotulo = op.label;
+          complemento = ' (' + valor + ')';
+        } else {
+          rotulo = String(valor);
+        }
+      } else {
+        rotulo = String(valor);
+      }
+    }
+
+    const isCritico = !!item.critico;
+    const classeCrit = isCritico ? ' critico' : '';
+
+    let notaHtml = '';
+    if (isCritico) {
+      notaHtml = '<div class="rr-item-nota-critica">⚠️ Este item foi marcado como ponto de atenção — veja detalhes na caixa vermelha do topo.</div>';
+    }
+
+    html += '<div class="rr-item' + classeCrit + '">';
+    html +=   '<span class="rr-item-num">' + item.id + '</span>';
+    html +=   '<div class="rr-item-texto">' + escapeHtmlAuto(item.texto || '');
+    html +=     '<div class="rr-item-resposta">Resposta: <strong>' + escapeHtmlAuto(rotulo) + '</strong>' + escapeHtmlAuto(complemento) + '</div>';
+    html +=     notaHtml;
+    html +=   '</div>';
+    html += '</div>';
+  });
+
+  // Item funcional ao final (se houver)
+  if (def.itemFuncional) {
+    const textoFunc = String(reg.item_funcional_texto || '').trim();
+    html += '<div class="rr-item">';
+    html +=   '<span class="rr-item-num">F</span>';
+    html +=   '<div class="rr-item-texto">' + escapeHtmlAuto(def.itemFuncional.texto || 'Item funcional');
+    if (textoFunc) {
+      html += '<div class="rr-item-resposta">Resposta: <strong>' + escapeHtmlAuto(textoFunc) + '</strong></div>';
+    } else {
+      html += '<div class="rr-item-resposta"><em>Não respondido</em></div>';
+    }
+    html +=   '</div>';
+    html += '</div>';
+  }
+
+  return html;
+}
+
+/* Fim das funções do renderer unificado (Pacote 12.7.2) */
 
 // ============================================================
 // UTILITÁRIOS
@@ -13911,118 +14988,122 @@ document.addEventListener('keydown', function(e){
 
 // ============================================================
 // Monta o HTML interno do modal a partir do registro salvo
+// Pacote 12.7.2: delegado para o renderer unificado.
 // ============================================================
 function escHistMontarHtmlDetalhe(cod, def, reg) {
-  const dh = escHistFormatarDataHoraHtml(reg);
-
-  let html = '';
-
-  // 1) Box de data/hora
-  const textoDataHora = dh.data + (dh.hora ? ', ' + dh.hora : '');
-  html += '<div class="eschm-header-box">' +
-            '<div class="eschm-data">📅 Aplicado em ' + escapeHtmlAuto(textoDataHora) + '</div>' +
-          '</div>';
-
-  // 2) Escore (único ou DASS-21 com 3 subescalas)
-  if (cod === 'DASS-21') {
-    const d = reg.escore_depressao;
-    const a = reg.escore_ansiedade;
-    const e = reg.escore_estresse;
-
-    const corD = escHistCorSubFaixa('depressao', d);
-    const corA = escHistCorSubFaixa('ansiedade', a);
-    const corE = escHistCorSubFaixa('estresse',  e);
-    const rotD = escHistRotuloSubFaixa('depressao', d);
-    const rotA = escHistRotuloSubFaixa('ansiedade', a);
-    const rotE = escHistRotuloSubFaixa('estresse',  e);
-
-    html += '<div class="eschm-sub-grid">';
-    html +=   '<div class="eschm-sub-box dep">' +
-                '<div class="eschm-sub-nome">Depressão</div>' +
-                '<div class="eschm-sub-escore">' + escapeHtmlAuto(String(d !== '' && d !== null && d !== undefined ? d : '—')) + '</div>' +
-                (rotD ? '<div class="eschm-sub-faixa esch-faixa ' + corD + '">' + escapeHtmlAuto(rotD) + '</div>' : '') +
-              '</div>';
-    html +=   '<div class="eschm-sub-box ans">' +
-                '<div class="eschm-sub-nome">Ansiedade</div>' +
-                '<div class="eschm-sub-escore">' + escapeHtmlAuto(String(a !== '' && a !== null && a !== undefined ? a : '—')) + '</div>' +
-                (rotA ? '<div class="eschm-sub-faixa esch-faixa ' + corA + '">' + escapeHtmlAuto(rotA) + '</div>' : '') +
-              '</div>';
-    html +=   '<div class="eschm-sub-box est">' +
-                '<div class="eschm-sub-nome">Estresse</div>' +
-                '<div class="eschm-sub-escore">' + escapeHtmlAuto(String(e !== '' && e !== null && e !== undefined ? e : '—')) + '</div>' +
-                (rotE ? '<div class="eschm-sub-faixa esch-faixa ' + corE + '">' + escapeHtmlAuto(rotE) + '</div>' : '') +
-              '</div>';
-    html += '</div>';
-  } else {
-    const escore = (reg.escore_total !== '' && reg.escore_total !== null && reg.escore_total !== undefined)
-                  ? reg.escore_total : '—';
-    const escoreMax = def && def.escoreMax ? ('/' + def.escoreMax) : '';
-    const faixaRotulo = String(reg.faixa || '');
-    const faixaCor = escHistCorDaFaixa(cod, faixaRotulo, escore);
-
-    html += '<div class="eschm-escore-box">' +
-              '<div>' +
-                '<span class="eschm-escore-num">' + escapeHtmlAuto(String(escore)) + '</span>' +
-                '<span class="eschm-escore-max">' + escapeHtmlAuto(escoreMax) + '</span>' +
-              '</div>' +
-              (faixaRotulo ? '<div class="eschm-faixa-grande esch-faixa ' + faixaCor + '">' + escapeHtmlAuto(faixaRotulo) + '</div>' : '') +
-            '</div>';
-  }
-
-  // 3) Alerta de risco (se houver)
-  if (String(reg.alerta_risco_flag || '').toUpperCase() === 'SIM') {
-    html += escHistBlocoAlertaRisco(cod, def, reg);
-  }
-
-  // 4) Accordion "Minhas respostas" (fechado por padrão)
-  if (def && def.itens && def.itens.length) {
-    html += '<div class="eschm-accordion">';
-    html +=   '<div class="eschm-accordion-head" onclick="escHistToggleAccordion(this)">';
-    html +=     '📝 Minhas respostas';
-    html +=     '<span class="eschm-accordion-chevron">›</span>';
-    html +=   '</div>';
-    html +=   '<div class="eschm-accordion-corpo">';
-    html +=     escHistRenderRespostas(cod, def, reg);
-    html +=   '</div>';
-    html += '</div>';
-  }
-
-  // 5) Impacto funcional
-  const textoFunc = String(reg.item_funcional_texto || '').trim();
-  if (def && def.itemFuncional && textoFunc) {
-    html += '<div class="eschm-funcional">' +
-              '<div class="eschm-funcional-titulo">Impacto funcional</div>' +
-              '<div class="eschm-funcional-texto">Você indicou <strong>' + escapeHtmlAuto(textoFunc) + '</strong> para realizar trabalho, cuidar das tarefas de casa ou se relacionar com pessoas.</div>' +
-            '</div>';
-  }
-
-  // 6) Rodapé — observações + tempo de preenchimento (só se existirem)
-  const obs = String(reg.observacoes || '').trim();
-  const tempo = Number(reg.tempo_preenchimento_seg);
-  const temTempo = !isNaN(tempo) && tempo > 0;
-  if (obs || temTempo) {
-    html += '<div class="eschm-footer">';
-    if (obs) {
-      html += '<div class="eschm-footer-linha">📝 <strong>Observações:</strong> ' + escapeHtmlAuto(obs) + '</div>';
-    }
-    if (temTempo) {
-      const min = Math.floor(tempo / 60);
-      const seg = tempo % 60;
-      let tempoTxt;
-      if (min >= 1) {
-        tempoTxt = min + ' min ' + seg + ' s';
-      } else {
-        tempoTxt = seg + ' s';
-      }
-      html += '<div class="eschm-footer-linha">⏱️ <strong>Tempo de preenchimento:</strong> ' + tempoTxt + '</div>';
-    }
-    html += '</div>';
-  }
-
-  return html;
+  // Calcula contexto longitudinal (quantas aplicações, última há X dias)
+  const contexto = escCalcularContextoLongitudinal(cod, reg);
+  // Usa o mesmo renderer da tela imediata, só muda o modo.
+  return escRenderizarConteudoResultado(reg, def, 'historico', contexto);
 }
 
-// Bloco de alerta de risco didático (contextualiza item crítico)
+// ============================================================
+// PACOTE 12.7.1 — Blocos educativos "O que isso significa?"
+//                 e "Sobre a faixa de classificação"
+// Reusam o visual .esc-result-card da tela imediata para harmonia.
+// ============================================================
+
+// Encontra a faixa (do registro) para escalas de escore único
+function escHistEncontrarFaixa(cod, def, reg) {
+  if (!def || !def.faixas) return null;
+  const rotulo = String(reg.faixa || '');
+  // Estratégia 1: pelo rótulo textual salvo
+  if (rotulo) {
+    const f = def.faixas.find(function(x){ return x.rotulo === rotulo; });
+    if (f) return f;
+  }
+  // Estratégia 2: pelo escore numérico
+  const num = Number(reg.escore_total);
+  if (!isNaN(num)) {
+    const f = def.faixas.find(function(x){ return num >= x.min && num <= x.max; });
+    if (f) return f;
+  }
+  return null;
+}
+
+function escHistBlocoOQueSignifica(cod, def, reg) {
+  if (!def) return '';
+
+  // DASS-21: texto educativo genérico (não varia por faixa — muitas combinações)
+  if (cod === 'DASS-21') {
+    const titulo = def.eduGeralTitulo || '🧠 O que isso significa?';
+    const desc = def.eduGeralDesc || '';
+    const sug  = def.eduGeralSugestao || '';
+    if (!desc && !sug) return '';
+    return '<div class="esc-result-card">' +
+             '<h3>' + titulo + '</h3>' +
+             (desc ? '<p>' + desc + '</p>' : '') +
+             (sug  ? '<p>' + sug  + '</p>' : '') +
+           '</div>';
+  }
+
+  // Escalas de escore único: texto varia por faixa
+  const f = escHistEncontrarFaixa(cod, def, reg);
+  if (!f) return '';
+  const titulo = f.titulo || '🧠 O que isso significa?';
+  const desc = f.descricao || '';
+  const sug  = f.sugestao || '';
+  if (!desc && !sug) return '';
+  return '<div class="esc-result-card">' +
+           '<h3>' + titulo + '</h3>' +
+           (desc ? '<p>' + desc + '</p>' : '') +
+           (sug  ? '<p>' + sug  + '</p>' : '') +
+         '</div>';
+}
+
+function escHistBlocoSobreFaixa(cod, def, reg) {
+  if (!def) return '';
+
+  // DASS-21: tabela comparativa das 3 subescalas (mesmo visual da tela imediata)
+  if (cod === 'DASS-21') {
+    const meta = def.subescalasMeta || {};
+    const fs = def.faixasSubescalas || {};
+    const ordem = Object.keys(meta).length ? Object.keys(meta) : Object.keys(fs);
+    if (!ordem.length) return '';
+
+    let tabelaHtml = '<li style="list-style:none;margin-left:-20px;"><table style="width:100%;border-collapse:collapse;font-size:12.5px;">';
+    tabelaHtml += '<tr style="font-weight:700;background:var(--gray-bg);"><td style="padding:6px 8px;">Nível</td>';
+    ordem.forEach(function(k){
+      tabelaHtml += '<td style="padding:6px 8px;text-align:center;">' + escapeHtmlAuto(meta[k] ? meta[k].nome : k) + '</td>';
+    });
+    tabelaHtml += '</tr>';
+
+    const refK = ordem[0];
+    const refFaixas = (fs[refK] || []).slice().reverse(); // do menor ao maior
+    refFaixas.forEach(function(fRef){
+      tabelaHtml += '<tr style="border-top:1px solid var(--gray-lt);"><td style="padding:6px 8px;font-weight:700;">' + escapeHtmlAuto(fRef.rotulo) + '</td>';
+      ordem.forEach(function(k){
+        const fSub = (fs[k] || []).find(function(x){ return x.rotulo === fRef.rotulo; });
+        const txt = fSub ? (fSub.min + '-' + (fSub.max >= 99 ? '+' : fSub.max)) : '—';
+        tabelaHtml += '<td style="padding:6px 8px;text-align:center;">' + escapeHtmlAuto(txt) + '</td>';
+      });
+      tabelaHtml += '</tr>';
+    });
+    tabelaHtml += '</table></li>';
+
+    return '<div class="esc-result-card">' +
+             '<h3>📊 Sobre a faixa de classificação</h3>' +
+             '<ul>' + tabelaHtml + '</ul>' +
+           '</div>';
+  }
+
+  // Escalas de escore único: lista simples das faixas
+  if (!def.faixasLista || !def.faixasLista.length) return '';
+  let itens = '';
+  def.faixasLista.forEach(function(linha){
+    itens += '<li>' + linha + '</li>';
+  });
+  return '<div class="esc-result-card">' +
+           '<h3>📊 Sobre a faixa de classificação</h3>' +
+           '<ul>' + itens + '</ul>' +
+         '</div>';
+}
+
+// ============================================================
+// Bloco de alerta compacto do modal do histórico
+// Pacote 12.7.1: mesmo layout visual da tela imediata (grid 2 cols)
+// com contextualização do item crítico no topo.
+// ============================================================
 function escHistBlocoAlertaRisco(cod, def, reg) {
   const itemKey = String(reg.alerta_risco_item || '');
   const valor = reg.alerta_risco_valor;
@@ -14046,18 +15127,40 @@ function escHistBlocoAlertaRisco(cod, def, reg) {
     valorTxt = String(valor || '');
   }
 
-  let corpo = '<strong>Ponto de atenção nesta aplicação.</strong>';
+  // Contextualização (só no modal do histórico, não na tela imediata)
+  let contexto = '';
   if (itemTexto) {
-    corpo += '<br>Neste dia você marcou <strong>' + escapeHtmlAuto(valorTxt || 'uma resposta de atenção') + '</strong> no item: <em>"' + escapeHtmlAuto(itemTexto) + '"</em>.';
-  } else {
-    corpo += '<br>Neste dia você marcou uma resposta que sinaliza atenção clínica.';
+    contexto = '<div class="eschm-alerta-contexto">' +
+                 'Neste dia você marcou <strong>' + escapeHtmlAuto(valorTxt || 'uma resposta de atenção') +
+                 '</strong> no item: <em>"' + escapeHtmlAuto(itemTexto) + '"</em>.' +
+               '</div>';
   }
-  corpo += '<br><br>Se esses pensamentos ou sensações voltarem, fale com seu terapeuta o quanto antes. Em momentos de crise, o <strong>CVV</strong> atende 24h pelo telefone <strong>188</strong>.';
 
-  return '<div class="eschm-alerta">' +
-           '<span class="eschm-alerta-icon">🚨</span>' +
-           '<div class="eschm-alerta-texto">' + corpo + '</div>' +
-         '</div>';
+  // Rodapé: texto adaptado ao contexto temporal (consulta retrospectiva).
+  // Mantém a mesma estrutura de linguagem da tela imediata (apoio antes,
+  // pessoa de confiança, te acolher) — apenas o verbo muda para o presente.
+  const textoTerapeuta = 'Se esses pensamentos ou sensações estiverem voltando, fale com seu psicólogo(a) o quanto antes ou procure alguém de confiança que possa te acolher neste momento.';
+
+  return '<div class="eschm-alerta-wrapper">' +
+    '<div class="esc-alerta-tela" style="display:block;">' +
+      '<h2>💙 Você não está sozinho(a)</h2>' +
+      '<p>Percebemos que você indicou ter tido pensamentos difíceis. <strong>Existe ajuda disponível agora</strong>, 24h por dia, gratuita e com sigilo.</p>' +
+      contexto +
+      '<div class="esc-alerta-tela-contatos-grid">' +
+        '<div class="esc-alerta-tela-contato">' +
+          '<div class="esc-alerta-tela-contato-titulo">☎️ CVV</div>' +
+          '<div class="esc-alerta-tela-contato-desc">Apoio emocional · 24h · Gratuito</div>' +
+          '<span class="esc-alerta-tela-contato-numero">188</span>' +
+        '</div>' +
+        '<div class="esc-alerta-tela-contato">' +
+          '<div class="esc-alerta-tela-contato-titulo">🚑 SAMU</div>' +
+          '<div class="esc-alerta-tela-contato-desc">Emergência médica · 24h · Gratuito</div>' +
+          '<span class="esc-alerta-tela-contato-numero">192</span>' +
+        '</div>' +
+      '</div>' +
+      '<p>' + textoTerapeuta + '</p>' +
+    '</div>' +
+  '</div>';
 }
 
 // Renderiza respostas item a item do registro
