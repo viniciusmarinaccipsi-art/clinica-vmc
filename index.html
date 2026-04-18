@@ -14,6 +14,9 @@
   --coral:#E07A6B; --coral-bg:#FFF5F3;
   --green:#6BBF8A; --green-bg:#F2FBF5;
   --amber:#D4A843; --amber-bg:#FFFBF0;
+  --orange:#E08A3C; --orange-bg:#FFF0E0;
+  --purple:#8B6FB8; --purple-bg:#F5F1FA;
+  --teal:#3A8C8C; --teal-bg:#E8F3F3;
   --red:#D94444; --red-bg:#FEF2F2;
   --gray:#7A8D9C; --gray-bg:#F5F7F9; --gray-lt:#E8ECF0;
   --txt:#2D3748; --txt-m:#4A5568; --txt-l:#718096;
@@ -2004,11 +2007,13 @@ body{
 .esc-card-arrow{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:20px;color:var(--gray-lt);transition:all .2s;}
 .esc-card:hover:not(:disabled):not(.locked) .esc-card-arrow{right:10px;color:var(--txt-l);}
 
-.esc-card.blue{border-color:var(--blue-lt);}.esc-card.blue .esc-card-title{color:var(--blue);}
+.esc-card.blue{border-color:#BFD5DF;}.esc-card.blue .esc-card-title{color:var(--blue);}
 .esc-card.coral{border-color:#F5D0CA;}.esc-card.coral .esc-card-title{color:var(--coral);}
 .esc-card.green{border-color:#D0EDDA;}.esc-card.green .esc-card-title{color:var(--green);}
 .esc-card.amber{border-color:#F0E0A8;}.esc-card.amber .esc-card-title{color:var(--amber);}
+.esc-card.orange{border-color:#F5CDA8;}.esc-card.orange .esc-card-title{color:var(--orange);}
 .esc-card.purple{border-color:#D9CEEA;}.esc-card.purple .esc-card-title{color:var(--purple);}
+.esc-card.teal{border-color:#A8CFCF;}.esc-card.teal .esc-card-title{color:var(--teal);}
 .esc-card.gray{border-color:var(--gray-lt);}.esc-card.gray .esc-card-title{color:var(--gray);}
 
 .esc-card-badge{
@@ -2228,6 +2233,466 @@ body{
   .esc-opcao-num { font-size: 14px; }
   .esc-item-texto { font-size: 13.5px; }
   .esc-result-escore { font-size: 42px; }
+}
+
+/* Tintura dinâmica por escala (Pacote 12.3 em diante)
+   Aplicada pelo JS em escIniciarAplicacao. Controla borda do cabeçalho,
+   cor da barra de progresso, bolinha do número do item, botão primário
+   e estado selecionado das opções. */
+.esc-tint-amber .esc-aplic-head { border-left-color: var(--amber); }
+.esc-tint-amber .esc-aplic-head h2 { color: var(--amber); }
+.esc-tint-amber .esc-aplic-head .esc-enunciado { background: var(--amber-bg); }
+.esc-tint-amber .esc-aplic-barra-fill { background: var(--amber); }
+.esc-tint-amber .esc-item-num { background: var(--amber); }
+.esc-tint-amber .esc-opcao:hover { border-color: var(--amber); background: var(--amber-bg); }
+.esc-tint-amber .esc-opcao.selecionada { background: var(--amber); color: white; border-color: var(--amber); box-shadow: 0 2px 8px rgba(212,168,67,.3); }
+.esc-tint-amber .esc-btn-primary { background: var(--amber); }
+.esc-tint-amber .esc-btn-primary:hover { background: #BF962F; }
+/* Itens funcionais mantêm azul mesmo com tintura ativa */
+.esc-tint-amber .esc-item-funcional .esc-item-num { background: var(--blue); }
+.esc-tint-amber .esc-item-funcional .esc-opcao:hover { border-color: var(--blue); background: var(--blue-lt); }
+.esc-tint-amber .esc-item-funcional .esc-opcao.selecionada { background: var(--blue); color: white; border-color: var(--blue); box-shadow: 0 2px 8px rgba(44,95,124,.25); }
+
+.esc-tint-green .esc-aplic-head { border-left-color: var(--green); }
+.esc-tint-green .esc-aplic-head h2 { color: var(--green); }
+.esc-tint-green .esc-aplic-head .esc-enunciado { background: var(--green-bg); }
+.esc-tint-green .esc-aplic-barra-fill { background: var(--green); }
+.esc-tint-green .esc-item-num { background: var(--green); }
+.esc-tint-green .esc-opcao:hover { border-color: var(--green); background: var(--green-bg); }
+.esc-tint-green .esc-opcao.selecionada { background: var(--green); color: white; border-color: var(--green); box-shadow: 0 2px 8px rgba(107,191,138,.3); }
+.esc-tint-green .esc-btn-primary { background: var(--green); }
+.esc-tint-green .esc-btn-primary:hover { background: #5BAD7B; }
+.esc-tint-green .esc-item-funcional .esc-item-num { background: var(--blue); }
+.esc-tint-green .esc-item-funcional .esc-opcao:hover { border-color: var(--blue); background: var(--blue-lt); }
+.esc-tint-green .esc-item-funcional .esc-opcao.selecionada { background: var(--blue); color: white; border-color: var(--blue); box-shadow: 0 2px 8px rgba(44,95,124,.25); }
+
+.esc-tint-purple .esc-aplic-head { border-left-color: var(--purple); }
+.esc-tint-purple .esc-aplic-head h2 { color: var(--purple); }
+.esc-tint-purple .esc-aplic-head .esc-enunciado { background: var(--purple-bg); }
+.esc-tint-purple .esc-aplic-barra-fill { background: var(--purple); }
+.esc-tint-purple .esc-item-num { background: var(--purple); }
+.esc-tint-purple .esc-opcao:hover { border-color: var(--purple); background: var(--purple-bg); }
+.esc-tint-purple .esc-opcao.selecionada { background: var(--purple); border-color: var(--purple); box-shadow: 0 2px 8px rgba(139,111,184,.3); }
+.esc-tint-purple .esc-btn-primary { background: var(--purple); }
+.esc-tint-purple .esc-btn-primary:hover { background: #755AA0; }
+.esc-tint-purple .esc-item-funcional .esc-item-num { background: var(--blue); }
+.esc-tint-purple .esc-item-funcional .esc-opcao:hover { border-color: var(--blue); background: var(--blue-lt); }
+.esc-tint-purple .esc-item-funcional .esc-opcao.selecionada { background: var(--blue); border-color: var(--blue); box-shadow: 0 2px 8px rgba(44,95,124,.25); }
+
+.esc-tint-gray .esc-aplic-head { border-left-color: var(--gray); }
+.esc-tint-gray .esc-aplic-head h2 { color: var(--gray); }
+.esc-tint-gray .esc-aplic-head .esc-enunciado { background: var(--gray-bg); }
+.esc-tint-gray .esc-aplic-barra-fill { background: var(--gray); }
+.esc-tint-gray .esc-item-num { background: var(--gray); }
+.esc-tint-gray .esc-opcao:hover { border-color: var(--gray); background: var(--gray-bg); }
+.esc-tint-gray .esc-opcao.selecionada { background: var(--gray); color: white; border-color: var(--gray); box-shadow: 0 2px 8px rgba(122,141,156,.3); }
+.esc-tint-gray .esc-btn-primary { background: var(--gray); }
+.esc-tint-gray .esc-btn-primary:hover { background: #637483; }
+.esc-tint-gray .esc-item-funcional .esc-item-num { background: var(--blue); }
+.esc-tint-gray .esc-item-funcional .esc-opcao:hover { border-color: var(--blue); background: var(--blue-lt); }
+.esc-tint-gray .esc-item-funcional .esc-opcao.selecionada { background: var(--blue); border-color: var(--blue); box-shadow: 0 2px 8px rgba(44,95,124,.25); }
+
+.esc-tint-orange .esc-aplic-head { border-left-color: var(--orange); }
+.esc-tint-orange .esc-aplic-head h2 { color: var(--orange); }
+.esc-tint-orange .esc-aplic-head .esc-enunciado { background: var(--orange-bg); }
+.esc-tint-orange .esc-aplic-barra-fill { background: var(--orange); }
+.esc-tint-orange .esc-item-num { background: var(--orange); }
+.esc-tint-orange .esc-opcao:hover { border-color: var(--orange); background: var(--orange-bg); }
+.esc-tint-orange .esc-opcao.selecionada { background: var(--orange); color: white; border-color: var(--orange); box-shadow: 0 2px 8px rgba(224,138,60,.3); }
+.esc-tint-orange .esc-btn-primary { background: var(--orange); }
+.esc-tint-orange .esc-btn-primary:hover { background: #C5762B; }
+.esc-tint-orange .esc-btn-primary:disabled { background: transparent; color: var(--orange); border: 2px solid var(--orange); }
+.esc-tint-orange .esc-item-funcional .esc-item-num { background: var(--blue); }
+.esc-tint-orange .esc-item-funcional .esc-opcao:hover { border-color: var(--blue); background: var(--blue-lt); }
+.esc-tint-orange .esc-item-funcional .esc-opcao.selecionada { background: var(--blue); color: white; border-color: var(--blue); box-shadow: 0 2px 8px rgba(44,95,124,.25); }
+
+.esc-tint-blue .esc-aplic-head { border-left-color: var(--blue); }
+.esc-tint-blue .esc-aplic-head h2 { color: var(--blue); }
+.esc-tint-blue .esc-aplic-head .esc-enunciado { background: var(--blue-lt); }
+.esc-tint-blue .esc-aplic-barra-fill { background: var(--blue); }
+.esc-tint-blue .esc-item-num { background: var(--blue); }
+.esc-tint-blue .esc-opcao:hover { border-color: var(--blue); background: var(--blue-lt); }
+.esc-tint-blue .esc-opcao.selecionada { background: var(--blue); color: white; border-color: var(--blue); box-shadow: 0 2px 8px rgba(44,95,124,.3); }
+.esc-tint-blue .esc-btn-primary { background: var(--blue); }
+.esc-tint-blue .esc-btn-primary:hover { background: #21485E; }
+.esc-tint-blue .esc-btn-primary:disabled { background: transparent; color: var(--blue); border: 2px solid var(--blue); }
+/* SRQ-20 não tem item funcional, mas mantemos a regra por consistência caso seja criado futuramente */
+
+.esc-tint-teal .esc-aplic-head { border-left-color: var(--teal); }
+.esc-tint-teal .esc-aplic-head h2 { color: var(--teal); }
+.esc-tint-teal .esc-aplic-head .esc-enunciado { background: var(--teal-bg); }
+.esc-tint-teal .esc-aplic-barra-fill { background: var(--teal); }
+.esc-tint-teal .esc-item-num { background: var(--teal); }
+.esc-tint-teal .esc-opcao:hover { border-color: var(--teal); background: var(--teal-bg); }
+.esc-tint-teal .esc-opcao.selecionada { background: var(--teal); color: white; border-color: var(--teal); box-shadow: 0 2px 8px rgba(58,140,140,.3); }
+.esc-tint-teal .esc-btn-primary { background: var(--teal); }
+.esc-tint-teal .esc-btn-primary:hover { background: #2D6E6E; }
+.esc-tint-teal .esc-btn-primary:disabled { background: transparent; color: var(--teal); border: 2px solid var(--teal); }
+.esc-tint-teal .esc-item-funcional .esc-item-num { background: var(--blue); }
+.esc-tint-teal .esc-item-funcional .esc-opcao:hover { border-color: var(--blue); background: var(--blue-lt); }
+.esc-tint-teal .esc-item-funcional .esc-opcao.selecionada { background: var(--blue); color: white; border-color: var(--blue); box-shadow: 0 2px 8px rgba(44,95,124,.25); }
+
+/* ===== Padrão unificado do botão primário da escala =====
+   Antes de preencher (disabled): só contorno da cor da escala, fundo branco
+   Depois de preencher (enabled): botão cheio na cor da escala
+   Cada tintura sobrescreve a cor. O estilo base desabilitado vale para coral (PHQ-9 / padrão). */
+.esc-btn-primary:disabled { background: transparent; color: var(--coral); border: 2px solid var(--coral); cursor: not-allowed; transform: none; opacity: 0.7; }
+.esc-tint-coral .esc-btn-primary:disabled  { background: transparent; color: var(--coral);  border: 2px solid var(--coral); }
+.esc-tint-amber .esc-btn-primary:disabled  { background: transparent; color: var(--amber);  border: 2px solid var(--amber); }
+.esc-tint-green .esc-btn-primary:disabled  { background: transparent; color: var(--green);  border: 2px solid var(--green); }
+.esc-tint-purple .esc-btn-primary:disabled { background: transparent; color: var(--purple); border: 2px solid var(--purple); }
+.esc-tint-gray .esc-btn-primary:disabled   { background: transparent; color: var(--gray);   border: 2px solid var(--gray); }
+.esc-tint-teal .esc-btn-primary:disabled   { background: transparent; color: var(--teal);   border: 2px solid var(--teal); }
+
+/* Boxes de subescalas (Pacote 12.5 / DASS-21)
+   Um grid de 3 cards compactos com escore e faixa por subescala. */
+#escResultSubescalasConteudo {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 6px;
+}
+.esc-sub-box {
+  background: var(--gray-bg);
+  border-radius: var(--rs);
+  padding: 12px 8px;
+  text-align: center;
+  border: 2px solid var(--gray-lt);
+}
+.esc-sub-box.esc-sub-coral  { border-color: #F5D0CA; background: var(--coral-bg); }
+.esc-sub-box.esc-sub-amber  { border-color: #F0E0A8; background: var(--amber-bg); }
+.esc-sub-box.esc-sub-green  { border-color: #D0EDDA; background: var(--green-bg); }
+.esc-sub-head {
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  margin-bottom: 4px;
+}
+.esc-sub-icone { font-size: 18px; }
+.esc-sub-nome {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 13px; font-weight: 700; color: var(--txt-m);
+}
+.esc-sub-escore {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 32px; font-weight: 700; line-height: 1;
+  color: var(--txt); margin: 6px 0;
+}
+.esc-sub-faixa {
+  font-size: 11.5px;
+  padding: 3px 10px;
+}
+/* Faixas específicas dos boxes de subescalas (fundo claro, texto escuro)
+   — diferente da .esc-result-faixa que aparece sobre gradient azul no cabeçalho */
+.esc-sub-faixa.verde    { background: var(--green-bg); color: #2D7A4A; }
+.esc-sub-faixa.amarelo  { background: var(--amber-bg); color: #8B6914; }
+.esc-sub-faixa.laranja  { background: #FFE8E0;        color: #B74A36; }
+.esc-sub-faixa.vermelho { background: var(--red-bg);   color: var(--red); }
+
+/* Pacote 12.6 — Formato dicotômico (SRQ-20)
+   Botões Sim/Não maiores, ocupando cada um a metade da largura,
+   sem o número pequeno em cima (que faz sentido para Likert mas não para binário). */
+.esc-item-opcoes-dicotomica {
+  gap: 10px;
+}
+.esc-opcao-dicotomica {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 16px !important;
+  font-weight: 700;
+  padding: 16px 14px !important;
+  min-height: 54px;
+}
+
+@media (max-width: 520px) {
+  #escResultSubescalasConteudo { gap: 6px; }
+  .esc-sub-box { padding: 10px 4px; }
+  .esc-sub-escore { font-size: 26px; }
+  .esc-sub-faixa { font-size: 10.5px; padding: 2px 6px; }
+  .esc-sub-nome { font-size: 11.5px; }
+  .esc-opcao-dicotomica { font-size: 15px !important; padding: 14px 10px !important; min-height: 48px; }
+}
+
+/* ============================================================
+   PACOTE 12.7 (Fase 1) — Histórico de Escalas
+   Lista de aplicações agrupadas por escala + modal de detalhes.
+   Reusa paleta de escalas (.esc-card.*) e modal .p11-m* (maior).
+   Prefixo: .esch-* (bloco/lista) | .eschm-* (conteúdo do modal)
+   ============================================================ */
+
+/* Cabeçalho da seção */
+.esch-head { margin: 4px 0 14px 0; }
+.esch-titulo {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 20px; font-weight: 700; color: var(--blue);
+  margin: 0 0 4px 0; display: flex; align-items: center; gap: 8px;
+}
+.esch-subtitulo { font-size: 13px; color: var(--gray); line-height: 1.45; margin: 0; }
+
+/* Estado vazio */
+.esch-vazio {
+  background: var(--blue-lt); border-radius: 14px;
+  padding: 28px 20px; text-align: center; color: var(--blue);
+}
+.esch-vazio-icon { font-size: 38px; display: block; margin-bottom: 8px; }
+.esch-vazio-titulo {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 16px; font-weight: 700; margin-bottom: 4px;
+}
+.esch-vazio-texto { font-size: 13px; line-height: 1.5; }
+
+/* Loading */
+.esch-loading { text-align: center; padding: 40px 20px; color: var(--gray); font-size: 14px; }
+.esch-spin {
+  width: 32px; height: 32px;
+  border: 3px solid var(--gray-lt); border-top-color: var(--blue);
+  border-radius: 50%; animation: esch-spin-anim 0.8s linear infinite;
+  margin: 0 auto 10px;
+}
+@keyframes esch-spin-anim { to { transform: rotate(360deg); } }
+
+/* Bloco colapsável por escala */
+.esch-bloco {
+  background: white; border: 1.5px solid var(--gray-lt);
+  border-radius: 14px; margin-bottom: 12px; overflow: hidden;
+  transition: border-color 0.15s;
+}
+.esch-bloco.aberto { border-color: var(--gray); }
+.esch-bloco.coral  { border-left: 5px solid var(--coral); }
+.esch-bloco.amber  { border-left: 5px solid var(--amber); }
+.esch-bloco.orange { border-left: 5px solid var(--orange); }
+.esch-bloco.purple { border-left: 5px solid var(--purple); }
+.esch-bloco.teal   { border-left: 5px solid var(--teal); }
+
+.esch-bloco-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px; cursor: pointer; user-select: none;
+  background: white; transition: background 0.15s;
+}
+.esch-bloco-head:hover { background: var(--gray-bg); }
+.esch-bloco-icone { font-size: 22px; }
+.esch-bloco-titulo {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 15px; font-weight: 700; flex: 1;
+}
+.esch-bloco.coral  .esch-bloco-titulo { color: var(--coral); }
+.esch-bloco.amber  .esch-bloco-titulo { color: #A8842F; }
+.esch-bloco.orange .esch-bloco-titulo { color: var(--orange); }
+.esch-bloco.purple .esch-bloco-titulo { color: var(--purple); }
+.esch-bloco.teal   .esch-bloco-titulo { color: var(--teal); }
+
+.esch-bloco-contagem {
+  font-size: 12px; font-weight: 600; color: var(--gray);
+  background: var(--gray-bg); padding: 3px 10px; border-radius: 20px;
+}
+.esch-bloco-chevron {
+  font-size: 18px; color: var(--gray); transition: transform 0.2s;
+}
+.esch-bloco.aberto .esch-bloco-chevron { transform: rotate(90deg); }
+
+.esch-bloco-corpo {
+  display: none; padding: 4px 16px 16px 16px;
+  border-top: 1px solid var(--gray-lt);
+}
+.esch-bloco.aberto .esch-bloco-corpo { display: block; }
+
+/* Lista de aplicações */
+.esch-aplic {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 2px; border-bottom: 1px solid var(--gray-lt);
+}
+.esch-aplic:last-child { border-bottom: none; }
+
+.esch-aplic-data { flex: 1 1 auto; min-width: 0; }
+.esch-aplic-data-principal {
+  font-size: 13.5px; font-weight: 600; color: #2A3A45; line-height: 1.3;
+}
+.esch-aplic-data-hora { font-size: 11.5px; color: var(--gray); margin-top: 2px; }
+
+.esch-aplic-escore { flex: 0 0 auto; text-align: right; padding: 0 6px; }
+.esch-aplic-escore-num {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 18px; font-weight: 700; color: #2A3A45; line-height: 1;
+}
+.esch-aplic-escore-max { font-size: 11px; color: var(--gray); margin-left: 2px; }
+.esch-aplic-faixa {
+  font-size: 10.5px; font-weight: 700; padding: 2px 7px;
+  border-radius: 10px; margin-top: 4px; display: inline-block;
+}
+
+/* DASS-21: 3 escores lado a lado */
+.esch-aplic-tris { flex: 0 0 auto; display: flex; gap: 6px; padding: 0 6px; }
+.esch-aplic-tri {
+  text-align: center; min-width: 42px; padding: 4px 6px;
+  border-radius: 8px; background: var(--gray-bg);
+}
+.esch-aplic-tri-nome {
+  font-size: 9.5px; font-weight: 700; color: var(--gray);
+  text-transform: uppercase; letter-spacing: 0.3px;
+}
+.esch-aplic-tri-val {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 15px; font-weight: 700; color: #2A3A45;
+}
+.esch-aplic-tri.dep { background: var(--coral-bg); }
+.esch-aplic-tri.dep .esch-aplic-tri-val { color: var(--coral); }
+.esch-aplic-tri.ans { background: var(--amber-bg); }
+.esch-aplic-tri.ans .esch-aplic-tri-val { color: #A8842F; }
+.esch-aplic-tri.est { background: var(--green-bg); }
+.esch-aplic-tri.est .esch-aplic-tri-val { color: var(--green); }
+
+/* Botão lupa */
+.esch-aplic-lupa {
+  flex: 0 0 auto; width: 36px; height: 36px;
+  border: 1.5px solid var(--gray-lt); background: white;
+  border-radius: 10px; cursor: pointer; font-size: 16px;
+  transition: all 0.15s;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.esch-aplic-lupa:hover {
+  border-color: var(--blue); background: var(--blue-lt); transform: scale(1.05);
+}
+
+/* Marcador de risco (pontinho vermelho) */
+.esch-aplic-flag-risco {
+  display: inline-block; width: 8px; height: 8px;
+  background: var(--red); border-radius: 50%;
+  margin-right: 5px; vertical-align: middle;
+  box-shadow: 0 0 0 2px var(--red-bg);
+}
+
+/* Classes de cor da faixa (usadas na lista e no modal) */
+.esch-faixa.verde    { background: #E0F3E7; color: #2C7A47; }
+.esch-faixa.amarelo  { background: #FFF5D6; color: #8A6A1A; }
+.esch-faixa.laranja  { background: #FFE1CC; color: #9A4A18; }
+.esch-faixa.vermelho { background: #FEE2E2; color: #991B1B; }
+.esch-faixa.cinza    { background: var(--gray-lt); color: var(--gray); }
+
+/* ------------------------------------------------------------
+   MODAL DE DETALHES (usa casco .p11-mov/.p11-mbox, conteúdo próprio)
+   ------------------------------------------------------------ */
+.eschm-header-box {
+  text-align: center; padding: 14px 12px;
+  background: var(--blue-lt); border-radius: 12px; margin-bottom: 14px;
+}
+.eschm-data { font-size: 13px; color: var(--blue); font-weight: 600; }
+
+.eschm-escore-box {
+  text-align: center; padding: 18px 12px;
+  border: 2px solid var(--gray-lt); border-radius: 14px; margin-bottom: 14px;
+}
+.eschm-escore-num {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 44px; font-weight: 700; color: #2A3A45; line-height: 1;
+}
+.eschm-escore-max { font-size: 18px; color: var(--gray); margin-left: 4px; }
+.eschm-faixa-grande {
+  display: inline-block; font-size: 13px; font-weight: 700;
+  padding: 4px 12px; border-radius: 12px; margin-top: 10px;
+}
+
+/* DASS-21 no modal: 3 boxes */
+.eschm-sub-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 8px; margin-bottom: 14px;
+}
+.eschm-sub-box {
+  padding: 12px 8px; border-radius: 12px;
+  text-align: center; border: 1.5px solid var(--gray-lt);
+}
+.eschm-sub-box.dep { background: var(--coral-bg); border-color: #F5D0CA; }
+.eschm-sub-box.ans { background: var(--amber-bg); border-color: #F0E0A8; }
+.eschm-sub-box.est { background: var(--green-bg); border-color: #D0EDDA; }
+.eschm-sub-nome {
+  font-size: 11.5px; font-weight: 700; color: var(--gray);
+  text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px;
+}
+.eschm-sub-escore {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 28px; font-weight: 700; line-height: 1;
+}
+.eschm-sub-box.dep .eschm-sub-escore { color: var(--coral); }
+.eschm-sub-box.ans .eschm-sub-escore { color: #A8842F; }
+.eschm-sub-box.est .eschm-sub-escore { color: var(--green); }
+.eschm-sub-faixa {
+  font-size: 10.5px; font-weight: 700; margin-top: 6px;
+  padding: 2px 6px; border-radius: 8px; display: inline-block;
+}
+
+/* Alerta de risco */
+.eschm-alerta {
+  background: var(--red-bg); border: 1.5px solid #FCA5A5;
+  border-radius: 12px; padding: 14px 14px; margin-bottom: 14px;
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.eschm-alerta-icon { font-size: 22px; line-height: 1.2; }
+.eschm-alerta-texto { font-size: 13px; color: #7F1D1D; line-height: 1.5; }
+.eschm-alerta-texto strong { color: #991B1B; }
+
+/* Accordion "Minhas respostas" */
+.eschm-accordion {
+  border: 1.5px solid var(--gray-lt); border-radius: 12px;
+  margin-bottom: 12px; overflow: hidden;
+}
+.eschm-accordion-head {
+  padding: 12px 14px; cursor: pointer; user-select: none;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--gray-bg); font-size: 13.5px;
+  font-weight: 700; color: #2A3A45;
+}
+.eschm-accordion-head:hover { background: var(--gray-lt); }
+.eschm-accordion-chevron {
+  margin-left: auto; font-size: 16px;
+  color: var(--gray); transition: transform 0.2s;
+}
+.eschm-accordion.aberto .eschm-accordion-chevron { transform: rotate(90deg); }
+.eschm-accordion-corpo { display: none; padding: 4px 14px 12px 14px; }
+.eschm-accordion.aberto .eschm-accordion-corpo { display: block; }
+
+.eschm-item {
+  padding: 10px 2px; border-bottom: 1px solid var(--gray-lt);
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.eschm-item:last-child { border-bottom: none; }
+.eschm-item-num {
+  flex: 0 0 auto; width: 24px; height: 24px;
+  border-radius: 6px; background: var(--gray-bg);
+  color: var(--gray); font-weight: 700; font-size: 11.5px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.eschm-item.critico .eschm-item-num { background: var(--red); color: white; }
+.eschm-item-texto { flex: 1; font-size: 12.5px; line-height: 1.4; color: #2A3A45; }
+.eschm-item-resposta { margin-top: 4px; font-size: 11.5px; color: var(--gray); }
+.eschm-item-resposta strong { color: #2A3A45; }
+
+/* Impacto Funcional */
+.eschm-funcional {
+  background: var(--blue-lt); border-radius: 12px;
+  padding: 12px 14px; margin-bottom: 12px;
+}
+.eschm-funcional-titulo {
+  font-size: 12px; font-weight: 700; color: var(--blue);
+  text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px;
+}
+.eschm-funcional-texto { font-size: 13px; color: #2A3A45; line-height: 1.5; }
+
+/* Rodapé: observações e tempo */
+.eschm-footer {
+  padding: 10px 12px; background: var(--gray-bg); border-radius: 10px;
+  font-size: 11.5px; color: var(--gray); line-height: 1.5;
+}
+.eschm-footer-linha { margin: 2px 0; }
+.eschm-footer strong { color: #2A3A45; font-weight: 600; }
+
+/* Responsivo */
+@media (max-width: 540px) {
+  .esch-aplic { flex-wrap: wrap; gap: 8px; }
+  .esch-aplic-data { flex-basis: 100%; }
+  .esch-aplic-escore { order: 2; }
+  .esch-aplic-tris { order: 2; margin-left: auto; }
+  .esch-aplic-lupa { order: 3; margin-left: auto; }
+  .esch-aplic-tri { min-width: 38px; }
+  .eschm-sub-grid { grid-template-columns: repeat(3, 1fr); gap: 4px; }
+  .eschm-sub-box { padding: 10px 4px; }
+  .eschm-sub-escore { font-size: 22px; }
+  .eschm-escore-num { font-size: 36px; }
 }
 
 </style>
@@ -6670,53 +7135,84 @@ body{
         <span class="esc-card-arrow">›</span>
       </button>
 
-      <button class="esc-card amber" disabled>
+      <button class="esc-card amber" id="escCardGAD7" type="button" onclick="escClicarCardEscala('GAD-7')">
         <span class="esc-card-icon">😰</span>
         <div class="esc-card-title">GAD-7 — Ansiedade Generalizada</div>
         <div class="esc-card-desc">Avalia sintomas de ansiedade das últimas 2 semanas</div>
         <div class="esc-card-meta">
           <span>7 itens</span><span>2-3 min</span><span>Últimos 15 dias</span>
         </div>
-        <span class="esc-card-badge soon">Em breve</span>
+        <span class="esc-card-arrow">›</span>
       </button>
 
-      <button class="esc-card purple" disabled>
-        <span class="esc-card-icon">🤯</span>
-        <div class="esc-card-title">DASS-21 — Depressão, Ansiedade e Estresse</div>
-        <div class="esc-card-desc">Visão ampla em três subescalas (última semana)</div>
-        <div class="esc-card-meta">
-          <span>21 itens</span><span>5-7 min</span><span>Última semana</span>
-        </div>
-        <span class="esc-card-badge soon">Em breve</span>
-      </button>
-
-      <button class="esc-card green" disabled>
+      <button class="esc-card orange" id="escCardPSS10" type="button" onclick="escClicarCardEscala('PSS-10')">
         <span class="esc-card-icon">😤</span>
         <div class="esc-card-title">PSS-10 — Estresse Percebido</div>
         <div class="esc-card-desc">Percepção subjetiva de estresse no último mês</div>
         <div class="esc-card-meta">
           <span>10 itens</span><span>3-5 min</span><span>Último mês</span>
         </div>
-        <span class="esc-card-badge soon">Em breve</span>
+        <span class="esc-card-arrow">›</span>
       </button>
 
-      <button class="esc-card gray" disabled>
+      <button class="esc-card purple" id="escCardDASS21" type="button" onclick="escClicarCardEscala('DASS-21')">
+        <span class="esc-card-icon">🤯</span>
+        <div class="esc-card-title">DASS-21 — Depressão, Ansiedade e Estresse</div>
+        <div class="esc-card-desc">Visão ampla em três subescalas (última semana)</div>
+        <div class="esc-card-meta">
+          <span>21 itens</span><span>5-7 min</span><span>Última semana</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card teal" id="escCardSRQ20" type="button" onclick="escClicarCardEscala('SRQ-20')">
         <span class="esc-card-icon">🤔</span>
         <div class="esc-card-title">SRQ-20 — Rastreamento Geral</div>
         <div class="esc-card-desc">Rastreamento de transtornos mentais comuns</div>
         <div class="esc-card-meta">
           <span>20 itens</span><span>5 min</span><span>Últimos 30 dias</span>
         </div>
-        <span class="esc-card-badge soon">Em breve</span>
+        <span class="esc-card-arrow">›</span>
       </button>
 
-      <button class="esc-card blue" disabled style="margin-top:8px;">
+      <!-- PACOTE 12.7 (Fase 1): card destravado -->
+      <button class="esc-card blue" type="button" style="margin-top:8px;" onclick="escAbrirHistorico()">
         <span class="esc-card-icon">📈</span>
         <div class="esc-card-title">Meu Histórico de Escalas</div>
-        <div class="esc-card-desc">Resultados anteriores e gráfico de evolução ao longo do tempo</div>
-        <span class="esc-card-badge soon">Pacote 12.3</span>
+        <div class="esc-card-desc">Veja suas aplicações anteriores e consulte os detalhes de cada resultado</div>
+        <span class="esc-card-arrow">›</span>
       </button>
 
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- PACOTE 12.7 (Fase 1) — TELA DO HISTÓRICO DE ESCALAS           -->
+  <!-- ============================================================ -->
+  <div class="section" id="sec-escalas-historico">
+    <div class="nav-bar">
+      <button class="btn-back" onclick="abrirSecao('sec-escalas')">← Voltar</button>
+      <span class="nav-title">Meu Histórico de Escalas</span>
+    </div>
+
+    <div class="esch-head">
+      <h2 class="esch-titulo">📈 Meu Histórico de Escalas</h2>
+      <p class="esch-subtitulo">Todas as aplicações que você já fez, agrupadas por escala. Toque no 🔍 para ver os detalhes de cada resultado.</p>
+    </div>
+
+    <div id="eschConteudo"></div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- PACOTE 12.7 (Fase 1) — MODAL DE DETALHES DA APLICAÇÃO         -->
+  <!-- ============================================================ -->
+  <div class="p11-mov" id="eschModalDetalhe" onclick="if(event.target===this)escHistFecharDetalhe()">
+    <div class="p11-mbox">
+      <div class="p11-mhead">
+        <h3 class="p11-mtitle" id="eschModalTitulo">🔍 Detalhes da aplicação</h3>
+        <button class="p11-mclose" type="button" onclick="escHistFecharDetalhe()" aria-label="Fechar">×</button>
+      </div>
+      <div class="p11-mbody" id="eschModalConteudo"></div>
     </div>
   </div>
 
@@ -12223,8 +12719,245 @@ const ESC_ESCALAS = {
       '<strong>15-19</strong> — Depressão moderadamente grave',
       '<strong>20-27</strong> — Depressão grave'
     ]
+  },
+
+  'GAD-7': {
+    nomeCompleto: 'GAD-7 — Ansiedade Generalizada',
+    emoji: '😰',
+    corPrefix: 'amber',
+    enunciado: 'Durante as últimas 2 semanas, com que frequência você foi incomodado(a) pelos problemas abaixo?',
+    subtitulo: '7 itens · 2 a 3 minutos · Pensando nas <strong>últimas 2 semanas</strong>',
+    escoreMax: 21,
+    opcoes: [
+      { valor: 0, label: 'Nenhuma vez' },
+      { valor: 1, label: 'Vários dias' },
+      { valor: 2, label: 'Mais da metade dos dias' },
+      { valor: 3, label: 'Quase todos os dias' }
+    ],
+    itens: [
+      { id: 1, texto: 'Sentir-se nervoso(a), ansioso(a) ou muito tenso(a)' },
+      { id: 2, texto: 'Não ser capaz de impedir ou de controlar as preocupações' },
+      { id: 3, texto: 'Preocupar-se muito com diversas coisas' },
+      { id: 4, texto: 'Dificuldade para relaxar' },
+      { id: 5, texto: 'Ficar tão agitado(a) que se torna difícil permanecer sentado(a)' },
+      { id: 6, texto: 'Ficar facilmente aborrecido(a) ou irritado(a)' },
+      { id: 7, texto: 'Sentir medo como se algo horrível fosse acontecer' }
+    ],
+    itemFuncional: {
+      texto: 'Se você marcou algum problema, quão difícil esses problemas tornaram para você fazer seu trabalho, cuidar das tarefas de casa ou se relacionar com outras pessoas?',
+      opcoes: [
+        'Nem um pouco difícil',
+        'Um pouco difícil',
+        'Muito difícil',
+        'Extremamente difícil'
+      ]
+    },
+    faixas: [
+      { min: 15, max: 21, rotulo: 'Ansiedade grave', cor: 'vermelho',
+        titulo: '🔴 O que isso significa?',
+        descricao: 'Seu escore indica <strong>sintomas de ansiedade graves</strong> nas últimas 2 semanas. Este nível de sofrimento interfere significativamente no dia a dia e merece atenção imediata.',
+        sugestao: 'Entre em contato com seu terapeuta o quanto antes. Ele vai avaliar com você os próximos passos — que podem incluir intensificação do acompanhamento e, se pertinente, avaliação médica complementar.' },
+      { min: 10, max: 14, rotulo: 'Ansiedade moderada', cor: 'laranja',
+        titulo: '🟠 O que isso significa?',
+        descricao: 'Seu escore indica <strong>sintomas de ansiedade moderados</strong> nas últimas 2 semanas. Este é um sinal importante de que vale a pena discutir com seu terapeuta estratégias específicas para lidar com a ansiedade.',
+        sugestao: 'Traga este resultado para sua próxima sessão. Use também o Registro de Automonitoramento para mapear situações-gatilho, pensamentos ansiosos e reações físicas que você vem observando.' },
+      { min: 5, max: 9, rotulo: 'Ansiedade leve', cor: 'amarelo',
+        titulo: '🟡 O que isso significa?',
+        descricao: 'Seu escore indica <strong>sintomas de ansiedade leves</strong> nas últimas 2 semanas. Ansiedade em algum grau é parte da experiência humana — o que importa é o quanto ela interfere na sua vida.',
+        sugestao: 'Converse com seu terapeuta sobre o que você tem notado. Técnicas de manejo da ansiedade (respiração, grounding, reestruturação cognitiva) podem ser úteis neste momento.' },
+      { min: 0, max: 4, rotulo: 'Ansiedade mínima', cor: 'verde',
+        titulo: '🟢 O que isso significa?',
+        descricao: 'Seu escore indica <strong>ansiedade mínima</strong> nas últimas 2 semanas. Você tem conseguido lidar bem com as demandas desse período.',
+        sugestao: 'Continue com os cuidados de rotina e, se notar mudanças, converse com seu terapeuta. O Registro de Automonitoramento pode te ajudar a mapear o que está funcionando bem.' }
+    ],
+    faixasLista: [
+      '<strong>0-4</strong> — Ansiedade mínima',
+      '<strong>5-9</strong> — Ansiedade leve',
+      '<strong>10-14</strong> — Ansiedade moderada',
+      '<strong>15-21</strong> — Ansiedade grave'
+    ]
+  },
+
+  'PSS-10': {
+    nomeCompleto: 'PSS-10 — Estresse Percebido',
+    emoji: '😤',
+    corPrefix: 'orange',
+    enunciado: 'As perguntas a seguir se referem aos seus sentimentos e pensamentos durante o último mês. Em cada caso, indique com que frequência você se sentiu ou pensou de determinada maneira.',
+    subtitulo: '10 itens · 3 a 5 minutos · Pensando no <strong>último mês</strong>',
+    escoreMax: 40,
+    opcoes: [
+      { valor: 0, label: 'Nunca' },
+      { valor: 1, label: 'Quase nunca' },
+      { valor: 2, label: 'Às vezes' },
+      { valor: 3, label: 'Quase sempre' },
+      { valor: 4, label: 'Sempre' }
+    ],
+    itens: [
+      { id: 1,  texto: 'Com que frequência você tem ficado triste por causa de algo que aconteceu inesperadamente?' },
+      { id: 2,  texto: 'Com que frequência você tem se sentido incapaz de controlar as coisas importantes em sua vida?' },
+      { id: 3,  texto: 'Com que frequência você tem se sentido nervoso(a) e "estressado(a)"?' },
+      { id: 4,  texto: 'Com que frequência você tem se sentido confiante na sua habilidade de resolver problemas pessoais?', reverso: true },
+      { id: 5,  texto: 'Com que frequência você tem sentido que as coisas estão acontecendo de acordo com a sua vontade?', reverso: true },
+      { id: 6,  texto: 'Com que frequência você tem achado que não conseguiria lidar com todas as coisas que você tem que fazer?' },
+      { id: 7,  texto: 'Com que frequência você tem sido capaz de controlar as irritações em sua vida?', reverso: true },
+      { id: 8,  texto: 'Com que frequência você tem sentido que está com tudo sob controle?', reverso: true },
+      { id: 9,  texto: 'Com que frequência você tem ficado irritado(a) porque as coisas que aconteceram estavam fora do seu controle?' },
+      { id: 10, texto: 'Com que frequência você tem sentido que as dificuldades se acumularam a ponto de você acreditar que não poderia superá-las?' }
+    ],
+    // PSS-10 não tem item funcional
+    faixas: [
+      { min: 27, max: 40, rotulo: 'Estresse alto', cor: 'vermelho',
+        titulo: '🔴 O que isso significa?',
+        descricao: 'Seu escore indica <strong>estresse percebido alto</strong> no último mês. Isso sugere que você tem sentido dificuldade importante em lidar com as demandas e imprevistos da sua vida.',
+        sugestao: 'Traga este resultado para sua próxima sessão. Seu terapeuta pode ajudar a mapear os principais focos de estresse e desenvolver estratégias específicas de enfrentamento. Cuidados básicos como sono, alimentação e pausas costumam estar desregulados nesse nível — vale observar.' },
+      { min: 14, max: 26, rotulo: 'Estresse moderado', cor: 'amarelo',
+        titulo: '🟡 O que isso significa?',
+        descricao: 'Seu escore indica <strong>estresse percebido moderado</strong> no último mês. Este é um nível comum, especialmente em períodos de sobrecarga, mas vale atenção para que não evolua.',
+        sugestao: 'Use o Registro de Automonitoramento para identificar situações-gatilho e estratégias que estão (ou não) funcionando. Converse com seu terapeuta sobre como distribuir demandas e preservar momentos de recuperação.' },
+      { min: 0, max: 13, rotulo: 'Estresse baixo', cor: 'verde',
+        titulo: '🟢 O que isso significa?',
+        descricao: 'Seu escore indica <strong>estresse percebido baixo</strong> no último mês. Você tem conseguido manejar bem as demandas desse período.',
+        sugestao: 'Continue observando o que tem funcionado bem — quais rotinas, apoios e estratégias. Acompanhar esses fatores ajuda a manter o equilíbrio mesmo em períodos mais exigentes.' }
+    ],
+    faixasLista: [
+      '<strong>0-13</strong> — Estresse baixo',
+      '<strong>14-26</strong> — Estresse moderado',
+      '<strong>27-40</strong> — Estresse alto',
+      '<em style="color:var(--txt-l);">O PSS-10 é uma medida dimensional — o valor do escore importa mais do que a faixa isolada. O acompanhamento ao longo do tempo mostra a direção da sua trajetória.</em>'
+    ]
+  },
+
+  'DASS-21': {
+    nomeCompleto: 'DASS-21 — Depressão, Ansiedade e Estresse',
+    emoji: '🤯',
+    corPrefix: 'purple',
+    enunciado: 'Por favor, leia cuidadosamente cada uma das afirmações abaixo e marque a opção que indique o quanto ela se aplicou a você durante a última semana.',
+    subtitulo: '21 itens · 5 a 7 minutos · Pensando na <strong>última semana</strong>',
+    // DASS-21 não tem escore único — são 3 subescalas reportadas separadamente.
+    // escoreMax fica com o maior valor teórico possível de uma subescala (7 itens × 3 × 2 = 42)
+    // e é usado apenas para o grid de faixas (não aparece como "XX/42" na tela)
+    escoreMax: 42,
+    multiSubescalas: true,
+    opcoes: [
+      { valor: 0, label: 'Não se aplicou' },
+      { valor: 1, label: 'Aplicou-se em algum grau' },
+      { valor: 2, label: 'Aplicou-se em grau considerável' },
+      { valor: 3, label: 'Aplicou-se muito / a maioria do tempo' }
+    ],
+    itens: [
+      { id: 1,  subescala: 'estresse',  texto: 'Achei difícil me acalmar' },
+      { id: 2,  subescala: 'ansiedade', texto: 'Senti minha boca seca' },
+      { id: 3,  subescala: 'depressao', texto: 'Não consegui vivenciar nenhum sentimento positivo' },
+      { id: 4,  subescala: 'ansiedade', texto: 'Tive dificuldade em respirar em alguns momentos (ex: respiração ofegante, falta de ar, sem ter feito nenhum esforço físico)' },
+      { id: 5,  subescala: 'depressao', texto: 'Achei difícil ter iniciativa para fazer as coisas' },
+      { id: 6,  subescala: 'estresse',  texto: 'Tive a tendência de reagir de forma exagerada às situações' },
+      { id: 7,  subescala: 'ansiedade', texto: 'Senti tremores (ex: nas mãos)' },
+      { id: 8,  subescala: 'estresse',  texto: 'Senti que estava sempre nervoso(a)' },
+      { id: 9,  subescala: 'ansiedade', texto: 'Preocupei-me com situações em que eu pudesse entrar em pânico e parecesse ridículo(a)' },
+      { id: 10, subescala: 'depressao', texto: 'Senti que não tinha nada a desejar' },
+      { id: 11, subescala: 'estresse',  texto: 'Senti-me agitado(a)' },
+      { id: 12, subescala: 'estresse',  texto: 'Achei difícil relaxar' },
+      { id: 13, subescala: 'depressao', texto: 'Senti-me depressivo(a) e sem ânimo' },
+      { id: 14, subescala: 'estresse',  texto: 'Fui intolerante com as coisas que me impediam de continuar o que eu estava fazendo' },
+      { id: 15, subescala: 'ansiedade', texto: 'Senti que estava prestes a entrar em pânico' },
+      { id: 16, subescala: 'depressao', texto: 'Não consegui me entusiasmar com nada' },
+      { id: 17, subescala: 'depressao', texto: 'Senti que não tinha valor como pessoa' },
+      { id: 18, subescala: 'estresse',  texto: 'Senti que estava um pouco emotivo(a) / sensível demais' },
+      { id: 19, subescala: 'ansiedade', texto: 'Percebi a ação do meu coração na ausência de esforço físico (ex: aumento da frequência cardíaca, disritmia cardíaca)' },
+      { id: 20, subescala: 'ansiedade', texto: 'Senti medo sem motivo' },
+      // Item 21 é crítico — "vida sem sentido" com resposta ≥ 2 dispara alerta (Vignola & Tucci 2014 / documento supervisor)
+      { id: 21, subescala: 'depressao', texto: 'Senti que a vida não tinha sentido',
+        critico: true, criticoLimiar: 2, itemRiscoKey: 'DASS21_item21' }
+    ],
+    // Faixas por subescala (escore já multiplicado por 2)
+    faixasSubescalas: {
+      depressao: [
+        { min: 28, max: 99, rotulo: 'Extremamente severo', cor: 'vermelho' },
+        { min: 21, max: 27, rotulo: 'Severo',              cor: 'vermelho' },
+        { min: 14, max: 20, rotulo: 'Moderado',            cor: 'laranja'  },
+        { min: 10, max: 13, rotulo: 'Leve',                cor: 'amarelo'  },
+        { min: 0,  max: 9,  rotulo: 'Normal',              cor: 'verde'    }
+      ],
+      ansiedade: [
+        { min: 20, max: 99, rotulo: 'Extremamente severo', cor: 'vermelho' },
+        { min: 15, max: 19, rotulo: 'Severo',              cor: 'vermelho' },
+        { min: 10, max: 14, rotulo: 'Moderado',            cor: 'laranja'  },
+        { min: 8,  max: 9,  rotulo: 'Leve',                cor: 'amarelo'  },
+        { min: 0,  max: 7,  rotulo: 'Normal',              cor: 'verde'    }
+      ],
+      estresse: [
+        { min: 34, max: 99, rotulo: 'Extremamente severo', cor: 'vermelho' },
+        { min: 26, max: 33, rotulo: 'Severo',              cor: 'vermelho' },
+        { min: 19, max: 25, rotulo: 'Moderado',            cor: 'laranja'  },
+        { min: 15, max: 18, rotulo: 'Leve',                cor: 'amarelo'  },
+        { min: 0,  max: 14, rotulo: 'Normal',              cor: 'verde'    }
+      ]
+    },
+    subescalasMeta: {
+      depressao: { nome: 'Depressão', icone: '😔', corPrefix: 'coral' },
+      ansiedade: { nome: 'Ansiedade', icone: '😰', corPrefix: 'amber' },
+      estresse:  { nome: 'Estresse',  icone: '😤', corPrefix: 'green' }
+    },
+    // Texto educativo genérico (não varia por faixa — é muita combinação)
+    eduGeralTitulo: '🧠 O que isso significa?',
+    eduGeralDesc: 'O DASS-21 avalia três dimensões diferentes: sintomas depressivos, sintomas ansiosos e nível de estresse. Cada subescala é interpretada separadamente — é possível, por exemplo, ter estresse alto e depressão normal. Olhar para as três juntas dá um retrato mais completo.',
+    eduGeralSugestao: 'Traga este resultado para sua próxima sessão. Se alguma das três subescalas apareceu em nível moderado ou superior, vale conversar com seu terapeuta sobre estratégias específicas para essa dimensão. Use também o Registro de Automonitoramento para mapear o que está por trás desses sintomas no dia a dia.'
+  },
+
+  'SRQ-20': {
+    nomeCompleto: 'SRQ-20 — Rastreamento Geral',
+    emoji: '🤔',
+    corPrefix: 'teal',
+    enunciado: 'Estas questões são relacionadas a certas dores e problemas que podem ter lhe incomodado nos últimos 30 dias. Se você acha que a questão se aplica a você, responda SIM. Se a questão não se aplica a você, responda NÃO.',
+    subtitulo: '20 itens · cerca de 5 minutos · Pensando nos <strong>últimos 30 dias</strong>',
+    escoreMax: 20,
+    dicotomica: true, // marca que a escala é Sim/Não (Pacote 12.6)
+    opcoes: [
+      { valor: 0, label: 'Não' },
+      { valor: 1, label: 'Sim' }
+    ],
+    itens: [
+      { id: 1,  texto: 'Você tem dores de cabeça frequentes?' },
+      { id: 2,  texto: 'Tem falta de apetite?' },
+      { id: 3,  texto: 'Dorme mal?' },
+      { id: 4,  texto: 'Assusta-se com facilidade?' },
+      { id: 5,  texto: 'Tem tremores nas mãos?' },
+      { id: 6,  texto: 'Sente-se nervoso(a), tenso(a) ou preocupado(a)?' },
+      { id: 7,  texto: 'Tem má digestão?' },
+      { id: 8,  texto: 'Tem dificuldades de pensar com clareza?' },
+      { id: 9,  texto: 'Tem se sentido triste ultimamente?' },
+      { id: 10, texto: 'Tem chorado mais do que de costume?' },
+      { id: 11, texto: 'Encontra dificuldades para realizar com satisfação suas atividades diárias?' },
+      { id: 12, texto: 'Tem dificuldades para tomar decisões?' },
+      { id: 13, texto: 'Tem dificuldades no serviço (seu trabalho é penoso, lhe causa sofrimento)?' },
+      { id: 14, texto: 'É incapaz de desempenhar um papel útil em sua vida?' },
+      { id: 15, texto: 'Tem perdido o interesse pelas coisas?' },
+      { id: 16, texto: 'Você se sente uma pessoa inútil, sem préstimo?' },
+      // Item 17 é crítico — ideação suicida, resposta "Sim" (valor 1) dispara alerta
+      { id: 17, texto: 'Tem tido ideia de acabar com a vida?',
+        critico: true, criticoLimiar: 1, itemRiscoKey: 'SRQ20_item17' },
+      { id: 18, texto: 'Sente-se cansado(a) o tempo todo?' },
+      { id: 19, texto: 'Tem sensações desagradáveis no estômago?' },
+      { id: 20, texto: 'Você se cansa com facilidade?' }
+    ],
+    faixas: [
+      { min: 7, max: 20, rotulo: 'Suspeita de transtorno mental comum', cor: 'laranja',
+        titulo: '🟠 O que isso significa?',
+        descricao: 'Seu escore ficou <strong>acima do ponto de corte</strong> (≥ 7) para rastreamento de transtornos mentais comuns no Brasil. Isso <strong>não é um diagnóstico</strong> — é um sinal de que vale uma avaliação clínica mais detalhada.',
+        sugestao: 'Traga este resultado para sua próxima sessão. Seu terapeuta vai discutir com você o que esses sintomas podem estar indicando e pode encaminhar para avaliação complementar, se pertinente. O SRQ-20 é um instrumento amplo — ele não diz qual é o problema, só que vale investigar melhor.' },
+      { min: 0, max: 6, rotulo: 'Baixa probabilidade de TMC', cor: 'verde',
+        titulo: '🟢 O que isso significa?',
+        descricao: 'Seu escore ficou <strong>abaixo do ponto de corte</strong> (< 7) para rastreamento de transtornos mentais comuns no Brasil. Isso sugere que, no conjunto de sintomas avaliados pelo SRQ-20, você não apresentou sinais marcantes nos últimos 30 dias.',
+        sugestao: 'Continue observando como você está e, se notar mudanças importantes, converse com seu terapeuta. O SRQ-20 é um rastreamento amplo — escores baixos são bons indicadores, mas não substituem o acompanhamento contínuo.' }
+    ],
+    faixasLista: [
+      '<strong>0-6</strong> — Baixa probabilidade de transtorno mental comum',
+      '<strong>≥ 7</strong> — Suspeita de transtorno mental comum (indicação de avaliação diagnóstica)',
+      '<em style="color:var(--txt-l);">Ponto de corte brasileiro validado (Gonçalves, Stein & Kapczinski, 2008) — sensibilidade 86,3%, especificidade 89,3%.</em>'
+    ]
   }
-  // Futuras escalas (GAD-7, DASS-21, PSS-10, SRQ-20) seguirão este padrão
+
+  // Módulo 4 completo com 5 escalas
 };
 
 // ============================================================
@@ -12345,6 +13078,14 @@ function escIniciarAplicacao(codigoEscala) {
   document.getElementById('escAplicarSub').innerHTML = def.subtitulo;
   document.getElementById('escAplicarEnunciado').textContent = def.enunciado;
 
+  // Tintura dinâmica: aplica classe de cor ao container da aplicação
+  // para que a barra de progresso, borda e botões sigam a cor da escala
+  const secAplic = document.getElementById('sec-escalas-aplicar');
+  if (secAplic) {
+    secAplic.classList.remove('esc-tint-coral', 'esc-tint-amber', 'esc-tint-green', 'esc-tint-purple', 'esc-tint-gray', 'esc-tint-orange', 'esc-tint-blue', 'esc-tint-teal');
+    secAplic.classList.add('esc-tint-' + (def.corPrefix || 'coral'));
+  }
+
   // Renderiza itens
   escRenderItens(def);
 
@@ -12361,18 +13102,25 @@ function escRenderItens(def) {
   const cont = document.getElementById('escItens');
   let html = '';
 
+  // Pacote 12.6: formato dicotômico (SRQ-20) usa botões maiores sem número visível
+  const isDicotomica = def.dicotomica === true;
+  const classeBotaoExtra = isDicotomica ? ' esc-opcao-dicotomica' : '';
+
   def.itens.forEach(item => {
     html += '<div class="esc-item" id="escItemBox-' + item.id + '">';
     html += '<div class="esc-item-head">';
     html += '<div class="esc-item-num">' + item.id + '</div>';
     html += '<div class="esc-item-texto">' + escapeHtmlAuto(item.texto) + '</div>';
     html += '</div>';
-    html += '<div class="esc-item-opcoes">';
+    html += '<div class="esc-item-opcoes' + (isDicotomica ? ' esc-item-opcoes-dicotomica' : '') + '">';
     def.opcoes.forEach(o => {
-      html += '<button type="button" class="esc-opcao" ' +
+      html += '<button type="button" class="esc-opcao' + classeBotaoExtra + '" ' +
               'data-item="' + item.id + '" data-valor="' + o.valor + '" ' +
               'onclick="escSelecionarOpcao(' + item.id + ', ' + o.valor + ', ' + (item.critico ? 'true' : 'false') + ')">';
-      html += '<span class="esc-opcao-num">' + o.valor + '</span>';
+      // Escalas Likert mostram o número pequeno em cima do rótulo; dicotômicas só o rótulo
+      if (!isDicotomica) {
+        html += '<span class="esc-opcao-num">' + o.valor + '</span>';
+      }
       html += escapeHtmlAuto(o.label);
       html += '</button>';
     });
@@ -12496,24 +13244,59 @@ function escCalcularEscoreEAlerta(codigoEscala, respostas) {
   let alertaItem = '';
   let alertaValor = '';
 
+  // Valor máximo da escala Likert (ex: PHQ-9 vai 0-3, PSS-10 vai 0-4)
+  // Usado para inverter itens reversos.
+  const escalaMax = (def.opcoes && def.opcoes.length)
+    ? def.opcoes[def.opcoes.length - 1].valor
+    : 3;
+
+  // Pacote 12.5: escalas multi-subescala (DASS-21) acumulam somas separadas
+  const subescalasSomas = {}; // { depressao: 0, ansiedade: 0, estresse: 0 }
+
   def.itens.forEach(item => {
-    const v = parseInt(respostas[item.id]) || 0;
+    const bruto = parseInt(respostas[item.id]) || 0;
+
+    // Se o item é reverso, inverte: 0↔max, 1↔max-1, etc. (Pacote 12.4 / PSS-10)
+    const v = item.reverso ? (escalaMax - bruto) : bruto;
     escoreTotal += v;
 
-    // Detecção de alerta de risco (item crítico)
-    if (item.critico && v >= 1) {
+    // Se o item pertence a uma subescala, acumula separadamente (Pacote 12.5 / DASS-21)
+    if (item.subescala) {
+      subescalasSomas[item.subescala] = (subescalasSomas[item.subescala] || 0) + v;
+    }
+
+    // Detecção de alerta de risco (item crítico) — usa valor BRUTO, não invertido
+    // criticoLimiar permite limiar customizado por item (ex: DASS-21 item 21 = 2)
+    if (item.critico && bruto >= (item.criticoLimiar || 1)) {
       alertaFlag = 'SIM';
       alertaItem = item.itemRiscoKey || ('item_' + item.id);
-      alertaValor = String(v);
+      alertaValor = String(bruto);
     }
   });
 
-  // Encontra faixa de classificação
-  const faixa = def.faixas.find(f => escoreTotal >= f.min && escoreTotal <= f.max) || def.faixas[0];
+  // Para escalas multi-subescala: multiplicar cada soma por 2 (DASS-21 → DASS-42)
+  // e encontrar a faixa de cada uma
+  let subescalas = null;
+  if (def.multiSubescalas && def.faixasSubescalas) {
+    subescalas = {};
+    Object.keys(subescalasSomas).forEach(k => {
+      const escoreSub = subescalasSomas[k] * 2; // DASS-21 → DASS-42
+      const listaFaixas = def.faixasSubescalas[k] || [];
+      const faixaSub = listaFaixas.find(f => escoreSub >= f.min && escoreSub <= f.max) || listaFaixas[listaFaixas.length - 1];
+      subescalas[k] = { escore: escoreSub, faixa: faixaSub };
+    });
+  }
+
+  // Encontra faixa de classificação (só para escalas com escore único)
+  let faixa = null;
+  if (def.faixas && def.faixas.length) {
+    faixa = def.faixas.find(f => escoreTotal >= f.min && escoreTotal <= f.max) || def.faixas[0];
+  }
 
   return {
     escoreTotal: escoreTotal,
     faixa: faixa,
+    subescalas: subescalas,      // null para PHQ-9, GAD-7, PSS-10; objeto para DASS-21
     alertaFlag: alertaFlag,
     alertaItem: alertaItem,
     alertaValor: alertaValor
@@ -12547,10 +13330,18 @@ async function escEnviarEscala() {
       versao_instrumento: ESC_VERSAO_INSTRUMENTO,
       data_aplicacao: escDataHojeISO(),
       escore_total: calc.escoreTotal,
-      escore_depressao: '',   // reservado para DASS-21 futuro
-      escore_ansiedade: '',
-      escore_estresse: '',
-      faixa: calc.faixa.rotulo,
+      // Subescalas do DASS-21 (ou '' para escalas de escore único)
+      escore_depressao: (calc.subescalas && calc.subescalas.depressao) ? calc.subescalas.depressao.escore : '',
+      escore_ansiedade: (calc.subescalas && calc.subescalas.ansiedade) ? calc.subescalas.ansiedade.escore : '',
+      escore_estresse:  (calc.subescalas && calc.subescalas.estresse)  ? calc.subescalas.estresse.escore  : '',
+      // Faixa: escalas de escore único têm faixa textual; DASS-21 grava resumo das 3
+      faixa: calc.faixa
+        ? calc.faixa.rotulo
+        : (calc.subescalas
+            ? ('Dep:' + calc.subescalas.depressao.faixa.rotulo +
+               ' | Ans:' + calc.subescalas.ansiedade.faixa.rotulo +
+               ' | Est:' + calc.subescalas.estresse.faixa.rotulo)
+            : ''),
       alerta_risco_flag: calc.alertaFlag,
       alerta_risco_item: calc.alertaItem,
       alerta_risco_valor: calc.alertaValor,
@@ -12591,6 +13382,11 @@ async function escEnviarEscala() {
     ESC_STATE.temEscalas = true;
     sessionStorage.setItem(ESC_FLAG_COMO_USAR, '1');
 
+    // Pacote 12.7: invalida cache do histórico para refletir a nova aplicação
+    if (typeof escHistInvalidarCache === 'function') {
+      escHistInvalidarCache();
+    }
+
     // Mostra resultado
     escMostrarResultado(codigo, calc, ESC_STATE.respostas);
 
@@ -12612,30 +13408,92 @@ function escMostrarResultado(codigo, calc, respostas) {
   const blocoAlerta = document.getElementById('escBlocoAlertaRisco');
   blocoAlerta.classList.toggle('show', calc.alertaFlag === 'SIM');
 
-  // Cabeçalho
+  // Cabeçalho (título e data são iguais em todas as escalas)
   document.getElementById('escResultTitulo').innerHTML = def.emoji + ' ' + def.nomeCompleto;
   document.getElementById('escResultData').textContent = escFormatarDataBr(new Date());
-  document.getElementById('escResultEscore').textContent = calc.escoreTotal;
-  document.getElementById('escResultEscoreMax').textContent = '/' + def.escoreMax;
 
-  // Faixa com cor
-  const elFaixa = document.getElementById('escResultFaixa');
-  elFaixa.textContent = calc.faixa.rotulo;
-  elFaixa.className = 'esc-result-faixa ' + calc.faixa.cor;
-
-  // Texto educativo por faixa
-  document.getElementById('escResultEduTitulo').innerHTML = calc.faixa.titulo;
-  document.getElementById('escResultEduDesc').innerHTML = calc.faixa.descricao;
-  document.getElementById('escResultEduSugestao').innerHTML = calc.faixa.sugestao;
-
-  // Faixas de classificação
+  const headerEscore = document.querySelector('.esc-result-header .esc-result-escore');
+  const elFaixaUnica = document.getElementById('escResultFaixa');
+  const cardSubescalas = document.getElementById('escResultSubescalas');
+  const subescalasConteudo = document.getElementById('escResultSubescalasConteudo');
   const ulFaixas = document.getElementById('escResultFaixas');
-  ulFaixas.innerHTML = def.faixasLista.map(f => '<li>' + f + '</li>').join('');
 
-  // Subescalas (oculto por enquanto — só DASS-21 futuro)
-  document.getElementById('escResultSubescalas').style.display = 'none';
+  if (calc.subescalas) {
+    // ============ Caminho multi-subescala (DASS-21) ============
+    // Oculta o escore único grande e a faixa única
+    if (headerEscore) headerEscore.style.display = 'none';
+    if (elFaixaUnica) elFaixaUnica.style.display = 'none';
 
-  // Impacto funcional (só se a escala tem item funcional)
+    // Mostra bloco de subescalas com 3 boxes (um por subescala)
+    cardSubescalas.style.display = 'block';
+    const meta = def.subescalasMeta || {};
+    let html = '';
+    // Ordem fixa: depressao, ansiedade, estresse (ou o que estiver definido)
+    const ordem = Object.keys(meta).length ? Object.keys(meta) : Object.keys(calc.subescalas);
+    ordem.forEach(k => {
+      const sub = calc.subescalas[k];
+      if (!sub) return;
+      const m = meta[k] || { nome: k, icone: '', corPrefix: 'gray' };
+      html += '<div class="esc-sub-box esc-sub-' + m.corPrefix + '">';
+      html +=   '<div class="esc-sub-head"><span class="esc-sub-icone">' + m.icone + '</span>';
+      html +=   '<span class="esc-sub-nome">' + m.nome + '</span></div>';
+      html +=   '<div class="esc-sub-escore">' + sub.escore + '</div>';
+      html +=   '<div class="esc-sub-faixa ' + sub.faixa.cor + '">' + sub.faixa.rotulo + '</div>';
+      html += '</div>';
+    });
+    subescalasConteudo.innerHTML = html;
+
+    // Texto educativo geral (não varia por faixa no DASS-21)
+    document.getElementById('escResultEduTitulo').innerHTML = def.eduGeralTitulo || '🧠 O que isso significa?';
+    document.getElementById('escResultEduDesc').innerHTML = def.eduGeralDesc || '';
+    document.getElementById('escResultEduSugestao').innerHTML = def.eduGeralSugestao || '';
+
+    // Lista de faixas — para DASS-21 mostra uma tabela enxuta
+    const fs = def.faixasSubescalas || {};
+    let faixasHtml = '<li style="list-style:none;margin-left:-20px;"><table style="width:100%;border-collapse:collapse;font-size:12.5px;">';
+    faixasHtml += '<tr style="font-weight:700;background:var(--gray-bg);"><td style="padding:6px 8px;">Nível</td>';
+    ordem.forEach(k => {
+      faixasHtml += '<td style="padding:6px 8px;text-align:center;">' + (meta[k] ? meta[k].nome : k) + '</td>';
+    });
+    faixasHtml += '</tr>';
+    // Monta linhas — pega a primeira subescala como referência de rótulos
+    const refK = ordem[0];
+    const refFaixas = (fs[refK] || []).slice().reverse(); // do menor (Normal) ao maior (Extremo)
+    refFaixas.forEach(fRef => {
+      faixasHtml += '<tr style="border-top:1px solid var(--gray-lt);"><td style="padding:6px 8px;font-weight:700;">' + fRef.rotulo + '</td>';
+      ordem.forEach(k => {
+        const fSub = (fs[k] || []).find(x => x.rotulo === fRef.rotulo);
+        const txt = fSub ? (fSub.min + '-' + (fSub.max >= 99 ? '+' : fSub.max)) : '—';
+        faixasHtml += '<td style="padding:6px 8px;text-align:center;">' + txt + '</td>';
+      });
+      faixasHtml += '</tr>';
+    });
+    faixasHtml += '</table></li>';
+    ulFaixas.innerHTML = faixasHtml;
+
+  } else {
+    // ============ Caminho escore único (PHQ-9, GAD-7, PSS-10) ============
+    if (headerEscore) headerEscore.style.display = '';
+    if (elFaixaUnica) elFaixaUnica.style.display = '';
+    cardSubescalas.style.display = 'none';
+
+    document.getElementById('escResultEscore').textContent = calc.escoreTotal;
+    document.getElementById('escResultEscoreMax').textContent = '/' + def.escoreMax;
+
+    // Faixa com cor
+    elFaixaUnica.textContent = calc.faixa.rotulo;
+    elFaixaUnica.className = 'esc-result-faixa ' + calc.faixa.cor;
+
+    // Texto educativo por faixa
+    document.getElementById('escResultEduTitulo').innerHTML = calc.faixa.titulo;
+    document.getElementById('escResultEduDesc').innerHTML = calc.faixa.descricao;
+    document.getElementById('escResultEduSugestao').innerHTML = calc.faixa.sugestao;
+
+    // Lista de faixas
+    ulFaixas.innerHTML = def.faixasLista.map(f => '<li>' + f + '</li>').join('');
+  }
+
+  // Impacto funcional (só se a escala tem item funcional) — comum aos dois caminhos
   const cardFunc = document.getElementById('escResultFuncionalCard');
   const elFunc = document.getElementById('escResultFuncional');
   if (def.itemFuncional) {
@@ -12677,6 +13535,578 @@ function escFormatarDataBr(d) {
 }
 
 /* Fim do Pacote 12.2 (Módulo 4 — Escalas e Inventários) */
+
+
+/* ============================================================
+   PACOTE 12.7 (Fase 1) — Histórico de Escalas
+   Lista agrupada por escala + modal de detalhes da aplicação.
+   Prefixos: esch* (lista/seção) | eschm* (modal)
+   Reusa: chamarServidor, carregarSessao, escapeHtmlAuto,
+          abrirSecao, ESC_ESCALAS (dicionário das 5 escalas),
+          padrão de cache do PEV (30s), modal .p11-mov/.p11-mbox.
+   Backend e planilha: NÃO mudam (lerEscalas já existe).
+   ============================================================ */
+
+// ----- ESTADO (cache de 30s, lista de registros e índice para o modal) -----
+const ESC_HIST_STATE = {
+  registros: [],        // todos os registros carregados (mais recentes primeiro)
+  carregadoEm: 0,
+  cacheTtlMs: 30 * 1000,
+  invalidado: false,
+  abertos: {}           // { 'PHQ-9': true/false, ... } — quais blocos estão abertos
+};
+
+// Ordem fixa dos blocos (casada com a ordem do menu do Módulo 4)
+const ESC_HIST_ORDEM = ['PHQ-9', 'GAD-7', 'PSS-10', 'DASS-21', 'SRQ-20'];
+
+function escHistInvalidarCache() {
+  ESC_HIST_STATE.invalidado = true;
+}
+
+// ============================================================
+// ENTRY POINT: abrir a tela de histórico
+// ============================================================
+async function escAbrirHistorico() {
+  abrirSecao('sec-escalas-historico');
+  await escRenderHistorico();
+}
+
+// ============================================================
+// Renderização principal (com cache 30s estilo PEV)
+// ============================================================
+async function escRenderHistorico() {
+  const cont = document.getElementById('eschConteudo');
+  if (!cont) return;
+
+  const agora = Date.now();
+  const cacheValido = !ESC_HIST_STATE.invalidado
+                      && ESC_HIST_STATE.carregadoEm > 0
+                      && (agora - ESC_HIST_STATE.carregadoEm < ESC_HIST_STATE.cacheTtlMs);
+
+  if (cacheValido) {
+    escHistRenderBlocos(cont, ESC_HIST_STATE.registros);
+    return;
+  }
+
+  // Loading
+  cont.innerHTML = '<div class="esch-loading"><div class="esch-spin"></div>Carregando seu histórico...</div>';
+
+  try {
+    const paciente = carregarSessao();
+    if (!paciente || !paciente.sigla) {
+      cont.innerHTML = '<div class="esch-vazio">' +
+        '<span class="esch-vazio-icon">⚠️</span>' +
+        '<div class="esch-vazio-titulo">Sessão expirada</div>' +
+        '<div class="esch-vazio-texto">Faça login novamente para ver seu histórico.</div>' +
+      '</div>';
+      return;
+    }
+
+    const resp = await chamarServidor('lerEscalas', { sigla: paciente.sigla });
+    if (!resp || !resp.ok) {
+      const msgErro = (resp && resp.erro) ? escapeHtmlAuto(String(resp.erro)) : 'Tente novamente em alguns instantes.';
+      cont.innerHTML = '<div class="esch-vazio">' +
+        '<span class="esch-vazio-icon">⚠️</span>' +
+        '<div class="esch-vazio-titulo">Não foi possível carregar o histórico</div>' +
+        '<div class="esch-vazio-texto">' + msgErro + '</div>' +
+      '</div>';
+      return;
+    }
+
+    // Shape esperado: { ok: true, total: N, escalas: [...] }.
+    // Defensivo: aceita tambem resp.registros se algum dia o backend renomear.
+    const lista = Array.isArray(resp.escalas) ? resp.escalas
+                : (Array.isArray(resp.registros) ? resp.registros : []);
+
+    // Ordena do mais recente para o mais antigo
+    // Critério: timestamp (fallback: data_aplicacao)
+    lista.sort(function(a, b){
+      const ta = escHistChaveTemporal(a);
+      const tb = escHistChaveTemporal(b);
+      return tb - ta;
+    });
+
+    ESC_HIST_STATE.registros = lista;
+    ESC_HIST_STATE.carregadoEm = agora;
+    ESC_HIST_STATE.invalidado = false;
+
+    escHistRenderBlocos(cont, lista);
+
+  } catch (e) {
+    console.error('[Hist Escalas] Erro ao carregar:', e);
+    cont.innerHTML = '<div class="esch-vazio">' +
+      '<span class="esch-vazio-icon">⚠️</span>' +
+      '<div class="esch-vazio-titulo">Falha de conexão</div>' +
+      '<div class="esch-vazio-texto">Verifique sua internet e tente novamente.</div>' +
+    '</div>';
+  }
+}
+
+// Chave temporal para ordenar (timestamp do servidor é preferido;
+// cai pra data_aplicacao se não houver). Nunca retorna NaN.
+function escHistChaveTemporal(r) {
+  if (!r) return 0;
+  if (r.timestamp) {
+    try {
+      const d = (r.timestamp instanceof Date) ? r.timestamp : new Date(r.timestamp);
+      if (!isNaN(d.getTime())) return d.getTime();
+    } catch (e) {}
+  }
+  const da = String(r.data_aplicacao || '').match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (da) {
+    const d = new Date(parseInt(da[1]), parseInt(da[2]) - 1, parseInt(da[3]));
+    return d.getTime();
+  }
+  return 0;
+}
+
+// ============================================================
+// Renderização dos blocos colapsáveis
+// ============================================================
+function escHistRenderBlocos(cont, registros) {
+  if (!registros || registros.length === 0) {
+    cont.innerHTML = '<div class="esch-vazio">' +
+      '<span class="esch-vazio-icon">📭</span>' +
+      '<div class="esch-vazio-titulo">Você ainda não aplicou nenhuma escala</div>' +
+      '<div class="esch-vazio-texto">Quando você preencher sua primeira escala (PHQ-9, GAD-7, PSS-10, DASS-21 ou SRQ-20), ela aparecerá aqui.</div>' +
+    '</div>';
+    return;
+  }
+
+  // Agrupa por instrumento
+  const porEscala = {};
+  ESC_HIST_ORDEM.forEach(function(cod){ porEscala[cod] = []; });
+  registros.forEach(function(r, idx){
+    const cod = String(r.instrumento || '').trim();
+    if (porEscala.hasOwnProperty(cod)) {
+      // guarda o índice global para o modal recuperar depois
+      porEscala[cod].push({ reg: r, idxGlobal: idx });
+    }
+  });
+
+  // Monta blocos apenas das escalas com >= 1 aplicação, na ordem fixa
+  let html = '';
+  ESC_HIST_ORDEM.forEach(function(cod){
+    const grupo = porEscala[cod];
+    if (!grupo || grupo.length === 0) return;
+    const def = ESC_ESCALAS[cod];
+    if (!def) return;
+
+    const aberto = ESC_HIST_STATE.abertos[cod] ? ' aberto' : '';
+    const corClasse = def.corPrefix; // coral, amber, orange, purple, teal
+
+    let linhasHtml = '';
+    grupo.forEach(function(item){
+      linhasHtml += escHistRenderAplicacao(cod, def, item.reg, item.idxGlobal);
+    });
+
+    const textoContagem = grupo.length === 1 ? '1 aplicação' : (grupo.length + ' aplicações');
+
+    html += '<div class="esch-bloco ' + corClasse + aberto + '" data-esc="' + escapeHtmlAuto(cod) + '">';
+    html +=   '<div class="esch-bloco-head" onclick="escHistToggleBloco(this)">';
+    html +=     '<span class="esch-bloco-icone">' + escapeHtmlAuto(def.emoji || '📊') + '</span>';
+    html +=     '<span class="esch-bloco-titulo">' + escapeHtmlAuto(def.nomeCompleto || cod) + '</span>';
+    html +=     '<span class="esch-bloco-contagem">' + textoContagem + '</span>';
+    html +=     '<span class="esch-bloco-chevron">›</span>';
+    html +=   '</div>';
+    html +=   '<div class="esch-bloco-corpo">' + linhasHtml + '</div>';
+    html += '</div>';
+  });
+
+  cont.innerHTML = html;
+}
+
+// Abre/fecha um bloco e guarda o estado em ESC_HIST_STATE.abertos
+function escHistToggleBloco(headEl) {
+  const bloco = headEl && headEl.parentElement;
+  if (!bloco) return;
+  const cod = bloco.getAttribute('data-esc');
+  const agoraAberto = !bloco.classList.contains('aberto');
+  bloco.classList.toggle('aberto', agoraAberto);
+  if (cod) ESC_HIST_STATE.abertos[cod] = agoraAberto;
+}
+
+// ============================================================
+// Renderização de uma linha (aplicação)
+// ============================================================
+function escHistRenderAplicacao(cod, def, reg, idxGlobal) {
+  const dataHoraHtml = escHistFormatarDataHoraHtml(reg);
+  const flagRisco = (String(reg.alerta_risco_flag || '').toUpperCase() === 'SIM')
+    ? '<span class="esch-aplic-flag-risco" title="Alerta de risco nesta aplicação"></span>'
+    : '';
+
+  let escoreHtml;
+  if (cod === 'DASS-21') {
+    // 3 boxes lado a lado com subescalas
+    const d = (reg.escore_depressao !== '' && reg.escore_depressao !== null && reg.escore_depressao !== undefined)
+              ? reg.escore_depressao : '—';
+    const a = (reg.escore_ansiedade !== '' && reg.escore_ansiedade !== null && reg.escore_ansiedade !== undefined)
+              ? reg.escore_ansiedade : '—';
+    const e = (reg.escore_estresse  !== '' && reg.escore_estresse  !== null && reg.escore_estresse  !== undefined)
+              ? reg.escore_estresse  : '—';
+    escoreHtml =
+      '<div class="esch-aplic-tris">' +
+        '<div class="esch-aplic-tri dep"><div class="esch-aplic-tri-nome">Dep</div><div class="esch-aplic-tri-val">' + escapeHtmlAuto(String(d)) + '</div></div>' +
+        '<div class="esch-aplic-tri ans"><div class="esch-aplic-tri-nome">Ans</div><div class="esch-aplic-tri-val">' + escapeHtmlAuto(String(a)) + '</div></div>' +
+        '<div class="esch-aplic-tri est"><div class="esch-aplic-tri-nome">Est</div><div class="esch-aplic-tri-val">' + escapeHtmlAuto(String(e)) + '</div></div>' +
+      '</div>';
+  } else {
+    // Escore único
+    const escore = (reg.escore_total !== '' && reg.escore_total !== null && reg.escore_total !== undefined)
+                  ? reg.escore_total : '—';
+    const escoreMax = def.escoreMax ? ('/' + def.escoreMax) : '';
+    // SRQ-20 dicotômica: mostramos só o número (máx já salvo)
+    const faixaRotulo = String(reg.faixa || '');
+    const faixaCor = escHistCorDaFaixa(cod, faixaRotulo, escore);
+
+    escoreHtml =
+      '<div class="esch-aplic-escore">' +
+        '<div>' + flagRisco +
+          '<span class="esch-aplic-escore-num">' + escapeHtmlAuto(String(escore)) + '</span>' +
+          '<span class="esch-aplic-escore-max">' + escapeHtmlAuto(escoreMax) + '</span>' +
+        '</div>' +
+        (faixaRotulo
+          ? '<div class="esch-aplic-faixa esch-faixa ' + faixaCor + '">' + escapeHtmlAuto(faixaRotulo) + '</div>'
+          : '') +
+      '</div>';
+  }
+
+  // Para DASS-21 também queremos o marcador de risco (fica na área de data)
+  const marcadorRiscoLinha = (cod === 'DASS-21' && String(reg.alerta_risco_flag || '').toUpperCase() === 'SIM')
+    ? '<span class="esch-aplic-flag-risco" title="Alerta de risco nesta aplicação"></span>'
+    : '';
+
+  return '<div class="esch-aplic">' +
+    '<div class="esch-aplic-data">' +
+      '<div class="esch-aplic-data-principal">' + marcadorRiscoLinha + dataHoraHtml.data + '</div>' +
+      '<div class="esch-aplic-data-hora">' + dataHoraHtml.hora + '</div>' +
+    '</div>' +
+    escoreHtml +
+    '<button class="esch-aplic-lupa" type="button" title="Ver detalhes" onclick="escHistAbrirDetalhe(' + idxGlobal + ')">🔍</button>' +
+  '</div>';
+}
+
+// Formata data + hora a partir do registro do servidor.
+// Retorna { data: '18 de abril de 2026', hora: 'às 14:32' }
+// Fallbacks: se não houver hora, só retorna a data.
+function escHistFormatarDataHoraHtml(reg) {
+  const meses = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+                 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+
+  // Data de aplicação (sempre existe no formato YYYY-MM-DD)
+  const m = String(reg.data_aplicacao || '').match(/(\d{4})-(\d{2})-(\d{2})/);
+  let textoData = '—';
+  if (m) {
+    const ano = parseInt(m[1]);
+    const mes = parseInt(m[2]) - 1;
+    const dia = parseInt(m[3]);
+    textoData = dia + ' de ' + meses[mes] + ' de ' + ano;
+  } else if (reg.timestamp) {
+    // Fallback: tenta extrair a data do timestamp
+    try {
+      const d = (reg.timestamp instanceof Date) ? reg.timestamp : new Date(reg.timestamp);
+      if (!isNaN(d.getTime())) {
+        textoData = d.getDate() + ' de ' + meses[d.getMonth()] + ' de ' + d.getFullYear();
+      }
+    } catch (e) {}
+  }
+
+  // Hora (vem do timestamp do servidor)
+  let textoHora = '';
+  if (reg.timestamp) {
+    try {
+      const d = (reg.timestamp instanceof Date) ? reg.timestamp : new Date(reg.timestamp);
+      if (!isNaN(d.getTime())) {
+        const hh = String(d.getHours()).padStart(2, '0');
+        const mm = String(d.getMinutes()).padStart(2, '0');
+        textoHora = 'às ' + hh + ':' + mm;
+      }
+    } catch (e) {}
+  }
+
+  return { data: textoData, hora: textoHora };
+}
+
+// ============================================================
+// Descobrir cor CSS da faixa (verde/amarelo/laranja/vermelho/cinza)
+// ============================================================
+function escHistCorDaFaixa(cod, rotulo, escore) {
+  const def = ESC_ESCALAS[cod];
+  if (!def) return 'cinza';
+
+  // Estratégia 1: procurar a faixa pelo rótulo textual (mais preciso)
+  if (def.faixas && Array.isArray(def.faixas) && rotulo) {
+    const f = def.faixas.find(function(x){ return x.rotulo === rotulo; });
+    if (f && f.cor) return f.cor;
+  }
+
+  // Estratégia 2: buscar por escore numérico (para rótulos com variações de escrita)
+  if (def.faixas && Array.isArray(def.faixas)) {
+    const num = Number(escore);
+    if (!isNaN(num)) {
+      const f = def.faixas.find(function(x){ return num >= x.min && num <= x.max; });
+      if (f && f.cor) return f.cor;
+    }
+  }
+
+  return 'cinza';
+}
+
+// Cor por subescala do DASS-21 (buscando pelo escore)
+function escHistCorSubFaixa(subKey, escore) {
+  const def = ESC_ESCALAS['DASS-21'];
+  if (!def || !def.faixasSubescalas || !def.faixasSubescalas[subKey]) return 'cinza';
+  const num = Number(escore);
+  if (isNaN(num)) return 'cinza';
+  const f = def.faixasSubescalas[subKey].find(function(x){ return num >= x.min && num <= x.max; });
+  return (f && f.cor) ? f.cor : 'cinza';
+}
+
+// Rótulo de subfaixa DASS-21 por escore
+function escHistRotuloSubFaixa(subKey, escore) {
+  const def = ESC_ESCALAS['DASS-21'];
+  if (!def || !def.faixasSubescalas || !def.faixasSubescalas[subKey]) return '';
+  const num = Number(escore);
+  if (isNaN(num)) return '';
+  const f = def.faixasSubescalas[subKey].find(function(x){ return num >= x.min && num <= x.max; });
+  return (f && f.rotulo) ? f.rotulo : '';
+}
+
+// ============================================================
+// MODAL DE DETALHES
+// ============================================================
+function escHistAbrirDetalhe(idxGlobal) {
+  const reg = ESC_HIST_STATE.registros[idxGlobal];
+  if (!reg) return;
+
+  const titulo = document.getElementById('eschModalTitulo');
+  const conteudo = document.getElementById('eschModalConteudo');
+  const modal = document.getElementById('eschModalDetalhe');
+  if (!conteudo || !modal) return;
+
+  const cod = String(reg.instrumento || '').trim();
+  const def = ESC_ESCALAS[cod];
+
+  if (titulo) {
+    titulo.innerHTML = (def ? escapeHtmlAuto(def.emoji || '🔍') + ' ' : '🔍 ') +
+                       escapeHtmlAuto(def ? def.nomeCompleto : cod);
+  }
+
+  conteudo.innerHTML = escHistMontarHtmlDetalhe(cod, def, reg);
+  modal.classList.add('show');
+}
+
+function escHistFecharDetalhe() {
+  const modal = document.getElementById('eschModalDetalhe');
+  if (modal) modal.classList.remove('show');
+}
+
+// ESC fecha o modal
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') {
+    const m = document.getElementById('eschModalDetalhe');
+    if (m && m.classList.contains('show')) escHistFecharDetalhe();
+  }
+});
+
+// ============================================================
+// Monta o HTML interno do modal a partir do registro salvo
+// ============================================================
+function escHistMontarHtmlDetalhe(cod, def, reg) {
+  const dh = escHistFormatarDataHoraHtml(reg);
+
+  let html = '';
+
+  // 1) Box de data/hora
+  const textoDataHora = dh.data + (dh.hora ? ', ' + dh.hora : '');
+  html += '<div class="eschm-header-box">' +
+            '<div class="eschm-data">📅 Aplicado em ' + escapeHtmlAuto(textoDataHora) + '</div>' +
+          '</div>';
+
+  // 2) Escore (único ou DASS-21 com 3 subescalas)
+  if (cod === 'DASS-21') {
+    const d = reg.escore_depressao;
+    const a = reg.escore_ansiedade;
+    const e = reg.escore_estresse;
+
+    const corD = escHistCorSubFaixa('depressao', d);
+    const corA = escHistCorSubFaixa('ansiedade', a);
+    const corE = escHistCorSubFaixa('estresse',  e);
+    const rotD = escHistRotuloSubFaixa('depressao', d);
+    const rotA = escHistRotuloSubFaixa('ansiedade', a);
+    const rotE = escHistRotuloSubFaixa('estresse',  e);
+
+    html += '<div class="eschm-sub-grid">';
+    html +=   '<div class="eschm-sub-box dep">' +
+                '<div class="eschm-sub-nome">Depressão</div>' +
+                '<div class="eschm-sub-escore">' + escapeHtmlAuto(String(d !== '' && d !== null && d !== undefined ? d : '—')) + '</div>' +
+                (rotD ? '<div class="eschm-sub-faixa esch-faixa ' + corD + '">' + escapeHtmlAuto(rotD) + '</div>' : '') +
+              '</div>';
+    html +=   '<div class="eschm-sub-box ans">' +
+                '<div class="eschm-sub-nome">Ansiedade</div>' +
+                '<div class="eschm-sub-escore">' + escapeHtmlAuto(String(a !== '' && a !== null && a !== undefined ? a : '—')) + '</div>' +
+                (rotA ? '<div class="eschm-sub-faixa esch-faixa ' + corA + '">' + escapeHtmlAuto(rotA) + '</div>' : '') +
+              '</div>';
+    html +=   '<div class="eschm-sub-box est">' +
+                '<div class="eschm-sub-nome">Estresse</div>' +
+                '<div class="eschm-sub-escore">' + escapeHtmlAuto(String(e !== '' && e !== null && e !== undefined ? e : '—')) + '</div>' +
+                (rotE ? '<div class="eschm-sub-faixa esch-faixa ' + corE + '">' + escapeHtmlAuto(rotE) + '</div>' : '') +
+              '</div>';
+    html += '</div>';
+  } else {
+    const escore = (reg.escore_total !== '' && reg.escore_total !== null && reg.escore_total !== undefined)
+                  ? reg.escore_total : '—';
+    const escoreMax = def && def.escoreMax ? ('/' + def.escoreMax) : '';
+    const faixaRotulo = String(reg.faixa || '');
+    const faixaCor = escHistCorDaFaixa(cod, faixaRotulo, escore);
+
+    html += '<div class="eschm-escore-box">' +
+              '<div>' +
+                '<span class="eschm-escore-num">' + escapeHtmlAuto(String(escore)) + '</span>' +
+                '<span class="eschm-escore-max">' + escapeHtmlAuto(escoreMax) + '</span>' +
+              '</div>' +
+              (faixaRotulo ? '<div class="eschm-faixa-grande esch-faixa ' + faixaCor + '">' + escapeHtmlAuto(faixaRotulo) + '</div>' : '') +
+            '</div>';
+  }
+
+  // 3) Alerta de risco (se houver)
+  if (String(reg.alerta_risco_flag || '').toUpperCase() === 'SIM') {
+    html += escHistBlocoAlertaRisco(cod, def, reg);
+  }
+
+  // 4) Accordion "Minhas respostas" (fechado por padrão)
+  if (def && def.itens && def.itens.length) {
+    html += '<div class="eschm-accordion">';
+    html +=   '<div class="eschm-accordion-head" onclick="escHistToggleAccordion(this)">';
+    html +=     '📝 Minhas respostas';
+    html +=     '<span class="eschm-accordion-chevron">›</span>';
+    html +=   '</div>';
+    html +=   '<div class="eschm-accordion-corpo">';
+    html +=     escHistRenderRespostas(cod, def, reg);
+    html +=   '</div>';
+    html += '</div>';
+  }
+
+  // 5) Impacto funcional
+  const textoFunc = String(reg.item_funcional_texto || '').trim();
+  if (def && def.itemFuncional && textoFunc) {
+    html += '<div class="eschm-funcional">' +
+              '<div class="eschm-funcional-titulo">Impacto funcional</div>' +
+              '<div class="eschm-funcional-texto">Você indicou <strong>' + escapeHtmlAuto(textoFunc) + '</strong> para realizar trabalho, cuidar das tarefas de casa ou se relacionar com pessoas.</div>' +
+            '</div>';
+  }
+
+  // 6) Rodapé — observações + tempo de preenchimento (só se existirem)
+  const obs = String(reg.observacoes || '').trim();
+  const tempo = Number(reg.tempo_preenchimento_seg);
+  const temTempo = !isNaN(tempo) && tempo > 0;
+  if (obs || temTempo) {
+    html += '<div class="eschm-footer">';
+    if (obs) {
+      html += '<div class="eschm-footer-linha">📝 <strong>Observações:</strong> ' + escapeHtmlAuto(obs) + '</div>';
+    }
+    if (temTempo) {
+      const min = Math.floor(tempo / 60);
+      const seg = tempo % 60;
+      let tempoTxt;
+      if (min >= 1) {
+        tempoTxt = min + ' min ' + seg + ' s';
+      } else {
+        tempoTxt = seg + ' s';
+      }
+      html += '<div class="eschm-footer-linha">⏱️ <strong>Tempo de preenchimento:</strong> ' + tempoTxt + '</div>';
+    }
+    html += '</div>';
+  }
+
+  return html;
+}
+
+// Bloco de alerta de risco didático (contextualiza item crítico)
+function escHistBlocoAlertaRisco(cod, def, reg) {
+  const itemKey = String(reg.alerta_risco_item || '');
+  const valor = reg.alerta_risco_valor;
+
+  // Encontra o item crítico no dicionário
+  let itemTexto = '';
+  if (def && def.itens) {
+    const critico = def.itens.find(function(x){ return x.critico || (x.itemRiscoKey === itemKey); });
+    if (critico) itemTexto = critico.texto;
+  }
+
+  // Rótulo da resposta (para escalas com opções textuais) ou "Sim" (dicotômicas)
+  let valorTxt = '';
+  if (def && def.dicotomica) {
+    valorTxt = (Number(valor) === 1) ? 'Sim' : 'Não';
+  } else if (def && def.opcoes && def.opcoes.length) {
+    const op = def.opcoes.find(function(x){ return Number(x.valor) === Number(valor); });
+    if (op) valorTxt = op.label;
+    else if (valor !== undefined && valor !== '') valorTxt = String(valor);
+  } else {
+    valorTxt = String(valor || '');
+  }
+
+  let corpo = '<strong>Ponto de atenção nesta aplicação.</strong>';
+  if (itemTexto) {
+    corpo += '<br>Neste dia você marcou <strong>' + escapeHtmlAuto(valorTxt || 'uma resposta de atenção') + '</strong> no item: <em>"' + escapeHtmlAuto(itemTexto) + '"</em>.';
+  } else {
+    corpo += '<br>Neste dia você marcou uma resposta que sinaliza atenção clínica.';
+  }
+  corpo += '<br><br>Se esses pensamentos ou sensações voltarem, fale com seu terapeuta o quanto antes. Em momentos de crise, o <strong>CVV</strong> atende 24h pelo telefone <strong>188</strong>.';
+
+  return '<div class="eschm-alerta">' +
+           '<span class="eschm-alerta-icon">🚨</span>' +
+           '<div class="eschm-alerta-texto">' + corpo + '</div>' +
+         '</div>';
+}
+
+// Renderiza respostas item a item do registro
+function escHistRenderRespostas(cod, def, reg) {
+  if (!def || !def.itens) return '';
+
+  let html = '';
+  def.itens.forEach(function(item){
+    const col = 'item_' + String(item.id).padStart(2, '0');
+    const valor = reg[col];
+    const temValor = !(valor === '' || valor === null || valor === undefined);
+
+    // Rótulo da resposta
+    let rotulo = '—';
+    if (temValor) {
+      if (def.dicotomica) {
+        rotulo = (Number(valor) === 1) ? 'Sim' : 'Não';
+      } else if (def.opcoes && def.opcoes.length) {
+        const op = def.opcoes.find(function(x){ return Number(x.valor) === Number(valor); });
+        rotulo = op ? op.label : String(valor);
+      } else {
+        rotulo = String(valor);
+      }
+    }
+
+    const isCritico = !!item.critico;
+    const classeCrit = isCritico ? ' critico' : '';
+
+    html += '<div class="eschm-item' + classeCrit + '">';
+    html +=   '<span class="eschm-item-num">' + item.id + '</span>';
+    html +=   '<div class="eschm-item-texto">' + escapeHtmlAuto(item.texto || '');
+    html +=     '<div class="eschm-item-resposta">Resposta: <strong>' + escapeHtmlAuto(rotulo) + '</strong>' +
+                (temValor && !def.dicotomica ? ' <span style="color:var(--gray);">(' + escapeHtmlAuto(String(valor)) + ')</span>' : '') +
+              '</div>';
+    html +=   '</div>';
+    html += '</div>';
+  });
+
+  return html;
+}
+
+// Toggle do accordion dentro do modal
+function escHistToggleAccordion(headEl) {
+  const acc = headEl && headEl.parentElement;
+  if (!acc) return;
+  acc.classList.toggle('aberto');
+}
+
+/* Fim do Pacote 12.7 (Fase 1) — Histórico de Escalas */
 
 </script>
 
