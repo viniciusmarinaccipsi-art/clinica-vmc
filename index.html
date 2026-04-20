@@ -7915,7 +7915,11 @@ body{
 
     <div class="esc-nav">
       <button class="esc-btn esc-btn-secondary" onclick="escCancelarAplicacao()">← Cancelar</button>
-      <button class="esc-btn esc-btn-primary" id="escBtnEnviar" disabled onclick="escEnviarEscala()">Ver meu resultado →</button>
+      <!-- Pacote 12.7.2.1: wrapper captura clique no botão desabilitado
+           e mostra alerta "Responda todas as questões" -->
+      <span class="esc-btn-wrapper" onclick="escBtnEnviarClicado(event)" style="flex:1;display:inline-block;">
+        <button class="esc-btn esc-btn-primary" id="escBtnEnviar" disabled onclick="escEnviarEscala()" style="width:100%;">Ver meu resultado →</button>
+      </span>
     </div>
   </div>
 
@@ -13778,8 +13782,27 @@ function escAtualizarProgresso() {
   document.getElementById('escProgressoPct').textContent = pct + '%';
   document.getElementById('escProgressoBarra').style.width = pct + '%';
 
-  // Habilita botão apenas com todos os itens obrigatórios respondidos
-  document.getElementById('escBtnEnviar').disabled = respondidosObrig < totalItensObrig;
+  // Pacote 12.7.2.1: botão só destrava quando TUDO estiver respondido,
+  // incluindo o item funcional (F) quando a escala tem.
+  const funcionalOk = !def.itemFuncional || (ESC_STATE.respostas['funcional'] !== undefined);
+  const itensOk = respondidosObrig >= totalItensObrig;
+  document.getElementById('escBtnEnviar').disabled = !(itensOk && funcionalOk);
+}
+
+/**
+ * Pacote 12.7.2.1: Captura clique no wrapper do botão "Ver meu resultado".
+ * Quando o botão está desabilitado, o clique chega aqui (o button não dispara).
+ * Mostra alerta pedindo pra responder todas as questões.
+ */
+function escBtnEnviarClicado(event) {
+  const btn = document.getElementById('escBtnEnviar');
+  if (btn && btn.disabled) {
+    alert('Responda todas as questões');
+    if (event) event.preventDefault();
+    return false;
+  }
+  // Se habilitado, deixa o onclick="escEnviarEscala()" do próprio button rodar
+  // (não faz nada aqui — o event bubbling do wrapper não é necessário)
 }
 
 /**
@@ -13887,10 +13910,8 @@ async function escEnviarEscala() {
   }
 
   const btn = document.getElementById('escBtnEnviar');
-  // Pacote 12.7.2: não muda o texto durante o envio.
-  // Apenas desabilita + adiciona classe rr-enviando (CSS faz o spinner).
+  // Pacote 12.7.2.1: apenas desabilita (sem spinner, sem trocar texto).
   btn.disabled = true;
-  btn.classList.add('rr-enviando');
 
   try {
     const calc = escCalcularEscoreEAlerta(codigo, ESC_STATE.respostas);
@@ -13964,8 +13985,6 @@ async function escEnviarEscala() {
   } catch (erro) {
     alert('Não foi possível salvar a escala: ' + String(erro));
     btn.disabled = false;
-    btn.classList.remove('rr-enviando');
-    // Texto já é "Ver meu resultado →" no HTML — só remove o spinner
   }
 }
 
@@ -14455,44 +14474,81 @@ function escRrBlocoLembrete() {
 // ============================================================
 // Contexto longitudinal: "Esta é sua Nª aplicação, última há X dias"
 // Lê de ESC_HIST_STATE (se já carregado) ou retorna null silenciosamente.
+// Pacote 12.7.2.1: reescrita robusta — tolera timestamps em múltiplos formatos
+// (ISO, Date object, string Google Sheets) e trabalha com data_aplicacao
+// (sempre presente em formato YYYY-MM-DD) como fallback.
 // ============================================================
+
+function escExtrairMsRegistro(r) {
+  // Tenta timestamp primeiro (mais preciso, com horário)
+  if (r && r.timestamp) {
+    try {
+      const d = (r.timestamp instanceof Date) ? r.timestamp : new Date(r.timestamp);
+      const t = d.getTime();
+      if (!isNaN(t) && t > 0) return t;
+    } catch (e) {}
+  }
+  // Fallback: data_aplicacao em formato YYYY-MM-DD
+  if (r && r.data_aplicacao) {
+    const m = String(r.data_aplicacao).match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (m) {
+      const d = new Date(parseInt(m[1]), parseInt(m[2]) - 1, parseInt(m[3]));
+      const t = d.getTime();
+      if (!isNaN(t) && t > 0) return t;
+    }
+  }
+  return 0;
+}
+
 function escCalcularContextoLongitudinal(codigo, regAtual) {
   try {
-    // Tenta ler do cache do histórico (já populado pela tela "Meu Histórico")
     const lista = (window.ESC_HIST_STATE && ESC_HIST_STATE.registros) ? ESC_HIST_STATE.registros : [];
-    // Filtra a mesma escala
+
+    // Filtra mesma escala
     const mesmaEscala = lista.filter(function(r){
       return String(r.instrumento || '') === codigo;
     });
 
-    // Adiciona (ou não) a aplicação atual ao contexto
-    // No modo tela imediata, a atual ainda não está no cache (foi invalidado);
-    // no modo histórico, já está. Usamos heurística: se regAtual tem timestamp
-    // muito recente (< 10s), consideramos que é a atual que acabou de ser salva.
-    let ordinal = mesmaEscala.length;
-    // Se ainda não apareceu no cache, contamos a atual também
     const agora = Date.now();
-    const regAtualMs = regAtual.timestamp ? (new Date(regAtual.timestamp)).getTime() : agora;
-    const isNova = (agora - regAtualMs) < 10000; // < 10s
+    let regAtualMs = escExtrairMsRegistro(regAtual);
+    if (regAtualMs === 0) regAtualMs = agora;
+
+    // Detecta se a aplicação atual é "recém-enviada" (tela imediata pós-save)
+    // — quando timestamp não existe ainda no reg (foi construído com new Date().toISOString()).
+    const isNovaEnvio = (agora - regAtualMs) < 15000; // < 15s
+
+    // Verifica se o registro atual está na lista (via timestamp próximo)
     const jaEstaNaLista = mesmaEscala.some(function(r){
-      return r.timestamp && Math.abs((new Date(r.timestamp)).getTime() - regAtualMs) < 5000;
+      const rMs = escExtrairMsRegistro(r);
+      return rMs > 0 && Math.abs(rMs - regAtualMs) < 60000; // dentro de 1 minuto
     });
 
-    if (isNova && !jaEstaNaLista) ordinal = mesmaEscala.length + 1;
+    // Calcula ordinal:
+    // - se tela imediata (nova, não está na lista): total + 1
+    // - senão: posição do registro na lista ordenada cronologicamente
+    let ordinal;
+    if (isNovaEnvio && !jaEstaNaLista) {
+      ordinal = mesmaEscala.length + 1;
+    } else {
+      // Modal do histórico: ordinal = quantas aplicações existem ATÉ esta data (inclusive)
+      ordinal = mesmaEscala.filter(function(r){
+        const rMs = escExtrairMsRegistro(r);
+        return rMs > 0 && rMs <= regAtualMs + 60000; // tolerância 1 min
+      }).length;
+      if (ordinal === 0) ordinal = 1;
+    }
 
-    if (ordinal < 2) return null; // primeira aplicação, sem contexto
+    if (ordinal < 2) return null; // 1ª aplicação — sem contexto
 
-    // Encontra a aplicação imediatamente anterior (diferente da atual)
+    // Aplicação imediatamente anterior à atual
     const anteriores = mesmaEscala
-      .map(function(r){
-        const t = r.timestamp ? (new Date(r.timestamp)).getTime() : 0;
-        return { reg: r, t: t };
+      .map(function(r){ return { reg: r, t: escExtrairMsRegistro(r) }; })
+      .filter(function(x){
+        return x.t > 0 && x.t < regAtualMs - 60000; // estritamente anterior (tolerância 1 min)
       })
-      .filter(function(x){ return x.t > 0 && Math.abs(x.t - regAtualMs) > 5000 && x.t < regAtualMs; })
-      .sort(function(a, b){ return b.t - a.t; });
+      .sort(function(a, b){ return b.t - a.t; }); // mais recente primeiro
 
     if (!anteriores.length) {
-      // Fallback: contamos pela lista mesmo, mas sem "há X dias"
       return {
         ordinalTexto: 'Esta é sua <strong>' + escOrdinalTexto(ordinal) + ' aplicação</strong> desta escala.',
         total: ordinal
@@ -14515,7 +14571,7 @@ function escCalcularContextoLongitudinal(codigo, regAtual) {
       total: ordinal
     };
   } catch (e) {
-    console.warn('[12.7.2] Erro ao calcular contexto longitudinal:', e);
+    console.warn('[12.7.2.1] Erro ao calcular contexto longitudinal:', e);
     return null;
   }
 }
