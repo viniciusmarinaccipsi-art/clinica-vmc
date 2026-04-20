@@ -14019,14 +14019,60 @@ function escMostrarResultado(codigo, calc, respostas) {
     reg[col] = (respostas && respostas[item.id] !== undefined) ? respostas[item.id] : '';
   });
 
-  // Calcula contexto longitudinal a partir do cache do histórico
-  const contexto = escCalcularContextoLongitudinal(codigo, reg);
-
-  // Renderiza conteúdo no container da tela imediata
+  // Render inicial sem contexto (imediato, para não atrasar a tela)
   const container = document.getElementById('escResultContainer');
-  container.innerHTML = escRenderizarConteudoResultado(reg, def, 'imediata', contexto);
+  const contextoInicial = escCalcularContextoLongitudinal(codigo, reg);
+  container.innerHTML = escRenderizarConteudoResultado(reg, def, 'imediata', contextoInicial);
 
   abrirSecao('sec-escalas-resultado');
+
+  // Pacote 12.7.2 (fix): se o cache do histórico estava vazio,
+  // busca agora e re-renderiza o contexto longitudinal.
+  // Isso evita que a linha "Esta é sua Nª aplicação" fique invisível
+  // quando o paciente aplica uma escala sem antes abrir "Meu Histórico".
+  escGarantirContextoLongitudinal(codigo, reg, def);
+}
+
+// ============================================================
+// Fix 12.7.2: garante que o contexto longitudinal renderize
+// mesmo quando o cache do histórico nunca foi populado.
+// ============================================================
+async function escGarantirContextoLongitudinal(codigo, reg, def) {
+  try {
+    const cacheVazio = !window.ESC_HIST_STATE ||
+                       !ESC_HIST_STATE.registros ||
+                       ESC_HIST_STATE.registros.length === 0 ||
+                       ESC_HIST_STATE.carregadoEm === 0;
+
+    if (!cacheVazio) return; // Já tem cache, render inicial já tratou
+
+    const paciente = carregarSessao();
+    if (!paciente || !paciente.sigla) return;
+
+    const resp = await chamarServidor('lerEscalas', { sigla: paciente.sigla });
+    if (!resp || !resp.ok) return;
+
+    const lista = Array.isArray(resp.escalas) ? resp.escalas
+                : (Array.isArray(resp.registros) ? resp.registros : []);
+
+    // Popula o cache (para próximas chamadas não refazerem a request)
+    if (window.ESC_HIST_STATE) {
+      ESC_HIST_STATE.registros = lista;
+      ESC_HIST_STATE.carregadoEm = Date.now();
+      ESC_HIST_STATE.invalidado = false;
+    }
+
+    // Re-renderiza a tela de resultado com o contexto agora disponível
+    const contexto = escCalcularContextoLongitudinal(codigo, reg);
+    if (contexto && contexto.ordinalTexto) {
+      const container = document.getElementById('escResultContainer');
+      if (container) {
+        container.innerHTML = escRenderizarConteudoResultado(reg, def, 'imediata', contexto);
+      }
+    }
+  } catch (e) {
+    console.warn('[12.7.2] Falha ao buscar contexto longitudinal:', e);
+  }
 }
 
 // ============================================================
