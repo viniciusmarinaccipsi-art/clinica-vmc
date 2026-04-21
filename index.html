@@ -7915,10 +7915,11 @@ body{
 
     <div class="esc-nav">
       <button class="esc-btn esc-btn-secondary" onclick="escCancelarAplicacao()">← Cancelar</button>
-      <!-- Pacote 12.7.2.1: wrapper captura clique no botão desabilitado
-           e mostra alerta "Responda todas as questões" -->
+      <!-- Pacote 12.7.2.2: wrapper captura clique APENAS quando botão está desabilitado.
+           Quando o botão está habilitado, o onclick do próprio button roda e o alerta
+           NÃO aparece (a função só alerta se disabled === true). -->
       <span class="esc-btn-wrapper" onclick="escBtnEnviarClicado(event)" style="flex:1;display:inline-block;">
-        <button class="esc-btn esc-btn-primary" id="escBtnEnviar" disabled onclick="escEnviarEscala()" style="width:100%;">Ver meu resultado →</button>
+        <button class="esc-btn esc-btn-primary" id="escBtnEnviar" disabled onclick="escEnviarEscala(event)" style="width:100%;">Ver meu resultado →</button>
       </span>
     </div>
   </div>
@@ -13790,19 +13791,24 @@ function escAtualizarProgresso() {
 }
 
 /**
- * Pacote 12.7.2.1: Captura clique no wrapper do botão "Ver meu resultado".
- * Quando o botão está desabilitado, o clique chega aqui (o button não dispara).
- * Mostra alerta pedindo pra responder todas as questões.
+ * Pacote 12.7.2.2: Captura clique no wrapper do botão "Ver meu resultado".
+ * - Se o botão está DESABILITADO: mostra alerta "Responda todas as questões"
+ *   (porque buttons disabled não disparam onclick, mas o click chega no wrapper)
+ * - Se o botão está HABILITADO: o onclick do próprio button já rodou antes
+ *   deste wrapper (event bubbling normal). Aqui não fazemos nada.
+ *
+ * IMPORTANTE: só mostramos o alerta se o event.target NÃO foi o próprio botão.
+ * Se o paciente clicou DIRETAMENTE no botão habilitado, o onclick do button
+ * disparou escEnviarEscala() — nessa sequência, o click continua subindo para
+ * o wrapper, mas já estamos enviando. Por isso checamos btn.disabled aqui.
  */
 function escBtnEnviarClicado(event) {
   const btn = document.getElementById('escBtnEnviar');
+  // Só alerta se o botão REALMENTE está desabilitado no momento do clique.
+  // Quando habilitado, o onclick do próprio button já disparou; ignoramos aqui.
   if (btn && btn.disabled) {
     alert('Responda todas as questões');
-    if (event) event.preventDefault();
-    return false;
   }
-  // Se habilitado, deixa o onclick="escEnviarEscala()" do próprio button rodar
-  // (não faz nada aqui — o event bubbling do wrapper não é necessário)
 }
 
 /**
@@ -13898,7 +13904,12 @@ function escCalcularEscoreEAlerta(codigoEscala, respostas) {
 /**
  * Envia a escala para o servidor e, se der tudo certo, mostra resultado.
  */
-async function escEnviarEscala() {
+async function escEnviarEscala(event) {
+  // Para propagação para o wrapper — evita que o handler do wrapper
+  // mostre alerta "Responda todas as questões" quando o botão está habilitado.
+  if (event && typeof event.stopPropagation === 'function') {
+    event.stopPropagation();
+  }
   const codigo = ESC_STATE.escalaAtual;
   const def = ESC_ESCALAS[codigo];
   if (!def) return;
@@ -14502,51 +14513,67 @@ function escExtrairMsRegistro(r) {
 
 function escCalcularContextoLongitudinal(codigo, regAtual) {
   try {
+    const DEBUG = true; // Pacote 12.7.2.2: logs temporários para diagnóstico
     const lista = (window.ESC_HIST_STATE && ESC_HIST_STATE.registros) ? ESC_HIST_STATE.registros : [];
+
+    if (DEBUG) console.log('[CTX] codigo=', codigo, 'cache size=', lista.length);
 
     // Filtra mesma escala
     const mesmaEscala = lista.filter(function(r){
       return String(r.instrumento || '') === codigo;
     });
 
+    if (DEBUG) console.log('[CTX] mesma escala count=', mesmaEscala.length);
+    if (DEBUG && mesmaEscala.length > 0) {
+      console.log('[CTX] exemplo registro[0]:', mesmaEscala[0]);
+      console.log('[CTX] timestamp bruto:', mesmaEscala[0].timestamp, 'tipo:', typeof mesmaEscala[0].timestamp);
+      console.log('[CTX] data_aplicacao:', mesmaEscala[0].data_aplicacao);
+      console.log('[CTX] ms extraído do [0]:', escExtrairMsRegistro(mesmaEscala[0]));
+    }
+
     const agora = Date.now();
     let regAtualMs = escExtrairMsRegistro(regAtual);
     if (regAtualMs === 0) regAtualMs = agora;
 
+    if (DEBUG) console.log('[CTX] regAtualMs=', regAtualMs, 'agora=', agora);
+
     // Detecta se a aplicação atual é "recém-enviada" (tela imediata pós-save)
-    // — quando timestamp não existe ainda no reg (foi construído com new Date().toISOString()).
-    const isNovaEnvio = (agora - regAtualMs) < 15000; // < 15s
+    const isNovaEnvio = (agora - regAtualMs) < 15000;
 
     // Verifica se o registro atual está na lista (via timestamp próximo)
     const jaEstaNaLista = mesmaEscala.some(function(r){
       const rMs = escExtrairMsRegistro(r);
-      return rMs > 0 && Math.abs(rMs - regAtualMs) < 60000; // dentro de 1 minuto
+      return rMs > 0 && Math.abs(rMs - regAtualMs) < 60000;
     });
 
-    // Calcula ordinal:
-    // - se tela imediata (nova, não está na lista): total + 1
-    // - senão: posição do registro na lista ordenada cronologicamente
+    // Calcula ordinal
     let ordinal;
     if (isNovaEnvio && !jaEstaNaLista) {
       ordinal = mesmaEscala.length + 1;
     } else {
-      // Modal do histórico: ordinal = quantas aplicações existem ATÉ esta data (inclusive)
       ordinal = mesmaEscala.filter(function(r){
         const rMs = escExtrairMsRegistro(r);
-        return rMs > 0 && rMs <= regAtualMs + 60000; // tolerância 1 min
+        return rMs > 0 && rMs <= regAtualMs + 60000;
       }).length;
       if (ordinal === 0) ordinal = 1;
     }
 
-    if (ordinal < 2) return null; // 1ª aplicação — sem contexto
+    if (DEBUG) console.log('[CTX] isNovaEnvio=', isNovaEnvio, 'jaEstaNaLista=', jaEstaNaLista, 'ordinal=', ordinal);
+
+    if (ordinal < 2) {
+      if (DEBUG) console.log('[CTX] retornando null porque ordinal < 2');
+      return null;
+    }
 
     // Aplicação imediatamente anterior à atual
     const anteriores = mesmaEscala
       .map(function(r){ return { reg: r, t: escExtrairMsRegistro(r) }; })
       .filter(function(x){
-        return x.t > 0 && x.t < regAtualMs - 60000; // estritamente anterior (tolerância 1 min)
+        return x.t > 0 && x.t < regAtualMs - 60000;
       })
-      .sort(function(a, b){ return b.t - a.t; }); // mais recente primeiro
+      .sort(function(a, b){ return b.t - a.t; });
+
+    if (DEBUG) console.log('[CTX] anteriores count=', anteriores.length);
 
     if (!anteriores.length) {
       return {
@@ -14571,7 +14598,7 @@ function escCalcularContextoLongitudinal(codigo, regAtual) {
       total: ordinal
     };
   } catch (e) {
-    console.warn('[12.7.2.1] Erro ao calcular contexto longitudinal:', e);
+    console.warn('[12.7.2.2] Erro ao calcular contexto longitudinal:', e);
     return null;
   }
 }
