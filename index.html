@@ -14070,15 +14070,16 @@ function escMostrarResultado(codigo, calc, respostas) {
 async function escGarantirContextoLongitudinal(codigo, reg, def) {
   try {
     const DEBUG = true;
-    const cacheVazio = !window.ESC_HIST_STATE ||
+    // Pacote 12.7.2.3: ESC_HIST_STATE é const top-level, não vira window.*
+    // Acessa direto, sem window.
+    const cacheVazio = !ESC_HIST_STATE ||
                        !ESC_HIST_STATE.registros ||
                        ESC_HIST_STATE.registros.length === 0 ||
                        ESC_HIST_STATE.carregadoEm === 0;
 
-    if (DEBUG) console.log('[GARANTIR] cacheVazio=', cacheVazio, 'registros=', (window.ESC_HIST_STATE && ESC_HIST_STATE.registros) ? ESC_HIST_STATE.registros.length : 'N/A');
+    if (DEBUG) console.log('[GARANTIR] cacheVazio=', cacheVazio, 'registros=', (ESC_HIST_STATE && ESC_HIST_STATE.registros) ? ESC_HIST_STATE.registros.length : 'N/A');
 
     if (!cacheVazio) {
-      // Cache populado — re-renderiza caso o render inicial tenha retornado null
       if (DEBUG) console.log('[GARANTIR] cache ja populado, re-renderizando');
       const contexto = escCalcularContextoLongitudinal(codigo, reg);
       if (contexto && contexto.ordinalTexto) {
@@ -14111,12 +14112,12 @@ async function escGarantirContextoLongitudinal(codigo, reg, def) {
       console.log('[GARANTIR] timestamp do primeiro:', lista[0].timestamp, 'tipo:', typeof lista[0].timestamp);
     }
 
-    // Popula o cache
-    if (window.ESC_HIST_STATE) {
-      ESC_HIST_STATE.registros = lista;
-      ESC_HIST_STATE.carregadoEm = Date.now();
-      ESC_HIST_STATE.invalidado = false;
-    }
+    // Popula o cache (direto no const, sem passar por window)
+    ESC_HIST_STATE.registros = lista;
+    ESC_HIST_STATE.carregadoEm = Date.now();
+    ESC_HIST_STATE.invalidado = false;
+
+    if (DEBUG) console.log('[GARANTIR] cache populado, registros agora=', ESC_HIST_STATE.registros.length);
 
     // Re-renderiza com contexto
     const contexto = escCalcularContextoLongitudinal(codigo, reg);
@@ -14131,7 +14132,7 @@ async function escGarantirContextoLongitudinal(codigo, reg, def) {
       if (DEBUG) console.log('[GARANTIR] contexto retornou null, nao re-renderiza');
     }
   } catch (e) {
-    console.warn('[12.7.2.2] Falha ao buscar contexto longitudinal:', e);
+    console.warn('[12.7.2.3] Falha ao buscar contexto longitudinal:', e);
   }
 }
 
@@ -14544,7 +14545,8 @@ function escExtrairMsRegistro(r) {
 function escCalcularContextoLongitudinal(codigo, regAtual) {
   try {
     const DEBUG = true; // Pacote 12.7.2.2: logs temporários para diagnóstico
-    const lista = (window.ESC_HIST_STATE && ESC_HIST_STATE.registros) ? ESC_HIST_STATE.registros : [];
+    // Pacote 12.7.2.3: ESC_HIST_STATE é const top-level, não vira window.*
+    const lista = (ESC_HIST_STATE && ESC_HIST_STATE.registros) ? ESC_HIST_STATE.registros : [];
 
     if (DEBUG) console.log('[CTX] codigo=', codigo, 'cache size=', lista.length);
 
