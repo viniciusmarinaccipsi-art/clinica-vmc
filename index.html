@@ -14614,8 +14614,15 @@ function escCalcularContextoLongitudinal(codigo, regAtual) {
       };
     }
 
+    // Pacote 12.7.2.3: calcula diferença em DIAS CIVIS (ano/mês/dia), não em ms.
+    // Isso evita o bug "aplicação de 18/04 22:00 vs 19/04 03:00 mostrar 'hoje'"
+    // porque <24h diff mas são dias diferentes.
+    const dAtual = new Date(regAtualMs);
+    const dAnterior = new Date(anteriores[0].t);
+    const dAtualCivil = new Date(dAtual.getFullYear(), dAtual.getMonth(), dAtual.getDate());
+    const dAnteriorCivil = new Date(dAnterior.getFullYear(), dAnterior.getMonth(), dAnterior.getDate());
     const msDia = 24 * 60 * 60 * 1000;
-    const difDias = Math.floor((regAtualMs - anteriores[0].t) / msDia);
+    const difDias = Math.round((dAtualCivil.getTime() - dAnteriorCivil.getTime()) / msDia);
     let textoTempo;
     if (difDias === 0) {
       textoTempo = 'A última foi <strong>hoje</strong>.';
