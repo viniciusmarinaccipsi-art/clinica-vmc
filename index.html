@@ -14614,26 +14614,26 @@ function escCalcularContextoLongitudinal(codigo, regAtual) {
       };
     }
 
-    // Pacote 12.7.2.3: calcula diferença em DIAS CIVIS (ano/mês/dia), não em ms.
-    // Isso evita o bug "aplicação de 18/04 22:00 vs 19/04 03:00 mostrar 'hoje'"
-    // porque <24h diff mas são dias diferentes.
-    const dAtual = new Date(regAtualMs);
+    // Pacote 12.7.2.4: calcula diferença em DIAS CIVIS entre HOJE e a anterior.
+    // Texto combinado A+B: "Esta foi sua Nª aplicação - a última dela foi há X dias"
+    // Compara sempre a data da aplicação ANTERIOR com HOJE (não com o regAtual).
+    const hoje = new Date();
     const dAnterior = new Date(anteriores[0].t);
-    const dAtualCivil = new Date(dAtual.getFullYear(), dAtual.getMonth(), dAtual.getDate());
+    const hojeCivil = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
     const dAnteriorCivil = new Date(dAnterior.getFullYear(), dAnterior.getMonth(), dAnterior.getDate());
     const msDia = 24 * 60 * 60 * 1000;
-    const difDias = Math.round((dAtualCivil.getTime() - dAnteriorCivil.getTime()) / msDia);
+    const difDias = Math.round((hojeCivil.getTime() - dAnteriorCivil.getTime()) / msDia);
     let textoTempo;
     if (difDias === 0) {
-      textoTempo = 'A última foi <strong>hoje</strong>.';
+      textoTempo = 'a última dela foi <strong>hoje</strong>.';
     } else if (difDias === 1) {
-      textoTempo = 'A última foi <strong>ontem</strong>.';
+      textoTempo = 'a última dela foi <strong>ontem</strong>.';
     } else {
-      textoTempo = 'A última foi <strong>há ' + difDias + ' dias</strong>.';
+      textoTempo = 'a última dela foi <strong>há ' + difDias + ' dias</strong>.';
     }
 
     return {
-      ordinalTexto: 'Esta é sua <strong>' + escOrdinalTexto(ordinal) + ' aplicação</strong>. ' + textoTempo,
+      ordinalTexto: 'Esta foi sua <strong>' + escOrdinalTexto(ordinal) + ' aplicação</strong> — ' + textoTempo,
       total: ordinal
     };
   } catch (e) {
