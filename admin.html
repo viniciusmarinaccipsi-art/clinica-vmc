@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4A3B6B">
+<title>Clínica VMC — Área Administrativa</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================
+   PACOTE 13.1.2 — FRONTEND ADMIN
+   Identidade visual: mesma da app principal, paleta roxa.
+   Variável CSS principal: --adm (cor da área administrativa).
+   Trocar --adm em :root altera a cor de TUDO de uma vez.
+   ========================================================== */
+
+:root {
+  /* Paleta admin (pode ser trocada se o Vinicius pedir cor diferente) */
+  --adm:        #4A3B6B;     /* roxo escuro/grafite */
+  --adm-bg:     #F5F1FA;     /* roxo muito claro (fundo de destaques) */
+  --adm-lt:     #DDD3EC;     /* roxo claro (bordas, hovers) */
+  --adm-dk:     #3A2D55;     /* roxo mais escuro (hover de botões) */
+
+  /* Estados (alinhados com a paleta da app principal) */
+  --green:      #6BBF8A;
+  --green-bg:   #F2FBF5;
+  --red:        #D94444;
+  --red-bg:     #FEF2F2;
+  --amber:      #D4A843;
+  --amber-bg:   #FFFBF0;
+  --gray:       #7A8D9C;
+  --gray-bg:    #F5F7F9;
+  --gray-lt:    #E8ECF0;
+
+  /* Texto */
+  --txt:        #2D3748;
+  --txt-m:      #4A5568;
+  --txt-l:      #718096;
+
+  /* Estrutura */
+  --w:          #FFF;
+  --r:          14px;
+  --rs:         8px;
+  --border:     #DDE4EA;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; }
+
+body {
+  font-family:'Nunito', sans-serif;
+  color:var(--txt);
+  background:linear-gradient(135deg, #EDE7F6, #E8E2F0, #F0EAF7);
+  min-height:100vh;
+  -webkit-tap-highlight-color:transparent;
+}
+
+.app { max-width:1100px; margin:0 auto; padding:20px 16px 80px; }
+
+/* ===== Cabeçalho ===== */
+.app-header {
+  text-align:center;
+  padding:24px 0 20px;
+  position:relative;
+}
+.app-header h1 {
+  font-family:'Quicksand', sans-serif;
+  font-size:24px;
+  font-weight:700;
+  color:var(--adm);
+}
+.app-header p {
+  font-size:13px;
+  color:var(--txt-l);
+  margin-top:4px;
+}
+.adm-badge {
+  display:inline-block;
+  background:var(--adm);
+  color:var(--w);
+  font-size:11px;
+  font-weight:700;
+  padding:4px 10px;
+  border-radius:12px;
+  letter-spacing:.5px;
+  text-transform:uppercase;
+  margin-top:8px;
+}
+
+/* ===== Seções (cada tela é um <div class="section">) ===== */
+.section { display:none; }
+.section.active { display:block; }
+
+/* ============================================================
+   LOGIN ADMIN
+   ============================================================ */
+.login-card {
+  background:var(--w);
+  border-radius:var(--r);
+  padding:32px 28px;
+  max-width:420px;
+  margin:60px auto 0;
+  box-shadow:0 8px 28px rgba(74, 59, 107, 0.18);
+  border-top:6px solid var(--adm);
+}
+.login-icon {
+  font-size:42px;
+  text-align:center;
+  margin-bottom:12px;
+}
+.login-title {
+  font-family:'Quicksand', sans-serif;
+  font-size:22px;
+  font-weight:700;
+  color:var(--adm);
+  text-align:center;
+  margin-bottom:6px;
+}
+.login-sub {
+  font-size:13px;
+  color:var(--txt-l);
+  text-align:center;
+  margin-bottom:24px;
+}
+.field {
+  margin-bottom:16px;
+}
+.field label {
+  display:block;
+  font-size:13px;
+  font-weight:600;
+  color:var(--txt-m);
+  margin-bottom:6px;
+}
+.field input, .field select, .field textarea {
+  width:100%;
+  padding:11px 14px;
+  border:2px solid var(--gray-lt);
+  border-radius:var(--rs);
+  font-family:'Nunito', sans-serif;
+  font-size:15px;
+  color:var(--txt);
+  background:var(--w);
+  transition:border-color .2s;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline:none;
+  border-color:var(--adm);
+}
+.field .hint {
+  font-size:11px;
+  color:var(--txt-l);
+  margin-top:4px;
+}
+
+.btn-primary {
+  width:100%;
+  padding:13px;
+  background:var(--adm);
+  color:var(--w);
+  border:none;
+  border-radius:var(--rs);
+  font-family:'Nunito', sans-serif;
+  font-size:15px;
+  font-weight:700;
+  cursor:pointer;
+  transition:background .2s, transform .15s;
+}
+.btn-primary:hover {
+  background:var(--adm-dk);
+}
+.btn-primary:active {
+  transform:translateY(1px);
+}
+.btn-primary:disabled {
+  opacity:.5;
+  cursor:not-allowed;
+  transform:none;
+}
+
+.btn-secondary {
+  padding:11px 18px;
+  background:var(--w);
+  color:var(--adm);
+  border:2px solid var(--adm);
+  border-radius:var(--rs);
+  font-family:'Nunito', sans-serif;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  transition:background .2s;
+}
+.btn-secondary:hover { background:var(--adm-bg); }
+
+.btn-danger {
+  padding:11px 18px;
+  background:var(--red);
+  color:var(--w);
+  border:none;
+  border-radius:var(--rs);
+  font-family:'Nunito', sans-serif;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  transition:background .2s;
+}
+.btn-danger:hover { background:#B83838; }
+
+.alert {
+  padding:11px 14px;
+  border-radius:var(--rs);
+  font-size:13px;
+  margin-top:12px;
+}
+.alert-error { background:var(--red-bg); color:var(--red); border:1px solid var(--red); }
+.alert-success { background:var(--green-bg); color:#2E7D45; border:1px solid var(--green); }
+.alert-info { background:var(--adm-bg); color:var(--adm); border:1px solid var(--adm-lt); }
+.hidden { display:none !important; }
+
+.login-footer {
+  font-size:12px;
+  color:var(--txt-l);
+  text-align:center;
+  margin-top:18px;
+  line-height:1.5;
+}
+.login-footer a {
+  color:var(--adm);
+  text-decoration:none;
+  font-weight:600;
+}
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+.dash-bar {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:var(--w);
+  border-radius:var(--r);
+  padding:14px 20px;
+  margin-bottom:18px;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+}
+.dash-user {
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.dash-user-info {
+  display:flex;
+  flex-direction:column;
+}
+.dash-user-info strong {
+  font-size:14px;
+  color:var(--txt);
+}
+.dash-user-info small {
+  font-size:11px;
+  color:var(--txt-l);
+}
+.btn-logout {
+  background:none;
+  border:none;
+  color:var(--adm);
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  padding:6px 10px;
+  border-radius:var(--rs);
+}
+.btn-logout:hover { background:var(--adm-bg); }
+
+.dash-actions {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:18px;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.dash-title {
+  font-family:'Quicksand', sans-serif;
+  font-size:18px;
+  font-weight:700;
+  color:var(--txt);
+}
+.dash-count {
+  color:var(--txt-l);
+  font-size:13px;
+  font-weight:400;
+  margin-left:6px;
+}
+
+.btn-add {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:11px 18px;
+  background:var(--adm);
+  color:var(--w);
+  border:none;
+  border-radius:var(--rs);
+  font-family:'Nunito', sans-serif;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  transition:background .2s;
+}
+.btn-add:hover { background:var(--adm-dk); }
+
+/* ===== Tabela de profissionais ===== */
+.prof-table-wrap {
+  background:var(--w);
+  border-radius:var(--r);
+  overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+}
+.prof-table {
+  width:100%;
+  border-collapse:collapse;
+}
+.prof-table thead {
+  background:var(--adm-bg);
+}
+.prof-table th {
+  text-align:left;
+  padding:14px 16px;
+  font-family:'Quicksand', sans-serif;
+  font-size:12px;
+  font-weight:700;
+  color:var(--adm);
+  text-transform:uppercase;
+  letter-spacing:.5px;
+  border-bottom:2px solid var(--adm-lt);
+}
+.prof-table td {
+  padding:14px 16px;
+  font-size:14px;
+  color:var(--txt-m);
+  border-bottom:1px solid var(--gray-lt);
+  vertical-align:middle;
+}
+.prof-table tr:last-child td {
+  border-bottom:none;
+}
+.prof-table tr:hover {
+  background:#FAFAFC;
+}
+.prof-sigla {
+  font-family:'Quicksand', sans-serif;
+  font-weight:700;
+  color:var(--adm);
+  font-size:14px;
+}
+.prof-nome {
+  font-weight:600;
+  color:var(--txt);
+}
+.prof-status {
+  display:inline-block;
+  padding:3px 10px;
+  border-radius:10px;
+  font-size:11px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
+.prof-status.ativo {
+  background:var(--green-bg);
+  color:#2E7D45;
+}
+.prof-status.inativo {
+  background:var(--red-bg);
+  color:var(--red);
+}
+.prof-actions {
+  display:flex;
+  gap:6px;
+  justify-content:flex-end;
+}
+.btn-icon {
+  background:var(--w);
+  border:1px solid var(--gray-lt);
+  border-radius:var(--rs);
+  padding:6px 12px;
+  font-size:12px;
+  font-weight:600;
+  color:var(--txt-m);
+  cursor:pointer;
+  transition:all .2s;
+  font-family:'Nunito', sans-serif;
+}
+.btn-icon:hover {
+  border-color:var(--adm);
+  color:var(--adm);
+  background:var(--adm-bg);
+}
+.btn-icon.danger:hover {
+  border-color:var(--red);
+  color:var(--red);
+  background:var(--red-bg);
+}
+
+.empty-state {
+  padding:50px 20px;
+  text-align:center;
+  color:var(--txt-l);
+}
+.empty-state-icon { font-size:48px; opacity:.4; margin-bottom:12px; }
+.empty-state-title { font-size:16px; font-weight:700; color:var(--txt-m); margin-bottom:6px; }
+.empty-state-sub { font-size:13px; }
+
+/* Tabela compacta em telas pequenas */
+@media (max-width: 768px) {
+  .prof-table thead { display:none; }
+  .prof-table tr {
+    display:block;
+    padding:12px;
+    border-bottom:2px solid var(--gray-lt);
+  }
+  .prof-table td {
+    display:block;
+    padding:6px 0;
+    border:none;
+  }
+  .prof-table td::before {
+    content:attr(data-label) ': ';
+    font-weight:700;
+    color:var(--adm);
+    font-size:11px;
+    text-transform:uppercase;
+  }
+  .prof-actions { justify-content:flex-start; flex-wrap:wrap; margin-top:8px; }
+}
+
+/* ============================================================
+   MODAL (cadastrar / editar / trocar senha / confirmar)
+   ============================================================ */
+.modal-backdrop {
+  position:fixed;
+  top:0; left:0; right:0; bottom:0;
+  background:rgba(74, 59, 107, 0.55);
+  z-index:1000;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding:30px 16px;
+  overflow-y:auto;
+}
+.modal-backdrop.hidden { display:none; }
+.modal {
+  background:var(--w);
+  border-radius:var(--r);
+  max-width:500px;
+  width:100%;
+  box-shadow:0 14px 40px rgba(0,0,0,.25);
+  overflow:hidden;
+  margin:auto;
+}
+.modal-head {
+  padding:18px 22px;
+  background:var(--adm-bg);
+  border-bottom:1px solid var(--adm-lt);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.modal-title {
+  font-family:'Quicksand', sans-serif;
+  font-size:17px;
+  font-weight:700;
+  color:var(--adm);
+}
+.modal-close {
+  background:none;
+  border:none;
+  font-size:22px;
+  color:var(--txt-m);
+  cursor:pointer;
+  padding:0 4px;
+  line-height:1;
+}
+.modal-close:hover { color:var(--adm); }
+.modal-body {
+  padding:22px;
+}
+.modal-foot {
+  padding:14px 22px;
+  background:var(--gray-bg);
+  border-top:1px solid var(--gray-lt);
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+}
+.modal-foot .btn-secondary,
+.modal-foot .btn-primary,
+.modal-foot .btn-danger {
+  width:auto;
+}
+.modal-body p {
+  font-size:14px;
+  color:var(--txt-m);
+  line-height:1.5;
+  margin-bottom:12px;
+}
+
+/* ============================================================
+   LOADING OVERLAY
+   ============================================================ */
+.loading-overlay {
+  position:fixed;
+  top:0; left:0; right:0; bottom:0;
+  background:rgba(255,255,255,0.7);
+  z-index:9999;
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+.loading-overlay.visible { display:flex; }
+.loading-spinner {
+  width:48px;
+  height:48px;
+  border:4px solid var(--adm-lt);
+  border-top-color:var(--adm);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin {
+  to { transform:rotate(360deg); }
+}
+
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="app-header">
+    <h1>Clínica VMC</h1>
+    <p>Sistema Clínico Digital</p>
+    <span class="adm-badge">Área Administrativa</span>
+  </div>
+
+  <!-- ============================================================
+       TELA 1 — LOGIN ADMIN
+       ============================================================ -->
+  <div class="section active" id="sec-login-adm">
+    <div class="login-card">
+      <div class="login-icon">🔐</div>
+      <div class="login-title">Acesso Administrativo</div>
+      <div class="login-sub">Apenas administradores autorizados podem entrar aqui.</div>
+
+      <div class="field">
+        <label for="admSigla">Sigla</label>
+        <input type="text" id="admSigla" autocomplete="off" autocapitalize="characters" maxlength="15" placeholder="Sua sigla de admin">
+      </div>
+      <div class="field">
+        <label for="admSenha">Senha</label>
+        <input type="password" id="admSenha" autocomplete="current-password" placeholder="Sua senha">
+      </div>
+
+      <button class="btn-primary" id="admBtnLogin" onclick="admFazerLogin()">Entrar</button>
+
+      <div class="alert alert-error hidden" id="admLoginError"></div>
+
+      <div class="login-footer">
+        Esta é a área administrativa do sistema. Para acessar como
+        psicólogo ou paciente, use a <a href="index.html">página principal</a>.
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       TELA 2 — DASHBOARD ADMIN
+       ============================================================ -->
+  <div class="section" id="sec-dash">
+    <div class="dash-bar">
+      <div class="dash-user">
+        <span style="font-size:24px;">👤</span>
+        <div class="dash-user-info">
+          <strong id="dashUserNome">—</strong>
+          <small id="dashUserSigla">—</small>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="admLogout()">Sair</button>
+    </div>
+
+    <div class="dash-actions">
+      <div class="dash-title">
+        Profissionais
+        <span class="dash-count" id="dashCount"></span>
+      </div>
+      <button class="btn-add" onclick="admAbrirModalCadastro()">
+        <span style="font-size:18px;">+</span>
+        Cadastrar Novo Profissional
+      </button>
+    </div>
+
+    <div class="prof-table-wrap">
+      <table class="prof-table" id="profTable">
+        <thead>
+          <tr>
+            <th>Sigla</th>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>CRP</th>
+            <th>Status</th>
+            <th style="text-align:right;">Ações</th>
+          </tr>
+        </thead>
+        <tbody id="profTableBody">
+          <!-- preenchido via JS -->
+        </tbody>
+      </table>
+      <div id="profEmptyState" class="empty-state hidden">
+        <div class="empty-state-icon">📋</div>
+        <div class="empty-state-title">Nenhum profissional cadastrado</div>
+        <div class="empty-state-sub">Clique em "Cadastrar Novo Profissional" para começar.</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       MODAL: CADASTRAR PROFISSIONAL
+       ============================================================ -->
+  <div class="modal-backdrop hidden" id="modalCadastro">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title">Cadastrar Novo Profissional</div>
+        <button class="modal-close" onclick="admFecharModal('modalCadastro')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label for="cadSigla">Sigla <span style="color:var(--red);">*</span></label>
+          <input type="text" id="cadSigla" autocapitalize="characters" maxlength="15" placeholder="Ex: JOAO">
+          <div class="hint">Identificador único. Letras maiúsculas, números e underline. Será usada como login.</div>
+        </div>
+        <div class="field">
+          <label for="cadNome">Nome completo <span style="color:var(--red);">*</span></label>
+          <input type="text" id="cadNome" placeholder="Ex: João Silva">
+        </div>
+        <div class="field">
+          <label for="cadEmail">Email</label>
+          <input type="email" id="cadEmail" placeholder="joao@exemplo.com">
+        </div>
+        <div class="field">
+          <label for="cadTelefone">Telefone</label>
+          <input type="text" id="cadTelefone" placeholder="(11) 99999-9999">
+        </div>
+        <div class="field">
+          <label for="cadCRP">CRP</label>
+          <input type="text" id="cadCRP" placeholder="Ex: 06/123456">
+        </div>
+        <div class="field">
+          <label for="cadDataInicio">Data de início</label>
+          <input type="date" id="cadDataInicio">
+        </div>
+        <div class="field">
+          <label for="cadSenha">Senha inicial <span style="color:var(--red);">*</span></label>
+          <input type="text" id="cadSenha" placeholder="Mínimo 6 caracteres">
+          <div class="hint">O profissional pode trocar depois pela interface dele.</div>
+        </div>
+        <div class="alert alert-error hidden" id="cadError"></div>
+        <div class="alert alert-success hidden" id="cadSuccess"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-secondary" onclick="admFecharModal('modalCadastro')">Cancelar</button>
+        <button class="btn-primary" id="cadBtnSalvar" onclick="admSalvarCadastro()">Cadastrar</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       MODAL: EDITAR PROFISSIONAL
+       ============================================================ -->
+  <div class="modal-backdrop hidden" id="modalEditar">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title">Editar Profissional</div>
+        <button class="modal-close" onclick="admFecharModal('modalEditar')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-info" id="edInfo">
+          Editando: <strong id="edInfoSigla">—</strong>
+          <span style="opacity:.7;">(sigla não pode ser alterada)</span>
+        </div>
+        <div class="field">
+          <label for="edNome">Nome completo</label>
+          <input type="text" id="edNome">
+        </div>
+        <div class="field">
+          <label for="edEmail">Email</label>
+          <input type="email" id="edEmail">
+        </div>
+        <div class="field">
+          <label for="edTelefone">Telefone</label>
+          <input type="text" id="edTelefone">
+        </div>
+        <div class="field">
+          <label for="edCRP">CRP</label>
+          <input type="text" id="edCRP">
+        </div>
+        <div class="field">
+          <label for="edDataInicio">Data de início</label>
+          <input type="date" id="edDataInicio">
+        </div>
+        <input type="hidden" id="edProfId">
+        <div class="alert alert-error hidden" id="edError"></div>
+        <div class="alert alert-success hidden" id="edSuccess"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-secondary" onclick="admFecharModal('modalEditar')">Cancelar</button>
+        <button class="btn-primary" id="edBtnSalvar" onclick="admSalvarEdicao()">Salvar alterações</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       MODAL: TROCAR SENHA
+       ============================================================ -->
+  <div class="modal-backdrop hidden" id="modalSenha">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title">Trocar Senha do Profissional</div>
+        <button class="modal-close" onclick="admFecharModal('modalSenha')">×</button>
+      </div>
+      <div class="modal-body">
+        <p>Troca a senha de <strong id="senhaInfoSigla">—</strong>.
+        Não é possível recuperar a senha antiga depois.</p>
+        <div class="field">
+          <label for="senhaNova">Nova senha</label>
+          <input type="text" id="senhaNova" placeholder="Mínimo 6 caracteres">
+        </div>
+        <div class="field">
+          <label for="senhaConfirma">Confirmar nova senha</label>
+          <input type="text" id="senhaConfirma" placeholder="Digite a mesma senha de novo">
+        </div>
+        <input type="hidden" id="senhaProfId">
+        <div class="alert alert-error hidden" id="senhaError"></div>
+        <div class="alert alert-success hidden" id="senhaSuccess"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-secondary" onclick="admFecharModal('modalSenha')">Cancelar</button>
+        <button class="btn-primary" id="senhaBtnSalvar" onclick="admSalvarNovaSenha()">Trocar Senha</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       MODAL: CONFIRMAR DESATIVAR / REATIVAR
+       ============================================================ -->
+  <div class="modal-backdrop hidden" id="modalStatus">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title" id="statusTitulo">—</div>
+        <button class="modal-close" onclick="admFecharModal('modalStatus')">×</button>
+      </div>
+      <div class="modal-body">
+        <p id="statusTextoConfirma">—</p>
+        <div class="alert alert-error hidden" id="statusError"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-secondary" onclick="admFecharModal('modalStatus')">Cancelar</button>
+        <button class="btn-primary" id="statusBtnConfirma" onclick="admConfirmarStatus()">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       LOADING
+       ============================================================ -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+  </div>
+
+</div>
+
+
+<script>
+/* ==========================================================
+   PACOTE 13.1.2 — FRONTEND ADMIN
+   ========================================================== */
+
+// URL do Apps Script (mesma do index.html — backend unificado)
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx7kHrVq7KizCWCVeEhTpsBFcU36Vc1zUBWF1AuJxdPD3iO5K4LIPuZs2vXXr1OK94eAg/exec';
+
+// Estado global da área admin (em memória apenas)
+const ADM_STATE = {
+  sigla: null,         // sigla do admin logado (para revalidar em cada chamada)
+  senha: null,         // senha do admin logado (idem)
+  nomeCompleto: null,
+  profissionais: [],
+  statusPendente: null,  // {profId, sigla, acao: 'desativar'|'reativar'}
+};
+
+
+/* ============================================================
+   CHAMADA AO SERVIDOR
+   ============================================================ */
+async function admChamarServidor(acao, dados = {}) {
+  mostrarLoading(true);
+  try {
+    const payload = { acao, ...dados };
+    const resposta = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'cors',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload),
+    });
+    const json = await resposta.json();
+    return json;
+  } catch (erro) {
+    console.error('Erro ao chamar servidor:', erro);
+    return { ok: false, erro: 'Falha de conexão com o servidor.' };
+  } finally {
+    mostrarLoading(false);
+  }
+}
+
+function mostrarLoading(visivel) {
+  document.getElementById('loadingOverlay').classList.toggle('visible', visivel);
+}
+
+
+/* ============================================================
+   NAVEGAÇÃO ENTRE SEÇÕES
+   ============================================================ */
+function admIrPara(idSecao) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(idSecao).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+
+/* ============================================================
+   LOGIN ADMIN
+   ============================================================ */
+async function admFazerLogin() {
+  const sigla = document.getElementById('admSigla').value.trim().toUpperCase();
+  const senha = document.getElementById('admSenha').value;
+  const erroBox = document.getElementById('admLoginError');
+  const btn = document.getElementById('admBtnLogin');
+
+  erroBox.classList.add('hidden');
+
+  if (!sigla || !senha) {
+    erroBox.textContent = 'Preencha sigla e senha.';
+    erroBox.classList.remove('hidden');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Entrando...';
+
+  const resp = await admChamarServidor('autenticar', {
+    sigla, senha, tipo: 'admin'
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Entrar';
+
+  if (!resp.ok) {
+    erroBox.textContent = resp.erro || 'Erro ao autenticar.';
+    erroBox.classList.remove('hidden');
+    document.getElementById('admSenha').value = '';
+    return;
+  }
+
+  // Guarda credenciais em memória para revalidar em cada chamada admin
+  ADM_STATE.sigla = sigla;
+  ADM_STATE.senha = senha;
+  ADM_STATE.nomeCompleto = resp.admin.nome_completo;
+
+  // Limpa os campos do form de login
+  document.getElementById('admSigla').value = '';
+  document.getElementById('admSenha').value = '';
+
+  // Atualiza header e vai pro dashboard
+  document.getElementById('dashUserNome').textContent = resp.admin.nome_completo;
+  document.getElementById('dashUserSigla').textContent = 'Admin · ' + resp.admin.sigla;
+
+  admIrPara('sec-dash');
+  await admCarregarProfissionais();
+}
+
+function admLogout() {
+  // Limpa estado em memória (não tem sessionStorage por segurança)
+  ADM_STATE.sigla = null;
+  ADM_STATE.senha = null;
+  ADM_STATE.nomeCompleto = null;
+  ADM_STATE.profissionais = [];
+  admIrPara('sec-login-adm');
+}
+
+
+/* ============================================================
+   CARREGAR E RENDERIZAR LISTA DE PROFISSIONAIS
+   ============================================================ */
+async function admCarregarProfissionais() {
+  const resp = await admChamarServidor('admListarProfissionais', {
+    adminSigla: ADM_STATE.sigla,
+    adminSenha: ADM_STATE.senha
+  });
+
+  if (!resp.ok) {
+    alert('Erro ao carregar profissionais: ' + (resp.erro || 'erro desconhecido'));
+    // Sessão pode ter expirado; volta pro login
+    admLogout();
+    return;
+  }
+
+  ADM_STATE.profissionais = resp.profissionais || [];
+  admRenderizarTabela();
+}
+
+function admRenderizarTabela() {
+  const tbody = document.getElementById('profTableBody');
+  const empty = document.getElementById('profEmptyState');
+  const count = document.getElementById('dashCount');
+  const lista = ADM_STATE.profissionais;
+
+  count.textContent = '(' + lista.length + ')';
+
+  if (lista.length === 0) {
+    tbody.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  let html = '';
+  for (const p of lista) {
+    const ativo = String(p.ativo || '').trim().toLowerCase() === 'sim';
+    const statusClass = ativo ? 'ativo' : 'inativo';
+    const statusTxt = ativo ? 'Ativo' : 'Inativo';
+    const profId = escapeHtml(p.profissional_id || '');
+    const sigla = escapeHtml(p.sigla || '');
+    const nome = escapeHtml(p.nome_completo || '—');
+    const email = escapeHtml(p.email || '—');
+    const crp = escapeHtml(p.crp || '—');
+
+    const btnStatus = ativo
+      ? `<button class="btn-icon danger" onclick="admConfirmarDesativar('${profId}','${sigla}')">Desativar</button>`
+      : `<button class="btn-icon" onclick="admConfirmarReativar('${profId}','${sigla}')">Reativar</button>`;
+
+    html += `
+      <tr>
+        <td data-label="Sigla"><span class="prof-sigla">${sigla}</span></td>
+        <td data-label="Nome"><span class="prof-nome">${nome}</span></td>
+        <td data-label="Email">${email}</td>
+        <td data-label="CRP">${crp}</td>
+        <td data-label="Status"><span class="prof-status ${statusClass}">${statusTxt}</span></td>
+        <td data-label="Ações">
+          <div class="prof-actions">
+            <button class="btn-icon" onclick="admAbrirModalEditar('${profId}')">Editar</button>
+            <button class="btn-icon" onclick="admAbrirModalSenha('${profId}','${sigla}')">Senha</button>
+            ${btnStatus}
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+  tbody.innerHTML = html;
+}
+
+
+/* ============================================================
+   MODAL: CADASTRAR
+   ============================================================ */
+function admAbrirModalCadastro() {
+  // Limpa form
+  ['cadSigla','cadNome','cadEmail','cadTelefone','cadCRP','cadDataInicio','cadSenha']
+    .forEach(id => document.getElementById(id).value = '');
+  document.getElementById('cadError').classList.add('hidden');
+  document.getElementById('cadSuccess').classList.add('hidden');
+
+  // Preenche data início com hoje (sugestão)
+  document.getElementById('cadDataInicio').value = new Date().toISOString().slice(0,10);
+
+  document.getElementById('modalCadastro').classList.remove('hidden');
+  setTimeout(() => document.getElementById('cadSigla').focus(), 100);
+}
+
+async function admSalvarCadastro() {
+  const erroBox = document.getElementById('cadError');
+  const sucBox = document.getElementById('cadSuccess');
+  const btn = document.getElementById('cadBtnSalvar');
+  erroBox.classList.add('hidden');
+  sucBox.classList.add('hidden');
+
+  const dados = {
+    sigla: document.getElementById('cadSigla').value.trim().toUpperCase(),
+    nomeCompleto: document.getElementById('cadNome').value.trim(),
+    email: document.getElementById('cadEmail').value.trim(),
+    telefone: document.getElementById('cadTelefone').value.trim(),
+    crp: document.getElementById('cadCRP').value.trim(),
+    dataInicio: document.getElementById('cadDataInicio').value,
+    senhaInicial: document.getElementById('cadSenha').value
+  };
+
+  // Validação básica no cliente (servidor revalida)
+  if (!dados.sigla) {
+    return mostrarErro(erroBox, 'Sigla obrigatória.');
+  }
+  if (!/^[A-Z0-9_]{2,15}$/.test(dados.sigla)) {
+    return mostrarErro(erroBox, 'Sigla deve ter 2-15 caracteres (letras maiúsculas, números, underline).');
+  }
+  if (!dados.nomeCompleto) {
+    return mostrarErro(erroBox, 'Nome completo obrigatório.');
+  }
+  if (!dados.senhaInicial || dados.senhaInicial.length < 6) {
+    return mostrarErro(erroBox, 'Senha obrigatória, mínimo 6 caracteres.');
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Cadastrando...';
+
+  const resp = await admChamarServidor('admCadastrarProfissional', {
+    adminSigla: ADM_STATE.sigla,
+    adminSenha: ADM_STATE.senha,
+    dados
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Cadastrar';
+
+  if (!resp.ok) {
+    return mostrarErro(erroBox, resp.erro || 'Erro ao cadastrar.');
+  }
+
+  sucBox.textContent = '✓ Profissional ' + resp.sigla + ' cadastrado com sucesso!';
+  sucBox.classList.remove('hidden');
+
+  // Fecha modal e recarrega lista após pequeno delay
+  setTimeout(async () => {
+    admFecharModal('modalCadastro');
+    await admCarregarProfissionais();
+  }, 1200);
+}
+
+
+/* ============================================================
+   MODAL: EDITAR
+   ============================================================ */
+function admAbrirModalEditar(profId) {
+  const p = ADM_STATE.profissionais.find(x => x.profissional_id === profId);
+  if (!p) return;
+
+  document.getElementById('edProfId').value = p.profissional_id;
+  document.getElementById('edInfoSigla').textContent = p.sigla;
+  document.getElementById('edNome').value = p.nome_completo || '';
+  document.getElementById('edEmail').value = p.email || '';
+  document.getElementById('edTelefone').value = p.telefone || '';
+  document.getElementById('edCRP').value = p.crp || '';
+  document.getElementById('edDataInicio').value = p.data_inicio || '';
+  document.getElementById('edError').classList.add('hidden');
+  document.getElementById('edSuccess').classList.add('hidden');
+
+  document.getElementById('modalEditar').classList.remove('hidden');
+}
+
+async function admSalvarEdicao() {
+  const erroBox = document.getElementById('edError');
+  const sucBox = document.getElementById('edSuccess');
+  const btn = document.getElementById('edBtnSalvar');
+  erroBox.classList.add('hidden');
+  sucBox.classList.add('hidden');
+
+  const profId = document.getElementById('edProfId').value;
+  const mudancas = {
+    nomeCompleto: document.getElementById('edNome').value.trim(),
+    email: document.getElementById('edEmail').value.trim(),
+    telefone: document.getElementById('edTelefone').value.trim(),
+    crp: document.getElementById('edCRP').value.trim(),
+    dataInicio: document.getElementById('edDataInicio').value
+  };
+
+  if (!mudancas.nomeCompleto) {
+    return mostrarErro(erroBox, 'Nome completo não pode ficar vazio.');
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Salvando...';
+
+  const resp = await admChamarServidor('admAtualizarProfissional', {
+    adminSigla: ADM_STATE.sigla,
+    adminSenha: ADM_STATE.senha,
+    profissionalId: profId,
+    mudancas
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Salvar alterações';
+
+  if (!resp.ok) {
+    return mostrarErro(erroBox, resp.erro || 'Erro ao salvar.');
+  }
+
+  sucBox.textContent = '✓ Alterações salvas!';
+  sucBox.classList.remove('hidden');
+
+  setTimeout(async () => {
+    admFecharModal('modalEditar');
+    await admCarregarProfissionais();
+  }, 1000);
+}
+
+
+/* ============================================================
+   MODAL: TROCAR SENHA
+   ============================================================ */
+function admAbrirModalSenha(profId, sigla) {
+  document.getElementById('senhaProfId').value = profId;
+  document.getElementById('senhaInfoSigla').textContent = sigla;
+  document.getElementById('senhaNova').value = '';
+  document.getElementById('senhaConfirma').value = '';
+  document.getElementById('senhaError').classList.add('hidden');
+  document.getElementById('senhaSuccess').classList.add('hidden');
+  document.getElementById('modalSenha').classList.remove('hidden');
+  setTimeout(() => document.getElementById('senhaNova').focus(), 100);
+}
+
+async function admSalvarNovaSenha() {
+  const erroBox = document.getElementById('senhaError');
+  const sucBox = document.getElementById('senhaSuccess');
+  const btn = document.getElementById('senhaBtnSalvar');
+  erroBox.classList.add('hidden');
+  sucBox.classList.add('hidden');
+
+  const profId = document.getElementById('senhaProfId').value;
+  const novaSenha = document.getElementById('senhaNova').value;
+  const confirma = document.getElementById('senhaConfirma').value;
+
+  if (!novaSenha || novaSenha.length < 6) {
+    return mostrarErro(erroBox, 'Senha deve ter no mínimo 6 caracteres.');
+  }
+  if (novaSenha !== confirma) {
+    return mostrarErro(erroBox, 'As senhas digitadas não coincidem.');
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Trocando...';
+
+  const resp = await admChamarServidor('admTrocarSenhaProfissional', {
+    adminSigla: ADM_STATE.sigla,
+    adminSenha: ADM_STATE.senha,
+    profissionalId: profId,
+    novaSenha
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Trocar Senha';
+
+  if (!resp.ok) {
+    return mostrarErro(erroBox, resp.erro || 'Erro ao trocar senha.');
+  }
+
+  sucBox.textContent = '✓ Senha trocada com sucesso!';
+  sucBox.classList.remove('hidden');
+
+  setTimeout(() => admFecharModal('modalSenha'), 1200);
+}
+
+
+/* ============================================================
+   MODAL: CONFIRMAR DESATIVAR / REATIVAR
+   ============================================================ */
+function admConfirmarDesativar(profId, sigla) {
+  ADM_STATE.statusPendente = { profId, sigla, acao: 'desativar' };
+  document.getElementById('statusTitulo').textContent = 'Desativar Profissional';
+  document.getElementById('statusTextoConfirma').innerHTML =
+    `Tem certeza que deseja desativar o profissional <strong>${escapeHtml(sigla)}</strong>?<br><br>` +
+    `Ele <strong>não conseguirá mais fazer login</strong>, mas seus pacientes ` +
+    `continuarão acessando normalmente. Esta ação pode ser revertida.`;
+  document.getElementById('statusBtnConfirma').textContent = 'Sim, desativar';
+  document.getElementById('statusBtnConfirma').className = 'btn-danger';
+  document.getElementById('statusError').classList.add('hidden');
+  document.getElementById('modalStatus').classList.remove('hidden');
+}
+
+function admConfirmarReativar(profId, sigla) {
+  ADM_STATE.statusPendente = { profId, sigla, acao: 'reativar' };
+  document.getElementById('statusTitulo').textContent = 'Reativar Profissional';
+  document.getElementById('statusTextoConfirma').innerHTML =
+    `Reativar o profissional <strong>${escapeHtml(sigla)}</strong>?<br><br>` +
+    `Ele voltará a conseguir fazer login normalmente.`;
+  document.getElementById('statusBtnConfirma').textContent = 'Sim, reativar';
+  document.getElementById('statusBtnConfirma').className = 'btn-primary';
+  document.getElementById('statusError').classList.add('hidden');
+  document.getElementById('modalStatus').classList.remove('hidden');
+}
+
+async function admConfirmarStatus() {
+  const erroBox = document.getElementById('statusError');
+  const btn = document.getElementById('statusBtnConfirma');
+  erroBox.classList.add('hidden');
+
+  const pendente = ADM_STATE.statusPendente;
+  if (!pendente) return;
+
+  const acao = pendente.acao === 'desativar'
+    ? 'admDesativarProfissional'
+    : 'admReativarProfissional';
+
+  btn.disabled = true;
+  const textoOriginal = btn.textContent;
+  btn.textContent = 'Processando...';
+
+  const resp = await admChamarServidor(acao, {
+    adminSigla: ADM_STATE.sigla,
+    adminSenha: ADM_STATE.senha,
+    profissionalId: pendente.profId
+  });
+
+  btn.disabled = false;
+  btn.textContent = textoOriginal;
+
+  if (!resp.ok) {
+    return mostrarErro(erroBox, resp.erro || 'Erro ao alterar status.');
+  }
+
+  ADM_STATE.statusPendente = null;
+  admFecharModal('modalStatus');
+  await admCarregarProfissionais();
+}
+
+
+/* ============================================================
+   UTILITÁRIOS
+   ============================================================ */
+function admFecharModal(id) {
+  document.getElementById(id).classList.add('hidden');
+}
+
+function mostrarErro(box, msg) {
+  box.textContent = msg;
+  box.classList.remove('hidden');
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// ESC fecha qualquer modal aberto
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    ['modalCadastro','modalEditar','modalSenha','modalStatus'].forEach(id => {
+      const m = document.getElementById(id);
+      if (m && !m.classList.contains('hidden')) admFecharModal(id);
+    });
+  }
+});
+
+// Enter no login dispara entrar
+['admSigla','admSenha'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') admFazerLogin();
+  });
+});
+
+</script>
+
+</body>
+</html>
