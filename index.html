@@ -286,7 +286,7 @@ body{
 .prof-ind-chip.chip-adesao-critico{background:var(--red-bg);color:var(--red);}
 .prof-ind-empty{font-size:11px;color:var(--txt-l);margin-top:6px;font-style:italic;}
 
-/* Pacote 13.3.1: Tela read-only de paciente (visão profissional) */
+/* Pacote 13.3.1→13.3.3: Tela read-only de paciente (visão profissional) */
 .prof-pv-header{
   background:linear-gradient(135deg,var(--blue),#1E4A5F);
   color:var(--w);border-radius:var(--r);
@@ -312,16 +312,47 @@ body{
 .prof-pv-back:hover{background:rgba(255,255,255,.25);}
 .prof-pv-loading{text-align:center;padding:32px 16px;color:var(--txt-l);font-size:14px;}
 .prof-pv-loading .prof-spinner{margin-bottom:10px;}
-.prof-pv-banner{
-  background:var(--blue-lt);border-radius:8px;
-  padding:10px 14px;font-size:12px;color:var(--blue);
-  margin-bottom:16px;text-align:center;line-height:1.5;
+
+/* Pacote 13.3.3: Cards-módulo colapsáveis */
+.prof-pv-mods{display:flex;flex-direction:column;gap:12px;}
+.prof-pv-mod{
+  background:var(--w);border-radius:var(--r);
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+  border:2px solid transparent;overflow:hidden;
+  transition:border-color .25s,box-shadow .25s;
 }
-.prof-pv-banner strong{display:block;margin-bottom:2px;font-size:13px;}
-.prof-pv-empty{
-  text-align:center;padding:40px 20px;color:var(--txt-l);font-size:14px;
+.prof-pv-mod.mod-blue{border-color:var(--blue-lt);}
+.prof-pv-mod.mod-coral{border-color:#F5D0CA;}
+.prof-pv-mod.mod-purple{border-color:#D9CCE8;}
+.prof-pv-mod-head{
+  display:flex;align-items:center;gap:14px;
+  padding:18px 20px;cursor:pointer;
+  transition:background .2s;position:relative;
 }
-.prof-pv-empty span{font-size:32px;display:block;margin-bottom:10px;}
+.prof-pv-mod-head:hover{background:var(--gray-bg);}
+.prof-pv-mod-icon{font-size:28px;flex-shrink:0;}
+.prof-pv-mod-info{flex:1;min-width:0;}
+.prof-pv-mod-title{
+  font-family:'Quicksand',sans-serif;font-size:15px;font-weight:700;margin-bottom:2px;
+}
+.mod-blue .prof-pv-mod-title{color:var(--blue);}
+.mod-coral .prof-pv-mod-title{color:var(--coral);}
+.mod-purple .prof-pv-mod-title{color:var(--purple);}
+.prof-pv-mod-meta{font-size:11px;color:var(--txt-l);}
+.prof-pv-mod-chevron{
+  font-size:20px;color:var(--gray-lt);transition:transform .25s;
+  flex-shrink:0;font-weight:700;
+}
+.prof-pv-mod.aberto .prof-pv-mod-chevron{transform:rotate(90deg);color:var(--txt-l);}
+.prof-pv-mod-body{
+  display:none;padding:0 20px 20px;
+}
+.prof-pv-mod.aberto .prof-pv-mod-body{display:block;}
+.prof-pv-mod-body .anam-card{box-shadow:none;border:none;padding:0;}
+.prof-pv-mod-vazio{
+  text-align:center;padding:24px 16px;color:var(--txt-l);font-size:13px;
+}
+.prof-pv-mod-vazio span{font-size:28px;display:block;margin-bottom:8px;}
 
 /* ===== Campos de formulário ===== */
 .field{margin:12px 0;position:relative;}
@@ -8801,7 +8832,8 @@ function profRenderizarIndicadores_(p) {
 }
 
 /* ============================================================
-   PACOTE 13.3.1 — VISUALIZAÇÃO INDIVIDUAL DO PACIENTE (read-only)
+   PACOTE 13.3.1→13.3.3 — VISUALIZAÇÃO INDIVIDUAL DO PACIENTE
+   Cards colapsáveis: Anamnese, Automonitoramento, Escalas
    ============================================================ */
 
 /* Paciente selecionado pelo profissional (memória apenas) */
@@ -8809,27 +8841,17 @@ var PROF_PACIENTE_SEL = null;
 
 /**
  * Profissional clicou no card de um paciente.
- * Busca dados via profLerDadosPaciente e renderiza anamnese read-only.
+ * Busca dados via profLerDadosPaciente e renderiza 3 cards-módulo colapsáveis.
  */
 async function profAbrirPaciente(sigla) {
   if (!PROF_SESSAO) return;
 
-  // Guardar referência do paciente selecionado
   PROF_PACIENTE_SEL = { sigla: sigla };
-
-  // Iniciais para avatar
   var iniciais = sigla.charAt(0);
 
   var container = document.getElementById('profPacienteConteudo');
   container.innerHTML =
-    '<div class="prof-pv-header">' +
-      '<div class="prof-pv-avatar">' + profEscHtml_(iniciais) + '</div>' +
-      '<div class="prof-pv-info">' +
-        '<p class="prof-pv-nome">Carregando…</p>' +
-        '<p class="prof-pv-sigla">' + profEscHtml_(sigla) + '</p>' +
-      '</div>' +
-      '<button class="prof-pv-back" onclick="profVoltarDashboard()">← Voltar</button>' +
-    '</div>' +
+    profBuildHeader_(iniciais, 'Carregando…', sigla) +
     '<div class="prof-pv-loading">' +
       '<div class="prof-spinner"></div>' +
       '<p>Carregando dados do paciente…</p>' +
@@ -8837,7 +8859,6 @@ async function profAbrirPaciente(sigla) {
 
   abrirSecao('sec-prof-paciente');
 
-  // Buscar dados no backend
   var resp = await chamarServidor('profLerDadosPaciente', {
     profSigla: PROF_SESSAO._sigla,
     profSenha: PROF_SESSAO._senha,
@@ -8846,69 +8867,104 @@ async function profAbrirPaciente(sigla) {
 
   if (!resp.ok) {
     container.innerHTML =
-      '<div class="prof-pv-header">' +
-        '<div class="prof-pv-avatar">' + profEscHtml_(iniciais) + '</div>' +
-        '<div class="prof-pv-info">' +
-          '<p class="prof-pv-nome">' + profEscHtml_(sigla) + '</p>' +
-          '<p class="prof-pv-sigla">Erro ao carregar</p>' +
-        '</div>' +
-        '<button class="prof-pv-back" onclick="profVoltarDashboard()">← Voltar</button>' +
-      '</div>' +
+      profBuildHeader_(iniciais, sigla, 'Erro ao carregar') +
       '<div class="alert alert-error" style="margin-top:16px;">' +
         '⚠️ ' + profEscHtml_(resp.erro || 'Erro ao carregar dados do paciente.') +
       '</div>';
     return;
   }
 
-  // Atualizar dados do paciente selecionado
+  // Nome real do paciente
   var nome = sigla;
   if (resp.anamnese && resp.anamnese.nome_completo) {
     nome = resp.anamnese.nome_completo;
   }
   PROF_PACIENTE_SEL.nome = nome;
 
-  // Gerar iniciais do nome real
   var iniciaisNome = nome.split(' ').filter(function(w){ return w.length > 0; })
     .map(function(w){ return w[0].toUpperCase(); }).slice(0,2).join('');
   if (!iniciaisNome) iniciaisNome = sigla.charAt(0);
 
-  // Renderizar header + conteúdo
-  var html =
-    '<div class="prof-pv-header">' +
-      '<div class="prof-pv-avatar">' + profEscHtml_(iniciaisNome) + '</div>' +
-      '<div class="prof-pv-info">' +
-        '<p class="prof-pv-nome">' + profEscHtml_(nome) + '</p>' +
-        '<p class="prof-pv-sigla">Paciente · ' + profEscHtml_(sigla) + '</p>' +
-      '</div>' +
-      '<button class="prof-pv-back" onclick="profVoltarDashboard()">← Voltar</button>' +
-    '</div>';
+  // ---- Header ----
+  var html = profBuildHeader_(iniciaisNome, nome, 'Paciente · ' + sigla);
 
-  // Anamnese
+  // ---- 3 cards-módulo colapsáveis ----
+  html += '<div class="prof-pv-mods">';
+
+  // 1. Anamnese
+  var anamMeta = resp.anamnese_preenchida ? 'Preenchida' : 'Não preenchida';
+  if (resp.anamnese && resp.anamnese.timestamp) {
+    var ts = resp.anamnese.timestamp;
+    if (typeof ts === 'string' && ts.length >= 10) anamMeta = 'Preenchida em ' + formatarDataBR(ts.slice(0, 10));
+  }
+  html += '<div class="prof-pv-mod mod-blue" id="profMod-anam">';
+  html += '<div class="prof-pv-mod-head" onclick="profToggleModulo_(\'anam\')">';
+  html += '<span class="prof-pv-mod-icon">📝</span>';
+  html += '<div class="prof-pv-mod-info"><div class="prof-pv-mod-title">Anamnese</div><div class="prof-pv-mod-meta">' + profEscHtml_(anamMeta) + '</div></div>';
+  html += '<span class="prof-pv-mod-chevron">›</span>';
+  html += '</div>';
+  html += '<div class="prof-pv-mod-body">';
   if (resp.anamnese_preenchida && resp.anamnese) {
     html += profRenderizarAnamnese_(resp.anamnese);
   } else {
-    html +=
-      '<div class="prof-pv-empty">' +
-        '<span>📝</span>' +
-        '<p style="font-weight:700;color:var(--txt);margin-bottom:6px;">Anamnese não preenchida</p>' +
-        '<p>O paciente ainda não enviou sua anamnese.</p>' +
-      '</div>';
+    html += '<div class="prof-pv-mod-vazio"><span>📝</span>O paciente ainda não enviou sua anamnese.</div>';
   }
+  html += '</div></div>';
 
-  // Pacote 13.3.2: Automonitoramento
-  html += profRenderizarAutomonitoramento_(resp.automonitoramento || [], resp.total_auto || 0);
+  // 2. Automonitoramento
+  var totalAuto = (resp.automonitoramento || []).length;
+  var autoMeta = totalAuto === 0 ? 'Nenhum registro' : totalAuto + ' registro' + (totalAuto !== 1 ? 's' : '');
+  html += '<div class="prof-pv-mod mod-coral" id="profMod-auto">';
+  html += '<div class="prof-pv-mod-head" onclick="profToggleModulo_(\'auto\')">';
+  html += '<span class="prof-pv-mod-icon">📊</span>';
+  html += '<div class="prof-pv-mod-info"><div class="prof-pv-mod-title">Automonitoramento</div><div class="prof-pv-mod-meta">' + profEscHtml_(autoMeta) + '</div></div>';
+  html += '<span class="prof-pv-mod-chevron">›</span>';
+  html += '</div>';
+  html += '<div class="prof-pv-mod-body">';
+  html += profRenderizarAutomonitoramento_(resp.automonitoramento || []);
+  html += '</div></div>';
+
+  // 3. Escalas
+  var totalEsc = (resp.escalas || []).length;
+  var escMeta = totalEsc === 0 ? 'Nenhuma aplicação' : totalEsc + ' aplicaç' + (totalEsc !== 1 ? 'ões' : 'ão');
+  html += '<div class="prof-pv-mod mod-purple" id="profMod-esc">';
+  html += '<div class="prof-pv-mod-head" onclick="profToggleModulo_(\'esc\')">';
+  html += '<span class="prof-pv-mod-icon">📋</span>';
+  html += '<div class="prof-pv-mod-info"><div class="prof-pv-mod-title">Escalas e Inventários</div><div class="prof-pv-mod-meta">' + profEscHtml_(escMeta) + '</div></div>';
+  html += '<span class="prof-pv-mod-chevron">›</span>';
+  html += '</div>';
+  html += '<div class="prof-pv-mod-body" id="profModEscBody">';
+  html += profRenderizarEscalas_(resp.escalas || []);
+  html += '</div></div>';
+
+  html += '</div>'; // fecha .prof-pv-mods
 
   container.innerHTML = html;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+/* Monta o header da tela do paciente (DRY) */
+function profBuildHeader_(iniciais, nome, sub) {
+  return '<div class="prof-pv-header">' +
+    '<div class="prof-pv-avatar">' + profEscHtml_(iniciais) + '</div>' +
+    '<div class="prof-pv-info">' +
+      '<p class="prof-pv-nome">' + profEscHtml_(nome) + '</p>' +
+      '<p class="prof-pv-sigla">' + profEscHtml_(sub) + '</p>' +
+    '</div>' +
+    '<button class="prof-pv-back" onclick="profVoltarDashboard()">← Voltar</button>' +
+  '</div>';
+}
+
+/* Abre/fecha um card-módulo */
+function profToggleModulo_(id) {
+  var el = document.getElementById('profMod-' + id);
+  if (el) el.classList.toggle('aberto');
+}
+
 /**
- * Renderiza a anamnese de um paciente em modo consulta (read-only).
- * Reusa a mesma estrutura visual de renderConsulta do fluxo paciente,
- * com banner adaptado para a visão do profissional.
+ * Renderiza a anamnese em modo read-only (conteúdo do card colapsável).
  */
 function profRenderizarAnamnese_(dados) {
-  // Helper: uma linha label + valor
   var linha = function(label, valor) {
     var v;
     if (valor === undefined || valor === null || valor === '') {
@@ -8921,29 +8977,14 @@ function profRenderizarAnamnese_(dados) {
     return '<div class="review-row"><strong>' + label + '</strong><span>' + v + '</span></div>';
   };
 
-  // Data de nascimento + idade
   var dnasc = dados.data_nascimento;
   if (dnasc instanceof Date) dnasc = dnasc.toISOString().slice(0, 10);
   var idade = calcularIdade(dnasc);
   var dataFmt = (dnasc ? formatarDataBR(dnasc) : '') + (idade !== null ? ' (' + idade + ' anos)' : '');
 
-  // Data de envio
-  var dataEnvio = dados.timestamp;
-  if (dataEnvio instanceof Date) dataEnvio = formatarDataBR(dataEnvio.toISOString().slice(0, 10));
-  else if (typeof dataEnvio === 'string' && dataEnvio.length >= 10) dataEnvio = formatarDataBR(dataEnvio.slice(0, 10));
-
   var html = '<div class="anam-card">';
 
-  html +=
-    '<div class="prof-pv-banner">' +
-      '<strong>Anamnese' + (dataEnvio ? ' — preenchida em ' + dataEnvio : '') + '</strong>' +
-      'Visualização somente leitura — dados preenchidos pelo paciente' +
-    '</div>';
-
-  html += '<div class="anam-step-title">Anamnese Completa</div>';
-  html += '<div class="anam-step-sub">Consulta pelo profissional</div>';
-
-  // Seção 1 — Dados Pessoais
+  // Seção 1
   html += '<div class="review-section"><h4>1. Dados Pessoais</h4>';
   html += linha('Nome completo', dados.nome_completo);
   html += linha('Data de nascimento', dataFmt);
@@ -8970,7 +9011,7 @@ function profRenderizarAnamnese_(dados) {
   }
   html += '</div>';
 
-  // Seção 2 — Histórico de Tratamentos
+  // Seção 2
   html += '<div class="review-section"><h4>2. Histórico de Tratamentos</h4>';
   html += linha('Psicoterapia / psiquiatria anterior?', dados.psicoterapia_anterior);
   if (dados.psicoterapia_anterior === 'Sim') html += linha('Detalhes', dados.tratamentos_anteriores);
@@ -8986,7 +9027,7 @@ function profRenderizarAnamnese_(dados) {
   }
   html += '</div>';
 
-  // Seção 3 — Histórico de Saúde
+  // Seção 3
   html += '<div class="review-section"><h4>3. Histórico de Saúde</h4>';
   html += linha('Em tratamento atual', dados.transtornos_em_tratamento);
   html += linha('Tratamento no passado', dados.transtornos_tratamento_passado);
@@ -9002,7 +9043,7 @@ function profRenderizarAnamnese_(dados) {
   if (dados.familiar_complicacao === 'Sim') html += linha('Detalhes', dados.familiar_complicacao_detalhes);
   html += '</div>';
 
-  // Seção 4 — Pessoa(s) de Confiança
+  // Seção 4
   html += '<div class="review-section"><h4>4. Pessoa(s) de Confiança</h4>';
   for (var i = 1; i <= 3; i++) {
     var nomePessoa = dados['pessoa_confianca_' + i + '_nome'];
@@ -9015,44 +9056,25 @@ function profRenderizarAnamnese_(dados) {
   }
   html += '</div>';
 
-  html += '</div>'; // fecha .anam-card
+  html += '</div>';
   return html;
 }
 
 /**
- * Pacote 13.3.2: Renderiza a lista de registros de automonitoramento
- * na visão read-only do profissional.
- *
- * Reusa os cards compactos (.histc) e o modal existente (histAbrirModal)
- * sem duplicar lógica — apenas popula window._HIST_REGS para o modal funcionar.
+ * Renderiza a lista de registros de automonitoramento (conteúdo do card colapsável).
+ * Reusa os cards compactos (.histc) e o modal existente (histAbrirModal).
  */
-function profRenderizarAutomonitoramento_(registros, total) {
-  var html = '';
-
-  // Título da seção
-  html += '<div style="margin-top:20px;margin-bottom:12px;">';
-  html += '<div class="anam-step-title">Registros de Automonitoramento</div>';
-  html += '<div class="anam-step-sub">' + total + ' registro' + (total !== 1 ? 's' : '') + '</div>';
-  html += '</div>';
-
+function profRenderizarAutomonitoramento_(registros) {
   if (!registros || registros.length === 0) {
-    html +=
-      '<div class="prof-pv-empty">' +
-        '<span>📭</span>' +
-        '<p style="font-weight:700;color:var(--txt);margin-bottom:6px;">Nenhum registro de automonitoramento</p>' +
-        '<p>O paciente ainda não enviou registros.</p>' +
-      '</div>';
-    return html;
+    return '<div class="prof-pv-mod-vazio"><span>📭</span>O paciente ainda não enviou registros.</div>';
   }
 
-  // Ordem cronológica reversa (mais recente primeiro)
   var regs = registros.slice().reverse();
-
-  // Guardar no window._HIST_REGS para o modal existente funcionar
   window._HIST_REGS = regs;
 
   var emojis = { 1:'😟', 2:'🙁', 3:'😐', 4:'🙂', 5:'😊' };
   var humorLbl = { 1:'Muito negativo', 2:'Negativo', 3:'Neutro', 4:'Positivo', 5:'Muito positivo' };
+  var html = '';
 
   for (var i = 0; i < regs.length; i++) {
     var r = regs[i];
@@ -9075,6 +9097,59 @@ function profRenderizarAutomonitoramento_(registros, total) {
     html += '</div>';
     html += '</div>';
   }
+
+  return html;
+}
+
+/**
+ * Pacote 13.3.3: Renderiza o histórico de escalas (conteúdo do card colapsável).
+ * Agrupa por instrumento reusando a estrutura visual esch-bloco.
+ * Popula ESC_HIST_STATE.registros para que o modal escHistAbrirDetalhe funcione.
+ */
+function profRenderizarEscalas_(escalas) {
+  if (!escalas || escalas.length === 0) {
+    return '<div class="prof-pv-mod-vazio"><span>📋</span>O paciente ainda não aplicou nenhuma escala.</div>';
+  }
+
+  // Popula ESC_HIST_STATE para o modal funcionar
+  ESC_HIST_STATE.registros = escalas;
+  ESC_HIST_STATE.carregadoEm = Date.now();
+  ESC_HIST_STATE.invalidado = false;
+
+  // Agrupa por instrumento
+  var porEscala = {};
+  ESC_HIST_ORDEM.forEach(function(cod){ porEscala[cod] = []; });
+  escalas.forEach(function(r, idx){
+    var cod = String(r.instrumento || '').trim();
+    if (porEscala.hasOwnProperty(cod)) {
+      porEscala[cod].push({ reg: r, idxGlobal: idx });
+    }
+  });
+
+  var html = '';
+  ESC_HIST_ORDEM.forEach(function(cod){
+    var grupo = porEscala[cod];
+    if (!grupo || grupo.length === 0) return;
+    var def = ESC_ESCALAS[cod];
+    if (!def) return;
+
+    var corClasse = def.corPrefix;
+    var textoContagem = grupo.length === 1 ? '1 aplicação' : (grupo.length + ' aplicações');
+
+    html += '<div class="esch-bloco ' + corClasse + '" data-esc="' + escapeHtmlAuto(cod) + '">';
+    html += '<div class="esch-bloco-head" onclick="escHistToggleBloco(this)">';
+    html += '<span class="esch-bloco-icone">' + escapeHtmlAuto(def.emoji || '📊') + '</span>';
+    html += '<span class="esch-bloco-titulo">' + escapeHtmlAuto(def.nomeCompleto || cod) + '</span>';
+    html += '<span class="esch-bloco-contagem">' + textoContagem + '</span>';
+    html += '<span class="esch-bloco-chevron">›</span>';
+    html += '</div>';
+    html += '<div class="esch-bloco-corpo">';
+    grupo.forEach(function(item){
+      html += escHistRenderAplicacao(cod, def, item.reg, item.idxGlobal);
+    });
+    html += '</div>';
+    html += '</div>';
+  });
 
   return html;
 }
