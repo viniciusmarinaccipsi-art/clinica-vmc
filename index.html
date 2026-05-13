@@ -240,7 +240,7 @@ body{
   background:var(--w);border-radius:var(--r);
   border:1.5px solid var(--border);border-left:4px solid var(--blue);
   padding:14px 16px;display:flex;align-items:center;gap:14px;
-  transition:box-shadow .2s,border-color .2s;cursor:default;
+  transition:box-shadow .2s,border-color .2s;cursor:pointer;
 }
 .prof-pac-card:hover{
   border-color:var(--blue);box-shadow:0 2px 8px rgba(44,95,124,.1);
@@ -285,6 +285,43 @@ body{
 .prof-ind-chip.chip-adesao-alerta{background:var(--amber-bg);color:var(--amber);}
 .prof-ind-chip.chip-adesao-critico{background:var(--red-bg);color:var(--red);}
 .prof-ind-empty{font-size:11px;color:var(--txt-l);margin-top:6px;font-style:italic;}
+
+/* Pacote 13.3.1: Tela read-only de paciente (visão profissional) */
+.prof-pv-header{
+  background:linear-gradient(135deg,var(--blue),#1E4A5F);
+  color:var(--w);border-radius:var(--r);
+  padding:16px 20px;margin-bottom:16px;
+  display:flex;align-items:center;gap:14px;
+}
+.prof-pv-avatar{
+  width:48px;height:48px;border-radius:50%;
+  background:rgba(255,255,255,.18);color:var(--w);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Quicksand',sans-serif;font-weight:700;font-size:16px;
+  flex-shrink:0;
+}
+.prof-pv-info{flex:1;min-width:0;}
+.prof-pv-nome{font-family:'Quicksand',sans-serif;font-weight:700;font-size:16px;margin:0 0 2px;}
+.prof-pv-sigla{font-size:12px;opacity:.8;margin:0;}
+.prof-pv-back{
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
+  color:var(--w);border-radius:8px;padding:8px 14px;
+  font-size:12px;font-weight:700;cursor:pointer;
+  transition:all .25s;font-family:'Nunito',sans-serif;white-space:nowrap;
+}
+.prof-pv-back:hover{background:rgba(255,255,255,.25);}
+.prof-pv-loading{text-align:center;padding:32px 16px;color:var(--txt-l);font-size:14px;}
+.prof-pv-loading .prof-spinner{margin-bottom:10px;}
+.prof-pv-banner{
+  background:var(--blue-lt);border-radius:8px;
+  padding:10px 14px;font-size:12px;color:var(--blue);
+  margin-bottom:16px;text-align:center;line-height:1.5;
+}
+.prof-pv-banner strong{display:block;margin-bottom:2px;font-size:13px;}
+.prof-pv-empty{
+  text-align:center;padding:40px 20px;color:var(--txt-l);font-size:14px;
+}
+.prof-pv-empty span{font-size:32px;display:block;margin-bottom:10px;}
 
 /* ===== Campos de formulário ===== */
 .field{margin:12px 0;position:relative;}
@@ -3532,6 +3569,13 @@ body{
       <p style="font-weight:700;color:var(--txt);margin-bottom:8px;">Dashboard em construção</p>
       <p>A lista de pacientes será implementada no Pacote 13.2.2.</p>
       <p style="margin-top:12px;font-size:12px;">Login realizado com sucesso como profissional.</p>
+    </div>
+  </div>
+
+  <!-- PACOTE 13.3.1: VISUALIZAÇÃO INDIVIDUAL DO PACIENTE (read-only, visão profissional) -->
+  <div class="section" id="sec-prof-paciente">
+    <div id="profPacienteConteudo">
+      <!-- Populado dinamicamente por profAbrirPaciente() -->
     </div>
   </div>
 
@@ -8592,6 +8636,7 @@ var PROF_SESSAO = null;
 
 function logoutProfissional() {
   PROF_SESSAO = null;
+  PROF_PACIENTE_SEL = null;
   document.getElementById('userBadge').classList.remove('visible');
   resetarTelaLogin_();
   abrirSecao('sec-login');
@@ -8675,7 +8720,7 @@ async function profCarregarDashboard() {
     if (p.data_cadastro) metaParts.push('Cadastro: ' + p.data_cadastro);
     var metaStr = metaParts.join(' · ');
 
-    html += '<div class="prof-pac-card">';
+    html += '<div class="prof-pac-card" onclick="profAbrirPaciente(\'' + profEscHtml_(sigla) + '\')">';
     html +=   '<div class="prof-pac-avatar">' + iniciais + '</div>';
     html +=   '<div class="prof-pac-info">';
     html +=     '<div class="prof-pac-nome">' + profEscHtml_(nome) + ' <span style="font-weight:400;color:var(--txt-l);font-size:12px;">(' + profEscHtml_(sigla) + ')</span></div>';
@@ -8753,6 +8798,230 @@ function profRenderizarIndicadores_(p) {
   }
 
   return '<div class="prof-ind-row">' + chips.join('') + '</div>';
+}
+
+/* ============================================================
+   PACOTE 13.3.1 — VISUALIZAÇÃO INDIVIDUAL DO PACIENTE (read-only)
+   ============================================================ */
+
+/* Paciente selecionado pelo profissional (memória apenas) */
+var PROF_PACIENTE_SEL = null;
+
+/**
+ * Profissional clicou no card de um paciente.
+ * Busca dados via profLerDadosPaciente e renderiza anamnese read-only.
+ */
+async function profAbrirPaciente(sigla) {
+  if (!PROF_SESSAO) return;
+
+  // Guardar referência do paciente selecionado
+  PROF_PACIENTE_SEL = { sigla: sigla };
+
+  // Iniciais para avatar
+  var iniciais = sigla.charAt(0);
+
+  var container = document.getElementById('profPacienteConteudo');
+  container.innerHTML =
+    '<div class="prof-pv-header">' +
+      '<div class="prof-pv-avatar">' + profEscHtml_(iniciais) + '</div>' +
+      '<div class="prof-pv-info">' +
+        '<p class="prof-pv-nome">Carregando…</p>' +
+        '<p class="prof-pv-sigla">' + profEscHtml_(sigla) + '</p>' +
+      '</div>' +
+      '<button class="prof-pv-back" onclick="profVoltarDashboard()">← Voltar</button>' +
+    '</div>' +
+    '<div class="prof-pv-loading">' +
+      '<div class="prof-spinner"></div>' +
+      '<p>Carregando dados do paciente…</p>' +
+    '</div>';
+
+  abrirSecao('sec-prof-paciente');
+
+  // Buscar dados no backend
+  var resp = await chamarServidor('profLerDadosPaciente', {
+    profSigla: PROF_SESSAO._sigla,
+    profSenha: PROF_SESSAO._senha,
+    siglaPaciente: sigla
+  });
+
+  if (!resp.ok) {
+    container.innerHTML =
+      '<div class="prof-pv-header">' +
+        '<div class="prof-pv-avatar">' + profEscHtml_(iniciais) + '</div>' +
+        '<div class="prof-pv-info">' +
+          '<p class="prof-pv-nome">' + profEscHtml_(sigla) + '</p>' +
+          '<p class="prof-pv-sigla">Erro ao carregar</p>' +
+        '</div>' +
+        '<button class="prof-pv-back" onclick="profVoltarDashboard()">← Voltar</button>' +
+      '</div>' +
+      '<div class="alert alert-error" style="margin-top:16px;">' +
+        '⚠️ ' + profEscHtml_(resp.erro || 'Erro ao carregar dados do paciente.') +
+      '</div>';
+    return;
+  }
+
+  // Atualizar dados do paciente selecionado
+  var nome = sigla;
+  if (resp.anamnese && resp.anamnese.nome_completo) {
+    nome = resp.anamnese.nome_completo;
+  }
+  PROF_PACIENTE_SEL.nome = nome;
+
+  // Gerar iniciais do nome real
+  var iniciaisNome = nome.split(' ').filter(function(w){ return w.length > 0; })
+    .map(function(w){ return w[0].toUpperCase(); }).slice(0,2).join('');
+  if (!iniciaisNome) iniciaisNome = sigla.charAt(0);
+
+  // Renderizar header + conteúdo
+  var html =
+    '<div class="prof-pv-header">' +
+      '<div class="prof-pv-avatar">' + profEscHtml_(iniciaisNome) + '</div>' +
+      '<div class="prof-pv-info">' +
+        '<p class="prof-pv-nome">' + profEscHtml_(nome) + '</p>' +
+        '<p class="prof-pv-sigla">Paciente · ' + profEscHtml_(sigla) + '</p>' +
+      '</div>' +
+      '<button class="prof-pv-back" onclick="profVoltarDashboard()">← Voltar</button>' +
+    '</div>';
+
+  // Anamnese
+  if (resp.anamnese_preenchida && resp.anamnese) {
+    html += profRenderizarAnamnese_(resp.anamnese);
+  } else {
+    html +=
+      '<div class="prof-pv-empty">' +
+        '<span>📝</span>' +
+        '<p style="font-weight:700;color:var(--txt);margin-bottom:6px;">Anamnese não preenchida</p>' +
+        '<p>O paciente ainda não enviou sua anamnese.</p>' +
+      '</div>';
+  }
+
+  container.innerHTML = html;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/**
+ * Renderiza a anamnese de um paciente em modo consulta (read-only).
+ * Reusa a mesma estrutura visual de renderConsulta do fluxo paciente,
+ * com banner adaptado para a visão do profissional.
+ */
+function profRenderizarAnamnese_(dados) {
+  // Helper: uma linha label + valor
+  var linha = function(label, valor) {
+    var v;
+    if (valor === undefined || valor === null || valor === '') {
+      v = '<span class="empty">— não informado —</span>';
+    } else if (valor instanceof Date) {
+      v = formatarDataBR(valor.toISOString().slice(0, 10));
+    } else {
+      v = profEscHtml_(String(valor));
+    }
+    return '<div class="review-row"><strong>' + label + '</strong><span>' + v + '</span></div>';
+  };
+
+  // Data de nascimento + idade
+  var dnasc = dados.data_nascimento;
+  if (dnasc instanceof Date) dnasc = dnasc.toISOString().slice(0, 10);
+  var idade = calcularIdade(dnasc);
+  var dataFmt = (dnasc ? formatarDataBR(dnasc) : '') + (idade !== null ? ' (' + idade + ' anos)' : '');
+
+  // Data de envio
+  var dataEnvio = dados.timestamp;
+  if (dataEnvio instanceof Date) dataEnvio = formatarDataBR(dataEnvio.toISOString().slice(0, 10));
+  else if (typeof dataEnvio === 'string' && dataEnvio.length >= 10) dataEnvio = formatarDataBR(dataEnvio.slice(0, 10));
+
+  var html = '<div class="anam-card">';
+
+  html +=
+    '<div class="prof-pv-banner">' +
+      '<strong>Anamnese' + (dataEnvio ? ' — preenchida em ' + dataEnvio : '') + '</strong>' +
+      'Visualização somente leitura — dados preenchidos pelo paciente' +
+    '</div>';
+
+  html += '<div class="anam-step-title">Anamnese Completa</div>';
+  html += '<div class="anam-step-sub">Consulta pelo profissional</div>';
+
+  // Seção 1 — Dados Pessoais
+  html += '<div class="review-section"><h4>1. Dados Pessoais</h4>';
+  html += linha('Nome completo', dados.nome_completo);
+  html += linha('Data de nascimento', dataFmt);
+  html += linha('RG', dados.rg);
+  html += linha('CPF', dados.cpf);
+  html += linha('Telefone', dados.telefone);
+  html += linha('E-mail', dados.email);
+  html += linha('Escolaridade', dados.escolaridade);
+  html += linha('Profissão', dados.profissao);
+  html += linha('Estado civil', dados.estado_civil);
+  html += linha('Reside fora do Brasil?', dados.reside_fora_brasil);
+  if (dados.reside_fora_brasil === 'Sim') {
+    html += linha('País', dados.pais);
+    html += linha('ZIP Code', dados.cep_exterior);
+    html += linha('Endereço', dados.endereco_exterior);
+  } else {
+    html += linha('CEP', dados.cep);
+    html += linha('Estado', dados.estado);
+    html += linha('Cidade', dados.cidade);
+    html += linha('Logradouro', dados.endereco_logradouro);
+    html += linha('Número', dados.endereco_numero);
+    html += linha('Complemento', dados.endereco_complemento);
+    html += linha('Bairro', dados.endereco_bairro);
+  }
+  html += '</div>';
+
+  // Seção 2 — Histórico de Tratamentos
+  html += '<div class="review-section"><h4>2. Histórico de Tratamentos</h4>';
+  html += linha('Psicoterapia / psiquiatria anterior?', dados.psicoterapia_anterior);
+  if (dados.psicoterapia_anterior === 'Sim') html += linha('Detalhes', dados.tratamentos_anteriores);
+  html += linha('Procedimento médico (12m)', dados.procedimento_medico_12m);
+  if (dados.procedimento_medico_12m === 'Sim') html += linha('Detalhes do procedimento', dados.procedimento_medico_detalhes);
+  html += linha('Medicação não psicotrópica', dados.medicacao_nao_psico_continua);
+  if (dados.medicacao_nao_psico_continua === 'Sim') html += linha('Detalhes (não psico)', dados.medicacao_nao_psico_detalhes);
+  html += linha('Medicação psicotrópica', dados.medicacao_psico);
+  if (dados.medicacao_psico === 'Sim') {
+    html += linha('Em uso atual', dados.medicacao_psico_atual);
+    html += linha('Uso no passado', dados.medicacao_psico_passado);
+    html += linha('Observações', dados.medicacao_psico_detalhes);
+  }
+  html += '</div>';
+
+  // Seção 3 — Histórico de Saúde
+  html += '<div class="review-section"><h4>3. Histórico de Saúde</h4>';
+  html += linha('Em tratamento atual', dados.transtornos_em_tratamento);
+  html += linha('Tratamento no passado', dados.transtornos_tratamento_passado);
+  html += linha('Diagnosticados sem tratamento', dados.transtornos_sem_tratamento);
+  html += linha('Suspeitas (sem diagnóstico formal)', dados.transtornos_suspeitados);
+  html += linha('Outros', dados.transtornos_outros_texto);
+  html += linha('Familiar com transtorno?', dados.familiar_transtorno);
+  if (dados.familiar_transtorno === 'Sim') html += linha('Detalhes', dados.familiar_transtorno_detalhes);
+  html += linha('Sinais de risco', dados.sinais_risco_marcados);
+  html += linha('Condições clínicas', dados.complicacoes_clinicas);
+  html += linha('Outras condições', dados.complicacoes_outros_texto);
+  html += linha('Familiar com condição clínica?', dados.familiar_complicacao);
+  if (dados.familiar_complicacao === 'Sim') html += linha('Detalhes', dados.familiar_complicacao_detalhes);
+  html += '</div>';
+
+  // Seção 4 — Pessoa(s) de Confiança
+  html += '<div class="review-section"><h4>4. Pessoa(s) de Confiança</h4>';
+  for (var i = 1; i <= 3; i++) {
+    var nomePessoa = dados['pessoa_confianca_' + i + '_nome'];
+    if (!nomePessoa && i > 1) continue;
+    html += '<div style="margin-top:' + (i > 1 ? '10px' : '0') + ';font-weight:700;color:var(--blue);font-size:12px;">Pessoa ' + i + '</div>';
+    html += linha('Nome', dados['pessoa_confianca_' + i + '_nome']);
+    html += linha('Relação', dados['pessoa_confianca_' + i + '_relacao']);
+    html += linha('Telefone', dados['pessoa_confianca_' + i + '_telefone']);
+    html += linha('E-mail', dados['pessoa_confianca_' + i + '_email']);
+  }
+  html += '</div>';
+
+  html += '</div>'; // fecha .anam-card
+  return html;
+}
+
+/**
+ * Volta da tela individual do paciente para o dashboard do profissional.
+ */
+function profVoltarDashboard() {
+  PROF_PACIENTE_SEL = null;
+  abrirSecao('sec-prof-dashboard');
 }
 
 function logout() {
