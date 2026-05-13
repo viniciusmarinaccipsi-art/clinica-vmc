@@ -269,6 +269,23 @@ body{
 .prof-pac-badge.ativo{background:var(--green-bg);color:var(--green);}
 .prof-pac-badge.inativo{background:var(--gray-bg);color:var(--gray);}
 
+/* Pacote 13.2.3: Indicadores clínicos no card do paciente */
+.prof-ind-row{
+  display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;
+}
+.prof-ind-chip{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:11px;padding:3px 8px;border-radius:8px;
+  background:var(--gray-bg);color:var(--txt-m);
+}
+.prof-ind-chip.chip-humor{background:var(--blue-lt);color:var(--blue);}
+.prof-ind-chip.chip-escala{background:var(--purple-bg);color:var(--purple);}
+.prof-ind-chip.chip-alerta{background:var(--red-bg);color:var(--red);font-weight:700;}
+.prof-ind-chip.chip-adesao-ok{background:var(--green-bg);color:var(--green);}
+.prof-ind-chip.chip-adesao-alerta{background:var(--amber-bg);color:var(--amber);}
+.prof-ind-chip.chip-adesao-critico{background:var(--red-bg);color:var(--red);}
+.prof-ind-empty{font-size:11px;color:var(--txt-l);margin-top:6px;font-style:italic;}
+
 /* ===== Campos de formulário ===== */
 .field{margin:12px 0;position:relative;}
 .field label{
@@ -8666,6 +8683,10 @@ async function profCarregarDashboard() {
     html +=       '<span class="prof-pac-badge ' + badgeClass + '">' + badgeText + '</span>';
     if (metaStr) html += '<span>' + profEscHtml_(metaStr) + '</span>';
     html +=     '</div>';
+
+    // Pacote 13.2.3: Indicadores clínicos
+    html += profRenderizarIndicadores_(p);
+
     html +=   '</div>';
     html += '</div>';
   }
@@ -8679,6 +8700,59 @@ function profEscHtml_(str) {
   var d = document.createElement('div');
   d.textContent = str;
   return d.innerHTML;
+}
+
+/* Pacote 13.2.3: renderiza chips de indicadores clínicos para um paciente */
+var PROF_HUMOR_EMOJIS = { 1:'😟', 2:'🙁', 3:'😐', 4:'🙂', 5:'😊' };
+
+function profRenderizarIndicadores_(p) {
+  var chips = [];
+
+  // 1. Dias desde último automonitoramento (adesão)
+  if (p.ind_total_auto > 0 && p.ind_dias_desde_auto !== null) {
+    var dias = p.ind_dias_desde_auto;
+    var txt, cls;
+    if (dias === 0) { txt = 'Registro hoje'; cls = 'chip-adesao-ok'; }
+    else if (dias === 1) { txt = 'Último registro: ontem'; cls = 'chip-adesao-ok'; }
+    else if (dias <= 7) { txt = 'Último registro: ' + dias + ' dias'; cls = 'chip-adesao-ok'; }
+    else if (dias <= 14) { txt = 'Último registro: ' + dias + ' dias'; cls = 'chip-adesao-alerta'; }
+    else { txt = 'Último registro: ' + dias + ' dias'; cls = 'chip-adesao-critico'; }
+    chips.push('<span class="prof-ind-chip ' + cls + '">📅 ' + txt + '</span>');
+  }
+
+  // 2. Último humor (emoji + número)
+  if (p.ind_ultimo_humor) {
+    var emoji = PROF_HUMOR_EMOJIS[p.ind_ultimo_humor] || '';
+    chips.push('<span class="prof-ind-chip chip-humor">' + emoji + ' Humor: ' + p.ind_ultimo_humor + '/5</span>');
+  }
+
+  // 3. Total de registros de automonitoramento
+  if (p.ind_total_auto > 0) {
+    chips.push('<span class="prof-ind-chip">📊 ' + p.ind_total_auto + ' registro' + (p.ind_total_auto > 1 ? 's' : '') + '</span>');
+  }
+
+  // 4. Escala mais recente
+  if (p.ind_ultima_escala_nome) {
+    var escTxt = p.ind_ultima_escala_nome;
+    if (p.ind_ultima_escala_faixa) escTxt += ': ' + p.ind_ultima_escala_faixa;
+    if (p.ind_ultima_escala_data) escTxt += ' (' + p.ind_ultima_escala_data + ')';
+    chips.push('<span class="prof-ind-chip chip-escala">📋 ' + profEscHtml_(escTxt) + '</span>');
+  }
+
+  // 5. Alerta crítico mais recente
+  if (p.ind_alertas && p.ind_alertas.length > 0) {
+    var a = p.ind_alertas[0];
+    var alertaTxt = '⚠️ Alerta: ' + a.instrumento;
+    if (a.item) alertaTxt += ' ' + a.item;
+    if (a.data) alertaTxt += ' (' + a.data + ')';
+    chips.push('<span class="prof-ind-chip chip-alerta">' + profEscHtml_(alertaTxt) + '</span>');
+  }
+
+  if (chips.length === 0) {
+    return '<div class="prof-ind-empty">Sem registros ainda</div>';
+  }
+
+  return '<div class="prof-ind-row">' + chips.join('') + '</div>';
 }
 
 function logout() {
