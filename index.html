@@ -154,6 +154,68 @@ body{
   text-align:center;margin-bottom:24px;
 }
 
+/* Pacote 13.2.1: Seletor de tipo (Paciente / Psicólogo) */
+.login-tipo-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;
+  margin-bottom:20px;
+}
+.login-tipo-card{
+  background:var(--w);border-radius:var(--r);padding:16px 10px;
+  cursor:pointer;transition:all .25s;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+  border:2px solid var(--border);
+  text-align:center;
+  font-family:'Nunito',sans-serif;
+}
+.login-tipo-card:hover{
+  transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.1);
+  border-color:var(--blue);
+}
+.login-tipo-card.selected{
+  border-color:var(--blue);background:var(--blue-lt);
+  box-shadow:0 4px 12px rgba(44,95,124,.15);
+}
+.login-tipo-icon{font-size:36px;display:block;margin-bottom:8px;}
+.login-tipo-label{
+  font-family:'Quicksand',sans-serif;font-size:14px;
+  font-weight:700;color:var(--txt);
+}
+.login-tipo-card.selected .login-tipo-label{color:var(--blue);}
+
+/* Pacote 13.2.1: Formulário de login (escondido até selecionar tipo) */
+.login-form-fields{
+  display:none;
+}
+.login-form-fields.visible{
+  display:block;
+}
+
+/* Pacote 13.2.1: Dashboard do profissional */
+.prof-header{
+  background:linear-gradient(135deg,var(--blue),#1E4A5F);
+  color:var(--w);border-radius:var(--r);
+  padding:20px;margin-bottom:16px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.prof-header-info h2{
+  font-family:'Quicksand',sans-serif;font-size:18px;
+  font-weight:700;margin:0 0 4px;
+}
+.prof-header-info p{
+  font-size:12px;opacity:.85;margin:0;
+}
+.prof-btn-logout{
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
+  color:var(--w);border-radius:8px;padding:8px 16px;
+  font-size:12px;font-weight:700;cursor:pointer;
+  transition:all .25s;font-family:'Nunito',sans-serif;
+}
+.prof-btn-logout:hover{background:rgba(255,255,255,.25);}
+.prof-placeholder{
+  text-align:center;color:var(--txt-l);
+  padding:40px 20px;font-size:14px;
+}
+
 /* ===== Campos de formulário ===== */
 .field{margin:12px 0;position:relative;}
 .field label{
@@ -3350,24 +3412,56 @@ body{
     <div class="login-card">
       <div class="login-icon">🔐</div>
       <div class="login-title">Acesso ao Sistema</div>
-      <div class="login-sub">Digite sua sigla e senha para entrar</div>
+      <div class="login-sub">Selecione seu perfil e faça login</div>
 
-      <div class="field">
-        <label for="inputSigla">Sigla</label>
-        <input type="text" id="inputSigla" placeholder="Ex: TST" autocomplete="off" autocapitalize="characters" maxlength="10">
-      </div>
-      <div class="field">
-        <label for="inputSenha">Senha</label>
-        <input type="password" id="inputSenha" placeholder="Sua senha" autocomplete="current-password">
+      <!-- Pacote 13.2.1: Seletor de tipo -->
+      <div class="login-tipo-grid">
+        <div class="login-tipo-card" id="loginTipoPaciente" onclick="selecionarTipoLogin('paciente')">
+          <span class="login-tipo-icon">📍</span>
+          <span class="login-tipo-label">Sou Paciente</span>
+        </div>
+        <div class="login-tipo-card" id="loginTipoProfissional" onclick="selecionarTipoLogin('profissional')">
+          <span class="login-tipo-icon">🧭</span>
+          <span class="login-tipo-label">Sou Psicólogo</span>
+        </div>
       </div>
 
-      <button class="btn-primary" id="btnLogin" onclick="fazerLogin()">Entrar</button>
+      <!-- Formulário aparece após seleção de tipo -->
+      <div class="login-form-fields" id="loginFormFields">
+        <div class="field">
+          <label for="inputSigla">Sigla</label>
+          <input type="text" id="inputSigla" placeholder="Ex: TST" autocomplete="off" autocapitalize="characters" maxlength="10">
+        </div>
+        <div class="field">
+          <label for="inputSenha">Senha</label>
+          <input type="password" id="inputSenha" placeholder="Sua senha" autocomplete="current-password">
+        </div>
+
+        <button class="btn-primary" id="btnLogin" onclick="fazerLogin()">Entrar</button>
+      </div>
 
       <div class="alert alert-error hidden" id="loginError"></div>
 
       <div class="login-footer">
         Em caso de problemas, entre em contato com seu terapeuta.
       </div>
+    </div>
+  </div>
+
+  <!-- PACOTE 13.2.1: DASHBOARD DO PROFISSIONAL (placeholder - populado no 13.2.2) -->
+  <div class="section" id="sec-prof-dashboard">
+    <div class="prof-header">
+      <div class="prof-header-info">
+        <h2 id="profNomeHeader">Olá, Profissional</h2>
+        <p id="profSiglaHeader">Área do Psicólogo</p>
+      </div>
+      <button class="prof-btn-logout" onclick="logoutProfissional()">Sair</button>
+    </div>
+    <div class="prof-placeholder" id="profDashboardConteudo">
+      <p style="font-size:32px;margin-bottom:12px;">🏗️</p>
+      <p style="font-weight:700;color:var(--txt);margin-bottom:8px;">Dashboard em construção</p>
+      <p>A lista de pacientes será implementada no Pacote 13.2.2.</p>
+      <p style="margin-top:12px;font-size:12px;">Login realizado com sucesso como profissional.</p>
     </div>
   </div>
 
@@ -8329,13 +8423,41 @@ function atualizarMenuConformeSessao() {
 /* ============================================================
    LOGIN
    ============================================================ */
+
+/* Pacote 13.2.1: Estado do seletor de tipo */
+var LOGIN_TIPO_SELECIONADO = '';
+
+function selecionarTipoLogin(tipo) {
+  LOGIN_TIPO_SELECIONADO = tipo;
+
+  // Visual: marcar card selecionado
+  document.getElementById('loginTipoPaciente').classList.toggle('selected', tipo === 'paciente');
+  document.getElementById('loginTipoProfissional').classList.toggle('selected', tipo === 'profissional');
+
+  // Mostrar campos de login
+  document.getElementById('loginFormFields').classList.add('visible');
+
+  // Limpar erro anterior
+  document.getElementById('loginError').classList.add('hidden');
+
+  // Foco no campo sigla
+  document.getElementById('inputSigla').focus();
+}
+
 async function fazerLogin() {
   const sigla = document.getElementById('inputSigla').value.trim().toUpperCase();
   const senha = document.getElementById('inputSenha').value;
   const erroBox = document.getElementById('loginError');
   const btn = document.getElementById('btnLogin');
+  const tipo = LOGIN_TIPO_SELECIONADO || 'paciente';
 
   erroBox.classList.add('hidden');
+
+  if (!tipo) {
+    erroBox.textContent = 'Por favor, selecione se você é Paciente ou Psicólogo.';
+    erroBox.classList.remove('hidden');
+    return;
+  }
 
   if (!sigla || !senha) {
     erroBox.textContent = 'Por favor, preencha sigla e senha.';
@@ -8346,7 +8468,7 @@ async function fazerLogin() {
   btn.disabled = true;
   btn.textContent = 'Entrando...';
 
-  const resposta = await chamarServidor('autenticar', { sigla, senha });
+  const resposta = await chamarServidor('autenticar', { sigla, senha, tipo });
 
   btn.disabled = false;
   btn.textContent = 'Entrar';
@@ -8358,16 +8480,61 @@ async function fazerLogin() {
     return;
   }
 
-  salvarSessao(resposta.paciente);
-  atualizarBadgeUsuario();
-  atualizarMenuConformeSessao();
+  // Limpar campos
   document.getElementById('inputSigla').value = '';
   document.getElementById('inputSenha').value = '';
 
-  // Pacote 9: Sempre vai para o menu principal, mesmo que a anamnese esteja pendente.
-  // O cadeado visual no card do Automonitoramento + modal explicativo cuidam do
-  // bloqueio — paciente vê o menu completo e entende a ordem das etapas.
+  // Pacote 13.2.1: fluxo diferenciado por tipo
+  if (tipo === 'profissional' && resposta.profissional) {
+    // Sessão do profissional (credenciais ficam só em memória JS — lição 23)
+    PROF_SESSAO = {
+      profissional_id: resposta.profissional.profissional_id,
+      sigla: resposta.profissional.sigla,
+      nome_completo: resposta.profissional.nome_completo,
+      email: resposta.profissional.email,
+      // Credenciais para chamadas subsequentes (memória apenas, não sessionStorage)
+      _sigla: sigla,
+      _senha: senha
+    };
+    // Atualizar header do dashboard
+    document.getElementById('profNomeHeader').textContent = 'Olá, ' + (resposta.profissional.nome_completo || resposta.profissional.sigla);
+    document.getElementById('profSiglaHeader').textContent = 'Área do Psicólogo · ' + resposta.profissional.sigla;
+    // Badge mostra sigla do profissional
+    document.getElementById('userBadgeText').textContent = resposta.profissional.sigla;
+    document.getElementById('userBadge').classList.add('visible');
+
+    resetarTelaLogin_();
+    abrirSecao('sec-prof-dashboard');
+    return;
+  }
+
+  // Fluxo paciente (inalterado)
+  salvarSessao(resposta.paciente);
+  atualizarBadgeUsuario();
+  atualizarMenuConformeSessao();
+  resetarTelaLogin_();
   abrirSecao('sec-menu');
+}
+
+/* Pacote 13.2.1: Sessão do profissional em memória (não sessionStorage — lição 23) */
+var PROF_SESSAO = null;
+
+function logoutProfissional() {
+  PROF_SESSAO = null;
+  document.getElementById('userBadge').classList.remove('visible');
+  resetarTelaLogin_();
+  abrirSecao('sec-login');
+}
+
+/* Pacote 13.2.1: Reseta a tela de login ao estado inicial */
+function resetarTelaLogin_() {
+  LOGIN_TIPO_SELECIONADO = '';
+  document.getElementById('loginTipoPaciente').classList.remove('selected');
+  document.getElementById('loginTipoProfissional').classList.remove('selected');
+  document.getElementById('loginFormFields').classList.remove('visible');
+  document.getElementById('loginError').classList.add('hidden');
+  document.getElementById('inputSigla').value = '';
+  document.getElementById('inputSenha').value = '';
 }
 
 function logout() {
@@ -8388,6 +8555,7 @@ function logout() {
   }
   try { sessionStorage.removeItem('escComoUsarLido'); } catch(e){}
   atualizarBadgeUsuario();
+  resetarTelaLogin_();
   abrirSecao('sec-login');
 }
 
