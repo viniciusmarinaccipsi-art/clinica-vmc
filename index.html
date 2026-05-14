@@ -430,21 +430,21 @@ body{
 .pac-btn-editar-anam:hover{background:#1e4a5f;}
 /* Pacote 13.4.2: Menu hamburger do paciente */
 .pac-menu-header{
-  display:flex;align-items:center;justify-content:center;
-  position:relative;margin:8px 16px 4px;
+  position:relative;margin:8px 16px 4px;text-align:center;
 }
 .pac-menu-header h2{
   font-family:'Quicksand',sans-serif;font-size:16px;color:var(--blue);
-  text-align:center;margin:0;
+  margin:0;
+}
+.pac-hamburger-wrap{
+  position:absolute;right:0;top:-4px;
 }
 .pac-hamburger-btn{
-  position:absolute;right:0;top:50%;transform:translateY(-50%);
   background:none;border:1.5px solid var(--border);border-radius:8px;
   padding:6px 10px;font-size:18px;cursor:pointer;color:var(--txt);
   line-height:1;transition:background .2s,border-color .2s;
 }
 .pac-hamburger-btn:hover{background:var(--blue-lt);border-color:var(--blue);}
-.pac-hamburger-wrap{position:relative;display:inline-block;}
 .pac-hamburger-dropdown{
   display:none;position:absolute;right:0;top:calc(100% + 6px);
   background:var(--w,#fff);border:1.5px solid var(--border);border-radius:10px;
