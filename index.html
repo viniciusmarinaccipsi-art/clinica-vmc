@@ -429,16 +429,10 @@ body{
 }
 .pac-btn-editar-anam:hover{background:#1e4a5f;}
 /* Pacote 13.4.2: Menu hamburger do paciente */
-.pac-menu-header{
-  position:relative;margin:8px 16px 4px;text-align:center;
-}
-.pac-menu-header h2{
-  font-family:'Quicksand',sans-serif;font-size:16px;color:var(--blue);
-  margin:0;
-}
 .pac-hamburger-wrap{
-  position:absolute;right:0;top:-4px;
+  position:absolute;top:20px;left:0;display:none;
 }
+.pac-hamburger-wrap.visivel{display:block;}
 .pac-hamburger-btn{
   background:none;border:1.5px solid var(--border);border-radius:8px;
   padding:6px 10px;font-size:18px;cursor:pointer;color:var(--txt);
@@ -3661,6 +3655,15 @@ body{
       <span id="userBadgeText">TST</span>
       <button class="btn-logout" onclick="logout()" title="Sair">⏻</button>
     </div>
+    <!-- Pacote 13.4.2: Hamburger menu (esquerda, alinhado ao badge) -->
+    <div class="pac-hamburger-wrap" id="pacHamburgerWrap">
+      <button class="pac-hamburger-btn" onclick="pacToggleHamburger()" aria-label="Menu" id="pacHamburgerBtn">☰</button>
+      <div class="pac-hamburger-dropdown" id="pacHamburgerMenu">
+        <button class="pac-hamburger-item" onclick="pacHamburgerAcao('senha')">
+          <span>🔑</span> Alterar Senha
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- LOGIN -->
@@ -3794,18 +3797,9 @@ body{
 
   <!-- MENU -->
   <div class="section" id="sec-menu">
-    <!-- Pacote 13.4.2: Header com hamburger -->
-    <div class="pac-menu-header">
-      <h2>Menu Principal</h2>
-      <div class="pac-hamburger-wrap">
-        <button class="pac-hamburger-btn" onclick="pacToggleHamburger()" aria-label="Menu" id="pacHamburgerBtn">☰</button>
-        <div class="pac-hamburger-dropdown" id="pacHamburgerMenu">
-          <button class="pac-hamburger-item" onclick="pacHamburgerAcao('senha')">
-            <span>🔑</span> Alterar Senha
-          </button>
-        </div>
-      </div>
-    </div>
+    <h2 style="font-family:'Quicksand',sans-serif;font-size:16px;color:var(--blue);text-align:center;margin:8px 0 4px;">
+      Menu Principal
+    </h2>
     <p style="font-size:12px;color:var(--txt-l);text-align:center;margin-bottom:16px;">
       Escolha o módulo que deseja acessar
     </p>
@@ -8749,6 +8743,9 @@ function atualizarMenuConformeSessao() {
   const cardEscalas = document.getElementById('cardEscalas');
   // Pacote 13.4.2: botão destaque da senha (só no primeiro acesso)
   const senhaDestaque = document.getElementById('pacSenhaDestaque');
+  // Pacote 13.4.2: hamburger visível quando paciente está logado
+  const hamburgerWrap = document.getElementById('pacHamburgerWrap');
+  if (hamburgerWrap) hamburgerWrap.classList.add('visivel');
   if (paciente.anamnese_preenchida) {
     badgeDone.classList.remove('hidden');
     aviso.classList.add('hidden');
@@ -9804,6 +9801,9 @@ function logout() {
     ESC_STATE.respostas = {};
   }
   try { sessionStorage.removeItem('escComoUsarLido'); } catch(e){}
+  // Pacote 13.4.2: esconder hamburger ao deslogar
+  var hWrap = document.getElementById('pacHamburgerWrap');
+  if (hWrap) hWrap.classList.remove('visivel');
   atualizarBadgeUsuario();
   resetarTelaLogin_();
   abrirSecao('sec-login');
