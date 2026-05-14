@@ -420,6 +420,23 @@ body{
 .prof-edit-field input:focus,.prof-edit-field textarea:focus,.prof-edit-field select:focus{
   border-color:var(--blue);outline:none;
 }
+/* Pacote 13.4.1: Botao alterar senha no menu do paciente */
+.pac-btn-senha{
+  display:block;width:calc(100% - 32px);max-width:360px;margin:20px auto 0;
+  padding:12px 16px;background:var(--w,#fff);border:1.5px solid var(--border);
+  border-radius:10px;font-family:'Nunito',sans-serif;font-size:13px;
+  font-weight:600;color:var(--txt);cursor:pointer;text-align:center;
+  transition:border-color .2s,background .2s;
+}
+.pac-btn-senha:hover{border-color:var(--blue);background:var(--blue-lt);}
+/* Pacote 13.4.1: Botao editar anamnese no modo consulta */
+.pac-btn-editar-anam{
+  display:block;margin:0 auto 16px;padding:10px 20px;
+  background:var(--blue);color:#fff;border:none;border-radius:8px;
+  font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;
+  cursor:pointer;transition:background .2s;
+}
+.pac-btn-editar-anam:hover{background:#1e4a5f;}
 
 /* ===== Campos de formulário ===== */
 .field{margin:12px 0;position:relative;}
@@ -3712,6 +3729,35 @@ body{
     </div>
   </div>
 
+  <!-- Pacote 13.4.1: Modal de troca de senha do paciente -->
+  <div class="p5-modal-overlay" id="pacSenhaModal" onclick="if(event.target===this)pacFecharModalSenha()">
+    <div class="p5-modal-card" role="dialog" aria-modal="true" aria-labelledby="pacSenhaTitulo" style="max-width:400px;">
+      <div class="p5-modal-head">
+        <span class="p5-modal-icone">🔑</span>
+        <div class="p5-modal-titulo" id="pacSenhaTitulo">Alterar Senha</div>
+      </div>
+      <div class="p5-modal-body">
+        <div class="prof-cad-erro" id="pacSenhaErro"></div>
+        <div class="prof-cad-field">
+          <label>Senha atual <span class="req">*</span></label>
+          <input type="password" id="pacSenhaAtual" placeholder="Digite sua senha atual">
+        </div>
+        <div class="prof-cad-field">
+          <label>Nova senha <span class="req">*</span></label>
+          <input type="password" id="pacSenhaNova" placeholder="Mínimo 6 caracteres">
+        </div>
+        <div class="prof-cad-field">
+          <label>Confirmar nova senha <span class="req">*</span></label>
+          <input type="password" id="pacSenhaNova2" placeholder="Repita a nova senha">
+        </div>
+      </div>
+      <div class="p5-modal-acoes">
+        <button class="p5-btn p5-btn-secondary" type="button" onclick="pacFecharModalSenha()">Cancelar</button>
+        <button class="p5-btn p5-btn-primary" type="button" id="pacSenhaBtnEnviar" onclick="pacAlterarSenha()">Alterar Senha</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MENU -->
   <div class="section" id="sec-menu">
     <h2 style="font-family:'Quicksand',sans-serif;font-size:16px;color:var(--blue);text-align:center;margin:8px 0 4px;">
@@ -3772,6 +3818,8 @@ body{
         <span class="card-badge-soon">Em breve</span>
       </button>
     </div>
+    <!-- Pacote 13.4.1: Botão alterar senha -->
+    <button class="pac-btn-senha" onclick="pacAbrirModalSenha()">🔑 Alterar Senha</button>
   </div>
 
   <!-- ANAMNESE -->
@@ -9552,6 +9600,119 @@ var HEADERS_ANAMNESE_FRONT = [
 
 /* Fim do Pacote 13.4 — Edição Anamnese */
 
+/* ============================================================
+   PACOTE 13.4.1.A — Troca de Senha pelo Paciente
+   ============================================================ */
+
+function pacAbrirModalSenha() {
+  document.getElementById('pacSenhaAtual').value = '';
+  document.getElementById('pacSenhaNova').value = '';
+  document.getElementById('pacSenhaNova2').value = '';
+  var erroEl = document.getElementById('pacSenhaErro');
+  erroEl.textContent = '';
+  erroEl.classList.remove('visivel');
+  document.getElementById('pacSenhaBtnEnviar').disabled = false;
+  document.getElementById('pacSenhaBtnEnviar').textContent = 'Alterar Senha';
+  document.getElementById('pacSenhaModal').classList.add('show');
+}
+
+function pacFecharModalSenha() {
+  document.getElementById('pacSenhaModal').classList.remove('show');
+}
+
+async function pacAlterarSenha() {
+  var erroEl = document.getElementById('pacSenhaErro');
+  erroEl.classList.remove('visivel');
+
+  var atual = document.getElementById('pacSenhaAtual').value;
+  var nova  = document.getElementById('pacSenhaNova').value;
+  var nova2 = document.getElementById('pacSenhaNova2').value;
+
+  if (!atual) { erroEl.textContent = 'Digite sua senha atual.'; erroEl.classList.add('visivel'); return; }
+  if (!nova || nova.length < 6) { erroEl.textContent = 'Nova senha deve ter no mínimo 6 caracteres.'; erroEl.classList.add('visivel'); return; }
+  if (nova !== nova2) { erroEl.textContent = 'As senhas não conferem.'; erroEl.classList.add('visivel'); return; }
+
+  var btn = document.getElementById('pacSenhaBtnEnviar');
+  btn.disabled = true;
+  btn.textContent = 'Alterando…';
+
+  var paciente = carregarSessao();
+  if (!paciente) { erroEl.textContent = 'Sessão expirada.'; erroEl.classList.add('visivel'); btn.disabled = false; btn.textContent = 'Alterar Senha'; return; }
+
+  var resp = await chamarServidor('alterarSenhaPaciente', {
+    sigla: paciente.sigla,
+    senhaAtual: atual,
+    novaSenha: nova
+  });
+
+  if (!resp.ok) {
+    erroEl.textContent = resp.erro || 'Erro ao alterar senha.';
+    erroEl.classList.add('visivel');
+    btn.disabled = false;
+    btn.textContent = 'Alterar Senha';
+    return;
+  }
+
+  pacFecharModalSenha();
+  alert('Senha alterada com sucesso!');
+}
+
+// ESC fecha modal de senha
+document.addEventListener('keydown', function(ev) {
+  if (ev.key === 'Escape') {
+    var m = document.getElementById('pacSenhaModal');
+    if (m && m.classList.contains('show')) pacFecharModalSenha();
+  }
+});
+
+/* ============================================================
+   PACOTE 13.4.1.B — Edição de Anamnese pelo Paciente
+   ============================================================ */
+
+/**
+ * Paciente clica "Editar Anamnese" no modo consulta.
+ * Carrega dados atuais como rascunho e reabre o formulário de 4 passos.
+ */
+function pacIniciarEdicaoAnamnese() {
+  var dados = ANAM_STATE.dadosConsulta;
+  if (!dados) { alert('Sem dados para editar.'); return; }
+
+  // Converter dados do servidor para formato de rascunho
+  var rascunhoDados = {};
+  for (var chave in dados) {
+    if (dados.hasOwnProperty(chave)) {
+      var val = dados[chave];
+      // Datas: converter Date para string ISO
+      if (val instanceof Date) val = val.toISOString().slice(0, 10);
+      else if (val !== null && val !== undefined) val = String(val);
+      else val = '';
+      rascunhoDados[chave] = val;
+    }
+  }
+
+  // Determinar quantas pessoas de confiança estão preenchidas
+  var numPessoas = 1;
+  if (rascunhoDados.pessoa_confianca_2_nome) numPessoas = 2;
+  if (rascunhoDados.pessoa_confianca_3_nome) numPessoas = 3;
+
+  // Salvar como rascunho para que restaurarValoresDoRascunho() preencha os campos
+  sessionStorage.setItem('anamnese_rascunho', JSON.stringify({
+    passo: 1,
+    numPessoasConfianca: numPessoas,
+    dados: rascunhoDados
+  }));
+
+  // Ativar modo edição
+  ANAM_STATE.editando = true;
+  ANAM_STATE.modoConsulta = false;
+  ANAM_STATE.passoAtual = 1;
+  ANAM_STATE.numPessoasConfianca = numPessoas;
+
+  renderPasso(1);
+}
+
+/* Fim do Pacote 13.4.1 */
+
 function logout() {
   limparSessao();
   // Pacote 5: reseta estado de primeira vez ao deslogar
@@ -9582,6 +9743,7 @@ const ANAM_STATE = {
   passoAtual: 1,
   totalPassos: 4,
   modoConsulta: false,
+  editando: false, // Pacote 13.4.1: true quando paciente edita anamnese existente
   dadosConsulta: null,
   // Quantas pessoas de confiança estão visíveis no formulário (1 a 3)
   numPessoasConfianca: 1,
@@ -9611,6 +9773,7 @@ function voltarMenuAnamnese() {
   if (!ANAM_STATE.modoConsulta && ANAM_STATE.passoAtual !== 'revisao') {
     salvarRascunho();
   }
+  ANAM_STATE.editando = false; // Pacote 13.4.1: resetar ao sair
   abrirSecao('sec-menu');
 }
 
@@ -11295,7 +11458,10 @@ async function enviarAnamneseDefinitivo() {
     return;
   }
 
-  const resposta = await chamarServidor('salvarAnamnese', {
+  // Pacote 13.4.1: se editando, atualizar em vez de inserir
+  var acao = ANAM_STATE.editando ? 'pacienteAtualizarAnamnese' : 'salvarAnamnese';
+
+  const resposta = await chamarServidor(acao, {
     sigla: paciente.sigla,
     dados: rascunho.dados,
   });
@@ -11311,6 +11477,7 @@ async function enviarAnamneseDefinitivo() {
   limparRascunho();
   atualizarMenuConformeSessao();
 
+  ANAM_STATE.editando = false; // Pacote 13.4.1: resetar flag
   ANAM_STATE.modoConsulta = true;
   await abrirModoConsulta(true);
 }
@@ -11463,6 +11630,9 @@ function renderConsulta(dados, recemEnviado) {
   html += '</div>';
 
   html += `
+    <div style="text-align:center;margin-top:16px;">
+      <button class="pac-btn-editar-anam" onclick="pacIniciarEdicaoAnamnese()">✏️ Editar Anamnese</button>
+    </div>
     <div class="anam-nav">
       <button class="btn-step btn-step-prev" onclick="abrirSecao('sec-menu')">← Voltar ao menu</button>
     </div>
