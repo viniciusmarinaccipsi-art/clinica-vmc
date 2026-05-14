@@ -14041,49 +14041,38 @@ async function histAbrirModal(idx) {
     document.getElementById('histModalOverlay')._p136Idx = idx;
     document.getElementById('p136EditErro').textContent = '';
 
-    // Abre o modal imediatamente — banner aparece depois da consulta
+    // Abre o modal imediatamente com botão Editar visível
     document.getElementById('histModalOverlay').classList.add('show');
     var _banner = document.getElementById('p136PresencaBanner');
     var _btnEd  = document.getElementById('p136BtnEditar');
     if (_banner) _banner.style.display = 'none';
-    if (_btnEd)  _btnEd.style.display  = 'none';
+    if (_btnEd)  _btnEd.style.display  = '';  // mostra imediatamente
 
-    // Pacote 13.6.2: consulta em tempo real o lock de presença
+    // Consulta lock em segundo plano — esconde botão só se outro estiver editando
     var siglaParaConsulta = '';
     if (PROF_SESSAO && PROF_PACIENTE_SEL) siglaParaConsulta = PROF_PACIENTE_SEL.sigla;
     else { var _pac = (typeof carregarSessao === 'function') ? carregarSessao() : null; if (_pac) siglaParaConsulta = _pac.sigla || ''; }
 
     var ts = String(r.timestamp || '').trim();
     if (siglaParaConsulta && ts) {
-      var lockResp = await chamarServidor('lerEditandoAuto', { sigla: siglaParaConsulta, timestamp: ts });
-      var editandoQuem = (lockResp && lockResp.ok) ? String(lockResp.editando_quem || '').trim() : String(r.editando_quem || '').trim();
-
-      // Quem sou eu agora
-      var _pacSess = (typeof carregarSessao === 'function') ? carregarSessao() : null;
-      var euSigla = PROF_SESSAO ? PROF_SESSAO._sigla : (_pacSess ? _pacSess.sigla : '');
-      var euTipo  = PROF_SESSAO ? 'profissional' : 'paciente';
-      var euChave = euTipo + ':' + euSigla;
-
-      // Atualiza o registro em memória com o valor fresco
-      r.editando_quem = editandoQuem;
-
-      var bannerEl  = document.getElementById('p136PresencaBanner');
-      var textoEl   = document.getElementById('p136PresencaTexto');
-      var btnEditar = document.getElementById('p136BtnEditar');
-
-      if (editandoQuem && editandoQuem !== euChave) {
-        var nomeQuem = editandoQuem.startsWith('profissional:') ? 'Profissional' : 'Paciente';
-        var siglaQuem = editandoQuem.split(':')[1] || '';
-        if (textoEl)  textoEl.textContent = nomeQuem + (siglaQuem ? ' (' + siglaQuem + ')' : '') + ' está editando este registro';
-        if (bannerEl) bannerEl.style.display = 'flex';
-        if (btnEditar) btnEditar.style.display = 'none';
-      } else {
-        if (bannerEl) bannerEl.style.display = 'none';
-        if (btnEditar) btnEditar.style.display = '';
-      }
-    } else {
-      var _btn = document.getElementById('p136BtnEditar');
-      if (_btn) _btn.style.display = '';
+      chamarServidor('lerEditandoAuto', { sigla: siglaParaConsulta, timestamp: ts }).then(function(lockResp) {
+        var editandoQuem = (lockResp && lockResp.ok) ? String(lockResp.editando_quem || '').trim() : String(r.editando_quem || '').trim();
+        var _pacSess2 = (typeof carregarSessao === 'function') ? carregarSessao() : null;
+        var euSigla = PROF_SESSAO ? PROF_SESSAO._sigla : (_pacSess2 ? _pacSess2.sigla : '');
+        var euTipo  = PROF_SESSAO ? 'profissional' : 'paciente';
+        var euChave = euTipo + ':' + euSigla;
+        r.editando_quem = editandoQuem;
+        var bannerEl  = document.getElementById('p136PresencaBanner');
+        var textoEl   = document.getElementById('p136PresencaTexto');
+        var btnEditar = document.getElementById('p136BtnEditar');
+        if (editandoQuem && editandoQuem !== euChave) {
+          var nomeQuem = editandoQuem.startsWith('profissional:') ? 'Profissional' : 'Paciente';
+          var siglaQuem = editandoQuem.split(':')[1] || '';
+          if (textoEl)  textoEl.textContent = nomeQuem + (siglaQuem ? ' (' + siglaQuem + ')' : '') + ' está editando este registro';
+          if (bannerEl) bannerEl.style.display = 'flex';
+          if (btnEditar) btnEditar.style.display = 'none';
+        }
+      });
     }
 
   } catch (err) {
@@ -14331,7 +14320,7 @@ function p136RenderSecao_(r, tipo, cor, titulo) {
   var h = '<div style="margin-bottom:18px;">';
   h += '<div class="auto-sec-header" style="border-color:var(--' + corVar + ');margin-bottom:12px;">';
   h += '<div class="auto-sec-icon" style="background:var(--' + corVar + '-bg);color:var(--' + corVar + ');">' + (tipo==='neg'?'💔':'💚') + '</div>';
-  h += '<div><div class="auto-sec-title">' + titulo + '</div></div>';
+  h += '<div><div class="auto-sec-title">' + (tipo==='neg' ? 'Registro Negativo' : 'Registro Positivo') + '</div></div>';
   h += '</div>';
   h += '<label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--txt-m);cursor:pointer;margin-bottom:12px;">';
   h += '<input type="checkbox" data-campo="' + tipo + '_preenchido"' + (preenchido ? ' checked' : '') + ' onchange="p136ToggleSide(this)" style="width:17px;height:17px;cursor:pointer;"> Ativar este lado do registro</label>';
