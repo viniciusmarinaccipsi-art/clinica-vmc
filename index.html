@@ -466,6 +466,45 @@ body{
 .pac-senha-destaque:hover{opacity:.9;}
 .pac-senha-destaque.visivel{display:block;}
 
+/* ===== Pacote 13.5 — Botões de gestão de paciente ===== */
+.p135-acoes-wrap{
+  display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;
+}
+.p135-btn{
+  padding:7px 14px;border:none;border-radius:7px;
+  font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;
+  cursor:pointer;transition:background .2s, opacity .2s;
+  display:inline-flex;align-items:center;gap:5px;
+}
+.p135-btn-desativar{background:#FFF0E0;color:#c0622a;}
+.p135-btn-desativar:hover{background:#ffe0c0;}
+.p135-btn-reativar{background:var(--green-bg);color:var(--green);}
+.p135-btn-reativar:hover{background:#d8f3e2;}
+.p135-btn-excluir{background:var(--red-bg);color:var(--red);}
+.p135-btn-excluir:hover{background:#fde0e0;}
+/* Seção de inativos no dashboard */
+.p135-inativos-toggle{
+  display:flex;align-items:center;gap:8px;padding:10px 14px;
+  background:var(--gray-bg);border:1.5px solid var(--border);
+  border-radius:10px;cursor:pointer;margin-top:18px;
+  font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;
+  color:var(--txt-m);transition:background .2s;user-select:none;
+}
+.p135-inativos-toggle:hover{background:var(--gray-lt);}
+.p135-inativos-toggle .p135-chevron{margin-left:auto;transition:transform .25s;font-size:18px;}
+.p135-inativos-toggle.aberto .p135-chevron{transform:rotate(90deg);}
+.p135-inativos-lista{display:none;margin-top:6px;}
+.p135-inativos-lista.visivel{display:block;}
+/* modal confirmação digitar sigla */
+.p135-confirm-input{
+  width:100%;padding:10px 12px;border:2px solid var(--border);
+  border-radius:8px;font-family:'Nunito',sans-serif;font-size:15px;
+  font-weight:700;text-align:center;letter-spacing:2px;
+  box-sizing:border-box;margin-top:8px;
+}
+.p135-confirm-input:focus{border-color:var(--red);outline:none;}
+.p135-confirm-input.ok{border-color:var(--red);background:var(--red-bg);}
+
 /* ===== Campos de formulário ===== */
 .field{margin:12px 0;position:relative;}
 .field label{
@@ -3762,6 +3801,85 @@ body{
       <div class="p5-modal-acoes">
         <button class="p5-btn p5-btn-secondary" type="button" onclick="profFecharModalCadastro()">Cancelar</button>
         <button class="p5-btn p5-btn-primary" type="button" id="profCadBtnEnviar" onclick="profCadastrarPaciente()">Cadastrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pacote 13.5: Modal desativar paciente -->
+  <div class="p5-modal-overlay" id="p135DesativarModal" onclick="if(event.target===this)p135FecharDesativar()">
+    <div class="p5-modal-card" role="dialog" aria-modal="true" style="max-width:400px;">
+      <div class="p5-modal-head">
+        <span class="p5-modal-icone">⏸️</span>
+        <div class="p5-modal-titulo">Desativar Paciente</div>
+      </div>
+      <div class="p5-modal-body">
+        <div class="prof-cad-erro" id="p135DesativarErro"></div>
+        <p style="font-size:14px;color:var(--txt);line-height:1.6;margin:0 0 10px;">
+          Deseja desativar o paciente <strong id="p135DesativarNome"></strong>?
+        </p>
+        <div style="background:var(--amber-bg);border-left:3px solid var(--amber);border-radius:6px;padding:10px 12px;font-size:13px;color:var(--txt-m);line-height:1.6;">
+          ⚠️ O paciente <strong>não conseguirá mais fazer login</strong>. Os dados clínicos serão preservados integralmente. É possível reativar depois.
+        </div>
+      </div>
+      <div class="p5-modal-acoes">
+        <button class="p5-btn p5-btn-secondary" type="button" onclick="p135FecharDesativar()">Cancelar</button>
+        <button class="p5-btn" type="button" id="p135DesativarBtn"
+          style="background:#E08A3C;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-family:Nunito,sans-serif;font-size:14px;font-weight:700;cursor:pointer;"
+          onclick="p135ConfirmarDesativar()">Desativar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pacote 13.5: Modal reativar paciente -->
+  <div class="p5-modal-overlay" id="p135ReativarModal" onclick="if(event.target===this)p135FecharReativar()">
+    <div class="p5-modal-card" role="dialog" aria-modal="true" style="max-width:400px;">
+      <div class="p5-modal-head">
+        <span class="p5-modal-icone">▶️</span>
+        <div class="p5-modal-titulo">Reativar Paciente</div>
+      </div>
+      <div class="p5-modal-body">
+        <div class="prof-cad-erro" id="p135ReativarErro"></div>
+        <p style="font-size:14px;color:var(--txt);line-height:1.6;margin:0 0 10px;">
+          Deseja reativar o paciente <strong id="p135ReativarNome"></strong>?
+        </p>
+        <div style="background:var(--green-bg);border-left:3px solid var(--green);border-radius:6px;padding:10px 12px;font-size:13px;color:var(--txt-m);line-height:1.6;">
+          ✅ O paciente voltará a conseguir fazer login normalmente. Todos os dados estarão disponíveis.
+        </div>
+      </div>
+      <div class="p5-modal-acoes">
+        <button class="p5-btn p5-btn-secondary" type="button" onclick="p135FecharReativar()">Cancelar</button>
+        <button class="p5-btn" type="button" id="p135ReativarBtn"
+          style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-family:Nunito,sans-serif;font-size:14px;font-weight:700;cursor:pointer;"
+          onclick="p135ConfirmarReativar()">Reativar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pacote 13.5: Modal excluir paciente (confirmação dupla) -->
+  <div class="p5-modal-overlay" id="p135ExcluirModal" onclick="if(event.target===this)p135FecharExcluir()">
+    <div class="p5-modal-card" role="dialog" aria-modal="true" style="max-width:420px;">
+      <div class="p5-modal-head">
+        <span class="p5-modal-icone">🗑️</span>
+        <div class="p5-modal-titulo">Excluir Paciente Permanentemente</div>
+      </div>
+      <div class="p5-modal-body">
+        <div class="prof-cad-erro" id="p135ExcluirErro"></div>
+        <div style="background:var(--red-bg);border-left:3px solid var(--red);border-radius:6px;padding:10px 12px;font-size:13px;color:var(--txt);line-height:1.6;margin-bottom:14px;">
+          ⛔ <strong>Ação irreversível.</strong> Todos os dados do paciente <strong id="p135ExcluirNome"></strong> serão excluídos permanentemente: anamnese, registros de automonitoramento e escalas.
+        </div>
+        <label style="font-size:13px;font-weight:700;color:var(--txt-m);font-family:Nunito,sans-serif;">
+          Para confirmar, digite a sigla do paciente:
+        </label>
+        <input type="text" id="p135ExcluirInput" class="p135-confirm-input"
+          placeholder="SIGLA" maxlength="10"
+          oninput="p135ValidarExcluirInput()"
+          style="text-transform:uppercase;">
+      </div>
+      <div class="p5-modal-acoes">
+        <button class="p5-btn p5-btn-secondary" type="button" onclick="p135FecharExcluir()">Cancelar</button>
+        <button class="p5-btn" type="button" id="p135ExcluirBtn" disabled
+          style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-family:Nunito,sans-serif;font-size:14px;font-weight:700;cursor:pointer;opacity:.4;"
+          onclick="p135ConfirmarExcluir()">Excluir</button>
       </div>
     </div>
   </div>
@@ -8931,45 +9049,61 @@ async function profCarregarDashboard() {
 
   // Renderizar lista
   var html = btnNovo;
-  html += '<p class="prof-pac-count">Pacientes (' + pacientes.length + ')</p>';
+
+  // Pacote 13.5: separar ativos e inativos
+  var ativos   = pacientes.filter(function(p){ return String(p.ativo||'Sim').trim().toLowerCase() !== 'nao'; });
+  var inativos = pacientes.filter(function(p){ return String(p.ativo||'Sim').trim().toLowerCase() === 'nao'; });
+
+  html += '<p class="prof-pac-count">Pacientes ativos (' + ativos.length + ')</p>';
   html += '<div class="prof-pac-list">';
 
-  for (var i = 0; i < pacientes.length; i++) {
-    var p = pacientes[i];
+  var renderCard = function(p) {
     var sigla = p.sigla || '—';
     var nome = p.nome_completo || sigla;
     var ativo = String(p.ativo || 'Sim').trim().toLowerCase() === 'sim';
     var badgeClass = ativo ? 'ativo' : 'inativo';
-    var badgeText = ativo ? 'Ativo' : 'Inativo';
-
-    // Iniciais para o avatar (até 2 letras)
+    var badgeText  = ativo ? 'Ativo' : 'Inativo';
     var iniciais = nome.split(' ').filter(function(w){ return w.length > 0; })
       .map(function(w){ return w[0].toUpperCase(); }).slice(0,2).join('');
     if (!iniciais) iniciais = sigla.charAt(0);
-
-    // Linha de meta: anamnese + cadastro
     var metaParts = [];
     if (p.data_anamnese) metaParts.push('Anamnese: ' + p.data_anamnese);
-    if (p.data_cadastro) metaParts.push('Cadastro: ' + p.data_cadastro);
+    if (p.data_cadastro)  metaParts.push('Cadastro: '  + p.data_cadastro);
     var metaStr = metaParts.join(' · ');
+    var r = '<div class="prof-pac-card" onclick="profAbrirPaciente(\'' + profEscHtml_(sigla) + '\')">';
+    r +=   '<div class="prof-pac-avatar">' + iniciais + '</div>';
+    r +=   '<div class="prof-pac-info">';
+    r +=     '<div class="prof-pac-nome">' + profEscHtml_(nome) + ' <span style="font-weight:400;color:var(--txt-l);font-size:12px;">(' + profEscHtml_(sigla) + ')</span></div>';
+    r +=     '<div class="prof-pac-meta">';
+    r +=       '<span class="prof-pac-badge ' + badgeClass + '">' + badgeText + '</span>';
+    if (metaStr) r += '<span>' + profEscHtml_(metaStr) + '</span>';
+    r +=     '</div>';
+    r += profRenderizarIndicadores_(p);
+    r +=   '</div>';
+    r += '</div>';
+    return r;
+  };
 
-    html += '<div class="prof-pac-card" onclick="profAbrirPaciente(\'' + profEscHtml_(sigla) + '\')">';
-    html +=   '<div class="prof-pac-avatar">' + iniciais + '</div>';
-    html +=   '<div class="prof-pac-info">';
-    html +=     '<div class="prof-pac-nome">' + profEscHtml_(nome) + ' <span style="font-weight:400;color:var(--txt-l);font-size:12px;">(' + profEscHtml_(sigla) + ')</span></div>';
-    html +=     '<div class="prof-pac-meta">';
-    html +=       '<span class="prof-pac-badge ' + badgeClass + '">' + badgeText + '</span>';
-    if (metaStr) html += '<span>' + profEscHtml_(metaStr) + '</span>';
-    html +=     '</div>';
+  if (ativos.length === 0) {
+    html += '<div class="prof-pac-empty"><span>📋</span><p>Nenhum paciente ativo no momento.</p></div>';
+  } else {
+    for (var i = 0; i < ativos.length; i++) html += renderCard(ativos[i]);
+  }
+  html += '</div>';
 
-    // Pacote 13.2.3: Indicadores clínicos
-    html += profRenderizarIndicadores_(p);
-
-    html +=   '</div>';
-    html += '</div>';
+  // Seção colapsável de inativos
+  if (inativos.length > 0) {
+    html += '<button class="p135-inativos-toggle" id="p135InatToggle" onclick="p135ToggleInativos()">';
+    html += '🗂️ Pacientes desativados (' + inativos.length + ')';
+    html += '<span class="p135-chevron">›</span>';
+    html += '</button>';
+    html += '<div class="p135-inativos-lista" id="p135InatLista">';
+    html += '<div class="prof-pac-list" style="margin-top:8px;">';
+    for (var j = 0; j < inativos.length; j++) html += renderCard(inativos[j]);
+    html += '</div></div>';
   }
 
-  html += '</div>';
+  html += '';
   container.innerHTML = html;
 }
 
@@ -9083,6 +9217,7 @@ async function profAbrirPaciente(sigla) {
   }
   PROF_PACIENTE_SEL.nome = nome;
   PROF_PACIENTE_SEL.anamnese = resp.anamnese || null; // Pacote 13.4: guardar para edição
+  PROF_PACIENTE_SEL.ativo = String(resp.ativo || 'Sim').trim(); // Pacote 13.5
 
   var iniciaisNome = nome.split(' ').filter(function(w){ return w.length > 0; })
     .map(function(w){ return w[0].toUpperCase(); }).slice(0,2).join('');
@@ -9149,11 +9284,25 @@ async function profAbrirPaciente(sigla) {
 
 /* Monta o header da tela do paciente (DRY) */
 function profBuildHeader_(iniciais, nome, sub) {
+  // Pacote 13.5: botões de ação baseados no status ativo
+  var acoesHtml = '';
+  if (PROF_PACIENTE_SEL && PROF_PACIENTE_SEL.sigla) {
+    var ativoAtual = String(PROF_PACIENTE_SEL.ativo || 'Sim').trim().toLowerCase();
+    acoesHtml = '<div class="p135-acoes-wrap">';
+    if (ativoAtual === 'nao') {
+      acoesHtml += '<button class="p135-btn p135-btn-reativar" onclick="p135AbrirReativar(\'' + profEscHtml_(PROF_PACIENTE_SEL.sigla) + '\')">▶️ Reativar</button>';
+      acoesHtml += '<button class="p135-btn p135-btn-excluir" onclick="p135AbrirExcluir(\'' + profEscHtml_(PROF_PACIENTE_SEL.sigla) + '\')">🗑️ Excluir</button>';
+    } else {
+      acoesHtml += '<button class="p135-btn p135-btn-desativar" onclick="p135AbrirDesativar(\'' + profEscHtml_(PROF_PACIENTE_SEL.sigla) + '\')">⏸️ Desativar</button>';
+    }
+    acoesHtml += '</div>';
+  }
   return '<div class="prof-pv-header">' +
     '<div class="prof-pv-avatar">' + profEscHtml_(iniciais) + '</div>' +
     '<div class="prof-pv-info">' +
       '<p class="prof-pv-nome">' + profEscHtml_(nome) + '</p>' +
       '<p class="prof-pv-sigla">' + profEscHtml_(sub) + '</p>' +
+      acoesHtml +
     '</div>' +
     '<button class="prof-pv-back" onclick="profVoltarDashboard()">← Voltar</button>' +
   '</div>';
@@ -9361,6 +9510,159 @@ function profRenderizarEscalas_(escalas) {
 /**
  * Volta da tela individual do paciente para o dashboard do profissional.
  */
+/* ============================================================
+   PACOTE 13.5 — Desativar / Reativar / Excluir Paciente
+   ============================================================ */
+
+/* --- Desativar --- */
+function p135AbrirDesativar(sigla) {
+  var nome = (PROF_PACIENTE_SEL && PROF_PACIENTE_SEL.nome) ? PROF_PACIENTE_SEL.nome : sigla;
+  document.getElementById('p135DesativarNome').textContent = nome + ' (' + sigla + ')';
+  document.getElementById('p135DesativarErro').textContent = '';
+  document.getElementById('p135DesativarModal').classList.add('show');
+  document.getElementById('p135DesativarModal')._sigla = sigla;
+}
+function p135FecharDesativar() {
+  document.getElementById('p135DesativarModal').classList.remove('show');
+}
+async function p135ConfirmarDesativar() {
+  var modal = document.getElementById('p135DesativarModal');
+  var sigla = modal._sigla;
+  var btn = document.getElementById('p135DesativarBtn');
+  btn.disabled = true; btn.textContent = 'Aguarde…';
+  var resp = await chamarServidor('profDesativarPaciente', {
+    profSigla: PROF_SESSAO._sigla,
+    profSenha: PROF_SESSAO._senha,
+    siglaPaciente: sigla
+  });
+  btn.disabled = false; btn.textContent = 'Desativar';
+  if (!resp.ok) {
+    document.getElementById('p135DesativarErro').textContent = resp.erro || 'Erro ao desativar.';
+    return;
+  }
+  p135FecharDesativar();
+  // Atualizar estado local e recarregar header
+  if (PROF_PACIENTE_SEL) PROF_PACIENTE_SEL.ativo = 'Nao';
+  // Re-renderizar header com novos botões
+  var container = document.getElementById('profPacienteConteudo');
+  var headerEl = container ? container.querySelector('.prof-pv-header') : null;
+  if (headerEl) {
+    var nome = PROF_PACIENTE_SEL ? PROF_PACIENTE_SEL.nome : sigla;
+    var iniciais = nome.split(' ').filter(function(w){return w.length>0;}).map(function(w){return w[0].toUpperCase();}).slice(0,2).join('');
+    if (!iniciais) iniciais = sigla.charAt(0);
+    headerEl.outerHTML = profBuildHeader_(iniciais, nome, 'Paciente · ' + sigla);
+  }
+  // Mostrar feedback
+  var feedback = document.createElement('div');
+  feedback.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-family:Nunito,sans-serif;z-index:9999;';
+  feedback.textContent = '✅ Paciente desativado com sucesso.';
+  document.body.appendChild(feedback);
+  setTimeout(function(){ feedback.remove(); }, 3000);
+}
+
+/* --- Reativar --- */
+function p135AbrirReativar(sigla) {
+  var nome = (PROF_PACIENTE_SEL && PROF_PACIENTE_SEL.nome) ? PROF_PACIENTE_SEL.nome : sigla;
+  document.getElementById('p135ReativarNome').textContent = nome + ' (' + sigla + ')';
+  document.getElementById('p135ReativarErro').textContent = '';
+  document.getElementById('p135ReativarModal').classList.add('show');
+  document.getElementById('p135ReativarModal')._sigla = sigla;
+}
+function p135FecharReativar() {
+  document.getElementById('p135ReativarModal').classList.remove('show');
+}
+async function p135ConfirmarReativar() {
+  var modal = document.getElementById('p135ReativarModal');
+  var sigla = modal._sigla;
+  var btn = document.getElementById('p135ReativarBtn');
+  btn.disabled = true; btn.textContent = 'Aguarde…';
+  var resp = await chamarServidor('profReativarPaciente', {
+    profSigla: PROF_SESSAO._sigla,
+    profSenha: PROF_SESSAO._senha,
+    siglaPaciente: sigla
+  });
+  btn.disabled = false; btn.textContent = 'Reativar';
+  if (!resp.ok) {
+    document.getElementById('p135ReativarErro').textContent = resp.erro || 'Erro ao reativar.';
+    return;
+  }
+  p135FecharReativar();
+  if (PROF_PACIENTE_SEL) PROF_PACIENTE_SEL.ativo = 'Sim';
+  var container = document.getElementById('profPacienteConteudo');
+  var headerEl = container ? container.querySelector('.prof-pv-header') : null;
+  if (headerEl) {
+    var nome = PROF_PACIENTE_SEL ? PROF_PACIENTE_SEL.nome : sigla;
+    var iniciais = nome.split(' ').filter(function(w){return w.length>0;}).map(function(w){return w[0].toUpperCase();}).slice(0,2).join('');
+    if (!iniciais) iniciais = sigla.charAt(0);
+    headerEl.outerHTML = profBuildHeader_(iniciais, nome, 'Paciente · ' + sigla);
+  }
+  var feedback = document.createElement('div');
+  feedback.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-family:Nunito,sans-serif;z-index:9999;';
+  feedback.textContent = '✅ Paciente reativado com sucesso.';
+  document.body.appendChild(feedback);
+  setTimeout(function(){ feedback.remove(); }, 3000);
+}
+
+/* --- Excluir --- */
+function p135AbrirExcluir(sigla) {
+  var nome = (PROF_PACIENTE_SEL && PROF_PACIENTE_SEL.nome) ? PROF_PACIENTE_SEL.nome : sigla;
+  document.getElementById('p135ExcluirNome').textContent = nome + ' (' + sigla + ')';
+  document.getElementById('p135ExcluirErro').textContent = '';
+  var input = document.getElementById('p135ExcluirInput');
+  input.value = '';
+  input.classList.remove('ok');
+  var btn = document.getElementById('p135ExcluirBtn');
+  btn.disabled = true; btn.style.opacity = '.4';
+  document.getElementById('p135ExcluirModal').classList.add('show');
+  document.getElementById('p135ExcluirModal')._sigla = sigla;
+  setTimeout(function(){ input.focus(); }, 150);
+}
+function p135FecharExcluir() {
+  document.getElementById('p135ExcluirModal').classList.remove('show');
+}
+function p135ValidarExcluirInput() {
+  var modal = document.getElementById('p135ExcluirModal');
+  var sigla = modal._sigla || '';
+  var input = document.getElementById('p135ExcluirInput');
+  var btn = document.getElementById('p135ExcluirBtn');
+  var digitado = input.value.trim().toUpperCase();
+  var correto = digitado === sigla.trim().toUpperCase();
+  input.classList.toggle('ok', correto);
+  btn.disabled = !correto;
+  btn.style.opacity = correto ? '1' : '.4';
+}
+async function p135ConfirmarExcluir() {
+  var modal = document.getElementById('p135ExcluirModal');
+  var sigla = modal._sigla;
+  var btn = document.getElementById('p135ExcluirBtn');
+  btn.disabled = true; btn.textContent = 'Excluindo…';
+  var resp = await chamarServidor('profExcluirPaciente', {
+    profSigla: PROF_SESSAO._sigla,
+    profSenha: PROF_SESSAO._senha,
+    siglaPaciente: sigla,
+    confirmacaoSigla: document.getElementById('p135ExcluirInput').value.trim().toUpperCase()
+  });
+  btn.textContent = 'Excluir';
+  if (!resp.ok) {
+    btn.disabled = false; btn.style.opacity = '1';
+    document.getElementById('p135ExcluirErro').textContent = resp.erro || 'Erro ao excluir.';
+    return;
+  }
+  p135FecharExcluir();
+  PROF_PACIENTE_SEL = null;
+  profCarregarDashboard();
+  abrirSecao('sec-prof-dashboard');
+}
+
+/* Toggle seção inativos no dashboard */
+function p135ToggleInativos() {
+  var btn   = document.getElementById('p135InatToggle');
+  var lista = document.getElementById('p135InatLista');
+  if (!btn || !lista) return;
+  var aberto = lista.classList.toggle('visivel');
+  btn.classList.toggle('aberto', aberto);
+}
+
 function profVoltarDashboard() {
   PROF_PACIENTE_SEL = null;
   window._HIST_REGS = null;
