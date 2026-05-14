@@ -14051,7 +14051,7 @@ async function histAbrirModal(idx) {
     // Pacote 13.6.2: consulta em tempo real o lock de presença
     var siglaParaConsulta = '';
     if (PROF_SESSAO && PROF_PACIENTE_SEL) siglaParaConsulta = PROF_PACIENTE_SEL.sigla;
-    else if (typeof SESSAO !== 'undefined' && SESSAO) siglaParaConsulta = SESSAO.sigla;
+    else { var _pac = (typeof carregarSessao === 'function') ? carregarSessao() : null; if (_pac) siglaParaConsulta = _pac.sigla || ''; }
 
     var ts = String(r.timestamp || '').trim();
     if (siglaParaConsulta && ts) {
@@ -14059,7 +14059,8 @@ async function histAbrirModal(idx) {
       var editandoQuem = (lockResp && lockResp.ok) ? String(lockResp.editando_quem || '').trim() : String(r.editando_quem || '').trim();
 
       // Quem sou eu agora
-      var euSigla = PROF_SESSAO ? PROF_SESSAO._sigla : (typeof SESSAO !== 'undefined' && SESSAO ? SESSAO.sigla : '');
+      var _pacSess = (typeof carregarSessao === 'function') ? carregarSessao() : null;
+      var euSigla = PROF_SESSAO ? PROF_SESSAO._sigla : (_pacSess ? _pacSess.sigla : '');
       var euTipo  = PROF_SESSAO ? 'profissional' : 'paciente';
       var euChave = euTipo + ':' + euSigla;
 
@@ -14119,7 +14120,9 @@ var P136_ESTADO = { idx: null, tipo: null, sigla: null, timestamp: null };
 
 function p136_quemSou_() {
   if (PROF_SESSAO) return { tipo: 'profissional', sigla: PROF_SESSAO._sigla };
-  if (typeof SESSAO !== 'undefined' && SESSAO) return { tipo: 'paciente', sigla: SESSAO.sigla };
+  // Paciente usa sessionStorage, não objeto SESSAO global
+  var pac = (typeof carregarSessao === 'function') ? carregarSessao() : null;
+  if (pac && pac.sigla) return { tipo: 'paciente', sigla: pac.sigla };
   return null;
 }
 
