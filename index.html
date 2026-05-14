@@ -14043,8 +14043,10 @@ async function histAbrirModal(idx) {
 
     // Abre o modal imediatamente — banner aparece depois da consulta
     document.getElementById('histModalOverlay').classList.add('show');
-    document.getElementById('p136PresencaBanner').style.display = 'none';
-    document.getElementById('p136BtnEditar').style.display = 'none';
+    var _banner = document.getElementById('p136PresencaBanner');
+    var _btnEd  = document.getElementById('p136BtnEditar');
+    if (_banner) _banner.style.display = 'none';
+    if (_btnEd)  _btnEd.style.display  = 'none';
 
     // Pacote 13.6.2: consulta em tempo real o lock de presença
     var siglaParaConsulta = '';
@@ -14064,24 +14066,23 @@ async function histAbrirModal(idx) {
       // Atualiza o registro em memória com o valor fresco
       r.editando_quem = editandoQuem;
 
-      var bannerEl = document.getElementById('p136PresencaBanner');
-      var textoEl  = document.getElementById('p136PresencaTexto');
+      var bannerEl  = document.getElementById('p136PresencaBanner');
+      var textoEl   = document.getElementById('p136PresencaTexto');
       var btnEditar = document.getElementById('p136BtnEditar');
 
       if (editandoQuem && editandoQuem !== euChave) {
-        // Outro usuário está editando
         var nomeQuem = editandoQuem.startsWith('profissional:') ? 'Profissional' : 'Paciente';
         var siglaQuem = editandoQuem.split(':')[1] || '';
-        textoEl.textContent = nomeQuem + (siglaQuem ? ' (' + siglaQuem + ')' : '') + ' está editando este registro';
-        bannerEl.style.display = 'flex';
-        btnEditar.style.display = 'none';
+        if (textoEl)  textoEl.textContent = nomeQuem + (siglaQuem ? ' (' + siglaQuem + ')' : '') + ' está editando este registro';
+        if (bannerEl) bannerEl.style.display = 'flex';
+        if (btnEditar) btnEditar.style.display = 'none';
       } else {
-        bannerEl.style.display = 'none';
-        btnEditar.style.display = '';
+        if (bannerEl) bannerEl.style.display = 'none';
+        if (btnEditar) btnEditar.style.display = '';
       }
     } else {
-      // Fallback: usa dado em memória
-      document.getElementById('p136BtnEditar').style.display = '';
+      var _btn = document.getElementById('p136BtnEditar');
+      if (_btn) _btn.style.display = '';
     }
 
   } catch (err) {
@@ -14130,18 +14131,20 @@ async function histAbrirModal(idx) {
 function histFecharModal() {
   // Pacote 13.6: limpar lock se estava editando
   var modal = document.getElementById('histModalOverlay');
-  if (modal._p136Editando) {
-    p136LimparLock_(false); // fire-and-forget, não await
+  if (modal && modal._p136Editando) {
+    p136LimparLock_(false);
   }
-  modal._p136Editando = false;
-  modal.classList.remove('show');
-  document.getElementById('p136BtnEditar').style.display = 'none';
-  document.getElementById('p136PresencaBanner').style.display = 'none';
-  document.getElementById('p136EditErro').textContent = '';
-  // Restaurar rodapé padrão
+  if (modal) { modal._p136Editando = false; modal.classList.remove('show'); }
+  // Restaurar rodapé padrão PRIMEIRO (recria p136BtnEditar)
   var rodape = document.getElementById('histModalRodape');
-  rodape.innerHTML = '<button class="hist-modal-btn-fechar" type="button" onclick="histFecharModal()">Fechar</button>' +
-    '<button class="p136-btn-editar" type="button" id="p136BtnEditar" onclick="p136IniciarEdicao()" style="display:none;">✏️ Editar</button>';
+  if (rodape) {
+    rodape.innerHTML = '<button class="hist-modal-btn-fechar" type="button" onclick="histFecharModal()">Fechar</button>' +
+      '<button class="p136-btn-editar" type="button" id="p136BtnEditar" onclick="p136IniciarEdicao()" style="display:none;">✏️ Editar</button>';
+  }
+  var banner = document.getElementById('p136PresencaBanner');
+  if (banner) banner.style.display = 'none';
+  var erro = document.getElementById('p136EditErro');
+  if (erro) erro.textContent = '';
 }
 
 /* ============================================================
