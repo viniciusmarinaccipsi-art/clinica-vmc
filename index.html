@@ -14091,43 +14091,6 @@ async function histAbrirModal(idx) {
   }
 }
 
-    const emojis = {1:'😟',2:'🙁',3:'😐',4:'🙂',5:'😊'};
-    const humorLbl = {1:'Muito negativo',2:'Negativo',3:'Neutro',4:'Positivo',5:'Muito positivo'};
-    const humor = parseInt(r.humor_nivel, 10) || 3;
-
-    const data = String(r.data_registro || '');
-    let dataFmt = '—';
-    const dm = data.match(/(\d{4})-(\d{2})-(\d{2})/);
-    if (dm) dataFmt = dm[3] + '/' + dm[2] + '/' + dm[1];
-    const hora = autoFormatarHora(r.hora_registro);
-
-    document.getElementById('histModalEmoji').textContent = emojis[humor] || '❓';
-    document.getElementById('histModalData').textContent = dataFmt + ' · ' + hora;
-    document.getElementById('histModalHumor').innerHTML = 'Humor: <strong>' + humor + '/5 ' + (humorLbl[humor]||'') + '</strong>';
-
-    // Montar conteúdo completo (mesmo layout do Pacote 6)
-    let html = '';
-    if (r.neg_preenchido === 'sim') {
-      html += histModalSecaoCompleta(r, 'neg', 'coral', '💔 Registro Negativo');
-    }
-    if (r.pos_preenchido === 'sim') {
-      html += histModalSecaoCompleta(r, 'pos', 'green', '💚 Registro Positivo');
-    }
-
-    document.getElementById('histModalConteudo').innerHTML = html;
-
-    // Pacote 13.6: carimbo de edição anterior
-    if (r.editado === 'Sim' && r.editado_em) {
-      var quemLabel = r.editado_por === 'profissional' ? 'pelo profissional' : 'pelo paciente';
-      var carimboBanner = '<div style="padding:6px 18px 0;font-size:11px;color:var(--txt-l);font-style:italic;">' +
-        '✏️ Editado ' + quemLabel + ' em ' + r.editado_em.replace('T',' ').slice(0,16) + '</div>';
-      document.getElementById('histModalConteudo').innerHTML = carimboBanner + html;
-    }
-
-    // Pacote 13.6: presença (outro usuário editando)
-    var bannerEl = document.getElementById('p136PresencaBanner');
-    var textoEl  = document.getElementById('p136PresencaTexto');
-    var editandoQuem = String(r.editando_quem || '').trim();
 function histFecharModal() {
   // Pacote 13.6: limpar lock se estava editando
   var modal = document.getElementById('histModalOverlay');
@@ -17023,7 +16986,7 @@ function escFormatarDataBr(d) {
    ============================================================ */
 
 // ----- ESTADO (cache de 30s, lista de registros e índice para o modal) -----
-const ESC_HIST_STATE = {
+var ESC_HIST_STATE = {
   registros: [],        // todos os registros carregados (mais recentes primeiro)
   carregadoEm: 0,
   cacheTtlMs: 30 * 1000,
@@ -17032,7 +16995,7 @@ const ESC_HIST_STATE = {
 };
 
 // Ordem fixa dos blocos (casada com a ordem do menu do Módulo 4)
-const ESC_HIST_ORDEM = ['PHQ-9', 'GAD-7', 'PSS-10', 'DASS-21', 'SRQ-20'];
+var ESC_HIST_ORDEM = ['PHQ-9', 'GAD-7', 'PSS-10', 'DASS-21', 'SRQ-20'];
 
 function escHistInvalidarCache() {
   ESC_HIST_STATE.invalidado = true;
