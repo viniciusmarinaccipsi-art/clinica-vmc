@@ -13994,7 +13994,7 @@ function histSecaoExpandida(r, tipo, cor) {
 }
 
 // ---- Modal de visualização ampliada ----
-function histAbrirModal(idx) {
+async function histAbrirModal(idx) {
   try {
     const regs = window._HIST_REGS;
     if (!regs || !regs[idx]) {
@@ -14003,6 +14003,92 @@ function histAbrirModal(idx) {
       return;
     }
     const r = regs[idx];
+
+    const emojis = {1:'😟',2:'🙁',3:'😐',4:'🙂',5:'😊'};
+    const humorLbl = {1:'Muito negativo',2:'Negativo',3:'Neutro',4:'Positivo',5:'Muito positivo'};
+    const humor = parseInt(r.humor_nivel, 10) || 3;
+
+    const data = String(r.data_registro || '');
+    let dataFmt = '—';
+    const dm = data.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (dm) dataFmt = dm[3] + '/' + dm[2] + '/' + dm[1];
+    const hora = autoFormatarHora(r.hora_registro);
+
+    document.getElementById('histModalEmoji').textContent = emojis[humor] || '❓';
+    document.getElementById('histModalData').textContent = dataFmt + ' · ' + hora;
+    document.getElementById('histModalHumor').innerHTML = 'Humor: <strong>' + humor + '/5 ' + (humorLbl[humor]||'') + '</strong>';
+
+    // Montar conteúdo completo
+    let html = '';
+    if (r.neg_preenchido === 'sim') {
+      html += histModalSecaoCompleta(r, 'neg', 'coral', '💔 Registro Negativo');
+    }
+    if (r.pos_preenchido === 'sim') {
+      html += histModalSecaoCompleta(r, 'pos', 'green', '💚 Registro Positivo');
+    }
+
+    document.getElementById('histModalConteudo').innerHTML = html;
+
+    // Pacote 13.6: carimbo de edição anterior
+    if (r.editado === 'Sim' && r.editado_em) {
+      var quemLabel = r.editado_por === 'profissional' ? 'pelo profissional' : 'pelo paciente';
+      var carimboBanner = '<div style="padding:6px 18px 0;font-size:11px;color:var(--txt-l);font-style:italic;">' +
+        '✏️ Editado ' + quemLabel + ' em ' + r.editado_em.replace('T',' ').slice(0,16) + '</div>';
+      document.getElementById('histModalConteudo').innerHTML = carimboBanner + html;
+    }
+
+    // Guarda índice atual
+    document.getElementById('histModalOverlay')._p136Idx = idx;
+    document.getElementById('p136EditErro').textContent = '';
+
+    // Abre o modal imediatamente — banner aparece depois da consulta
+    document.getElementById('histModalOverlay').classList.add('show');
+    document.getElementById('p136PresencaBanner').style.display = 'none';
+    document.getElementById('p136BtnEditar').style.display = 'none';
+
+    // Pacote 13.6.2: consulta em tempo real o lock de presença
+    var siglaParaConsulta = '';
+    if (PROF_SESSAO && PROF_PACIENTE_SEL) siglaParaConsulta = PROF_PACIENTE_SEL.sigla;
+    else if (typeof SESSAO !== 'undefined' && SESSAO) siglaParaConsulta = SESSAO.sigla;
+
+    var ts = String(r.timestamp || '').trim();
+    if (siglaParaConsulta && ts) {
+      var lockResp = await chamarServidor('lerEditandoAuto', { sigla: siglaParaConsulta, timestamp: ts });
+      var editandoQuem = (lockResp && lockResp.ok) ? String(lockResp.editando_quem || '').trim() : String(r.editando_quem || '').trim();
+
+      // Quem sou eu agora
+      var euSigla = PROF_SESSAO ? PROF_SESSAO._sigla : (typeof SESSAO !== 'undefined' && SESSAO ? SESSAO.sigla : '');
+      var euTipo  = PROF_SESSAO ? 'profissional' : 'paciente';
+      var euChave = euTipo + ':' + euSigla;
+
+      // Atualiza o registro em memória com o valor fresco
+      r.editando_quem = editandoQuem;
+
+      var bannerEl = document.getElementById('p136PresencaBanner');
+      var textoEl  = document.getElementById('p136PresencaTexto');
+      var btnEditar = document.getElementById('p136BtnEditar');
+
+      if (editandoQuem && editandoQuem !== euChave) {
+        // Outro usuário está editando
+        var nomeQuem = editandoQuem.startsWith('profissional:') ? 'Profissional' : 'Paciente';
+        var siglaQuem = editandoQuem.split(':')[1] || '';
+        textoEl.textContent = nomeQuem + (siglaQuem ? ' (' + siglaQuem + ')' : '') + ' está editando este registro';
+        bannerEl.style.display = 'flex';
+        btnEditar.style.display = 'none';
+      } else {
+        bannerEl.style.display = 'none';
+        btnEditar.style.display = '';
+      }
+    } else {
+      // Fallback: usa dado em memória
+      document.getElementById('p136BtnEditar').style.display = '';
+    }
+
+  } catch (err) {
+    console.error('[histAbrirModal] Erro:', err);
+    alert('Erro ao abrir o registro: ' + (err && err.message || err));
+  }
+}
 
     const emojis = {1:'😟',2:'🙁',3:'😐',4:'🙂',5:'😊'};
     const humorLbl = {1:'Muito negativo',2:'Negativo',3:'Neutro',4:'Positivo',5:'Muito positivo'};
@@ -14041,30 +14127,6 @@ function histAbrirModal(idx) {
     var bannerEl = document.getElementById('p136PresencaBanner');
     var textoEl  = document.getElementById('p136PresencaTexto');
     var editandoQuem = String(r.editando_quem || '').trim();
-    if (editandoQuem) {
-      var nomeQuem = editandoQuem.startsWith('profissional:') ? 'Profissional' : 'Paciente';
-      var siglaQuem = editandoQuem.split(':')[1] || '';
-      textoEl.textContent = nomeQuem + (siglaQuem ? ' (' + siglaQuem + ')' : '') + ' está editando este registro';
-      bannerEl.style.display = 'flex';
-    } else {
-      bannerEl.style.display = 'none';
-    }
-
-    // Pacote 13.6: botão Editar (só mostra se não tem outro editando)
-    var btnEditar = document.getElementById('p136BtnEditar');
-    btnEditar.style.display = editandoQuem ? 'none' : '';
-    document.getElementById('p136EditErro').textContent = '';
-
-    // Guarda índice atual para p136IniciarEdicao saber qual registro editar
-    document.getElementById('histModalOverlay')._p136Idx = idx;
-
-    document.getElementById('histModalOverlay').classList.add('show');
-  } catch (err) {
-    console.error('[histAbrirModal] Erro:', err);
-    alert('Erro ao abrir o registro: ' + (err && err.message || err));
-  }
-}
-
 function histFecharModal() {
   // Pacote 13.6: limpar lock se estava editando
   var modal = document.getElementById('histModalOverlay');
@@ -14225,7 +14287,7 @@ async function p136LimparLock_(aguardar) {
 /* Coleta todos os valores do form de edição no modal */
 function p136ColetarDados_() {
   var dados = {};
-  // Humor nivel (hidden input)
+  // Humor nivel
   var hInput = document.getElementById('p136HumorNivel');
   if (hInput) dados['humor_nivel'] = hInput.value;
   // Todos os [data-campo] (textareas, checkboxes de side toggle)
@@ -14236,20 +14298,21 @@ function p136ColetarDados_() {
     if (el.type === 'checkbox') dados[c] = el.checked ? 'sim' : 'nao';
     else dados[c] = el.value;
   });
-  // Grupos de checkboxes
+  // Grupos de checkboxes (auto-group com data-grupo-edit)
   var grupos = document.querySelectorAll('#histModalConteudo [data-grupo-edit]');
   grupos.forEach(function(g) {
     var chave = g.getAttribute('data-grupo-edit');
-    var temSlider = !!g.querySelector('input[type="range"]');
-    var cbs = g.querySelectorAll('input[type="checkbox"]');
+    var temLikert = !!g.querySelector('.auto-item-likert');
+    var optEls = g.querySelectorAll('.auto-option');
     var itens = [];
-    cbs.forEach(function(cb) {
-      if (!cb.checked) return;
+    optEls.forEach(function(optEl) {
+      var cb = optEl.querySelector('input[type="checkbox"]');
+      if (!cb || !cb.checked) return;
       var item = cb.getAttribute('data-item');
       if (!item) return;
-      if (temSlider) {
-        var sl = g.querySelector('input[type="range"][data-para="' + item.replace(/"/g, '\\"') + '"]');
-        itens.push(item + ':' + (sl ? sl.value : '3'));
+      if (temLikert) {
+        var hidden = optEl.querySelector('input[type="hidden"][data-likert-para]');
+        itens.push(item + ':' + (hidden ? hidden.value : '3'));
       } else {
         itens.push(item);
       }
@@ -14272,16 +14335,20 @@ function p136RenderFormEdicao_(r) {
 function p136RenderHumor_(r) {
   var nivel = parseInt(r.humor_nivel, 10) || 3;
   var emojis = {1:'😟',2:'🙁',3:'😐',4:'🙂',5:'😊'};
-  var h = '<div class="p136-secao"><div class="p136-secao-head blue">Estado de Humor</div><div class="p136-secao-body">';
-  h += '<div class="p136-humor-btns">';
+  var h = '<div style="margin-bottom:18px;">';
+  h += '<div class="auto-sec-header" style="border-color:var(--blue);margin-bottom:12px;">';
+  h += '<div class="auto-sec-icon" style="background:var(--blue-lt);color:var(--blue);">😐</div>';
+  h += '<div><div class="auto-sec-title">Estado de Humor</div></div>';
+  h += '</div>';
+  h += '<div style="display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap;">';
   for (var i = 1; i <= 5; i++) {
     h += '<button type="button" class="p136-humor-btn' + (i === nivel ? ' ativo' : '') + '" onclick="p136ToggleHumor(this,' + i + ')">' + (emojis[i]||i) + ' ' + i + '</button>';
   }
   h += '</div>';
   h += '<input type="hidden" id="p136HumorNivel" value="' + nivel + '">';
-  h += '<div class="p136-campo"><label>Observações</label>';
+  h += '<div class="prof-edit-field"><label>Observações</label>';
   h += '<textarea data-campo="humor_observacoes" rows="2">' + escapeHtmlAuto(String(r.humor_observacoes || '')) + '</textarea></div>';
-  h += '</div></div>';
+  h += '</div>';
   return h;
 }
 
@@ -14295,16 +14362,19 @@ function p136ToggleHumor(btn, val) {
 
 function p136RenderSecao_(r, tipo, cor, titulo) {
   var preenchido = String(r[tipo + '_preenchido'] || 'nao').trim() === 'sim';
-  var h = '<div class="p136-secao"><div class="p136-secao-head ' + cor + '">' + titulo + '</div><div class="p136-secao-body">';
-  h += '<label class="p136-toggle-check"><input type="checkbox" data-campo="' + tipo + '_preenchido"' + (preenchido ? ' checked' : '') + ' onchange="p136ToggleSide(this)"> Ativar este lado do registro</label>';
+  var corVar = tipo === 'neg' ? 'coral' : 'green';
+  var h = '<div style="margin-bottom:18px;">';
+  h += '<div class="auto-sec-header" style="border-color:var(--' + corVar + ');margin-bottom:12px;">';
+  h += '<div class="auto-sec-icon" style="background:var(--' + corVar + '-bg);color:var(--' + corVar + ');">' + (tipo==='neg'?'💔':'💚') + '</div>';
+  h += '<div><div class="auto-sec-title">' + titulo + '</div></div>';
+  h += '</div>';
+  h += '<label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--txt-m);cursor:pointer;margin-bottom:12px;">';
+  h += '<input type="checkbox" data-campo="' + tipo + '_preenchido"' + (preenchido ? ' checked' : '') + ' onchange="p136ToggleSide(this)" style="width:17px;height:17px;cursor:pointer;"> Ativar este lado do registro</label>';
   h += '<div id="p136Side_' + tipo + '"' + (preenchido ? '' : ' style="display:none;"') + '>';
-  // Situação texto livre
-  h += '<div class="p136-campo"><label>Situação (texto livre)</label>';
+  h += '<div class="prof-edit-field"><label>Situação (texto livre)</label>';
   h += '<textarea data-campo="' + tipo + '_sit_o_que" rows="2">' + escapeHtmlAuto(String(r[tipo + '_sit_o_que'] || '')) + '</textarea></div>';
-  // Tipos de situação
   var sitGrupos = ['interpessoais','desempenho','solidao','perda','internas'];
   sitGrupos.forEach(function(g) { h += p136RenderGrupo_(r, tipo + '_sit_tipo_' + g, false); });
-  // Categorias
   var catsDef = tipo === 'neg' ? [
     { prefixos: ['_emo_tristeza','_emo_ansiedade','_emo_raiva','_emo_culpa','_emo_ciume'], likert: true },
     { prefixos: ['_fis_ativacao','_fis_desativacao','_fis_tensao','_fis_digestivas','_fis_sono'], likert: true },
@@ -14318,12 +14388,12 @@ function p136RenderSecao_(r, tipo, cor, titulo) {
   ];
   catsDef.forEach(function(cat) {
     if (cat.textoKey) {
-      h += '<div class="p136-campo"><label>Texto livre</label>';
+      h += '<div class="prof-edit-field" style="margin-top:10px;"><label>Texto livre</label>';
       h += '<textarea data-campo="' + tipo + cat.textoKey + '" rows="2">' + escapeHtmlAuto(String(r[tipo + cat.textoKey] || '')) + '</textarea></div>';
     }
     cat.prefixos.forEach(function(s) { h += p136RenderGrupo_(r, tipo + s, cat.likert); });
   });
-  h += '</div></div></div>';
+  h += '</div></div>';
   return h;
 }
 
@@ -14333,10 +14403,18 @@ function p136ToggleSide(cb) {
   if (el) el.style.display = cb.checked ? '' : 'none';
 }
 
+function p136CorDoGrupo_(chave) {
+  if (chave.indexOf('neg_pens') === 0) return 'amber';
+  if (chave.indexOf('neg_') === 0) return 'coral';
+  if (chave.indexOf('pos_') === 0) return 'green';
+  return 'gray';
+}
+
 function p136RenderGrupo_(r, chave, comLikert) {
   var optEls = document.querySelectorAll('[data-grupo="' + chave + '"] input[data-item]');
   if (!optEls.length) return '';
   var titulo = histTituloGrupo(chave);
+  var cor = p136CorDoGrupo_(chave);
   var valorAtual = String(r[chave] || '');
   var partes = valorAtual ? valorAtual.split(' | ').map(function(s){ return s.trim(); }).filter(Boolean) : [];
   var marcados = {};
@@ -14346,33 +14424,56 @@ function p136RenderGrupo_(r, chave, comLikert) {
     if (comLikert && mm) { marcados[mm[1].trim()] = true; intensidades[mm[1].trim()] = parseInt(mm[2],10); }
     else { marcados[p] = true; }
   });
-  var h = '<div class="p136-grupo" data-grupo-edit="' + chave + '">';
-  h += '<div class="p136-grupo-titulo">' + escapeHtmlAuto(titulo) + '</div>';
+  var h = '<div class="auto-group ' + cor + ' open" data-grupo-edit="' + chave + '" style="margin:8px 0;">';
+  h += '<div class="auto-group-head" style="pointer-events:none;">';
+  h += '<div class="auto-group-head-main"><div class="auto-group-title">' + escapeHtmlAuto(titulo) + '</div></div>';
+  h += '</div>';
+  h += '<div class="auto-group-body" style="display:block;padding-bottom:10px;">';
   optEls.forEach(function(el) {
     var item = el.getAttribute('data-item');
     if (!item) return;
     var checked = !!marcados[item];
     var intens = intensidades[item] || 3;
-    // Escape item for use in data-para attribute (replace quotes)
     var itemEsc = item.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-    h += '<div class="p136-item">';
-    h += '<label class="p136-item-label"><input type="checkbox" data-item="' + itemEsc + '"' + (checked ? ' checked' : '') + (comLikert ? ' onchange="p136ToggleSlider(this)"' : '') + '> ' + escapeHtmlAuto(item) + '</label>';
+    h += '<div class="auto-option' + (checked ? ' marked' : '') + '">';
+    h += '<label class="auto-option-lbl">';
+    h += '<input type="checkbox" data-item="' + itemEsc + '"' + (checked ? ' checked' : '') + (comLikert ? ' onchange="p136ToggleLikert(this)"' : '') + '>';
+    h += ' ' + escapeHtmlAuto(item) + '</label>';
     if (comLikert) {
-      h += '<div class="p136-slider-wrap"><input type="range" min="1" max="5" value="' + intens + '" class="p136-slider" data-para="' + itemEsc + '"' + (checked ? '' : ' disabled') + ' oninput="this.nextElementSibling.textContent=this.value">';
-      h += '<span class="p136-slider-val">' + intens + '</span></div>';
+      h += '<div class="auto-item-likert"' + (checked ? ' style="display:flex;"' : '') + '>';
+      h += '<span class="auto-item-likert-label">Intensidade</span>';
+      h += '<div class="auto-item-likert-btns">';
+      for (var n = 1; n <= 5; n++) {
+        h += '<button type="button" class="auto-item-likert-btn' + (n === intens ? ' selected' : '') + '" onclick="p136ClickLikert(this,' + n + ')">' + n + '</button>';
+      }
+      h += '</div>';
+      h += '<input type="hidden" data-likert-para="' + itemEsc + '" value="' + intens + '">';
+      h += '</div>';
     }
     h += '</div>';
   });
-  h += '</div>';
+  h += '</div></div>';
   return h;
 }
 
-function p136ToggleSlider(cb) {
-  var item = cb.getAttribute('data-item');
-  var wrap = cb.closest('.p136-item');
-  if (!wrap) return;
-  var sl = wrap.querySelector('input[type="range"]');
-  if (sl) sl.disabled = !cb.checked;
+function p136ToggleLikert(cb) {
+  var optEl = cb.closest('.auto-option');
+  if (!optEl) return;
+  var likertEl = optEl.querySelector('.auto-item-likert');
+  if (likertEl) likertEl.style.display = cb.checked ? 'flex' : 'none';
+  optEl.classList.toggle('marked', cb.checked);
+}
+
+function p136ClickLikert(btn, val) {
+  var btnsWrap = btn.parentElement;
+  if (!btnsWrap) return;
+  btnsWrap.querySelectorAll('.auto-item-likert-btn').forEach(function(b){ b.classList.remove('selected'); });
+  btn.classList.add('selected');
+  var likertDiv = btnsWrap.closest('.auto-item-likert');
+  if (likertDiv) {
+    var hidden = likertDiv.querySelector('input[type="hidden"]');
+    if (hidden) hidden.value = val;
+  }
 }
 
 // Monta uma seção completa do modal (com todos os subitens)
