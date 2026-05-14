@@ -14140,26 +14140,22 @@ async function p136IniciarEdicao() {
 
   P136_ESTADO = { idx: idx, tipo: eu.tipo, sigla: eu.sigla, timestamp: ts };
 
-  // Marcar lock no servidor
-  var lockResp;
+  // Pacote 13.6.2: gravar lock em paralelo (fire-and-forget)
+  // Não bloqueamos a abertura do form aguardando o servidor
   if (eu.tipo === 'profissional') {
-    lockResp = await chamarServidor('profMarcarEditandoAuto', {
+    chamarServidor('profMarcarEditandoAuto', {
       profSigla: PROF_SESSAO._sigla, profSenha: PROF_SESSAO._senha,
       siglaPaciente: (PROF_PACIENTE_SEL ? PROF_PACIENTE_SEL.sigla : eu.sigla),
       timestamp: ts
     });
   } else {
-    var pac = (typeof SESSAO !== 'undefined') ? SESSAO : null;
-    lockResp = await chamarServidor('pacienteMarcarEditandoAuto', {
+    var _pacLock = (typeof carregarSessao === 'function') ? carregarSessao() : null;
+    chamarServidor('pacienteMarcarEditandoAuto', {
       sigla: eu.sigla, timestamp: ts
     });
   }
-  if (!lockResp || !lockResp.ok) {
-    document.getElementById('p136EditErro').textContent = (lockResp && lockResp.erro) || 'Não foi possível iniciar a edição.';
-    return;
-  }
 
-  modal._p136Editando = true;
+  document.getElementById('histModalOverlay')._p136Editando = true;
   // Substituir conteúdo do modal pelo form de edição
   document.getElementById('histModalConteudo').innerHTML = p136RenderFormEdicao_(r);
   document.getElementById('p136PresencaBanner').style.display = 'none';
