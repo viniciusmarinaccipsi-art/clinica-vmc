@@ -354,6 +354,73 @@ body{
 }
 .prof-pv-mod-vazio span{font-size:28px;display:block;margin-bottom:8px;}
 
+/* Pacote 13.4: Botao + Novo Paciente e modal de cadastro */
+.prof-btn-novo{
+  display:flex;align-items:center;gap:6px;justify-content:center;
+  width:100%;padding:12px 16px;margin-bottom:14px;
+  background:var(--green);color:#fff;border:none;border-radius:10px;
+  font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;
+  cursor:pointer;transition:background .2s;
+}
+.prof-btn-novo:hover{background:#5aad79;}
+.prof-btn-novo span{font-size:18px;}
+.prof-cad-field{margin:0 0 14px;}
+.prof-cad-field label{
+  display:block;font-size:12px;font-weight:700;color:var(--txt-m);
+  margin-bottom:5px;font-family:'Nunito',sans-serif;
+}
+.prof-cad-field label .req{color:var(--coral);}
+.prof-cad-field input{
+  width:100%;padding:10px 12px;border:1.5px solid var(--border);
+  border-radius:8px;font-size:14px;font-family:'Nunito',sans-serif;
+  box-sizing:border-box;transition:border-color .2s;
+}
+.prof-cad-field input:focus{border-color:var(--blue);outline:none;}
+.prof-cad-field .prof-cad-hint{font-size:11px;color:var(--txt-l);margin-top:3px;}
+.prof-cad-erro{
+  display:none;background:var(--red-bg,#FEF2F2);color:var(--red);
+  padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px;
+  border:1px solid rgba(217,68,68,.2);
+}
+.prof-cad-erro.visivel{display:block;}
+.prof-cad-sucesso{
+  background:var(--green-bg,#F2FBF5);color:#2d7a4a;
+  padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px;
+  border:1px solid rgba(107,191,138,.3);
+}
+.prof-btn-editar-anam{
+  background:var(--blue);color:#fff;border:none;border-radius:8px;
+  padding:8px 16px;font-family:'Nunito',sans-serif;font-size:13px;
+  font-weight:700;cursor:pointer;transition:background .2s;
+}
+.prof-btn-editar-anam:hover{background:#1e4a5f;}
+.prof-edit-acoes{
+  display:flex;gap:10px;justify-content:flex-end;margin:16px 0 8px;
+}
+.prof-edit-acoes button{
+  padding:10px 22px;border-radius:8px;font-family:'Nunito',sans-serif;
+  font-size:14px;font-weight:700;cursor:pointer;border:none;
+}
+.prof-edit-salvar{background:var(--green);color:#fff;}
+.prof-edit-salvar:hover{background:#5aad79;}
+.prof-edit-salvar:disabled{background:var(--gray-lt);cursor:not-allowed;}
+.prof-edit-cancelar{background:var(--w,#fff);color:var(--txt);border:1.5px solid var(--border) !important;}
+.prof-edit-cancelar:hover{background:var(--gray-bg,#F5F7F9);}
+.prof-edit-field{margin:0 0 12px;}
+.prof-edit-field label{
+  display:block;font-size:12px;font-weight:700;color:var(--txt-m);
+  margin-bottom:4px;font-family:'Nunito',sans-serif;
+}
+.prof-edit-field input,.prof-edit-field textarea,.prof-edit-field select{
+  width:100%;padding:8px 10px;border:1.5px solid var(--border);
+  border-radius:6px;font-size:13px;font-family:'Nunito',sans-serif;
+  box-sizing:border-box;
+}
+.prof-edit-field textarea{min-height:60px;resize:vertical;}
+.prof-edit-field input:focus,.prof-edit-field textarea:focus,.prof-edit-field select:focus{
+  border-color:var(--blue);outline:none;
+}
+
 /* ===== Campos de formulário ===== */
 .field{margin:12px 0;position:relative;}
 .field label{
@@ -3607,6 +3674,41 @@ body{
   <div class="section" id="sec-prof-paciente">
     <div id="profPacienteConteudo">
       <!-- Populado dinamicamente por profAbrirPaciente() -->
+    </div>
+  </div>
+
+  <!-- Pacote 13.4: Modal de cadastro de novo paciente -->
+  <div class="p5-modal-overlay" id="profCadModal" onclick="if(event.target===this)profFecharModalCadastro()">
+    <div class="p5-modal-card" role="dialog" aria-modal="true" aria-labelledby="profCadTitulo" style="max-width:420px;">
+      <div class="p5-modal-head">
+        <span class="p5-modal-icone">➕</span>
+        <div class="p5-modal-titulo" id="profCadTitulo">Cadastrar Novo Paciente</div>
+      </div>
+      <div class="p5-modal-body" id="profCadBody">
+        <div class="prof-cad-erro" id="profCadErro"></div>
+        <div class="prof-cad-field">
+          <label>Sigla <span class="req">*</span></label>
+          <input type="text" id="profCadSigla" maxlength="10" placeholder="Ex: ABC"
+                 oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9_]/g,'')">
+          <div class="prof-cad-hint">2-10 caracteres, letras maiúsculas, números ou _</div>
+        </div>
+        <div class="prof-cad-field">
+          <label>Nome completo <span class="req">*</span></label>
+          <input type="text" id="profCadNome" placeholder="Nome completo do paciente">
+        </div>
+        <div class="prof-cad-field">
+          <label>Senha inicial <span class="req">*</span></label>
+          <input type="password" id="profCadSenha" placeholder="Mínimo 6 caracteres">
+        </div>
+        <div class="prof-cad-field">
+          <label>Confirmar senha <span class="req">*</span></label>
+          <input type="password" id="profCadSenha2" placeholder="Repita a senha">
+        </div>
+      </div>
+      <div class="p5-modal-acoes">
+        <button class="p5-btn p5-btn-secondary" type="button" onclick="profFecharModalCadastro()">Cancelar</button>
+        <button class="p5-btn p5-btn-primary" type="button" id="profCadBtnEnviar" onclick="profCadastrarPaciente()">Cadastrar</button>
+      </div>
     </div>
   </div>
 
@@ -8718,8 +8820,12 @@ async function profCarregarDashboard() {
 
   var pacientes = resp.pacientes || [];
 
+  // Pacote 13.4: botao + Novo Paciente (sempre visivel)
+  var btnNovo = '<button class="prof-btn-novo" onclick="profAbrirModalCadastro()">' +
+    '<span>＋</span> Novo Paciente</button>';
+
   if (pacientes.length === 0) {
-    container.innerHTML =
+    container.innerHTML = btnNovo +
       '<div class="prof-pac-empty">' +
         '<span>📋</span>' +
         '<p style="font-weight:700;color:var(--txt);margin-bottom:6px;">Nenhum paciente cadastrado</p>' +
@@ -8729,7 +8835,8 @@ async function profCarregarDashboard() {
   }
 
   // Renderizar lista
-  var html = '<p class="prof-pac-count">Pacientes (' + pacientes.length + ')</p>';
+  var html = btnNovo;
+  html += '<p class="prof-pac-count">Pacientes (' + pacientes.length + ')</p>';
   html += '<div class="prof-pac-list">';
 
   for (var i = 0; i < pacientes.length; i++) {
@@ -8880,6 +8987,7 @@ async function profAbrirPaciente(sigla) {
     nome = resp.anamnese.nome_completo;
   }
   PROF_PACIENTE_SEL.nome = nome;
+  PROF_PACIENTE_SEL.anamnese = resp.anamnese || null; // Pacote 13.4: guardar para edição
 
   var iniciaisNome = nome.split(' ').filter(function(w){ return w.length > 0; })
     .map(function(w){ return w[0].toUpperCase(); }).slice(0,2).join('');
@@ -8903,9 +9011,10 @@ async function profAbrirPaciente(sigla) {
   html += '<div class="prof-pv-mod-info"><div class="prof-pv-mod-title">Anamnese</div><div class="prof-pv-mod-meta">' + profEscHtml_(anamMeta) + '</div></div>';
   html += '<span class="prof-pv-mod-chevron">›</span>';
   html += '</div>';
-  html += '<div class="prof-pv-mod-body">';
+  html += '<div class="prof-pv-mod-body" id="profModAnamBody">';
   if (resp.anamnese_preenchida && resp.anamnese) {
-    html += profRenderizarAnamnese_(resp.anamnese);
+    html += '<div style="text-align:right;margin-bottom:10px;"><button class="prof-btn-editar-anam" onclick="profIniciarEdicaoAnamnese_()">✏️ Editar Anamnese</button></div>';
+    html += '<div id="profAnamConteudo">' + profRenderizarAnamnese_(resp.anamnese) + '</div>';
   } else {
     html += '<div class="prof-pv-mod-vazio"><span>📝</span>O paciente ainda não enviou sua anamnese.</div>';
   }
@@ -9162,6 +9271,286 @@ function profVoltarDashboard() {
   window._HIST_REGS = null;
   abrirSecao('sec-prof-dashboard');
 }
+
+/* ============================================================
+   PACOTE 13.4 — Cadastro de Paciente pelo Profissional
+   ============================================================ */
+
+function profAbrirModalCadastro() {
+  // Limpar campos
+  document.getElementById('profCadSigla').value = '';
+  document.getElementById('profCadNome').value = '';
+  document.getElementById('profCadSenha').value = '';
+  document.getElementById('profCadSenha2').value = '';
+  var erroEl = document.getElementById('profCadErro');
+  erroEl.textContent = '';
+  erroEl.classList.remove('visivel');
+  document.getElementById('profCadBtnEnviar').disabled = false;
+  document.getElementById('profCadBtnEnviar').textContent = 'Cadastrar';
+  // Abrir modal
+  document.getElementById('profCadModal').classList.add('show');
+}
+
+function profFecharModalCadastro() {
+  document.getElementById('profCadModal').classList.remove('show');
+}
+
+async function profCadastrarPaciente() {
+  var erroEl = document.getElementById('profCadErro');
+  erroEl.classList.remove('visivel');
+
+  var sigla  = document.getElementById('profCadSigla').value.trim().toUpperCase();
+  var nome   = document.getElementById('profCadNome').value.trim();
+  var senha  = document.getElementById('profCadSenha').value;
+  var senha2 = document.getElementById('profCadSenha2').value;
+
+  // Validações no frontend
+  if (!sigla) {
+    erroEl.textContent = 'Preencha a sigla do paciente.';
+    erroEl.classList.add('visivel');
+    return;
+  }
+  if (!/^[A-Z0-9_]{2,10}$/.test(sigla)) {
+    erroEl.textContent = 'Sigla deve ter 2-10 caracteres (letras maiúsculas, números ou _).';
+    erroEl.classList.add('visivel');
+    return;
+  }
+  if (!nome) {
+    erroEl.textContent = 'Preencha o nome completo do paciente.';
+    erroEl.classList.add('visivel');
+    return;
+  }
+  if (!senha || senha.length < 6) {
+    erroEl.textContent = 'A senha deve ter no mínimo 6 caracteres.';
+    erroEl.classList.add('visivel');
+    return;
+  }
+  if (senha !== senha2) {
+    erroEl.textContent = 'As senhas não conferem.';
+    erroEl.classList.add('visivel');
+    return;
+  }
+
+  // Desabilitar botão e mostrar loading
+  var btnEnviar = document.getElementById('profCadBtnEnviar');
+  btnEnviar.disabled = true;
+  btnEnviar.textContent = 'Cadastrando…';
+
+  if (!PROF_SESSAO) {
+    erroEl.textContent = 'Sessão expirada. Faça login novamente.';
+    erroEl.classList.add('visivel');
+    btnEnviar.disabled = false;
+    btnEnviar.textContent = 'Cadastrar';
+    return;
+  }
+
+  var resp = await chamarServidor('profCadastrarPaciente', {
+    profSigla: PROF_SESSAO._sigla,
+    profSenha: PROF_SESSAO._senha,
+    dados: {
+      sigla: sigla,
+      nomeCompleto: nome,
+      senhaInicial: senha
+    }
+  });
+
+  if (!resp.ok) {
+    erroEl.textContent = resp.erro || 'Erro desconhecido ao cadastrar.';
+    erroEl.classList.add('visivel');
+    btnEnviar.disabled = false;
+    btnEnviar.textContent = 'Cadastrar';
+    return;
+  }
+
+  // Sucesso: fechar modal e recarregar dashboard
+  profFecharModalCadastro();
+  alert('Paciente ' + sigla + ' cadastrado com sucesso!\n\nSigla: ' + sigla + '\nSenha: (a que você definiu)');
+  profCarregarDashboard();
+}
+
+// Fechar modal de cadastro com ESC
+document.addEventListener('keydown', function(evt) {
+  if (evt.key === 'Escape') {
+    var m = document.getElementById('profCadModal');
+    if (m && m.classList.contains('show')) profFecharModalCadastro();
+  }
+});
+
+/* Fim do Pacote 13.4 — Cadastro */
+
+/* ============================================================
+   PACOTE 13.4 — Edição de Anamnese pelo Profissional
+   ============================================================ */
+
+function profIniciarEdicaoAnamnese_() {
+  var dados = PROF_PACIENTE_SEL ? PROF_PACIENTE_SEL.anamnese : null;
+  if (!dados) { alert('Sem dados de anamnese para editar.'); return; }
+  var container = document.getElementById('profModAnamBody');
+  if (!container) return;
+  container.innerHTML = profRenderizarAnamneseEditavel_(dados);
+}
+
+function profCancelarEdicaoAnamnese_() {
+  var dados = PROF_PACIENTE_SEL ? PROF_PACIENTE_SEL.anamnese : null;
+  var container = document.getElementById('profModAnamBody');
+  if (!container) return;
+  if (dados) {
+    container.innerHTML =
+      '<div style="text-align:right;margin-bottom:10px;"><button class="prof-btn-editar-anam" onclick="profIniciarEdicaoAnamnese_()">✏️ Editar Anamnese</button></div>' +
+      '<div id="profAnamConteudo">' + profRenderizarAnamnese_(dados) + '</div>';
+  }
+}
+
+function profRenderizarAnamneseEditavel_(d) {
+  var v = function(k) { return (d[k] !== undefined && d[k] !== null) ? String(d[k]) : ''; };
+  var esc = function(s) { return profEscHtml_(s); };
+
+  var inp = function(label, key) {
+    return '<div class="prof-edit-field"><label>' + label + '</label>' +
+      '<input type="text" id="profEd_' + key + '" value="' + esc(v(key)) + '"></div>';
+  };
+  var ta = function(label, key) {
+    return '<div class="prof-edit-field"><label>' + label + '</label>' +
+      '<textarea id="profEd_' + key + '">' + esc(v(key)) + '</textarea></div>';
+  };
+  var sel = function(label, key) {
+    var val = v(key);
+    return '<div class="prof-edit-field"><label>' + label + '</label>' +
+      '<select id="profEd_' + key + '">' +
+      '<option value=""' + (!val ? ' selected' : '') + '>—</option>' +
+      '<option value="Sim"' + (val === 'Sim' ? ' selected' : '') + '>Sim</option>' +
+      '<option value="Não"' + (val === 'Não' ? ' selected' : '') + '>Não</option>' +
+      '</select></div>';
+  };
+
+  var html = '<div class="anam-card">';
+
+  // Seção 1
+  html += '<div class="review-section"><h4>1. Dados Pessoais</h4>';
+  html += inp('Nome completo', 'nome_completo');
+  html += '<div class="prof-edit-field"><label>Data de nascimento</label>' +
+    '<input type="date" id="profEd_data_nascimento" value="' + esc(v('data_nascimento')) + '"></div>';
+  html += inp('RG', 'rg') + inp('CPF', 'cpf') + inp('Telefone', 'telefone');
+  html += inp('E-mail', 'email') + inp('Escolaridade', 'escolaridade');
+  html += inp('Profissão', 'profissao') + inp('Estado civil', 'estado_civil');
+  html += sel('Reside fora do Brasil?', 'reside_fora_brasil');
+  html += inp('País', 'pais') + inp('ZIP Code / CEP exterior', 'zip_code');
+  html += inp('Endereço exterior', 'endereco_exterior');
+  html += inp('CEP', 'cep') + inp('Estado', 'estado') + inp('Cidade', 'cidade');
+  html += inp('Logradouro', 'endereco_logradouro') + inp('Número', 'endereco_numero');
+  html += inp('Complemento', 'endereco_complemento') + inp('Bairro', 'endereco_bairro');
+  html += '</div>';
+
+  // Seção 2
+  html += '<div class="review-section"><h4>2. Histórico de Tratamentos</h4>';
+  html += sel('Psicoterapia / psiquiatria anterior?', 'psicoterapia_anterior');
+  html += ta('Detalhes dos tratamentos', 'tratamentos_anteriores');
+  html += sel('Procedimento médico (12m)', 'procedimento_medico_12m');
+  html += ta('Detalhes do procedimento', 'procedimento_medico_detalhes');
+  html += sel('Medicação não psicotrópica', 'medicacao_nao_psico_continua');
+  html += ta('Detalhes (não psico)', 'medicacao_nao_psico_detalhes');
+  html += sel('Medicação psicotrópica', 'medicacao_psico');
+  html += ta('Em uso atual', 'medicacao_psico_atual');
+  html += ta('Uso no passado', 'medicacao_psico_passado');
+  html += ta('Observações (medicação)', 'medicacao_psico_detalhes');
+  html += '</div>';
+
+  // Seção 3
+  html += '<div class="review-section"><h4>3. Histórico de Saúde</h4>';
+  html += ta('Em tratamento atual', 'transtornos_em_tratamento');
+  html += ta('Tratamento no passado', 'transtornos_tratamento_passado');
+  html += ta('Diagnosticados sem tratamento', 'transtornos_sem_tratamento');
+  html += ta('Suspeitas (sem diagnóstico formal)', 'transtornos_suspeitados');
+  html += ta('Outros', 'transtornos_outros_texto');
+  html += sel('Familiar com transtorno?', 'familiar_transtorno');
+  html += ta('Detalhes (familiar)', 'familiar_transtorno_detalhes');
+  html += ta('Sinais de risco', 'sinais_risco_marcados');
+  html += ta('Condições clínicas', 'complicacoes_clinicas');
+  html += ta('Outras condições', 'complicacoes_outros_texto');
+  html += sel('Familiar com condição clínica?', 'familiar_complicacao');
+  html += ta('Detalhes (condição familiar)', 'familiar_complicacao_detalhes');
+  html += '</div>';
+
+  // Seção 4
+  html += '<div class="review-section"><h4>4. Pessoa(s) de Confiança</h4>';
+  for (var i = 1; i <= 3; i++) {
+    html += '<div style="font-weight:700;color:var(--blue);font-size:12px;margin:' + (i > 1 ? '12px' : '0') + ' 0 4px;">Pessoa ' + i + '</div>';
+    html += inp('Nome', 'pessoa_confianca_' + i + '_nome');
+    html += inp('Relação', 'pessoa_confianca_' + i + '_relacao');
+    html += inp('Telefone', 'pessoa_confianca_' + i + '_telefone');
+    html += inp('E-mail', 'pessoa_confianca_' + i + '_email');
+  }
+  html += '</div>';
+
+  // Botões
+  html += '<div class="prof-edit-acoes">';
+  html += '<button class="prof-edit-cancelar" onclick="profCancelarEdicaoAnamnese_()">Cancelar</button>';
+  html += '<button class="prof-edit-salvar" id="profEditSalvarBtn" onclick="profSalvarAnamnesePaciente_()">Salvar Alterações</button>';
+  html += '</div>';
+
+  html += '</div>';
+  return html;
+}
+
+async function profSalvarAnamnesePaciente_() {
+  if (!PROF_SESSAO || !PROF_PACIENTE_SEL) return;
+
+  var btn = document.getElementById('profEditSalvarBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Salvando…'; }
+
+  // Coletar todos os campos
+  var dados = {};
+  var campos = HEADERS_ANAMNESE_FRONT;
+  for (var i = 0; i < campos.length; i++) {
+    var el = document.getElementById('profEd_' + campos[i]);
+    if (el) dados[campos[i]] = el.value;
+  }
+
+  var resp = await chamarServidor('profSalvarAnamnese', {
+    profSigla: PROF_SESSAO._sigla,
+    profSenha: PROF_SESSAO._senha,
+    siglaPaciente: PROF_PACIENTE_SEL.sigla,
+    dados: dados
+  });
+
+  if (!resp.ok) {
+    alert('Erro ao salvar: ' + (resp.erro || 'Erro desconhecido'));
+    if (btn) { btn.disabled = false; btn.textContent = 'Salvar Alterações'; }
+    return;
+  }
+
+  // Atualizar dados em memória e voltar para read-only
+  PROF_PACIENTE_SEL.anamnese = dados;
+  profCancelarEdicaoAnamnese_();
+  alert('Anamnese salva com sucesso!');
+}
+
+// Lista de campos da anamnese para coleta (espelha HEADERS_ANAMNESE do backend, sem timestamp e versao_formulario)
+var HEADERS_ANAMNESE_FRONT = [
+  'nome_completo', 'data_nascimento', 'rg', 'cpf', 'telefone', 'email',
+  'escolaridade', 'profissao', 'estado_civil', 'reside_fora_brasil',
+  'pais', 'zip_code', 'endereco_exterior', 'estado', 'cidade', 'cep',
+  'endereco_logradouro', 'endereco_numero', 'endereco_complemento',
+  'endereco_bairro', 'psicoterapia_anterior', 'tratamentos_anteriores',
+  'procedimento_medico_12m', 'procedimento_medico_detalhes',
+  'medicacao_nao_psico_continua', 'medicacao_nao_psico_detalhes',
+  'medicacao_psico', 'medicacao_psico_atual', 'medicacao_psico_passado',
+  'medicacao_psico_detalhes', 'transtornos_em_tratamento',
+  'transtornos_tratamento_passado', 'transtornos_sem_tratamento',
+  'transtornos_suspeitados', 'transtornos_outros_texto',
+  'familiar_transtorno', 'familiar_transtorno_detalhes',
+  'sinais_risco_marcados', 'complicacoes_clinicas',
+  'complicacoes_outros_texto', 'familiar_complicacao',
+  'familiar_complicacao_detalhes',
+  'pessoa_confianca_1_nome', 'pessoa_confianca_1_relacao',
+  'pessoa_confianca_1_telefone', 'pessoa_confianca_1_email',
+  'pessoa_confianca_2_nome', 'pessoa_confianca_2_relacao',
+  'pessoa_confianca_2_telefone', 'pessoa_confianca_2_email',
+  'pessoa_confianca_3_nome', 'pessoa_confianca_3_relacao',
+  'pessoa_confianca_3_telefone', 'pessoa_confianca_3_email'
+];
+
+/* Fim do Pacote 13.4 — Edição Anamnese */
 
 function logout() {
   limparSessao();
