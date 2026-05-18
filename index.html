@@ -1506,6 +1506,14 @@ body{
 .mood-card.m4{background:#F2FBF5;border-color:#D0EDDA;}.mood-card.m4.selected,.mood-card.m4:hover{border-color:var(--green);}.mood-card.m4 .mood-num{color:var(--green);}
 .mood-card.m5{background:#E8F7ED;border-color:#B8E6C8;}.mood-card.m5.selected,.mood-card.m5:hover{border-color:#4A9E68;}.mood-card.m5 .mood-num{color:#4A9E68;}
 @media(max-width:600px){.mood-grid{gap:5px;}.mood-card{padding:10px 2px;}.mood-emoji{font-size:22px;}.mood-lbl{font-size:9px;}}
+/* Pacote 13.6.9.2 — caixa de descrição dinâmica de humor */
+.humor-desc-box{border-radius:var(--r);padding:10px 14px;font-size:12.5px;font-weight:600;font-style:italic;text-align:center;margin:0 0 14px;border:1.5px solid transparent;opacity:0;max-height:0;overflow:hidden;transition:opacity .25s ease,max-height .25s ease,padding .25s ease,margin .25s ease;}
+.humor-desc-box.visivel{opacity:1;max-height:60px;padding:10px 14px;margin:0 0 14px;}
+.humor-desc-box.desc-1{background:#FFF0EE;border-color:#F5D0CA;color:var(--coral);}
+.humor-desc-box.desc-2{background:#FFF5F3;border-color:#F5DDD8;color:#E8A090;}
+.humor-desc-box.desc-3{background:var(--gray-bg);border-color:var(--gray-lt);color:var(--txt-m);}
+.humor-desc-box.desc-4{background:#F2FBF5;border-color:#D0EDDA;color:#3A8A58;}
+.humor-desc-box.desc-5{background:#E8F7ED;border-color:#B8E6C8;color:#4A9E68;}
 
 /* Campos de formulário */
 .auto-field{margin:10px 0;}
@@ -4431,7 +4439,7 @@ body{
           <input type="time" id="autoInpHora" onchange="autoOnDataHoraChange()">
         </div>
       </div>
-      <p style="font-size:13px;color:var(--txt-m);text-align:center;font-weight:700;margin:14px 0 6px;">Como você está se sentindo neste momento? <span class="req" style="color:var(--coral);">*</span></p>
+      <p style="font-size:13px;color:var(--txt-m);text-align:center;font-weight:700;margin:14px 0 6px;">Como você define o seu humor neste momento? <span class="req" style="color:var(--coral);">*</span></p>
       <div class="mood-grid">
         <div class="mood-card m1" onclick="autoSelecionarHumor(this,1)"><span class="mood-emoji">😟</span><span class="mood-num">1</span><span class="mood-lbl">Muito negativo</span></div>
         <div class="mood-card m2" onclick="autoSelecionarHumor(this,2)"><span class="mood-emoji">🙁</span><span class="mood-num">2</span><span class="mood-lbl">Negativo</span></div>
@@ -4439,6 +4447,8 @@ body{
         <div class="mood-card m4" onclick="autoSelecionarHumor(this,4)"><span class="mood-emoji">🙂</span><span class="mood-num">4</span><span class="mood-lbl">Positivo</span></div>
         <div class="mood-card m5" onclick="autoSelecionarHumor(this,5)"><span class="mood-emoji">😊</span><span class="mood-num">5</span><span class="mood-lbl">Muito positivo</span></div>
       </div>
+      <!-- Pacote 13.6.9.2 — descrição dinâmica de humor -->
+      <div class="humor-desc-box" id="autoHumorDesc"></div>
       <div class="auto-obs-box">
         <label>Observações (opcional):</label>
         <textarea id="autoInpObsHumor" placeholder="Algo que queira registrar sobre esse momento..."></textarea>
@@ -5595,7 +5605,7 @@ body{
           </div>
         </div>
         <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Enjoo ou náuseas"> Enjoo ou náuseas</label>
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Enjoo, náuseas ou desconfortos abdominais"> Enjoo, náuseas ou desconfortos abdominais</label>
           <div class="auto-item-likert">
             <span class="auto-item-likert-label">Mal-estar:</span>
             <div class="auto-item-likert-btns">
@@ -12900,6 +12910,21 @@ function autoSelecionarHumor(el, valor) {
   AUTO_STATE.dados.humor_nivel = valor;
   autoValidarPasso1();
   autoSalvarRascunho();
+  // Pacote 13.6.9.2 — caixa de descrição dinâmica
+  var HUMOR_DESC = {
+    1: { txt: 'Estou me sentindo muito mal — com grande sofrimento ou desconforto emocional.', cls: 'desc-1' },
+    2: { txt: 'Estou me sentindo mal — algo me incomoda e está afetando o meu dia.', cls: 'desc-2' },
+    3: { txt: 'Não estou me sentindo bem nem mal — estou em um estado emocional estável.', cls: 'desc-3' },
+    4: { txt: 'Estou me sentindo bem — com disposição e alguma satisfação.', cls: 'desc-4' },
+    5: { txt: 'Estou me sentindo muito bem — com energia, leveza ou alegria.', cls: 'desc-5' }
+  };
+  var box = document.getElementById('autoHumorDesc');
+  if (box && HUMOR_DESC[valor]) {
+    var d = HUMOR_DESC[valor];
+    box.textContent = d.txt;
+    box.className = 'humor-desc-box ' + d.cls;
+    requestAnimationFrame(function() { box.classList.add('visivel'); });
+  }
 }
 
 function autoValidarPasso1() {
