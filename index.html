@@ -482,6 +482,15 @@ body{
 .p135-btn-reativar:hover{background:#d8f3e2;}
 .p135-btn-excluir{background:var(--red-bg);color:var(--red);}
 .p135-btn-excluir:hover{background:#fde0e0;}
+/* Pacote 13.7 — botão Senha paciente */
+.p135-btn-senha{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.35);}
+.p135-btn-senha:hover{background:rgba(255,255,255,.28);}
+/* Pacote 13.7 — card Dados Cadastrais */
+.prof-dados-body{border-top:1.5px solid var(--border);padding:14px 16px;display:flex;flex-direction:column;gap:8px;}
+.prof-dado-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+.prof-dado-label{font-size:11px;font-weight:700;color:var(--txt-l);white-space:nowrap;}
+.prof-dado-val{font-size:13px;font-weight:600;color:#2C3E50;text-align:right;}
+.prof-dado-empty{font-size:12px;color:var(--txt-l);font-style:italic;}
 /* Seção de inativos no dashboard */
 .p135-inativos-toggle{
   display:flex;align-items:center;gap:8px;padding:10px 14px;
@@ -3863,6 +3872,34 @@ body{
       <div class="p5-modal-acoes">
         <button class="p5-btn p5-btn-secondary" type="button" onclick="profFecharModalCadastro()">Cancelar</button>
         <button class="p5-btn p5-btn-primary" type="button" id="profCadBtnEnviar" onclick="profCadastrarPaciente()">Cadastrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pacote 13.7: Modal trocar senha do paciente -->
+  <div class="p5-modal-overlay" id="p137SenhaModal" onclick="if(event.target===this)p137FecharSenha()">
+    <div class="p5-modal-card" role="dialog" aria-modal="true" style="max-width:380px;">
+      <div class="p5-modal-head">
+        <span class="p5-modal-icone">🔑</span>
+        <div class="p5-modal-titulo">Trocar Senha do Paciente</div>
+      </div>
+      <div class="p5-modal-body">
+        <div class="prof-cad-erro" id="p137SenhaErro"></div>
+        <p style="font-size:13px;color:var(--txt-m);line-height:1.5;margin-bottom:16px;">
+          Troca a senha de <strong id="p137SenhaNome"></strong>. O paciente precisará usar a nova senha no próximo acesso.
+        </p>
+        <div class="prof-cad-field">
+          <label>Nova senha <span class="req">*</span></label>
+          <input type="password" id="p137SenhaInput1" placeholder="Mínimo 6 caracteres">
+        </div>
+        <div class="prof-cad-field">
+          <label>Confirmar nova senha <span class="req">*</span></label>
+          <input type="password" id="p137SenhaInput2" placeholder="Digite a mesma senha de novo">
+        </div>
+      </div>
+      <div class="p5-modal-acoes">
+        <button class="p5-btn p5-btn-secondary" type="button" onclick="p137FecharSenha()">Cancelar</button>
+        <button class="p5-btn p5-btn-primary" type="button" id="p137SenhaBtnEnviar" onclick="p137TrocarSenha()">Trocar Senha</button>
       </div>
     </div>
   </div>
@@ -9296,6 +9333,28 @@ async function profAbrirPaciente(sigla) {
   // ---- Header ----
   var html = profBuildHeader_(iniciaisNome, nome, 'Paciente · ' + sigla);
 
+  // ---- Pacote 13.7 — Card Dados Cadastrais ----
+  html += '<div class="prof-pv-mod mod-blue" id="profMod-dados">';
+  html += '<div class="prof-pv-mod-head" onclick="profToggleModulo_(\'dados\')">';
+  html += '<span class="prof-pv-mod-icon">👤</span>';
+  html += '<div class="prof-pv-mod-info"><div class="prof-pv-mod-title">Dados Cadastrais</div><div class="prof-pv-mod-meta">Informações da anamnese</div></div>';
+  html += '<span class="prof-pv-mod-chevron">›</span>';
+  html += '</div>';
+  html += '<div class="prof-pv-mod-body prof-dados-body" id="profModDadosBody">';
+  var dadoLinha = function(label, val) {
+    var v = (val === undefined || val === null || String(val).trim() === '')
+      ? '<span class="prof-dado-empty">— não informado —</span>'
+      : '<span class="prof-dado-val">' + profEscHtml_(String(val)) + '</span>';
+    return '<div class="prof-dado-row"><span class="prof-dado-label">' + label + '</span>' + v + '</div>';
+  };
+  var an = (resp.anamnese && resp.anamnese_preenchida) ? resp.anamnese : {};
+  html += dadoLinha('Nome completo', an.nome_completo);
+  html += dadoLinha('Data de nascimento', an.data_nascimento ? formatarDataBR(String(an.data_nascimento).slice(0,10)) : '');
+  html += dadoLinha('CPF', an.cpf);
+  html += dadoLinha('E-mail', an.email);
+  html += dadoLinha('Telefone', an.telefone);
+  html += '</div></div>';
+
   // ---- 3 cards-módulo colapsáveis ----
   html += '<div class="prof-pv-mods">';
 
@@ -9364,6 +9423,7 @@ function profBuildHeader_(iniciais, nome, sub) {
       acoesHtml += '<button class="p135-btn p135-btn-excluir" onclick="p135AbrirExcluir(\'' + profEscHtml_(PROF_PACIENTE_SEL.sigla) + '\')">🗑️ Excluir</button>';
     } else {
       acoesHtml += '<button class="p135-btn p135-btn-desativar" onclick="p135AbrirDesativar(\'' + profEscHtml_(PROF_PACIENTE_SEL.sigla) + '\')">⏸️ Desativar</button>';
+      acoesHtml += '<button class="p135-btn p135-btn-senha" onclick="p137AbrirSenha(\'' + profEscHtml_(PROF_PACIENTE_SEL.sigla) + '\')">🔑 Senha</button>';
     }
     acoesHtml += '</div>';
   }
@@ -9583,6 +9643,52 @@ function profRenderizarEscalas_(escalas) {
 /* ============================================================
    PACOTE 13.5 — Desativar / Reativar / Excluir Paciente
    ============================================================ */
+
+/* --- Pacote 13.7: Trocar senha do paciente --- */
+function p137AbrirSenha(sigla) {
+  document.getElementById('p137SenhaNome').textContent = sigla;
+  document.getElementById('p137SenhaInput1').value = '';
+  document.getElementById('p137SenhaInput2').value = '';
+  document.getElementById('p137SenhaErro').textContent = '';
+  document.getElementById('p137SenhaBtnEnviar').disabled = false;
+  document.getElementById('p137SenhaBtnEnviar').textContent = 'Trocar Senha';
+  document.getElementById('p137SenhaModal').style.display = 'flex';
+}
+function p137FecharSenha() {
+  document.getElementById('p137SenhaModal').style.display = 'none';
+}
+async function p137TrocarSenha() {
+  var s1 = document.getElementById('p137SenhaInput1').value.trim();
+  var s2 = document.getElementById('p137SenhaInput2').value.trim();
+  var erroEl = document.getElementById('p137SenhaErro');
+  var btn = document.getElementById('p137SenhaBtnEnviar');
+  erroEl.textContent = '';
+  if (!s1 || s1.length < 6) { erroEl.textContent = 'A senha deve ter no mínimo 6 caracteres.'; return; }
+  if (s1 !== s2) { erroEl.textContent = 'As senhas não coincidem.'; return; }
+  btn.disabled = true;
+  btn.textContent = 'Salvando…';
+  try {
+    var resp = await chamarServidor_({
+      acao: 'profAlterarSenhaPaciente',
+      profSigla: PROF_SESSAO._sigla,
+      profSenha: PROF_SESSAO._senha,
+      sigla_paciente: PROF_PACIENTE_SEL.sigla,
+      nova_senha: s1
+    });
+    if (resp && resp.ok) {
+      p137FecharSenha();
+      mostrarToast('Senha alterada com sucesso! ✅');
+    } else {
+      erroEl.textContent = (resp && resp.erro) ? resp.erro : 'Erro ao alterar senha.';
+      btn.disabled = false;
+      btn.textContent = 'Trocar Senha';
+    }
+  } catch(e) {
+    erroEl.textContent = 'Erro de conexão. Tente novamente.';
+    btn.disabled = false;
+    btn.textContent = 'Trocar Senha';
+  }
+}
 
 /* --- Desativar --- */
 function p135AbrirDesativar(sigla) {
