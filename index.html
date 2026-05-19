@@ -349,6 +349,12 @@ body{
 }
 .prof-pv-mod.aberto .prof-pv-mod-body{display:block;}
 .prof-pv-mod-body .anam-card{box-shadow:none;border:none;padding:0;}
+/* Pacote 13.7 — linhas de dados cadastrais */
+.prof-dado-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);}
+.prof-dado-row:last-child{border-bottom:none;}
+.prof-dado-label{font-size:11px;font-weight:700;color:var(--txt-l);white-space:nowrap;}
+.prof-dado-val{font-size:13px;font-weight:600;color:#2C3E50;text-align:right;}
+.prof-dado-empty{font-size:12px;color:var(--txt-l);font-style:italic;}
 .prof-pv-mod-vazio{
   text-align:center;padding:24px 16px;color:var(--txt-l);font-size:13px;
 }
@@ -9340,7 +9346,7 @@ async function profAbrirPaciente(sigla) {
   html += '<div class="prof-pv-mod-info"><div class="prof-pv-mod-title">Dados Cadastrais</div><div class="prof-pv-mod-meta">Informações da anamnese</div></div>';
   html += '<span class="prof-pv-mod-chevron">›</span>';
   html += '</div>';
-  html += '<div class="prof-pv-mod-body prof-dados-body" id="profModDadosBody">';
+  html += '<div class="prof-pv-mod-body" id="profModDadosBody">';
   var dadoLinha = function(label, val) {
     var v = (val === undefined || val === null || String(val).trim() === '')
       ? '<span class="prof-dado-empty">— não informado —</span>'
@@ -9652,10 +9658,10 @@ function p137AbrirSenha(sigla) {
   document.getElementById('p137SenhaErro').textContent = '';
   document.getElementById('p137SenhaBtnEnviar').disabled = false;
   document.getElementById('p137SenhaBtnEnviar').textContent = 'Trocar Senha';
-  document.getElementById('p137SenhaModal').style.display = 'flex';
+  document.getElementById('p137SenhaModal').classList.add('show');
 }
 function p137FecharSenha() {
-  document.getElementById('p137SenhaModal').style.display = 'none';
+  document.getElementById('p137SenhaModal').classList.remove('show');
 }
 async function p137TrocarSenha() {
   var s1 = document.getElementById('p137SenhaInput1').value.trim();
