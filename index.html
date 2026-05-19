@@ -492,7 +492,7 @@ body{
 .p135-btn-senha{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.35);}
 .p135-btn-senha:hover{background:rgba(255,255,255,.28);}
 /* Pacote 13.7 — card Dados Cadastrais */
-.prof-dados-body{border-top:1.5px solid var(--border);padding:14px 16px;display:flex;flex-direction:column;gap:8px;}
+/* Pacote 13.7 — linhas de dados cadastrais (dentro de prof-pv-mod-body) */
 .prof-dado-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
 .prof-dado-label{font-size:11px;font-weight:700;color:var(--txt-l);white-space:nowrap;}
 .prof-dado-val{font-size:13px;font-weight:600;color:#2C3E50;text-align:right;}
@@ -9339,7 +9339,10 @@ async function profAbrirPaciente(sigla) {
   // ---- Header ----
   var html = profBuildHeader_(iniciaisNome, nome, 'Paciente · ' + sigla);
 
-  // ---- Pacote 13.7 — Card Dados Cadastrais ----
+  // ---- 4 cards-módulo colapsáveis (Dados Cadastrais + 3 módulos) ----
+  html += '<div class="prof-pv-mods">';
+
+  // 0. Dados Cadastrais (Pacote 13.7)
   html += '<div class="prof-pv-mod mod-blue" id="profMod-dados">';
   html += '<div class="prof-pv-mod-head" onclick="profToggleModulo_(\'dados\')">';
   html += '<span class="prof-pv-mod-icon">👤</span>';
@@ -9360,9 +9363,6 @@ async function profAbrirPaciente(sigla) {
   html += dadoLinha('E-mail', an.email);
   html += dadoLinha('Telefone', an.telefone);
   html += '</div></div>';
-
-  // ---- 3 cards-módulo colapsáveis ----
-  html += '<div class="prof-pv-mods">';
 
   // 1. Anamnese
   var anamMeta = resp.anamnese_preenchida ? 'Preenchida' : 'Não preenchida';
