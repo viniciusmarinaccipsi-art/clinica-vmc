@@ -9674,8 +9674,7 @@ async function p137TrocarSenha() {
   btn.disabled = true;
   btn.textContent = 'Salvando…';
   try {
-    var resp = await chamarServidor_({
-      acao: 'profAlterarSenhaPaciente',
+    var resp = await chamarServidor('profAlterarSenhaPaciente', {
       profSigla: PROF_SESSAO._sigla,
       profSenha: PROF_SESSAO._senha,
       sigla_paciente: PROF_PACIENTE_SEL.sigla,
