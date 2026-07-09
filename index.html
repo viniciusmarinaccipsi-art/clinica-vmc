@@ -9573,7 +9573,6 @@ function profRenderizarAutomonitoramento_(registros) {
     if (m) dataFmt = m[3] + '/' + m[2] + '/' + m[1];
     else if (data) dataFmt = data;
     var hora = autoFormatarHora(r.hora_registro);
-    console.log('[DEBUG-HORA-PROF]', r.hora_registro, typeof r.hora_registro, '->', hora);
     var humor = parseInt(r.humor_nivel, 10) || 3;
 
     html += '<div class="histc">';
@@ -14016,7 +14015,6 @@ async function autoAbrirHistorico() {
       if (m) dataFmt = `${m[3]}/${m[2]}/${m[1]}`;
       else if (data) dataFmt = data;
       const hora = autoFormatarHora(r.hora_registro);
-      console.log('[DEBUG-HORA-PAC]', r.hora_registro, typeof r.hora_registro, '->', hora);
       const humor = parseInt(r.humor_nivel, 10) || 3;
 
       // Pacote 10 v4 — Lista compacta: só cabeçalho com data/humor/lupa.
@@ -14151,7 +14149,6 @@ async function histAbrirModal(idx) {
     const dm = data.match(/(\d{4})-(\d{2})-(\d{2})/);
     if (dm) dataFmt = dm[3] + '/' + dm[2] + '/' + dm[1];
     const hora = autoFormatarHora(r.hora_registro);
-    console.log('[DEBUG-HORA-MODAL]', r.hora_registro, typeof r.hora_registro, '->', hora);
 
     document.getElementById('histModalEmoji').textContent = emojis[humor] || '❓';
     document.getElementById('histModalData').textContent = dataFmt + ' · ' + hora;
@@ -16389,7 +16386,6 @@ function escMostrarResultado(codigo, calc, respostas) {
 // ============================================================
 async function escGarantirContextoLongitudinal(codigo, reg, def) {
   try {
-    const DEBUG = true;
     // Pacote 12.7.2.3: ESC_HIST_STATE é const top-level, não vira window.*
     // Acessa direto, sem window.
     const cacheVazio = !ESC_HIST_STATE ||
@@ -16397,10 +16393,7 @@ async function escGarantirContextoLongitudinal(codigo, reg, def) {
                        ESC_HIST_STATE.registros.length === 0 ||
                        ESC_HIST_STATE.carregadoEm === 0;
 
-    if (DEBUG) console.log('[GARANTIR] cacheVazio=', cacheVazio, 'registros=', (ESC_HIST_STATE && ESC_HIST_STATE.registros) ? ESC_HIST_STATE.registros.length : 'N/A');
-
     if (!cacheVazio) {
-      if (DEBUG) console.log('[GARANTIR] cache ja populado, re-renderizando');
       const contexto = escCalcularContextoLongitudinal(codigo, reg);
       if (contexto && contexto.ordinalTexto) {
         const container = document.getElementById('escResultContainer');
@@ -16411,45 +16404,29 @@ async function escGarantirContextoLongitudinal(codigo, reg, def) {
 
     const paciente = carregarSessao();
     if (!paciente || !paciente.sigla) {
-      if (DEBUG) console.log('[GARANTIR] sem sessao');
       return;
     }
 
-    if (DEBUG) console.log('[GARANTIR] chamando lerEscalas para', paciente.sigla);
     const resp = await chamarServidor('lerEscalas', { sigla: paciente.sigla });
-    if (DEBUG) console.log('[GARANTIR] resp=', resp);
     if (!resp || !resp.ok) {
-      if (DEBUG) console.log('[GARANTIR] resp nao OK, saindo');
       return;
     }
 
     const lista = Array.isArray(resp.escalas) ? resp.escalas
                 : (Array.isArray(resp.registros) ? resp.registros : []);
 
-    if (DEBUG) console.log('[GARANTIR] lista recebida count=', lista.length);
-    if (DEBUG && lista.length > 0) {
-      console.log('[GARANTIR] primeiro registro:', lista[0]);
-      console.log('[GARANTIR] timestamp do primeiro:', lista[0].timestamp, 'tipo:', typeof lista[0].timestamp);
-    }
-
     // Popula o cache (direto no const, sem passar por window)
     ESC_HIST_STATE.registros = lista;
     ESC_HIST_STATE.carregadoEm = Date.now();
     ESC_HIST_STATE.invalidado = false;
 
-    if (DEBUG) console.log('[GARANTIR] cache populado, registros agora=', ESC_HIST_STATE.registros.length);
-
     // Re-renderiza com contexto
     const contexto = escCalcularContextoLongitudinal(codigo, reg);
-    if (DEBUG) console.log('[GARANTIR] contexto calculado:', contexto);
     if (contexto && contexto.ordinalTexto) {
       const container = document.getElementById('escResultContainer');
       if (container) {
         container.innerHTML = escRenderizarConteudoResultado(reg, def, 'imediata', contexto);
-        if (DEBUG) console.log('[GARANTIR] re-renderizado com contexto');
       }
-    } else {
-      if (DEBUG) console.log('[GARANTIR] contexto retornou null, nao re-renderiza');
     }
   } catch (e) {
     console.warn('[12.7.2.3] Falha ao buscar contexto longitudinal:', e);
@@ -16864,30 +16841,17 @@ function escExtrairMsRegistro(r) {
 
 function escCalcularContextoLongitudinal(codigo, regAtual) {
   try {
-    const DEBUG = true; // Pacote 12.7.2.2: logs temporários para diagnóstico
     // Pacote 12.7.2.3: ESC_HIST_STATE é const top-level, não vira window.*
     const lista = (ESC_HIST_STATE && ESC_HIST_STATE.registros) ? ESC_HIST_STATE.registros : [];
-
-    if (DEBUG) console.log('[CTX] codigo=', codigo, 'cache size=', lista.length);
 
     // Filtra mesma escala
     const mesmaEscala = lista.filter(function(r){
       return String(r.instrumento || '') === codigo;
     });
 
-    if (DEBUG) console.log('[CTX] mesma escala count=', mesmaEscala.length);
-    if (DEBUG && mesmaEscala.length > 0) {
-      console.log('[CTX] exemplo registro[0]:', mesmaEscala[0]);
-      console.log('[CTX] timestamp bruto:', mesmaEscala[0].timestamp, 'tipo:', typeof mesmaEscala[0].timestamp);
-      console.log('[CTX] data_aplicacao:', mesmaEscala[0].data_aplicacao);
-      console.log('[CTX] ms extraído do [0]:', escExtrairMsRegistro(mesmaEscala[0]));
-    }
-
     const agora = Date.now();
     let regAtualMs = escExtrairMsRegistro(regAtual);
     if (regAtualMs === 0) regAtualMs = agora;
-
-    if (DEBUG) console.log('[CTX] regAtualMs=', regAtualMs, 'agora=', agora);
 
     // Detecta se a aplicação atual é "recém-enviada" (tela imediata pós-save)
     const isNovaEnvio = (agora - regAtualMs) < 15000;
@@ -16910,10 +16874,7 @@ function escCalcularContextoLongitudinal(codigo, regAtual) {
       if (ordinal === 0) ordinal = 1;
     }
 
-    if (DEBUG) console.log('[CTX] isNovaEnvio=', isNovaEnvio, 'jaEstaNaLista=', jaEstaNaLista, 'ordinal=', ordinal);
-
     if (ordinal < 2) {
-      if (DEBUG) console.log('[CTX] retornando null porque ordinal < 2');
       return null;
     }
 
@@ -16924,8 +16885,6 @@ function escCalcularContextoLongitudinal(codigo, regAtual) {
         return x.t > 0 && x.t < regAtualMs - 60000;
       })
       .sort(function(a, b){ return b.t - a.t; });
-
-    if (DEBUG) console.log('[CTX] anteriores count=', anteriores.length);
 
     if (!anteriores.length) {
       return {
