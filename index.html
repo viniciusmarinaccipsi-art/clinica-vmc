@@ -3737,6 +3737,71 @@ body{
   to { transform: rotate(360deg); }
 }
 
+/* ============================================================
+   PACOTE 14.1 — GRADE DE ATENDIMENTO (Módulo Consultório Digital)
+   Namespace gra* — tela do profissional
+   ============================================================ */
+.gra-topo{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
+.gra-voltar{background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:8px 14px;
+  font-family:'Nunito',sans-serif;font-weight:700;font-size:13px;cursor:pointer;color:var(--blue);}
+.gra-voltar:hover{border-color:var(--blue);background:var(--blue-lt);}
+.gra-titulo{font-family:'Quicksand',sans-serif;color:var(--blue);font-size:20px;margin:0;}
+.gra-card{background:#fff;border-radius:12px;border-left:6px solid var(--teal);
+  padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 4px rgba(44,95,124,.08);}
+.gra-card h3{font-family:'Quicksand',sans-serif;color:var(--teal);font-size:16px;margin:0 0 12px;}
+.gra-card.gra-card-dias{border-left-color:var(--blue);}
+.gra-card.gra-card-dias h3{color:var(--blue);}
+.gra-cfg-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:560px){.gra-cfg-grid{grid-template-columns:1fr;}}
+.gra-cfg-item label{display:block;font-weight:700;font-size:13px;margin-bottom:5px;}
+.gra-cfg-item .gra-hint{font-size:11.5px;color:var(--gray);margin-top:4px;line-height:1.35;}
+.gra-cfg-item select{width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:8px;
+  font-family:'Nunito',sans-serif;font-size:14px;background:#fff;}
+.gra-cfg-item select:focus{outline:none;border-color:var(--blue);}
+.gra-cfg-fixo{padding:9px 10px;border:1.5px solid var(--border);border-radius:8px;
+  background:var(--gray-bg);font-size:14px;color:var(--gray);}
+.gra-dia{border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:#fff;}
+.gra-dia.gra-off{background:var(--gray-bg);}
+.gra-dia-topo{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.gra-dia-nome{font-family:'Quicksand',sans-serif;font-weight:700;font-size:15px;}
+.gra-dia.gra-off .gra-dia-nome{color:var(--gray);}
+.gra-switch{position:relative;display:inline-block;width:46px;height:24px;flex-shrink:0;}
+.gra-switch input{opacity:0;width:0;height:0;}
+.gra-slider{position:absolute;cursor:pointer;inset:0;background:var(--gray-lt);border-radius:24px;transition:.2s;}
+.gra-slider:before{content:"";position:absolute;height:18px;width:18px;left:3px;top:3px;
+  background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.25);}
+.gra-switch input:checked + .gra-slider{background:var(--green);}
+.gra-switch input:checked + .gra-slider:before{transform:translateX(22px);}
+.gra-janelas{margin-top:10px;display:none;}
+.gra-dia.gra-on .gra-janelas{display:block;}
+.gra-janela{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  background:var(--blue-lt);border-radius:8px;padding:8px 10px;margin-bottom:8px;}
+.gra-janela input[type="time"]{padding:6px 8px;border:1.5px solid var(--border);border-radius:7px;
+  font-family:'Nunito',sans-serif;font-size:13.5px;background:#fff;}
+.gra-janela select{padding:6px 8px;border:1.5px solid var(--border);border-radius:7px;
+  font-family:'Nunito',sans-serif;font-size:13.5px;background:#fff;flex:1;min-width:120px;}
+.gra-janela .gra-ate{font-size:13px;color:var(--gray);}
+.gra-jan-remover{background:none;border:none;color:var(--red);cursor:pointer;
+  font-size:16px;padding:4px 6px;border-radius:6px;line-height:1;}
+.gra-jan-remover:hover{background:var(--red-bg);}
+.gra-add-janela{background:none;border:1.5px dashed var(--blue);color:var(--blue);
+  border-radius:8px;padding:7px 12px;font-family:'Nunito',sans-serif;font-weight:700;font-size:13px;cursor:pointer;}
+.gra-add-janela:hover{background:var(--blue-lt);}
+.gra-resumo-dia{font-size:12px;color:var(--gray);margin-left:auto;margin-right:8px;text-align:right;}
+.gra-erro{display:none;background:var(--red-bg);border-left:4px solid var(--red);
+  color:#8c2f2f;border-radius:8px;padding:10px 14px;font-size:13px;margin:10px 0;}
+.gra-acoes{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:6px;}
+.gra-btn-salvar{background:var(--green);color:#fff;border:none;border-radius:10px;
+  padding:12px 26px;font-family:'Quicksand',sans-serif;font-weight:700;font-size:15px;
+  cursor:pointer;box-shadow:0 2px 6px rgba(107,191,138,.4);}
+.gra-btn-salvar:hover{filter:brightness(.95);}
+.gra-btn-salvar:disabled{opacity:.55;cursor:not-allowed;}
+.gra-ok{display:none;background:var(--green-bg);border-left:4px solid var(--green);
+  color:#2e6b47;border-radius:8px;padding:10px 14px;font-size:13.5px;flex:1;min-width:220px;}
+.prof-btn-agenda{display:inline-flex;align-items:center;gap:8px;background:var(--blue);color:#fff;
+  border:none;border-radius:10px;padding:10px 18px;font-family:'Quicksand',sans-serif;font-weight:700;
+  font-size:14px;cursor:pointer;margin:0 0 16px 10px;box-shadow:0 2px 6px rgba(44,95,124,.35);}
+.prof-btn-agenda:hover{filter:brightness(1.08);}
 </style>
 </head>
 <body>
@@ -3837,6 +3902,48 @@ body{
       <p style="font-weight:700;color:var(--txt);margin-bottom:8px;">Dashboard em construção</p>
       <p>A lista de pacientes será implementada no Pacote 13.2.2.</p>
       <p style="margin-top:12px;font-size:12px;">Login realizado com sucesso como profissional.</p>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PACOTE 14.1: GRADE DE ATENDIMENTO (Módulo Consultório Digital)
+       ============================================================ -->
+  <div class="section" id="sec-prof-agenda">
+    <div class="gra-topo">
+      <button class="gra-voltar" onclick="abrirSecao('sec-prof-dashboard')">← Voltar</button>
+      <h2 class="gra-titulo">🗓️ Grade de Atendimento</h2>
+    </div>
+
+    <div class="gra-card">
+      <h3>⚙️ Configurações gerais</h3>
+      <div class="gra-cfg-grid">
+        <div class="gra-cfg-item">
+          <label for="graCfgAntecedencia">Antecedência mínima para agendar</label>
+          <select id="graCfgAntecedencia">
+            <option value="6">6 horas</option>
+            <option value="12">12 horas</option>
+            <option value="24" selected>24 horas</option>
+            <option value="48">48 horas</option>
+          </select>
+          <div class="gra-hint">Impede agendamentos em cima da hora na futura página pública.</div>
+        </div>
+        <div class="gra-cfg-item">
+          <label>Bloco de atendimento</label>
+          <div class="gra-cfg-fixo">⏱️ 60 minutos (padrão do sistema)</div>
+          <div class="gra-hint">Os horários abertos na grade são ofertados em blocos de 1 hora.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gra-card gra-card-dias">
+      <h3>📅 Dias e horários de atendimento</h3>
+      <div id="graDias"></div>
+      <div class="gra-erro" id="graErro"></div>
+    </div>
+
+    <div class="gra-acoes">
+      <button class="gra-btn-salvar" id="graBtnSalvar" onclick="graSalvar()">💾 Salvar grade</button>
+      <div class="gra-ok" id="graOk">✅ Grade de atendimento salva com sucesso!</div>
     </div>
   </div>
 
@@ -9147,8 +9254,10 @@ async function profCarregarDashboard() {
   var pacientes = resp.pacientes || [];
 
   // Pacote 13.4: botao + Novo Paciente (sempre visivel)
+  // Pacote 14.1: botao Agenda (abre a Grade de Atendimento)
   var btnNovo = '<button class="prof-btn-novo" onclick="profAbrirModalCadastro()">' +
-    '<span>＋</span> Novo Paciente</button>';
+    '<span>＋</span> Novo Paciente</button>' +
+    '<button class="prof-btn-agenda" onclick="graAbrirTela()">🗓️ Agenda</button>';
 
   if (pacientes.length === 0) {
     container.innerHTML = btnNovo +
@@ -17657,6 +17766,240 @@ function escHistToggleAccordion(headEl) {
 }
 
 /* Fim do Pacote 12.7 (Fase 1) — Histórico de Escalas */
+
+/* ============================================================
+   PACOTE 14.1 — GRADE DE ATENDIMENTO (Módulo Consultório Digital)
+   Namespace gra*. Tela do profissional para definir dias, janelas
+   de horário e modalidade. Persistência nas abas Config_Agenda e
+   Grade_Horarios da planilha Controle (criadas pelo backend no
+   primeiro salvamento). Ações: profLerGrade / profSalvarGrade.
+   ============================================================ */
+
+var GRA_DIAS_SEMANA = [
+  {num:1, nome:'Segunda-feira'},
+  {num:2, nome:'Terça-feira'},
+  {num:3, nome:'Quarta-feira'},
+  {num:4, nome:'Quinta-feira'},
+  {num:5, nome:'Sexta-feira'},
+  {num:6, nome:'Sábado'},
+  {num:7, nome:'Domingo'}
+];
+var GRA_MODALIDADES = [
+  {valor:'presencial', rotulo:'🏢 Presencial'},
+  {valor:'online',     rotulo:'💻 On-line'},
+  {valor:'ambas',      rotulo:'🔄 Ambas'}
+];
+var graEstado = null;      // { 1:{ativo,janelas:[{inicio,fim,modalidade}]}, ... }
+var graCarregando = false;
+
+/* Abre a tela da Grade e carrega os dados do servidor */
+function graAbrirTela() {
+  abrirSecao('sec-prof-agenda');
+  graCarregar();
+}
+
+/* Estado vazio padrão (todos os dias desligados) */
+function graEstadoVazio_() {
+  var e = {};
+  GRA_DIAS_SEMANA.forEach(function(d){ e[d.num] = {ativo:false, janelas:[]}; });
+  return e;
+}
+
+/* Carrega grade + config do servidor e renderiza */
+async function graCarregar() {
+  if (!PROF_SESSAO || graCarregando) return;
+  graCarregando = true;
+  var cont = document.getElementById('graDias');
+  cont.innerHTML = '<div class="prof-pac-loading"><div class="prof-spinner"></div>' +
+    '<p>Carregando grade…</p></div>';
+  document.getElementById('graErro').style.display = 'none';
+  document.getElementById('graOk').style.display = 'none';
+
+  var resp = await chamarServidor('profLerGrade', {
+    profSigla: PROF_SESSAO._sigla,
+    profSenha: PROF_SESSAO._senha
+  });
+  graCarregando = false;
+
+  if (!resp.ok) {
+    cont.innerHTML = '';
+    var el = document.getElementById('graErro');
+    el.innerHTML = '⚠️ Erro ao carregar a grade: ' + (resp.erro || 'tente novamente.');
+    el.style.display = 'block';
+    return;
+  }
+
+  // Config -> select de antecedência
+  var cfg = resp.config || {};
+  var sel = document.getElementById('graCfgAntecedencia');
+  if (cfg.antecedencia_min_horas && sel.querySelector('option[value="' + cfg.antecedencia_min_horas + '"]')) {
+    sel.value = String(cfg.antecedencia_min_horas);
+  }
+
+  // Grade -> estado por dia (dia ativo se possui ao menos uma janela com ativo=sim)
+  graEstado = graEstadoVazio_();
+  (resp.grade || []).forEach(function(g){
+    var d = Number(g.dia_semana);
+    if (!graEstado[d]) return;
+    graEstado[d].janelas.push({
+      inicio: g.hora_inicio, fim: g.hora_fim, modalidade: g.modalidade || 'ambas'
+    });
+    if (String(g.ativo).trim().toLowerCase() === 'sim') graEstado[d].ativo = true;
+  });
+
+  graRender();
+}
+
+/* Renderiza os 7 dias com suas janelas */
+function graRender() {
+  var cont = document.getElementById('graDias');
+  cont.innerHTML = '';
+  GRA_DIAS_SEMANA.forEach(function(dia){
+    var st = graEstado[dia.num];
+    var div = document.createElement('div');
+    div.className = 'gra-dia ' + (st.ativo ? 'gra-on' : 'gra-off');
+    div.setAttribute('data-gra-dia', dia.num);
+
+    var htmlJanelas = '';
+    st.janelas.forEach(function(j, idx){
+      var opts = GRA_MODALIDADES.map(function(m){
+        return '<option value="' + m.valor + '"' + (m.valor === j.modalidade ? ' selected' : '') + '>' +
+          m.rotulo + '</option>';
+      }).join('');
+      htmlJanelas +=
+        '<div class="gra-janela">' +
+          '<input type="time" value="' + j.inicio + '" onchange="graEditarJanela(' + dia.num + ',' + idx + ',\'inicio\',this.value)">' +
+          '<span class="gra-ate">até</span>' +
+          '<input type="time" value="' + j.fim + '" onchange="graEditarJanela(' + dia.num + ',' + idx + ',\'fim\',this.value)">' +
+          '<select onchange="graEditarJanela(' + dia.num + ',' + idx + ',\'modalidade\',this.value)">' + opts + '</select>' +
+          '<button class="gra-jan-remover" type="button" title="Remover janela" onclick="graRemoverJanela(' + dia.num + ',' + idx + ')">✕</button>' +
+        '</div>';
+    });
+
+    div.innerHTML =
+      '<div class="gra-dia-topo">' +
+        '<span class="gra-dia-nome">' + dia.nome + '</span>' +
+        '<span class="gra-resumo-dia">' + graResumoDia_(st) + '</span>' +
+        '<label class="gra-switch">' +
+          '<input type="checkbox" ' + (st.ativo ? 'checked' : '') + ' onchange="graToggleDia(' + dia.num + ',this.checked)">' +
+          '<span class="gra-slider"></span>' +
+        '</label>' +
+      '</div>' +
+      '<div class="gra-janelas">' +
+        htmlJanelas +
+        '<button class="gra-add-janela" type="button" onclick="graAddJanela(' + dia.num + ')">＋ Adicionar janela de horário</button>' +
+      '</div>';
+
+    cont.appendChild(div);
+  });
+}
+
+function graResumoDia_(st) {
+  if (!st.ativo || st.janelas.length === 0) return 'Sem atendimento';
+  return st.janelas.map(function(j){ return j.inicio + '–' + j.fim; }).join(' · ');
+}
+
+function graToggleDia(num, ligado) {
+  graEstado[num].ativo = ligado;
+  if (ligado && graEstado[num].janelas.length === 0) {
+    graEstado[num].janelas.push({inicio:'08:00', fim:'12:00', modalidade:'ambas'});
+  }
+  graRender();
+}
+
+function graAddJanela(num) {
+  graEstado[num].janelas.push({inicio:'14:00', fim:'18:00', modalidade:'ambas'});
+  graRender();
+}
+
+function graRemoverJanela(num, idx) {
+  graEstado[num].janelas.splice(idx, 1);
+  graRender();
+}
+
+function graEditarJanela(num, idx, campo, valor) {
+  graEstado[num].janelas[idx][campo] = valor;
+  var linha = document.querySelector('.gra-dia[data-gra-dia="' + num + '"] .gra-resumo-dia');
+  if (linha) linha.textContent = graResumoDia_(graEstado[num]);
+}
+
+/* Validação espelhada no cliente (o servidor revalida tudo) */
+function graValidar_() {
+  var erros = [];
+  GRA_DIAS_SEMANA.forEach(function(dia){
+    var st = graEstado[dia.num];
+    if (!st.ativo) return;
+    if (st.janelas.length === 0) {
+      erros.push(dia.nome + ': dia ativo sem nenhuma janela de horário.');
+      return;
+    }
+    st.janelas.forEach(function(j, i){
+      if (!j.inicio || !j.fim || j.fim <= j.inicio) {
+        erros.push(dia.nome + ', janela ' + (i+1) + ': horário final deve ser depois do inicial.');
+      }
+    });
+    var ordenadas = st.janelas.slice().sort(function(a,b){ return a.inicio < b.inicio ? -1 : 1; });
+    for (var k = 1; k < ordenadas.length; k++) {
+      if (ordenadas[k].inicio < ordenadas[k-1].fim) {
+        erros.push(dia.nome + ': janelas de horário sobrepostas.');
+        break;
+      }
+    }
+  });
+  return erros;
+}
+
+/* Salva no servidor */
+async function graSalvar() {
+  if (!PROF_SESSAO || !graEstado) return;
+  var elErro = document.getElementById('graErro');
+  var elOk = document.getElementById('graOk');
+  var btn = document.getElementById('graBtnSalvar');
+  elErro.style.display = 'none';
+  elOk.style.display = 'none';
+
+  var erros = graValidar_();
+  if (erros.length > 0) {
+    elErro.innerHTML = '⚠️ Corrija antes de salvar:<br>• ' + erros.join('<br>• ');
+    elErro.style.display = 'block';
+    return;
+  }
+
+  var grade = [];
+  GRA_DIAS_SEMANA.forEach(function(dia){
+    var st = graEstado[dia.num];
+    st.janelas.forEach(function(j){
+      grade.push({
+        dia_semana: dia.num,
+        hora_inicio: j.inicio,
+        hora_fim: j.fim,
+        modalidade: j.modalidade,
+        ativo: st.ativo ? 'sim' : 'nao'
+      });
+    });
+  });
+
+  btn.disabled = true;
+  var resp = await chamarServidor('profSalvarGrade', {
+    profSigla: PROF_SESSAO._sigla,
+    profSenha: PROF_SESSAO._senha,
+    config: {
+      duracao_slot_min: 60,
+      antecedencia_min_horas: Number(document.getElementById('graCfgAntecedencia').value)
+    },
+    grade: grade
+  });
+  btn.disabled = false;
+
+  if (!resp.ok) {
+    elErro.innerHTML = '⚠️ Erro ao salvar: ' + (resp.erro || 'tente novamente.');
+    elErro.style.display = 'block';
+    return;
+  }
+  elOk.style.display = 'block';
+}
+
+/* Fim do Pacote 14.1 — Grade de Atendimento */
 
 </script>
 
