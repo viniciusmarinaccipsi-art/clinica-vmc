@@ -22,6 +22,8 @@
   --txt:#2D3748; --txt-m:#4A5568; --txt-l:#718096;
   --w:#FFF; --r:14px; --rs:8px;
   --border:#DDE4EA;
+  /* Pacote 14.2 — cores da agenda visual (tons pastéis) */
+  --cal-disp:#F2F7FB; --cal-ev-verde:#D9F0E2; --cal-ev-lilas:#E4DDF4;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{
@@ -3802,6 +3804,69 @@ body{
   border:none;border-radius:10px;padding:10px 18px;font-family:'Quicksand',sans-serif;font-weight:700;
   font-size:14px;cursor:pointer;margin:0 0 16px 10px;box-shadow:0 2px 6px rgba(44,95,124,.35);}
 .prof-btn-agenda:hover{filter:brightness(1.08);}
+/* ============================================================
+   PACOTE 14.2 — AGENDA VISUAL (Módulo Consultório Digital)
+   Namespace cal* — calendário semanal/diário do profissional
+   ============================================================ */
+.cal-wrap{display:flex;gap:14px;align-items:flex-start;}
+.cal-lateral{width:225px;flex-shrink:0;}
+.cal-mini{background:#fff;border-radius:12px;border-left:6px solid var(--blue);
+  padding:14px;box-shadow:0 1px 4px rgba(44,95,124,.08);margin-bottom:12px;}
+.cal-mini-topo{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.cal-mini-topo b{font-family:'Quicksand',sans-serif;color:var(--blue);font-size:13.5px;}
+.cal-mini-nav{background:none;border:none;color:var(--blue);cursor:pointer;font-size:15px;padding:2px 8px;border-radius:6px;}
+.cal-mini-nav:hover{background:var(--blue-lt);}
+.cal-mini-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;}
+.cal-mini-grid .cal-mini-dow{font-size:9.5px;color:var(--gray);font-weight:700;padding:3px 0;}
+.cal-mini-dia{font-size:11px;padding:5px 0;border-radius:6px;cursor:pointer;border:none;background:none;
+  font-family:'Nunito',sans-serif;color:var(--txt);}
+.cal-mini-dia:hover{background:var(--blue-lt);}
+.cal-mini-dia.cal-fora{color:#C3CDD6;}
+.cal-mini-dia.cal-hoje{background:var(--blue);color:#fff;font-weight:800;}
+.cal-mini-dia.cal-sel{outline:2px solid var(--blue);}
+.cal-legenda{background:#fff;border-radius:12px;border-left:6px solid var(--teal);
+  padding:14px;box-shadow:0 1px 4px rgba(44,95,124,.08);font-size:12px;}
+.cal-legenda b{font-family:'Quicksand',sans-serif;color:var(--teal);display:block;margin-bottom:8px;font-size:13px;}
+.cal-leg-item{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.cal-leg-cor{width:14px;height:14px;border-radius:4px;flex-shrink:0;}
+.cal-main{flex:1;min-width:0;}
+.cal-header{background:#fff;border-radius:12px;border-left:6px solid var(--blue);
+  padding:12px 16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(44,95,124,.08);
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.cal-header h2{font-family:'Quicksand',sans-serif;color:var(--blue);font-size:17px;margin:0 auto 0 0;}
+.cal-btn{background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;
+  font-family:'Nunito',sans-serif;font-weight:700;font-size:12.5px;cursor:pointer;color:var(--txt);}
+.cal-btn:hover{border-color:var(--blue);color:var(--blue);}
+.cal-btn.cal-ativo{background:var(--blue);border-color:var(--blue);color:#fff;}
+.cal-periodo{font-family:'Quicksand',sans-serif;font-weight:700;font-size:13.5px;color:var(--txt);}
+.cal-grid-card{background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(44,95,124,.08);overflow:auto;}
+.cal-grid{display:grid;min-width:640px;}
+.cal-grid.cal-semana{grid-template-columns:52px repeat(7,1fr);}
+.cal-grid.cal-dia-view{grid-template-columns:52px 1fr;min-width:280px;}
+.cal-col-head{position:sticky;top:0;background:#fff;z-index:5;text-align:center;
+  padding:10px 4px;border-bottom:1.5px solid var(--border);}
+.cal-col-head .cal-dow{font-size:10.5px;color:var(--gray);font-weight:700;text-transform:uppercase;}
+.cal-col-head .cal-dnum{font-family:'Quicksand',sans-serif;font-weight:700;font-size:15px;
+  width:32px;height:32px;line-height:32px;border-radius:50%;margin:2px auto 0;}
+.cal-col-head.cal-hoje-col .cal-dnum{background:var(--blue);color:#fff;}
+.cal-horas{position:relative;}
+.cal-hora-label{height:48px;font-size:10px;color:var(--gray);text-align:right;
+  padding-right:6px;transform:translateY(-6px);}
+.cal-dia-col{position:relative;border-left:1px solid var(--gray-lt);}
+.cal-hora-linha{height:48px;border-bottom:1px solid var(--gray-lt);}
+.cal-disp-bloco{position:absolute;left:0;right:0;background:var(--cal-disp);pointer-events:none;}
+.cal-ev{position:absolute;left:3px;right:3px;border-radius:7px;padding:4px 6px;
+  font-size:11px;line-height:1.25;cursor:pointer;overflow:hidden;
+  border-left:4px solid;box-shadow:0 1px 2px rgba(0,0,0,.08);}
+.cal-ev:hover{filter:brightness(.97);}
+.cal-ev .cal-ev-hora{font-size:9.5px;opacity:.75;display:flex;justify-content:space-between;align-items:center;}
+.cal-ev .cal-ev-nome{font-weight:700;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;}
+.cal-ev.cal-presencial{background:var(--cal-ev-verde);border-left-color:var(--green);color:#2E6B47;}
+.cal-ev.cal-online{background:var(--cal-ev-lilas);border-left-color:var(--purple);color:#54418A;}
+.cal-vazio-aviso{padding:14px 16px;font-size:13px;color:var(--gray);background:var(--amber-bg);
+  border-left:4px solid var(--amber);border-radius:8px;margin-bottom:12px;}
+.cal-vazio-aviso a{color:var(--blue);font-weight:700;cursor:pointer;text-decoration:underline;}
+@media(max-width:760px){.cal-lateral{display:none;}}
 </style>
 </head>
 <body>
@@ -3906,11 +3971,61 @@ body{
   </div>
 
   <!-- ============================================================
+       PACOTE 14.2: AGENDA VISUAL (Módulo Consultório Digital)
+       ============================================================ -->
+  <div class="section" id="sec-prof-agenda-cal">
+    <div class="gra-topo">
+      <button class="gra-voltar" onclick="abrirSecao('sec-prof-dashboard')">← Voltar</button>
+      <h2 class="gra-titulo">🗓️ Agenda</h2>
+      <button class="cal-btn" style="margin-left:auto;" onclick="graAbrirTela()">⚙️ Grade de Atendimento</button>
+    </div>
+
+    <div class="cal-vazio-aviso" id="calAvisoGrade" style="display:none;">
+      Você ainda não definiu seus horários de atendimento.
+      <a onclick="graAbrirTela()">Configurar a Grade de Atendimento</a>
+    </div>
+
+    <div class="cal-wrap">
+      <div class="cal-lateral">
+        <div class="cal-mini">
+          <div class="cal-mini-topo">
+            <button class="cal-mini-nav" onclick="calMiniNavegar(-1)">‹</button>
+            <b id="calMiniTitulo">—</b>
+            <button class="cal-mini-nav" onclick="calMiniNavegar(1)">›</button>
+          </div>
+          <div class="cal-mini-grid" id="calMiniGrid"></div>
+        </div>
+        <div class="cal-legenda">
+          <b>Legenda</b>
+          <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-disp);border:1px solid var(--blue);"></span> Horário aberto p/ atendimento</div>
+          <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-ev-verde);border:1px solid var(--green);"></span> Sessão presencial</div>
+          <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-ev-lilas);border:1px solid var(--purple);"></span> Sessão on-line</div>
+          <div class="cal-leg-item"><span>✅</span> Confirmada pelo paciente</div>
+          <div class="cal-leg-item"><span>⏳</span> Aguardando confirmação</div>
+        </div>
+      </div>
+      <div class="cal-main">
+        <div class="cal-header">
+          <h2 id="calPeriodo">—</h2>
+          <button class="cal-btn" onclick="calIrHoje()">Hoje</button>
+          <button class="cal-btn" onclick="calNavegar(-1)">‹</button>
+          <button class="cal-btn" onclick="calNavegar(1)">›</button>
+          <button class="cal-btn cal-ativo" id="calBtnSemana" onclick="calMudarVisao('semana')">Semana</button>
+          <button class="cal-btn" id="calBtnDia" onclick="calMudarVisao('dia')">Dia</button>
+        </div>
+        <div class="cal-grid-card">
+          <div class="cal-grid cal-semana" id="calGrid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
        PACOTE 14.1: GRADE DE ATENDIMENTO (Módulo Consultório Digital)
        ============================================================ -->
   <div class="section" id="sec-prof-agenda">
     <div class="gra-topo">
-      <button class="gra-voltar" onclick="abrirSecao('sec-prof-dashboard')">← Voltar</button>
+      <button class="gra-voltar" onclick="abrirSecao('sec-prof-agenda-cal')">← Voltar</button>
       <h2 class="gra-titulo">🗓️ Grade de Atendimento</h2>
     </div>
 
@@ -3926,11 +4041,6 @@ body{
             <option value="48">48 horas</option>
           </select>
           <div class="gra-hint">Impede agendamentos em cima da hora na futura página pública.</div>
-        </div>
-        <div class="gra-cfg-item">
-          <label>Bloco de atendimento</label>
-          <div class="gra-cfg-fixo">⏱️ 60 minutos (padrão do sistema)</div>
-          <div class="gra-hint">Os horários abertos na grade são ofertados em blocos de 1 hora.</div>
         </div>
       </div>
     </div>
@@ -9257,7 +9367,7 @@ async function profCarregarDashboard() {
   // Pacote 14.1: botao Agenda (abre a Grade de Atendimento)
   var btnNovo = '<button class="prof-btn-novo" onclick="profAbrirModalCadastro()">' +
     '<span>＋</span> Novo Paciente</button>' +
-    '<button class="prof-btn-agenda" onclick="graAbrirTela()">🗓️ Agenda</button>';
+    '<button class="prof-btn-agenda" onclick="calAbrirTela()">🗓️ Agenda</button>';
 
   if (pacientes.length === 0) {
     container.innerHTML = btnNovo +
@@ -18000,6 +18110,222 @@ async function graSalvar() {
 }
 
 /* Fim do Pacote 14.1 — Grade de Atendimento */
+
+/* ============================================================
+   PACOTE 14.2 — AGENDA VISUAL (Módulo Consultório Digital)
+   Namespace cal*. Calendário semanal/diário do profissional.
+   Faixa fixa 06h–22h. Tintura = janelas da Grade de Atendimento
+   real (profLerGrade). Sessões: estrutura pronta, populada no
+   Pacote 14.3 (por ora CAL_SESSOES permanece vazio).
+   ============================================================ */
+
+var CAL_HORA_INI = 6;
+var CAL_HORA_FIM = 22;
+var CAL_ALT_HORA = 48;
+var CAL_DOW_ROTULOS = ['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
+var CAL_MESES_NOMES = ['janeiro','fevereiro','março','abril','maio','junho','julho',
+                       'agosto','setembro','outubro','novembro','dezembro'];
+
+var calDataRef = null;       // data de referência da visão
+var calVisao = 'semana';     // 'semana' | 'dia'
+var calMiniMes = null;       // primeiro dia do mês exibido no mini-calendário
+var CAL_GRADE_JANELAS = {};  // {1:[{inicio,fim,modalidade}], ...} — janelas ATIVAS da grade real
+var CAL_SESSOES = [];        // Pacote 14.3 populará com as sessões reais
+
+/* Abre a tela da Agenda, carrega a grade real e renderiza */
+async function calAbrirTela() {
+  abrirSecao('sec-prof-agenda-cal');
+  if (!PROF_SESSAO) return;
+
+  var hoje = new Date(); hoje.setHours(0,0,0,0);
+  if (!calDataRef) calDataRef = new Date(hoje);
+  if (!calMiniMes) calMiniMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  if (window.innerWidth < 760 && calVisao !== 'dia') calMudarVisao('dia', true);
+
+  // Carrega a grade real (tintura de disponibilidade)
+  var resp = await chamarServidor('profLerGrade', {
+    profSigla: PROF_SESSAO._sigla,
+    profSenha: PROF_SESSAO._senha
+  });
+
+  CAL_GRADE_JANELAS = {};
+  var temJanela = false;
+  if (resp.ok) {
+    (resp.grade || []).forEach(function(g){
+      if (String(g.ativo).trim().toLowerCase() !== 'sim') return;
+      var d = Number(g.dia_semana);
+      if (!CAL_GRADE_JANELAS[d]) CAL_GRADE_JANELAS[d] = [];
+      CAL_GRADE_JANELAS[d].push({inicio: g.hora_inicio, fim: g.hora_fim, modalidade: g.modalidade});
+      temJanela = true;
+    });
+  }
+  document.getElementById('calAvisoGrade').style.display = temJanela ? 'none' : 'block';
+
+  calRender();
+}
+
+/* ---------- Utilitários de data ---------- */
+function calSegundaDaSemana_(d) {
+  var r = new Date(d);
+  var dif = (r.getDay() + 6) % 7; // 0=Dom no getDay -> queremos 0=Seg
+  r.setDate(r.getDate() - dif);
+  return r;
+}
+function calMesmaData_(a, b) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+function calFmtDia_(d) {
+  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0');
+}
+
+/* ---------- Renderização da grade ---------- */
+function calRender() {
+  var grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  grid.className = 'cal-grid ' + (calVisao === 'semana' ? 'cal-semana' : 'cal-dia-view');
+  var hoje = new Date(); hoje.setHours(0,0,0,0);
+
+  var dias = [];
+  if (calVisao === 'semana') {
+    var seg = calSegundaDaSemana_(calDataRef);
+    for (var i = 0; i < 7; i++) { var d = new Date(seg); d.setDate(seg.getDate()+i); dias.push(d); }
+    var fim = dias[6];
+    document.getElementById('calPeriodo').textContent =
+      calFmtDia_(dias[0]) + ' – ' + calFmtDia_(fim) + ' de ' + CAL_MESES_NOMES[fim.getMonth()] + ', ' + fim.getFullYear();
+  } else {
+    dias.push(new Date(calDataRef));
+    document.getElementById('calPeriodo').textContent =
+      CAL_DOW_ROTULOS[(calDataRef.getDay()+6)%7] + ', ' + calFmtDia_(calDataRef) + ' de ' +
+      CAL_MESES_NOMES[calDataRef.getMonth()] + ', ' + calDataRef.getFullYear();
+  }
+
+  // Canto + cabeçalhos
+  var canto = document.createElement('div');
+  canto.className = 'cal-col-head';
+  grid.appendChild(canto);
+  dias.forEach(function(d){
+    var h = document.createElement('div');
+    h.className = 'cal-col-head' + (calMesmaData_(d, hoje) ? ' cal-hoje-col' : '');
+    h.innerHTML = '<div class="cal-dow">' + CAL_DOW_ROTULOS[(d.getDay()+6)%7] + '</div>' +
+      '<div class="cal-dnum">' + d.getDate() + '</div>';
+    grid.appendChild(h);
+  });
+
+  // Coluna de horas
+  var colHoras = document.createElement('div');
+  colHoras.className = 'cal-horas';
+  for (var hh = CAL_HORA_INI; hh < CAL_HORA_FIM; hh++) {
+    var lab = document.createElement('div');
+    lab.className = 'cal-hora-label';
+    lab.textContent = String(hh).padStart(2,'0') + ':00';
+    colHoras.appendChild(lab);
+  }
+  grid.appendChild(colHoras);
+
+  // Colunas de dia
+  dias.forEach(function(d){
+    var col = document.createElement('div');
+    col.className = 'cal-dia-col';
+    for (var k = CAL_HORA_INI; k < CAL_HORA_FIM; k++) {
+      var l = document.createElement('div');
+      l.className = 'cal-hora-linha';
+      col.appendChild(l);
+    }
+
+    // dia_semana no padrão da Grade: 1=Seg ... 7=Dom
+    var diaSemana = ((d.getDay() + 6) % 7) + 1;
+
+    // Tintura das janelas ativas da grade real
+    (CAL_GRADE_JANELAS[diaSemana] || []).forEach(function(w){
+      var hI = parseInt(w.inicio.split(':')[0],10) + parseInt(w.inicio.split(':')[1],10)/60;
+      var hF = parseInt(w.fim.split(':')[0],10) + parseInt(w.fim.split(':')[1],10)/60;
+      hI = Math.max(hI, CAL_HORA_INI); hF = Math.min(hF, CAL_HORA_FIM);
+      if (hF <= hI) return;
+      var tint = document.createElement('div');
+      tint.className = 'cal-disp-bloco';
+      tint.style.top = ((hI - CAL_HORA_INI) * CAL_ALT_HORA) + 'px';
+      tint.style.height = ((hF - hI) * CAL_ALT_HORA) + 'px';
+      col.appendChild(tint);
+    });
+
+    // Sessões (Pacote 14.3): estrutura pronta, CAL_SESSOES ainda vazio
+    CAL_SESSOES.forEach(function(ev){
+      if (!calMesmaData_(new Date(ev.data + 'T00:00:00'), d)) return;
+      var hIni = parseInt(ev.inicio.split(':')[0],10);
+      var mIni = parseInt(ev.inicio.split(':')[1],10);
+      if (hIni < CAL_HORA_INI || hIni >= CAL_HORA_FIM) return;
+      var topo = (hIni - CAL_HORA_INI) * CAL_ALT_HORA + (mIni/60) * CAL_ALT_HORA;
+      var fimTxt = String(hIni+1).padStart(2,'0') + ':' + String(mIni).padStart(2,'0');
+      var bloco = document.createElement('div');
+      bloco.className = 'cal-ev cal-' + ev.modalidade;
+      bloco.style.top = topo + 'px';
+      bloco.style.height = (CAL_ALT_HORA - 4) + 'px';
+      bloco.innerHTML =
+        '<div class="cal-ev-hora"><span>' + ev.inicio + ' – ' + fimTxt + '</span>' +
+        '<span>' + (ev.confirmada ? '✅' : '⏳') + '</span></div>' +
+        '<div class="cal-ev-nome">' + ev.nome + '</div>';
+      col.appendChild(bloco);
+    });
+
+    grid.appendChild(col);
+  });
+
+  calRenderMini_();
+}
+
+/* ---------- Mini-calendário ---------- */
+function calRenderMini_() {
+  var g = document.getElementById('calMiniGrid');
+  g.innerHTML = '';
+  var hoje = new Date(); hoje.setHours(0,0,0,0);
+  var nomeMes = CAL_MESES_NOMES[calMiniMes.getMonth()];
+  document.getElementById('calMiniTitulo').textContent =
+    nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1) + ' ' + calMiniMes.getFullYear();
+
+  ['S','T','Q','Q','S','S','D'].forEach(function(x){
+    var e = document.createElement('div'); e.className = 'cal-mini-dow'; e.textContent = x; g.appendChild(e);
+  });
+
+  var ini = calSegundaDaSemana_(new Date(calMiniMes));
+  for (var i = 0; i < 42; i++) {
+    var d = new Date(ini); d.setDate(ini.getDate() + i);
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'cal-mini-dia'
+      + (d.getMonth() !== calMiniMes.getMonth() ? ' cal-fora' : '')
+      + (calMesmaData_(d, hoje) ? ' cal-hoje' : '')
+      + (calMesmaData_(d, calDataRef) && !calMesmaData_(d, hoje) ? ' cal-sel' : '');
+    b.textContent = d.getDate();
+    (function(dd){
+      b.addEventListener('click', function(){ calDataRef = new Date(dd); calRender(); });
+    })(d);
+    g.appendChild(b);
+  }
+}
+
+/* ---------- Navegação ---------- */
+function calIrHoje() {
+  var hoje = new Date(); hoje.setHours(0,0,0,0);
+  calDataRef = new Date(hoje);
+  calMiniMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  calRender();
+}
+function calNavegar(direcao) {
+  calDataRef.setDate(calDataRef.getDate() + direcao * (calVisao === 'semana' ? 7 : 1));
+  calRender();
+}
+function calMudarVisao(visao, semRender) {
+  calVisao = visao;
+  document.getElementById('calBtnSemana').classList.toggle('cal-ativo', visao === 'semana');
+  document.getElementById('calBtnDia').classList.toggle('cal-ativo', visao === 'dia');
+  if (!semRender) calRender();
+}
+function calMiniNavegar(direcao) {
+  calMiniMes.setMonth(calMiniMes.getMonth() + direcao);
+  calRenderMini_();
+}
+
+/* Fim do Pacote 14.2 — Agenda Visual */
 
 </script>
 
