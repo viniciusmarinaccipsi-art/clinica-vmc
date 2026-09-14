@@ -312,6 +312,17 @@ function doPost(e) {
         );
         break;
 
+      // ============================================================
+      // PACOTE 14.1 - GRADE DE ATENDIMENTO (Modulo Consultorio Digital)
+      // ============================================================
+      case 'profLerGrade':
+        resposta = lerGradeAtendimento(payload.profSigla, payload.profSenha);
+        break;
+
+      case 'profSalvarGrade':
+        resposta = salvarGradeAtendimento(payload.profSigla, payload.profSenha, payload.config, payload.grade);
+        break;
+
       default:
         resposta = { ok: false, erro: 'Acao desconhecida: ' + acao };
     }
@@ -2530,4 +2541,191 @@ function testarAdmin13_1_1() {
   Logger.log('    Clinica VMC - Controle (vazia)');
   Logger.log('    Pacientes/');
   Logger.log('Apos validar, apague manualmente.');
+}
+
+
+// ============================================================
+// PACOTE 14.1 - GRADE DE ATENDIMENTO (Modulo Consultorio Digital)
+// Abas na planilha Controle do profissional:
+//   Config_Agenda   -> chave | valor          (configuracoes gerais)
+//   Grade_Horarios  -> dia_semana | hora_inicio | hora_fim | modalidade | ativo
+// Horarios gravados como TEXTO PURO (formato @) para o bug 1899
+// nem existir nesta estrutura. Leitura via getDisplayValues().
+// ============================================================
+
+var GRADE_ABA_CONFIG = 'Config_Agenda';
+var GRADE_ABA_HORARIOS = 'Grade_Horarios';
+var GRADE_CONFIG_PADRAO = {
+  duracao_slot_min: 60,
+  antecedencia_min_horas: 24
+};
+
+/**
+ * Garante que a aba exista na Controle, criando com cabecalho e
+ * formato de texto puro se necessario. Retorna a aba.
+ */
+function _gradeObterOuCriarAba_(controle, nomeAba, cabecalhos) {
+  var aba = controle.getSheetByName(nomeAba);
+  if (!aba) {
+    aba = controle.insertSheet(nomeAba);
+    aba.getRange(1, 1, 1, cabecalhos.length).setValues([cabecalhos]);
+    // Formato texto puro em toda a area util: Sheets nunca converte
+    // "13:00" em celula TIME (raiz do bug 1899)
+    aba.getRange(1, 1, aba.getMaxRows(), cabecalhos.length).setNumberFormat('@');
+  }
+  return aba;
+}
+
+/**
+ * Le a grade de atendimento do profissional.
+ * Entrada: profSigla, profSenha (revalidados a cada chamada)
+ * Saida: { ok:true, config:{...}, grade:[{dia_semana,hora_inicio,hora_fim,modalidade,ativo}] }
+ * Se as abas ainda nao existem, retorna config padrao e grade vazia
+ * (primeiro acesso) sem criar nada.
+ */
+function lerGradeAtendimento(profSigla, profSenha) {
+  // 1. Revalidar credenciais (padrao consolidado do Pacote 13.2)
+  var authResult = autenticar(profSigla, profSenha, 'profissional');
+  if (!authResult.ok) return authResult;
+
+  var profissionalId = authResult.profissional.profissional_id;
+  var controle = abrirControleDoProfissional(profissionalId);
+  if (!controle) {
+    return { ok: false, erro: 'Planilha de Controle nao encontrada.' };
+  }
+
+  // 2. Config (merge sobre os padroes)
+  var config = {
+    duracao_slot_min: GRADE_CONFIG_PADRAO.duracao_slot_min,
+    antecedencia_min_horas: GRADE_CONFIG_PADRAO.antecedencia_min_horas
+  };
+  var abaCfg = controle.getSheetByName(GRADE_ABA_CONFIG);
+  if (abaCfg) {
+    var valsCfg = abaCfg.getDataRange().getDisplayValues();
+    for (var i = 1; i < valsCfg.length; i++) {
+      var chave = String(valsCfg[i][0] || '').trim();
+      if (!chave) continue;
+      var valor = String(valsCfg[i][1] || '').trim();
+      var num = Number(valor);
+      config[chave] = isNaN(num) || valor === '' ? valor : num;
+    }
+  }
+
+  // 3. Grade
+  var grade = [];
+  var abaGrade = controle.getSheetByName(GRADE_ABA_HORARIOS);
+  if (abaGrade) {
+    var vals = abaGrade.getDataRange().getDisplayValues();
+    if (vals.length > 1) {
+      var cab = vals[0];
+      var iDia = cab.indexOf('dia_semana');
+      var iIni = cab.indexOf('hora_inicio');
+      var iFim = cab.indexOf('hora_fim');
+      var iMod = cab.indexOf('modalidade');
+      var iAtv = cab.indexOf('ativo');
+      for (var r = 1; r < vals.length; r++) {
+        var linha = vals[r];
+        if (String(linha[iDia] || '').trim() === '') continue;
+        grade.push({
+          dia_semana: Number(linha[iDia]),
+          hora_inicio: String(linha[iIni] || '').trim(),
+          hora_fim: String(linha[iFim] || '').trim(),
+          modalidade: String(linha[iMod] || '').trim(),
+          ativo: String(linha[iAtv] || 'sim').trim()
+        });
+      }
+    }
+  }
+
+  return { ok: true, config: config, grade: grade };
+}
+
+/**
+ * Salva a grade de atendimento do profissional.
+ * Entrada:
+ *   profSigla, profSenha - revalidados a cada chamada
+ *   config - { duracao_slot_min, antecedencia_min_horas }
+ *   grade  - [{dia_semana, hora_inicio, hora_fim, modalidade, ativo}]
+ * Cria as abas Config_Agenda e Grade_Horarios automaticamente no
+ * primeiro salvamento. A grade representa o estado ATUAL da
+ * configuracao: as linhas de dados sao substituidas a cada save
+ * (config nao e historico clinico; o principio aditivo se aplica
+ * ao schema das colunas, que nunca muda).
+ */
+function salvarGradeAtendimento(profSigla, profSenha, config, grade) {
+  // 1. Revalidar credenciais
+  var authResult = autenticar(profSigla, profSenha, 'profissional');
+  if (!authResult.ok) return authResult;
+
+  var profissionalId = authResult.profissional.profissional_id;
+  var controle = abrirControleDoProfissional(profissionalId);
+  if (!controle) {
+    return { ok: false, erro: 'Planilha de Controle nao encontrada.' };
+  }
+
+  // 2. Validacao server-side dos dados recebidos
+  config = config || {};
+  grade = grade || [];
+  var reHora = /^([01]\d|2[0-3]):[0-5]\d$/;
+  var modsValidas = { presencial: true, online: true, ambas: true };
+  for (var i = 0; i < grade.length; i++) {
+    var j = grade[i] || {};
+    var dia = Number(j.dia_semana);
+    if (!(dia >= 1 && dia <= 7)) {
+      return { ok: false, erro: 'Linha ' + (i + 1) + ': dia_semana invalido.' };
+    }
+    if (!reHora.test(String(j.hora_inicio)) || !reHora.test(String(j.hora_fim))) {
+      return { ok: false, erro: 'Linha ' + (i + 1) + ': horario invalido (use HH:MM).' };
+    }
+    if (String(j.hora_fim) <= String(j.hora_inicio)) {
+      return { ok: false, erro: 'Linha ' + (i + 1) + ': hora final deve ser maior que a inicial.' };
+    }
+    if (!modsValidas[String(j.modalidade)]) {
+      return { ok: false, erro: 'Linha ' + (i + 1) + ': modalidade invalida.' };
+    }
+  }
+
+  // 3. Gravar Config_Agenda (upsert chave -> valor)
+  var abaCfg = _gradeObterOuCriarAba_(controle, GRADE_ABA_CONFIG, ['chave', 'valor']);
+  var cfgGravar = {
+    duracao_slot_min: Number(config.duracao_slot_min) || GRADE_CONFIG_PADRAO.duracao_slot_min,
+    antecedencia_min_horas: Number(config.antecedencia_min_horas) || GRADE_CONFIG_PADRAO.antecedencia_min_horas
+  };
+  var valsCfg = abaCfg.getDataRange().getDisplayValues();
+  var chavesExistentes = {};
+  for (var c = 1; c < valsCfg.length; c++) {
+    chavesExistentes[String(valsCfg[c][0]).trim()] = c + 1; // numero da linha na planilha
+  }
+  for (var chave in cfgGravar) {
+    var valorTxt = String(cfgGravar[chave]);
+    if (chavesExistentes[chave]) {
+      abaCfg.getRange(chavesExistentes[chave], 2).setValue(valorTxt);
+    } else {
+      abaCfg.appendRow([chave, valorTxt]);
+    }
+  }
+
+  // 4. Gravar Grade_Horarios (substitui linhas de dados pelo estado atual)
+  var abaGrade = _gradeObterOuCriarAba_(controle, GRADE_ABA_HORARIOS,
+    ['dia_semana', 'hora_inicio', 'hora_fim', 'modalidade', 'ativo']);
+  var ultimaLinha = abaGrade.getLastRow();
+  if (ultimaLinha > 1) {
+    abaGrade.getRange(2, 1, ultimaLinha - 1, 5).clearContent();
+  }
+  if (grade.length > 0) {
+    var linhas = grade.map(function (g) {
+      return [
+        String(g.dia_semana),
+        String(g.hora_inicio),
+        String(g.hora_fim),
+        String(g.modalidade),
+        String(g.ativo || 'sim')
+      ];
+    });
+    var destino = abaGrade.getRange(2, 1, linhas.length, 5);
+    destino.setNumberFormat('@'); // garante texto puro mesmo em abas antigas
+    destino.setValues(linhas);
+  }
+
+  return { ok: true, mensagem: 'Grade de atendimento salva.', total_janelas: grade.length };
 }

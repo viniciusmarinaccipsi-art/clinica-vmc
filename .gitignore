@@ -1,5 +1,8 @@
-token.json
-credentials.json
-*.md
+.clasp.json
+Backup - */
+_para_apagar/
 *.py
-Backup*/
+*.zip
+manifest.json
+credentials*.json
+token*.json
