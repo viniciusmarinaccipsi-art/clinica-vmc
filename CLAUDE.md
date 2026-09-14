@@ -30,8 +30,9 @@ Vinicius Marinacci, psicólogo clínico; não é programador, mas opera agentes 
 
 Deploy manual (colar no editor do Apps Script, arrastar no GitHub) está descontinuado.
 
-**Prova do ping (PowerShell):**
-`curl.exe -sL -X POST -H "Content-Type: text/plain;charset=utf-8" -d "{\"acao\":\"ping\"}" "<APPS_SCRIPT_URL do index.html>"`
+**Prova do ping** (validado em 14/09/2026; no PowerShell 5.1 o `curl.exe` com `-X POST` e aspas escapadas falha — 411 ou JSON corrompido):
+- PowerShell: `Invoke-RestMethod -Method Post -Uri "<APPS_SCRIPT_URL do index.html>" -ContentType "text/plain;charset=utf-8" -Body '{"acao":"ping"}'`
+- Bash: `curl -sL -H 'Content-Type: text/plain;charset=utf-8' -d '{"acao":"ping"}' "<APPS_SCRIPT_URL>"` (sem `-X POST`: o 302 do Apps Script precisa virar GET)
 
 ## Princípios não-negociáveis
 
