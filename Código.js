@@ -60,6 +60,9 @@
 
 // ID da planilha global Sistema_VMC.
 // Criada pelo script Python migracao_13_0_1.py.
+// Pacote 15.0 — Limpeza (14/09/2026)
+var VERSAO_PACOTE = '15.0';
+
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
 // Nomes das abas da planilha global Sistema_VMC
@@ -83,7 +86,7 @@ var ABA_ESCALAS           = 'Escalas';
 // Versao atual do formulario
 var VERSAO_FORMULARIO = 'v1';
 
-// Pacote 13.4: Headers das 4 abas da planilha individual do paciente.
+// Pacote 13.4: Headers das 3 abas da planilha individual do paciente (Painel removida no 15.0).
 // Usados por cadastrarPaciente() ao criar planilha nova.
 var HEADERS_ANAMNESE = [
   'timestamp', 'versao_formulario', 'nome_completo', 'data_nascimento',
@@ -120,8 +123,7 @@ var HEADERS_AUTOMONITORAMENTO = [
   'neg_fis_desativacao', 'neg_fis_tensao', 'neg_fis_digestivas',
   'neg_fis_sono', 'neg_pens_o_que', 'neg_pens_sobre_mim',
   'neg_pens_sobre_futuro', 'neg_pens_sobre_outros', 'neg_pens_cobranca',
-  'neg_pens_culpa', 'neg_dist_previsao', 'neg_dist_generalizacao',
-  'neg_dist_percepcao', 'neg_dist_interpretacao', 'neg_dist_exigencia',
+  'neg_pens_culpa',
   'neg_comp_o_que', 'neg_comp_evitacao', 'neg_comp_isolamento',
   'neg_comp_reatividade', 'neg_comp_entorpecimento', 'neg_comp_controle',
   'pos_sit_o_que', 'pos_emo_felicidade', 'pos_emo_orgulho',
@@ -151,8 +153,6 @@ var HEADERS_ESCALAS = [
   'observacoes', 'tempo_preenchimento_seg'
 ];
 
-var HEADERS_PAINEL = ['data', 'tipo', 'valor', 'observacoes'];
-
 
 // ============================================================
 // ROTEADOR PRINCIPAL
@@ -166,7 +166,7 @@ function doPost(e) {
     var resposta;
     switch (acao) {
       case 'ping':
-        resposta = { ok: true, mensagem: 'Servidor respondendo (13.4.1 multi-tenant)', versao: VERSAO_FORMULARIO };
+        resposta = { ok: true, versao_pacote: VERSAO_PACOTE, versao_formulario: VERSAO_FORMULARIO, versao: VERSAO_FORMULARIO, mensagem: 'Servidor respondendo (Pacote ' + VERSAO_PACOTE + ')' };
         break;
 
       case 'autenticar':
@@ -1365,8 +1365,8 @@ function pacienteAtualizarAnamnese(sigla, dados) {
  * Cadastra um novo paciente para o profissional autenticado.
  *
  * Cria automaticamente:
- *   - Planilha individual com 4 abas (Anamnese, Automonitoramento,
- *     Escalas, Painel) usando headers padrao
+ *   - Planilha individual com 3 abas (Anamnese, Automonitoramento,
+ *     Escalas) usando headers padrao
  *   - Move planilha para pasta Pacientes/ do profissional
  *   - Linha na Controle do profissional
  *   - Linha no Indice_Siglas
@@ -1448,12 +1448,6 @@ function cadastrarPaciente(profSigla, profSenha, dados) {
     abaEsc.getRange(1, 1, 1, HEADERS_ESCALAS.length).setValues([HEADERS_ESCALAS]);
     abaEsc.setFrozenRows(1);
     abaEsc.getRange(1, 1, 1, HEADERS_ESCALAS.length).setFontWeight('bold');
-
-    // 5d. Painel (reservada)
-    var abaPainel = planilha.insertSheet('Painel');
-    abaPainel.getRange(1, 1, 1, HEADERS_PAINEL.length).setValues([HEADERS_PAINEL]);
-    abaPainel.setFrozenRows(1);
-    abaPainel.getRange(1, 1, 1, HEADERS_PAINEL.length).setFontWeight('bold');
 
     // 6. Mover planilha para pasta Pacientes/
     var arquivoPlanilha = DriveApp.getFileById(planilha.getId());
