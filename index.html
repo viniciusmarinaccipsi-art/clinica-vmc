@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Sistema Clínico Digital VMC — index.html — Pacote 15.0 (14/09/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -12476,18 +12477,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 /* ============================================================
-   SERVICE WORKER
-   ============================================================ */
-if ('serviceWorker' in navigator && location.protocol === 'https:') {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(err => {
-      console.warn('Service worker não registrado:', err);
-    });
-  });
-}
-
-
-/* ============================================================
    MÓDULO 2 v4 — JS
    ============================================================
    - Grupos colapsáveis (toggle múltiplo)
@@ -13434,36 +13423,6 @@ function autoAvancarSequencial(tipo, destino) {
   autoAtualizarBarra(tipo);
 }
 
-// Volta ao menu do tipo (último botão das seções de Comportamentos)
-function autoVoltarMenuSecao(tipo) {
-  const secAtual = document.querySelector('.section.active');
-  if (secAtual) {
-    const idAtual = secAtual.id;
-    const valid = autoValidarSecao(idAtual);
-    if (!valid.ok) {
-      alert('⚠️ ' + valid.msg);
-      return;
-    }
-    autoColetarDadosDaSecao(idAtual);
-    const chave = AUTO_SEC_MAP[idAtual];
-    if (chave) AUTO_STATE.preenchido[chave] = true;
-    const seq = tipo === 'neg' ? AUTO_SEQ_NEG : AUTO_SEQ_POS;
-    const idxAtual = seq.indexOf(idAtual);
-    if (idxAtual >= 0) {
-      const novaEtapa = idxAtual + 1;
-      if (tipo === 'neg' && novaEtapa > AUTO_STATE.seqNegAtual) AUTO_STATE.seqNegAtual = novaEtapa;
-      if (tipo === 'pos' && novaEtapa > AUTO_STATE.seqPosAtual) AUTO_STATE.seqPosAtual = novaEtapa;
-    }
-    autoSalvarRascunho();
-  }
-  const destino = tipo === 'neg' ? 'sec-auto-menu-neg' : 'sec-auto-menu-pos';
-  abrirSecao(destino);
-  autoMostrarBarraSeNecessario(tipo);
-  autoAplicarSequenciaObrigatoria(tipo);
-  autoAtualizarProgressoMenus();
-  autoAtualizarBarra(tipo);
-}
-
 // ============================================================
 // VALIDAÇÃO DE SEÇÃO
 // ============================================================
@@ -14128,21 +14087,6 @@ function autoAbrirResumo() {
   abrirSecao('sec-auto-resumo');
 }
 
-// Mantida para compatibilidade (não mais usada pelo resumo, mas pode ser útil)
-function autoContarGruposPreenchidos(prefixo) {
-  const stats = { emo:0, fis:0, pens:0, dist:0, comp:0 };
-  for (const k of Object.keys(AUTO_STATE.dados)) {
-    if (!k.startsWith(prefixo)) continue;
-    if (!AUTO_STATE.dados[k]) continue;
-    if (k.includes('_emo_')) stats.emo++;
-    else if (k.includes('_fis_')) stats.fis++;
-    else if (k.includes('_pens_')) stats.pens++;
-    else if (k.includes('_dist_')) stats.dist++;
-    else if (k.includes('_comp_')) stats.comp++;
-  }
-  return stats;
-}
-
 function escapeHtmlAuto(s) {
   if (!s) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -14299,7 +14243,6 @@ function histSecaoExpandida(r, tipo, cor) {
     const gruposPreenchidos = [];
     for (const k of Object.keys(r)) {
       if (!k.startsWith(cat.prefixo)) continue;
-      if (k.endsWith('_intensidade') || k.endsWith('_crenca')) continue;
       const val = r[k];
       // Pacote 8: blindar contra null/undefined
       if (val == null) continue;
@@ -14888,12 +14831,6 @@ document.addEventListener('keydown', function(e){
   }
 });
 
-// Funções legadas mantidas para compatibilidade
-function autoLinhaHist(icon, key, valor) {
-  const val = valor || '<span class="nodata">—</span>';
-  return `<div class="histc-line"><span class="histc-line-icon">${icon}</span><span class="histc-line-key">${key}</span><span class="histc-line-val">${val}</span></div>`;
-}
-
 function autoFormatarHora(raw) {
   if (!raw && raw !== 0) return '—';
 
@@ -14931,83 +14868,6 @@ function autoFormatarHora(raw) {
   } catch (e) {}
 
   return s;
-}
-
-function autoDescreverSituacaoHist(r, tipo) {
-  // Primeiro procura no grupo dominante de tipos
-  const chaves = [`${tipo}_sit_tipo_interpessoais`, `${tipo}_sit_tipo_desempenho`, `${tipo}_sit_tipo_solidao`, `${tipo}_sit_tipo_perda`, `${tipo}_sit_tipo_internas`];
-  const nomes = ['Interpessoais','Desempenho','Solidão/Inatividade','Perda/Mudança','Internas'];
-  let maiorQtd = 0, maiorIdx = -1;
-  for (let i = 0; i < chaves.length; i++) {
-    const val = r[chaves[i]] || '';
-    const qtd = val ? val.split(AUTO_SEPARADOR).filter(x => x.trim()).length : 0;
-    if (qtd > maiorQtd) { maiorQtd = qtd; maiorIdx = i; }
-  }
-  if (maiorIdx >= 0) return nomes[maiorIdx];
-  // Fallback: texto do "o que aconteceu"
-  const oque = r[`${tipo}_sit_o_que`];
-  if (oque) {
-    const t = String(oque).substring(0, 40);
-    return escapeHtmlAuto(t) + (oque.length > 40 ? '...' : '');
-  }
-  return '';
-}
-
-function autoGrupoDominanteHist(r, prefixo) {
-  // Acha o grupo com mais itens (contagem do separador) e mostra o título + Likert médio
-  const titulos = {
-    'neg_emo_tristeza':'Tristeza/Depressão','neg_emo_ansiedade':'Ansiedade/Medo','neg_emo_raiva':'Raiva/Irritação','neg_emo_culpa':'Culpa/Vergonha','neg_emo_ciume':'Ciúme/Inveja',
-    'neg_fis_ativacao':'Ativação/Aceleração','neg_fis_desativacao':'Desativação','neg_fis_tensao':'Tensão/Contração','neg_fis_digestivas':'Digestivas','neg_fis_sono':'Sono/Concentração',
-    'neg_pens_sobre_mim':'Sobre Mim Mesmo','neg_pens_sobre_futuro':'Sobre o Futuro','neg_pens_sobre_outros':'Sobre os Outros','neg_pens_cobranca':'Cobrança','neg_pens_culpa':'Culpa',
-    'neg_dist_previsao':'Erros de Previsão','neg_dist_generalizacao':'Generalização','neg_dist_percepcao':'Percepção','neg_dist_interpretacao':'Interpretação','neg_dist_exigencia':'Exigência',
-    'neg_comp_evitacao':'Evitação/Fuga','neg_comp_isolamento':'Isolamento','neg_comp_reatividade':'Agitação/Reatividade','neg_comp_entorpecimento':'Entorpecimento','neg_comp_controle':'Busca de Controle',
-    'pos_emo_felicidade':'Felicidade/Satisfação','pos_emo_orgulho':'Orgulho/Realização','pos_emo_conexao':'Conexão/Afeto','pos_emo_calma':'Calma/Serenidade','pos_emo_esperanca':'Esperança/Motivação',
-    'pos_fis_calma':'Desaceleração/Calma','pos_fis_energia':'Energia/Vitalidade','pos_fis_relaxamento':'Relaxamento','pos_fis_digestivo':'Conforto Digestivo','pos_fis_atencao':'Atenção/Descanso',
-    'pos_pens_autocompaixao':'Autocompaixão','pos_pens_esperanca':'Esperança/Perspectiva','pos_pens_confianca':'Confiança nos Outros','pos_pens_flexibilidade':'Flexibilidade','pos_pens_responsabilidade':'Responsabilidade Equilibrada',
-    'pos_comp_enfrentamento':'Enfrentamento/Ação','pos_comp_conexao':'Conexão/Vínculo','pos_comp_expressao':'Expressão/Comunicação','pos_comp_autocuidado':'Autocuidado','pos_comp_aceitacao':'Aceitação/Flexibilidade',
-  };
-  let dominantChave = null;
-  let dominantQtd = 0;
-  let dominantLikerts = [];
-  let eLikert = false;
-  for (const k of Object.keys(r)) {
-    if (!k.startsWith(prefixo)) continue;
-    if (k.endsWith('_intensidade')) continue; // legacy v3
-    const val = r[k] || '';
-    if (!val) continue;
-    const partes = String(val).split(AUTO_SEPARADOR).filter(x => x.trim());
-    if (partes.length > dominantQtd) {
-      dominantQtd = partes.length;
-      dominantChave = k;
-      // Extrai likerts se formato v4 (item:valor)
-      dominantLikerts = [];
-      partes.forEach(p => {
-        const m = p.match(/:(\d+)$/);
-        if (m) { dominantLikerts.push(parseInt(m[1],10)); eLikert = true; }
-      });
-    }
-  }
-  if (!dominantChave) {
-    // Fallback: olha colunas _intensidade legacy (v3)
-    for (const k of Object.keys(r)) {
-      if (!k.startsWith(prefixo)) continue;
-      if (!k.endsWith('_intensidade')) continue;
-      const valInt = parseInt(r[k], 10);
-      if (valInt > 0) {
-        const grupoChave = k.replace('_intensidade','');
-        const nome = titulos[grupoChave] || grupoChave;
-        return `${escapeHtmlAuto(nome)} <span class="lk">${valInt}/5</span>`;
-      }
-    }
-    return '';
-  }
-  const nome = titulos[dominantChave] || dominantChave;
-  let lkHtml = '';
-  if (eLikert && dominantLikerts.length > 0) {
-    const media = Math.round(dominantLikerts.reduce((a,b)=>a+b,0) / dominantLikerts.length);
-    lkHtml = ` <span class="lk">${media}/5</span>`;
-  }
-  return `${escapeHtmlAuto(nome)}${lkHtml}`;
 }
 
 // ============================================================
@@ -15158,7 +15018,6 @@ const PEV_TITULOS_GRUPO = {
   'neg_emo_tristeza':'Tristeza/Depressão','neg_emo_ansiedade':'Ansiedade/Medo','neg_emo_raiva':'Raiva/Irritação','neg_emo_culpa':'Culpa/Vergonha','neg_emo_ciume':'Ciúme/Inveja',
   'neg_fis_ativacao':'Ativação/Aceleração','neg_fis_desativacao':'Desativação','neg_fis_tensao':'Tensão/Contração','neg_fis_digestivas':'Digestivas','neg_fis_sono':'Sono/Concentração',
   'neg_pens_sobre_mim':'Sobre Mim Mesmo','neg_pens_sobre_futuro':'Sobre o Futuro','neg_pens_sobre_outros':'Sobre os Outros','neg_pens_cobranca':'Cobrança','neg_pens_culpa':'Culpa',
-  'neg_dist_previsao':'Erros de Previsão','neg_dist_generalizacao':'Generalização','neg_dist_percepcao':'Percepção','neg_dist_interpretacao':'Interpretação','neg_dist_exigencia':'Exigência',
   'neg_comp_evitacao':'Evitação/Fuga','neg_comp_isolamento':'Isolamento','neg_comp_reatividade':'Agitação/Reatividade','neg_comp_entorpecimento':'Entorpecimento','neg_comp_controle':'Busca de Controle',
   'pos_emo_felicidade':'Felicidade/Satisfação','pos_emo_orgulho':'Orgulho/Realização','pos_emo_conexao':'Conexão/Afeto','pos_emo_calma':'Calma/Serenidade','pos_emo_esperanca':'Esperança/Motivação',
   'pos_fis_calma':'Desaceleração/Calma','pos_fis_energia':'Energia/Vitalidade','pos_fis_relaxamento':'Relaxamento','pos_fis_digestivo':'Conforto Digestivo','pos_fis_atencao':'Atenção/Descanso',
@@ -15166,9 +15025,7 @@ const PEV_TITULOS_GRUPO = {
   'pos_comp_enfrentamento':'Enfrentamento/Ação','pos_comp_conexao':'Conexão/Vínculo','pos_comp_expressao':'Expressão/Comunicação','pos_comp_autocuidado':'Autocuidado','pos_comp_aceitacao':'Aceitação/Flexibilidade',
 };
 
-// Subitens de cada grupo — lidos do DOM do formulário (Pacote 2.1)
-// Substitui a constante hardcoded PEV_SUBITENS_GRUPO que divergia
-// em 41 dos 49 grupos. Fonte única de verdade: o próprio formulário.
+// Subitens de cada grupo — lidos do DOM do formulário em runtime (fonte única de verdade)
 const PEV_SUBITENS_CACHE = { dados: null };
 function pevConstruirCacheSubitens() {
   const mapa = {};
@@ -17274,15 +17131,6 @@ function escDataHojeISO() {
   return yy + '-' + mm + '-' + dd;
 }
 
-function escFormatarDataBr(d) {
-  const meses = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
-                 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
-  const hh = String(d.getHours()).padStart(2, '0');
-  const mi = String(d.getMinutes()).padStart(2, '0');
-  return 'Aplicado em ' + d.getDate() + ' de ' + meses[d.getMonth()] +
-         ' de ' + d.getFullYear() + ', ' + hh + ':' + mi;
-}
-
 /* Fim do Pacote 12.2 (Módulo 4 — Escalas e Inventários) */
 
 
@@ -17691,194 +17539,6 @@ function escHistEncontrarFaixa(cod, def, reg) {
     if (f) return f;
   }
   return null;
-}
-
-function escHistBlocoOQueSignifica(cod, def, reg) {
-  if (!def) return '';
-
-  // DASS-21: texto educativo genérico (não varia por faixa — muitas combinações)
-  if (cod === 'DASS-21') {
-    const titulo = def.eduGeralTitulo || '🧠 O que isso significa?';
-    const desc = def.eduGeralDesc || '';
-    const sug  = def.eduGeralSugestao || '';
-    if (!desc && !sug) return '';
-    return '<div class="esc-result-card">' +
-             '<h3>' + titulo + '</h3>' +
-             (desc ? '<p>' + desc + '</p>' : '') +
-             (sug  ? '<p>' + sug  + '</p>' : '') +
-           '</div>';
-  }
-
-  // Escalas de escore único: texto varia por faixa
-  const f = escHistEncontrarFaixa(cod, def, reg);
-  if (!f) return '';
-  const titulo = f.titulo || '🧠 O que isso significa?';
-  const desc = f.descricao || '';
-  const sug  = f.sugestao || '';
-  if (!desc && !sug) return '';
-  return '<div class="esc-result-card">' +
-           '<h3>' + titulo + '</h3>' +
-           (desc ? '<p>' + desc + '</p>' : '') +
-           (sug  ? '<p>' + sug  + '</p>' : '') +
-         '</div>';
-}
-
-function escHistBlocoSobreFaixa(cod, def, reg) {
-  if (!def) return '';
-
-  // DASS-21: tabela comparativa das 3 subescalas (mesmo visual da tela imediata)
-  if (cod === 'DASS-21') {
-    const meta = def.subescalasMeta || {};
-    const fs = def.faixasSubescalas || {};
-    const ordem = Object.keys(meta).length ? Object.keys(meta) : Object.keys(fs);
-    if (!ordem.length) return '';
-
-    let tabelaHtml = '<li style="list-style:none;margin-left:-20px;"><table style="width:100%;border-collapse:collapse;font-size:12.5px;">';
-    tabelaHtml += '<tr style="font-weight:700;background:var(--gray-bg);"><td style="padding:6px 8px;">Nível</td>';
-    ordem.forEach(function(k){
-      tabelaHtml += '<td style="padding:6px 8px;text-align:center;">' + escapeHtmlAuto(meta[k] ? meta[k].nome : k) + '</td>';
-    });
-    tabelaHtml += '</tr>';
-
-    const refK = ordem[0];
-    const refFaixas = (fs[refK] || []).slice().reverse(); // do menor ao maior
-    refFaixas.forEach(function(fRef){
-      tabelaHtml += '<tr style="border-top:1px solid var(--gray-lt);"><td style="padding:6px 8px;font-weight:700;">' + escapeHtmlAuto(fRef.rotulo) + '</td>';
-      ordem.forEach(function(k){
-        const fSub = (fs[k] || []).find(function(x){ return x.rotulo === fRef.rotulo; });
-        const txt = fSub ? (fSub.min + '-' + (fSub.max >= 99 ? '+' : fSub.max)) : '—';
-        tabelaHtml += '<td style="padding:6px 8px;text-align:center;">' + escapeHtmlAuto(txt) + '</td>';
-      });
-      tabelaHtml += '</tr>';
-    });
-    tabelaHtml += '</table></li>';
-
-    return '<div class="esc-result-card">' +
-             '<h3>📊 Sobre a faixa de classificação</h3>' +
-             '<ul>' + tabelaHtml + '</ul>' +
-           '</div>';
-  }
-
-  // Escalas de escore único: lista simples das faixas
-  if (!def.faixasLista || !def.faixasLista.length) return '';
-  let itens = '';
-  def.faixasLista.forEach(function(linha){
-    itens += '<li>' + linha + '</li>';
-  });
-  return '<div class="esc-result-card">' +
-           '<h3>📊 Sobre a faixa de classificação</h3>' +
-           '<ul>' + itens + '</ul>' +
-         '</div>';
-}
-
-// ============================================================
-// Bloco de alerta compacto do modal do histórico
-// Pacote 12.7.1: mesmo layout visual da tela imediata (grid 2 cols)
-// com contextualização do item crítico no topo.
-// ============================================================
-function escHistBlocoAlertaRisco(cod, def, reg) {
-  const itemKey = String(reg.alerta_risco_item || '');
-  const valor = reg.alerta_risco_valor;
-
-  // Encontra o item crítico no dicionário
-  let itemTexto = '';
-  if (def && def.itens) {
-    const critico = def.itens.find(function(x){ return x.critico || (x.itemRiscoKey === itemKey); });
-    if (critico) itemTexto = critico.texto;
-  }
-
-  // Rótulo da resposta (para escalas com opções textuais) ou "Sim" (dicotômicas)
-  let valorTxt = '';
-  if (def && def.dicotomica) {
-    valorTxt = (Number(valor) === 1) ? 'Sim' : 'Não';
-  } else if (def && def.opcoes && def.opcoes.length) {
-    const op = def.opcoes.find(function(x){ return Number(x.valor) === Number(valor); });
-    if (op) valorTxt = op.label;
-    else if (valor !== undefined && valor !== '') valorTxt = String(valor);
-  } else {
-    valorTxt = String(valor || '');
-  }
-
-  // Contextualização (só no modal do histórico, não na tela imediata)
-  let contexto = '';
-  if (itemTexto) {
-    contexto = '<div class="eschm-alerta-contexto">' +
-                 'Neste dia você marcou <strong>' + escapeHtmlAuto(valorTxt || 'uma resposta de atenção') +
-                 '</strong> no item: <em>"' + escapeHtmlAuto(itemTexto) + '"</em>.' +
-               '</div>';
-  }
-
-  // Rodapé: texto adaptado ao contexto temporal (consulta retrospectiva).
-  // Mantém a mesma estrutura de linguagem da tela imediata (apoio antes,
-  // pessoa de confiança, te acolher) — apenas o verbo muda para o presente.
-  const textoTerapeuta = 'Se esses pensamentos ou sensações estiverem voltando, fale com seu psicólogo(a) o quanto antes ou procure alguém de confiança que possa te acolher neste momento.';
-
-  return '<div class="eschm-alerta-wrapper">' +
-    '<div class="esc-alerta-tela" style="display:block;">' +
-      '<h2>💙 Você não está sozinho(a)</h2>' +
-      '<p>Percebemos que você indicou ter tido pensamentos difíceis. <strong>Existe ajuda disponível agora</strong>, 24h por dia, gratuita e com sigilo.</p>' +
-      contexto +
-      '<div class="esc-alerta-tela-contatos-grid">' +
-        '<div class="esc-alerta-tela-contato">' +
-          '<div class="esc-alerta-tela-contato-titulo">☎️ CVV</div>' +
-          '<div class="esc-alerta-tela-contato-desc">Apoio emocional · 24h · Gratuito</div>' +
-          '<span class="esc-alerta-tela-contato-numero">188</span>' +
-        '</div>' +
-        '<div class="esc-alerta-tela-contato">' +
-          '<div class="esc-alerta-tela-contato-titulo">🚑 SAMU</div>' +
-          '<div class="esc-alerta-tela-contato-desc">Emergência médica · 24h · Gratuito</div>' +
-          '<span class="esc-alerta-tela-contato-numero">192</span>' +
-        '</div>' +
-      '</div>' +
-      '<p>' + textoTerapeuta + '</p>' +
-    '</div>' +
-  '</div>';
-}
-
-// Renderiza respostas item a item do registro
-function escHistRenderRespostas(cod, def, reg) {
-  if (!def || !def.itens) return '';
-
-  let html = '';
-  def.itens.forEach(function(item){
-    const col = 'item_' + String(item.id).padStart(2, '0');
-    const valor = reg[col];
-    const temValor = !(valor === '' || valor === null || valor === undefined);
-
-    // Rótulo da resposta
-    let rotulo = '—';
-    if (temValor) {
-      if (def.dicotomica) {
-        rotulo = (Number(valor) === 1) ? 'Sim' : 'Não';
-      } else if (def.opcoes && def.opcoes.length) {
-        const op = def.opcoes.find(function(x){ return Number(x.valor) === Number(valor); });
-        rotulo = op ? op.label : String(valor);
-      } else {
-        rotulo = String(valor);
-      }
-    }
-
-    const isCritico = !!item.critico;
-    const classeCrit = isCritico ? ' critico' : '';
-
-    html += '<div class="eschm-item' + classeCrit + '">';
-    html +=   '<span class="eschm-item-num">' + item.id + '</span>';
-    html +=   '<div class="eschm-item-texto">' + escapeHtmlAuto(item.texto || '');
-    html +=     '<div class="eschm-item-resposta">Resposta: <strong>' + escapeHtmlAuto(rotulo) + '</strong>' +
-                (temValor && !def.dicotomica ? ' <span style="color:var(--gray);">(' + escapeHtmlAuto(String(valor)) + ')</span>' : '') +
-              '</div>';
-    html +=   '</div>';
-    html += '</div>';
-  });
-
-  return html;
-}
-
-// Toggle do accordion dentro do modal
-function escHistToggleAccordion(headEl) {
-  const acc = headEl && headEl.parentElement;
-  if (!acc) return;
-  acc.classList.toggle('aberto');
 }
 
 /* Fim do Pacote 12.7 (Fase 1) — Histórico de Escalas */
