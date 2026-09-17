@@ -6,7 +6,7 @@ Gerado a partir da skill `clinica-vmc` em 17/09/2026 (regeneração pós-Pacote 
 
 Sistema web modular para consultório de psicologia (TCC): `index.html` (SPA vanilla JS, GitHub Pages) + `admin.html` + backend Google Apps Script (Web App, `doPost` roteado por `acao`) + Google Sheets como banco multi-tenant (Admin → Profissional → Paciente).
 
-**Natureza (decisão de 14/09/2026):** é um **laboratório** — protótipo não divulgado, em uso com poucos pacientes, que será reconstruído do zero ao fim da exploração. Portanto: melhorias no sistema atual são decididas item a item por custo-benefício (vale o que traz ganho antes do reset ou ensina algo para o novo sistema; fora disso, reescrever o código inteiro e escala); toda ideia fica registrada no roadmap do status por tema, com estado feito/candidato/adiado; **remover peso morto** (código, colunas, abas, docs, logs sem função) em vez de preservar — o Pacote 15.0 é a referência. Sigilo dos pacientes vale integralmente.
+**Natureza (decisão de 14/09, revista em 17/09/2026):** é um **laboratório** — protótipo não divulgado, em uso com poucos pacientes, que será reconstruído do zero ao fim da exploração. Portanto: melhorias no sistema atual são decididas item a item por custo-benefício (vale o que traz ganho antes do reset ou ensina algo para o novo sistema; fora disso, reescrever o código inteiro e escala); toda ideia fica registrada no roadmap do status por tema, com estado feito/candidato/adiado; **remover peso morto** (código, colunas, abas, docs, logs sem função) em vez de preservar — o Pacote 15.0 é a referência. Sigilo dos pacientes vale integralmente.
 
 ## Usuário
 
