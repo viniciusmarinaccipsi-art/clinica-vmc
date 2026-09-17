@@ -47,7 +47,7 @@ Deploy manual (colar no editor do Apps Script, arrastar no GitHub) está descont
 ## Checklist antes de entregar
 
 - [ ] `node --check` do JS extraído (`sed -n '/<script>/,/<\/script>/p' index.html | sed '1d;$d' > check.js`)
-- [ ] Tags balanceadas `div`/`button`/`script` (sem tolerância a partir do 15.0)
+- [ ] Tags balanceadas `div`/`button`/`script` (sem tolerância a partir do 15.0), contando `div` **fora** dos blocos `<script>` — a contagem bruta tem 1 `<div` a mais dentro de string JS de `innerHTML` (diagnóstico do 15.0)
 - [ ] Toda `var(--x)` declarada no `:root` (variável ausente falha em silêncio)
 - [ ] Marcadores preservados: `pevConstruirCacheSubitens`, `P5_STATE`, `autoFormatarHora`, `.hidden` global, `Utilities.formatDate` em `lerAbaComoObjetos`
 - [ ] Nenhum fragmento órfão; nenhuma função nova sem chamada; nenhuma aba/coluna "reservada"

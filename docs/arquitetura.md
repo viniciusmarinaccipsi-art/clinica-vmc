@@ -7,11 +7,13 @@ Projeto e no próprio código — em caso de dúvida, conferir a fonte real.
 ## Stack
 
 - **Frontend:** single-page app `index.html`, vanilla JavaScript sem
-  framework, Chart.js via CDN, service worker básico (`sw.js`, preparação
-  PWA), `sessionStorage` apenas (localStorage não é usado).
+  framework, Chart.js via CDN, `sessionStorage` apenas (localStorage não
+  é usado). Sem service worker (removido no Pacote 15.0).
   `admin.html` é arquivo separado e independente.
 - **Backend:** Google Apps Script publicado como Web App (`doPost` com
-  roteador de ações). Redeploy manual preservando URL.
+  roteador de ações). Deploy por `clasp push` + `clasp deploy
+  --deploymentId` na mesma implantação (URL fixa); `VERSAO_PACOTE` no
+  topo do `Código.js`, devolvida pelo `ping` como `versao_pacote`.
 - **Dados:** Google Sheets. Planilha global `Sistema_VMC` + uma planilha
   Controle por profissional + uma planilha individual por paciente.
 - **Hospedagem:** GitHub Pages (repo público `clinica-vmc`).
@@ -32,7 +34,8 @@ Implicações práticas:
   refinado), o correto é trocar o `data-item` no HTML **e** migrar as
   planilhas via script Python (referência: Pacote 13.6.9.1) para manter
   os gráficos limpos.
-- Seção removida do frontend → colunas ficam na planilha (ex: `neg_dist_*`).
+- Seção removida do frontend → colunas **sem dados** são removidas num
+  pacote de limpeza, com script de dry-run (ex.: `neg_dist_*` no 15.0).
 
 Chaves técnicas que NÃO podem mudar: `data-grupo`, prefixos de coluna
 (`neg_emo_*`, `pos_fis_*`...), IDs de seções/botões, nomes de funções
@@ -167,8 +170,7 @@ Profissional_<sigla>/ (uma pasta por profissional)
 Planilha individual do paciente — abas:
 ├── Anamnese          (registro único na row 2 — sobrescrever, nunca append)
 ├── Automonitoramento (1 linha por registro; versao_formulario)
-├── Escalas           (1 linha por aplicação; escores e alertas)
-└── Painel            (reservada — removida no Pacote 15.0)
+└── Escalas           (1 linha por aplicação; escores e alertas)
 ```
 
 - Contagens de colunas evoluem — a fonte é o cabeçalho real da aba
@@ -199,7 +201,7 @@ Planilha individual do paciente — abas:
   carrega `profissional_id`.
 - `montarLinha` é aditiva por nome de coluna; campos desconhecidos são
   ignorados — o frontend pode evoluir antes do backend.
-- `HEADERS_ANAMNESE/AUTOMONITORAMENTO/ESCALAS/PAINEL`: arrays constantes
+- `HEADERS_ANAMNESE/AUTOMONITORAMENTO/ESCALAS`: arrays constantes
   usados ao criar planilha de paciente nova; coluna nova = atualizar o
   array correspondente.
 - Conversões obrigatórias em `lerAbaComoObjetos`: TIME →
@@ -218,5 +220,3 @@ Planilha individual do paciente — abas:
   admin: apenas variável `ADM_STATE` em memória.
 - Toda chamada `chamarServidor` passa `sigla` explícita.
 - Rascunhos locais: sessionStorage.
-- `sw.js` sem handler fetch (limpo no 12.7.3); removido no Pacote 15.0
-  junto com `manifest.json`.
