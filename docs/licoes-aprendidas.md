@@ -1,21 +1,21 @@
 # Lições Aprendidas — Referência
 
-64 lições acumuladas no desenvolvimento (numeração original preservada —
+71 lições acumuladas no desenvolvimento (numeração original preservada —
 as conversas citam "lição #N"). Consultar antes de decisões não-triviais.
-Lições novas (65+) surgem primeiro na seção 8 do `status_projeto_vmc.md`;
-esta cópia é atualizada quando a skill/CLAUDE.md é regenerada.
+Lições novas nascem na seção 8 do status_projeto_vmc.md e entram aqui na
+regeneração seguinte da skill clinica-vmc.
 
 ## Deploy, GitHub e Apps Script
 
 **1. Sempre testar pelo site publicado em aba anônima.** Nunca pelo
 arquivo local. Cache do navegador é fonte recorrente de confusão.
 
-**2. Upload no GitHub: sempre arrastar ("Upload files").** Copiar/colar
+**(Obsoleta desde a esteira de 14/09/2026.)** **2. Upload no GitHub: sempre arrastar ("Upload files").** Copiar/colar
 trunca arquivos grandes. URL direta: `https://github.com/USER/REPO/upload/main`.
 "Uploads are disabled" = sessão expirou, fazer Sign in.
 *(A partir de 14/09/2026 o deploy é por git push — esta lição vale só como histórico.)*
 
-**3. NUNCA deletar arquivo antigo antes do upload.** O GitHub sobrescreve.
+**(Obsoleta desde a esteira de 14/09/2026.)** **3. NUNCA deletar arquivo antigo antes do upload.** O GitHub sobrescreve.
 Deletar cria janela de site quebrado.
 
 **38. Cache do navegador esconde uploads bem-sucedidos.** Se o commit
@@ -28,7 +28,7 @@ Pacote 12.2 ficou uma semana "concluído" sem deploy; o do 13.7.6 ficou
 40 dias. Marcar CONCLUÍDO somente após teste em produção — especialmente
 Code.gs, que exige redeploy explícito.
 
-**48. Windows esconde extensões "conhecidas"** (`.html`, `.py`, `.js`).
+**(Obsoleta desde a esteira de 14/09/2026.)** **48. Windows esconde extensões "conhecidas"** (`.html`, `.py`, `.js`).
 Não tentar renomear no Windows; conferir o nome final no GitHub após o
 upload.
 
@@ -36,7 +36,7 @@ upload.
 `index.html`, e o Pages serve `index.html`. Garantir minúsculas ANTES de
 arrastar.
 
-**64. Antes de redeploy do Apps Script, conferir se o código do fix está
+**(Obsoleta desde a esteira de 14/09/2026.)** **64. Antes de redeploy do Apps Script, conferir se o código do fix está
 no EDITOR** (Ctrl+F pelo marcador de versão, ex: "13.7.6"). Todo Code.gs
 deve conter comentário com o número do pacote como marcador verificável.
 Sequência: código no editor → salvar → Gerenciar implantações → lápis →
@@ -54,10 +54,10 @@ testável isoladamente; bug no caminho vira pacote próprio.
 **13. Respostas curtas do usuário = "executar".** Não pedir
 micro-confirmações técnicas de quem não é programador.
 
-**15. Nomear versões de entrega** (`index_pacoteN_vX.html`) e guardar
+**(Obsoleta desde a esteira de 14/09/2026.)** **15. Nomear versões de entrega** (`index_pacoteN_vX.html`) e guardar
 todas nas pastas de backup. *(Descartado no reset — git resolve.)*
 
-**34. Nomenclatura cronológica de arquivos evita ambiguidade.** O número
+**(Obsoleta desde a esteira de 14/09/2026.)** **34. Nomenclatura cronológica de arquivos evita ambiguidade.** O número
 do arquivo segue a ordem de deploy, não do roadmap conceitual.
 
 **36. Verificar as ferramentas disponíveis no início da conversa.** Se
@@ -255,3 +255,19 @@ usados ao criar planilha nova — adicionar coluna = atualizar o array.
 - [ ] Colunas com dados apenas adicionadas, nunca removidas
 - [ ] Code.gs com `VERSAO_PACOTE` devolvida pelo `ping`
 - [ ] Nenhum log com dados clínicos
+
+## Esteira, scripts e verificação (Etapa 0 e Pacote 15.0)
+
+**65. Descrição ≠ código.** O status afirmou "Escalas: 32 colunas" por meses; o `Code.gs` tem 38. Toda contagem ou nome citado num documento sai de grep no arquivo real, com data.
+
+**66. "Nunca apagar" em excesso é dívida.** Colunas, funções, abas e documentos sem função foram preservados por regra e acumularam peso; o aditivo vale para contratos de dados vivos, não para código e docs de um laboratório.
+
+**67. Marcador de versão precisa ser executável, não textual.** `ping` com string fixa mentiu desde maio; a constante de versão deve ser a mesma que o `ping` devolve e que o pacote declara.
+
+**68. Comando de verificação só vale depois de rodar no shell real.** O `curl.exe` prescrito para o `ping` falhava no PowerShell 5.1 por dois motivos independentes (`-X POST` mantém POST sem corpo no 302 do Apps Script → 411; as aspas escapadas chegam corrompidas ao servidor). Um "erro" do ping pode ser do cliente, não do deploy: confirmar com um segundo cliente (`Invoke-RestMethod`, `node fetch`, curl no Bash) antes de concluir que a implantação quebrou. (Etapa 0, 14/09/2026)
+
+**69. Contagem bruta de tags mente em SPA com templates.** O "div desbalanceado" (2.106 × 2.105) era um `<div` dentro de string JS de `innerHTML`; fora dos `<script>` o HTML estava íntegro. Contar tags só fora dos blocos de script e por profundidade acumulada antes de "corrigir". (15.0, 16/09/2026)
+
+**70. Scripts Python contra Sheets precisam de wrapper de quota em TODAS as chamadas.** Retry só em `get_all_values` não bastou: o 429 veio de `sh.worksheet()` (metadados). Um `api()` único com espera de 65 s, `sh.worksheets()` uma vez por planilha e pausa entre planilhas resolveram. (15.0, 16/09/2026)
+
+**71. Script com `input()` não roda pelo `!` do Claude Code.** O `!` não tem stdin (EOF na confirmação `SIM`); execução destrutiva com confirmação roda num PowerShell externo. O token OAuth também expira (`invalid_grant`): `autenticar()` deve cair no fluxo do navegador em vez de abortar (padrão em `limpeza_15_0.py`). (15.0, 16/09/2026)

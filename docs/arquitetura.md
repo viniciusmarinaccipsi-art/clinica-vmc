@@ -45,7 +45,7 @@ espaçamentos, ordem visual, internals de funções auxiliares.
 > **Revisão de 14/09/2026 (ver CLAUDE.md e status):** o princípio aditivo
 > passa a valer apenas para contratos de dados vivos. Código, abas e
 > colunas sem função são removidos em pacotes de limpeza (ex.: 15.0 —
-> `neg_dist_*`, aba `Painel`, funções nunca chamadas, ramos v3, `sw.js`).
+> `neg_dist_*`, aba `Painel`, funções nunca chamadas, ramos v3, service worker).
 
 ## Arquitetura DOM-first
 
