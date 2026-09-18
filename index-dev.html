@@ -883,7 +883,17 @@ body.vmc-largo .topbar-in{max-width:1360px;}
   z-index:1000;
   backdrop-filter:blur(2px);
 }
-.loading-overlay.visible{display:flex;}
+.loading-overlay.visible{display:flex;flex-direction:column;gap:var(--s-4);}
+.loading-msg{font:var(--t-body);font-weight:600;color:var(--c-ink-2);text-align:center;max-width:280px;padding:0 var(--s-4);}
+.loading-msg:empty{display:none;}
+/* Pacote 16.2.1 — faixa de erro de rede com nova tentativa */
+.erro-rede{position:fixed;left:50%;bottom:var(--s-4);transform:translateX(-50%);width:min(calc(100% - 32px),768px);z-index:1001;
+  display:none;align-items:center;gap:var(--s-3);flex-wrap:wrap;padding:var(--s-3) var(--s-4);
+  background:var(--c-surface);border:1px solid var(--c-risk-line);border-left:4px solid var(--c-risk);border-radius:var(--r-card);box-shadow:var(--sh-3);color:var(--c-risk-ink);}
+.erro-rede.visivel{display:flex;}
+.erro-rede-txt{flex:1;min-width:180px;font:var(--t-body);color:var(--c-ink);}
+.erro-rede-btn{min-height:var(--hit-min);padding:0 var(--s-5);border:none;border-radius:var(--r-chip);background:var(--c-action);color:var(--c-ink-inv);font:var(--t-action);cursor:pointer;}
+.erro-rede-btn:hover{background:var(--c-action-hover);}
 .spinner{
   width:48px;height:48px;
   border:4px solid var(--c-action-tint);
@@ -3773,6 +3783,13 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 
 <div class="loading-overlay" id="loadingOverlay">
   <div class="spinner"></div>
+  <div class="loading-msg" id="loadingMsg" aria-live="polite"></div>
+</div>
+<!-- Pacote 16.2.1: falha dupla do servidor — mensagem na tela atual + repetir a mesma chamada, sem perder o preenchido -->
+<div class="erro-rede" id="vmcErroRede" role="alert">
+  <svg class="ico" aria-hidden="true"><use href="#i-alert"/></svg>
+  <span class="erro-rede-txt">O servidor não respondeu. Verifique a conexão e tente de novo.</span>
+  <button type="button" class="erro-rede-btn" id="vmcErroRedeBtn">Tentar de novo</button>
 </div>
 
 <div class="modal-overlay" id="modalConfirma">
@@ -8868,29 +8885,76 @@ const STATUS_TRATAMENTO = [
 /* ============================================================
    COMUNICAÇÃO COM O APPS SCRIPT
    ============================================================ */
-async function chamarServidor(acao, dados = {}) {
-  mostrarLoading(true);
+// Pacote 16.2.1 (débito 8.13): timeout de 20 s, uma nova tentativa automática após 2 s e, na
+// segunda falha, faixa na tela atual com "Tentar de novo" que repete a MESMA chamada. A promessa
+// só resolve com a resposta do servidor, então quem chama mantém o contrato (mesmos parâmetros,
+// mesmo retorno) e nada do que foi digitado se perde. Falha = timeout, erro de rede, HTTP fora
+// de 2xx ou corpo que não é JSON (o 404 do Apps Script chega como HTML).
+var VMC_TIMEOUT_MS = 20000;
+var VMC_RETRY_MS = 2000;
+
+async function _chamarUmaVez_(payload) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), VMC_TIMEOUT_MS);
   try {
-    const payload = { acao, ...dados };
     const resposta = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       mode: 'cors',
       redirect: 'follow',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(payload),
+      signal: ctrl.signal,
     });
-    const json = await resposta.json();
-    return json;
-  } catch (erro) {
-    console.error('Erro ao chamar servidor:', erro);
-    return { ok: false, erro: 'Falha de conexão com o servidor.' };
+    if (!resposta.ok) throw new Error('HTTP ' + resposta.status);
+    const texto = await resposta.text();
+    try { return JSON.parse(texto); }
+    catch (e) { throw new Error('Resposta não é JSON: ' + texto.slice(0, 40)); }
   } finally {
-    mostrarLoading(false);
+    clearTimeout(timer);
+  }
+}
+
+function _aguardarTentarDeNovo_() {
+  return new Promise(resolve => {
+    const faixa = document.getElementById('vmcErroRede');
+    const btn = document.getElementById('vmcErroRedeBtn');
+    faixa.classList.add('visivel');
+    btn.onclick = () => { faixa.classList.remove('visivel'); btn.onclick = null; resolve(); };
+    btn.focus();
+  });
+}
+
+async function chamarServidor(acao, dados = {}) {
+  const payload = { acao, ...dados };
+  for (;;) {
+    mostrarLoading(true);
+    try {
+      try {
+        return await _chamarUmaVez_(payload);
+      } catch (erro1) {
+        console.warn('Servidor não respondeu (1ª tentativa):', erro1.message);
+        loadingMensagem('O servidor demorou; tentando de novo…');
+        await new Promise(r => setTimeout(r, VMC_RETRY_MS));
+        try {
+          return await _chamarUmaVez_(payload);
+        } catch (erro2) {
+          console.error('Erro ao chamar servidor (2ª tentativa):', erro2.message);
+        }
+      }
+    } finally {
+      mostrarLoading(false);
+    }
+    await _aguardarTentarDeNovo_();
   }
 }
 
 function mostrarLoading(visivel) {
   document.getElementById('loadingOverlay').classList.toggle('visible', visivel);
+  if (visivel) loadingMensagem('');
+}
+function loadingMensagem(txt) {
+  const el = document.getElementById('loadingMsg');
+  if (el) el.textContent = txt || '';
 }
 
 
