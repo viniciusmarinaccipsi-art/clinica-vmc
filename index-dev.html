@@ -8654,8 +8654,18 @@ body.vmc-largo .app{max-width:1360px;}
 </div>
 
 <script>
-// Pacote 16.0: lê um token CSS do :root para uso em JS (Chart.js e cores calculadas)
-function vmcTok(nome) { return getComputedStyle(document.documentElement).getPropertyValue(nome).trim(); }
+// Pacote 16.0: lê um token CSS do :root para uso em JS (Chart.js e cores calculadas).
+// Pacote 16.0.1: cache por token — getComputedStyle roda uma vez por nome, nunca dentro de
+// laço de renderização (pevDesenharHumor chama por ponto do gráfico); o cache é zerado quando
+// o tema do sistema muda (prefers-color-scheme), para o próximo desenho ler os valores novos.
+var VMC_TOK_CACHE = {};
+function vmcTok(nome) {
+  if (!(nome in VMC_TOK_CACHE)) VMC_TOK_CACHE[nome] = getComputedStyle(document.documentElement).getPropertyValue(nome).trim();
+  return VMC_TOK_CACHE[nome];
+}
+if (window.matchMedia) {
+  try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () { VMC_TOK_CACHE = {}; }); } catch (e) {}
+}
 /* ============================================================
    SISTEMA CLÍNICO DIGITAL — v2
    ============================================================ */
