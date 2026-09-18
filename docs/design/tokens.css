@@ -1,0 +1,224 @@
+/* ==========================================================================
+   Sistema Clínico Digital VMC — tokens.css
+   Direção: Consultório · paleta Lavanda clínica
+   Gerado para o redesenho (brief 17/09/2026, entregável 6.2)
+
+   Regra de cor por significado, na ordem de precedência:
+   1. RISCO  — vermelho, e só vermelho, para ideação/autolesão/item de risco e erro de sistema.
+   2. TIPO DE REGISTRO — ameixa para o Registro Negativo, verde-água para o Registro Positivo.
+      É o código que o paciente já aprendeu: a cor diz que tipo de registro ele está fazendo.
+   3. INSTRUMENTO — cada escala tem um par tinte/tinta estável em toda a interface.
+   4. AÇÃO — índigo. Tudo que se clica, em qualquer módulo.
+   5. ATENÇÃO — âmbar para pendência que o próprio usuário resolve. Nunca risco.
+   As 5 etapas do modelo cognitivo (situação, emoções, reações físicas, pensamentos,
+   comportamentos) NÃO têm cor própria: herdam a cor do tipo de registro e se distinguem
+   por rótulo, ícone e indicador de progresso. Isso evita 10 matizes competindo na mesma tela.
+   ========================================================================== */
+
+:root {
+  /* ---------- Superfície e tinta ---------- */
+  --c-bg:            #F3F3F8;  /* fundo da aplicação */
+  --c-bg-deep:       #E9E9F1;  /* fundo de área de documento e de prancha */
+  --c-surface:       #FFFFFF;  /* cartão, modal, campo */
+  --c-surface-sub:   #F7F6FB;  /* cartão interno, linha zebrada */
+  --c-ink:           #1D1B2B;  /* texto principal  — 14.8:1 sobre --c-surface */
+  --c-ink-2:         #3F3C52;  /* corpo secundário — 9.6:1 */
+  --c-ink-3:         #5E5B73;  /* rótulo e metadado — 6.1:1 (mínimo permitido) */
+  --c-ink-inv:       #F7F6FB;  /* texto sobre fundo índigo, ameixa ou teal cheio */
+
+  /* ---------- Traço ---------- */
+  --c-line-soft:     #F1F0F7;  /* divisor entre itens da mesma lista */
+  --c-line-inner:    #ECEBF3;  /* borda de cartão interno */
+  --c-line:          #E2E1EE;  /* borda de cartão e de barra de abas */
+  --c-line-strong:   #D6D5E4;  /* borda de botão secundário, campo, moldura de tela */
+
+  /* ---------- Ação · índigo ---------- */
+  --c-action:        #4C4A8F;  /* botão primário, link, aba ativa, seleção */
+  --c-action-hover:  #3D3B75;
+  --c-action-press:  #34326A;
+  --c-action-ring:   #C9C7E6;  /* anel de foco: 3px, offset 2px */
+  --c-action-tint:   #E7E6F5;  /* fundo de ícone, monograma, chip selecionado leve */
+  --c-action-ink:    #3D3A6B;  /* texto sobre o tinte índigo */
+
+  /* ---------- Tipo de registro · o código semântico do paciente ----------
+     Registro Negativo  = situação que fez mal   → ameixa
+     Registro Positivo  = situação que fez bem   → verde-água
+     Usado na borda lateral do cartão, no cabeçalho cumulativo, nos chips de item
+     selecionado, na barra de progresso da etapa e no ponto da lista Meus Registros. */
+  --c-reg-neg:       #8E4A6B;  /* 5.6:1 sobre branco — pode receber texto */
+  --c-reg-neg-ink:   #7A3E59;  /* texto e ícone sobre branco ou sobre o tinte */
+  --c-reg-neg-tint:  #F6E9EF;  /* fundo de chip, de cartão de etapa, de selo */
+  --c-reg-neg-line:  #E8D3DD;  /* borda do cartão de Registro Negativo */
+  --c-reg-pos:       #2F7D77;  /* 4.8:1 sobre branco */
+  --c-reg-pos-ink:   #245F5A;
+  --c-reg-pos-tint:  #E2F0EE;
+  --c-reg-pos-line:  #C9E2DF;
+
+  /* ---------- Confirmação ---------- */
+  --c-pos:           #2F7D77;  /* gravado com sucesso, preenchimento de progresso */
+  --c-pos-ink:       #245F5A;
+  --c-pos-tint:      #E2F0EE;
+
+  /* ---------- Atenção · âmbar (pendência, nunca risco) ---------- */
+  --c-warn:          #84591A;
+  --c-warn-ink:      #6E4A12;
+  --c-warn-tint:     #FBF0D8;
+  --c-warn-line:     #EFDCAE;
+
+  /* ---------- Risco e erro · vermelho (uso exclusivo) ---------- */
+  --c-risk:          #A83E3E;  /* ícone de alerta, borda de campo com erro */
+  --c-risk-ink:      #8F3333;  /* texto de alerta e de erro */
+  --c-risk-tint:     #FBE7E7;  /* cartão de alerta de risco */
+  --c-risk-line:     #F0CFCF;
+  --c-risk-soft:     #FBEAEA;  /* selo de escore alto, fundo de humor 1 e 2 */
+  --c-risk-ink-2:    #9A4040;
+
+  /* ---------- Instrumentos · um par por escala ---------- */
+  --c-phq9-tint:     #FBEAEA;
+  --c-phq9-ink:      #9A4040;
+  --c-gad7-tint:     #FBF0D8;
+  --c-gad7-ink:      #84591A;
+  --c-pss10-tint:    #FAF0DC;
+  --c-pss10-ink:     #8B5520;
+  --c-dass21-tint:   #EDEBF7;
+  --c-dass21-ink:    #3D3A6B;
+  --c-srq20-tint:    #E2F0EE;
+  --c-srq20-ink:     #245F5A;
+
+  /* ---------- Módulos do menu · tinte de identificação ---------- */
+  --c-mod-anamnese:  #E7E6F5;  /* Anamnese */
+  --c-mod-auto:      #F6E9EF;  /* Automonitoramento */
+  --c-mod-formul:    #EDEBF7;  /* Formulação Cognitivo-Comportamental */
+  --c-mod-escalas:   #FBF0D8;  /* Escalas */
+  --c-mod-psicoed:   #E2F0EE;  /* Psicoeducação */
+  --c-mod-interv:    #EFEEF6;  /* Intervenções */
+
+  /* ---------- Gráfico e desabilitado (nunca recebem texto por cima) ---------- */
+  --c-chart-neg:     #C15C5C;
+  --c-chart-neutro:  #AFADC0;
+  --c-chart-pos:     #59A39C;
+  --c-chart-vazio:   #E2E1EE;
+  --c-disabled-bg:   #E2E1EE;
+  --c-disabled-ink:  #6E6B80;
+
+  /* ---------- Tipografia ---------- */
+  --f-title: 'Newsreader', Georgia, serif;   /* títulos, escores, horas, citação */
+  --f-text:  'Figtree', system-ui, sans-serif; /* tudo que se lê ou se clica */
+
+  --t-display:   500 32px/1.2 var(--f-title);
+  --t-h1:        500 27px/1.2 var(--f-title);
+  --t-h2:        500 24px/1.25 var(--f-title);
+  --t-h3:        500 20px/1.3 var(--f-title);
+  --t-h4:        500 18px/1.3 var(--f-title);
+  --t-num:       600 19px/1.1 var(--f-title);
+  --t-body-lg:   400 16px/1.5 var(--f-text);
+  --t-body:      400 14px/1.5 var(--f-text);
+  --t-body-sm:   400 13px/1.45 var(--f-text);
+  --t-label:     700 12px/1.3 var(--f-text);
+  --t-action:    600 14px/1.2 var(--f-text);
+  --ls-label:    .08em;
+  --num-tnum:    'tnum' 1;   /* font-feature-settings de escore, data e hora */
+
+  /* ---------- Espaço ---------- */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+  --s-5: 20px; --s-6: 24px; --s-7: 32px; --s-8: 40px; --s-9: 56px;
+
+  /* ---------- Raio ---------- */
+  --r-chip:  999px;  /* chip, botão Likert, pílula */
+  --r-field: 10px;   /* campo e botão */
+  --r-card:  14px;   /* cartão e modal */
+  --r-sheet: 20px;   /* folha inferior no celular */
+  --r-frame: 36px;   /* moldura de tela de celular */
+
+  /* ---------- Sombra ---------- */
+  --sh-1: 0 1px 2px rgba(29,27,43,.05);                        /* cartão em repouso */
+  --sh-2: 0 6px 18px rgba(29,27,43,.10);                       /* cartão em hover */
+  --sh-3: 0 18px 44px rgba(29,27,43,.18);                      /* modal e folha */
+  --sh-bar: 0 -1px 0 var(--c-line), 0 -8px 20px rgba(29,27,43,.05); /* barra fixa */
+
+  /* ---------- Alvo de toque e movimento ---------- */
+  --hit-min:   44px;  /* mínimo absoluto */
+  --hit-likert: 48px; /* botão circular Likert no celular */
+  --dur-fast:  120ms;
+  --dur:       200ms;
+  --ease:      cubic-bezier(.2,.8,.3,1);
+
+  /* ---------- Apelidos (Pacote 16.0): nomes citados nas pranchas 03/05 que não existiam aqui ---------- */
+  --c-bg-page:    var(--c-bg);
+  --c-surface-2:  var(--c-surface-sub);
+  --c-ink-4:      var(--c-ink-3);
+  --c-placeholder: var(--c-ink-3);
+  --c-bg-app:     var(--c-bg);
+  --t-quote:      italic 400 18px/1.5 var(--f-title);
+}
+
+/* ---------- Tema escuro ---------- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --c-bg:          #14131C;
+    --c-bg-deep:     #0F0E16;
+    --c-surface:     #1E1C29;
+    --c-surface-sub: #252333;
+    --c-ink:         #EDECF4;
+    --c-ink-2:       #C6C4D4;
+    --c-ink-3:       #9C99AD;
+    --c-ink-inv:     #14131C;
+    --c-line-soft:   #262436;
+    --c-line-inner:  #2B2940;
+    --c-line:        #322F47;
+    --c-line-strong: #3E3B57;
+    --c-action:      #A8A5E0;
+    --c-action-hover:#B8B5EA;
+    --c-action-press:#9895D6;
+    --c-action-ring: #4C4A8F;
+    --c-action-tint: #262441;
+    --c-action-ink:  #C4C2EE;
+    --c-reg-neg:     #D79BB6;
+    --c-reg-neg-ink: #E4B4C9;
+    --c-reg-neg-tint:#2E2130;
+    --c-reg-neg-line:#45304A;
+    --c-reg-pos:     #6FC0B8;
+    --c-reg-pos-ink: #8FD3CC;
+    --c-reg-pos-tint:#16302E;
+    --c-reg-pos-line:#234945;
+    --c-pos:         #6FC0B8;
+    --c-pos-ink:     #8FD3CC;
+    --c-pos-tint:    #16302E;
+    --c-warn:        #E2B45C;
+    --c-warn-ink:    #EFC97F;
+    --c-warn-tint:   #32270F;
+    --c-warn-line:   #4C3C18;
+    --c-risk:        #E98787;
+    --c-risk-ink:    #F2A5A5;
+    --c-risk-tint:   #35181B;
+    --c-risk-line:   #512427;
+    --c-risk-soft:   #35181B;
+    --c-risk-ink-2:  #F2A5A5;
+    --c-phq9-tint:   #35181B; --c-phq9-ink:   #F2A5A5;
+    --c-gad7-tint:   #32270F; --c-gad7-ink:   #EFC97F;
+    --c-pss10-tint:  #33240F; --c-pss10-ink:  #EDC182;
+    --c-dass21-tint: #262441; --c-dass21-ink: #C4C2EE;
+    --c-srq20-tint:  #16302E; --c-srq20-ink:  #8FD3CC;
+    --c-chart-neg:   #D97A7A;
+    --c-chart-neutro:#6E6B85;
+    --c-chart-pos:   #5FAFA8;
+    --c-chart-vazio: #2B2940;
+    --c-disabled-bg: #2B2940;
+    --c-disabled-ink:#7C798E;
+    --sh-1: 0 1px 2px rgba(0,0,0,.4);
+    --sh-2: 0 6px 18px rgba(0,0,0,.45);
+    --sh-3: 0 18px 44px rgba(0,0,0,.55);
+  }
+}
+
+/* ---------- Base mínima ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--c-bg); color: var(--c-ink); font: var(--t-body); -webkit-font-smoothing: antialiased; }
+a { color: var(--c-action); }
+a:hover { color: var(--c-action-hover); }
+:focus-visible { outline: 3px solid var(--c-action-ring); outline-offset: 2px; border-radius: var(--r-field); }
+.num { font: var(--t-num); font-feature-settings: var(--num-tnum); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
