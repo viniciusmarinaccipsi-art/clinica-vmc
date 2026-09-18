@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#2C5F7C">
 <title>Clínica VMC — Sistema TCC</title>
 <link rel="manifest" href="manifest.json">
-<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700&family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
 /* Pacote 16.0 — tokens do redesenho (docs/design/tokens.css) substituem o :root antigo de 31 variáveis */
@@ -250,24 +250,42 @@ body{
 }
 .app{max-width:800px;margin:0 auto;padding:20px 16px 100px;}
 
-/* ===== Cabeçalho ===== */
-.app-header{text-align:center;padding:30px 0 20px;position:relative;}
-.app-header h1{font-family:var(--f-title);font-size:22px;font-weight:700;color:var(--c-action);}
-.app-header p{font-size:12px;color:var(--c-ink-3);margin-top:4px;}
-.user-badge{
-  position:absolute;top:20px;right:0;
-  background:var(--c-action-tint);color:var(--c-action);
-  padding:6px 12px;border-radius:20px;
-  font-size:12px;font-weight:700;
-  display:none;align-items:center;gap:6px;
-}
+/* ===== Pacote 16.1 (T1) — barra única fixa =====
+   Um componente para as 25 telas internas: [voltar] [título] [badge/sair · menu].
+   Título e destino do voltar vêm do DOM (data-barra-titulo / data-barra-voltar na seção).
+   No menu e nas telas do profissional a barra mostra a marca (modo .marca); no login não aparece. */
+.topbar{position:fixed;top:0;left:0;right:0;height:52px;z-index:100;display:none;
+  background:var(--c-surface);border-bottom:1px solid var(--c-line);box-shadow:var(--sh-bar);}
+body.com-barra .topbar{display:block;}
+body.com-barra .app{padding-top:60px;}
+.topbar-in{max-width:800px;margin:0 auto;height:100%;padding:0 var(--s-4);display:flex;align-items:center;gap:var(--s-3);}
+body.vmc-largo .topbar-in{max-width:1360px;}
+.topbar-voltar{width:var(--hit-min);height:var(--hit-min);border-radius:50%;border:1px solid var(--c-line-strong);
+  background:var(--c-surface);color:var(--c-ink);font:400 24px/1 var(--f-text);cursor:pointer;flex-shrink:0;
+  display:none;align-items:center;justify-content:center;padding:0 0 3px;transition:background var(--dur-fast) var(--ease);}
+.topbar.tela .topbar-voltar{display:flex;}
+.topbar-voltar:hover{background:var(--c-action-tint);border-color:var(--c-action);}
+.topbar-texto{flex:1;min-width:0;display:none;flex-direction:column;justify-content:center;}
+.topbar.tela .topbar-texto{display:flex;}
+.topbar-titulo{font:500 16px/1.15 var(--f-title);letter-spacing:-.01em;color:var(--c-ink);overflow:hidden;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;}
+.topbar-texto.com-sub .topbar-titulo{-webkit-line-clamp:1;}
+.topbar-sub{display:none;font:var(--t-body-sm);font-weight:600;color:var(--c-action);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.topbar-sub.visivel{display:block;}
+@media (max-width:540px){ .topbar.tela #userBadgeText{display:none;} .topbar.tela .user-badge{padding:0 8px;} }
+.topbar-marca{flex:1;display:none;align-items:center;gap:var(--s-2);}
+.topbar.marca .topbar-marca{display:flex;}
+.marca-ico{width:32px;height:32px;border-radius:9px;background:var(--c-action-tint);color:var(--c-action-ink);
+  font:600 18px/1 var(--f-title);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+.marca-nome{font:var(--t-h3);color:var(--c-ink);}
+.topbar-acoes{display:flex;align-items:center;gap:var(--s-2);flex-shrink:0;}
+.user-badge{display:none;align-items:center;gap:4px;height:32px;padding:0 var(--s-3);border-radius:var(--r-chip);
+  background:var(--c-action-tint);color:var(--c-action-ink);font:var(--t-label);letter-spacing:var(--ls-label);}
 .user-badge.visible{display:flex;}
-.btn-logout{
-  background:none;border:none;color:var(--c-action);
-  font-size:14px;cursor:pointer;padding:0 0 0 4px;
-  font-weight:700;opacity:.6;transition:opacity .2s;
-}
+.btn-logout{background:none;border:none;color:var(--c-action);font-size:16px;cursor:pointer;padding:0 0 0 4px;line-height:1;opacity:.75;transition:opacity var(--dur-fast);}
 .btn-logout:hover{opacity:1;}
+/* marca reduzida: só no login (o menu usa a barra em modo .marca) */
+.login-marca{display:flex;align-items:center;justify-content:center;gap:var(--s-2);padding:var(--s-7) 0 var(--s-5);}
 
 /* ===== Cards de menu ===== */
 .card-grid{display:grid;gap:14px;margin-top:16px;}
@@ -335,15 +353,6 @@ body{
 }
 
 /* ===== Nav bar ===== */
-.nav-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:10px 0;}
-.btn-back{
-  background:var(--c-surface-sub);border:none;border-radius:var(--r-field);
-  padding:8px 14px;font-family:var(--f-text);font-size:13px;
-  font-weight:600;color:var(--c-ink-2);cursor:pointer;
-  transition:all .2s;display:flex;align-items:center;gap:4px;
-}
-.btn-back:hover{background:var(--c-line);}
-.nav-title{font-family:var(--f-text);font-size:14px;font-weight:600;color:var(--c-ink-3);}
 
 /* ===== Login ===== */
 .login-card{
@@ -649,7 +658,7 @@ body{
 .pac-btn-editar-anam:hover{background:var(--c-action-hover);}
 /* Pacote 13.4.2: Menu hamburger do paciente */
 .pac-hamburger-wrap{
-  position:absolute;top:20px;left:0;display:none;
+  position:relative;display:none;
 }
 .pac-hamburger-wrap.visivel{display:block;}
 .pac-hamburger-btn{
@@ -1285,7 +1294,6 @@ body{
 .consulta-banner strong{display:block;margin-bottom:2px;font-size:13px;}
 
 @media(max-width:600px){
-  .app-header h1{font-size:20px;}
   .login-card,.anam-card{padding:22px 16px;}
   .modal-card{padding:24px 18px;}
 }
@@ -1322,27 +1330,17 @@ body{
    Prefixado com p11- para isolamento
    ============================================================ */
 .p11-header{
-  background:transparent;
-  margin:0 0 10px 0;
-  border-radius:8px;
-  overflow:hidden;
-  border:1px solid var(--c-line);
+  margin:0 0 var(--s-2);border:1px solid var(--c-line);border-radius:var(--r-field);
+  background:var(--c-surface);overflow:hidden;
 }
-.p11-c1{
-  display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px;
-  padding:6px 10px;background:var(--c-surface-sub);
-  border-bottom:1px solid var(--c-line);
-  font-size:12px;line-height:1.3;
-}
-.p11-c1-bloco{display:inline-flex;align-items:center;gap:4px;}
+/* Pacote 16.1: linha única recolhível — humor + chips das etapas + "+N" (modal) + chevron que abre a trilha */
+.p11-linha{display:flex;align-items:center;gap:4px;padding:6px 8px;min-height:40px;}
+.p11-chips{display:flex;align-items:center;gap:4px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;}
+.p11-chips::-webkit-scrollbar{display:none;}
+.p11-chips .p11-tab{flex-shrink:0;}
 .p11-humor-emoji{font-size:15px;line-height:1;}
-.p11-humor-lbl{color:var(--c-ink-2);font-weight:600;font-size:12px;}
-.p11-humor-lbl strong{color:var(--c-ink);}
-.p11-atual{color:var(--c-reg-neg-ink);font-weight:700;font-size:12px;}
-.p11-atual-ic{font-size:11px;}
-.p11-sep{color:var(--c-ink-3);font-weight:600;}
 .p11-modal-btn{
-  margin-left:auto;display:inline-flex;align-items:center;gap:3px;
+  margin-left:4px;display:inline-flex;align-items:center;gap:3px;
   padding:3px 8px;background:var(--c-action);color:var(--c-ink-inv);
   border:none;border-radius:10px;font-family:inherit;font-size:11px;
   font-weight:700;cursor:pointer;transition:all .15s;
@@ -1350,14 +1348,15 @@ body{
 }
 .p11-modal-btn:hover{background:var(--c-action-hover);transform:scale(1.05);}
 .p11-modal-btn-ic{font-size:11px;}
-
-/* Camada 2 — tabs horizontais (compacto) */
-.p11-c2{
-  display:flex;gap:4px;overflow-x:auto;
-  padding:6px 8px;background:var(--c-surface);
-  border-bottom:1px solid var(--c-line);
-  scrollbar-width:thin;
+.p11-abrir{
+  margin-left:auto;flex-shrink:0;width:28px;height:28px;border-radius:50%;
+  border:1px solid var(--c-line);background:var(--c-surface);color:var(--c-ink-2);
+  cursor:pointer;font-size:14px;line-height:1;transition:transform var(--dur) var(--ease);
 }
+.p11-header.aberto .p11-abrir{transform:rotate(180deg);}
+.p11-det{display:none;border-top:1px solid var(--c-line);}
+.p11-header.aberto .p11-det{display:block;}
+
 .p11-tab{
   display:inline-flex;align-items:center;gap:3px;
   padding:4px 10px 4px 12px;background:var(--c-surface);
@@ -1478,11 +1477,9 @@ body{
 .p11-tooltip.show{opacity:1;}
 
 @media (max-width:540px){
-  .p11-c1{font-size:11.5px;gap:5px;padding:5px 8px;}
   .p11-humor-emoji{font-size:14px;}
-  .p11-humor-lbl, .p11-atual{font-size:11.5px;}
   .p11-modal-btn{padding:3px 7px;font-size:10.5px;}
-  .p11-c2{padding:5px 6px;}
+  .p11-linha{padding:5px 6px;}
   .p11-tab{padding:3px 9px 3px 10px;font-size:11px;}
   .p11-tab.filled{padding-left:7px;}
   .p11-c3-linha{padding:5px 8px;font-size:11.5px;flex-wrap:wrap;}
@@ -1638,7 +1635,8 @@ body{
 .auto-card.seq-bloqueado .auto-card-title::before{content:'🔒 ';font-size:12px;}
 
 /* Badge de data no topo das sub-seções */
-.auto-date-wrap{text-align:center;margin-bottom:10px;}
+/* Pacote 16.1: a data do registro aparece como subtítulo da barra; os [data-auto-badge] seguem no DOM como fonte do texto */
+.auto-date-wrap{display:none;}
 .auto-date-badge{display:inline-block;font-size:11px;color:var(--c-action);font-weight:700;padding:5px 12px;background:var(--c-action-tint);border-radius:20px;}
 
 /* Steps do passo 1/2 */
@@ -1686,11 +1684,12 @@ body{
 .auto-obs-box textarea{width:100%;border:1px solid var(--c-line);border-radius:6px;padding:8px 10px;font-family:var(--f-text);font-size:12.5px;min-height:50px;resize:vertical;outline:none;background:var(--c-surface);}
 
 /* Header de sub-seção */
-.auto-sec-header{display:flex;align-items:center;gap:12px;padding-bottom:10px;border-bottom:3px solid;margin-bottom:14px;}
-.auto-sec-icon{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.auto-sec-header{display:flex;align-items:center;gap:12px;padding-bottom:8px;border-bottom:3px solid;margin-bottom:10px;}
+.auto-sec-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;}
 .auto-sec-title{font-family:var(--f-title);font-size:17px;font-weight:700;}
 .auto-sec-sub{font-size:11px;color:var(--c-ink-3);}
 .auto-sec-title .req{color:var(--c-reg-neg-ink);font-size:18px;margin-left:3px;}
+.auto-sec-sub .req{color:var(--c-reg-neg-ink);font-weight:700;margin-left:2px;}
 
 /* ============================================================
    GRUPO COLAPSÁVEL (como a Anamnese)
@@ -1730,7 +1729,7 @@ body{
 .auto-group.green .auto-item-likert-btn:hover,.auto-group.green .auto-item-likert-btn.selected{border-color:var(--c-reg-pos);color:var(--c-reg-pos-ink);background:var(--c-reg-pos-tint);}
 
 /* Scale bar legenda */
-.auto-scale{border-radius:var(--r-field);padding:7px 12px;margin:10px 0;font-size:10px;display:flex;justify-content:space-between;font-weight:700;gap:4px;flex-wrap:wrap;}
+.auto-scale{border-radius:var(--r-field);padding:7px 12px;margin:6px 0;font-size:10px;display:flex;justify-content:space-between;font-weight:700;gap:4px;flex-wrap:wrap;}
 .auto-scale.coral{background:var(--c-reg-neg-tint);color:var(--c-reg-neg-ink);}
 .auto-scale.green{background:var(--c-reg-pos-tint);color:var(--c-reg-pos-ink);}
 .auto-scale.amber{background:var(--c-warn-tint);color:var(--c-warn-ink);}
@@ -3710,28 +3709,36 @@ body.vmc-largo .app{max-width:1360px;}
   </div>
 </div>
 
-<div class="app">
-
-  <div class="app-header">
-    <h1>📋 Clínica VMC</h1>
-    <p>Sistema Clínico Digital — TCC</p>
-    <div class="user-badge" id="userBadge">
-      <span id="userBadgeText">TST</span>
-      <button class="btn-logout" onclick="logout()" title="Sair">⏻</button>
-    </div>
-    <!-- Pacote 13.4.2: Hamburger menu (esquerda, alinhado ao badge) -->
-    <div class="pac-hamburger-wrap" id="pacHamburgerWrap">
-      <button class="pac-hamburger-btn" onclick="pacToggleHamburger()" aria-label="Menu" id="pacHamburgerBtn">☰</button>
-      <div class="pac-hamburger-dropdown" id="pacHamburgerMenu">
-        <button class="pac-hamburger-item" onclick="pacHamburgerAcao('senha')">
-          <span>🔑</span> Alterar Senha
-        </button>
+<!-- Pacote 16.1 (T1): barra única fixa. Voltar + título nas telas internas (data-barra-* da seção);
+     marca no menu e nas telas do profissional; badge e menu do paciente à direita. Fora de .app por ser fixa. -->
+<div class="topbar" id="topbar">
+  <div class="topbar-in">
+    <button class="topbar-voltar" id="topbarVoltar" type="button" aria-label="Voltar">‹</button>
+    <div class="topbar-marca"><span class="marca-ico">V</span><span class="marca-nome">Clínica VMC</span></div>
+    <div class="topbar-texto"><span class="topbar-titulo" id="topbarTitulo"></span><span class="topbar-sub" id="topbarSub"></span></div>
+    <div class="topbar-acoes">
+      <div class="user-badge" id="userBadge">
+        <span id="userBadgeText">TST</span>
+        <button class="btn-logout" onclick="logout()" title="Sair">⏻</button>
+      </div>
+      <!-- Pacote 13.4.2: Hamburger menu do paciente (16.1: dentro da barra) -->
+      <div class="pac-hamburger-wrap" id="pacHamburgerWrap">
+        <button class="pac-hamburger-btn" onclick="pacToggleHamburger()" aria-label="Menu" id="pacHamburgerBtn">☰</button>
+        <div class="pac-hamburger-dropdown" id="pacHamburgerMenu">
+          <button class="pac-hamburger-item" onclick="pacHamburgerAcao('senha')">
+            <span>🔑</span> Alterar Senha
+          </button>
+        </div>
       </div>
     </div>
   </div>
+</div>
+
+<div class="app">
 
   <!-- LOGIN -->
   <div class="section active" id="sec-login">
+    <div class="login-marca"><span class="marca-ico">V</span><span class="marca-nome">Clínica VMC</span></div>
     <div class="login-card">
       <div class="login-icon">🔐</div>
       <div class="login-title">Acesso ao Sistema</div>
@@ -4121,22 +4128,14 @@ body.vmc-largo .app{max-width:1360px;}
   </div>
 
   <!-- ANAMNESE -->
-  <div class="section" id="sec-anamnese">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="voltarMenuAnamnese()">← Menu</button>
-      <span class="nav-title">Módulo 1 — Anamnese</span>
-    </div>
+  <div class="section" id="sec-anamnese" data-barra-titulo="Módulo 1 — Anamnese" data-barra-voltar="voltarMenuAnamnese()">
     <div id="anamConteudo"></div>
   </div>
 
   <!-- ============================================================
        MÓDULO 2 v4 — REGISTRO DE AUTOMONITORAMENTO
        ============================================================ -->
-  <div class="section" id="sec-automonitoramento">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-menu')">← Menu</button>
-      <span class="nav-title">Módulo 2 — Automonitoramento</span>
-    </div>
+  <div class="section" id="sec-automonitoramento" data-barra-titulo="Módulo 2 — Automonitoramento" data-barra-voltar="abrirSecao('sec-menu')">
     <!-- Pacote 5: aviso de primeira vez (só aparece se paciente nunca fez Auto) -->
     <div class="p5-sub-aviso" id="p5SubAviso">
       🔒 Antes de começar, leia o "Como Usar Este Registro". Depois você poderá usar todas as funções.
@@ -4204,11 +4203,7 @@ body.vmc-largo .app{max-width:1360px;}
   </div>
 
   <!-- INSTRUÇÕES -->
-  <div class="section" id="sec-auto-instrucoes">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-automonitoramento')">← Voltar</button>
-      <span class="nav-title">Instruções</span>
-    </div>
+  <div class="section" id="sec-auto-instrucoes" data-barra-titulo="Instruções" data-barra-voltar="abrirSecao('sec-automonitoramento')" data-barra-voltar-rotulo="Voltar">
     <div class="instr-box">
       <h3>📖 Como Usar Este Registro</h3>
       <p>Este registro foi desenvolvido para ajudá-lo a observar e compreender melhor suas experiências emocionais no dia a dia. Ele é uma ferramenta de autoconhecimento que pode ser usada junto ao seu processo terapêutico.</p>
@@ -4452,11 +4447,7 @@ body.vmc-largo .app{max-width:1360px;}
   </div>
 
   <!-- PAINEL DE EVOLUÇÃO -->
-  <div class="section" id="sec-auto-painel">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-automonitoramento')">← Menu</button>
-      <span class="nav-title">Painel de Evolução</span>
-    </div>
+  <div class="section" id="sec-auto-painel" data-barra-titulo="Painel de Evolução" data-barra-voltar="abrirSecao('sec-automonitoramento')">
     <!-- Container preenchido pelo JS quando o paciente abre o painel (lazy load) -->
     <div id="pevConteudo">
       <div class="pev-loading">
@@ -4490,11 +4481,7 @@ body.vmc-largo .app{max-width:1360px;}
   </div>
 
   <!-- PASSO 1 — Checagem de humor -->
-  <div class="section" id="sec-auto-passo1">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-automonitoramento')">← Voltar</button>
-      <span class="nav-title">Passo 1 de 2</span>
-    </div>
+  <div class="section" id="sec-auto-passo1" data-barra-titulo="Passo 1 de 2" data-barra-voltar="abrirSecao('sec-automonitoramento')" data-barra-voltar-rotulo="Voltar">
     <div class="auto-steps">
       <div class="auto-step-dot active"></div>
       <div class="auto-step-dot"></div>
@@ -4538,11 +4525,7 @@ body.vmc-largo .app{max-width:1360px;}
   </div>
 
   <!-- PASSO 2 — Escolher tipo -->
-  <div class="section" id="sec-auto-passo2">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-auto-passo1')">← Voltar</button>
-      <span class="nav-title">Passo 2 de 2</span>
-    </div>
+  <div class="section" id="sec-auto-passo2" data-barra-titulo="Passo 2 de 2" data-barra-voltar="abrirSecao('sec-auto-passo1')" data-barra-voltar-rotulo="Voltar">
     <div class="auto-steps">
       <div class="auto-step-dot done"></div>
       <div class="auto-step-dot active"></div>
@@ -4572,11 +4555,7 @@ body.vmc-largo .app{max-width:1360px;}
   </div>
 
   <!-- MENU NEG (com barra gamificada) -->
-  <div class="section" id="sec-auto-menu-neg">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-auto-passo2')">← Voltar</button>
-      <span class="nav-title">Registro Negativo</span>
-    </div>
+  <div class="section" id="sec-auto-menu-neg" data-barra-titulo="Registro Negativo" data-barra-voltar="abrirSecao('sec-auto-passo2')" data-barra-voltar-rotulo="Voltar">
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
 
     <!-- Barra gamificada (só aparece na 1ª vez) -->
@@ -4652,11 +4631,7 @@ body.vmc-largo .app{max-width:1360px;}
   </div>
 
   <!-- MENU POS -->
-  <div class="section" id="sec-auto-menu-pos">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-auto-passo2')">← Voltar</button>
-      <span class="nav-title">Registro Positivo</span>
-    </div>
+  <div class="section" id="sec-auto-menu-pos" data-barra-titulo="Registro Positivo" data-barra-voltar="abrirSecao('sec-auto-passo2')" data-barra-voltar-rotulo="Voltar">
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
 
     <div class="gbar pos" id="gbarPos" style="display:none;">
@@ -4733,11 +4708,7 @@ body.vmc-largo .app{max-width:1360px;}
   <!-- As 11 sub-seções ficam aqui -->
     <!-- SUB-SEÇÕES CLÍNICAS DO MÓDULO 2 v4 -->
 
-  <div class="section" id="sec-auto-sit-a">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-auto-menu-neg')">← Menu</button>
-      <span class="nav-title">Situação</span>
-    </div>
+  <div class="section" id="sec-auto-sit-a" data-barra-titulo="Situação" data-barra-voltar="abrirSecao('sec-auto-menu-neg')">
     <!-- Pacote 11.4a: cabeçalho cumulativo (renderizado via JS) -->
     <div class="p11-header" id="p11aHdr-sit-a" style="display:none;"></div>
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
@@ -4745,8 +4716,7 @@ body.vmc-largo .app{max-width:1360px;}
       <div class="auto-sec-header" style="border-color:var(--c-ink-3);">
         <div class="auto-sec-icon" style="background:var(--c-surface-sub);color:var(--c-ink-3);">📍</div>
         <div>
-          <div class="auto-sec-title" style="color:var(--c-ink-3);">Situação / Contexto <span class="req">*</span></div>
-          <div class="auto-sec-sub">O que estava acontecendo quando seu humor mudou</div>
+          <div class="auto-sec-sub">O que estava acontecendo quando seu humor mudou <span class="req">*</span></div>
         </div>
       </div>
       <!-- Pacote 3: caixa única substituindo Quando/Onde/Com quem/O que aconteceu.
@@ -4857,11 +4827,7 @@ body.vmc-largo .app{max-width:1360px;}
     </div>
   </div>
 
-  <div class="section" id="sec-auto-emo-a">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-auto-menu-neg')">← Menu</button>
-      <span class="nav-title">Emoções Desagradáveis</span>
-    </div>
+  <div class="section" id="sec-auto-emo-a" data-barra-titulo="Emoções Desagradáveis" data-barra-voltar="abrirSecao('sec-auto-menu-neg')">
     <!-- Pacote 11.4a: cabeçalho cumulativo -->
     <div class="p11-header" id="p11aHdr-emo-a" style="display:none;"></div>
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
@@ -4869,8 +4835,7 @@ body.vmc-largo .app{max-width:1360px;}
       <div class="auto-sec-header" style="border-color:var(--c-reg-neg);">
         <div class="auto-sec-icon" style="background:var(--c-reg-neg-tint);color:var(--c-reg-neg-ink);">💔</div>
         <div>
-          <div class="auto-sec-title" style="color:var(--c-reg-neg-ink);">Emoções Desagradáveis <span class="req">*</span></div>
-          <div class="auto-sec-sub">Identifique as emoções desagradáveis avalie a intensidade do desconforto</div>
+          <div class="auto-sec-sub">Identifique as emoções desagradáveis avalie a intensidade do desconforto <span class="req">*</span></div>
         </div>
       </div>
       <div class="auto-scale coral"><span>① Nenhum</span><span>② Pouco</span><span>③ Moderado</span><span>④ Muito</span><span>⑤ Intenso</span></div>
@@ -5356,11 +5321,7 @@ body.vmc-largo .app{max-width:1360px;}
     </div>
   </div>
 
-  <div class="section" id="sec-auto-fis-a">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-auto-menu-neg')">← Menu</button>
-      <span class="nav-title">Reações Físicas</span>
-    </div>
+  <div class="section" id="sec-auto-fis-a" data-barra-titulo="Reações Físicas" data-barra-voltar="abrirSecao('sec-auto-menu-neg')">
     <!-- Pacote 11.4a: cabeçalho cumulativo -->
     <div class="p11-header" id="p11aHdr-fis-a" style="display:none;"></div>
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
@@ -5368,8 +5329,7 @@ body.vmc-largo .app{max-width:1360px;}
       <div class="auto-sec-header" style="border-color:var(--c-reg-neg);">
         <div class="auto-sec-icon" style="background:var(--c-reg-neg-tint);color:var(--c-reg-neg-ink);">⚡</div>
         <div>
-          <div class="auto-sec-title" style="color:var(--c-reg-neg-ink);">Reações Físicas — Mal-Estar <span class="req">*</span></div>
-          <div class="auto-sec-sub">Identifique as sensações corporais de mal-estar e avalie sua intensidade</div>
+          <div class="auto-sec-sub">Identifique as sensações corporais de mal-estar e avalie sua intensidade <span class="req">*</span></div>
         </div>
       </div>
       <div class="auto-scale coral"><span>① Nenhum</span><span>② Pouco</span><span>③ Moderado</span><span>④ Muito</span><span>⑤ Extremo</span></div>
@@ -5855,11 +5815,7 @@ body.vmc-largo .app{max-width:1360px;}
     </div>
   </div>
 
-  <div class="section" id="sec-auto-pens-a">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-auto-menu-neg')">← Menu</button>
-      <span class="nav-title">Pensamentos Desadaptativos</span>
-    </div>
+  <div class="section" id="sec-auto-pens-a" data-barra-titulo="Pensamentos Desadaptativos" data-barra-voltar="abrirSecao('sec-auto-menu-neg')">
     <!-- Pacote 11.4a: cabeçalho cumulativo -->
     <div class="p11-header" id="p11aHdr-pens-a" style="display:none;"></div>
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
@@ -5867,11 +5823,9 @@ body.vmc-largo .app{max-width:1360px;}
       <div class="auto-sec-header" style="border-color:var(--c-reg-neg);">
         <div class="auto-sec-icon" style="background:var(--c-reg-neg-tint);color:var(--c-reg-neg-ink);">🌧️</div>
         <div>
-          <div class="auto-sec-title" style="color:var(--c-reg-neg-ink);">Pensamentos Desadaptativos <span class="req">*</span></div>
-          <div class="auto-sec-sub">Identifique pensamentos desadaptativos e avalie o quanto você acredita nesses pensamentos</div>
+          <div class="auto-sec-sub">Identifique pensamentos desadaptativos e avalie o quanto você acredita nesses pensamentos <span class="req">*</span></div>
         </div>
       </div>
-      <div class="auto-scale coral"><span>① Nada</span><span>② Pouco</span><span>③ Moderado</span><span>④ Muito</span><span>⑤ Totalmente</span></div>
 
       <!-- Pacote 8: Caixa(s) de texto livre para descrever pensamentos.
            Backend: quando reset, criar coluna neg_pens_o_que (texto único,
@@ -5933,6 +5887,7 @@ body.vmc-largo .app{max-width:1360px;}
         </div>
       </div>
 
+      <div class="auto-scale coral"><span>① Nada</span><span>② Pouco</span><span>③ Moderado</span><span>④ Muito</span><span>⑤ Totalmente</span></div>
       <h3 style="font-family:var(--f-title);font-size:14px;color:var(--c-reg-neg-ink);margin:18px 0 2px;">Tipo de Pensamento</h3>
       <div style="font-size:12px;color:var(--c-ink-3);font-style:italic;margin:0 0 8px;">"Marque os tipos de pensamento desadaptativo que passaram pela sua cabeça."</div>
 
@@ -6417,11 +6372,7 @@ body.vmc-largo .app{max-width:1360px;}
     </div>
   </div>
 
-  <div class="section" id="sec-auto-comp-a">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-auto-menu-neg')">← Menu</button>
-      <span class="nav-title">Comportamentos Disfuncionais</span>
-    </div>
+  <div class="section" id="sec-auto-comp-a" data-barra-titulo="Comportamentos Disfuncionais" data-barra-voltar="abrirSecao('sec-auto-menu-neg')">
     <!-- Pacote 11.4a: cabeçalho cumulativo -->
     <div class="p11-header" id="p11aHdr-comp-a" style="display:none;"></div>
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
@@ -6429,8 +6380,7 @@ body.vmc-largo .app{max-width:1360px;}
       <div class="auto-sec-header" style="border-color:var(--c-reg-neg);">
         <div class="auto-sec-icon" style="background:var(--c-reg-neg-tint);color:var(--c-reg-neg-ink);">📉</div>
         <div>
-          <div class="auto-sec-title" style="color:var(--c-reg-neg-ink);">Comportamentos Disfuncionais <span class="req">*</span></div>
-          <div class="auto-sec-sub">Identifique seus comportamentos disfuncionais que pioraram a situação</div>
+          <div class="auto-sec-sub">Identifique seus comportamentos disfuncionais que pioraram a situação <span class="req">*</span></div>
         </div>
       </div>
 
@@ -6624,18 +6574,13 @@ body.vmc-largo .app{max-width:1360px;}
     </div>
   </div>
 
-  <div class="section" id="sec-auto-sit-b">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-auto-menu-pos')">← Menu</button>
-      <span class="nav-title">Situação</span>
-    </div>
+  <div class="section" id="sec-auto-sit-b" data-barra-titulo="Situação" data-barra-voltar="abrirSecao('sec-auto-menu-pos')">
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
     <div class="anam-card">
       <div class="auto-sec-header" style="border-color:var(--c-ink-3);">
         <div class="auto-sec-icon" style="background:var(--c-surface-sub);color:var(--c-ink-3);">📍</div>
         <div>
-          <div class="auto-sec-title" style="color:var(--c-ink-3);">Situação / Contexto <span class="req">*</span></div>
-          <div class="auto-sec-sub">O que estava acontecendo quando seu humor mudou</div>
+          <div class="auto-sec-sub">O que estava acontecendo quando seu humor mudou <span class="req">*</span></div>
         </div>
       </div>
       <!-- Pacote 3: caixa única (mesma lógica do lado negativo). -->
@@ -6644,18 +6589,13 @@ body.vmc-largo .app{max-width:1360px;}
     </div>
   </div>
 
-  <div class="section" id="sec-auto-emo-b">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-auto-menu-pos')">← Menu</button>
-      <span class="nav-title">Emoções Agradáveis</span>
-    </div>
+  <div class="section" id="sec-auto-emo-b" data-barra-titulo="Emoções Agradáveis" data-barra-voltar="abrirSecao('sec-auto-menu-pos')">
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
     <div class="anam-card">
       <div class="auto-sec-header" style="border-color:var(--c-pos);">
         <div class="auto-sec-icon" style="background:var(--c-pos-tint);color:var(--c-pos-ink);">💚</div>
         <div>
-          <div class="auto-sec-title" style="color:var(--c-pos-ink);">Emoções Agradáveis <span class="req">*</span></div>
-          <div class="auto-sec-sub">Identifique as emoções agradáveis e avalie a intensidade de conforto</div>
+          <div class="auto-sec-sub">Identifique as emoções agradáveis e avalie a intensidade de conforto <span class="req">*</span></div>
         </div>
       </div>
       <div class="auto-scale green"><span>① Nenhum</span><span>② Pouco</span><span>③ Moderado</span><span>④ Muito</span><span>⑤ Intenso</span></div>
@@ -7141,18 +7081,13 @@ body.vmc-largo .app{max-width:1360px;}
     </div>
   </div>
 
-  <div class="section" id="sec-auto-fis-b">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-auto-menu-pos')">← Menu</button>
-      <span class="nav-title">Reações Físicas</span>
-    </div>
+  <div class="section" id="sec-auto-fis-b" data-barra-titulo="Reações Físicas" data-barra-voltar="abrirSecao('sec-auto-menu-pos')">
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
     <div class="anam-card">
       <div class="auto-sec-header" style="border-color:var(--c-pos);">
         <div class="auto-sec-icon" style="background:var(--c-pos-tint);color:var(--c-pos-ink);">🌿</div>
         <div>
-          <div class="auto-sec-title" style="color:var(--c-pos-ink);">Reações Físicas — Bem-Estar <span class="req">*</span></div>
-          <div class="auto-sec-sub">Identifique as sensações corporais de bem-estar e avalie a intensidade</div>
+          <div class="auto-sec-sub">Identifique as sensações corporais de bem-estar e avalie a intensidade <span class="req">*</span></div>
         </div>
       </div>
       <div class="auto-scale green"><span>① Nenhum</span><span>② Pouco</span><span>③ Moderado</span><span>④ Muito</span><span>⑤ Extremo</span></div>
@@ -7638,21 +7573,15 @@ body.vmc-largo .app{max-width:1360px;}
     </div>
   </div>
 
-  <div class="section" id="sec-auto-pens-b">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-auto-menu-pos')">← Menu</button>
-      <span class="nav-title">Pensamentos Adaptativos</span>
-    </div>
+  <div class="section" id="sec-auto-pens-b" data-barra-titulo="Pensamentos Adaptativos" data-barra-voltar="abrirSecao('sec-auto-menu-pos')">
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
     <div class="anam-card">
       <div class="auto-sec-header" style="border-color:var(--c-pos);">
         <div class="auto-sec-icon" style="background:var(--c-pos-tint);color:var(--c-pos-ink);">☀️</div>
         <div>
-          <div class="auto-sec-title" style="color:var(--c-pos-ink);">Pensamentos Adaptativos <span class="req">*</span></div>
-          <div class="auto-sec-sub">Identifique pensamentos adaptativos e avalie o quanto você acredita nesses pensamentos</div>
+          <div class="auto-sec-sub">Identifique pensamentos adaptativos e avalie o quanto você acredita nesses pensamentos <span class="req">*</span></div>
         </div>
       </div>
-      <div class="auto-scale green"><span>① Nada</span><span>② Pouco</span><span>③ Moderado</span><span>④ Muito</span><span>⑤ Totalmente</span></div>
 
       <!-- Pacote 8: Caixa(s) de texto livre para descrever pensamentos positivos -->
       <div class="auto-field">
@@ -7663,6 +7592,7 @@ body.vmc-largo .app{max-width:1360px;}
         <button type="button" class="p8-pens-add green" onclick="p8AdicionarPensamento('pos')">+ Adicionar outro pensamento</button>
       </div>
 
+      <div class="auto-scale green"><span>① Nada</span><span>② Pouco</span><span>③ Moderado</span><span>④ Muito</span><span>⑤ Totalmente</span></div>
       <h3 style="font-family:var(--f-title);font-size:14px;color:var(--c-pos-ink);margin:18px 0 2px;">Tipo de Pensamento</h3>
       <div style="font-size:12px;color:var(--c-ink-3);font-style:italic;margin:0 0 8px;">"Marque os tipos de pensamento adaptativo que passaram pela sua cabeça."</div>
 
@@ -8147,18 +8077,13 @@ body.vmc-largo .app{max-width:1360px;}
     </div>
   </div>
 
-  <div class="section" id="sec-auto-comp-b">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-auto-menu-pos')">← Menu</button>
-      <span class="nav-title">Comportamentos Funcionais</span>
-    </div>
+  <div class="section" id="sec-auto-comp-b" data-barra-titulo="Comportamentos Funcionais" data-barra-voltar="abrirSecao('sec-auto-menu-pos')">
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
     <div class="anam-card">
       <div class="auto-sec-header" style="border-color:var(--c-pos);">
         <div class="auto-sec-icon" style="background:var(--c-pos-tint);color:var(--c-pos-ink);">📈</div>
         <div>
-          <div class="auto-sec-title" style="color:var(--c-pos-ink);">Comportamentos Funcionais <span class="req">*</span></div>
-          <div class="auto-sec-sub">Identifique seus comportamentos funcionais que ajudaram a situação</div>
+          <div class="auto-sec-sub">Identifique seus comportamentos funcionais que ajudaram a situação <span class="req">*</span></div>
         </div>
       </div>
 
@@ -8354,11 +8279,7 @@ body.vmc-largo .app{max-width:1360px;}
 
 
   <!-- HISTÓRICO -->
-  <div class="section" id="sec-auto-historico">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-automonitoramento')">← Voltar</button>
-      <span class="nav-title">Meus Registros</span>
-    </div>
+  <div class="section" id="sec-auto-historico" data-barra-titulo="Meus Registros" data-barra-voltar="abrirSecao('sec-automonitoramento')" data-barra-voltar-rotulo="Voltar">
     <div id="autoHistLista"></div>
   </div>
 
@@ -8387,11 +8308,7 @@ body.vmc-largo .app{max-width:1360px;}
   </div>
 
   <!-- RESUMO -->
-  <div class="section" id="sec-auto-resumo">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-auto-passo2')">← Voltar</button>
-      <span class="nav-title">Revisar e Enviar</span>
-    </div>
+  <div class="section" id="sec-auto-resumo" data-barra-titulo="Revisar e Enviar" data-barra-voltar="abrirSecao('sec-auto-passo2')" data-barra-voltar-rotulo="Voltar">
     <div class="anam-card">
       <div class="auto-sec-header" style="border-color:var(--c-action);">
         <div class="auto-sec-icon" style="background:var(--c-action-tint);color:var(--c-action);">📤</div>
@@ -8415,11 +8332,7 @@ body.vmc-largo .app{max-width:1360px;}
   <!-- ============================================================ -->
 
   <!-- Menu do Módulo 4 -->
-  <div class="section" id="sec-escalas">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-menu')">← Menu</button>
-      <span class="nav-title">Módulo 4 — Escalas e Inventários</span>
-    </div>
+  <div class="section" id="sec-escalas" data-barra-titulo="Módulo 4 — Escalas e Inventários" data-barra-voltar="abrirSecao('sec-menu')">
 
     <div class="esc-sub-aviso" id="escSubAviso">
       🔒 Antes de começar, leia o "Como Usar as Escalas". Depois você poderá aplicar as escalas disponíveis.
@@ -8498,11 +8411,7 @@ body.vmc-largo .app{max-width:1360px;}
   <!-- ============================================================ -->
   <!-- PACOTE 12.7 (Fase 1) — TELA DO HISTÓRICO DE ESCALAS           -->
   <!-- ============================================================ -->
-  <div class="section" id="sec-escalas-historico">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-escalas')">← Voltar</button>
-      <span class="nav-title">Meu Histórico de Escalas</span>
-    </div>
+  <div class="section" id="sec-escalas-historico" data-barra-titulo="Meu Histórico de Escalas" data-barra-voltar="abrirSecao('sec-escalas')" data-barra-voltar-rotulo="Voltar">
 
     <div class="esch-head">
       <h2 class="esch-titulo">📈 Meu Histórico de Escalas</h2>
@@ -8543,11 +8452,7 @@ body.vmc-largo .app{max-width:1360px;}
   </div>
 
   <!-- Tela "Como Usar as Escalas" -->
-  <div class="section" id="sec-escalas-instrucoes">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-escalas')">← Voltar</button>
-      <span class="nav-title">Como Usar as Escalas</span>
-    </div>
+  <div class="section" id="sec-escalas-instrucoes" data-barra-titulo="Como Usar as Escalas" data-barra-voltar="abrirSecao('sec-escalas')" data-barra-voltar-rotulo="Voltar">
 
     <div class="esc-intro-card">
       <h2>📖 Sobre as Escalas e Inventários</h2>
@@ -8589,11 +8494,7 @@ body.vmc-largo .app{max-width:1360px;}
   </div>
 
   <!-- Tela de aplicação da escala (dinâmica — renderizada por JS) -->
-  <div class="section" id="sec-escalas-aplicar">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="escCancelarAplicacao()">← Cancelar</button>
-      <span class="nav-title" id="escAplicarTitulo">Aplicar escala</span>
-    </div>
+  <div class="section" id="sec-escalas-aplicar" data-barra-titulo="Aplicar escala" data-barra-voltar="escCancelarAplicacao()" data-barra-voltar-rotulo="Cancelar">
 
     <div class="esc-aplic-head">
       <h2 id="escAplicarHead"></h2>
@@ -8626,11 +8527,7 @@ body.vmc-largo .app{max-width:1360px;}
        foi substituída por um único container. A função
        escRenderizarConteudoResultado monta o HTML unificado que também é
        usado no modal do histórico. -->
-  <div class="section" id="sec-escalas-resultado">
-    <div class="nav-bar">
-      <button class="btn-back" onclick="abrirSecao('sec-escalas')">← Voltar ao menu</button>
-      <span class="nav-title">Resultado</span>
-    </div>
+  <div class="section" id="sec-escalas-resultado" data-barra-titulo="Resultado" data-barra-voltar="abrirSecao('sec-escalas')" data-barra-voltar-rotulo="Voltar ao menu">
     <div id="escResultContainer" class="rr-container"></div>
     <div class="esc-nav">
       <button class="esc-btn esc-btn-primary" onclick="abrirSecao('sec-escalas')">Voltar ao menu de Escalas</button>
@@ -8917,9 +8814,48 @@ function mostrarLoading(visivel) {
 /* ============================================================
    NAVEGAÇÃO ENTRE SEÇÕES
    ============================================================ */
+// Pacote 16.1 (T1): barra única. Título e destino do voltar vêm do DOM (data-barra-* da seção);
+// sem atributos (menu, telas do profissional) a barra mostra a marca; no login ela some.
+function topbarAtualizar(idSecao) {
+  var bar = document.getElementById('topbar');
+  var sec = document.getElementById(idSecao);
+  if (!bar || !sec) return;
+  if (idSecao === 'sec-login') {
+    document.body.classList.remove('com-barra');
+    bar.classList.remove('tela', 'marca');
+    return;
+  }
+  document.body.classList.add('com-barra');
+  var titulo = sec.getAttribute('data-barra-titulo');
+  if (titulo !== null) {
+    bar.classList.add('tela'); bar.classList.remove('marca');
+    document.getElementById('topbarTitulo').textContent = titulo;
+    var btn = document.getElementById('topbarVoltar');
+    btn.setAttribute('onclick', sec.getAttribute('data-barra-voltar') || "abrirSecao('sec-menu')");
+    btn.setAttribute('aria-label', sec.getAttribute('data-barra-voltar-rotulo') || 'Voltar');
+    btn.title = sec.getAttribute('data-barra-voltar-rotulo') || 'Voltar';
+    // subtítulo: data/hora do registro (texto do [data-auto-badge] da própria seção)
+    var badge = sec.querySelector('[data-auto-badge]');
+    var sub = document.getElementById('topbarSub');
+    var txt = badge ? badge.textContent.trim() : '';
+    sub.textContent = txt; sub.classList.toggle('visivel', !!txt);
+    sub.parentNode.classList.toggle('com-sub', !!txt);
+  } else {
+    bar.classList.add('marca'); bar.classList.remove('tela');
+  }
+}
+// Título dinâmico (ex.: escala em aplicação): grava no DOM e reflete na barra se a tela estiver ativa
+function topbarDefinirTitulo(idSecao, titulo) {
+  var sec = document.getElementById(idSecao);
+  if (!sec) return;
+  sec.setAttribute('data-barra-titulo', titulo);
+  if (sec.classList.contains('active')) topbarAtualizar(idSecao);
+}
+
 function abrirSecao(idSecao) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById(idSecao).classList.add('active');
+  topbarAtualizar(idSecao);
   window.scrollTo({ top: 0, behavior: 'smooth' });
   // Pacote 14.2.1: telas do módulo Agenda usam container largo no desktop
   document.body.classList.toggle('vmc-largo',
@@ -12858,22 +12794,14 @@ function p11aRenderizarCabecalho(idSecaoAtual) {
   // Primeira vez = tabs futuras bloqueadas
   const primeiraVez = (typeof P5_STATE !== 'undefined' && P5_STATE.verificado && P5_STATE.primeiraVez === true);
 
-  // ===== Camada 1 =====
-  let c1 = '<div class="p11-c1">';
-  c1 += '<span class="p11-c1-bloco">🌡️ <span class="p11-humor-lbl"><strong>Humor:</strong></span> ';
-  c1 += '<span class="p11-humor-emoji">' + humor.emoji + '</span> ';
-  c1 += '<span class="p11-humor-lbl">(' + humor.label + ')</span></span>';
-  c1 += '<span class="p11-sep">·</span>';
-  c1 += '<span class="p11-c1-bloco p11-atual"><span class="p11-atual-ic">✏️</span> Preenchendo: ' + p11aEscape(mSec.nome) + '</span>';
+  // ===== Linha única (Pacote 16.1): humor + chips das etapas + "+N" + chevron da trilha =====
+  let c1 = '<div class="p11-linha"><div class="p11-chips">';
+  c1 += '<span class="p11-tab" title="Humor: ' + p11aEscape(humor.label) + '"><span class="p11-humor-emoji">' + humor.emoji + '</span></span>';
   // Contador +N: seções preenchidas anteriores (filled) que não são a atual
   const nPrev = Object.values(status).filter(v => v === 'filled').length;
-  if (nPrev >= 1) {
-    c1 += '<button class="p11-modal-btn" type="button" onclick="p11aAbrirModal()"><span class="p11-modal-btn-ic">📋</span> +' + nPrev + '</button>';
-  }
-  c1 += '</div>';
 
-  // ===== Camada 2 =====
-  let c2 = '<div class="p11-c2">';
+  // Chips das 5 etapas (ex-camada 2), na mesma linha
+  let c2 = '';
   P11A_NEG_SECOES.forEach(s => {
     const st = status[s.id];
     let cls = 'p11-tab';
@@ -12886,13 +12814,17 @@ function p11aRenderizarCabecalho(idSecaoAtual) {
       : ' onclick="p11aTooltipBloqueio(this)"';
     c2 += '<span class="' + cls + '"' + onclick + '>' + s.icone + ' ' + p11aEscape(s.nome) + '</span>';
   });
-  c2 += '</div>';
+  c2 += '</div>'; // fim dos chips roláveis; "+N" e chevron ficam fixos à direita
+  if (nPrev >= 1) {
+    c2 += '<button class="p11-modal-btn" type="button" onclick="p11aAbrirModal()"><span class="p11-modal-btn-ic">📋</span> +' + nPrev + '</button>';
+  }
 
-  // ===== Camada 3 =====
+  // ===== Trilha (ex-camada 3): recolhida por padrão, abre pelo chevron =====
   let c3 = '';
   const preenchidasAntes = P11A_NEG_SECOES.filter(s => status[s.id] === 'filled');
   if (preenchidasAntes.length > 0) {
-    c3 += '<div class="p11-c3">';
+    c2 += '<button class="p11-abrir" type="button" onclick="p11aToggleDetalhes(this)" aria-label="Ver o que já foi preenchido" title="Ver o que já foi preenchido">⌄</button>';
+    c3 += '<div class="p11-det"><div class="p11-c3">';
     preenchidasAntes.forEach(s => {
       const grupos = p11aGruposPreenchidos(s, d);
       const nomesGrupos = grupos.map(g => '<span class="p11-c3-grp">' + p11aEscape(g.titulo) + '</span>').join('<span class="p11-c3-dot">·</span>');
@@ -12904,11 +12836,19 @@ function p11aRenderizarCabecalho(idSecaoAtual) {
       c3 += '</div>';
       c3 += '<div class="p11-c3-det">' + p11aMontarDetalhes(s, d) + '</div>';
     });
-    c3 += '</div>';
+    c3 += '</div></div>';
   }
 
-  hdrEl.innerHTML = c1 + c2 + c3;
+  const estavaAberto = hdrEl.classList.contains('aberto');
+  hdrEl.innerHTML = c1 + c2 + '</div>' + c3;
+  hdrEl.classList.toggle('aberto', estavaAberto && c3 !== '');
   hdrEl.style.display = 'block';
+}
+
+// Pacote 16.1: abre/fecha a trilha do que já foi preenchido
+function p11aToggleDetalhes(btn) {
+  var hdr = btn.closest('.p11-header');
+  if (hdr) hdr.classList.toggle('aberto');
 }
 
 // Clique em linha da Camada 3 — expande/colapsa detalhes
@@ -13095,6 +13035,9 @@ function autoAtualizarBadgesData() {
     if (h) txt += ` às ${h}`;
   }
   document.querySelectorAll('[data-auto-badge]').forEach(el => el.textContent = txt);
+  // Pacote 16.1: a barra mostra a data como subtítulo
+  var ativa = document.querySelector('.section.active');
+  if (ativa && typeof topbarAtualizar === 'function') topbarAtualizar(ativa.id);
 }
 
 function autoIrParaPasso2() {
@@ -15872,7 +15815,7 @@ function escIniciarAplicacao(codigoEscala) {
   ESC_STATE.inicioPreenchimento = Date.now();
 
   // Preenche cabeçalho
-  document.getElementById('escAplicarTitulo').textContent = codigoEscala;
+  topbarDefinirTitulo('sec-escalas-aplicar', codigoEscala); // Pacote 16.1: título vai para a barra
   document.getElementById('escAplicarHead').innerHTML = def.emoji + ' ' + def.nomeCompleto;
   document.getElementById('escAplicarSub').innerHTML = def.subtitulo;
   document.getElementById('escAplicarEnunciado').textContent = def.enunciado;

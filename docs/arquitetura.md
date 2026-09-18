@@ -220,3 +220,36 @@ Planilha individual do paciente — abas:
   admin: apenas variável `ADM_STATE` em memória.
 - Toda chamada `chamarServidor` passa `sigla` explícita.
 - Rascunhos locais: sessionStorage.
+
+## Sistema visual (Pacote 16.x — só `index-dev.html`)
+
+- **Tokens:** `docs/design/tokens.css` (cópia da entrega do Design) substitui o
+  `:root` antigo. 99 tokens claros + 58 sobrescritos em
+  `@media (prefers-color-scheme: dark)`, mais apelidos (`--c-bg-page`,
+  `--c-surface-2`, `--cal-*`). Regra: nenhum hex/rgba fixo fora dos dois
+  `:root`; cor de texto usa a variante `-ink`; vermelho só em `--c-risk*`;
+  escalas usam o par por instrumento (`--c-phq9-*` … `--c-srq20-*`);
+  registro usa `--c-reg-neg*` / `--c-reg-pos*`. Fontes: `--f-title`
+  (Newsreader 400–700) e `--f-text` (Figtree). Sombras `--sh-1/2/3/bar`.
+- **`vmcTok(nome)`:** lê um token do `:root` para o JS (Chart.js, cores de
+  humor) com cache por nome, zerado no `change` de
+  `matchMedia('(prefers-color-scheme: dark)')`. Nunca chamar dentro de laço
+  de renderização sem o cache.
+- **Barra única (`#topbar`, Pacote 16.1):** componente fixo de 52 px fora de
+  `.app`, um só para todas as telas. `abrirSecao()` chama
+  `topbarAtualizar(id)`, que lê da própria seção `data-barra-titulo`,
+  `data-barra-voltar` (o mesmo `onclick` da antiga barra "← Menu") e
+  `data-barra-voltar-rotulo`; com atributos → modo `.tela` (voltar + título
+  + subtítulo com a data do `[data-auto-badge]`); sem atributos (menu, telas
+  do profissional) → modo `.marca`; no login a barra some
+  (`body.com-barra` desligado). Título dinâmico: `topbarDefinirTitulo(id,
+  texto)`. Badge da sigla e hambúrguer do paciente vivem na barra (ids
+  `userBadge`, `pacHamburgerWrap` preservados). O header institucional
+  antigo existe só como marca reduzida no login (`.login-marca`).
+- **Cabeçalho cumulativo compacto (`.p11-header`):** `p11aRenderizarCabecalho`
+  gera uma linha (`.p11-linha`: humor + chips `.p11-tab` das 5 etapas + botão
+  "+N" que abre o modal existente + chevron `.p11-abrir`) e a trilha antiga
+  recolhida em `.p11-det` (`p11aToggleDetalhes`). Altura ≤ 44 px.
+- **Título nunca duplicado:** quando o título do card repete o da barra, o
+  card fica só com ícone + subtítulo (o asterisco de obrigatório vai para
+  `.auto-sec-sub .req`).
