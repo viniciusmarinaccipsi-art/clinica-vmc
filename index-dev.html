@@ -8892,6 +8892,21 @@ const STATUS_TRATAMENTO = [
 // de 2xx ou corpo que não é JSON (o 404 do Apps Script chega como HTML).
 var VMC_TIMEOUT_MS = 20000;
 var VMC_RETRY_MS = 2000;
+// Pacote 16.2.2: ações que gravam, editam, excluem ou travam registro — tabela do doPost em
+// Código.js (32 ações em 18/09/2026; ficam de fora só ping, autenticar, ler*, listar* e profLerGrade).
+// Para estas NÃO há repetição automática: uma resposta legítima que passasse do timeout seria
+// executada duas vezes no servidor (registro duplicado, senha trocada duas vezes…). A primeira
+// falha vai direto à faixa "O servidor não respondeu…", e só o usuário decide tentar de novo.
+var VMC_ACOES_GRAVACAO = [
+  'salvarAnamnese', 'salvarAutomonitoramento', 'salvarEscala',
+  'alterarSenhaPaciente', 'pacienteAtualizarAnamnese',
+  'pacienteMarcarEditandoAuto', 'pacienteLimparEditandoAuto', 'pacienteEditarAutomonitoramento',
+  'profCadastrarPaciente', 'profSalvarAnamnese', 'profSalvarGrade',
+  'profMarcarEditandoAuto', 'profLimparEditandoAuto', 'profEditarAutomonitoramento',
+  'profDesativarPaciente', 'profReativarPaciente', 'profExcluirPaciente', 'profAlterarSenhaPaciente',
+  'admCadastrarProfissional', 'admAtualizarProfissional', 'admTrocarSenhaProfissional',
+  'admDesativarProfissional', 'admReativarProfissional'
+];
 
 async function _chamarUmaVez_(payload) {
   const ctrl = new AbortController();
@@ -8926,19 +8941,24 @@ function _aguardarTentarDeNovo_() {
 
 async function chamarServidor(acao, dados = {}) {
   const payload = { acao, ...dados };
+  const repeteSozinho = VMC_ACOES_GRAVACAO.indexOf(acao) === -1; // só leitura e login repetem
   for (;;) {
     mostrarLoading(true);
     try {
       try {
         return await _chamarUmaVez_(payload);
       } catch (erro1) {
-        console.warn('Servidor não respondeu (1ª tentativa):', erro1.message);
-        loadingMensagem('O servidor demorou; tentando de novo…');
-        await new Promise(r => setTimeout(r, VMC_RETRY_MS));
-        try {
-          return await _chamarUmaVez_(payload);
-        } catch (erro2) {
-          console.error('Erro ao chamar servidor (2ª tentativa):', erro2.message);
+        if (!repeteSozinho) {
+          console.error('Erro ao chamar servidor (gravação, sem repetição automática):', erro1.message);
+        } else {
+          console.warn('Servidor não respondeu (1ª tentativa):', erro1.message);
+          loadingMensagem('O servidor demorou; tentando de novo…');
+          await new Promise(r => setTimeout(r, VMC_RETRY_MS));
+          try {
+            return await _chamarUmaVez_(payload);
+          } catch (erro2) {
+            console.error('Erro ao chamar servidor (2ª tentativa):', erro2.message);
+          }
         }
       }
     } finally {
