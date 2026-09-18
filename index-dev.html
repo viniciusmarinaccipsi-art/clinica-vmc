@@ -356,9 +356,9 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .section{display:none;animation:fadeIn .3s ease;}
 .section.active{display:block;}
 @keyframes fadeIn{
-  from{opacity:0;transform:translateY(10px);}
-  to{opacity:1;transform:translateY(0);}
-}
+  from{opacity:0;}
+  to{opacity:1;}
+}  /* Pacote 16.3: sem transform, para a barra de ação fixa não deslocar durante a entrada da tela */
 
 /* ===== Nav bar ===== */
 
@@ -911,13 +911,6 @@ body.vmc-largo .topbar-in{max-width:1360px;}
   box-shadow:var(--sh-1);
   border:1px solid var(--c-line);
 }
-.steps{display:flex;gap:6px;margin:0 0 18px;justify-content:center;}
-.step-dot{
-  width:10px;height:10px;border-radius:50%;
-  background:var(--c-line);transition:all .3s;
-}
-.step-dot.active{background:var(--c-action);width:30px;border-radius:5px;}
-.step-dot.done{background:var(--c-pos);}
 
 .anam-step-title{
   font-family:var(--f-title);
@@ -1351,11 +1344,8 @@ body.vmc-largo .topbar-in{max-width:1360px;}
   background:var(--c-surface);overflow:hidden;box-shadow:var(--sh-1);
 }
 /* Pacote 16.1: linha única recolhível — humor + chips das etapas + "+N" (modal) + chevron que abre a trilha */
-.p11-linha{display:flex;align-items:center;gap:4px;padding:0 6px;min-height:var(--hit-min);}
-.p11-chips{display:flex;align-items:center;gap:4px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;}
-.p11-chips::-webkit-scrollbar{display:none;}
-.p11-chips .p11-tab{flex-shrink:0;}
-.p11-humor-emoji{font-size:15px;line-height:1;}
+.p11-linha{display:flex;align-items:center;justify-content:flex-end;gap:var(--s-2);padding:0 6px;min-height:var(--hit-min);}
+.p11-linha-txt{margin-right:auto;font:var(--t-body-sm);color:var(--c-ink-2);}
 .p11-modal-btn{
   font:var(--t-body-sm);margin-left:4px;display:inline-flex;align-items:center;gap:3px;
   padding:3px 8px;background:var(--c-action);color:var(--c-ink-inv);
@@ -1373,32 +1363,6 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .p11-header.aberto .p11-abrir{transform:rotate(180deg);}
 .p11-det{display:none;border-top:1px solid var(--c-line);}
 .p11-header.aberto .p11-det{display:block;}
-
-.p11-tab{
-  font:var(--t-body-sm);display:inline-flex;align-items:center;gap:3px;
-  padding:4px 10px 4px 12px;background:var(--c-surface);
-  border:1px solid var(--c-line);border-radius:999px;
-  cursor:pointer;font-family:inherit;font-weight:600;
-  color:var(--c-ink-2);white-space:nowrap;transition:all .18s;
-  line-height:1.2;
-}
-.p11-tab:hover{border-color:var(--c-reg-neg);color:var(--c-reg-neg-ink);}
-.p11-tab.filled{
-  border-left:3px solid var(--c-action);
-  background:var(--c-action-tint);color:var(--c-action);padding-left:9px;
-}
-.p11-tab.filled::after{
-  content:'';display:inline-block;width:.9em;height:.9em;margin-left:3px;vertical-align:-.08em;
-  background:var(--c-action);-webkit-mask:var(--ico-check) center/contain no-repeat;mask:var(--ico-check) center/contain no-repeat;
-}
-.p11-tab.current{
-  background:var(--c-reg-neg);color:var(--c-ink-inv);
-  border-color:var(--c-reg-neg);
-  box-shadow:var(--sh-2);
-}
-.p11-tab.current::after{content:none;}
-.p11-tab.locked{opacity:.4;cursor:not-allowed;}
-.p11-tab.locked:hover{border-color:var(--c-line);color:var(--c-ink-2);}
 
 /* Camada 3 — trilha cumulativa (compacto) */
 .p11-c3{background:var(--c-surface-sub);}
@@ -1484,21 +1448,9 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 }
 .p11-mbody{padding:16px 18px 24px;}
 
-/* Tooltip de tab bloqueada */
-.p11-tooltip{
-  font:var(--t-body-sm);position:fixed;background:var(--c-ink);color:var(--c-ink-inv);
-  padding:6px 12px;border-radius:6px;
-  z-index:200;pointer-events:none;opacity:0;
-  transition:opacity .15s;box-shadow:var(--sh-2);
-}
-.p11-tooltip.show{opacity:1;}
-
 @media (max-width:540px){
-  .p11-humor-emoji{font-size:14px;}
   .p11-modal-btn{font:var(--t-body-sm);padding:3px 7px;}
   .p11-linha{padding:0 4px;}
-  .p11-tab{font:var(--t-body-sm);padding:3px 9px 3px 10px;}
-  .p11-tab.filled{padding-left:7px;}
   .p11-c3-linha{font:var(--t-body-sm);padding:5px 8px;flex-wrap:wrap;}
   .p11-c3-grps{font:var(--t-body-sm);min-width:calc(100% - 20px);padding-left:18px;margin-top:1px;}
   .p11-c3-det-in{padding:6px 10px 8px 20px;}
@@ -1642,11 +1594,6 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .auto-split{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 @media(max-width:600px){.auto-split{grid-template-columns:1fr;}}
 
-/* Badge "Preenchido" nos cards do menu */
-.auto-progress{font:var(--t-body-sm);position:absolute;right:40px;top:50%;transform:translateY(-50%);display:none;align-items:center;gap:4px;font-weight:700;padding:3px 9px;border-radius:10px;background:var(--c-reg-pos-tint);color:var(--c-reg-pos-ink);border:1px solid var(--c-reg-pos-line);}
-.auto-progress.pronto{display:flex;}
-.auto-progress::before{content:'';display:inline-block;width:.9em;height:.9em;margin-right:.25em;vertical-align:-.08em;background:currentColor;-webkit-mask:var(--ico-check) center/contain no-repeat;mask:var(--ico-check) center/contain no-repeat;}
-
 /* Cards de menu bloqueados na sequência obrigatória */
 .auto-card.seq-bloqueado{pointer-events:none;opacity:.45;}
 .auto-card.seq-bloqueado .auto-card-title::before{content:'';display:inline-block;width:.85em;height:.85em;margin-right:.3em;vertical-align:-.08em;background:currentColor;-webkit-mask:var(--ico-lock) center/contain no-repeat;mask:var(--ico-lock) center/contain no-repeat;}
@@ -1655,12 +1602,6 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 /* Pacote 16.1: a data do registro aparece como subtítulo da barra; os [data-auto-badge] seguem no DOM como fonte do texto */
 .auto-date-wrap{display:none;}
 .auto-date-badge{font:var(--t-body-sm);display:inline-block;color:var(--c-action);font-weight:700;padding:5px 12px;background:var(--c-action-tint);border-radius:20px;}
-
-/* Steps do passo 1/2 */
-.auto-steps{display:flex;gap:6px;margin:0 0 14px;justify-content:center;}
-.auto-step-dot{width:10px;height:10px;border-radius:50%;background:var(--c-line);transition:all .3s;}
-.auto-step-dot.active{background:var(--c-action);width:30px;border-radius:5px;}
-.auto-step-dot.done{background:var(--c-reg-pos);}
 
 /* Mood grid do Passo 1 */
 .mood-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:14px 0;}
@@ -1787,11 +1728,6 @@ body.vmc-largo .topbar-in{max-width:1360px;}
   background:var(--c-pos-tint);color:var(--c-reg-pos-ink);border-color:var(--c-reg-pos-line);
 }
 .auto-nav-duplo .auto-btn-prev.green:hover{background:var(--c-pos-tint);}
-@media (max-width:420px){
-  .auto-nav-duplo{flex-direction:column;}
-  .auto-nav-duplo .auto-btn-prev,
-  .auto-nav-duplo .auto-btn-next{flex:1;width:100%;}
-}
 .auto-btn-next.green{background:var(--c-reg-pos);}
 .auto-btn-next.green:hover:not(:disabled){background:var(--c-pos);box-shadow:var(--sh-2);}
 .auto-btn-next.gray{background:var(--c-ink-3);}
@@ -1800,57 +1736,6 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 /* Aviso de seção não preenchida */
 .auto-sec-warn{font:var(--t-body-sm);margin-top:12px;padding:10px 12px;background:var(--c-warn-tint);border:1.5px solid var(--c-warn-line);border-radius:var(--r-field);color:var(--c-warn-ink);line-height:1.5;}
 .auto-sec-warn::before{content:'';display:inline-block;width:1em;height:1em;margin-right:.3em;vertical-align:-.12em;background:currentColor;-webkit-mask:var(--ico-alert) center/contain no-repeat;mask:var(--ico-alert) center/contain no-repeat;}
-
-/* ============================================================
-   BARRA GAMIFICADA (stepper + cadeados + chave deslizante)
-   ============================================================ */
-.gbar{padding:14px 4px 8px;margin-bottom:16px;background:var(--c-surface);border-radius:var(--r-card);box-shadow:var(--sh-1);border:1px solid var(--c-line);}
-.gbar-track{position:relative;display:flex;align-items:center;gap:4px;margin:0 10px;}
-.gbar-lock{width:32px;height:32px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;background:var(--c-surface-sub);border:2px solid var(--c-line);border-radius:50%;transition:all .35s;z-index:2;}
-.gbar.done .gbar-lock.end{background:var(--c-reg-pos-tint);border-color:var(--c-reg-pos);animation:gbarUnlock .6s ease;}
-@keyframes gbarUnlock{
-  0%{transform:scale(1) rotate(0);}
-  40%{transform:scale(1.25) rotate(-10deg);}
-  70%{transform:scale(1.1) rotate(5deg);}
-  100%{transform:scale(1) rotate(0);}
-}
-.gbar-line{flex:1;position:relative;height:6px;background:var(--c-line);border-radius:3px;}
-.gbar-line-fill{position:absolute;left:0;top:0;bottom:0;width:0%;border-radius:3px;transition:width .55s cubic-bezier(.4,.2,.2,1);}
-.gbar.neg .gbar-line-fill{background:linear-gradient(90deg,var(--c-warn),var(--c-reg-neg));}
-.gbar.pos .gbar-line-fill{background:linear-gradient(90deg,var(--c-warn),var(--c-reg-pos));}
-.gbar-checkpoints{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);display:flex;justify-content:space-between;pointer-events:none;}
-.gbar-step{width:28px;height:28px;border-radius:50%;background:var(--c-surface);border:2.5px solid var(--c-line);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--c-ink-3);transition:all .35s;position:relative;}
-.gbar-step.atual{border-color:var(--c-warn);background:var(--c-warn-tint);color:var(--c-warn-ink);transform:scale(1.15);box-shadow:0 0 0 4px var(--c-warn-line);animation:gbarPulse 1.8s ease-in-out infinite;}
-@keyframes gbarPulse{
-  0%,100%{box-shadow:0 0 0 4px var(--c-warn-line);}
-  50%{box-shadow:0 0 0 7px var(--c-warn-line);}
-}
-.gbar.neg .gbar-step.concluido{border-color:var(--c-reg-neg);background:var(--c-reg-neg);color:var(--c-ink-inv);}
-.gbar.pos .gbar-step.concluido{border-color:var(--c-reg-pos);background:var(--c-reg-pos);color:var(--c-ink-inv);}
-.gbar-step.concluido .gbar-step-icon{display:none;}
-.gbar-step.concluido::after{content:'';width:14px;height:14px;background:currentColor;-webkit-mask:var(--ico-check) center/contain no-repeat;mask:var(--ico-check) center/contain no-repeat;position:absolute;}
-.gbar-key{position:absolute;top:-24px;left:0%;transform:translateX(-50%);font-size:20px;line-height:1;transition:left .55s cubic-bezier(.4,.2,.2,1);pointer-events:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.18));z-index:3;}
-.gbar.done .gbar-key{animation:gbarKeyInsert .6s ease forwards;}
-@keyframes gbarKeyInsert{
-  0%{transform:translateX(-50%) rotate(0);}
-  50%{transform:translateX(-50%) rotate(-15deg) scale(1.2);}
-  100%{transform:translateX(-50%) rotate(0) scale(1);opacity:0;}
-}
-.gbar-labels{display:flex;justify-content:space-between;margin:18px 10px 0;padding:0 34px;}
-.gbar-label{font:var(--t-body-sm);flex:1;text-align:center;color:var(--c-ink-3);font-weight:700;line-height:1.2;transition:color .3s;max-width:60px;}
-.gbar-label.atual{color:var(--c-warn-ink);}
-.gbar.neg .gbar-label.concluido{color:var(--c-reg-neg-ink);}
-.gbar.pos .gbar-label.concluido{color:var(--c-reg-pos-ink);}
-.gbar-counter{font:var(--t-body-sm);text-align:center;margin-top:12px;font-weight:700;color:var(--c-ink-3);}
-.gbar-counter strong{color:var(--c-action);font-size:13px;}
-.gbar.done .gbar-counter strong{color:var(--c-reg-pos-ink);}
-@media(max-width:600px){
-  .gbar-label{font:var(--t-body-sm);max-width:45px;}
-  .gbar-step{font:var(--t-body-sm);width:24px;height:24px;}
-  .gbar-lock{width:28px;height:28px;font-size:15px;}
-  .gbar-key{font-size:17px;top:-22px;}
-  .gbar-labels{padding:0 30px;}
-}
 
 /* ============================================================
    HISTÓRICO Opção C — Lista Linear
@@ -2613,14 +2498,6 @@ body.vmc-largo .topbar-in{max-width:1360px;}
   font-size:14.5px;line-height:1.6;color:var(--c-ink);
   background:var(--c-phq9-tint);padding:10px 14px;border-radius:var(--r-field);font-weight:600;
 }
-.esc-aplic-progresso{
-  font:var(--t-body-sm);display:flex;align-items:center;justify-content:space-between;
-  padding:8px 14px;background:var(--c-surface-sub);
-  border-radius:var(--r-field);margin-bottom:12px;
-  color:var(--c-ink-2);font-weight:600;
-}
-.esc-aplic-barra{height:4px;background:var(--c-line);border-radius:2px;overflow:hidden;flex:1;margin:0 10px;}
-.esc-aplic-barra-fill{height:100%;background:var(--c-phq9-ink);transition:width .3s;}
 
 /* Item de escala */
 .esc-item{
@@ -2729,7 +2606,6 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .esc-tint-amber .esc-aplic-head { border-left-color:var(--c-gad7-ink); }
 .esc-tint-amber .esc-aplic-head h2 { color:var(--c-gad7-ink); }
 .esc-tint-amber .esc-aplic-head .esc-enunciado { background:var(--c-gad7-tint); }
-.esc-tint-amber .esc-aplic-barra-fill { background:var(--c-gad7-ink); }
 .esc-tint-amber .esc-item-num { background:var(--c-gad7-ink); }
 .esc-tint-amber .esc-opcao:hover { border-color:var(--c-gad7-ink); background:var(--c-gad7-tint); }
 .esc-tint-amber .esc-opcao.selecionada { background:var(--c-gad7-ink); color:var(--c-ink-inv); border-color:var(--c-gad7-ink); box-shadow:var(--sh-2); }
@@ -2743,7 +2619,6 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .esc-tint-green .esc-aplic-head { border-left-color:var(--c-pos); }
 .esc-tint-green .esc-aplic-head h2 { color:var(--c-pos-ink); }
 .esc-tint-green .esc-aplic-head .esc-enunciado { background:var(--c-pos-tint); }
-.esc-tint-green .esc-aplic-barra-fill { background:var(--c-pos); }
 .esc-tint-green .esc-item-num { background:var(--c-pos); }
 .esc-tint-green .esc-opcao:hover { border-color:var(--c-pos); background:var(--c-pos-tint); }
 .esc-tint-green .esc-opcao.selecionada { background:var(--c-pos); color:var(--c-ink-inv); border-color:var(--c-pos); box-shadow:var(--sh-2); }
@@ -2756,7 +2631,6 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .esc-tint-purple .esc-aplic-head { border-left-color:var(--c-dass21-ink); }
 .esc-tint-purple .esc-aplic-head h2 { color:var(--c-dass21-ink); }
 .esc-tint-purple .esc-aplic-head .esc-enunciado { background:var(--c-dass21-tint); }
-.esc-tint-purple .esc-aplic-barra-fill { background:var(--c-dass21-ink); }
 .esc-tint-purple .esc-item-num { background:var(--c-dass21-ink); }
 .esc-tint-purple .esc-opcao:hover { border-color:var(--c-dass21-ink); background:var(--c-dass21-tint); }
 .esc-tint-purple .esc-opcao.selecionada { background:var(--c-dass21-ink); border-color:var(--c-dass21-ink); box-shadow:var(--sh-2); }
@@ -2769,7 +2643,6 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .esc-tint-gray .esc-aplic-head { border-left-color:var(--c-ink-3); }
 .esc-tint-gray .esc-aplic-head h2 { color:var(--c-ink-3); }
 .esc-tint-gray .esc-aplic-head .esc-enunciado { background:var(--c-surface-sub); }
-.esc-tint-gray .esc-aplic-barra-fill { background:var(--c-ink-3); }
 .esc-tint-gray .esc-item-num { background:var(--c-ink-3); }
 .esc-tint-gray .esc-opcao:hover { border-color:var(--c-ink-3); background:var(--c-surface-sub); }
 .esc-tint-gray .esc-opcao.selecionada { background:var(--c-ink-3); color:var(--c-ink-inv); border-color:var(--c-ink-3); box-shadow:var(--sh-2); }
@@ -2782,7 +2655,6 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .esc-tint-orange .esc-aplic-head { border-left-color:var(--c-pss10-ink); }
 .esc-tint-orange .esc-aplic-head h2 { color:var(--c-pss10-ink); }
 .esc-tint-orange .esc-aplic-head .esc-enunciado { background:var(--c-pss10-tint); }
-.esc-tint-orange .esc-aplic-barra-fill { background:var(--c-pss10-ink); }
 .esc-tint-orange .esc-item-num { background:var(--c-pss10-ink); }
 .esc-tint-orange .esc-opcao:hover { border-color:var(--c-pss10-ink); background:var(--c-pss10-tint); }
 .esc-tint-orange .esc-opcao.selecionada { background:var(--c-pss10-ink); color:var(--c-ink-inv); border-color:var(--c-pss10-ink); box-shadow:var(--sh-2); }
@@ -2796,7 +2668,6 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .esc-tint-blue .esc-aplic-head { border-left-color:var(--c-action); }
 .esc-tint-blue .esc-aplic-head h2 { color:var(--c-action); }
 .esc-tint-blue .esc-aplic-head .esc-enunciado { background:var(--c-action-tint); }
-.esc-tint-blue .esc-aplic-barra-fill { background:var(--c-action); }
 .esc-tint-blue .esc-item-num { background:var(--c-action); }
 .esc-tint-blue .esc-opcao:hover { border-color:var(--c-action); background:var(--c-action-tint); }
 .esc-tint-blue .esc-opcao.selecionada { background:var(--c-action); color:var(--c-ink-inv); border-color:var(--c-action); box-shadow:var(--sh-2); }
@@ -2808,7 +2679,6 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .esc-tint-teal .esc-aplic-head { border-left-color:var(--c-srq20-ink); }
 .esc-tint-teal .esc-aplic-head h2 { color:var(--c-srq20-ink); }
 .esc-tint-teal .esc-aplic-head .esc-enunciado { background:var(--c-srq20-tint); }
-.esc-tint-teal .esc-aplic-barra-fill { background:var(--c-srq20-ink); }
 .esc-tint-teal .esc-item-num { background:var(--c-srq20-ink); }
 .esc-tint-teal .esc-opcao:hover { border-color:var(--c-srq20-ink); background:var(--c-srq20-tint); }
 .esc-tint-teal .esc-opcao.selecionada { background:var(--c-srq20-ink); color:var(--c-ink-inv); border-color:var(--c-srq20-ink); box-shadow:var(--sh-2); }
@@ -3707,18 +3577,36 @@ body.vmc-largo .app{max-width:1360px;}
 .auto-card-icon .ico,.esc-card-icon .ico,.login-tipo-icon .ico,.p8-edu-icon .ico,.p5-modal-icone .ico,.login-icon .ico,.prof-pv-mod-icon .ico,.card-icon .ico{width:28px;height:28px;}
 .auto-sec-icon .ico{width:20px;height:20px;}
 .ico-pos{color:var(--c-pos);} .ico-warn{color:var(--c-warn);} .ico-risk2{color:var(--c-risk-ink-2);} .ico-risk{color:var(--c-risk);}
-/* pseudo-elementos que exibiam emoji: forma por máscara, cor herdada */
-
-/* ===== Pacote 16.2 (T2) — alvo de toque mínimo: --hit-min em tudo que se toca ===== */
-button,[onclick],[role="button"],a.btn,.auto-option-lbl,.esc-opcao,.p11-tab,.mood-card,.login-tipo-card,.card,.auto-card,.esc-card,.acc-header,.auto-group-head{min-height:var(--hit-min);}
 input:not([type="checkbox"]):not([type="radio"]),select,textarea{min-height:var(--hit-min);}
 input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 .btn-logout,.pac-hamburger-btn,.p11-mclose,.hist-modal-fechar,.pev-modal-fechar,.rr-submodal-close,.hist-modal-btn-fechar,.p11-abrir,.topbar-voltar,.cal-btn,.gra-voltar{min-width:var(--hit-min);min-height:var(--hit-min);}
 .btn-logout{display:inline-flex;align-items:center;justify-content:center;padding:0;}
 .pac-hamburger-btn{display:inline-flex;align-items:center;justify-content:center;padding:0;}
-.p11-tab{min-height:var(--hit-min);padding:0 12px;}
-.p11-tab.filled{padding-left:9px;}
-.p11-modal-btn{min-height:36px;}
+.p11-modal-btn{min-height:var(--hit-min);}
+
+/* ===== Pacote 16.3 (T3) — progresso único ===== */
+.prog{display:none;margin:0 0 var(--s-3);}
+.prog.visivel{display:block;}
+.prog-txt{display:block;font:500 15px/1.2 var(--f-title);color:var(--c-ink);}
+.prog-trilho{display:flex;gap:0;margin-top:-10px;} /* sem gap: cada segmento usa toda a largura como área de toque; o vão visual fica no ::before */
+.prog-seg{flex:1;min-width:0;height:var(--hit-min);min-height:var(--hit-min);padding:0;border:none;background:none;position:relative;cursor:default;}
+.prog-seg::before{content:'';position:absolute;left:2px;right:3px;top:50%;height:6px;margin-top:-3px;border-radius:3px;background:var(--c-line-strong);transition:background var(--dur) var(--ease);}
+.prog-seg.feito::before,.prog-seg.atual::before{background:var(--c-pos);}
+.prog.neg .prog-seg.feito::before,.prog.neg .prog-seg.atual::before{background:var(--c-reg-neg);}
+.prog.pos-reg .prog-seg.feito::before,.prog.pos-reg .prog-seg.atual::before{background:var(--c-reg-pos);}
+.prog-seg.feito{cursor:pointer;}
+.prog-seg.feito:hover::before{opacity:.7;}
+
+/* ===== Pacote 16.3 — barra de ação fixa no celular ===== */
+.barra-acao .auto-btn-prev,.auto-nav-duplo.barra-acao .auto-btn-prev.coral,.auto-nav-duplo.barra-acao .auto-btn-prev.green,.barra-acao .btn-step-prev,.barra-acao .esc-btn-secondary{background:var(--c-surface);border:1px solid var(--c-line-strong);color:var(--c-ink-2);}
+@media (max-width:600px){
+  .barra-acao{position:fixed;left:0;right:0;bottom:0;z-index:95;margin:0;padding:10px var(--s-4) calc(10px + env(safe-area-inset-bottom));
+    min-height:calc(64px + env(safe-area-inset-bottom));background:var(--c-surface);box-shadow:var(--sh-bar);display:flex;align-items:center;gap:var(--s-3);}
+  .barra-acao > *{flex:1;margin:0;min-width:0;}
+  .barra-acao .auto-btn-prev,.barra-acao .btn-step-prev,.barra-acao .esc-btn-secondary{flex:0 0 38%;}
+  body:has(.section.active .barra-acao) .app{padding-bottom:calc(100px + 64px);}
+}
+.sair-modal-txt{font:var(--t-body);color:var(--c-ink-2);margin:0 0 var(--s-4);}
 </style>
 </head>
 <body>
@@ -3791,6 +3679,22 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
   <span class="erro-rede-txt">O servidor não respondeu. Verifique a conexão e tente de novo.</span>
   <button type="button" class="erro-rede-btn" id="vmcErroRedeBtn">Tentar de novo</button>
 </div>
+<!-- Pacote 16.3: sair de um fluxo (anamnese, registro, escala) com dados em andamento -->
+<div class="p5-modal-overlay" id="sairModal" onclick="if(event.target===this)sairModalFechar()">
+  <div class="p5-modal-card" role="dialog" aria-modal="true" aria-labelledby="sairModalTitulo" style="max-width:380px;">
+    <div class="p5-modal-head">
+      <span class="p5-modal-icone"><svg class="ico" aria-hidden="true"><use href="#i-save"/></svg></span>
+      <div class="p5-modal-titulo" id="sairModalTitulo">Sair sem gravar?</div>
+    </div>
+    <div class="p5-modal-body">
+      <p class="sair-modal-txt">Seu rascunho fica salvo neste aparelho. Ao voltar, você continua de onde parou.</p>
+      <div class="p5-modal-acoes">
+        <button type="button" class="p5-btn p5-btn-secondary" onclick="sairModalFechar()">Continuar aqui</button>
+        <button type="button" class="p5-btn p5-btn-primary" id="sairModalConfirmar">Sair</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="modal-overlay" id="modalConfirma">
   <div class="modal-card">
@@ -3819,7 +3723,7 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
     <div class="topbar-acoes">
       <div class="user-badge" id="userBadge">
         <span id="userBadgeText">TST</span>
-        <button class="btn-logout" onclick="logout()" title="Sair"><svg class="ico" aria-hidden="true"><use href="#i-power"/></svg></button>
+        <button class="btn-logout" onclick="confirmarSaida(logout)" title="Sair"><svg class="ico" aria-hidden="true"><use href="#i-power"/></svg></button>
       </div>
       <!-- Pacote 13.4.2: Hamburger menu do paciente (16.1: dentro da barra) -->
       <div class="pac-hamburger-wrap" id="pacHamburgerWrap">
@@ -3835,6 +3739,12 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 </div>
 
 <div class="app">
+
+  <!-- Pacote 16.3 (T3): componente único de progresso — "Etapa N de T · nome" + trilho; etapas feitas são botões de voltar -->
+  <div class="prog" id="prog" aria-live="polite">
+    <span class="prog-txt" id="progTxt"></span>
+    <div class="prog-trilho" id="progTrilho"></div>
+  </div>
 
   <!-- LOGIN -->
   <div class="section active" id="sec-login">
@@ -4581,11 +4491,7 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
   </div>
 
   <!-- PASSO 1 — Checagem de humor -->
-  <div class="section" id="sec-auto-passo1" data-barra-titulo="Passo 1 de 2" data-barra-voltar="abrirSecao('sec-automonitoramento')" data-barra-voltar-rotulo="Voltar">
-    <div class="auto-steps">
-      <div class="auto-step-dot active"></div>
-      <div class="auto-step-dot"></div>
-    </div>
+  <div class="section" id="sec-auto-passo1" data-barra-titulo="Checagem de humor" data-barra-voltar="abrirSecao('sec-automonitoramento')" data-barra-voltar-rotulo="Voltar">
     <div class="anam-card">
       <div class="auto-sec-header" style="border-color:var(--c-action);">
         <div class="auto-sec-icon" style="background:var(--c-action-tint);color:var(--c-action);"><svg class="ico" aria-hidden="true"><use href="#i-thermometer"/></svg></div>
@@ -4618,18 +4524,16 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <label>Observações (opcional):</label>
         <textarea id="autoInpObsHumor" placeholder="Algo que queira registrar sobre esse momento..."></textarea>
       </div>
+      <div class="auto-nav-duplo barra-acao">
       <button class="auto-btn-next" id="autoBtnP1Proximo" onclick="autoIrParaPasso2()" disabled>
         Próximo: Escolher Tipo de Registro →
       </button>
+      </div>
     </div>
   </div>
 
   <!-- PASSO 2 — Escolher tipo -->
-  <div class="section" id="sec-auto-passo2" data-barra-titulo="Passo 2 de 2" data-barra-voltar="abrirSecao('sec-auto-passo1')" data-barra-voltar-rotulo="Voltar">
-    <div class="auto-steps">
-      <div class="auto-step-dot done"></div>
-      <div class="auto-step-dot active"></div>
-    </div>
+  <div class="section" id="sec-auto-passo2" data-barra-titulo="Tipo de registro" data-barra-voltar="abrirSecao('sec-auto-passo1')" data-barra-voltar-rotulo="Voltar">
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
     <div class="anam-card">
       <h3 style="font-family:var(--f-title);font-size:16px;color:var(--c-action);text-align:center;margin:0 0 6px;">Qual registro deseja preencher?</h3>
@@ -4648,9 +4552,12 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       </div>
       <!-- Pacote 10: botão novo "Começar registro →" — substitui o antigo "Finalizar e Revisar".
            Começa desabilitado. Só libera depois que o paciente seleciona um card. -->
+      <div class="auto-nav-duplo barra-acao">
+        <button class="auto-btn-prev" onclick="abrirSecao('sec-auto-passo1')">← Anterior</button>
       <button class="auto-btn-next p10-btn-comecar p10-disabled" id="p10BtnComecar" type="button" onclick="autoComecarRegistro()" style="margin-top:20px;">
         Começar registro →
       </button>
+      </div>
     </div>
   </div>
 
@@ -4658,73 +4565,44 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
   <div class="section" id="sec-auto-menu-neg" data-barra-titulo="Registro Negativo" data-barra-voltar="abrirSecao('sec-auto-passo2')" data-barra-voltar-rotulo="Voltar">
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
 
-    <!-- Barra gamificada (só aparece na 1ª vez) -->
-    <div class="gbar neg" id="gbarNeg" style="display:none;">
-      <div class="gbar-track">
-        <div class="gbar-lock start"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg></div>
-        <div class="gbar-line">
-          <div class="gbar-line-fill"></div>
-          <div class="gbar-checkpoints">
-            <div class="gbar-step"><span class="gbar-step-icon"><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg></span></div>
-            <div class="gbar-step"><span class="gbar-step-icon"><svg class="ico" aria-hidden="true"><use href="#i-heart-crack"/></svg></span></div>
-            <div class="gbar-step"><span class="gbar-step-icon"><svg class="ico" aria-hidden="true"><use href="#i-zap"/></svg></span></div>
-            <div class="gbar-step"><span class="gbar-step-icon"><svg class="ico" aria-hidden="true"><use href="#i-cloud-rain"/></svg></span></div>
-            <div class="gbar-step"><span class="gbar-step-icon"><svg class="ico" aria-hidden="true"><use href="#i-trend-down"/></svg></span></div>
-          </div>
-          <div class="gbar-key"><svg class="ico" aria-hidden="true"><use href="#i-key"/></svg></div>
-        </div>
-        <div class="gbar-lock end"><svg class="ico" aria-hidden="true"><use href="#i-unlock"/></svg></div>
-      </div>
-      <div class="gbar-labels">
-        <div class="gbar-label">Situação</div>
-        <div class="gbar-label">Emoções</div>
-        <div class="gbar-label">Físicas</div>
-        <div class="gbar-label">Pensam.</div>
-        <div class="gbar-label">Comport.</div>
-      </div>
-      <div class="gbar-counter"><strong>0</strong> de 5 etapas concluídas</div>
-    </div>
-
     <div class="auto-grid">
       <button class="auto-card gray" data-sec-idx="0" data-sec-tipo="neg" type="button" onclick="autoEntrarSecao('sec-auto-sit-a',0,'neg')">
         <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg></span>
         <div class="auto-card-title">Situação / Contexto</div>
         <div class="auto-card-desc">O que estava acontecendo</div>
-        <span class="auto-progress" id="autoProg-sit-a">Preenchido</span>
         <span class="auto-card-arrow">›</span>
       </button>
       <button class="auto-card coral" data-sec-idx="1" data-sec-tipo="neg" type="button" onclick="autoEntrarSecao('sec-auto-emo-a',1,'neg')">
         <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-heart-crack"/></svg></span>
         <div class="auto-card-title">Emoções Desagradáveis</div>
         <div class="auto-card-desc">Identifique e avalie as emoções de desconforto</div>
-        <span class="auto-progress" id="autoProg-emo-a">Preenchido</span>
         <span class="auto-card-arrow">›</span>
       </button>
       <button class="auto-card coral" data-sec-idx="2" data-sec-tipo="neg" type="button" onclick="autoEntrarSecao('sec-auto-fis-a',2,'neg')">
         <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-zap"/></svg></span>
         <div class="auto-card-title">Reações Físicas — Mal-Estar</div>
         <div class="auto-card-desc">Sensações corporais incômodas</div>
-        <span class="auto-progress" id="autoProg-fis-a">Preenchido</span>
         <span class="auto-card-arrow">›</span>
       </button>
       <button class="auto-card coral" data-sec-idx="3" data-sec-tipo="neg" type="button" onclick="autoEntrarSecao('sec-auto-pens-a',3,'neg')">
         <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-cloud-rain"/></svg></span>
         <div class="auto-card-title">Pensamentos Desadaptativos</div>
         <div class="auto-card-desc">Pensamentos negativos ou autocríticos</div>
-        <span class="auto-progress" id="autoProg-pens-a">Preenchido</span>
         <span class="auto-card-arrow">›</span>
       </button>
       <button class="auto-card coral" data-sec-idx="4" data-sec-tipo="neg" type="button" onclick="autoEntrarSecao('sec-auto-comp-a',4,'neg')">
         <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-trend-down"/></svg></span>
         <div class="auto-card-title">Comportamentos Disfuncionais</div>
         <div class="auto-card-desc">Atitudes que pioraram a situação</div>
-        <span class="auto-progress" id="autoProg-comp-a">Preenchido</span>
         <span class="auto-card-arrow">›</span>
       </button>
     </div>
-    <button class="auto-btn-next coral" id="autoBtnFinalizarNeg" onclick="autoFinalizarTipo('neg')" disabled style="margin-top:18px;">
+    <div class="auto-nav-duplo barra-acao">
+      <button class="auto-btn-prev coral" onclick="abrirSecao('sec-auto-passo2')">← Anterior</button>
+    <button class="auto-btn-next coral" id="autoBtnFinalizarNeg" onclick="autoFinalizarTipo('neg')" disabled>
       <svg class="ico" aria-hidden="true"><use href="#i-check"/></svg> Concluir Registro Negativo
     </button>
+    </div>
     <p style="font-size:13px;color:var(--c-ink-3);text-align:center;margin-top:8px;">
       Complete todas as seções para concluir.
     </p>
@@ -4734,72 +4612,44 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
   <div class="section" id="sec-auto-menu-pos" data-barra-titulo="Registro Positivo" data-barra-voltar="abrirSecao('sec-auto-passo2')" data-barra-voltar-rotulo="Voltar">
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
 
-    <div class="gbar pos" id="gbarPos" style="display:none;">
-      <div class="gbar-track">
-        <div class="gbar-lock start"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg></div>
-        <div class="gbar-line">
-          <div class="gbar-line-fill"></div>
-          <div class="gbar-checkpoints">
-            <div class="gbar-step"><span class="gbar-step-icon"><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg></span></div>
-            <div class="gbar-step"><span class="gbar-step-icon"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg></span></div>
-            <div class="gbar-step"><span class="gbar-step-icon"><svg class="ico" aria-hidden="true"><use href="#i-leaf"/></svg></span></div>
-            <div class="gbar-step"><span class="gbar-step-icon"><svg class="ico" aria-hidden="true"><use href="#i-sun"/></svg></span></div>
-            <div class="gbar-step"><span class="gbar-step-icon"><svg class="ico" aria-hidden="true"><use href="#i-trend-up"/></svg></span></div>
-          </div>
-          <div class="gbar-key"><svg class="ico" aria-hidden="true"><use href="#i-key"/></svg></div>
-        </div>
-        <div class="gbar-lock end"><svg class="ico" aria-hidden="true"><use href="#i-unlock"/></svg></div>
-      </div>
-      <div class="gbar-labels">
-        <div class="gbar-label">Situação</div>
-        <div class="gbar-label">Emoções</div>
-        <div class="gbar-label">Físicas</div>
-        <div class="gbar-label">Pensam.</div>
-        <div class="gbar-label">Comport.</div>
-      </div>
-      <div class="gbar-counter"><strong>0</strong> de 5 etapas concluídas</div>
-    </div>
-
     <div class="auto-grid">
       <button class="auto-card gray" data-sec-idx="0" data-sec-tipo="pos" type="button" onclick="autoEntrarSecao('sec-auto-sit-b',0,'pos')">
         <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg></span>
         <div class="auto-card-title">Situação / Contexto</div>
         <div class="auto-card-desc">O que estava acontecendo</div>
-        <span class="auto-progress" id="autoProg-sit-b">Preenchido</span>
         <span class="auto-card-arrow">›</span>
       </button>
       <button class="auto-card green" data-sec-idx="1" data-sec-tipo="pos" type="button" onclick="autoEntrarSecao('sec-auto-emo-b',1,'pos')">
         <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg></span>
         <div class="auto-card-title">Emoções Agradáveis</div>
         <div class="auto-card-desc">Identifique e avalie as emoções positivas</div>
-        <span class="auto-progress" id="autoProg-emo-b">Preenchido</span>
         <span class="auto-card-arrow">›</span>
       </button>
       <button class="auto-card green" data-sec-idx="2" data-sec-tipo="pos" type="button" onclick="autoEntrarSecao('sec-auto-fis-b',2,'pos')">
         <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-leaf"/></svg></span>
         <div class="auto-card-title">Reações Físicas — Bem-Estar</div>
         <div class="auto-card-desc">Sensações corporais agradáveis</div>
-        <span class="auto-progress" id="autoProg-fis-b">Preenchido</span>
         <span class="auto-card-arrow">›</span>
       </button>
       <button class="auto-card green" data-sec-idx="3" data-sec-tipo="pos" type="button" onclick="autoEntrarSecao('sec-auto-pens-b',3,'pos')">
         <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-sun"/></svg></span>
         <div class="auto-card-title">Pensamentos Adaptativos</div>
         <div class="auto-card-desc">Pensamentos mais equilibrados</div>
-        <span class="auto-progress" id="autoProg-pens-b">Preenchido</span>
         <span class="auto-card-arrow">›</span>
       </button>
       <button class="auto-card green" data-sec-idx="4" data-sec-tipo="pos" type="button" onclick="autoEntrarSecao('sec-auto-comp-b',4,'pos')">
         <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-trend-up"/></svg></span>
         <div class="auto-card-title">Comportamentos Funcionais</div>
         <div class="auto-card-desc">Atitudes que ajudaram</div>
-        <span class="auto-progress" id="autoProg-comp-b">Preenchido</span>
         <span class="auto-card-arrow">›</span>
       </button>
     </div>
-    <button class="auto-btn-next green" id="autoBtnFinalizarPos" onclick="autoFinalizarTipo('pos')" disabled style="margin-top:18px;">
+    <div class="auto-nav-duplo barra-acao">
+      <button class="auto-btn-prev green" onclick="abrirSecao('sec-auto-passo2')">← Anterior</button>
+    <button class="auto-btn-next green" id="autoBtnFinalizarPos" onclick="autoFinalizarTipo('pos')" disabled>
       <svg class="ico" aria-hidden="true"><use href="#i-check"/></svg> Concluir Registro Positivo
     </button>
+    </div>
     <p style="font-size:13px;color:var(--c-ink-3);text-align:center;margin-top:8px;">
       Complete todas as seções para concluir.
     </p>
@@ -4923,7 +4773,10 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         </div>
       </div>
 
-      <button class="auto-btn-next coral" onclick="autoAvancarSequencial('neg','sec-auto-emo-a')">Próximo: Emoções Desagradáveis →</button>
+      <div class="auto-nav-duplo barra-acao">
+        <button class="auto-btn-prev coral" onclick="abrirSecao('sec-auto-menu-neg')">← Anterior</button>
+        <button class="auto-btn-next coral" onclick="autoAvancarSequencial('neg','sec-auto-emo-a')">Próximo →</button>
+      </div>
     </div>
   </div>
 
@@ -5414,9 +5267,9 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         </div>
         </div>
       </div>
-      <div class="auto-nav-duplo">
-        <button class="auto-btn-prev coral" onclick="abrirSecao('sec-auto-sit-a')">← Anterior: Situação</button>
-        <button class="auto-btn-next coral" onclick="autoAvancarSequencial('neg','sec-auto-fis-a')">Próximo: Reações Físicas →</button>
+      <div class="auto-nav-duplo barra-acao">
+        <button class="auto-btn-prev coral" onclick="abrirSecao('sec-auto-sit-a')">← Anterior</button>
+        <button class="auto-btn-next coral" onclick="autoAvancarSequencial('neg','sec-auto-fis-a')">Próximo →</button>
       </div>
     </div>
   </div>
@@ -5908,9 +5761,9 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         </div>
         </div>
       </div>
-      <div class="auto-nav-duplo">
-        <button class="auto-btn-prev coral" onclick="abrirSecao('sec-auto-emo-a')">← Anterior: Emoções Desagradáveis</button>
-        <button class="auto-btn-next coral" onclick="autoAvancarSequencial('neg','sec-auto-pens-a')">Próximo: Pensamentos Desadaptativos →</button>
+      <div class="auto-nav-duplo barra-acao">
+        <button class="auto-btn-prev coral" onclick="abrirSecao('sec-auto-emo-a')">← Anterior</button>
+        <button class="auto-btn-next coral" onclick="autoAvancarSequencial('neg','sec-auto-pens-a')">Próximo →</button>
       </div>
     </div>
   </div>
@@ -6465,9 +6318,9 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         </div>
         </div>
       </div>
-      <div class="auto-nav-duplo">
-        <button class="auto-btn-prev coral" onclick="abrirSecao('sec-auto-fis-a')">← Anterior: Reações Físicas</button>
-        <button class="auto-btn-next coral" onclick="autoAvancarSequencial('neg','sec-auto-comp-a')">Próximo: Comportamentos Disfuncionais →</button>
+      <div class="auto-nav-duplo barra-acao">
+        <button class="auto-btn-prev coral" onclick="abrirSecao('sec-auto-fis-a')">← Anterior</button>
+        <button class="auto-btn-next coral" onclick="autoAvancarSequencial('neg','sec-auto-comp-a')">Próximo →</button>
       </div>
     </div>
   </div>
@@ -6667,8 +6520,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         </div>
         </div>
       </div>
-      <div class="auto-nav-duplo">
-        <button class="auto-btn-prev coral" onclick="abrirSecao('sec-auto-pens-a')">← Anterior: Pensamentos Desadaptativos</button>
+      <div class="auto-nav-duplo barra-acao">
+        <button class="auto-btn-prev coral" onclick="abrirSecao('sec-auto-pens-a')">← Anterior</button>
         <button class="auto-btn-next coral" onclick="autoFinalizarTipo('neg')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg> Concluir e Revisar →</button>
       </div>
     </div>
@@ -6685,7 +6538,10 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       </div>
       <!-- Pacote 3: caixa única (mesma lógica do lado negativo). -->
       <div class="auto-field"><label>O que aconteceu? <span class="req">*</span></label><textarea data-auto-campo="pos_sit_o_que" rows="4" placeholder="Ex: Quando isso aconteceu? Onde você estava? Com quem você estava? O que você estava fazendo?"></textarea></div>
-      <button class="auto-btn-next green" onclick="autoAvancarSequencial('pos','sec-auto-emo-b')">Próximo: Emoções Agradáveis →</button>
+      <div class="auto-nav-duplo barra-acao">
+        <button class="auto-btn-prev green" onclick="abrirSecao('sec-auto-menu-pos')">← Anterior</button>
+        <button class="auto-btn-next green" onclick="autoAvancarSequencial('pos','sec-auto-emo-b')">Próximo →</button>
+      </div>
     </div>
   </div>
 
@@ -7174,9 +7030,9 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         </div>
         </div>
       </div>
-      <div class="auto-nav-duplo">
-        <button class="auto-btn-prev green" onclick="abrirSecao('sec-auto-sit-b')">← Anterior: Situação</button>
-        <button class="auto-btn-next green" onclick="autoAvancarSequencial('pos','sec-auto-fis-b')">Próximo: Reações Físicas →</button>
+      <div class="auto-nav-duplo barra-acao">
+        <button class="auto-btn-prev green" onclick="abrirSecao('sec-auto-sit-b')">← Anterior</button>
+        <button class="auto-btn-next green" onclick="autoAvancarSequencial('pos','sec-auto-fis-b')">Próximo →</button>
       </div>
     </div>
   </div>
@@ -7666,9 +7522,9 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         </div>
         </div>
       </div>
-      <div class="auto-nav-duplo">
-        <button class="auto-btn-prev green" onclick="abrirSecao('sec-auto-emo-b')">← Anterior: Emoções Agradáveis</button>
-        <button class="auto-btn-next green" onclick="autoAvancarSequencial('pos','sec-auto-pens-b')">Próximo: Pensamentos Adaptativos →</button>
+      <div class="auto-nav-duplo barra-acao">
+        <button class="auto-btn-prev green" onclick="abrirSecao('sec-auto-emo-b')">← Anterior</button>
+        <button class="auto-btn-next green" onclick="autoAvancarSequencial('pos','sec-auto-pens-b')">Próximo →</button>
       </div>
     </div>
   </div>
@@ -8170,9 +8026,9 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         </div>
         </div>
       </div>
-      <div class="auto-nav-duplo">
-        <button class="auto-btn-prev green" onclick="abrirSecao('sec-auto-fis-b')">← Anterior: Reações Físicas</button>
-        <button class="auto-btn-next green" onclick="autoAvancarSequencial('pos','sec-auto-comp-b')">Próximo: Comportamentos Funcionais →</button>
+      <div class="auto-nav-duplo barra-acao">
+        <button class="auto-btn-prev green" onclick="abrirSecao('sec-auto-fis-b')">← Anterior</button>
+        <button class="auto-btn-next green" onclick="autoAvancarSequencial('pos','sec-auto-comp-b')">Próximo →</button>
       </div>
     </div>
   </div>
@@ -8370,13 +8226,12 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         </div>
         </div>
       </div>
-      <div class="auto-nav-duplo">
-        <button class="auto-btn-prev green" onclick="abrirSecao('sec-auto-pens-b')">← Anterior: Pensamentos Adaptativos</button>
+      <div class="auto-nav-duplo barra-acao">
+        <button class="auto-btn-prev green" onclick="abrirSecao('sec-auto-pens-b')">← Anterior</button>
         <button class="auto-btn-next green" onclick="autoFinalizarTipo('pos')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg> Concluir e Revisar →</button>
       </div>
     </div>
   </div>
-
 
   <!-- HISTÓRICO -->
   <div class="section" id="sec-auto-historico" data-barra-titulo="Meus Registros" data-barra-voltar="abrirSecao('sec-automonitoramento')" data-barra-voltar-rotulo="Voltar">
@@ -8418,12 +8273,14 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         </div>
       </div>
       <div id="autoResumoConteudo"></div>
-      <button class="auto-btn-next" id="autoBtnEnviar" onclick="autoEnviarRegistro()" style="margin-top:18px;">
-        <svg class="ico" aria-hidden="true"><use href="#i-send"/></svg> Enviar Registro
-      </button>
-      <button class="auto-btn-next gray" onclick="autoVoltarEditarRevisar()" style="margin-top:8px;">
+      <div class="auto-nav-duplo barra-acao">
+        <button class="auto-btn-prev" onclick="autoVoltarEditarRevisar()">
         ← Voltar e Editar
-      </button>
+        </button>
+        <button class="auto-btn-next" id="autoBtnEnviar" onclick="autoEnviarRegistro()">
+        <svg class="ico" aria-hidden="true"><use href="#i-send"/></svg> Enviar Registro
+        </button>
+      </div>
     </div>
   </div>
 
@@ -8602,16 +8459,10 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <div class="esc-enunciado" id="escAplicarEnunciado"></div>
     </div>
 
-    <div class="esc-aplic-progresso">
-      <span id="escProgressoLabel">0 de 0 respondidos</span>
-      <div class="esc-aplic-barra"><div class="esc-aplic-barra-fill" id="escProgressoBarra" style="width:0%"></div></div>
-      <span id="escProgressoPct">0%</span>
-    </div>
-
     <div id="escItens"></div>
 
-    <div class="esc-nav">
-      <button class="esc-btn esc-btn-secondary" onclick="escCancelarAplicacao()">← Cancelar</button>
+    <div class="esc-nav barra-acao">
+      <button class="esc-btn esc-btn-secondary" onclick="confirmarSaida(escCancelarAplicacao)">Cancelar</button>
       <!-- Pacote 12.7.2.2: wrapper captura clique APENAS quando botão está desabilitado.
            Quando o botão está habilitado, o onclick do próprio button roda e o alerta
            NÃO aparece (a função só alerta se disabled === true). -->
@@ -8675,7 +8526,6 @@ const STATUS_MEDICACAO = [
   { valor: 'passado', label: 'Usei no passado' },
   { valor: 'atual', label: 'Faço uso atualmente' },
 ];
-
 
 /* ============================================================
    DADOS ESTRUTURAIS DO MÓDULO ANAMNESE
@@ -8881,7 +8731,6 @@ const STATUS_TRATAMENTO = [
   { valor: 'atual', label: 'Recebi diagnóstico — estou em tratamento atualmente' },
 ];
 
-
 /* ============================================================
    COMUNICAÇÃO COM O APPS SCRIPT
    ============================================================ */
@@ -8977,7 +8826,6 @@ function loadingMensagem(txt) {
   if (el) el.textContent = txt || '';
 }
 
-
 /* ============================================================
    NAVEGAÇÃO ENTRE SEÇÕES
    ============================================================ */
@@ -8998,7 +8846,12 @@ function topbarAtualizar(idSecao) {
     bar.classList.add('tela'); bar.classList.remove('marca');
     document.getElementById('topbarTitulo').textContent = titulo;
     var btn = document.getElementById('topbarVoltar');
-    btn.setAttribute('onclick', sec.getAttribute('data-barra-voltar') || "abrirSecao('sec-menu')");
+    var codigo = sec.getAttribute('data-barra-voltar') || "abrirSecao('sec-menu')";
+    btn.removeAttribute('onclick');
+    btn.onclick = function () {
+      var executar = function () { (new Function(codigo))(); };
+      if (destinoForaDoFluxo(codigo, idSecao)) confirmarSaida(executar); else executar();
+    };
     btn.setAttribute('aria-label', sec.getAttribute('data-barra-voltar-rotulo') || 'Voltar');
     btn.title = sec.getAttribute('data-barra-voltar-rotulo') || 'Voltar';
     // subtítulo: data/hora do registro (texto do [data-auto-badge] da própria seção)
@@ -9011,6 +8864,43 @@ function topbarAtualizar(idSecao) {
     bar.classList.add('marca'); bar.classList.remove('tela');
   }
 }
+// Pacote 16.3: sair de um fluxo com dados em andamento pede confirmação; o rascunho já fica no aparelho.
+// (PROG_REGISTRO_TELAS é declarado mais abaixo; por isso a lista é lida na hora, não no carregamento)
+function fluxoRegistroTelas() { return Object.keys(PROG_REGISTRO_TELAS); }
+function fluxoEmAndamento() {
+  const at = document.querySelector('.section.active'); if (!at) return false;
+  const id = at.id;
+  if (id === 'sec-anamnese') return !!(typeof ANAM_STATE !== 'undefined' && !ANAM_STATE.modoConsulta && sessionStorage.getItem('anamnese_rascunho'));
+  if (fluxoRegistroTelas().indexOf(id) !== -1) return Object.keys(AUTO_STATE.dados || {}).length > 0 || Object.values(AUTO_STATE.preenchido || {}).some(Boolean);
+  if (id === 'sec-escalas-aplicar') return Object.keys(ESC_STATE.respostas || {}).length > 0;
+  return false;
+}
+function fluxoGuardarRascunho() {
+  const at = document.querySelector('.section.active'); if (!at) return;
+  if (fluxoRegistroTelas().indexOf(at.id) !== -1 && typeof autoSalvarRascunho === 'function') autoSalvarRascunho();
+  if (at.id === 'sec-escalas-aplicar' && typeof escSalvarRascunho === 'function') escSalvarRascunho();
+  // anamnese: o rascunho é gravado a cada passo (irParaProximoPasso/irParaPassoAnterior)
+}
+var SAIR_ACAO = null;
+function confirmarSaida(acao) {
+  if (!fluxoEmAndamento()) { acao(); return; }
+  fluxoGuardarRascunho();
+  SAIR_ACAO = acao;
+  const modal = document.getElementById('sairModal');
+  document.getElementById('sairModalConfirmar').onclick = function () { sairModalFechar(); const a = SAIR_ACAO; SAIR_ACAO = null; if (a) a(); };
+  modal.classList.add('show');
+  document.getElementById('sairModalConfirmar').focus();
+}
+function sairModalFechar() { document.getElementById('sairModal').classList.remove('show'); }
+// destino do "voltar" fica dentro do mesmo fluxo? (ex.: etapa → hub) — então não é saída
+function destinoForaDoFluxo(codigo, idAtual) {
+  const m = /abrirSecao\('([^']+)'\)/.exec(codigo || '');
+  if (!m) return true;
+  const dest = m[1];
+  if (fluxoRegistroTelas().indexOf(idAtual) !== -1 && fluxoRegistroTelas().indexOf(dest) !== -1) return false;
+  return true;
+}
+
 // Título dinâmico (ex.: escala em aplicação): grava no DOM e reflete na barra se a tela estiver ativa
 function topbarDefinirTitulo(idSecao, titulo) {
   var sec = document.getElementById(idSecao);
@@ -9019,10 +8909,74 @@ function topbarDefinirTitulo(idSecao, titulo) {
   if (sec.classList.contains('active')) topbarAtualizar(idSecao);
 }
 
+// ============================================================
+// Pacote 16.3 (T3): componente único de progresso ("Etapa N de T · nome" + trilho).
+// Substitui os pontos da anamnese, os pontos do humor, a barra com cadeado, o selo
+// "Preenchido", as tabs do cabeçalho cumulativo e a barra percentual das escalas.
+// cfg = { total, atual (1..total), nome, rotulo ('Etapa'|'Item'), cor ('pos'|'neg'|'pos-reg'),
+//         feitos: [índices tocáveis], irPara: function(indice) }
+// ============================================================
+var PROG_CFG = null;
+function progressoDefinir(cfg) {
+  PROG_CFG = cfg;
+  const el = document.getElementById('prog'); if (!el) return;
+  const total = cfg.total, atual = Math.min(Math.max(cfg.atual, 1), total);
+  document.getElementById('progTxt').textContent = (cfg.rotulo || 'Etapa') + ' ' + atual + ' de ' + total + (cfg.nome ? ' · ' + cfg.nome : '');
+  const feitos = new Set(cfg.feitos || []);
+  let h = '';
+  for (let i = 1; i <= total; i++) {
+    const feito = feitos.has(i) && i !== atual;
+    const cls = 'prog-seg' + (feito ? ' feito' : '') + (i === atual ? ' atual' : '');
+    const nome = (cfg.nomes && cfg.nomes[i]) ? cfg.nomes[i] : ((cfg.rotulo || 'Etapa') + ' ' + i);
+    h += feito
+      ? '<button type="button" class="' + cls + '" onclick="progressoIr(' + i + ')" aria-label="Voltar a ' + nome.replace(/"/g, '&quot;') + '"></button>'
+      : '<span class="' + cls + '" aria-hidden="true"></span>';
+  }
+  document.getElementById('progTrilho').innerHTML = h;
+  el.classList.remove('neg', 'pos-reg');
+  if (cfg.cor === 'neg' || cfg.cor === 'pos-reg') el.classList.add(cfg.cor);
+  el.classList.add('visivel');
+}
+function progressoOcultar() { PROG_CFG = null; const el = document.getElementById('prog'); if (el) el.classList.remove('visivel'); }
+function progressoIr(i) { if (PROG_CFG && typeof PROG_CFG.irPara === 'function') PROG_CFG.irPara(i); }
+
+// Registro (checagem de humor + tipo + 5 etapas + revisão = 8): decide pela tela ativa
+var PROG_REGISTRO_TELAS = {
+  'sec-auto-passo1': 1, 'sec-auto-passo2': 2,
+  'sec-auto-sit-a': 3, 'sec-auto-emo-a': 4, 'sec-auto-fis-a': 5, 'sec-auto-pens-a': 6, 'sec-auto-comp-a': 7,
+  'sec-auto-sit-b': 3, 'sec-auto-emo-b': 4, 'sec-auto-fis-b': 5, 'sec-auto-pens-b': 6, 'sec-auto-comp-b': 7,
+  'sec-auto-menu-neg': 0, 'sec-auto-menu-pos': 0, 'sec-auto-resumo': 8
+};
+var PROG_REGISTRO_NOMES = { 1: 'Humor', 2: 'Tipo de registro', 3: 'Situação', 4: 'Emoções', 5: 'Reações Físicas', 6: 'Pensamentos', 7: 'Comportamentos', 8: 'Revisar e enviar' };
+function progressoParaTela(idSecao) {
+  if (!(idSecao in PROG_REGISTRO_TELAS)) {
+    if (idSecao !== 'sec-anamnese' && idSecao !== 'sec-escalas-aplicar') progressoOcultar(); // anamnese e escala definem o próprio
+    return;
+  }
+  const tipo = /-b$|menu-pos$/.test(idSecao) ? 'pos' : (/-a$|menu-neg$/.test(idSecao) ? 'neg' : (idSecao === 'sec-auto-resumo' ? (AUTO_STATE.ultimoTipoFinalizado || 'neg') : null));
+  const chaves = tipo === 'pos' ? ['sit-b', 'emo-b', 'fis-b', 'pens-b', 'comp-b'] : ['sit-a', 'emo-a', 'fis-a', 'pens-a', 'comp-a'];
+  const secs = tipo === 'pos' ? AUTO_SEQ_POS : AUTO_SEQ_NEG;
+  let atual = PROG_REGISTRO_TELAS[idSecao];
+  const feitos = [];
+  if (atual === 0 || atual >= 3) feitos.push(1, 2); else if (atual === 2) feitos.push(1);
+  chaves.forEach((c, i) => { if (AUTO_STATE.preenchido[c]) feitos.push(3 + i); });
+  if (atual === 0) { const k = chaves.findIndex(c => !AUTO_STATE.preenchido[c]); atual = k === -1 ? 8 : 3 + k; }
+  progressoDefinir({
+    total: 8, atual, nome: PROG_REGISTRO_NOMES[atual], nomes: PROG_REGISTRO_NOMES, feitos,
+    cor: tipo === 'neg' ? 'neg' : (tipo === 'pos' ? 'pos-reg' : 'pos'),
+    irPara: function (k) {
+      if (k === 1) abrirSecao('sec-auto-passo1');
+      else if (k === 2) abrirSecao('sec-auto-passo2');
+      else if (k <= 7 && tipo) autoEntrarSecao(secs[k - 3], k - 3, tipo);
+    }
+  });
+}
+
 function abrirSecao(idSecao) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById(idSecao).classList.add('active');
   topbarAtualizar(idSecao);
+  progressoParaTela(idSecao);
   window.scrollTo({ top: 0, behavior: 'smooth' });
   // Pacote 14.2.1: telas do módulo Agenda usam container largo no desktop
   document.body.classList.toggle('vmc-largo',
@@ -9087,7 +9041,6 @@ function abrirModulo(modulo) {
   }
 }
 
-
 /* ============================================================
    SESSÃO DO PACIENTE
    ============================================================ */
@@ -9144,7 +9097,6 @@ function atualizarMenuConformeSessao() {
     if (senhaDestaque) senhaDestaque.classList.add('visivel');
   }
 }
-
 
 /* ============================================================
    LOGIN
@@ -10447,7 +10399,6 @@ function logout() {
   abrirSecao('sec-login');
 }
 
-
 /* ============================================================
    MÓDULO 1 — ANAMNESE
    ============================================================ */
@@ -10460,7 +10411,6 @@ const ANAM_STATE = {
   // Quantas pessoas de confiança estão visíveis no formulário (1 a 3)
   numPessoasConfianca: 1,
 };
-
 
 /* ============================================================
    ENTRADA DO MÓDULO
@@ -10489,7 +10439,6 @@ function voltarMenuAnamnese() {
   abrirSecao('sec-menu');
 }
 
-
 /* ============================================================
    RASCUNHO LOCAL
    ============================================================ */
@@ -10513,7 +10462,6 @@ function limparRascunho() {
   sessionStorage.removeItem('anamnese_rascunho');
 }
 
-
 /* ============================================================
    RENDERIZAÇÃO DOS PASSOS
    ============================================================ */
@@ -10522,7 +10470,7 @@ function renderPasso(numero) {
   const container = document.getElementById('anamConteudo');
 
   let html = '<div class="anam-card">';
-  html += renderStepDots(numero);
+  progressoDefinir({ total: 5, atual: numero, nome: ANAM_PASSOS_NOMES[numero], nomes: ANAM_PASSOS_NOMES, feitos: [1, 2, 3, 4].filter(k => k < numero), irPara: anamIrParaPasso });
 
   if (numero === 1) html += renderPasso1();
   else if (numero === 2) html += renderPasso2();
@@ -10538,20 +10486,19 @@ function renderPasso(numero) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function renderStepDots(passoAtivo) {
-  let html = '<div class="steps">';
-  for (let i = 1; i <= 4; i++) {
-    let cls = 'step-dot';
-    if (i < passoAtivo) cls += ' done';
-    else if (i === passoAtivo) cls += ' active';
-    html += `<div class="${cls}"></div>`;
+var ANAM_PASSOS_NOMES = { 1: 'Dados Pessoais', 2: 'Histórico de Tratamentos', 3: 'Histórico de Saúde', 4: 'Pessoa(s) de Confiança', 5: 'Revisão' };
+// Pacote 16.3: voltar a um passo já feito pelo trilho (guarda o passo atual no rascunho, como o "Voltar")
+function anamIrParaPasso(k) {
+  if (ANAM_STATE.passoAtual === 'revisao') { renderPasso(k); return; }
+  const dados = coletarDadosFormulario(false);
+  if (dados) {
+    sessionStorage.setItem('anamnese_rascunho', JSON.stringify({ passo: k, numPessoasConfianca: ANAM_STATE.numPessoasConfianca, dados: dados }));
   }
-  html += '</div>';
-  return html;
+  renderPasso(k);
 }
 
 function renderNavegacao(numero) {
-  let html = '<div class="anam-nav">';
+  let html = '<div class="anam-nav barra-acao">';
   if (numero > 1) {
     html += `<button class="btn-step btn-step-prev" onclick="irParaPassoAnterior()">← Voltar</button>`;
   }
@@ -10564,13 +10511,11 @@ function renderNavegacao(numero) {
   return html;
 }
 
-
 /* ============================================================
    PASSO 1 — DADOS PESSOAIS
    ============================================================ */
 function renderPasso1() {
   let html = '';
-  html += '<div class="anam-step-title">Passo 1 de 4 — Dados Pessoais</div>';
   html += '<div class="anam-step-sub">Preencha suas informações básicas</div>';
 
   html += `
@@ -10720,7 +10665,6 @@ function renderPasso1() {
   return html;
 }
 
-
 /* ============================================================
    PASSO 2 — HISTÓRICO DE TRATAMENTOS (reformulado v2.1)
    Ordem: tratamentos anteriores → procedimento → medicação não
@@ -10728,7 +10672,6 @@ function renderPasso1() {
    ============================================================ */
 function renderPasso2() {
   let html = '';
-  html += '<div class="anam-step-title">Passo 2 de 4 — Histórico de Tratamentos</div>';
   html += '<div class="anam-step-sub">Tratamentos anteriores, procedimentos e medicações</div>';
 
   html += `
@@ -10861,13 +10804,11 @@ function renderPasso2() {
   return html;
 }
 
-
 /* ============================================================
    PASSO 3 — HISTÓRICO DE SAÚDE (reformulado v2)
    ============================================================ */
 function renderPasso3() {
   let html = '';
-  html += '<div class="anam-step-title">Passo 3 de 4 — Histórico de Saúde</div>';
   html += '<div class="anam-step-sub">Diagnósticos psiquiátricos e condições clínicas</div>';
 
   // === TRANSTORNOS MENTAIS ===
@@ -11039,13 +10980,11 @@ function renderPasso3() {
   return html;
 }
 
-
 /* ============================================================
    PASSO 4 — PESSOAS DE CONFIANÇA (até 3)
    ============================================================ */
 function renderPasso4() {
   let html = '';
-  html += '<div class="anam-step-title">Passo 4 de 4 — Pessoa(s) de Confiança</div>';
   html += '<div class="anam-step-sub">Indique pelo menos uma pessoa que possa ser contatada em caso de necessidade</div>';
 
   // Sempre renderiza 1 (obrigatória), 2 e 3 conforme state
@@ -11144,7 +11083,6 @@ function removerPessoaConfianca(n) {
   ANAM_STATE.numPessoasConfianca = Math.max(1, ANAM_STATE.numPessoasConfianca - 1);
   renderPasso(4);
 }
-
 
 /* ============================================================
    LISTENERS / INTERAÇÕES DOS PASSOS
@@ -11276,7 +11214,6 @@ function atualizarAvisoRisco() {
   else warning.classList.remove('visible');
 }
 
-
 /* ============================================================
    MÁSCARAS
    ============================================================ */
@@ -11326,7 +11263,6 @@ function mascaraRGFlex(e) {
   e.target.value = v;
 }
 
-
 /* ============================================================
    VALIDAÇÃO DE CPF
    ============================================================ */
@@ -11346,7 +11282,6 @@ function validarCPF(cpf) {
   if (dig2 !== parseInt(cpf[10])) return false;
   return true;
 }
-
 
 /* ============================================================
    IDADE
@@ -11374,7 +11309,6 @@ function atualizarIdade() {
     display.classList.remove('visible');
   }
 }
-
 
 /* ============================================================
    VIACEP — busca automática de endereço
@@ -11434,7 +11368,6 @@ async function buscarCep(cepLimpo) {
 function abrirBuscaCepCorreios() {
   window.open('https://buscacepinter.correios.com.br/app/endereco/index.php', '_blank', 'noopener');
 }
-
 
 /* ============================================================
    COLETA DE DADOS DO FORMULÁRIO
@@ -11784,7 +11717,6 @@ function coletarDadosFormulario(validar = true) {
   return dados;
 }
 
-
 /* ============================================================
    RESTAURAÇÃO DE VALORES DO RASCUNHO
    ============================================================ */
@@ -11989,7 +11921,6 @@ function restaurarValoresDoRascunho() {
   }
 }
 
-
 /* ============================================================
    NAVEGAÇÃO ENTRE PASSOS
    ============================================================ */
@@ -12027,7 +11958,6 @@ function irParaRevisao() {
   renderRevisao(dados);
 }
 
-
 /* ============================================================
    TELA DE REVISÃO
    ============================================================ */
@@ -12043,7 +11973,7 @@ function renderRevisao(dados) {
   };
 
   let html = '<div class="anam-card">';
-  html += '<div class="anam-step-title">Revisão antes do envio</div>';
+  progressoDefinir({ total: 5, atual: 5, nome: ANAM_PASSOS_NOMES[5], nomes: ANAM_PASSOS_NOMES, feitos: [1, 2, 3, 4], irPara: anamIrParaPasso });
   html += '<div class="anam-step-sub">Confira atentamente todos os dados abaixo</div>';
 
   html += '<div class="alert alert-warn" style="margin-bottom:14px;"><svg class=ico aria-hidden=true><use href=#i-alert></use></svg> Após o envio, a anamnese <strong>não poderá ser editada</strong>. Se identificar algum erro, use o botão "Voltar e corrigir".</div>';
@@ -12123,7 +12053,7 @@ function renderRevisao(dados) {
   html += '</div>';
 
   html += `
-    <div class="anam-nav">
+    <div class="anam-nav barra-acao">
       <button class="btn-step btn-step-prev" onclick="voltarDaRevisao()">← Voltar e corrigir</button>
       <button class="btn-step btn-step-finish" onclick="abrirModalConfirma()"><svg class=ico aria-hidden=true><use href=#i-check></use></svg> Enviar definitivamente</button>
     </div>
@@ -12138,7 +12068,6 @@ function voltarDaRevisao() {
   renderPasso(4);
 }
 
-
 /* ============================================================
    MODAL DE CONFIRMAÇÃO
    ============================================================ */
@@ -12148,7 +12077,6 @@ function abrirModalConfirma() {
 function fecharModalConfirma() {
   document.getElementById('modalConfirma').classList.remove('visible');
 }
-
 
 /* ============================================================
    ENVIO DEFINITIVO
@@ -12193,7 +12121,6 @@ async function enviarAnamneseDefinitivo() {
   ANAM_STATE.modoConsulta = true;
   await abrirModoConsulta(true);
 }
-
 
 /* ============================================================
    MODO CONSULTA
@@ -12266,6 +12193,7 @@ function renderConsulta(dados, recemEnviado) {
     </div>
   `;
 
+  progressoOcultar();
   html += '<div class="anam-step-title">Sua Anamnese</div>';
   html += '<div class="anam-step-sub">Visualização somente leitura</div>';
 
@@ -12355,7 +12283,6 @@ function renderConsulta(dados, recemEnviado) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-
 /* ============================================================
    UTILITÁRIOS
    ============================================================ */
@@ -12382,7 +12309,6 @@ function escapeAttr(s) {
     .replace(/'/g, '&#39;');
 }
 
-
 /* ============================================================
    INICIALIZAÇÃO
    ============================================================ */
@@ -12403,7 +12329,6 @@ window.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Enter') document.getElementById('inputSenha').focus();
   });
 });
-
 
 /* ============================================================
    MÓDULO 2 v4 — JS
@@ -12482,8 +12407,6 @@ function autoResetState() {
   const inpObs = document.getElementById('autoInpObsHumor');
   if (inpObs) inpObs.value = '';
   autoAtualizarProgressoMenus();
-  autoAtualizarBarra('neg');
-  autoAtualizarBarra('pos');
 }
 
 // ============================================================
@@ -12958,30 +12881,14 @@ function p11aRenderizarCabecalho(idSecaoAtual) {
     }
   });
 
-  // Primeira vez = tabs futuras bloqueadas
-  const primeiraVez = (typeof P5_STATE !== 'undefined' && P5_STATE.verificado && P5_STATE.primeiraVez === true);
-
-  // ===== Linha única (Pacote 16.1): humor + chips das etapas + "+N" + chevron da trilha =====
-  let c1 = '<div class="p11-linha"><div class="p11-chips">';
-  c1 += '<span class="p11-tab" title="Humor: ' + p11aEscape(humor.label) + '"><span class="p11-humor-emoji">' + humor.emoji + '</span></span>';
-  // Contador +N: seções preenchidas anteriores (filled) que não são a atual
+  // ===== Pacote 16.3: a navegação entre etapas é do componente de progresso; aqui fica só
+  // o resumo do que já foi preenchido ("+N" abre o modal, chevron abre a trilha). Sem nada
+  // preenchido antes, o cabeçalho nem aparece. =====
   const nPrev = Object.values(status).filter(v => v === 'filled').length;
-
-  // Chips das 5 etapas (ex-camada 2), na mesma linha
+  if (nPrev === 0) { hdrEl.innerHTML = ''; hdrEl.style.display = 'none'; return; }
+  let c1 = '<div class="p11-linha">';
+  c1 += '<span class="p11-linha-txt">Humor ' + humor.emoji + ' · ' + nPrev + (nPrev === 1 ? ' etapa preenchida' : ' etapas preenchidas') + '</span>';
   let c2 = '';
-  P11A_NEG_SECOES.forEach(s => {
-    const st = status[s.id];
-    let cls = 'p11-tab';
-    if (st === 'current') cls += ' current';
-    else if (st === 'filled') cls += ' filled';
-    else if (primeiraVez) cls += ' locked';
-    const clickable = (st === 'filled') || (st === 'current') || !primeiraVez;
-    const onclick = clickable
-      ? ' onclick="p11aNavegarTab(\'' + s.fullId + '\', this)"'
-      : ' onclick="p11aTooltipBloqueio(this)"';
-    c2 += '<span class="' + cls + '"' + onclick + '>' + s.icone + ' ' + p11aEscape(s.nome) + '</span>';
-  });
-  c2 += '</div>'; // fim dos chips roláveis; "+N" e chevron ficam fixos à direita
   if (nPrev >= 1) {
     c2 += '<button class="p11-modal-btn" type="button" onclick="p11aAbrirModal()"><span class="p11-modal-btn-ic"><svg class=ico aria-hidden=true><use href=#i-clipboard></use></svg></span> +' + nPrev + '</button>';
   }
@@ -13024,32 +12931,6 @@ function p11aToggleLinha(el) {
 }
 
 // Clique em tab da Camada 2 — navega para seção
-function p11aNavegarTab(fullId, tabEl) {
-  if (tabEl && tabEl.classList.contains('current')) return; // já está nela
-  if (tabEl && tabEl.classList.contains('locked')) {
-    p11aTooltipBloqueio(tabEl);
-    return;
-  }
-  if (typeof abrirSecao === 'function') abrirSecao(fullId);
-}
-
-// Tooltip de tab bloqueada
-function p11aTooltipBloqueio(tab) {
-  let tip = document.getElementById('p11aTooltip');
-  if (!tip) {
-    tip = document.createElement('div');
-    tip.id = 'p11aTooltip';
-    tip.className = 'p11-tooltip';
-    document.body.appendChild(tip);
-  }
-  tip.textContent = 'Preencha a seção anterior primeiro';
-  const rect = tab.getBoundingClientRect();
-  tip.style.left = rect.left + 'px';
-  tip.style.top = (rect.bottom + 10) + 'px';
-  tip.classList.add('show');
-  setTimeout(() => tip.classList.remove('show'), 1800);
-}
-
 // Abre o modal do botão +N — NÃO navega pra tela Revisar.
 // Estratégia: chama autoAbrirResumo() pra popular #autoResumoConteudo,
 // captura o HTML, volta à seção original e clona o conteúdo no modal.
@@ -13290,18 +13171,9 @@ function autoAbrirMenuTipo(tipo) {
   }
   const destino = tipo === 'neg' ? 'sec-auto-menu-neg' : 'sec-auto-menu-pos';
   abrirSecao(destino);
-  autoMostrarBarraSeNecessario(tipo);
   autoAplicarSequenciaObrigatoria(tipo);
   autoAtualizarProgressoMenus();
-}
-
-function autoMostrarBarraSeNecessario(tipo) {
-  // Mostra a barra gamificada só na 1ª vez
-  const barra = document.getElementById(tipo === 'neg' ? 'gbarNeg' : 'gbarPos');
-  if (!barra) return;
-  const primeiraVez = tipo === 'neg' ? AUTO_STATE.primeiraVezNeg : AUTO_STATE.primeiraVezPos;
-  barra.style.display = primeiraVez ? 'block' : 'none';
-  if (primeiraVez) autoAtualizarBarra(tipo);
+  progressoParaTela(destino);
 }
 
 function autoAplicarSequenciaObrigatoria(tipo) {
@@ -13353,10 +13225,9 @@ function autoAvancarSequencial(tipo, destino) {
 
   autoSalvarRascunho();
   abrirSecao(destino);
-  autoMostrarBarraSeNecessario(tipo);
   autoAplicarSequenciaObrigatoria(tipo);
   autoAtualizarProgressoMenus();
-  autoAtualizarBarra(tipo);
+  progressoParaTela(destino);
 }
 
 // ============================================================
@@ -13684,25 +13555,12 @@ document.addEventListener('click', function(e) {
 // ============================================================
 // PROGRESSO DE MENU E BARRA GAMIFICADA
 // ============================================================
+// Pacote 16.3: o selo "Preenchido" saiu (o trilho de progresso mostra as etapas feitas); a função
+// segue recalculando AUTO_STATE.preenchido e habilitando os botões de concluir.
 function autoAtualizarProgressoMenus() {
-  const secoes = [
-    ['sit-a','sec-auto-sit-a','autoProg-sit-a'],
-    ['emo-a','sec-auto-emo-a','autoProg-emo-a'],
-    ['fis-a','sec-auto-fis-a','autoProg-fis-a'],
-    ['pens-a','sec-auto-pens-a','autoProg-pens-a'],
-    ['comp-a','sec-auto-comp-a','autoProg-comp-a'],
-    ['sit-b','sec-auto-sit-b','autoProg-sit-b'],
-    ['emo-b','sec-auto-emo-b','autoProg-emo-b'],
-    ['fis-b','sec-auto-fis-b','autoProg-fis-b'],
-    ['pens-b','sec-auto-pens-b','autoProg-pens-b'],
-    ['comp-b','sec-auto-comp-b','autoProg-comp-b'],
-  ];
-  for (const [chave, secId, progId] of secoes) {
-    const tem = autoTemConteudoNaSecao(secId);
-    AUTO_STATE.preenchido[chave] = tem;
-    const progEl = document.getElementById(progId);
-    if (progEl) progEl.classList.toggle('pronto', tem);
-  }
+  Object.entries(AUTO_SEC_MAP).forEach(([secId, chave]) => {
+    AUTO_STATE.preenchido[chave] = autoTemConteudoNaSecao(secId);
+  });
   // Habilita botões de finalizar tipo
   const btnNeg = document.getElementById('autoBtnFinalizarNeg');
   const btnPos = document.getElementById('autoBtnFinalizarPos');
@@ -13725,42 +13583,6 @@ function autoTemConteudoNaSecao(secId) {
     if (autoContarItensMarcados(gr) > 0) return true;
   }
   return false;
-}
-
-// Barra gamificada
-function autoAtualizarBarra(tipo) {
-  const barra = document.getElementById(tipo === 'neg' ? 'gbarNeg' : 'gbarPos');
-  if (!barra || barra.style.display === 'none') return;
-  const total = tipo === 'neg' ? 6 : 5;
-  const atual = tipo === 'neg' ? AUTO_STATE.seqNegAtual : AUTO_STATE.seqPosAtual;
-  const steps = barra.querySelectorAll('.gbar-step');
-  const labels = barra.querySelectorAll('.gbar-label');
-  const fill = barra.querySelector('.gbar-line-fill');
-  const key = barra.querySelector('.gbar-key');
-  const counter = barra.querySelector('.gbar-counter strong');
-
-  steps.forEach((s, i) => {
-    s.classList.remove('atual','concluido');
-    if (labels[i]) labels[i].classList.remove('atual','concluido');
-  });
-  for (let i = 0; i < total; i++) {
-    if (i < atual) {
-      steps[i].classList.add('concluido');
-      if (labels[i]) labels[i].classList.add('concluido');
-    } else if (i === atual && atual < total) {
-      steps[i].classList.add('atual');
-      if (labels[i]) labels[i].classList.add('atual');
-    }
-  }
-  let percent;
-  if (atual === 0) percent = 0;
-  else if (atual >= total) percent = 100;
-  else percent = (atual / (total - 1)) * 100;
-  percent = Math.min(percent, 100);
-  fill.style.width = percent + '%';
-  if (key) key.style.left = percent + '%';
-  if (counter) counter.textContent = atual;
-  barra.classList.toggle('done', atual >= total);
 }
 
 // ============================================================
@@ -15541,7 +15363,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-
 /* ============================================================
    MÓDULO 4 — ESCALAS E INVENTÁRIOS (Pacote 12.2)
    Prefixo: esc* / ESC_*
@@ -15980,6 +15801,8 @@ function escIniciarAplicacao(codigoEscala) {
   ESC_STATE.escalaAtual = codigoEscala;
   ESC_STATE.respostas = {};
   ESC_STATE.inicioPreenchimento = Date.now();
+  const rascunho = escCarregarRascunho(codigoEscala); // Pacote 16.3
+  if (rascunho) { ESC_STATE.respostas = rascunho.respostas || {}; ESC_STATE.inicioPreenchimento = rascunho.inicio || Date.now(); }
 
   // Preenche cabeçalho
   topbarDefinirTitulo('sec-escalas-aplicar', codigoEscala); // Pacote 16.1: título vai para a barra
@@ -15997,6 +15820,10 @@ function escIniciarAplicacao(codigoEscala) {
 
   // Renderiza itens
   escRenderItens(def);
+  // Pacote 16.3: reaplica as respostas do rascunho nos botões
+  Object.entries(ESC_STATE.respostas).forEach(([itemId, valor]) => {
+    document.querySelectorAll('.esc-opcao[data-item="' + itemId + '"]').forEach(b => b.classList.toggle('selecionada', parseInt(b.dataset.valor) === valor));
+  });
 
   // Reseta progresso
   escAtualizarProgresso();
@@ -16081,6 +15908,7 @@ function escRenderItens(def) {
  */
 function escSelecionarOpcao(itemId, valor, critico) {
   ESC_STATE.respostas[itemId] = valor;
+  escSalvarRascunho(); // Pacote 16.3: rascunho da escala no aparelho
 
   // Atualiza visual dos botões do item
   document.querySelectorAll('.esc-opcao[data-item="' + itemId + '"]').forEach(b => {
@@ -16113,10 +15941,16 @@ function escAtualizarProgresso() {
   const preenchidosVisual = Object.keys(ESC_STATE.respostas).length;
   const pct = Math.round((preenchidosVisual / totalComFuncional) * 100);
 
-  document.getElementById('escProgressoLabel').textContent =
-    preenchidosVisual + ' de ' + totalComFuncional + ' respondidos';
-  document.getElementById('escProgressoPct').textContent = pct + '%';
-  document.getElementById('escProgressoBarra').style.width = pct + '%';
+  // Pacote 16.3: componente único de progresso (item atual = próximo não respondido; itens respondidos são tocáveis e rolam até o item)
+  const ids = def.itens.map(i => i.id).concat(def.itemFuncional ? ['funcional'] : []);
+  const feitos = ids.map((id, k) => ESC_STATE.respostas[id] !== undefined ? k + 1 : 0).filter(Boolean);
+  const proximo = ids.findIndex(id => ESC_STATE.respostas[id] === undefined);
+  progressoDefinir({
+    total: totalComFuncional, atual: proximo === -1 ? totalComFuncional : proximo + 1, rotulo: 'Item',
+    nome: ESC_STATE.escalaAtual, feitos, cor: 'pos',
+    irPara: function (k) { const box = document.getElementById('escItemBox-' + ids[k - 1]); if (box) box.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  });
+  void pct;
 
   // Pacote 12.7.2.1: botão só destrava quando TUDO estiver respondido,
   // incluindo o item funcional (F) quando a escala tem.
@@ -16149,13 +15983,19 @@ function escBtnEnviarClicado(event) {
 /**
  * Cancelar aplicação — volta ao menu e limpa estado.
  */
+// Pacote 16.3: rascunho da escala (sessionStorage), restaurado ao reabrir a mesma escala
+var ESC_RASCUNHO_KEY = 'esc_rascunho_v1';
+function escSalvarRascunho() {
+  try { sessionStorage.setItem(ESC_RASCUNHO_KEY, JSON.stringify({ codigo: ESC_STATE.escalaAtual, respostas: ESC_STATE.respostas, inicio: ESC_STATE.inicioPreenchimento })); } catch (e) {}
+}
+function escCarregarRascunho(codigo) {
+  try { const r = JSON.parse(sessionStorage.getItem(ESC_RASCUNHO_KEY) || 'null'); return (r && r.codigo === codigo) ? r : null; } catch (e) { return null; }
+}
+function escLimparRascunho() { try { sessionStorage.removeItem(ESC_RASCUNHO_KEY); } catch (e) {} }
+
+// A confirmação de saída ("Sair sem gravar?") é feita por confirmarSaida() antes de chegar aqui;
+// o rascunho fica no aparelho e volta ao reabrir a mesma escala.
 function escCancelarAplicacao() {
-  const preenchidos = Object.keys(ESC_STATE.respostas).length;
-  if (preenchidos > 0) {
-    if (!confirm('Você preencheu ' + preenchidos + ' resposta(s). Se sair agora, elas serão descartadas. Tem certeza?')) {
-      return;
-    }
-  }
   ESC_STATE.escalaAtual = null;
   ESC_STATE.respostas = {};
   ESC_STATE.inicioPreenchimento = null;
@@ -16341,6 +16181,7 @@ async function escEnviarEscala(event) {
 // ============================================================
 
 function escMostrarResultado(codigo, calc, respostas) {
+  escLimparRascunho(); // Pacote 16.3: escala gravada, rascunho não faz mais sentido
   const def = ESC_ESCALAS[codigo];
   if (!def) return;
 
@@ -17068,7 +16909,6 @@ function escDataHojeISO() {
 }
 
 /* Fim do Pacote 12.2 (Módulo 4 — Escalas e Inventários) */
-
 
 /* ============================================================
    PACOTE 12.7 (Fase 1) — Histórico de Escalas
