@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.4.1 (20/09/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.4.2 (20/09/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -1786,10 +1786,18 @@ body.vmc-largo .topbar-in{max-width:1360px;}
   transition:background var(--dur-fast) var(--ease),border-color var(--dur-fast) var(--ease);}
 .histf-chip:hover{background:var(--c-action-tint);border-color:var(--c-action);}
 .histf-chip.ativo{background:var(--c-action);border-color:var(--c-action);color:var(--c-ink-inv);} /* 16.4b.1: sobre índigo cheio o texto é --c-ink-inv; --c-action-ink é para o tinte */
-.histm{margin-bottom:var(--s-5);}
-.histm-head{display:flex;align-items:baseline;gap:var(--s-2);margin-bottom:var(--s-2);}
+.histm{margin-bottom:var(--s-3);}
+/* Pacote 16.4.2: cabeçalho de mês vira botão recolhível, no padrão do histórico de escalas */
+.histm-head{display:flex;align-items:center;gap:var(--s-2);width:100%;
+  min-height:var(--hit-min);padding:var(--s-2) var(--s-3);
+  border:1px solid var(--c-line);border-radius:var(--r-field);
+  background:var(--c-surface);cursor:pointer;text-align:left;
+  font-family:var(--f-text);transition:background var(--dur-fast) var(--ease);}
+.histm-head:hover{background:var(--c-surface-sub);}
 .histm-mes{font:var(--t-h4);color:var(--c-ink);}
-.histm-cont{font:var(--t-body-sm);color:var(--c-ink-3);}
+.histm-cont{font:var(--t-body-sm);color:var(--c-ink-3);flex:1;}
+.histm-corpo{display:none;padding-top:var(--s-3);}
+.histm.aberto .histm-corpo{display:block;}
 .histc-tipo{font:var(--t-label);letter-spacing:var(--ls-label);text-transform:uppercase;
   padding:2px var(--s-2);border-radius:var(--r-chip);white-space:nowrap;}
 .histc-tipo.neg{background:var(--c-reg-neg-tint);color:var(--c-reg-neg-ink);}
@@ -2853,7 +2861,8 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .esch-bloco-chevron {
   font-size: 18px; color:var(--c-ink-3); transition: transform 0.2s;
 }
-.esch-bloco.aberto .esch-bloco-chevron { transform: rotate(90deg); }
+/* Pacote 16.4.2: a seta serve a qualquer bloco recolhível (esch-bloco e histm) */
+.aberto .esch-bloco-chevron { transform: rotate(90deg); }
 
 .esch-bloco-corpo {
   display: none; padding: 4px 16px 16px 16px;
@@ -14200,6 +14209,7 @@ async function autoAbrirHistorico() {
   // o que é desenhado; histAbrirModal(idx) recebe sempre o índice deste array.
   window._HIST_REGS = regs;
   HIST_FILTRO = 'todos';
+  HIST_MESES_ABERTOS = {}; // Pacote 16.4.2: ao entrar na tela, todo mês nasce fechado
 
   // Pacote 8: try/catch para detectar erro de parse silencioso
   try {
@@ -14218,6 +14228,7 @@ async function autoAbrirHistorico() {
    Um mesmo registro pode ser negativo, positivo ou os dois.
    ============================================================ */
 var HIST_FILTRO = 'todos';           // 'todos' | 'neg' | 'pos'
+var HIST_MESES_ABERTOS = {};         // Pacote 16.4.2: { '2026-09': true } — sobrevive à troca de filtro
 var HIST_EMOJIS = {1:'😟',2:'🙁',3:'😐',4:'🙂',5:'😊'};
 var HIST_HUMOR_LBL = {1:'Muito negativo',2:'Negativo',3:'Neutro',4:'Positivo',5:'Muito positivo'};
 var HIST_MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
@@ -14251,6 +14262,12 @@ function histRotuloMes(chave) {
 function histFiltrar(chave) {
   HIST_FILTRO = chave;
   histRenderizarLista();
+}
+
+// Pacote 16.4.2: abre/fecha um mês (estado em HIST_MESES_ABERTOS, que sobrevive à
+// re-renderização do filtro). Reusa o alternador do histórico de escalas.
+function histToggleMes(headEl) {
+  blocoRecolhivelToggle(headEl, HIST_MESES_ABERTOS, 'data-mes');
 }
 
 function histMontarChips() {
@@ -14320,13 +14337,18 @@ function histRenderizarLista() {
 
   ordem.forEach(function (chave) {
     const itens = grupos[chave];
-    html += '<div class="histm">' +
-              '<div class="histm-head">' +
+    const aberto = HIST_MESES_ABERTOS[chave] === true;
+    html += '<div class="histm' + (aberto ? ' aberto' : '') + '" data-mes="' + chave + '">' +
+              '<button type="button" class="histm-head" onclick="histToggleMes(this)"' +
+                ' aria-expanded="' + (aberto ? 'true' : 'false') + '">' +
                 '<span class="histm-mes">' + histRotuloMes(chave) + '</span>' +
                 '<span class="histm-cont">· ' + itens.length +
                   (itens.length === 1 ? ' registro' : ' registros') + '</span>' +
+                '<span class="esch-bloco-chevron">›</span>' +
+              '</button>' +
+              '<div class="histm-corpo">' +
+                itens.map(function (it) { return histMontarCartao(it.r, it.idx); }).join('') +
               '</div>' +
-              itens.map(function (it) { return histMontarCartao(it.r, it.idx); }).join('') +
             '</div>';
   });
 
@@ -17489,14 +17511,23 @@ function escHistRenderBlocos(cont, registros) {
   cont.innerHTML = html;
 }
 
-// Abre/fecha um bloco e guarda o estado em ESC_HIST_STATE.abertos
-function escHistToggleBloco(headEl) {
+// Pacote 16.4.2: alternador ÚNICO dos blocos recolhíveis do paciente — o histórico
+// de escalas (.esch-bloco, chave em data-esc) e os meses de Meus Registros (.histm,
+// chave em data-mes). Mesma classe de estado (.aberto), mesma seta
+// (.esch-bloco-chevron); o estado fica no objeto que o chamador passa.
+function blocoRecolhivelToggle(headEl, estado, attrChave) {
   const bloco = headEl && headEl.parentElement;
   if (!bloco) return;
-  const cod = bloco.getAttribute('data-esc');
+  const chave = bloco.getAttribute(attrChave);
   const agoraAberto = !bloco.classList.contains('aberto');
   bloco.classList.toggle('aberto', agoraAberto);
-  if (cod) ESC_HIST_STATE.abertos[cod] = agoraAberto;
+  headEl.setAttribute('aria-expanded', agoraAberto ? 'true' : 'false');
+  if (chave && estado) estado[chave] = agoraAberto;
+}
+
+// Abre/fecha um bloco do histórico de escalas (estado em ESC_HIST_STATE.abertos)
+function escHistToggleBloco(headEl) {
+  blocoRecolhivelToggle(headEl, ESC_HIST_STATE.abertos, 'data-esc');
 }
 
 // ============================================================
