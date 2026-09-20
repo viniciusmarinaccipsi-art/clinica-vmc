@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.4a (20/09/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.4b (20/09/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -1752,6 +1752,23 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .histc-empty{text-align:center;padding:40px 20px;background:var(--c-surface);border-radius:var(--r-card);border:2px dashed var(--c-line);}
 .histc-empty-icon{font-size:42px;display:block;margin-bottom:10px;opacity:.5;}
 .histc-empty-text{font-size:13px;color:var(--c-ink-3);line-height:1.6;}
+
+/* ===== Pacote 16.4b — Meus Registros: chips de filtro + agrupamento por mês ===== */
+.histf{display:flex;gap:var(--s-2);flex-wrap:wrap;margin-bottom:var(--s-4);}
+.histf-chip{font:var(--t-action);min-height:var(--hit-min);padding:0 var(--s-4);border-radius:var(--r-chip);
+  border:1px solid var(--c-line-strong);background:var(--c-surface);color:var(--c-ink-2);cursor:pointer;
+  display:inline-flex;align-items:center;
+  transition:background var(--dur-fast) var(--ease),border-color var(--dur-fast) var(--ease);}
+.histf-chip:hover{background:var(--c-action-tint);border-color:var(--c-action);}
+.histf-chip.ativo{background:var(--c-action);border-color:var(--c-action);color:var(--c-action-ink);}
+.histm{margin-bottom:var(--s-5);}
+.histm-head{display:flex;align-items:baseline;gap:var(--s-2);margin-bottom:var(--s-2);}
+.histm-mes{font:var(--t-h4);color:var(--c-ink);}
+.histm-cont{font:var(--t-body-sm);color:var(--c-ink-3);}
+.histc-tipo{font:var(--t-label);letter-spacing:var(--ls-label);text-transform:uppercase;
+  padding:2px var(--s-2);border-radius:var(--r-chip);white-space:nowrap;}
+.histc-tipo.neg{background:var(--c-reg-neg-tint);color:var(--c-reg-neg-ink);}
+.histc-tipo.pos{background:var(--c-reg-pos-tint);color:var(--c-reg-pos-ink);}
 
 /* ============================================================
    PACOTE 7 — Meus Registros expandidos + lupa
@@ -13927,42 +13944,142 @@ async function autoAbrirHistorico() {
     return;
   }
 
-  // Guarda registros para o modal poder acessar por índice
+  // Guarda registros para o modal poder acessar por índice.
+  // Pacote 16.4b: _HIST_REGS continua sendo a lista COMPLETA — o filtro só decide
+  // o que é desenhado; histAbrirModal(idx) recebe sempre o índice deste array.
   window._HIST_REGS = regs;
-
-  const emojis = {1:'😟',2:'🙁',3:'😐',4:'🙂',5:'😊'};
-  const humorLbl = {1:'Muito negativo',2:'Negativo',3:'Neutro',4:'Positivo',5:'Muito positivo'};
+  HIST_FILTRO = 'todos';
 
   // Pacote 8: try/catch para detectar erro de parse silencioso
   try {
-    box.innerHTML = regs.map((r, idx) => {
-      const data = String(r.data_registro || '');
-      let dataFmt = '—';
-      const m = data.match(/(\d{4})-(\d{2})-(\d{2})/);
-      if (m) dataFmt = `${m[3]}/${m[2]}/${m[1]}`;
-      else if (data) dataFmt = data;
-      const hora = autoFormatarHora(r.hora_registro);
-      const humor = parseInt(r.humor_nivel, 10) || 3;
-
-      // Pacote 10 v4 — Lista compacta: só cabeçalho com data/humor/lupa.
-      // As funções histSecaoExpandida/histTituloGrupo continuam existindo
-      // (usadas pelo modal da lupa), só não são mais chamadas aqui.
-      return `
-        <div class="histc">
-          <div class="histc-head">
-            <div class="histc-mood m${humor}">${emojis[humor] || '<svg class=ico aria-hidden=true><use href=#i-help></use></svg>'}</div>
-            <div class="histc-info">
-              <div class="histc-date">${dataFmt} · ${hora}</div>
-              <div class="histc-meta">Humor: <span class="humor-pill">${humor}/5 ${humorLbl[humor] || ''}</span></div>
-            </div>
-            <button class="hist-btn-lupa" type="button" title="Ver registro completo" onclick="histAbrirModal(${idx})"><svg class=ico aria-hidden=true><use href=#i-search></use></svg></button>
-          </div>
-        </div>`;
-    }).join('');
+    histRenderizarLista();
   } catch (err) {
     console.error('[Histórico] Erro ao renderizar registros:', err);
     box.innerHTML = `<div class="auto-sec-warn">Erro ao montar a lista de registros.<br><br><small>${escapeHtmlAuto(String(err && err.message || err))}</small><br><br>Tente recarregar a página.</div>`;
   }
+}
+
+/* ============================================================
+   PACOTE 16.4b — Meus Registros: chips de filtro + meses
+   ============================================================
+   O tipo do registro vem das colunas que já existem na aba
+   Automonitoramento: neg_preenchido e pos_preenchido ('sim').
+   Um mesmo registro pode ser negativo, positivo ou os dois.
+   ============================================================ */
+var HIST_FILTRO = 'todos';           // 'todos' | 'neg' | 'pos'
+var HIST_EMOJIS = {1:'😟',2:'🙁',3:'😐',4:'🙂',5:'😊'};
+var HIST_HUMOR_LBL = {1:'Muito negativo',2:'Negativo',3:'Neutro',4:'Positivo',5:'Muito positivo'};
+var HIST_MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                  'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+var HIST_CHIPS = [
+  { chave:'todos', rotulo:'Todos' },
+  { chave:'neg',   rotulo:'Registro Negativo' },
+  { chave:'pos',   rotulo:'Registro Positivo' }
+];
+
+function histEhNeg(r) { return !!r && r.neg_preenchido === 'sim'; }
+function histEhPos(r) { return !!r && r.pos_preenchido === 'sim'; }
+
+function histNoFiltro(r, filtro) {
+  if (filtro === 'neg') return histEhNeg(r);
+  if (filtro === 'pos') return histEhPos(r);
+  return true;
+}
+
+// "2026-09-14" -> "Setembro 2026" (chave de agrupamento = "2026-09")
+function histChaveMes(r) {
+  const m = String((r && r.data_registro) || '').match(/(\d{4})-(\d{2})/);
+  return m ? m[1] + '-' + m[2] : 'sem-data';
+}
+function histRotuloMes(chave) {
+  const m = String(chave).match(/(\d{4})-(\d{2})/);
+  if (!m) return 'Sem data';
+  return (HIST_MESES[parseInt(m[2], 10) - 1] || chave) + ' ' + m[1];
+}
+
+function histFiltrar(chave) {
+  HIST_FILTRO = chave;
+  histRenderizarLista();
+}
+
+function histMontarChips() {
+  return '<div class="histf">' + HIST_CHIPS.map(function (c) {
+    return '<button type="button" class="histf-chip' + (HIST_FILTRO === c.chave ? ' ativo' : '') +
+           '" aria-pressed="' + (HIST_FILTRO === c.chave) + '"' +
+           ' onclick="histFiltrar(\'' + c.chave + '\')">' + c.rotulo + '</button>';
+  }).join('') + '</div>';
+}
+
+function histMontarCartao(r, idx) {
+  const data = String(r.data_registro || '');
+  let dataFmt = '—';
+  const m = data.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (m) dataFmt = m[3] + '/' + m[2] + '/' + m[1];
+  else if (data) dataFmt = data;
+  const hora = autoFormatarHora(r.hora_registro);
+  const humor = parseInt(r.humor_nivel, 10) || 3;
+  let tipos = '';
+  if (histEhNeg(r)) tipos += '<span class="histc-tipo neg">Registro Negativo</span>';
+  if (histEhPos(r)) tipos += '<span class="histc-tipo pos">Registro Positivo</span>';
+  // Lista compacta (10 v4): cabeçalho com data/humor/tipo/lupa; o conteúdo
+  // completo continua no modal da lupa (histAbrirModal).
+  return '<div class="histc">' +
+           '<div class="histc-head">' +
+             '<div class="histc-mood m' + humor + '">' +
+               (HIST_EMOJIS[humor] || '<svg class=ico aria-hidden=true><use href=#i-help></use></svg>') +
+             '</div>' +
+             '<div class="histc-info">' +
+               '<div class="histc-date">' + dataFmt + ' · ' + hora + '</div>' +
+               '<div class="histc-meta">Humor: <span class="humor-pill">' + humor + '/5 ' +
+                 (HIST_HUMOR_LBL[humor] || '') + '</span>' + tipos + '</div>' +
+             '</div>' +
+             '<button class="hist-btn-lupa" type="button" title="Ver registro completo"' +
+               ' onclick="histAbrirModal(' + idx + ')">' +
+               '<svg class=ico aria-hidden=true><use href=#i-search></use></svg></button>' +
+           '</div>' +
+         '</div>';
+}
+
+function histRenderizarLista() {
+  const box = document.getElementById('autoHistLista');
+  if (!box) return;
+  const regs = window._HIST_REGS || [];
+
+  // Agrupa preservando a ordem já recebida (mais recente primeiro) e guardando
+  // o índice no array completo, que é o que histAbrirModal(idx) espera.
+  const ordem = [];
+  const grupos = {};
+  regs.forEach(function (r, idx) {
+    if (!histNoFiltro(r, HIST_FILTRO)) return;
+    const chave = histChaveMes(r);
+    if (!grupos[chave]) { grupos[chave] = []; ordem.push(chave); }
+    grupos[chave].push({ r: r, idx: idx });
+  });
+
+  let html = histMontarChips();
+
+  if (ordem.length === 0) {
+    html += '<div class="histc-empty">' +
+              '<span class="histc-empty-icon"><svg class=ico aria-hidden=true><use href=#i-inbox></use></svg></span>' +
+              '<div class="histc-empty-text">Nenhum registro deste tipo ainda.<br>Toque em "Todos" para ver o histórico completo.</div>' +
+            '</div>';
+    box.innerHTML = html;
+    return;
+  }
+
+  ordem.forEach(function (chave) {
+    const itens = grupos[chave];
+    html += '<div class="histm">' +
+              '<div class="histm-head">' +
+                '<span class="histm-mes">' + histRotuloMes(chave) + '</span>' +
+                '<span class="histm-cont">· ' + itens.length +
+                  (itens.length === 1 ? ' registro' : ' registros') + '</span>' +
+              '</div>' +
+              itens.map(function (it) { return histMontarCartao(it.r, it.idx); }).join('') +
+            '</div>';
+  });
+
+  box.innerHTML = html;
 }
 
 /* ============================================================
