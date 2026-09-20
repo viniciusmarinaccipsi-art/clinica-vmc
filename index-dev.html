@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.4b.1 (20/09/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.4c (20/09/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -272,6 +272,7 @@ body.vmc-largo .topbar-in{max-width:1360px;}
   background:var(--c-surface);color:var(--c-ink);font:400 24px/1 var(--f-text);cursor:pointer;flex-shrink:0;
   display:none;align-items:center;justify-content:center;padding:0 0 3px;transition:background var(--dur-fast) var(--ease);}
 .topbar.tela .topbar-voltar{display:flex;}
+.topbar.tela.sem-voltar .topbar-voltar{display:none;} /* Pacote 16.4c: o Início tem título, mas não tem para onde voltar */
 .topbar-voltar:hover{background:var(--c-action-tint);border-color:var(--c-action);}
 .topbar-texto{flex:1;min-width:0;display:none;flex-direction:column;justify-content:center;}
 .topbar.tela .topbar-texto{display:flex;}
@@ -308,8 +309,6 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 }
 .card:hover{transform:translateY(-3px);box-shadow:var(--sh-1);}
 .card:active{transform:translateY(0);}
-.card[disabled]{cursor:not-allowed;opacity:.55;}
-.card[disabled]:hover{transform:none;box-shadow:var(--sh-1);}
 
 /* Pacote 9: Card travado (anamnese não preenchida) */
 .card.locked{opacity:.55;cursor:not-allowed;}
@@ -330,27 +329,53 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .card-desc{font:var(--t-body-sm);color:var(--c-ink-3);line-height:1.5;}
 .card-arrow{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:20px;color:var(--c-line-strong);transition:all .25s;}
 .card:hover .card-arrow{right:12px;color:var(--c-ink-3);}
-.card-badge-soon{
-  font:var(--t-label);position:absolute;top:14px;right:14px;
-  background:var(--c-line);color:var(--c-ink-3);
-  font-weight:700;
-  padding:3px 8px;border-radius:10px;
-  text-transform:uppercase;letter-spacing:var(--ls-label);
-}
-.card-badge-done{
-  font:var(--t-label);position:absolute;top:14px;right:14px;
-  background:var(--c-pos-tint);color:var(--c-pos-ink);
-  font-weight:700;
-  padding:3px 8px;border-radius:10px;
-  text-transform:uppercase;letter-spacing:var(--ls-label);
-  border:1px solid var(--c-reg-pos-line);
-}
 .card-blue{border-color:var(--c-action-tint);}.card-blue .card-title{color:var(--c-action);}
-.card-coral{border-color:var(--c-reg-neg-line);}.card-coral .card-title{color:var(--c-reg-neg-ink);}
 .card-green{border-color:var(--c-reg-pos-line);}.card-green .card-title{color:var(--c-pos-ink);}
-.card-amber{border-color:var(--c-warn-tint);}.card-amber .card-title{color:var(--c-warn-ink);}
-.card-gray{border-color:var(--c-line);}.card-gray .card-title{color:var(--c-ink-3);}
-.card-purple{border-color:var(--c-dass21-tint);}.card-purple .card-title{color:var(--c-dass21-ink);}
+
+/* ===== Pacote 16.4c — Início (o antigo "Menu Principal") ===== */
+.ini-cab{margin:var(--s-2) 0 var(--s-5);}
+.ini-ola{font:var(--t-h2);color:var(--c-ink);}
+.ini-data{font:var(--t-body);color:var(--c-ink-3);margin-top:2px;}
+.ini-novo{
+  width:100%;min-height:var(--hit-min);height:58px;
+  border:none;border-radius:var(--r-card);
+  background:var(--c-action);color:var(--c-ink-inv);
+  font:var(--t-body-lg);font-weight:600;
+  display:flex;align-items:center;justify-content:center;gap:var(--s-2);
+  cursor:pointer;box-shadow:var(--sh-1);
+  transition:background var(--dur-fast) var(--ease);
+}
+.ini-novo:hover{background:var(--c-action-hover);}
+.ini-novo:active{background:var(--c-action-press);}
+.ini-cont{
+  background:var(--c-surface);border:1px solid var(--c-line);
+  border-radius:var(--r-card);box-shadow:var(--sh-1);
+  padding:var(--s-4);margin-top:var(--s-4);
+}
+.ini-cont-tit{font:var(--t-h4);color:var(--c-ink);margin-bottom:var(--s-2);}
+.ini-cont-linha{
+  display:flex;align-items:baseline;justify-content:space-between;gap:var(--s-3);
+  padding:var(--s-2) 0;border-top:1px solid var(--c-line-inner);
+}
+.ini-cont-rot{font:var(--t-body-sm);color:var(--c-ink-3);}
+.ini-cont-val{font:var(--t-body);color:var(--c-ink);text-align:right;font-feature-settings:var(--num-tnum);}
+.ini-cont-erro{font:var(--t-body-sm);color:var(--c-ink-3);display:flex;align-items:center;flex-wrap:wrap;gap:var(--s-2);}
+.ini-cont-erro button{
+  font:var(--t-action);min-height:var(--hit-min);padding:0 var(--s-3);
+  border:1px solid var(--c-line-strong);border-radius:var(--r-chip);
+  background:var(--c-surface);color:var(--c-action);cursor:pointer;
+}
+.ini-skel-l{
+  height:14px;border-radius:var(--r-field);background:var(--c-line);
+  margin:var(--s-3) 0;animation:ini-pulsa 1.2s ease-in-out infinite;
+}
+.ini-skel-l:nth-of-type(2){width:80%;}
+.ini-skel-l:nth-of-type(3){width:60%;}
+@keyframes ini-pulsa{0%,100%{opacity:.4;}50%{opacity:.85;}}
+.ini-breve{
+  font:var(--t-body-sm);color:var(--c-ink-3);text-align:center;
+  padding:var(--s-5) var(--s-2) var(--s-2);
+}
 
 /* ===== Seções ===== */
 .section{display:none;animation:fadeIn .3s ease;}
@@ -3746,6 +3771,10 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <div class="pac-hamburger-wrap" id="pacHamburgerWrap">
         <button class="pac-hamburger-btn" onclick="pacToggleHamburger()" aria-label="Menu" id="pacHamburgerBtn"><svg class="ico" aria-hidden="true"><use href="#i-menu"/></svg></button>
         <div class="pac-hamburger-dropdown" id="pacHamburgerMenu">
+          <!-- Pacote 16.4c: a Anamnese sai do Início depois de preenchida e passa a morar aqui -->
+          <button class="pac-hamburger-item hidden" id="pacHamburgerAnamnese" onclick="pacHamburgerAcao('anamnese')">
+            <span><svg class="ico" aria-hidden="true"><use href="#i-file"/></svg></span> Minha anamnese
+          </button>
           <button class="pac-hamburger-item" onclick="pacHamburgerAcao('senha')">
             <span><svg class="ico" aria-hidden="true"><use href="#i-key"/></svg></span> Alterar Senha
           </button>
@@ -4087,14 +4116,12 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
     </div>
   </div>
 
-  <!-- MENU -->
-  <div class="section" id="sec-menu">
-    <h2 style="font-family:var(--f-title);font-size:16px;color:var(--c-action);text-align:center;margin:8px 0 4px;">
-      Menu Principal
-    </h2>
-    <p style="font-size:13px;color:var(--c-ink-3);text-align:center;margin-bottom:16px;">
-      Escolha o módulo que deseja acessar
-    </p>
+  <!-- INÍCIO (Pacote 16.4c: era "Menu Principal") -->
+  <div class="section" id="sec-menu" data-barra-titulo="Início" data-barra-voltar="">
+    <div class="ini-cab">
+      <div class="ini-ola" id="iniOla">Olá</div>
+      <div class="ini-data" id="iniData"></div>
+    </div>
 
     <!-- Pacote 13.4.2: Botão destaque senha (só no primeiro acesso) -->
     <button class="pac-senha-destaque" id="pacSenhaDestaque" onclick="pacAbrirModalSenha()">
@@ -4106,52 +4133,41 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       Os outros módulos serão liberados em seguida.
     </div>
 
+    <!-- Ação primária: mesmo caminho do card "Iniciar Novo Registro" do hub -->
+    <button class="ini-novo" id="iniBtnNovo" type="button" onclick="iniNovoRegistro()">
+      <svg class="ico ico-lg" aria-hidden="true"><use href="#i-plus"/></svg> Novo registro
+    </button>
+
+    <!-- Continuidade: último registro, total e última escala (carrega em segundo plano) -->
+    <div class="ini-cont" id="iniContinuidade" aria-live="polite"></div>
+
     <div class="card-grid">
-      <button class="card card-blue" id="cardAnamnese" onclick="abrirModulo('anamnese')">
+      <!-- Anamnese: só enquanto estiver pendente; depois vai para o hambúrguer -->
+      <button class="card card-blue hidden" id="cardAnamnese" onclick="abrirModulo('anamnese')">
         <span class="card-icon"><svg class="ico ico-lg" aria-hidden="true"><use href="#i-file"/></svg></span>
-        <div class="card-title">1. Anamnese</div>
+        <div class="card-title">Anamnese</div>
         <div class="card-desc">Informações pessoais e histórico de saúde (preenchimento único)</div>
         <span class="card-arrow">›</span>
-        <span class="card-badge-done hidden" id="badgeAnamneseDone"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg> Preenchida</span>
       </button>
 
-      <button class="card card-coral" id="cardAutomon" onclick="abrirModulo('automonitoramento')">
+      <button class="card card-blue" id="cardAutoHub" onclick="abrirModulo('automonitoramento')">
         <span class="card-icon"><svg class="ico ico-lg" aria-hidden="true"><use href="#i-chart"/></svg></span>
-        <div class="card-title">2. Registro de Automonitoramento</div>
-        <div class="card-desc">Acompanhamento diário de humor, emoções, pensamentos e comportamentos</div>
+        <div class="card-title">Meus registros e evolução</div>
+        <div class="card-desc">Histórico dos registros, painel de evolução e "Como Usar Este Registro"</div>
         <span class="card-arrow">›</span>
         <span class="card-lock-badge"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg> Bloqueado</span>
-      </button>
-
-      <button class="card card-purple" disabled>
-        <span class="card-icon"><svg class="ico ico-lg" aria-hidden="true"><use href="#i-puzzle"/></svg></span>
-        <div class="card-title">3. Formulação Cognitivo-Comportamental</div>
-        <div class="card-desc">Distorções cognitivas, crenças, conceituação clínica e formulação do caso</div>
-        <span class="card-badge-soon">Em breve</span>
       </button>
 
       <button class="card card-green" id="cardEscalas" onclick="abrirModulo('escalas')">
         <span class="card-icon"><svg class="ico ico-lg" aria-hidden="true"><use href="#i-clipboard"/></svg></span>
-        <div class="card-title">4. Escalas e Inventários</div>
+        <div class="card-title">Escalas e inventários</div>
         <div class="card-desc">Instrumentos clínicos padronizados (PHQ-9, GAD-7 e outros)</div>
         <span class="card-arrow">›</span>
         <span class="card-lock-badge"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg> Bloqueado</span>
       </button>
-
-      <button class="card card-amber" disabled>
-        <span class="card-icon"><svg class="ico ico-lg" aria-hidden="true"><use href="#i-book"/></svg></span>
-        <div class="card-title">5. Psicoeducação</div>
-        <div class="card-desc">Materiais educativos sobre TCC</div>
-        <span class="card-badge-soon">Em breve</span>
-      </button>
-
-      <button class="card card-gray" disabled>
-        <span class="card-icon"><svg class="ico ico-lg" aria-hidden="true"><use href="#i-wrench"/></svg></span>
-        <div class="card-title">6. Intervenções Cognitivas e Comportamentais</div>
-        <div class="card-desc">Exercícios e técnicas terapêuticas</div>
-        <span class="card-badge-soon">Em breve</span>
-      </button>
     </div>
+
+    <div class="ini-breve">Em breve: Formulação Cognitivo-Comportamental · Psicoeducação · Intervenções Cognitivas e Comportamentais</div>
   </div>
 
   <!-- ANAMNESE -->
@@ -8854,7 +8870,7 @@ function topbarAtualizar(idSecao) {
   if (!bar || !sec) return;
   if (idSecao === 'sec-login') {
     document.body.classList.remove('com-barra');
-    bar.classList.remove('tela', 'marca');
+    bar.classList.remove('tela', 'marca', 'sem-voltar');
     return;
   }
   document.body.classList.add('com-barra');
@@ -8863,9 +8879,13 @@ function topbarAtualizar(idSecao) {
     bar.classList.add('tela'); bar.classList.remove('marca');
     document.getElementById('topbarTitulo').textContent = titulo;
     var btn = document.getElementById('topbarVoltar');
-    var codigo = sec.getAttribute('data-barra-voltar') || "abrirSecao('sec-menu')";
+    // Pacote 16.4c: data-barra-voltar="" (atributo presente e vazio) = tela sem volta.
+    // Ausente continua caindo no destino padrão, como nas 24 telas anteriores.
+    var attrVoltar = sec.getAttribute('data-barra-voltar');
+    var codigo = (attrVoltar === null) ? "abrirSecao('sec-menu')" : attrVoltar;
+    bar.classList.toggle('sem-voltar', codigo === '');
     btn.removeAttribute('onclick');
-    btn.onclick = function () {
+    btn.onclick = codigo === '' ? null : function () {
       var executar = function () { (new Function(codigo))(); };
       if (destinoForaDoFluxo(codigo, idSecao)) confirmarSaida(executar); else executar();
     };
@@ -8878,7 +8898,7 @@ function topbarAtualizar(idSecao) {
     sub.textContent = txt; sub.classList.toggle('visivel', !!txt);
     sub.parentNode.classList.toggle('com-sub', !!txt);
   } else {
-    bar.classList.add('marca'); bar.classList.remove('tela');
+    bar.classList.add('marca'); bar.classList.remove('tela', 'sem-voltar');
   }
 }
 // Pacote 16.3: sair de um fluxo com dados em andamento pede confirmação; o rascunho já fica no aparelho.
@@ -9002,6 +9022,10 @@ function abrirSecao(idSecao) {
   if (idSecao === 'sec-auto-painel' && typeof pevAbrir === 'function') {
     pevAbrir();
   }
+  // Pacote 16.4c: o Início atualiza saudação e bloco de continuidade ao abrir
+  if (idSecao === 'sec-menu' && typeof iniAbrir === 'function') {
+    iniAbrir();
+  }
   // Pacote 5: ao abrir a home do Módulo 2, verifica se precisa travar
   if (idSecao === 'sec-automonitoramento' && typeof p5VerificarPrimeiraVez === 'function') {
     p5VerificarPrimeiraVez().then(() => p5AplicarCadeados());
@@ -9086,32 +9110,247 @@ function atualizarBadgeUsuario() {
   }
 }
 
+// Pacote 16.4c: o Início mostra a Anamnese só enquanto ela estiver pendente.
+// Depois de preenchida o card sai da tela e vira "Minha anamnese" no hambúrguer.
+// Os cadeados (Pacotes 9 e 12.2) continuam valendo para os dois cards de módulo.
 function atualizarMenuConformeSessao() {
   const paciente = carregarSessao();
   if (!paciente) return;
-  const badgeDone = document.getElementById('badgeAnamneseDone');
   const aviso = document.getElementById('avisoAnamnesePendente');
-  // Pacote 9: cadeado no card do Automonitoramento
-  const cardAutomon = document.getElementById('cardAutomon');
-  // Pacote 12.2: cadeado no card de Escalas (mesma regra — exige anamnese)
+  const cardAnamnese = document.getElementById('cardAnamnese');
+  const itemAnamnese = document.getElementById('pacHamburgerAnamnese');
+  const cardAutoHub = document.getElementById('cardAutoHub');
   const cardEscalas = document.getElementById('cardEscalas');
   // Pacote 13.4.2: botão destaque da senha (só no primeiro acesso)
   const senhaDestaque = document.getElementById('pacSenhaDestaque');
   // Pacote 13.4.2: hamburger visível quando paciente está logado
   const hamburgerWrap = document.getElementById('pacHamburgerWrap');
   if (hamburgerWrap) hamburgerWrap.classList.add('visivel');
-  if (paciente.anamnese_preenchida) {
-    badgeDone.classList.remove('hidden');
-    aviso.classList.add('hidden');
-    if (cardAutomon) cardAutomon.classList.remove('locked');
-    if (cardEscalas) cardEscalas.classList.remove('locked');
-    if (senhaDestaque) senhaDestaque.classList.remove('visivel');
+  const feita = !!paciente.anamnese_preenchida;
+  if (cardAnamnese) cardAnamnese.classList.toggle('hidden', feita);
+  if (itemAnamnese) itemAnamnese.classList.toggle('hidden', !feita);
+  if (aviso) aviso.classList.toggle('hidden', feita);
+  if (cardAutoHub) cardAutoHub.classList.toggle('locked', !feita);
+  if (cardEscalas) cardEscalas.classList.toggle('locked', !feita);
+  if (senhaDestaque) senhaDestaque.classList.toggle('visivel', !feita);
+  // O bloco de continuidade precisa ser relido (nome do paciente, contagens)
+  if (typeof iniInvalidar === 'function') iniInvalidar();
+  if (typeof iniAtualizarSaudacao === 'function') iniAtualizarSaudacao();
+}
+
+/* ============================================================
+   PACOTE 16.4c — INÍCIO (o antigo "Menu Principal")
+   ============================================================
+   Saudação com o primeiro nome + data por extenso, ação primária
+   "Novo registro" e um bloco de continuidade com o último registro,
+   o total de registros e a última escala respondida.
+
+   O nome sai de lerHistorico -> resp.anamnese.nome_completo, que o
+   backend já devolve inteiro ao paciente (Código.js, lerHistorico):
+   nenhuma mudança no Apps Script foi necessária. O nome fica na
+   sessão para a saudação aparecer na hora nas visitas seguintes.
+
+   O carregamento não trava a tela: usa _chamarUmaVez_ (sem overlay e
+   sem a faixa "Tentar de novo" de chamarServidor), reaproveita os
+   caches de 30 s de PEV_STATE e ESC_HIST_STATE, e se falhar mostra um
+   "Tentar de novo" dentro do próprio bloco — o resto do Início segue
+   utilizável.
+   ============================================================ */
+var INI_STATE = { carregado: false, carregando: false, invalido: true, dados: null };
+var INI_DIAS = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira',
+                'Quinta-feira', 'Sexta-feira', 'Sábado'];
+
+function iniInvalidar() { INI_STATE.invalido = true; }
+
+// "Domingo, 20 de setembro de 2026" (HIST_MESES já existe no histórico)
+function iniDataPorExtenso(d) {
+  return INI_DIAS[d.getDay()] + ', ' + d.getDate() + ' de ' +
+         String(HIST_MESES[d.getMonth()] || '').toLowerCase() + ' de ' + d.getFullYear();
+}
+
+function iniPrimeiroNome(nome) {
+  var s = String(nome || '').trim();
+  return s ? s.split(/\s+/)[0] : '';
+}
+
+function iniAtualizarSaudacao() {
+  var elData = document.getElementById('iniData');
+  if (elData) elData.textContent = iniDataPorExtenso(new Date());
+  var elOla = document.getElementById('iniOla');
+  if (!elOla) return;
+  var pac = carregarSessao();
+  var nome = iniPrimeiroNome(pac && pac.nome_completo);
+  elOla.textContent = nome ? ('Olá, ' + nome) : 'Olá';
+}
+
+// Data civil YYYY-MM-DD -> ms local (lição 22: nunca usar UTC para "há N dias")
+function iniMsData(valor) {
+  var m = String(valor || '').match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return -1;
+  return new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10)).getTime();
+}
+
+function iniDiasDesde(valor) {
+  var ms = iniMsData(valor);
+  if (ms < 0) return null;
+  var hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  return Math.round((hoje.getTime() - ms) / 86400000);
+}
+
+function iniTextoDias(n) {
+  if (n === null || n < 0) return '';
+  if (n === 0) return 'hoje';
+  if (n === 1) return 'há 1 dia';
+  return 'há ' + n + ' dias';
+}
+
+function iniLinha(rotulo, valor) {
+  return '<div class="ini-cont-linha"><span class="ini-cont-rot">' + rotulo +
+         '</span><span class="ini-cont-val">' + escapeHtmlAuto(String(valor)) + '</span></div>';
+}
+
+function iniEsqueleto() {
+  var box = document.getElementById('iniContinuidade');
+  if (!box) return;
+  box.innerHTML = '<div class="ini-cont-tit">Sua continuidade</div>' +
+                  '<div class="ini-skel-l"></div><div class="ini-skel-l"></div><div class="ini-skel-l"></div>';
+}
+
+function iniRenderErro() {
+  var box = document.getElementById('iniContinuidade');
+  if (!box) return;
+  box.innerHTML = '<div class="ini-cont-tit">Sua continuidade</div>' +
+    '<div class="ini-cont-erro"><span>Não foi possível carregar agora.</span>' +
+    '<button type="button" onclick="iniCarregarContinuidade()">Tentar de novo</button></div>';
+}
+
+function iniRenderContinuidade(d) {
+  var box = document.getElementById('iniContinuidade');
+  if (!box || !d) return;
+  var regs = d.registros || [];
+  var escs = d.escalas || [];
+  var html = '<div class="ini-cont-tit">Sua continuidade</div>';
+
+  if (regs.length === 0) {
+    html += '<div class="ini-cont-linha"><span class="ini-cont-rot">' +
+            'Você ainda não tem registros. O primeiro é o passo mais importante.' +
+            '</span></div>';
   } else {
-    badgeDone.classList.add('hidden');
-    aviso.classList.remove('hidden');
-    if (cardAutomon) cardAutomon.classList.add('locked');
-    if (cardEscalas) cardEscalas.classList.add('locked');
-    if (senhaDestaque) senhaDestaque.classList.add('visivel');
+    var ultimo = null, maior = -1;
+    regs.forEach(function (r) {
+      var t = iniMsData(r && r.data_registro);
+      if (t > maior) { maior = t; ultimo = r; }
+    });
+    if (ultimo) {
+      var txtDias = iniTextoDias(iniDiasDesde(ultimo.data_registro));
+      html += iniLinha('Último registro',
+        formatarDataBR(ultimo.data_registro) + (txtDias ? ' · ' + txtDias : ''));
+    }
+    html += iniLinha('Registros no total', regs.length);
+  }
+
+  if (escs.length > 0) {
+    var ue = escs[0]; // lista já ordenada do mais recente para o mais antigo
+    html += iniLinha('Última escala',
+      (ue.instrumento || '—') + ' · ' + formatarDataBR(ue.data_aplicacao));
+  } else {
+    html += iniLinha('Última escala', 'nenhuma respondida ainda');
+  }
+
+  box.innerHTML = html;
+}
+
+// Leitura silenciosa: uma tentativa, sem overlay e sem faixa de erro global.
+async function iniLerQuieto(acao, dados) {
+  try {
+    return await _chamarUmaVez_(Object.assign({ acao: acao }, dados));
+  } catch (e) {
+    console.warn('[Início] ' + acao + ' não respondeu: ' + e.message);
+    return null;
+  }
+}
+
+async function iniCarregarContinuidade() {
+  if (INI_STATE.carregando) return;
+  var pac = carregarSessao();
+  if (!pac) return;
+  INI_STATE.carregando = true;
+  iniEsqueleto();
+  try {
+    var agora = Date.now();
+    var temHist = !PEV_STATE.invalidado && PEV_STATE.registros.length > 0 &&
+                  (agora - PEV_STATE.carregadoEm < PEV_STATE.cacheTtlMs);
+    var temEsc  = !ESC_HIST_STATE.invalidado && ESC_HIST_STATE.registros.length > 0 &&
+                  (agora - ESC_HIST_STATE.carregadoEm < ESC_HIST_STATE.cacheTtlMs);
+
+    // As duas leituras que faltam vão juntas; o esqueleto fica na tela enquanto isso
+    var par = await Promise.all([
+      temHist ? null : iniLerQuieto('lerHistorico', { sigla: pac.sigla }),
+      temEsc  ? null : iniLerQuieto('lerEscalas',  { sigla: pac.sigla })
+    ]);
+
+    var registros = null, escalas = null;
+
+    if (temHist) {
+      registros = PEV_STATE.registros;
+    } else if (par[0] && par[0].ok) {
+      registros = par[0].automonitoramento || [];
+      PEV_STATE.registros = registros;
+      PEV_STATE.carregadoEm = agora;
+      PEV_STATE.invalidado = false;
+      var an = par[0].anamnese;
+      if (an && an.nome_completo) {
+        pac.nome_completo = String(an.nome_completo).trim();
+        salvarSessao(pac);
+        iniAtualizarSaudacao();
+      }
+    }
+
+    if (temEsc) {
+      escalas = ESC_HIST_STATE.registros;
+    } else if (par[1] && par[1].ok) {
+      escalas = (Array.isArray(par[1].escalas) ? par[1].escalas : []).slice();
+      escalas.sort(function (a, b) { return escHistChaveTemporal(b) - escHistChaveTemporal(a); });
+      ESC_HIST_STATE.registros = escalas;
+      ESC_HIST_STATE.carregadoEm = agora;
+      ESC_HIST_STATE.invalidado = false;
+    }
+
+    if (registros === null || escalas === null) { iniRenderErro(); return; }
+
+    INI_STATE.dados = { registros: registros, escalas: escalas };
+    INI_STATE.carregado = true;
+    INI_STATE.invalido = false;
+    iniRenderContinuidade(INI_STATE.dados);
+  } finally {
+    INI_STATE.carregando = false;
+  }
+}
+
+function iniAbrir() {
+  if (!carregarSessao()) return;
+  iniAtualizarSaudacao();
+  if (INI_STATE.carregado && !INI_STATE.invalido) {
+    iniRenderContinuidade(INI_STATE.dados);
+    return;
+  }
+  iniCarregarContinuidade();
+}
+
+// "Novo registro" = o mesmo caminho do card "Iniciar Novo Registro" do hub:
+// abrirModulo('automonitoramento') decide sobre a anamnese pendente (p9Modal) e,
+// se entrou no hub, p5ClicarCardBloquevel('iniciar') respeita o cadeado do Como Usar.
+function iniNovoRegistro() {
+  abrirModulo('automonitoramento');
+  var ativa = document.querySelector('.section.active');
+  if (!ativa || ativa.id !== 'sec-automonitoramento') return; // anamnese pendente: o modal já abriu
+  if (typeof p5VerificarPrimeiraVez === 'function') {
+    p5VerificarPrimeiraVez().then(function () {
+      p5AplicarCadeados();
+      p5ClicarCardBloquevel('iniciar');
+    });
+  } else {
+    p5ClicarCardBloquevel('iniciar');
   }
 }
 
@@ -10270,6 +10509,8 @@ function pacHamburgerAcao(acao) {
   if (menu) menu.classList.remove('aberto');
   // Executar ação
   if (acao === 'senha') pacAbrirModalSenha();
+  // Pacote 16.4c: "Minha anamnese" usa o mesmo caminho do antigo card do menu
+  if (acao === 'anamnese') abrirModulo('anamnese');
 }
 
 // Fechar hamburger ao clicar fora
@@ -10406,6 +10647,13 @@ function logout() {
     ESC_STATE.carregando = false;
     ESC_STATE.escalaAtual = null;
     ESC_STATE.respostas = {};
+  }
+  // Pacote 16.4c: zera o Início (nome, contagens e caches lidos para ele)
+  if (typeof INI_STATE !== 'undefined') {
+    INI_STATE.carregado = false;
+    INI_STATE.carregando = false;
+    INI_STATE.invalido = true;
+    INI_STATE.dados = null;
   }
   try { sessionStorage.removeItem('escComoUsarLido'); } catch(e){}
   // Pacote 13.4.2: esconder hamburger ao deslogar
@@ -13904,6 +14152,8 @@ async function autoEnviarRegistro() {
   autoResetState();
   // Painel de Evolução: força recarregamento na próxima visita
   if (typeof pevInvalidarCache === 'function') pevInvalidarCache();
+  // Pacote 16.4c: o bloco de continuidade do Início também envelheceu
+  if (typeof iniInvalidar === 'function') iniInvalidar();
   // Pacote 5: paciente deixou de ser "primeira vez", força nova verificação
   P5_STATE.verificado = false;
   P5_STATE.primeiraVez = false;
@@ -15021,12 +15271,6 @@ async function pevAbrir() {
     PEV_STATE.registros = resp.automonitoramento || [];
     PEV_STATE.carregadoEm = agora;
     PEV_STATE.invalidado = false;
-    // Pacote 16.4a: só na 1ª abertura da sessão (ou depois de pevInvalidarCache).
-    // Depois de uma escolha manual, periodoAuto é false e nada aqui a sobrescreve.
-    if (PEV_STATE.periodoAuto) {
-      PEV_STATE.periodoAtual = pevPeriodoInicial(PEV_STATE.registros);
-      PEV_STATE.periodoAuto = false;
-    }
     pevRenderizar();
   } catch (e) {
     console.error('[Painel Evolução] Erro ao carregar:', e);
@@ -15076,6 +15320,16 @@ function pevRenderizar() {
     if (PEV_STATE.charts[k]) { try { PEV_STATE.charts[k].destroy(); } catch(e){} }
   });
   PEV_STATE.charts = {};
+
+  // Pacote 16.4a (ajustado no 16.4c): a escolha automática do período mora aqui,
+  // e não em pevAbrir, para valer também quando os registros vierem do cache —
+  // inclusive do cache que o Início preenche. periodoAuto é true só na 1ª
+  // abertura da sessão e depois de pevInvalidarCache; a escolha manual zera a flag
+  // antes de chamar esta função, então nunca é sobrescrita.
+  if (PEV_STATE.periodoAuto && PEV_STATE.registros.length > 0) {
+    PEV_STATE.periodoAtual = pevPeriodoInicial(PEV_STATE.registros);
+    PEV_STATE.periodoAuto = false;
+  }
 
   if (PEV_STATE.registros.length === 0) {
     cont.innerHTML = `
@@ -16306,6 +16560,8 @@ async function escEnviarEscala(event) {
     if (typeof escHistInvalidarCache === 'function') {
       escHistInvalidarCache();
     }
+    // Pacote 16.4c: a "última escala respondida" do Início mudou
+    if (typeof iniInvalidar === 'function') iniInvalidar();
 
     // Mostra resultado
     escMostrarResultado(codigo, calc, ESC_STATE.respostas);
