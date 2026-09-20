@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.4c (20/09/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.4.1 (20/09/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -9990,7 +9990,8 @@ function profRenderizarEscalas_(escalas) {
 
     html += '<div class="esch-bloco ' + corClasse + '" data-esc="' + escapeHtmlAuto(cod) + '">';
     html += '<div class="esch-bloco-head" onclick="escHistToggleBloco(this)">';
-    html += '<span class="esch-bloco-icone">' + escapeHtmlAuto(def.emoji || '<svg class=ico aria-hidden=true><use href=#i-chart></use></svg>') + '</span>';
+    // 16.4.1: def.emoji é HTML do sprite (literal do catálogo ESC_ESCALAS, nunca entrada do usuário) — não escapar
+    html += '<span class="esch-bloco-icone">' + (def.emoji || '<svg class=ico aria-hidden=true><use href=#i-chart></use></svg>') + '</span>';
     html += '<span class="esch-bloco-titulo">' + escapeHtmlAuto(def.nomeCompleto || cod) + '</span>';
     html += '<span class="esch-bloco-contagem">' + textoContagem + '</span>';
     html += '<span class="esch-bloco-chevron">›</span>';
@@ -16720,7 +16721,7 @@ function escRenderizarConteudoResultado(reg, def, modo, contexto) {
   if (eDass) {
     // DASS-21: cabeçalho enxuto + 3 boxes abaixo
     html += '<div class="rr-header">';
-    html +=   '<h2>' + escapeHtmlAuto(def.emoji || '') + ' ' + escapeHtmlAuto(def.nomeCompleto || cod) + '</h2>';
+    html +=   '<h2>' + (def.emoji || '') + ' ' + escapeHtmlAuto(def.nomeCompleto || cod) + '</h2>'; // 16.4.1: emoji é HTML do sprite
     html += '</div>';
     html += escRrBlocoSubescalasDass(reg, def);
   } else {
@@ -16884,7 +16885,7 @@ function escRrBlocoHeaderEscore(reg, def) {
   const faixaRotulo = String(reg.faixa || '');
 
   return '<div class="rr-header">' +
-    '<h2>' + escapeHtmlAuto(def.emoji || '') + ' ' + escapeHtmlAuto(def.nomeCompleto || '') + '</h2>' +
+    '<h2>' + (def.emoji || '') + ' ' + escapeHtmlAuto(def.nomeCompleto || '') + '</h2>' + // 16.4.1: emoji é HTML do sprite
     '<div class="rr-header-escore">' + escapeHtmlAuto(String(escore)) +
       (escoreMax ? '<span class="rr-header-escore-max">/' + escapeHtmlAuto(String(escoreMax)) + '</span>' : '') +
     '</div>' +
@@ -17475,7 +17476,8 @@ function escHistRenderBlocos(cont, registros) {
 
     html += '<div class="esch-bloco ' + corClasse + aberto + '" data-esc="' + escapeHtmlAuto(cod) + '">';
     html +=   '<div class="esch-bloco-head" onclick="escHistToggleBloco(this)">';
-    html +=     '<span class="esch-bloco-icone">' + escapeHtmlAuto(def.emoji || '<svg class=ico aria-hidden=true><use href=#i-chart></use></svg>') + '</span>';
+    // 16.4.1: def.emoji é HTML do sprite (literal do catálogo ESC_ESCALAS, nunca entrada do usuário) — não escapar
+    html +=     '<span class="esch-bloco-icone">' + (def.emoji || '<svg class=ico aria-hidden=true><use href=#i-chart></use></svg>') + '</span>';
     html +=     '<span class="esch-bloco-titulo">' + escapeHtmlAuto(def.nomeCompleto || cod) + '</span>';
     html +=     '<span class="esch-bloco-contagem">' + textoContagem + '</span>';
     html +=     '<span class="esch-bloco-chevron">›</span>';
@@ -17659,7 +17661,8 @@ function escHistAbrirDetalhe(idxGlobal) {
   const def = ESC_ESCALAS[cod];
 
   if (titulo) {
-    titulo.innerHTML = (def ? escapeHtmlAuto(def.emoji || '<svg class=ico aria-hidden=true><use href=#i-search></use></svg>') + ' ' : '<svg class=ico aria-hidden=true><use href=#i-search></use></svg> ') +
+    // 16.4.1: def.emoji é HTML do sprite (literal do catálogo ESC_ESCALAS, nunca entrada do usuário) — não escapar
+    titulo.innerHTML = (def ? (def.emoji || '<svg class=ico aria-hidden=true><use href=#i-search></use></svg>') + ' ' : '<svg class=ico aria-hidden=true><use href=#i-search></use></svg> ') +
                        escapeHtmlAuto(def ? def.nomeCompleto : cod);
   }
 
