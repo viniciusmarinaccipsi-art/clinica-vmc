@@ -246,10 +246,70 @@ Planilha individual do paciente — abas:
   texto)`. Badge da sigla e hambúrguer do paciente vivem na barra (ids
   `userBadge`, `pacHamburgerWrap` preservados). O header institucional
   antigo existe só como marca reduzida no login (`.login-marca`).
-- **Cabeçalho cumulativo compacto (`.p11-header`):** `p11aRenderizarCabecalho`
-  gera uma linha (`.p11-linha`: humor + chips `.p11-tab` das 5 etapas + botão
-  "+N" que abre o modal existente + chevron `.p11-abrir`) e a trilha antiga
-  recolhida em `.p11-det` (`p11aToggleDetalhes`). Altura ≤ 44 px.
+- **Cabeçalho cumulativo compacto (`.p11-header`, Pacote 16.3):**
+  `p11aRenderizarCabecalho` só resume o que já foi preenchido — linha
+  `.p11-linha` com "Humor 😐 · N etapas preenchidas", botão "+N" que abre o
+  modal existente e chevron `.p11-abrir` que expande a trilha `.p11-det`
+  (`p11aToggleDetalhes`). Sem etapa preenchida, não aparece. A navegação
+  entre etapas é do componente de progresso, não dele.
 - **Título nunca duplicado:** quando o título do card repete o da barra, o
   card fica só com ícone + subtítulo (o asterisco de obrigatório vai para
   `.auto-sec-sub .req`).
+- **Progresso único (`#prog`, Pacote 16.3):** `progressoDefinir({ total,
+  atual, nome, rotulo, cor, feitos, nomes, irPara })` escreve "Etapa N de T ·
+  nome" (`#progTxt`) e o trilho (`#progTrilho`): etapas feitas são
+  `<button class="prog-seg feito">` (44 px de altura, largura do segmento) que
+  chamam `progressoIr(i)` → `irPara(i)`; `progressoOcultar()` esconde.
+  `abrirSecao()` chama `progressoParaTela(id)`, que usa `PROG_REGISTRO_TELAS`
+  (humor, tipo, 5 etapas, revisão = 8; nos hubs, atual = próxima etapa não
+  preenchida em `AUTO_STATE.preenchido`) e esconde nas telas sem fluxo. A
+  anamnese define o próprio em `renderPasso`/`renderRevisao`
+  (`ANAM_PASSOS_NOMES`, 5 = 4 passos + revisão, volta por
+  `anamIrParaPasso(k)`); a escala em `escAtualizarProgresso` (item atual =
+  próximo não respondido; tocar rola até `#escItemBox-<id>`). Cor `--c-pos`;
+  `.prog.neg` / `.prog.pos-reg` nas etapas do registro. Substituiu pontos da
+  anamnese, pontos do humor, barra gamificada, selo "Preenchido", tabs do
+  cabeçalho cumulativo e barra percentual das escalas.
+- **Barra de ação (`.barra-acao`, Pacote 16.3):** classe no contêiner dos
+  botões de navegação já existentes (`.auto-nav-duplo`, `.anam-nav`,
+  `.esc-nav`). Em ≤ 600 px vira fixa no rodapé (`--sh-bar`, 64 px +
+  `env(safe-area-inset-bottom)`; "Anterior" em contorno com 38 %, primário à
+  direita) e `body:has(.section.active .barra-acao) .app` ganha
+  `padding-bottom`; no desktop fica no fim do card. `@keyframes fadeIn` das
+  seções é só opacidade (um `transform` na seção deslocaria a barra fixa).
+- **Sair sem gravar (Pacote 16.3):** `confirmarSaida(acao)` abre `#sairModal`
+  (padrão `.p5-modal-*`) quando `fluxoEmAndamento()` — anamnese com rascunho
+  fora do modo consulta, registro com dados ou etapa preenchida, escala com
+  resposta — depois de `fluxoGuardarRascunho()`. Pontos cobertos: voltar da
+  barra quando `destinoForaDoFluxo(codigo, idAtual)` (etapa → hub não pede),
+  sair (⏻ → `confirmarSaida(logout)`), Cancelar da escala
+  (`confirmarSaida(escCancelarAplicacao)`, sem `confirm()` nativo).
+- **Rascunhos no `sessionStorage`:** registro `AUTO_RASCUNHO_KEY`
+  (`automon_rascunho_v4`, `autoSalvarRascunho`), anamnese
+  `anamnese_rascunho` (gravado a cada passo) e, desde o 16.3, escala
+  `ESC_RASCUNHO_KEY` (`esc_rascunho_v1`: código, respostas, início;
+  `escSalvarRascunho` a cada resposta, `escCarregarRascunho` em
+  `escIniciarAplicacao` da mesma escala, `escLimparRascunho` ao mostrar o
+  resultado).
+- **Ícones (Pacote 16.2):** sprite SVG inline no início do `<body>`, 55
+  `<symbol id="i-…">` de desenho próprio (grade 24, traço 1,75,
+  `currentColor`); uso `<svg class="ico" aria-hidden="true"><use
+  href="#i-x"/></svg>` (com texto ao lado) ou `role="img" aria-label` (só
+  ícone); em strings JS a forma sem aspas `<svg class=ico aria-hidden=true><use
+  href=#i-x></use></svg>`. `.ico-lg` 28 px nos cards do menu; pseudo-elementos
+  usam máscara (`--ico-lock/-check/-check-square/-alert`). Só as 5 faces da
+  escala de humor continuam emoji. Mapa emoji → símbolo em
+  `docs/design/icones.md`.
+- **Toque, piso tipográfico e foco (Pacote 16.2):** `--hit-min` (44 px) em
+  tudo que se toca, Likert `--hit-likert` (48 px), checkbox tocável pelo
+  `label`; nenhum `font-size` fixo abaixo de 13 px (rótulos em caixa alta usam
+  `--t-label`); zero `outline:none` — vale o `:focus-visible` do `tokens.css`.
+- **`chamarServidor` (Pacotes 16.2.1–16.2.2):** `_chamarUmaVez_` com
+  `AbortController` (`VMC_TIMEOUT_MS` = 20 s; falha = timeout, rede, HTTP fora
+  de 2xx ou corpo não-JSON); repetição automática uma vez após `VMC_RETRY_MS`
+  (2 s) **só** para ações fora de `VMC_ACOES_GRAVACAO` (as 23 do `doPost` que
+  gravam, editam, excluem ou travam registro — conferir por grep no
+  `Código.js` ao criar ação nova); na falha final, `_aguardarTentarDeNovo_`
+  mostra a faixa `#vmcErroRede` ("O servidor não respondeu…") e a promessa só
+  resolve com a resposta real, preservando o contrato de quem chamou. A
+  consulta de CEP (ViaCEP) é o único `fetch` fora do wrapper.

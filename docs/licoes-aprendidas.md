@@ -1,6 +1,6 @@
 # Lições Aprendidas — Referência
 
-71 lições acumuladas no desenvolvimento (numeração original preservada —
+76 lições acumuladas no desenvolvimento (numeração original preservada —
 as conversas citam "lição #N"). Consultar antes de decisões não-triviais.
 Lições novas nascem na seção 8 do status_projeto_vmc.md e entram aqui na
 regeneração seguinte da skill clinica-vmc.
@@ -271,3 +271,15 @@ usados ao criar planilha nova — adicionar coluna = atualizar o array.
 **70. Scripts Python contra Sheets precisam de wrapper de quota em TODAS as chamadas.** Retry só em `get_all_values` não bastou: o 429 veio de `sh.worksheet()` (metadados). Um `api()` único com espera de 65 s, `sh.worksheets()` uma vez por planilha e pausa entre planilhas resolveram. (15.0, 16/09/2026)
 
 **71. Script com `input()` não roda pelo `!` do Claude Code.** O `!` não tem stdin (EOF na confirmação `SIM`); execução destrutiva com confirmação roda num PowerShell externo. O token OAuth também expira (`invalid_grant`): `autenticar()` deve cair no fluxo do navegador em vez de abortar (padrão em `limpeza_15_0.py`). (15.0, 16/09/2026)
+
+## Redesenho e medição (Pacotes 16.0–16.3)
+
+**72. Claude in Chrome só para inspeção visual.** A aba que a extensão abre fica em segundo plano: o Chrome limita `setTimeout` a 1 por segundo (10 saltos em ~3 s, `requestAnimationFrame` não dispara) e a extensão não captura requests nem console do Apps Script. Os "45 s sem resposta" medidos por ela eram throttling da aba, iguais em `index.html`. Medição é Playwright com o Chrome instalado (`channel: 'chrome'`), aba visível, `pageerror`/`console`/`request` capturados. (16.0.1, 18/09/2026)
+
+**73. Validar pacote visual exige teste de execução, não só `node --check`.** Playwright com `pageerror`, console e requests, fluxo de login até a resposta do servidor ("Sigla ou senha incorretos" com sigla inválida), rodado no arquivo alterado **e** no de produção para comparar no mesmo minuto. Um script que só mede a requisição, e não a responsividade da página, passa e não prova nada. (16.0.1, 18/09/2026)
+
+**74. "Falha de conexão com o servidor" pode ser latência do Apps Script.** Na mesma hora foram vistos 45 s sem resposta, 404 em HTML em 15 s e 200 em 6,7 s. Antes de abrir bug, testar produção e `index-dev.html` no mesmo minuto. Correção estrutural: `chamarServidor` com `AbortController` e timeout de 20 s, repetição automática após 2 s só em leitura/login (`VMC_ACOES_GRAVACAO` lista as 23 ações do `doPost` que gravam, editam, excluem ou travam registro), faixa "O servidor não respondeu…" com "Tentar de novo" que repete a mesma chamada sem perder o preenchido. (16.2.1 e 16.2.2, 18/09/2026)
+
+**75. Bug sem reprodução não vira commit "Correção".** Trinta execuções sem reproduzir o sintoma significam que não há causa no código a corrigir; o commit diz o que foi feito de fato ("vmcTok com cache por token; bloqueio da thread não era do arquivo") e o relatório registra a evidência e o que falta para reproduzir. Uma mensagem de commit que afirma uma causa inexistente contamina o histórico. (16.0.1, 18/09/2026)
+
+**76. Pranchas do Claude Design são pacotes JS, não folhas de estilo.** Cada `NN-*.html` guarda o conteúdo num `<script type="__bundler/template">` como string JSON, com estilo inline e zero classes CSS; as fontes vêm em base64 no manifesto. O que se aproveita em código é `tokens.css` (99 tokens claros + 58 escuros) e `mapa_campos.md`; nomes citados nas pranchas mas ausentes do `tokens.css` viram apelidos declarados no `:root`. (16.0, 18/09/2026)
