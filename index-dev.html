@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index.html — Pacote 15.0 (14/09/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.4a (20/09/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -14836,11 +14836,29 @@ const PEV_STATE = {
   cacheTtlMs: 30 * 1000,
   periodoAtual: 7,
   charts: {},
-  invalidado: false
+  invalidado: false,
+  // Pacote 16.4a: true enquanto o período ainda pode ser escolhido pelos dados.
+  // Vira false na primeira escolha manual; volta a true quando o cache é invalidado.
+  periodoAuto: true
 };
 
 function pevInvalidarCache() {
   PEV_STATE.invalidado = true;
+  PEV_STATE.periodoAuto = true;
+}
+
+// Pacote 16.4a: o painel abre no MENOR período (7, 30, 90) que já tenha pelo
+// menos 3 registros. Se nenhum chegar a 3, abre em "Tudo" — assim o paciente
+// novo não cai num gráfico vazio. Reusa pevFiltrarPorPeriodo (mesma regra de
+// datas civis do filtro), então não há segunda contagem para divergir.
+var PEV_PERIODOS_AUTO = [7, 30, 90];
+var PEV_MIN_REGISTROS_AUTO = 3;
+function pevPeriodoInicial(registros) {
+  for (var i = 0; i < PEV_PERIODOS_AUTO.length; i++) {
+    var p = PEV_PERIODOS_AUTO[i];
+    if (pevFiltrarPorPeriodo(registros, p).length >= PEV_MIN_REGISTROS_AUTO) return p;
+  }
+  return 'tudo';
 }
 
 // ----- 4. ABERTURA DO PAINEL (lazy load) -----
@@ -14886,6 +14904,12 @@ async function pevAbrir() {
     PEV_STATE.registros = resp.automonitoramento || [];
     PEV_STATE.carregadoEm = agora;
     PEV_STATE.invalidado = false;
+    // Pacote 16.4a: só na 1ª abertura da sessão (ou depois de pevInvalidarCache).
+    // Depois de uma escolha manual, periodoAuto é false e nada aqui a sobrescreve.
+    if (PEV_STATE.periodoAuto) {
+      PEV_STATE.periodoAtual = pevPeriodoInicial(PEV_STATE.registros);
+      PEV_STATE.periodoAuto = false;
+    }
     pevRenderizar();
   } catch (e) {
     console.error('[Painel Evolução] Erro ao carregar:', e);
@@ -15043,6 +15067,7 @@ function pevBindSeletor() {
     btn.addEventListener('click', () => {
       const v = btn.dataset.pevPeriodo;
       PEV_STATE.periodoAtual = (v === 'tudo') ? 'tudo' : parseInt(v, 10);
+      PEV_STATE.periodoAuto = false; // Pacote 16.4a: escolha manual manda
       pevRenderizar();
     });
   });
