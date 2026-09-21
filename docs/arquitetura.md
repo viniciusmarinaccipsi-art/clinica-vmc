@@ -313,3 +313,17 @@ Planilha individual do paciente — abas:
   mostra a faixa `#vmcErroRede` ("O servidor não respondeu…") e a promessa só
   resolve com a resposta real, preservando o contrato de quem chamou. A
   consulta de CEP (ViaCEP) é o único `fetch` fora do wrapper.
+- **Início, período do Painel e blocos recolhíveis (Pacote 16.4):** `#sec-menu`
+  virou o Início (`data-barra-titulo="Início"`, `data-barra-voltar=""` = tela sem
+  volta via `.topbar.sem-voltar`): saudação com o primeiro nome de
+  `lerHistorico().anamnese.nome_completo`, ação primária `iniNovoRegistro()` (mesmo
+  caminho de `abrirModulo('automonitoramento')` → `p5ClicarCardBloquevel('iniciar')`)
+  e bloco de continuidade que lê `lerHistorico` + `lerEscalas` em paralelo por
+  `_chamarUmaVez_` (sem overlay), reaproveitando os caches de `PEV_STATE` e
+  `ESC_HIST_STATE`; o Painel abre no menor período com dados —
+  `pevPeriodoInicial()` em `pevRenderizar`, menor de 7/30/90 com ≥ 3 registros ou
+  "tudo", válido só enquanto `PEV_STATE.periodoAuto`, que a escolha manual zera; e
+  `blocoRecolhivelToggle(headEl, estado, attrChave)` é o alternador único dos blocos
+  recolhíveis (`.aberto` + seta `.esch-bloco-chevron`), com `escHistToggleBloco`
+  (`ESC_HIST_STATE.abertos`, `data-esc`) e `histToggleMes` (`HIST_MESES_ABERTOS`,
+  `data-mes`) como adaptadores.

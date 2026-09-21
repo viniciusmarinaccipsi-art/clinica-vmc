@@ -1,6 +1,6 @@
 # Lições Aprendidas — Referência
 
-76 lições acumuladas no desenvolvimento (numeração original preservada —
+78 lições acumuladas no desenvolvimento (numeração original preservada —
 as conversas citam "lição #N"). Consultar antes de decisões não-triviais.
 Lições novas nascem na seção 8 do status_projeto_vmc.md e entram aqui na
 regeneração seguinte da skill clinica-vmc.
@@ -283,3 +283,9 @@ usados ao criar planilha nova — adicionar coluna = atualizar o array.
 **75. Bug sem reprodução não vira commit "Correção".** Trinta execuções sem reproduzir o sintoma significam que não há causa no código a corrigir; o commit diz o que foi feito de fato ("vmcTok com cache por token; bloqueio da thread não era do arquivo") e o relatório registra a evidência e o que falta para reproduzir. Uma mensagem de commit que afirma uma causa inexistente contamina o histórico. (16.0.1, 18/09/2026)
 
 **76. Pranchas do Claude Design são pacotes JS, não folhas de estilo.** Cada `NN-*.html` guarda o conteúdo num `<script type="__bundler/template">` como string JSON, com estilo inline e zero classes CSS; as fontes vêm em base64 no manifesto. O que se aproveita em código é `tokens.css` (99 tokens claros + 58 escuros) e `mapa_campos.md`; nomes citados nas pranchas mas ausentes do `tokens.css` viram apelidos declarados no `:root`. (16.0, 18/09/2026)
+
+## Pacote 16.4
+
+**77. Ambiente Linux montando pasta do Windows tem `git` próprio — `core.autocrlf` diferente gera "modificado" falso em massa.** Um `device_bash` (VM Linux montando a pasta do Google Drive do Windows) rodou `git status`/`git diff` com sua própria configuração de git, distinta da do PowerShell que normalmente versiona o repositório; a árvore inteira apareceu "modificada", com o mesmo número de inserções e remoções por arquivo (ex.: 40.168+/40.168−), sem nenhum byte de conteúdo diferente — puro efeito de terminação de linha (CRLF ↔ LF), confirmado por `git diff --stat` simétrico e comparação literal de conteúdo. Antes de tratar um alerta de "alterações não commitadas" como risco, conferir se as inserções e remoções batem exatamente por arquivo e se o ambiente que rodou o `git` é o mesmo que normalmente commita. (16.4, 20/09/2026)
+
+**78. Campo que muda de tipo (emoji → HTML) exige re-auditar todo consumidor, não só a origem.** Desde o Pacote 16.2 `def.emoji` do catálogo `ESC_ESCALAS` passou a guardar markup SVG em vez de um caractere emoji, mas 5 pontos de renderização continuaram chamando `escapeHtmlAuto(def.emoji)`, herdado de quando o campo era texto puro — o ícone virava texto cru na tela (corrigido no 16.4.1). `grep` pelo nome do campo no arquivo inteiro, não só no ponto de origem da mudança, antes de fechar o pacote que muda o que um campo guarda. (16.4.1, 20/09/2026)

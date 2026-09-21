@@ -96,5 +96,5 @@ Deploy manual (colar no editor do Apps Script, arrastar no GitHub) está descont
 ## Referências
 
 - `docs/arquitetura.md` — padrões técnicos, namespaces, modelo de dados, backend, seção "Sistema visual" do redesenho.
-- `docs/licoes-aprendidas.md` — lições 1–76 (numeração original; obsoletas marcadas). Lições novas nascem na seção 8 do status e entram aqui na regeneração seguinte da skill.
+- `docs/licoes-aprendidas.md` — lições 1–78 (numeração original; obsoletas marcadas). Lições novas nascem na seção 8 do status e entram aqui na regeneração seguinte da skill.
 - `..\VMC-offline\diagnostico_codigo_16.md` — diagnóstico de código que abriu o tema G; `..\PACOTE_16_*_RELATORIO.md` — um relatório por pacote.
