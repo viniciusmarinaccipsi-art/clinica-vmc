@@ -60,8 +60,8 @@
 
 // ID da planilha global Sistema_VMC.
 // Criada pelo script Python migracao_13_0_1.py.
-// Pacote 15.0 — Limpeza (14/09/2026)
-var VERSAO_PACOTE = '15.0';
+// Pacote 17.0 — Escalas de Beck: acao lerItensInstrumento (23/09/2026)
+var VERSAO_PACOTE = '17.0';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -69,6 +69,10 @@ var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 var ABA_PROFISSIONAIS  = 'Profissionais';
 var ABA_ADMINS         = 'Admins';
 var ABA_INDICE_SIGLAS  = 'Indice_Siglas';
+// Pacote 17.0: textos dos inventarios respondidos pelo paciente (BDI-II, BAI).
+// Os enunciados NAO ficam no codigo - o repositorio e o site sao publicos.
+// Uma linha por texto; colunas: instrumento, tipo, item, opcao, texto, ativo.
+var ABA_ITENS_INSTRUMENTOS = 'Itens_Instrumentos';
 
 // Nome da aba dentro de cada Controle de profissional.
 // Mantemos o nome "Pacientes" da versao anterior por compatibilidade
@@ -193,6 +197,13 @@ function doPost(e) {
 
       case 'lerEscalas':
         resposta = lerEscalas(payload.sigla);
+        break;
+
+      // Pacote 17.0 - textos dos inventarios (BDI-II, BAI). Exige sessao valida
+      // (paciente ou profissional); sem 'instrumento' devolve so quais estao
+      // liberados, para o menu decidir o que mostrar. Nao grava nada.
+      case 'lerItensInstrumento':
+        resposta = lerItensInstrumento(payload);
         break;
 
       // Pacote 13.4.1 - Acoes do paciente
@@ -1247,6 +1258,223 @@ function criarAbaEscalas() {
   }
 
   Logger.log('=== Resumo: criadas=' + criadas + ' puladas=' + puladas + ' erros=' + erros + ' ===');
+}
+
+
+// ============================================================
+// PACOTE 17.0 - ITENS DOS INVENTARIOS (BDI-II, BAI)
+// ============================================================
+// Regras (docs/escalas/ESPEC_escalas_beck.md, secoes 0.1 e 5):
+//   1. Nenhum texto de item vive no codigo: o repositorio e o site sao publicos.
+//      Enunciados, afirmacoes e instrucoes ficam na aba Itens_Instrumentos da
+//      Sistema_VMC e so saem daqui para quem tem sessao valida.
+//   2. Um instrumento so e entregue quando a linha de controle (tipo='controle')
+//      tem ativo='SIM' E o hash gravado nela bate com o conteudo atual da aba.
+//      Qualquer edicao posterior derruba o hash: o instrumento sai do menu do
+//      paciente ate nova conferencia e nova liberacao pelo script de carga.
+//   3. Default seguro: aba ausente, instrumento desconhecido, sem liberacao ou
+//      com hash divergente => nao entrega texto nenhum e nao aparece no menu.
+//   4. A acao nao grava nada (fica FORA de VMC_ACOES_GRAVACAO no frontend).
+
+var INSTRUMENTOS_VALIDOS = ['bdi2', 'bai'];
+
+/**
+ * Normalizacao canonica de uma celula para o hash.
+ * O mesmo algoritmo roda no script Python de carga - qualquer divergencia aqui
+ * derruba a liberacao (que e exatamente o comportamento seguro desejado).
+ *   vazio           -> ''
+ *   numero inteiro  -> sem casa decimal ('1', nao '1.0')
+ *   resto           -> texto com espacos das pontas removidos
+ */
+function _itensNormalizar_(valor) {
+  if (valor === null || valor === undefined) return '';
+  if (typeof valor === 'number') {
+    return (valor === Math.floor(valor)) ? String(Math.floor(valor)) : String(valor);
+  }
+  return String(valor).trim();
+}
+
+/**
+ * Hash SHA-256 (hex minusculo) do conteudo de um instrumento.
+ * Serializacao canonica: uma linha "tipo|item|opcao|texto" por registro de
+ * conteudo (a linha de controle fica de fora), ordenadas alfabeticamente e
+ * unidas por \n. A ordenacao torna o hash independente da ordem das linhas na
+ * aba, entao reordenar a planilha nao derruba a liberacao - so mudar texto.
+ */
+function _itensHashConteudo_(linhas) {
+  var partes = [];
+  for (var i = 0; i < linhas.length; i++) {
+    var l = linhas[i];
+    if (_itensNormalizar_(l.tipo).toLowerCase() === 'controle') continue;
+    partes.push(
+      _itensNormalizar_(l.tipo) + '|' +
+      _itensNormalizar_(l.item) + '|' +
+      _itensNormalizar_(l.opcao) + '|' +
+      _itensNormalizar_(l.texto)
+    );
+  }
+  partes.sort();
+  var bytes = Utilities.computeDigest(
+    Utilities.DigestAlgorithm.SHA_256, partes.join('\n'), Utilities.Charset.UTF_8);
+  var hex = '';
+  for (var b = 0; b < bytes.length; b++) {
+    var v = (bytes[b] < 0) ? bytes[b] + 256 : bytes[b];
+    hex += (v < 16 ? '0' : '') + v.toString(16);
+  }
+  return hex;
+}
+
+/**
+ * Confere a sessao de quem pediu os textos.
+ * Profissional: (profSigla, profSenha) revalidados a cada chamada, como nas
+ * demais acoes prof*. Paciente: sigla existente e ativa na Controle do
+ * profissional dono - mesmo nivel das demais acoes de paciente (lerHistorico,
+ * lerEscalas). Sem nenhum dos dois, recusa.
+ */
+function _itensSessaoValida_(payload) {
+  if (payload.profSigla && payload.profSenha) {
+    var auth = autenticarProfissional(payload.profSigla, payload.profSenha);
+    if (!auth || !auth.ok) return { ok: false, erro: 'Sessao invalida' };
+    return { ok: true, quem: 'profissional' };
+  }
+  if (payload.sigla) {
+    var pac = buscarPaciente(payload.sigla);
+    if (!pac) return { ok: false, erro: 'Sessao invalida' };
+    if (String(pac.ativo || 'Sim').trim().toLowerCase() !== 'sim') {
+      return { ok: false, erro: 'Sessao invalida' };
+    }
+    return { ok: true, quem: 'paciente' };
+  }
+  return { ok: false, erro: 'Sessao invalida' };
+}
+
+/**
+ * Le a aba Itens_Instrumentos e devolve so as linhas de um instrumento.
+ * Aba ausente ou vazia => lista vazia (e o instrumento fica indisponivel).
+ */
+function _itensLinhasDoInstrumento_(todas, instrumento) {
+  var alvo = String(instrumento).trim().toLowerCase();
+  var saida = [];
+  for (var i = 0; i < todas.length; i++) {
+    if (_itensNormalizar_(todas[i].instrumento).toLowerCase() === alvo) saida.push(todas[i]);
+  }
+  return saida;
+}
+
+/**
+ * Estado de liberacao de um instrumento: liberado apenas se houver linha de
+ * controle com ativo='SIM' e hash igual ao conteudo atual.
+ */
+function _itensEstado_(linhas) {
+  var controle = null;
+  for (var i = 0; i < linhas.length; i++) {
+    if (_itensNormalizar_(linhas[i].tipo).toLowerCase() === 'controle') { controle = linhas[i]; break; }
+  }
+  if (!controle) return { liberado: false, motivo: 'sem_controle' };
+  if (_itensNormalizar_(controle.ativo).toUpperCase() !== 'SIM') {
+    return { liberado: false, motivo: 'nao_liberado' };
+  }
+  var hashGravado = _itensNormalizar_(controle.texto).toLowerCase();
+  var hashAtual = _itensHashConteudo_(linhas);
+  if (!hashGravado || hashGravado !== hashAtual) {
+    return { liberado: false, motivo: 'hash_divergente' };
+  }
+  return { liberado: true, hash: hashAtual };
+}
+
+/**
+ * Monta os textos de um instrumento no formato que o frontend consome.
+ * Nenhuma transformacao alem do agrupamento: o texto vai como esta na aba
+ * (secao 0.1 item 3 da especificacao - o escape de HTML e feito na tela).
+ */
+function _itensMontarTextos_(linhas) {
+  var out = { instrucao: '', titulos: {}, itens: {}, opcoes: {}, ancoras: {} };
+  for (var i = 0; i < linhas.length; i++) {
+    var l = linhas[i];
+    var tipo = _itensNormalizar_(l.tipo).toLowerCase();
+    var item = _itensNormalizar_(l.item);
+    var opcao = _itensNormalizar_(l.opcao);
+    var texto = _itensNormalizar_(l.texto);
+    if (tipo === 'instrucao') {
+      out.instrucao = texto;
+    } else if (tipo === 'titulo') {
+      out.titulos[item] = texto;
+    } else if (tipo === 'item') {
+      out.itens[item] = texto;
+    } else if (tipo === 'opcao') {
+      if (!out.opcoes[item]) out.opcoes[item] = [];
+      out.opcoes[item].push({ codigo: opcao, texto: texto });
+    } else if (tipo === 'ancora_rotulo' || tipo === 'ancora_descricao') {
+      if (!out.ancoras[opcao]) out.ancoras[opcao] = { codigo: opcao, rotulo: '', descricao: '' };
+      if (tipo === 'ancora_rotulo') out.ancoras[opcao].rotulo = texto;
+      else out.ancoras[opcao].descricao = texto;
+    }
+  }
+  // Ordem das opcoes: 0, 1, 2, 3 e, nos itens de 7 opcoes, 0, 1a, 1b, 2a, 2b,
+  // 3a, 3b - digito primeiro, letra depois, como na folha impressa.
+  Object.keys(out.opcoes).forEach(function (k) {
+    out.opcoes[k].sort(function (a, b) {
+      var na = parseInt(a.codigo, 10), nb = parseInt(b.codigo, 10);
+      if (na !== nb) return na - nb;
+      return String(a.codigo).localeCompare(String(b.codigo));
+    });
+  });
+  return out;
+}
+
+/**
+ * Acao lerItensInstrumento.
+ *
+ * Entrada (paciente):     { sigla }                      [+ instrumento]
+ * Entrada (profissional): { profSigla, profSenha }       [+ instrumento]
+ *
+ * Sem 'instrumento': { ok: true, liberados: ['bdi2'] } - so a lista, sem texto,
+ *   para o menu decidir quais cartoes mostrar.
+ * Com 'instrumento' liberado: { ok: true, instrumento, hash, textos: {...} }.
+ * Com 'instrumento' nao liberado: { ok: false, erro, motivo } - sem texto.
+ */
+function lerItensInstrumento(payload) {
+  payload = payload || {};
+  var sessao = _itensSessaoValida_(payload);
+  if (!sessao.ok) return { ok: false, erro: sessao.erro };
+
+  var sistema;
+  try {
+    sistema = SpreadsheetApp.openById(SISTEMA_VMC_ID);
+  } catch (e) {
+    return { ok: false, erro: 'Planilha do sistema indisponivel' };
+  }
+  var todas = lerAbaComoObjetos(sistema, ABA_ITENS_INSTRUMENTOS);
+
+  var pedido = _itensNormalizar_(payload.instrumento).toLowerCase();
+
+  // Sem instrumento: devolve so quais estao liberados (nenhum texto).
+  if (!pedido) {
+    var liberados = [];
+    for (var i = 0; i < INSTRUMENTOS_VALIDOS.length; i++) {
+      var cod = INSTRUMENTOS_VALIDOS[i];
+      var est = _itensEstado_(_itensLinhasDoInstrumento_(todas, cod));
+      if (est.liberado) liberados.push(cod);
+    }
+    return { ok: true, liberados: liberados };
+  }
+
+  if (INSTRUMENTOS_VALIDOS.indexOf(pedido) === -1) {
+    return { ok: false, erro: 'Instrumento desconhecido' };
+  }
+
+  var linhas = _itensLinhasDoInstrumento_(todas, pedido);
+  var estado = _itensEstado_(linhas);
+  if (!estado.liberado) {
+    return { ok: false, erro: 'Instrumento nao liberado', motivo: estado.motivo };
+  }
+
+  return {
+    ok: true,
+    instrumento: pedido,
+    hash: estado.hash,
+    textos: _itensMontarTextos_(linhas)
+  };
 }
 
 

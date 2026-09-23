@@ -6,3 +6,8 @@ _para_apagar/
 manifest.json
 credentials*.json
 token*.json
+
+# Pacote 17.0 - modelo PREENCHIDO dos itens dos inventarios (texto do BDI-II
+# e do BAI). O modelo VAZIO e versionado; o preenchido, nunca.
+itens_instrumentos_preenchido.xlsx
+docs/escalas/itens_instrumentos_preenchido.xlsx

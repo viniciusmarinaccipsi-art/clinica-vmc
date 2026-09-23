@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.4.3 (23/09/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 17.0 (23/09/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -97,6 +97,10 @@
   --c-dass21-ink:    #3D3A6B;
   --c-srq20-tint:    #E2F0EE;
   --c-srq20-ink:     #245F5A;
+  --c-bdi2-tint:     #E7EBF5;  /* Pacote 17.0 — BDI-II, azul-ardósia */
+  --c-bdi2-ink:      #35477F;
+  --c-bai-tint:      #EAEFDC;  /* Pacote 17.0 — BAI, verde-oliva */
+  --c-bai-ink:       #4F5B23;
 
   /* ---------- Módulos do menu · tinte de identificação ---------- */
   --c-mod-anamnese:  #E7E6F5;  /* Anamnese */
@@ -217,6 +221,8 @@
     --c-pss10-tint:  #33240F; --c-pss10-ink:  #EDC182;
     --c-dass21-tint: #262441; --c-dass21-ink: #C4C2EE;
     --c-srq20-tint:  #16302E; --c-srq20-ink:  #8FD3CC;
+    --c-bdi2-tint:   #1B2135; --c-bdi2-ink:   #A9B9E8;
+    --c-bai-tint:    #232815; --c-bai-ink:    #C3CE8E;
     --c-chart-neg:   #D97A7A;
     --c-chart-neutro:#6E6B85;
     --c-chart-pos:   #5FAFA8;
@@ -2502,6 +2508,8 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .esc-card.purple{border-color:var(--c-dass21-tint);}.esc-card.purple .esc-card-title{color:var(--c-dass21-ink);}
 .esc-card.teal{border-color:var(--c-srq20-tint);}.esc-card.teal .esc-card-title{color:var(--c-srq20-ink);}
 .esc-card.gray{border-color:var(--c-line);}.esc-card.gray .esc-card-title{color:var(--c-ink-3);}
+.esc-card.bdi2{border-color:var(--c-bdi2-tint);}.esc-card.bdi2 .esc-card-title{color:var(--c-bdi2-ink);}
+.esc-card.bai{border-color:var(--c-bai-tint);}.esc-card.bai .esc-card-title{color:var(--c-bai-ink);}
 
 /* Subtítulo de aviso primeira vez (leitura do "Como Usar" obrigatória) */
 .esc-sub-aviso{
@@ -2578,6 +2586,20 @@ body.vmc-largo .topbar-in{max-width:1360px;}
   box-shadow:var(--sh-2);
 }
 .esc-opcao-num{display:block;font-size:16px;font-weight:800;margin-bottom:2px;}
+
+/* Pacote 17.0 — BDI-II e BAI: as opções são as frases da folha, não rótulos
+   curtos de Likert. Empilham uma por linha, alinhadas à esquerda, com o código
+   do papel (0, 1a, 2b…) na coluna da esquerda. */
+.esc-item-opcoes-empilhada{flex-direction:column;gap:8px;}
+.esc-item-opcoes-empilhada .esc-opcao{
+  flex:none;width:100%;min-width:0;text-align:left;
+  display:grid;grid-template-columns:2.4em 1fr;column-gap:10px;align-items:start;
+  min-height:var(--hit-min);
+}
+.esc-item-opcoes-empilhada .esc-opcao-num{margin-bottom:0;text-align:center;}
+/* BAI: a descrição da coluna vem abaixo do rótulo, como na folha */
+.esc-opcao-detalhe{display:block;font-size:13px;font-weight:500;opacity:.85;margin-top:2px;}
+.esc-item-opcoes-empilhada .esc-opcao-detalhe{grid-column:2;}
 
 /* Alerta inline de ideação (Camada 1) */
 .esc-alerta-inline{
@@ -2726,6 +2748,27 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .esc-tint-blue .esc-btn-primary:disabled { background: transparent; color:var(--c-action); border:2px solid var(--c-action); }
 /* SRQ-20 não tem item funcional, mas mantemos a regra por consistência caso seja criado futuramente */
 
+/* Pacote 17.0 — tinturas do BDI-II e do BAI (sem item funcional nos dois) */
+.esc-tint-bdi2 .esc-aplic-head { border-left-color:var(--c-bdi2-ink); }
+.esc-tint-bdi2 .esc-aplic-head h2 { color:var(--c-bdi2-ink); }
+.esc-tint-bdi2 .esc-aplic-head .esc-enunciado { background:var(--c-bdi2-tint); }
+.esc-tint-bdi2 .esc-item-num { background:var(--c-bdi2-ink); }
+.esc-tint-bdi2 .esc-opcao:hover { border-color:var(--c-bdi2-ink); background:var(--c-bdi2-tint); }
+.esc-tint-bdi2 .esc-opcao.selecionada { background:var(--c-bdi2-ink); color:var(--c-ink-inv); border-color:var(--c-bdi2-ink); box-shadow:var(--sh-2); }
+.esc-tint-bdi2 .esc-btn-primary { background:var(--c-bdi2-ink); }
+.esc-tint-bdi2 .esc-btn-primary:hover { background:var(--c-bdi2-ink); }
+.esc-tint-bdi2 .esc-btn-primary:disabled { background: transparent; color:var(--c-bdi2-ink); border:2px solid var(--c-bdi2-ink); }
+
+.esc-tint-bai .esc-aplic-head { border-left-color:var(--c-bai-ink); }
+.esc-tint-bai .esc-aplic-head h2 { color:var(--c-bai-ink); }
+.esc-tint-bai .esc-aplic-head .esc-enunciado { background:var(--c-bai-tint); }
+.esc-tint-bai .esc-item-num { background:var(--c-bai-ink); }
+.esc-tint-bai .esc-opcao:hover { border-color:var(--c-bai-ink); background:var(--c-bai-tint); }
+.esc-tint-bai .esc-opcao.selecionada { background:var(--c-bai-ink); color:var(--c-ink-inv); border-color:var(--c-bai-ink); box-shadow:var(--sh-2); }
+.esc-tint-bai .esc-btn-primary { background:var(--c-bai-ink); }
+.esc-tint-bai .esc-btn-primary:hover { background:var(--c-bai-ink); }
+.esc-tint-bai .esc-btn-primary:disabled { background: transparent; color:var(--c-bai-ink); border:2px solid var(--c-bai-ink); }
+
 .esc-tint-teal .esc-aplic-head { border-left-color:var(--c-srq20-ink); }
 .esc-tint-teal .esc-aplic-head h2 { color:var(--c-srq20-ink); }
 .esc-tint-teal .esc-aplic-head .esc-enunciado { background:var(--c-srq20-tint); }
@@ -2836,6 +2879,8 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .esch-bloco.orange { border-left:5px solid var(--c-pss10-ink); }
 .esch-bloco.purple { border-left:5px solid var(--c-dass21-ink); }
 .esch-bloco.teal   { border-left:5px solid var(--c-srq20-ink); }
+.esch-bloco.bdi2   { border-left:5px solid var(--c-bdi2-ink); }
+.esch-bloco.bai    { border-left:5px solid var(--c-bai-ink); }
 
 .esch-bloco-head {
   display: flex; align-items: center; gap: 10px;
@@ -2853,6 +2898,8 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .esch-bloco.orange .esch-bloco-titulo { color:var(--c-pss10-ink); }
 .esch-bloco.purple .esch-bloco-titulo { color:var(--c-dass21-ink); }
 .esch-bloco.teal   .esch-bloco-titulo { color:var(--c-srq20-ink); }
+.esch-bloco.bdi2   .esch-bloco-titulo { color:var(--c-bdi2-ink); }
+.esch-bloco.bai    .esch-bloco-titulo { color:var(--c-bai-ink); }
 
 .esch-bloco-contagem {
    font:var(--t-body-sm);font-weight: 600; color:var(--c-ink-3);
@@ -2889,6 +2936,8 @@ body.vmc-largo .topbar-in{max-width:1360px;}
   font-size: 18px; font-weight: 700; color:var(--c-ink); line-height: 1;
 }
 .esch-aplic-escore-max {  font:var(--t-body-sm);color:var(--c-ink-3); margin-left: 2px; }
+/* Pacote 17.0 — BDI-II e BAI no histórico do paciente: sem número */
+.esch-aplic-enviado { font:var(--t-body-sm); font-weight: 700; color:var(--c-ink-3); }
 .esch-aplic-faixa {
    font:var(--t-body-sm);font-weight: 700; padding: 2px 7px;
   border-radius: 10px; margin-top: 4px; display: inline-block;
@@ -8396,6 +8445,28 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <span class="esc-card-arrow">›</span>
       </button>
 
+      <!-- Pacote 17.0 — Escalas de Beck. Nascem escondidas: só aparecem quando o
+           backend confirma que o instrumento está liberado (ativo=SIM na aba
+           Itens_Instrumentos) e o hash do conteúdo bate. Sem descrição inventada:
+           nome oficial e a janela temporal da instrução, nada mais (seção 0.1). -->
+      <button class="esc-card bdi2 hidden" id="escCardBDI2" type="button" onclick="escClicarCardEscala('BDI-II')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-heart-crack"/></svg></span>
+        <div class="esc-card-title">BDI-II — Inventário de Depressão de Beck</div>
+        <div class="esc-card-meta">
+          <span>Duas últimas semanas, incluindo hoje</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card bai hidden" id="escCardBAI" type="button" onclick="escClicarCardEscala('BAI')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-brain"/></svg></span>
+        <div class="esc-card-title">BAI — Inventário de Ansiedade de Beck</div>
+        <div class="esc-card-meta">
+          <span>Última semana, incluindo hoje</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
       <!-- PACOTE 12.7 (Fase 1): card destravado -->
       <button class="esc-card blue" type="button" style="margin-top:8px;" onclick="escAbrirHistorico()">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-trend-up"/></svg></span>
@@ -8483,6 +8554,10 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <li>Um <strong>texto educativo</strong> explicando o que isso significa</li>
         <li>A partir da 2ª aplicação da mesma escala: um <strong>gráfico de evolução</strong> ao longo do tempo</li>
       </ul>
+
+      <!-- Pacote 17.0: os dois inventários de Beck seguem a prática com o papel —
+           o resultado é conversado na sessão, não devolvido na tela. -->
+      <p>Há duas exceções: o <strong>BDI-II</strong> e o <strong>BAI</strong>. Neles você vê apenas a confirmação de que as respostas foram enviadas — sem pontuação e sem texto interpretativo, exatamente como acontece quando esses inventários são respondidos no papel. O resultado fica com o seu terapeuta e é conversado na sessão.</p>
 
       <div class="esc-intro-disclaimer">
         <svg class="ico" aria-hidden="true"><use href="#i-alert"/></svg> <strong>Importante:</strong> Os resultados destas escalas são <strong>medidas de rastreamento</strong> — não substituem avaliação diagnóstica realizada pelo seu psicólogo. São uma ferramenta de apoio ao tratamento, não um diagnóstico automático.
@@ -10004,6 +10079,7 @@ function profRenderizarEscalas_(escalas) {
   }
 
   // Popula ESC_HIST_STATE para o modal funcionar
+  ESC_HIST_STATE.visaoProfissional = true; // Pacote 17.0: o profissional vê tudo
   ESC_HIST_STATE.registros = escalas;
   ESC_HIST_STATE.carregadoEm = Date.now();
   ESC_HIST_STATE.invalidado = false;
@@ -15834,6 +15910,110 @@ const ESC_STATE = {
   inicioPreenchimento: null
 };
 
+// ============================================================
+// Pacote 17.0 — textos que NAO ficam no codigo (BDI-II, BAI)
+// ============================================================
+// O repositorio e o site sao publicos, entao enunciado, titulos, afirmacoes,
+// ancoras e instrucao vivem na aba Itens_Instrumentos da Sistema_VMC e chegam
+// pela acao 'lerItensInstrumento'. Aqui eles ficam SO EM MEMORIA: nunca vao
+// para sessionStorage. O rascunho da escala (16.3) continua guardando apenas as
+// respostas numericas, nunca texto de item.
+var ESC_TEXTOS = {};        // { bdi2: { instrucao, titulos, itens, opcoes, ancoras } }
+var ESC_LIBERADOS = null;   // null = ainda nao perguntou ao servidor; [] = nenhum
+// Cartao do menu por instrumento — o cartao so aparece com o instrumento liberado
+var ESC_CARTOES_POR_INSTRUMENTO = { bdi2: 'escCardBDI2', bai: 'escCardBAI' };
+
+// Valor numerico de uma resposta. Nas escalas do 12.x ja e numero; no BDI-II os
+// itens 16 e 18 guardam o codigo da folha ('2b'), e ali so o digito pontua.
+function escValorNumerico(valor) {
+  if (valor === undefined || valor === null || valor === '') return 0;
+  var n = parseInt(String(valor), 10);
+  return isNaN(n) ? 0 : n;
+}
+
+// Letras de direcao dos itens com variante (BDI-II 16 e 18): "i16=2b; i18=1a".
+// Vira o conteudo de observacoes, que ate o 16.4.3 era gravado vazio em todas as
+// escalas. Escala sem itensComLetra devolve '' e nada muda para ela.
+function escLetrasDeDirecao(def, respostas) {
+  if (!def || !def.itensComLetra || !respostas) return '';
+  var partes = [];
+  def.itensComLetra.forEach(function (n) {
+    var v = respostas[n];
+    if (v === undefined || v === null || v === '') return;
+    var codigo = String(v).trim();
+    if (/[A-Za-z]/.test(codigo)) partes.push('i' + n + '=' + codigo);
+  });
+  return partes.join('; ');
+}
+
+// Pergunta ao servidor quais instrumentos estao liberados (ativo=SIM e hash
+// conferido). Default seguro: qualquer falha deixa a lista vazia, e os cartoes
+// ficam escondidos.
+async function escCarregarLiberados() {
+  var paciente = carregarSessao();
+  if (!paciente || !paciente.sigla) { ESC_LIBERADOS = []; return ESC_LIBERADOS; }
+  try {
+    var resp = await chamarServidor('lerItensInstrumento', { sigla: paciente.sigla });
+    ESC_LIBERADOS = (resp && resp.ok && Array.isArray(resp.liberados)) ? resp.liberados : [];
+  } catch (e) {
+    console.warn('[Escalas] lerItensInstrumento (lista) falhou:', e);
+    ESC_LIBERADOS = [];
+  }
+  return ESC_LIBERADOS;
+}
+
+function escAplicarCartoesLiberados() {
+  var liberados = ESC_LIBERADOS || [];
+  Object.keys(ESC_CARTOES_POR_INSTRUMENTO).forEach(function (instr) {
+    var el = document.getElementById(ESC_CARTOES_POR_INSTRUMENTO[instr]);
+    if (el) el.classList.toggle('hidden', liberados.indexOf(instr) === -1);
+  });
+}
+
+// Busca os textos de um instrumento e guarda em memoria. Devolve false quando o
+// servidor recusa (sem liberacao, hash divergente, sem sessao) — e ai a escala
+// nao abre.
+async function escCarregarTextos(codigoEscala) {
+  var def = ESC_ESCALAS[codigoEscala];
+  if (!def || !def.textoDaAba) return true;
+  if (ESC_TEXTOS[def.instrumentoId]) return true;
+  var paciente = carregarSessao();
+  if (!paciente || !paciente.sigla) return false;
+  try {
+    var resp = await chamarServidor('lerItensInstrumento', {
+      sigla: paciente.sigla, instrumento: def.instrumentoId
+    });
+    if (!resp || !resp.ok || !resp.textos) return false;
+    ESC_TEXTOS[def.instrumentoId] = resp.textos;
+    return true;
+  } catch (e) {
+    console.warn('[Escalas] lerItensInstrumento falhou:', e);
+    return false;
+  }
+}
+
+// Opcoes de UM item, ja na ordem da folha.
+//   escalas do 12.x  -> conjunto unico do proprio catalogo
+//   BDI-II           -> quatro afirmacoes proprias (sete nos itens 16 e 18)
+//   BAI              -> as quatro colunas (ancoras), iguais para todos os itens
+function escOpcoesDoItem(def, item, textos) {
+  if (!def.textoDaAba) {
+    return (def.opcoes || []).map(function (o) {
+      return { codigo: String(o.valor), label: o.label, detalhe: '' };
+    });
+  }
+  if (!textos) return [];
+  if (def.opcoesPorItem) {
+    return (textos.opcoes[String(item.id)] || []).map(function (o) {
+      return { codigo: String(o.codigo), label: o.texto, detalhe: '' };
+    });
+  }
+  return ['0', '1', '2', '3'].map(function (c) {
+    var a = textos.ancoras[c] || { rotulo: '', descricao: '' };
+    return { codigo: c, label: a.rotulo, detalhe: a.descricao };
+  });
+}
+
 // ===== Dicionário de escalas (só PHQ-9 implementado no Pacote 12.2) =====
 const ESC_ESCALAS = {
   'PHQ-9': {
@@ -16135,9 +16315,91 @@ const ESC_ESCALAS = {
       '<strong>≥ 7</strong> — Suspeita de transtorno mental comum (indicação de avaliação diagnóstica)',
       '<em style="color:var(--c-ink-3);">Ponto de corte brasileiro validado (Gonçalves, Stein & Kapczinski, 2008) — sensibilidade 86,3%, especificidade 89,3%.</em>'
     ]
+  },
+
+  // ============================================================
+  // Pacote 17.0 — Escalas de Beck (BDI-II e BAI)
+  // ============================================================
+  // Estas duas definições NÃO trazem texto de item: enunciado, títulos,
+  // afirmações, âncoras e instrução vivem na aba Itens_Instrumentos da
+  // Sistema_VMC e chegam por 'lerItensInstrumento' quando o paciente abre a
+  // escala. O que está aqui é só estrutura publicável: número de itens,
+  // pontuação, faixas e item crítico.
+  //   textoDaAba     - o renderizador exige os textos do servidor antes de desenhar
+  //   instrumentoId  - chave do instrumento na aba
+  //   escoreOculto   - o paciente não vê escore, faixa nem interpretação (seção 4
+  //                    da especificação): escore, faixa e alerta são da área do
+  //                    profissional. Por isso não há 'descricao' nem 'sugestao'
+  //                    nas faixas, só o rótulo.
+  //   opcoesPorItem  - cada item tem as suas opções (o BDI-II não tem um conjunto
+  //                    único), e os itens de 'itensComLetra' têm 7 em vez de 4.
+  'BDI-II': {
+    nomeCompleto: 'BDI-II — Inventário de Depressão de Beck',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-heart-crack></use></svg>',
+    corPrefix: 'bdi2',
+    instrumentoId: 'bdi2',
+    textoDaAba: true,
+    escoreOculto: true,
+    opcoesPorItem: true,
+    itensComLetra: [16, 18],
+    subtitulo: '21 itens · Pensando nas <strong>duas últimas semanas</strong>, incluindo hoje',
+    escoreMax: 63,
+    itens: [
+      { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }, { id: 8 },
+      // Item 9 (ideação suicida): mesma camada de segurança do PHQ-9 item 9.
+      // A mensagem é genérica e não reproduz o texto do item.
+      { id: 9, critico: true, criticoLimiar: 1, itemRiscoKey: 'BDI2_item9' },
+      { id: 10 }, { id: 11 }, { id: 12 }, { id: 13 }, { id: 14 }, { id: 15 },
+      { id: 16 }, { id: 17 }, { id: 18 }, { id: 19 }, { id: 20 }, { id: 21 }
+    ],
+    faixas: [
+      { min: 29, max: 63, rotulo: 'Grave',    cor: 'vermelho' },
+      { min: 20, max: 28, rotulo: 'Moderado', cor: 'laranja'  },
+      { min: 14, max: 19, rotulo: 'Leve',     cor: 'amarelo'  },
+      { min: 0,  max: 13, rotulo: 'Mínimo',   cor: 'verde'    }
+    ],
+    faixasLista: [
+      '<strong>0-13</strong> — Mínimo',
+      '<strong>14-19</strong> — Leve',
+      '<strong>20-28</strong> — Moderado',
+      '<strong>29-63</strong> — Grave',
+      '<em style="color:var(--c-ink-3);">Pontos de corte sugeridos no manual para pacientes com diagnóstico de depressão maior.</em>'
+    ]
+  },
+
+  'BAI': {
+    nomeCompleto: 'BAI — Inventário de Ansiedade de Beck',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg>',
+    corPrefix: 'bai',
+    instrumentoId: 'bai',
+    textoDaAba: true,
+    escoreOculto: true,
+    subtitulo: '21 itens · Pensando na <strong>última semana</strong>, incluindo hoje',
+    escoreMax: 63,
+    // O BAI tem um conjunto único de quatro colunas para todos os itens (as
+    // âncoras), como a PHQ-9 — por isso não usa opcoesPorItem. Os rótulos e as
+    // descrições das colunas vêm da aba, em 'ancoras'.
+    itens: [
+      { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 },
+      { id: 8 }, { id: 9 }, { id: 10 }, { id: 11 }, { id: 12 }, { id: 13 }, { id: 14 },
+      { id: 15 }, { id: 16 }, { id: 17 }, { id: 18 }, { id: 19 }, { id: 20 }, { id: 21 }
+    ],
+    faixas: [
+      { min: 31, max: 63, rotulo: 'Grave',    cor: 'vermelho' },
+      { min: 20, max: 30, rotulo: 'Moderado', cor: 'laranja'  },
+      { min: 11, max: 19, rotulo: 'Leve',     cor: 'amarelo'  },
+      { min: 0,  max: 10, rotulo: 'Mínimo',   cor: 'verde'    }
+    ],
+    faixasLista: [
+      '<strong>0-10</strong> — Mínimo',
+      '<strong>11-19</strong> — Leve',
+      '<strong>20-30</strong> — Moderado',
+      '<strong>31-63</strong> — Grave',
+      '<em style="color:var(--c-ink-3);">Tabela 2 do manual brasileiro (pacientes psiquiátricos, versão em português). Os cortes dependem da amostra e do objetivo: em triagem tendem a ser baixados (menos falsos negativos); em pesquisa, elevados (menos falsos positivos). O sistema usa a Tabela 2 sem ajuste.</em>'
+    ]
   }
 
-  // Módulo 4 completo com 5 escalas
+  // Módulo 4: 5 escalas do 12.x + BDI-II e BAI (17.0)
 };
 
 // ============================================================
@@ -16153,6 +16415,14 @@ async function escAbrirMenu() {
   // Reuso do padrão Pacote 5/11.5: derivar "é primeira vez?" do servidor.
   // Default seguro: enquanto não verificou, trata como primeira vez.
   escAplicarAvisoPrimeiraVez();
+
+  // Pacote 17.0: BDI-II e BAI só entram no menu quando o servidor confirma a
+  // liberação. Enquanto a resposta não chega, os cartões seguem escondidos.
+  escAplicarCartoesLiberados();
+  if (ESC_LIBERADOS === null) {
+    await escCarregarLiberados();
+    escAplicarCartoesLiberados();
+  }
 
   if (!ESC_STATE.verificado && !ESC_STATE.carregando) {
     ESC_STATE.carregando = true;
@@ -16241,11 +16511,25 @@ function escClicarEntendi() {
  * Inicia o preenchimento de uma escala.
  * Limpa estado anterior, renderiza itens e vai para a tela de aplicação.
  */
-function escIniciarAplicacao(codigoEscala) {
+async function escIniciarAplicacao(codigoEscala) {
   const def = ESC_ESCALAS[codigoEscala];
   if (!def) {
     alert('Escala não encontrada: ' + codigoEscala);
     return;
+  }
+
+  // Pacote 17.0: escala cujo texto mora na aba só abre com os textos na mão.
+  // Recusa do servidor (sem liberação, hash divergente, sessão inválida) tira a
+  // escala do menu até a próxima verificação — default seguro.
+  if (def.textoDaAba) {
+    const textosOk = await escCarregarTextos(codigoEscala);
+    if (!textosOk) {
+      alert('Esta escala não está disponível no momento. Fale com seu terapeuta.');
+      ESC_LIBERADOS = null;
+      await escCarregarLiberados();
+      escAplicarCartoesLiberados();
+      return;
+    }
   }
 
   ESC_STATE.escalaAtual = codigoEscala;
@@ -16258,13 +16542,17 @@ function escIniciarAplicacao(codigoEscala) {
   topbarDefinirTitulo('sec-escalas-aplicar', codigoEscala); // Pacote 16.1: título vai para a barra
   document.getElementById('escAplicarHead').innerHTML = def.emoji + ' ' + def.nomeCompleto;
   document.getElementById('escAplicarSub').innerHTML = def.subtitulo;
-  document.getElementById('escAplicarEnunciado').textContent = def.enunciado;
+  // Pacote 17.0: a instrução do BDI-II e do BAI vem da aba, inteira e sem
+  // reescrita (seção 0.1 item 2). textContent preserva o texto como digitado.
+  const textosEsc = def.textoDaAba ? (ESC_TEXTOS[def.instrumentoId] || null) : null;
+  document.getElementById('escAplicarEnunciado').textContent =
+    textosEsc ? (textosEsc.instrucao || '') : def.enunciado;
 
   // Tintura dinâmica: aplica classe de cor ao container da aplicação
   // para que a barra de progresso, borda e botões sigam a cor da escala
   const secAplic = document.getElementById('sec-escalas-aplicar');
   if (secAplic) {
-    secAplic.classList.remove('esc-tint-coral', 'esc-tint-amber', 'esc-tint-green', 'esc-tint-purple', 'esc-tint-gray', 'esc-tint-orange', 'esc-tint-blue', 'esc-tint-teal');
+    secAplic.classList.remove('esc-tint-coral', 'esc-tint-amber', 'esc-tint-green', 'esc-tint-purple', 'esc-tint-gray', 'esc-tint-orange', 'esc-tint-blue', 'esc-tint-teal', 'esc-tint-bdi2', 'esc-tint-bai');
     secAplic.classList.add('esc-tint-' + (def.corPrefix || 'coral'));
   }
 
@@ -16272,7 +16560,7 @@ function escIniciarAplicacao(codigoEscala) {
   escRenderItens(def);
   // Pacote 16.3: reaplica as respostas do rascunho nos botões
   Object.entries(ESC_STATE.respostas).forEach(([itemId, valor]) => {
-    document.querySelectorAll('.esc-opcao[data-item="' + itemId + '"]').forEach(b => b.classList.toggle('selecionada', parseInt(b.dataset.valor) === valor));
+    document.querySelectorAll('.esc-opcao[data-item="' + itemId + '"]').forEach(b => b.classList.toggle('selecionada', String(b.dataset.valor) === String(valor)));
   });
 
   // Reseta progresso
@@ -16291,23 +16579,42 @@ function escRenderItens(def) {
   // Pacote 12.6: formato dicotômico (SRQ-20) usa botões maiores sem número visível
   const isDicotomica = def.dicotomica === true;
   const classeBotaoExtra = isDicotomica ? ' esc-opcao-dicotomica' : '';
+  // Pacote 17.0: textos do instrumento (null nas escalas do 12.x, que trazem o
+  // texto no próprio catálogo).
+  const textos = def.textoDaAba ? (ESC_TEXTOS[def.instrumentoId] || null) : null;
 
   def.itens.forEach(item => {
+    // BDI-II: o cabeçalho do item é o título da folha; BAI: o enunciado.
+    const textoItem = textos
+      ? (textos.itens[String(item.id)] || textos.titulos[String(item.id)] || '')
+      : item.texto;
+    // Opções por item (BDI-II tem 4, e 7 nos itens 16 e 18); nas demais, o
+    // conjunto único da escala.
+    const opcoes = escOpcoesDoItem(def, item, textos);
+    // As afirmacoes do BDI-II e as colunas do BAI sao frases inteiras da folha:
+    // empilham uma por linha, alinhadas a esquerda, com o codigo a esquerda.
+    const empilhada = def.textoDaAba ? ' esc-item-opcoes-empilhada' : '';
+
     html += '<div class="esc-item" id="escItemBox-' + item.id + '">';
     html += '<div class="esc-item-head">';
     html += '<div class="esc-item-num">' + item.id + '</div>';
-    html += '<div class="esc-item-texto">' + escapeHtmlAuto(item.texto) + '</div>';
+    html += '<div class="esc-item-texto">' + escapeHtmlAuto(textoItem) + '</div>';
     html += '</div>';
-    html += '<div class="esc-item-opcoes' + (isDicotomica ? ' esc-item-opcoes-dicotomica' : '') + '">';
-    def.opcoes.forEach(o => {
+    html += '<div class="esc-item-opcoes' + (isDicotomica ? ' esc-item-opcoes-dicotomica' : '') + empilhada + '">';
+    opcoes.forEach(o => {
       html += '<button type="button" class="esc-opcao' + classeBotaoExtra + '" ' +
-              'data-item="' + item.id + '" data-valor="' + o.valor + '" ' +
-              'onclick="escSelecionarOpcao(' + item.id + ', ' + o.valor + ', ' + (item.critico ? 'true' : 'false') + ')">';
-      // Escalas Likert mostram o número pequeno em cima do rótulo; dicotômicas só o rótulo
+              'data-item="' + item.id + '" data-valor="' + escapeHtmlAuto(o.codigo) + '" ' +
+              'onclick="escSelecionarOpcao(' + item.id + ', &quot;' + escapeHtmlAuto(o.codigo) + '&quot;, ' + (item.critico ? 'true' : 'false') + ')">';
+      // Escalas Likert mostram o número pequeno em cima do rótulo; dicotômicas só o rótulo.
+      // No BDI-II o código é o número como está no papel (0, 1a, 1b, 2a...).
       if (!isDicotomica) {
-        html += '<span class="esc-opcao-num">' + o.valor + '</span>';
+        html += '<span class="esc-opcao-num">' + escapeHtmlAuto(o.codigo) + '</span>';
       }
       html += escapeHtmlAuto(o.label);
+      // BAI: a descrição da coluna acompanha o rótulo, como na folha.
+      if (o.detalhe) {
+        html += '<span class="esc-opcao-detalhe">' + escapeHtmlAuto(o.detalhe) + '</span>';
+      }
       html += '</button>';
     });
     html += '</div>';
@@ -16357,18 +16664,21 @@ function escRenderItens(def) {
  * Callback ao selecionar uma opção em um item.
  */
 function escSelecionarOpcao(itemId, valor, critico) {
+  // Pacote 17.0: nas escalas do 12.x o valor é número; no BDI-II os itens 16 e
+  // 18 guardam o código da folha ('2b'), porque a direção da mudança tem valor
+  // clínico. A comparação vira textual para servir aos dois casos.
   ESC_STATE.respostas[itemId] = valor;
   escSalvarRascunho(); // Pacote 16.3: rascunho da escala no aparelho
 
   // Atualiza visual dos botões do item
   document.querySelectorAll('.esc-opcao[data-item="' + itemId + '"]').forEach(b => {
-    b.classList.toggle('selecionada', parseInt(b.dataset.valor) === valor);
+    b.classList.toggle('selecionada', String(b.dataset.valor) === String(valor));
   });
 
   // Alerta inline para item crítico
   if (critico) {
     const caixa = document.getElementById('escAlertaItem-' + itemId);
-    if (caixa) caixa.classList.toggle('show', valor >= 1);
+    if (caixa) caixa.classList.toggle('show', escValorNumerico(valor) >= 1);
   }
 
   escAtualizarProgresso();
@@ -16477,7 +16787,8 @@ function escCalcularEscoreEAlerta(codigoEscala, respostas) {
   const subescalasSomas = {}; // { depressao: 0, ansiedade: 0, estresse: 0 }
 
   def.itens.forEach(item => {
-    const bruto = parseInt(respostas[item.id]) || 0;
+    // Pacote 17.0: só o dígito pontua — '2b' vale 2, como manda o manual do BDI-II.
+    const bruto = escValorNumerico(respostas[item.id]);
 
     // Se o item é reverso, inverte: 0↔max, 1↔max-1, etc. (Pacote 12.4 / PSS-10)
     const v = item.reverso ? (escalaMax - bruto) : bruto;
@@ -16573,16 +16884,23 @@ async function escEnviarEscala(event) {
       alerta_risco_flag: calc.alertaFlag,
       alerta_risco_item: calc.alertaItem,
       alerta_risco_valor: calc.alertaValor,
-      observacoes: '',
+      // Pacote 17.0: a letra dos itens 16 e 18 do BDI-II (direção da mudança —
+      // aumento ou redução) vai para observacoes, que até aqui era gravada vazia
+      // em todas as escalas. As colunas item_16/item_18 ficam numéricas porque o
+      // resultado e o histórico as leem como número.
+      observacoes: escLetrasDeDirecao(def, ESC_STATE.respostas),
       tempo_preenchimento_seg: ESC_STATE.inicioPreenchimento
         ? Math.round((Date.now() - ESC_STATE.inicioPreenchimento) / 1000)
         : ''
     };
 
-    // Respostas numeradas (item_01 a item_21, preenche só os que a escala usa)
+    // Respostas numeradas (item_01 a item_21, preenche só os que a escala usa).
+    // Pacote 17.0: sempre o número — escValorNumerico devolve o próprio valor nas
+    // escalas do 12.x e o dígito de '2b' no BDI-II.
     def.itens.forEach(item => {
       const col = 'item_' + String(item.id).padStart(2, '0');
-      dados[col] = (ESC_STATE.respostas[item.id] !== undefined) ? ESC_STATE.respostas[item.id] : '';
+      const bruto = ESC_STATE.respostas[item.id];
+      dados[col] = (bruto !== undefined) ? escValorNumerico(bruto) : '';
     });
 
     // Item funcional
@@ -16674,11 +16992,36 @@ function escMostrarResultado(codigo, calc, respostas) {
   // Preenche todas as colunas item_01..item_21 (só as que a escala usa)
   def.itens.forEach(function(item){
     const col = 'item_' + String(item.id).padStart(2, '0');
-    reg[col] = (respostas && respostas[item.id] !== undefined) ? respostas[item.id] : '';
+    const bruto = (respostas && respostas[item.id] !== undefined) ? respostas[item.id] : '';
+    reg[col] = (bruto === '') ? '' : escValorNumerico(bruto);
   });
+  reg.observacoes = escLetrasDeDirecao(def, respostas || {});
+
+  const container = document.getElementById('escResultContainer');
+
+  // Pacote 17.0 (seção 4 da especificação): no BDI-II e no BAI o paciente vê
+  // "Respostas enviadas" e nada mais — sem escore, sem faixa, sem texto
+  // interpretativo, igual à prática com o papel. Escore, faixa e histórico
+  // aparecem só na área do profissional. O alerta do item 9 é a exceção: mantém
+  // para o paciente a mesma camada de segurança do PHQ-9 item 9.
+  if (def.escoreOculto) {
+    let htmlEnviado = escRrBlocoData(reg, 'imediata');
+    if (String(calc.alertaFlag || '').toUpperCase() === 'SIM') {
+      htmlEnviado += escRrBlocoAlerta(reg, def, 'imediata');
+    }
+    htmlEnviado += '<div class="rr-card">' +
+      '<h3><svg class=ico aria-hidden=true><use href=#i-check></use></svg> Respostas enviadas</h3>' +
+      '<p>Suas respostas foram registradas e ficam disponíveis para o seu terapeuta.</p>' +
+      '<p>Como no papel, o resultado deste inventário é conversado na sessão.</p>' +
+      '</div>';
+    htmlEnviado += escRrBlocoTempo(reg);
+    htmlEnviado += escRrBlocoLembrete();
+    container.innerHTML = htmlEnviado;
+    abrirSecao('sec-escalas-resultado');
+    return;
+  }
 
   // Render inicial sem contexto (imediato, para não atrasar a tela)
-  const container = document.getElementById('escResultContainer');
   const contextoInicial = escCalcularContextoLongitudinal(codigo, reg);
   container.innerHTML = escRenderizarConteudoResultado(reg, def, 'imediata', contextoInicial);
 
@@ -17378,11 +17721,14 @@ var ESC_HIST_STATE = {
   carregadoEm: 0,
   cacheTtlMs: 30 * 1000,
   invalidado: false,
-  abertos: {}           // { 'PHQ-9': true/false, ... } — quais blocos estão abertos
+  abertos: {},          // { 'PHQ-9': true/false, ... } — quais blocos estão abertos
+  visaoProfissional: false  // Pacote 17.0: o mesmo renderer serve as duas telas
 };
 
 // Ordem fixa dos blocos (casada com a ordem do menu do Módulo 4)
-var ESC_HIST_ORDEM = ['PHQ-9', 'GAD-7', 'PSS-10', 'DASS-21', 'SRQ-20'];
+// Pacote 17.0: sem BDI-II e BAI aqui, o registro é gravado e fica invisível —
+// esta lista alimenta o histórico do paciente E o card Escalas do profissional.
+var ESC_HIST_ORDEM = ['PHQ-9', 'GAD-7', 'PSS-10', 'DASS-21', 'SRQ-20', 'BDI-II', 'BAI'];
 
 function escHistInvalidarCache() {
   ESC_HIST_STATE.invalidado = true;
@@ -17489,11 +17835,12 @@ function escHistChaveTemporal(r) {
 // Renderização dos blocos colapsáveis
 // ============================================================
 function escHistRenderBlocos(cont, registros) {
+  ESC_HIST_STATE.visaoProfissional = false; // Pacote 17.0: tela do paciente
   if (!registros || registros.length === 0) {
     cont.innerHTML = '<div class="esch-vazio">' +
       '<span class="esch-vazio-icon"><svg class=ico aria-hidden=true><use href=#i-inbox></use></svg></span>' +
       '<div class="esch-vazio-titulo">Você ainda não aplicou nenhuma escala</div>' +
-      '<div class="esch-vazio-texto">Quando você preencher sua primeira escala (PHQ-9, GAD-7, PSS-10, DASS-21 ou SRQ-20), ela aparecerá aqui.</div>' +
+      '<div class="esch-vazio-texto">Quando você preencher sua primeira escala (PHQ-9, GAD-7, PSS-10, DASS-21, SRQ-20, BDI-II ou BAI), ela aparecerá aqui.</div>' +
     '</div>';
     return;
   }
@@ -17566,6 +17913,10 @@ function escHistToggleBloco(headEl) {
 // ============================================================
 function escHistRenderAplicacao(cod, def, reg, idxGlobal) {
   const dataHoraHtml = escHistFormatarDataHoraHtml(reg);
+  // Pacote 17.0: BDI-II e BAI não mostram escore ao paciente (seção 4). A MESMA
+  // função serve a visão do profissional, que vê tudo — quem separa os dois é
+  // ESC_HIST_STATE.visaoProfissional, marcada pelo ponto de entrada.
+  const ocultarEscore = def && def.escoreOculto && !ESC_HIST_STATE.visaoProfissional;
   const flagRisco = (String(reg.alerta_risco_flag || '').toUpperCase() === 'SIM')
     ? '<span class="esch-aplic-flag-risco" title="Alerta de risco nesta aplicação"></span>'
     : '';
@@ -17584,6 +17935,12 @@ function escHistRenderAplicacao(cod, def, reg, idxGlobal) {
         '<div class="esch-aplic-tri dep"><div class="esch-aplic-tri-nome">Dep</div><div class="esch-aplic-tri-val">' + escapeHtmlAuto(String(d)) + '</div></div>' +
         '<div class="esch-aplic-tri ans"><div class="esch-aplic-tri-nome">Ans</div><div class="esch-aplic-tri-val">' + escapeHtmlAuto(String(a)) + '</div></div>' +
         '<div class="esch-aplic-tri est"><div class="esch-aplic-tri-nome">Est</div><div class="esch-aplic-tri-val">' + escapeHtmlAuto(String(e)) + '</div></div>' +
+      '</div>';
+  } else if (ocultarEscore) {
+    // Só a confirmação de que a aplicação existe: data, nome e nada de número.
+    escoreHtml =
+      '<div class="esch-aplic-escore">' + flagRisco +
+        '<span class="esch-aplic-enviado">Respostas enviadas</span>' +
       '</div>';
   } else {
     // Escore único
@@ -17617,7 +17974,10 @@ function escHistRenderAplicacao(cod, def, reg, idxGlobal) {
       '<div class="esch-aplic-data-hora">' + dataHoraHtml.hora + '</div>' +
     '</div>' +
     escoreHtml +
-    '<button class="esch-aplic-lupa" type="button" title="Ver detalhes" onclick="escHistAbrirDetalhe(' + idxGlobal + ')"><svg class=ico aria-hidden=true><use href=#i-search></use></svg></button>' +
+    // Sem escore para o paciente também não há detalhe a abrir: a lupa levaria ao
+    // resultado completo (escore, faixa, interpretação).
+    (ocultarEscore ? '' :
+      '<button class="esch-aplic-lupa" type="button" title="Ver detalhes" onclick="escHistAbrirDetalhe(' + idxGlobal + ')"><svg class=ico aria-hidden=true><use href=#i-search></use></svg></button>') +
   '</div>';
 }
 

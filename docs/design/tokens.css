@@ -84,6 +84,10 @@
   --c-dass21-ink:    #3D3A6B;
   --c-srq20-tint:    #E2F0EE;
   --c-srq20-ink:     #245F5A;
+  --c-bdi2-tint:     #E7EBF5;  /* Pacote 17.0 — BDI-II, azul-ardósia */
+  --c-bdi2-ink:      #35477F;
+  --c-bai-tint:      #EAEFDC;  /* Pacote 17.0 — BAI, verde-oliva */
+  --c-bai-ink:       #4F5B23;
 
   /* ---------- Módulos do menu · tinte de identificação ---------- */
   --c-mod-anamnese:  #E7E6F5;  /* Anamnese */
@@ -199,6 +203,8 @@
     --c-pss10-tint:  #33240F; --c-pss10-ink:  #EDC182;
     --c-dass21-tint: #262441; --c-dass21-ink: #C4C2EE;
     --c-srq20-tint:  #16302E; --c-srq20-ink:  #8FD3CC;
+    --c-bdi2-tint:   #1B2135; --c-bdi2-ink:   #A9B9E8;
+    --c-bai-tint:    #232815; --c-bai-ink:    #C3CE8E;
     --c-chart-neg:   #D97A7A;
     --c-chart-neutro:#6E6B85;
     --c-chart-pos:   #5FAFA8;
