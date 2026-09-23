@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.4.2 (20/09/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.4.3 (23/09/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -8781,7 +8781,20 @@ const STATUS_TRATAMENTO = [
 // só resolve com a resposta do servidor, então quem chama mantém o contrato (mesmos parâmetros,
 // mesmo retorno) e nada do que foi digitado se perde. Falha = timeout, erro de rede, HTTP fora
 // de 2xx ou corpo que não é JSON (o 404 do Apps Script chega como HTML).
+// Pacote 16.4.3: o limite passa a ser POR AÇÃO. O corte único de 20 s do 16.2.1 serve à
+// leitura curta, mas não à leitura pesada do profissional (profListarPacientes abre uma
+// planilha por paciente em laço; profLerDadosPaciente lê as três abas de um paciente) nem
+// à gravação, que não pode ser repetida. Três faixas:
+//   VMC_TIMEOUT_MS (20 s)            leitura curta, login e lock — repetem sozinhas uma vez;
+//   VMC_TIMEOUT_PESADO_MS (60 s)     leitura pesada do profissional — SEM repetição
+//                                    automática: a segunda varredura custaria outro minuto e
+//                                    dobraria a cota da Sheets API. Quem decide é o usuário,
+//                                    na faixa "Tentar de novo";
+//   VMC_TIMEOUT_GRAVACAO_MS (60 s)   toda ação de VMC_ACOES_GRAVACAO — já sem repetição
+//                                    automática desde o 16.2.2.
 var VMC_TIMEOUT_MS = 20000;
+var VMC_TIMEOUT_PESADO_MS = 60000;
+var VMC_TIMEOUT_GRAVACAO_MS = 60000;
 var VMC_RETRY_MS = 2000;
 // Pacote 16.2.2: ações que gravam, editam, excluem ou travam registro — tabela do doPost em
 // Código.js (32 ações em 18/09/2026; ficam de fora só ping, autenticar, ler*, listar* e profLerGrade).
@@ -8798,10 +8811,20 @@ var VMC_ACOES_GRAVACAO = [
   'admCadastrarProfissional', 'admAtualizarProfissional', 'admTrocarSenhaProfissional',
   'admDesativarProfissional', 'admReativarProfissional'
 ];
+// Pacote 16.4.3: leituras pesadas do profissional. Medido no Playwright (Chrome, aba
+// visível) em 23/09/2026 — números no relatório do pacote. São as únicas leituras que
+// varrem mais de uma planilha, e as únicas que perdem a repetição automática.
+var VMC_ACOES_PESADAS = ['profListarPacientes', 'profLerDadosPaciente'];
 
-async function _chamarUmaVez_(payload) {
+async function _chamarUmaVez_(payload, limiteMs) {
+  const limite = limiteMs || VMC_TIMEOUT_MS;
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), VMC_TIMEOUT_MS);
+  const timer = setTimeout(() => ctrl.abort(), limite);
+  // Em ação de limite estendido, avisar na marca dos 20 s: antes do 16.4.3 o usuário via
+  // o erro nesse ponto; sem aviso ele veria um overlay parado por um minuto.
+  const aviso = limite > VMC_TIMEOUT_MS
+    ? setTimeout(() => loadingMensagem('O servidor está demorando; aguarde até 1 minuto…'), VMC_TIMEOUT_MS)
+    : null;
   try {
     const resposta = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
@@ -8817,6 +8840,7 @@ async function _chamarUmaVez_(payload) {
     catch (e) { throw new Error('Resposta não é JSON: ' + texto.slice(0, 40)); }
   } finally {
     clearTimeout(timer);
+    if (aviso) clearTimeout(aviso);
   }
 }
 
@@ -8832,21 +8856,28 @@ function _aguardarTentarDeNovo_() {
 
 async function chamarServidor(acao, dados = {}) {
   const payload = { acao, ...dados };
-  const repeteSozinho = VMC_ACOES_GRAVACAO.indexOf(acao) === -1; // só leitura e login repetem
+  // Pacote 16.4.3: limite e repetição saem da classe da ação, não de um valor único.
+  const ehGravacao = VMC_ACOES_GRAVACAO.indexOf(acao) !== -1;
+  const ehPesada = VMC_ACOES_PESADAS.indexOf(acao) !== -1;
+  const limite = ehGravacao ? VMC_TIMEOUT_GRAVACAO_MS
+               : ehPesada  ? VMC_TIMEOUT_PESADO_MS
+                           : VMC_TIMEOUT_MS;
+  const repeteSozinho = !ehGravacao && !ehPesada; // só leitura curta e login repetem
   for (;;) {
     mostrarLoading(true);
     try {
       try {
-        return await _chamarUmaVez_(payload);
+        return await _chamarUmaVez_(payload, limite);
       } catch (erro1) {
         if (!repeteSozinho) {
-          console.error('Erro ao chamar servidor (gravação, sem repetição automática):', erro1.message);
+          console.error('Erro ao chamar servidor (' + (ehGravacao ? 'gravação' : 'leitura pesada') +
+            ', sem repetição automática):', erro1.message);
         } else {
           console.warn('Servidor não respondeu (1ª tentativa):', erro1.message);
           loadingMensagem('O servidor demorou; tentando de novo…');
           await new Promise(r => setTimeout(r, VMC_RETRY_MS));
           try {
-            return await _chamarUmaVez_(payload);
+            return await _chamarUmaVez_(payload, limite);
           } catch (erro2) {
             console.error('Erro ao chamar servidor (2ª tentativa):', erro2.message);
           }
