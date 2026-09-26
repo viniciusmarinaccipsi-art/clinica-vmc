@@ -1,4 +1,23 @@
 /* ==========================================================================
+   Pacote 16.5 · 04_tokens.css — o que mudou em relação ao tokens.css de 17/09/2026
+   1. FONTE ÚNICA: --f-title passa a Figtree (sem serifa em lugar nenhum); os títulos
+      ficam em seminegrito (600). Newsreader sai do app. --t-num idem.
+   2. NOVOS · humor (checagem breve e cabeçalho cumulativo), 5 níveis de ameixa a verde-água:
+      --c-humor-1-bg … --c-humor-5-bg (fundo da faixa) e --c-humor-1-ink … --c-humor-5-ink (número, rostinho, nome).
+      Nível 3 é neutro (índigo): não pertence a nenhum tipo de registro. A caixa descritiva do nível e a
+      referência "Na checagem você anotou:" usam --c-action-tint (não o tinte da DASS-21).
+   3. NOVOS · trilho de etapas: --c-reg-neg-mid / --c-reg-pos-mid (segmento da etapa atual, meio-tom).
+   4. NOVO · --t-h2-sm (600 22px) para o título da etapa no celular e --t-legend (400 14px) para a
+      palavra da legenda embaixo de cada número da escala.
+   5. NOVO · --hit-face 56px: altura da faixa de humor; --w-likert-col 70px: coluna mínima da escala 1–5.
+   6. RODADA 3 (26/09) · dois valores que estavam soltos nas pranchas viram token:
+      --c-line-alpha (borda com alfa sobre tinte, ex.: divisor de "O que já está anotado") e
+      --c-scrim (fundo escurecido atrás da folha "Sair sem enviar?"). Tema claro e escuro.
+      Também --w-slider-desktop 400px (largura da barra deslizante no computador) e --hit-thumb 44px (marcador da barra).
+   Tudo o mais é idêntico ao arquivo de 17/09 (inclusive o tema escuro).
+   ========================================================================== */
+
+/* ==========================================================================
    Sistema Clínico Digital VMC — tokens.css
    Direção: Consultório · paleta Lavanda clínica
    Gerado para o redesenho (brief 17/09/2026, entregável 6.2)
@@ -62,7 +81,7 @@
      Fundo da faixa na checagem breve; ink = número, rostinho i-humor-N e nome do nível. */
   --c-humor-1-bg:    #EFDCE4;  --c-humor-1-ink: #7A3E59;   /* Muito mal    · 6.3:1 */
   --c-humor-2-bg:    #F6E9EF;  --c-humor-2-ink: #7A3E59;   /* Mal          · 7.0:1 */
-  --c-humor-3-bg:    #E7E6F5;  --c-humor-3-ink: #3D3A6B;   /* Mais ou menos· 8.6:1 — igual a --c-action-tint (neutro/ação) */
+  --c-humor-3-bg:    #E7E6F5;  --c-humor-3-ink: #3D3A6B;   /* Mais ou menos· 8.6:1 — igual a --c-action-tint (neutro/ação); #EDEBF7 é reservado à DASS-21 */
   --c-humor-4-bg:    #EAF4F2;  --c-humor-4-ink: #245F5A;   /* Bem          · 6.9:1 */
   --c-humor-5-bg:    #D9ECE9;  --c-humor-5-ink: #245F5A;   /* Muito bem    · 6.3:1 */
 
@@ -96,10 +115,6 @@
   --c-dass21-ink:    #3D3A6B;
   --c-srq20-tint:    #E2F0EE;
   --c-srq20-ink:     #245F5A;
-  --c-bdi2-tint:     #E7EBF5;  /* Pacote 17.0 — BDI-II, azul-ardósia */
-  --c-bdi2-ink:      #35477F;
-  --c-bai-tint:      #EAEFDC;  /* Pacote 17.0 — BAI, verde-oliva */
-  --c-bai-ink:       #4F5B23;
 
   /* ---------- Módulos do menu · tinte de identificação ---------- */
   --c-mod-anamnese:  #E7E6F5;  /* Anamnese */
@@ -118,7 +133,7 @@
   --c-disabled-ink:  #6E6B80;
 
   /* ---------- Tipografia ---------- */
-  --f-title: 'Figtree', system-ui, sans-serif; /* 16.4.5: títulos em Figtree 600 — nenhuma serifa no app */
+  --f-title: 'Figtree', system-ui, sans-serif; /* 16.5: títulos em Figtree 600 — nenhuma serifa no app */
   --f-text:  'Figtree', system-ui, sans-serif; /* tudo que se lê ou se clica */
 
   --t-display:   600 32px/1.2 var(--f-title);
@@ -164,14 +179,6 @@
   --dur-fast:  120ms;
   --dur:       200ms;
   --ease:      cubic-bezier(.2,.8,.3,1);
-
-  /* ---------- Apelidos (Pacote 16.0): nomes citados nas pranchas 03/05 que não existiam aqui ---------- */
-  --c-bg-page:    var(--c-bg);
-  --c-surface-2:  var(--c-surface-sub);
-  --c-ink-4:      var(--c-ink-3);
-  --c-placeholder: var(--c-ink-3);
-  --c-bg-app:     var(--c-bg);
-  --t-quote:      italic 400 18px/1.5 var(--f-title);
 }
 
 /* ---------- Tema escuro ---------- */
@@ -230,8 +237,6 @@
     --c-pss10-tint:  #33240F; --c-pss10-ink:  #EDC182;
     --c-dass21-tint: #262441; --c-dass21-ink: #C4C2EE;
     --c-srq20-tint:  #16302E; --c-srq20-ink:  #8FD3CC;
-    --c-bdi2-tint:   #1B2135; --c-bdi2-ink:   #A9B9E8;
-    --c-bai-tint:    #232815; --c-bai-ink:    #C3CE8E;
     --c-chart-neg:   #D97A7A;
     --c-chart-neutro:#6E6B85;
     --c-chart-pos:   #5FAFA8;

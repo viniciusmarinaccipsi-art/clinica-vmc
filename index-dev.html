@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.5d-1 (26/09/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.5c (26/09/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -43,6 +43,8 @@
   --c-line-inner:    #ECEBF3;  /* borda de cartão interno */
   --c-line:          #E2E1EE;  /* borda de cartão e de barra de abas */
   --c-line-strong:   #D6D5E4;  /* borda de botão secundário, campo, moldura de tela */
+  --c-line-alpha:    rgba(29,27,43,.08);  /* 16.5 r3: divisor sobre fundo tinte (herda o tom do fundo) */
+  --c-scrim:         rgba(29,27,43,.45);  /* 16.5 r3: fundo escurecido atrás de folha inferior e modal */
 
   /* ---------- Ação · índigo ---------- */
   --c-action:        #4C4A8F;  /* botão primário, link, aba ativa, seleção */
@@ -169,6 +171,8 @@
   --hit-likert: 48px; /* botão circular Likert no celular */
   --hit-face:   56px; /* 16.5: faixa de nível de humor */
   --w-likert-col: 70px; /* 16.5: coluna mínima da escala 1–5 (cabe "Totalmente" a 14px) */
+  --hit-thumb:  44px; /* 16.5 r3: marcador da barra deslizante */
+  --w-slider-desktop: 400px; /* 16.5 r3: largura da barra deslizante na coluna direita do computador */
   --dur-fast:  120ms;
   --dur:       200ms;
   --ease:      cubic-bezier(.2,.8,.3,1);
@@ -202,6 +206,8 @@
     --c-line-inner:  #2B2940;
     --c-line:        #322F47;
     --c-line-strong: #3E3B57;
+    --c-line-alpha:  rgba(255,255,255,.10);
+    --c-scrim:       rgba(0,0,0,.60);
     --c-action:      #A8A5E0;
     --c-action-hover:#B8B5EA;
     --c-action-press:#9895D6;
@@ -307,6 +313,17 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .topbar-texto.com-sub .topbar-titulo{-webkit-line-clamp:1;}
 .topbar-sub{display:none;font:var(--t-body-sm);font-weight:600;color:var(--c-action);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .topbar-sub.visivel{display:block;}
+/* Pacote 16.5c: sobretítulo (caixa alta, cor da ação ou do tipo de registro) e botão de ação na barra */
+.topbar-sobre{display:none;font:var(--t-label);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--c-action);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.topbar-sobre.neg{color:var(--c-reg-neg);}
+.topbar-sobre.pos{color:var(--c-reg-pos);}
+.topbar-texto.com-sobre .topbar-sobre{display:block;}
+.topbar-texto.com-sobre .topbar-titulo{-webkit-line-clamp:1;}
+.topbar-acao{display:none;min-height:var(--hit-min);padding:0 14px;border-radius:var(--r-chip);border:1px solid var(--c-line-strong);background:var(--c-surface);color:var(--c-ink);font:var(--t-action);font-family:var(--f-text);cursor:pointer;white-space:nowrap;}
+.topbar-acao:hover{background:var(--c-action-tint);}
+.topbar-acao:active{border-color:var(--c-action);background:var(--c-action-tint);color:var(--c-action-ink);}
+.topbar.com-acao .topbar-acao{display:inline-flex;align-items:center;}
+.topbar.com-acao .user-badge,.topbar.com-acao .pac-hamburger-wrap{display:none;}
 @media (max-width:540px){ .topbar.tela #userBadgeText{display:none;} .topbar.tela .user-badge{padding:0 8px;} }
 .topbar-marca{flex:1;display:none;align-items:center;gap:var(--s-2);}
 .topbar.marca .topbar-marca{display:flex;}
@@ -1365,25 +1382,9 @@ body.vmc-largo .topbar-in{max-width:1360px;}
    ============================================================ */
 
 /* Cards de seção com progresso visual */
-.auto-card{background:var(--c-surface);border-radius:var(--r-card);padding:18px;cursor:pointer;transition:all .25s;box-shadow:var(--sh-1);border:2px solid transparent;position:relative;overflow:hidden;text-align:left;width:100%;font-family:var(--f-text);display:block;}
-.auto-card:hover:not(:disabled):not(.locked){transform:translateY(-2px);box-shadow:var(--sh-1);}
-.auto-card:active:not(:disabled):not(.locked){transform:translateY(0);}
-.auto-card:disabled,.auto-card.locked{opacity:.55;cursor:not-allowed;}
-.auto-card.locked .auto-card-title::after{content:'';display:inline-block;width:.85em;height:.85em;margin-left:.3em;vertical-align:-.08em;background:currentColor;-webkit-mask:var(--ico-lock) center/contain no-repeat;mask:var(--ico-lock) center/contain no-repeat;}
 
 /* Pacote 10: Card selecionado no Passo 2 de 2 */
 
-.auto-card.coral.p10-selecionado{box-shadow:0 0 0 3px var(--c-reg-neg),0 8px 24px var(--c-reg-neg-line);}
-.auto-card.green.p10-selecionado{box-shadow:0 0 0 3px var(--c-reg-pos),0 8px 24px var(--c-reg-pos-line);}
-/* Botão "Começar registro" desabilitado quando nenhum card foi escolhido */
-.p10-btn-comecar[disabled],
-.p10-btn-comecar.p10-disabled{
-  opacity:.5;cursor:not-allowed;
-  background:var(--c-disabled-bg) !important;
-  box-shadow:none !important;
-}
-.p10-btn-comecar[disabled]:hover,
-.p10-btn-comecar.p10-disabled:hover{transform:none !important;}
 
 /* ============================================================
    PACOTE 11.4a — Cabeçalho Cumulativo (Registro Negativo)
@@ -1510,19 +1511,6 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 /* ============================================================
    PACOTE 5 — Cadeado no fluxo de primeira vez
    ============================================================ */
-.p5-sub-aviso{
-  display:none;
-  background:var(--c-warn-tint);
-  border-left:4px solid var(--c-warn);
-  border-radius:10px;
-  padding:12px 14px;
-  margin:0 0 14px 0;
-  font-size:13px;
-  color:var(--c-warn-ink);
-  font-weight:500;
-  line-height:1.45;
-}
-.p5-sub-aviso.show{display:block;}
 
 .p5-modal-overlay{
   display:none;
@@ -1631,23 +1619,8 @@ body.vmc-largo .topbar-in{max-width:1360px;}
   transform:translateY(-1px);
   box-shadow:var(--sh-3);
 }
-.auto-card-icon{font-size:28px;margin-bottom:6px;display:block;}
-.auto-card-title{font-family:var(--f-title);font-size:15px;font-weight:700;margin-bottom:3px;}
-.auto-card-desc{font:var(--t-body-sm);color:var(--c-ink-3);line-height:1.5;padding-right:90px;}
-.auto-card-arrow{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:20px;color:var(--c-line-strong);transition:all .2s;}
-.auto-card:hover:not(:disabled):not(.locked) .auto-card-arrow{right:10px;color:var(--c-ink-3);}
-.auto-card.blue{border-color:var(--c-action-tint);}.auto-card.blue .auto-card-title{color:var(--c-action);}
-.auto-card.coral{border-color:var(--c-reg-neg-line);}.auto-card.coral .auto-card-title{color:var(--c-reg-neg-ink);}
-.auto-card.green{border-color:var(--c-reg-pos-line);}.auto-card.green .auto-card-title{color:var(--c-reg-pos-ink);}
-.auto-card.amber{border-color:var(--c-warn-line);}.auto-card.amber .auto-card-title{color:var(--c-warn-ink);}
-.auto-card.gray{border-color:var(--c-line);}.auto-card.gray .auto-card-title{color:var(--c-ink-3);}
-.auto-grid{display:grid;gap:12px;margin-top:12px;}
-.auto-split{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-@media(max-width:600px){.auto-split{grid-template-columns:1fr;}}
 
 /* Cards de menu bloqueados na sequência obrigatória */
-.auto-card.seq-bloqueado{pointer-events:none;opacity:.45;}
-.auto-card.seq-bloqueado .auto-card-title::before{content:'';display:inline-block;width:.85em;height:.85em;margin-right:.3em;vertical-align:-.08em;background:currentColor;-webkit-mask:var(--ico-lock) center/contain no-repeat;mask:var(--ico-lock) center/contain no-repeat;}
 
 /* Badge de data no topo das sub-seções */
 /* Pacote 16.1: a data do registro aparece como subtítulo da barra; os [data-auto-badge] seguem no DOM como fonte do texto */
@@ -1655,27 +1628,122 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .auto-date-badge{font:var(--t-body-sm);display:inline-block;color:var(--c-action);font-weight:700;padding:5px 12px;background:var(--c-action-tint);border-radius:20px;}
 
 /* Mood grid do Passo 1 */
-.mood-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:14px 0;}
-.mood-card{text-align:center;padding:12px 4px;border-radius:var(--r-card);border:2px solid transparent;cursor:pointer;transition:all .2s;background:var(--c-surface-sub);}
-.mood-card:hover{transform:translateY(-2px);}
-.mood-card.selected{transform:scale(1.03);box-shadow:var(--sh-1);}
-.mood-emoji{font-size:26px;display:block;margin-bottom:4px;}
-.mood-num{font-size:14px;font-weight:800;display:block;}
-.mood-lbl{font:var(--t-body-sm);font-weight:700;display:block;margin-top:2px;color:var(--c-ink-2);}
-.mood-card.m1{background:var(--c-reg-neg-tint);border-color:var(--c-reg-neg-line);}.mood-card.m1.selected,.mood-card.m1:hover{border-color:var(--c-reg-neg);}.mood-card.m1 .mood-num{color:var(--c-reg-neg-ink);}
-.mood-card.m2{background:var(--c-reg-neg-tint);border-color:var(--c-reg-neg-line);}.mood-card.m2.selected,.mood-card.m2:hover{border-color:var(--c-reg-neg-line);}.mood-card.m2 .mood-num{color:var(--c-reg-neg-ink);}
-.mood-card.m3{background:var(--c-surface-sub);border-color:var(--c-line);}.mood-card.m3.selected,.mood-card.m3:hover{border-color:var(--c-ink-3);}.mood-card.m3 .mood-num{color:var(--c-ink-3);}
-.mood-card.m4{background:var(--c-pos-tint);border-color:var(--c-reg-pos-line);}.mood-card.m4.selected,.mood-card.m4:hover{border-color:var(--c-reg-pos);}.mood-card.m4 .mood-num{color:var(--c-reg-pos-ink);}
-.mood-card.m5{background:var(--c-pos-tint);border-color:var(--c-reg-pos-line);}.mood-card.m5.selected,.mood-card.m5:hover{border-color:var(--c-pos);}.mood-card.m5 .mood-num{color:var(--c-pos-ink);}
-@media(max-width:600px){.mood-grid{gap:5px;}.mood-card{padding:10px 2px;}.mood-emoji{font-size:22px;}.mood-lbl{font:var(--t-body-sm);}}
 /* Pacote 13.6.9.2 — caixa de descrição dinâmica de humor */
-.humor-desc-box{font:var(--t-body-sm);border-radius:var(--r-card);padding:10px 14px;font-weight:600;font-style:italic;text-align:center;margin:0 0 14px;border:1.5px solid transparent;opacity:0;max-height:0;overflow:hidden;transition:opacity .25s ease,max-height .25s ease,padding .25s ease,margin .25s ease;}
-.humor-desc-box.visivel{opacity:1;max-height:60px;padding:10px 14px;margin:0 0 14px;}
-.humor-desc-box.desc-1{background:var(--c-reg-neg-tint);border-color:var(--c-reg-neg-line);color:var(--c-reg-neg-ink);}
-.humor-desc-box.desc-2{background:var(--c-reg-neg-tint);border-color:var(--c-reg-neg-line);color:var(--c-reg-neg-ink);}
-.humor-desc-box.desc-3{background:var(--c-surface-sub);border-color:var(--c-line);color:var(--c-ink-2);}
-.humor-desc-box.desc-4{background:var(--c-pos-tint);border-color:var(--c-reg-pos-line);color:var(--c-pos-ink);}
-.humor-desc-box.desc-5{background:var(--c-pos-tint);border-color:var(--c-reg-pos-line);color:var(--c-pos-ink);}
+/* ---------- Pacote 16.5c · checagem breve (AUT-03), página Automonitoramento (AUT-02), checagem enviada (AUT-03b), menu "Suas 5 etapas" (AUT-03c) ---------- */
+[hidden]{display:none !important;}
+.rotulo-secao{font:var(--t-label);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--c-ink-3);margin:18px 0 10px;}
+.b56{display:flex;align-items:center;justify-content:center;gap:var(--s-2);width:100%;min-height:56px;padding:0 16px;border-radius:var(--r-card);border:1.5px solid transparent;background:var(--c-action);color:var(--c-ink-inv);font:600 16px/1.2 var(--f-text);cursor:pointer;transition:background var(--dur-fast) var(--ease);}
+.b56:hover:not(:disabled){background:var(--c-action-hover);}
+.b56:active:not(:disabled){background:var(--c-action-press);}
+.b56:disabled{background:var(--c-disabled-bg);color:var(--c-disabled-ink);cursor:not-allowed;}
+.b56 + .b56{margin-top:var(--s-3);}
+.b56-sec{background:var(--c-surface);color:var(--c-ink);border-color:var(--c-line-strong);}
+.b56-sec:hover:not(:disabled){background:var(--c-surface-sub);}
+.b56-sec:active:not(:disabled){background:var(--c-line);}
+.b56-sec:disabled{background:var(--c-disabled-bg);color:var(--c-disabled-ink);border-color:transparent;}
+.lnk{margin-left:auto;display:inline-flex;align-items:center;gap:6px;min-height:var(--hit-min);padding:0 6px;border:none;background:none;color:var(--c-action);font:600 15px/1 var(--f-text);letter-spacing:0;text-transform:none;cursor:pointer;}
+/* checagem */
+.chk-titulo{font:var(--t-h2);color:var(--c-ink);margin:8px 0 14px;}
+.chk-data-pill{display:flex;align-items:center;gap:var(--s-3);width:100%;min-height:52px;padding:0 var(--s-4);background:var(--c-surface);border:1px solid var(--c-line);border-radius:var(--r-card);font:var(--t-body-lg);font-feature-settings:var(--num-tnum);color:var(--c-ink);cursor:pointer;text-align:left;}
+.chk-data-pill .ico{color:var(--c-ink-3);}
+.chk-data-alterar{margin-left:auto;font:600 15px/1 var(--f-text);color:var(--c-action);}
+.chk-data-campos{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-3);}
+.chk-data-campos input{min-height:var(--hit-min);border:1.5px solid var(--c-line-strong);border-radius:var(--r-field);padding:0 12px;font:var(--t-body-lg);font-family:var(--f-text);color:var(--c-ink);background:var(--c-surface);}
+.chk-faixas{display:flex;flex-direction:column;gap:var(--s-2);margin:14px 0;}
+.chk-faixa{display:flex;align-items:center;gap:var(--s-3);width:100%;min-height:var(--hit-face);padding:0 10px;border-radius:var(--r-card);border:2px solid transparent;cursor:pointer;text-align:left;font-family:var(--f-text);}
+.chk-faixa[data-nivel="1"]{background:var(--c-humor-1-bg);color:var(--c-humor-1-ink);}
+.chk-faixa[data-nivel="2"]{background:var(--c-humor-2-bg);color:var(--c-humor-2-ink);}
+.chk-faixa[data-nivel="3"]{background:var(--c-humor-3-bg);color:var(--c-humor-3-ink);}
+.chk-faixa[data-nivel="4"]{background:var(--c-humor-4-bg);color:var(--c-humor-4-ink);}
+.chk-faixa[data-nivel="5"]{background:var(--c-humor-5-bg);color:var(--c-humor-5-ink);}
+.chk-num{width:40px;height:40px;border-radius:50%;background:var(--c-surface);display:flex;align-items:center;justify-content:center;font:600 17px/1 var(--f-text);flex-shrink:0;}
+.chk-faixa .ico{width:28px;height:28px;stroke-width:2;}
+.chk-nome{font:600 17px/1.2 var(--f-text);flex:1;}
+.chk-faixa .chk-check{display:none;}
+.chk-faixa[aria-checked="true"]{background:var(--c-surface);border-color:var(--c-action);box-shadow:0 0 0 3px var(--c-action-ring);color:var(--c-action-ink);}
+.chk-faixa[aria-checked="true"] .chk-num{background:var(--c-humor-3-bg);}
+.chk-faixa[aria-checked="true"] .chk-check{display:block;width:22px;height:22px;}
+.humor-desc-box{display:none;background:var(--c-action-tint);color:var(--c-ink-2);border-radius:var(--r-card);padding:12px 16px;font:italic 400 15px/1.5 var(--f-text);margin:0 0 16px;}
+.humor-desc-box.visivel{display:block;}
+.chk-obs label{display:block;font:600 16px/1.3 var(--f-text);color:var(--c-ink);margin:14px 0 4px;}
+.chk-obs-dica{font:var(--t-body);color:var(--c-ink-3);margin:0 0 8px;}
+.chk-obs textarea{width:100%;min-height:88px;border:1.5px solid var(--c-line-strong);border-radius:var(--r-field);padding:12px 14px;font:var(--t-body-lg);font-family:var(--f-text);color:var(--c-ink);background:var(--c-surface);resize:vertical;}
+/* checagem enviada */
+.chk-env{text-align:center;padding-top:24px;}
+.chk-env-circ{width:96px;height:96px;border-radius:50%;background:var(--c-pos-tint);color:var(--c-pos-ink);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;}
+.chk-env-circ .ico{width:40px;height:40px;stroke-width:2;}
+.chk-env-titulo{font:var(--t-h2);color:var(--c-ink);margin:0 0 18px;}
+.chk-env-card{text-align:left;background:var(--c-surface);border:1px solid var(--c-line);border-left:4px solid var(--c-action);border-radius:var(--r-card);padding:14px 16px;box-shadow:var(--sh-1);}
+.chk-env-humor{display:flex;align-items:center;gap:var(--s-3);font:600 19px/1.2 var(--f-text);color:var(--c-ink);}
+.chk-env-humor .ico{width:30px;height:30px;stroke-width:2;}
+.chk-env-data{font:var(--t-body-lg);color:var(--c-ink-3);margin-top:6px;font-feature-settings:var(--num-tnum);}
+.chk-env-obs{font:var(--t-body-lg);color:var(--c-ink-2);margin-top:6px;}
+.chk-env-nota{font:var(--t-body-lg);color:var(--c-ink-3);margin:18px 0;}
+/* página Automonitoramento */
+.hub-aviso{display:flex;gap:var(--s-3);align-items:flex-start;background:var(--c-warn-tint);border:1px solid var(--c-warn-line);border-radius:var(--r-card);padding:14px 16px;color:var(--c-warn-ink);font:var(--t-body-lg);margin:4px 0 16px;}
+.hub-aviso .ico{flex-shrink:0;margin-top:2px;}
+.ctipo{display:grid;grid-template-columns:48px minmax(0,1fr) 20px;gap:var(--s-3);align-items:center;width:100%;text-align:left;background:var(--c-surface);border:1px solid var(--c-line);border-left:4px solid var(--c-reg-neg);border-radius:var(--r-card);padding:16px 12px 16px 14px;box-shadow:var(--sh-1);cursor:pointer;font-family:var(--f-text);margin-bottom:12px;transition:background var(--dur-fast) var(--ease);}
+.ctipo.pos{border-left-color:var(--c-reg-pos);}
+.ctipo-ico{width:48px;height:48px;border-radius:12px;background:var(--c-reg-neg-tint);color:var(--c-reg-neg-ink);display:flex;align-items:center;justify-content:center;}
+.ctipo.pos .ctipo-ico{background:var(--c-reg-pos-tint);color:var(--c-reg-pos-ink);}
+.ctipo-ico .ico{width:24px;height:24px;}
+.ctipo-titulo{display:block;font:600 19px/1.2 var(--f-text);color:var(--c-reg-neg-ink);margin-bottom:4px;}
+.ctipo.pos .ctipo-titulo{color:var(--c-reg-pos-ink);}
+.ctipo-desc{display:block;font:400 14px/1.45 var(--f-text);color:var(--c-ink-2);}
+.ctipo-chev{font-size:22px;color:var(--c-ink-3);}
+.ctipo:hover:not(.bloqueado){background:var(--c-reg-neg-tint);}
+.ctipo.pos:hover:not(.bloqueado){background:var(--c-reg-pos-tint);}
+.ctipo:active:not(.bloqueado){border-left-width:6px;}
+.ctipo.bloqueado{opacity:.5;cursor:default;}
+.hub-nota{display:flex;gap:6px;align-items:center;font:var(--t-body-sm);color:var(--c-ink-3);margin:-4px 0 14px;}
+.hub-duplo{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:4px 0 12px;}
+.hub-card{text-align:left;background:var(--c-surface);border:1px solid var(--c-line);border-radius:var(--r-card);padding:16px;box-shadow:var(--sh-1);cursor:pointer;min-height:var(--hit-min);font-family:var(--f-text);}
+.hub-card:hover{background:var(--c-surface-sub);}
+.hub-card-titulo{display:flex;align-items:center;gap:var(--s-2);font:600 17px/1.25 var(--f-text);color:var(--c-ink);margin-bottom:6px;}
+.hub-card-titulo .ico{color:var(--c-action);flex-shrink:0;}
+.hub-card-desc{display:block;font:var(--t-body);color:var(--c-ink-3);}
+.hub-faixa{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:var(--s-3);align-items:center;width:100%;text-align:left;background:var(--c-action-tint);border:1.5px solid transparent;border-radius:var(--r-card);padding:16px;cursor:pointer;font-family:var(--f-text);color:var(--c-action-ink);}
+.hub-faixa .ico{color:var(--c-action);}
+.hub-faixa-titulo{display:block;font:600 17px/1.25 var(--f-text);color:var(--c-ink);margin-bottom:4px;}
+.hub-faixa-desc{display:block;font:var(--t-body);color:var(--c-action-ink);}
+.hub-faixa-chev{display:none;font-size:22px;color:var(--c-action);}
+.hub-faixa.destaque{border-color:var(--c-action);}
+.hub-faixa.destaque .hub-faixa-chev{display:block;}
+.hub-rascunho{background:var(--c-surface);border:1px solid var(--c-warn-line);border-left:4px solid var(--c-warn);border-radius:var(--r-card);padding:16px;box-shadow:var(--sh-1);margin:4px 0 16px;}
+.hub-rascunho-titulo{display:flex;align-items:center;gap:var(--s-3);font:600 16px/1.3 var(--f-text);color:var(--c-ink);margin-bottom:12px;}
+.hub-rascunho-titulo .ico{color:var(--c-warn-ink);flex-shrink:0;}
+.hub-rascunho-chip{border-radius:var(--r-field);padding:10px 12px;margin-bottom:12px;font:var(--t-body);color:var(--c-ink-2);}
+.hub-rascunho-chip.neg{background:var(--c-reg-neg-tint);}
+.hub-rascunho-chip.pos{background:var(--c-reg-pos-tint);}
+.hub-rascunho-tipo{display:flex;align-items:center;gap:var(--s-2);font:600 14px/1.3 var(--f-text);margin-bottom:4px;}
+.hub-rascunho-chip.neg .hub-rascunho-tipo{color:var(--c-reg-neg-ink);}
+.hub-rascunho-chip.pos .hub-rascunho-tipo{color:var(--c-reg-pos-ink);}
+/* bloco HUMOR (página e menu) */
+.menu-humor{background:var(--c-surface);border:1px solid var(--c-line);border-left:4px solid var(--c-action);border-radius:var(--r-card);padding:14px 16px;box-shadow:var(--sh-1);margin:4px 0 14px;}
+.menu-humor-head{display:flex;align-items:center;gap:var(--s-2);font:var(--t-label);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--c-ink-2);}
+.menu-humor-head .ico{color:var(--c-action);}
+.menu-humor-linha{display:flex;align-items:center;gap:var(--s-3);flex-wrap:wrap;margin-top:6px;}
+.menu-humor-linha .ico{width:30px;height:30px;stroke-width:2;}
+.menu-humor-nome{font:600 18px/1.2 var(--f-text);color:var(--c-ink);}
+.menu-humor-data{font:400 15px/1.2 var(--f-text);color:var(--c-ink-3);font-feature-settings:var(--num-tnum);}
+/* menu "Suas 5 etapas" */
+.menu-dica{font:400 15px/1.4 var(--f-text);color:var(--c-ink-3);margin:0 0 10px;}
+.metapas{display:flex;flex-direction:column;gap:10px;}
+.metapa{display:grid;grid-template-columns:44px minmax(0,1fr) 20px;gap:12px;align-items:center;width:100%;min-height:76px;text-align:left;background:var(--c-surface);border:1px solid var(--c-line);border-left:4px solid var(--c-reg-neg);border-radius:var(--r-card);padding:12px 12px 12px 14px;box-shadow:var(--sh-1);cursor:pointer;font-family:var(--f-text);transition:background var(--dur-fast) var(--ease);}
+.metapa.pos{border-left-color:var(--c-reg-pos);}
+.metapa-ico{width:44px;height:44px;border-radius:50%;background:var(--c-reg-neg-tint);color:var(--c-reg-neg-ink);display:flex;align-items:center;justify-content:center;}
+.metapa.pos .metapa-ico{background:var(--c-reg-pos-tint);color:var(--c-reg-pos-ink);}
+.metapa-ico .ico{width:22px;height:22px;}
+.metapa-nome{display:block;font:700 13px/1.3 var(--f-text);letter-spacing:.06em;text-transform:uppercase;color:var(--c-ink);}
+.metapa-perg{display:block;font:400 15px/1.4 var(--f-text);color:var(--c-ink-2);margin-top:2px;}
+.metapa-chev{font-size:22px;color:var(--c-ink-3);}
+.metapa:hover{background:var(--c-reg-neg-tint);}
+.metapa.pos:hover{background:var(--c-reg-pos-tint);}
+.metapa:active{border-left-width:6px;}
+.metapa.seq-bloqueado{pointer-events:none;opacity:.45;}
+.menu-rodape{margin-top:18px;}
+/* Meus Registros: linha só de checagem */
+.histc-tipo.chk{background:var(--c-humor-3-bg);color:var(--c-humor-3-ink);}
 
 /* Campos de formulário */
 .auto-field{margin:10px 0;}
@@ -1684,13 +1752,8 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .auto-field input,.auto-field textarea{width:100%;border:1.5px solid var(--c-line);border-radius:var(--r-field);padding:10px 12px;font-family:var(--f-text);font-size:13.5px;transition:border .2s;background:var(--c-surface);color:var(--c-ink);}
 .auto-field input:focus,.auto-field textarea:focus{border-color:var(--c-action);}
 .auto-field textarea{min-height:70px;resize:vertical;}
-.auto-field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-@media(max-width:600px){.auto-field-row{grid-template-columns:1fr;}}
 
 /* Obs box */
-.auto-obs-box{margin-top:12px;padding:10px 12px;background:var(--c-surface-sub);border-radius:var(--r-field);}
-.auto-obs-box label{font:var(--t-body-sm);font-weight:700;color:var(--c-ink-2);display:block;margin-bottom:4px;}
-.auto-obs-box textarea{font:var(--t-body-sm);width:100%;border:1px solid var(--c-line);border-radius:6px;padding:8px 10px;font-family:var(--f-text);min-height:50px;resize:vertical;background:var(--c-surface);}
 
 /* Header de sub-seção */
 .auto-sec-header{display:flex;align-items:center;gap:12px;padding-bottom:8px;border-bottom:3px solid;margin-bottom:10px;}
@@ -2499,7 +2562,7 @@ body.vmc-largo .topbar-in{max-width:1360px;}
    Prefixo: esc-* (CSS) / esc* / ESC_* (JS)
    ============================================================ */
 
-/* Cards do menu de escalas — reuso do padrão .auto-card */
+/* Cards do menu de escalas (padrão de cartão com borda lateral colorida) */
 .esc-grid{display:grid;gap:12px;margin-top:12px;}
 .esc-card{
   background:var(--c-surface);border-radius:var(--r-card);padding:18px;
@@ -3694,7 +3757,7 @@ body.vmc-largo .app{max-width:1360px;}
 /* ===== Pacote 16.2 (T4) — ícones SVG do sprite (#i-*) ===== */
 .ico{width:1.25em;height:1.25em;vertical-align:-.3em;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;display:inline-block;}
 .ico-lg{width:28px;height:28px;}
-.auto-card-icon .ico,.esc-card-icon .ico,.login-tipo-icon .ico,.p8-edu-icon .ico,.p5-modal-icone .ico,.login-icon .ico,.prof-pv-mod-icon .ico,.card-icon .ico{width:28px;height:28px;}
+.esc-card-icon .ico,.login-tipo-icon .ico,.p8-edu-icon .ico,.p5-modal-icone .ico,.login-icon .ico,.prof-pv-mod-icon .ico,.card-icon .ico{width:28px;height:28px;}
 .auto-sec-icon .ico{width:20px;height:20px;}
 .ico-pos{color:var(--c-pos);} .ico-warn{color:var(--c-warn);} .ico-risk2{color:var(--c-risk-ink-2);} .ico-risk{color:var(--c-risk);}
 /* Pacote 16.5b: rostinhos do humor — cor por nível (ameixa → verde-água), traço 2 como no 05_rostinhos.svg */
@@ -3847,8 +3910,10 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
   <div class="topbar-in">
     <button class="topbar-voltar" id="topbarVoltar" type="button" aria-label="Voltar">‹</button>
     <div class="topbar-marca"><span class="marca-ico">V</span><span class="marca-nome">Clínica VMC</span></div>
-    <div class="topbar-texto"><span class="topbar-titulo" id="topbarTitulo"></span><span class="topbar-sub" id="topbarSub"></span></div>
+    <div class="topbar-texto"><span class="topbar-sobre" id="topbarSobre"></span><span class="topbar-titulo" id="topbarTitulo"></span><span class="topbar-sub" id="topbarSub"></span></div>
     <div class="topbar-acoes">
+      <!-- Pacote 16.5c: botão de ação da tela (ex.: "Salvar e sair"), lido de data-barra-acao / data-barra-acao-onclick -->
+      <button class="topbar-acao" id="topbarAcao" type="button"></button>
       <div class="user-badge" id="userBadge">
         <span id="userBadgeText">TST</span>
         <button class="btn-logout" onclick="confirmarSaida(logout)" title="Sair"><svg class="ico" aria-hidden="true"><use href="#i-power"/></svg></button>
@@ -4264,56 +4329,54 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
   <!-- ============================================================
        MÓDULO 2 v4 — REGISTRO DE AUTOMONITORAMENTO
        ============================================================ -->
-  <div class="section" id="sec-automonitoramento" data-barra-titulo="Módulo 2 — Automonitoramento" data-barra-voltar="abrirSecao('sec-menu')">
-    <!-- Pacote 5: aviso de primeira vez (só aparece se paciente nunca fez Auto) -->
-    <div class="p5-sub-aviso" id="p5SubAviso">
-      <svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg> Antes de começar, leia o "Como Usar Este Registro". Depois você poderá usar todas as funções.
+  <div class="section" id="sec-automonitoramento" data-barra-titulo="Automonitoramento" data-barra-voltar="abrirSecao('sec-menu')">
+    <!-- Pacote 16.5c (AUT-02): a escolha do tipo vem para cá (D3). Estados: primeiro acesso (D11, aviso + cartões
+         bloqueados), checagem feita nesta sessão (linha HUMOR), rascunho em andamento (aviso no lugar dos cartões).
+         Tudo decidido por hubAtualizar(), chamado ao abrir a seção. -->
+    <div class="hub-aviso" id="p5SubAviso" hidden>
+      <svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg>
+      <span>Antes do registro completo, leia o "Como Usar Este Registro". A checagem breve de humor já está liberada.</span>
     </div>
-    <div class="auto-grid">
-      <button class="auto-card blue" id="autoCardComoUsar" type="button" onclick="abrirSecao('sec-auto-instrucoes')">
-        <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg></span>
-        <div class="auto-card-title">Como Usar Este Registro</div>
-        <div class="auto-card-desc">Entenda a estrutura, as escalas e como preencher</div>
-        <span class="auto-card-arrow">›</span>
+    <div class="menu-humor" id="hubHumor" hidden>
+      <div class="menu-humor-head"><svg class="ico" aria-hidden="true"><use href="#i-thermometer"/></svg><span>Humor</span><button type="button" class="lnk" onclick="chkEditar()"><svg class="ico" aria-hidden="true"><use href="#i-pencil"/></svg> editar</button></div>
+      <div class="menu-humor-linha"><span id="hubHumorRosto"></span><span class="menu-humor-nome" id="hubHumorNome"></span><span class="menu-humor-data" id="hubHumorData"></span></div>
+    </div>
+    <div class="hub-rascunho" id="hubRascunho" role="status" hidden>
+      <div class="hub-rascunho-titulo"><svg class="ico" aria-hidden="true"><use href="#i-pencil"/></svg>Você tem um registro em andamento.</div>
+      <div class="hub-rascunho-chip" id="hubRascunhoChip"></div>
+      <button type="button" class="b56" onclick="hubContinuarRascunho()">Continuar registro</button>
+      <button type="button" class="b56 b56-sec" onclick="hubDescartarRascunho()">Descartar</button>
+    </div>
+    <div id="hubTipos">
+      <div class="rotulo-secao">Que tipo de registro?</div>
+      <button class="ctipo neg" id="autoCardNeg" type="button" onclick="hubEscolherTipo('neg')">
+        <span class="ctipo-ico"><svg class="ico" aria-hidden="true"><use href="#i-heart-crack"/></svg></span>
+        <span><span class="ctipo-titulo">Registro Negativo</span><span class="ctipo-desc">Situações conflituosas → emoções desagradáveis, pensamentos desadaptativos e comportamentos disfuncionais</span></span>
+        <span class="ctipo-chev" aria-hidden="true">›</span>
       </button>
-      <button class="auto-card blue" id="autoCardIniciar" type="button" onclick="p5ClicarCardBloquevel('iniciar')" style="border-color:var(--c-action);background:var(--c-action-tint);">
-        <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-thermometer"/></svg></span>
-        <div class="auto-card-title">Iniciar Novo Registro</div>
-        <div class="auto-card-desc">Registre a data, avalie seu humor e escolha o tipo de registro</div>
-        <span class="auto-card-arrow">›</span>
+      <button class="ctipo pos" id="autoCardPos" type="button" onclick="hubEscolherTipo('pos')">
+        <span class="ctipo-ico"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg></span>
+        <span><span class="ctipo-titulo">Registro Positivo</span><span class="ctipo-desc">Situações conflituosas ou harmoniosas → emoções agradáveis, pensamentos adaptativos e comportamentos funcionais</span></span>
+        <span class="ctipo-chev" aria-hidden="true">›</span>
       </button>
-      <button class="auto-card amber" id="autoCardPainel" type="button" onclick="p5ClicarCardBloquevel('painel')">
-        <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg></span>
-        <div class="auto-card-title">Painel de Evolução</div>
-        <div class="auto-card-desc">Gráficos e insights sobre seus registros</div>
-        <span class="auto-card-arrow">›</span>
+      <p class="hub-nota" id="hubNotaPositivo" hidden><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg> Na sua primeira vez, preencha o Registro Negativo primeiro. O Positivo abre depois.</p>
+    </div>
+    <div class="hub-duplo">
+      <button class="hub-card" id="autoCardPainel" type="button" onclick="p5ClicarCardBloquevel('painel')">
+        <span class="hub-card-titulo"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg>Painel de Evolução</span>
+        <span class="hub-card-desc">Gráficos e insights sobre seus registros</span>
       </button>
-      <button class="auto-card gray" id="autoCardHistorico" type="button" onclick="p5ClicarCardBloquevel('historico')">
-        <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg></span>
-        <div class="auto-card-title">Meus Registros Anteriores</div>
-        <div class="auto-card-desc">Consulte seu histórico de automonitoramento</div>
-        <span class="auto-card-arrow">›</span>
+      <button class="hub-card" id="autoCardHistorico" type="button" onclick="p5ClicarCardBloquevel('historico')">
+        <span class="hub-card-titulo"><svg class="ico" aria-hidden="true"><use href="#i-archive"/></svg>Meus Registros</span>
+        <span class="hub-card-desc">Consulte seu histórico de automonitoramento</span>
       </button>
     </div>
+    <button class="hub-faixa" id="autoCardComoUsar" type="button" onclick="abrirSecao('sec-auto-instrucoes')">
+      <svg class="ico" aria-hidden="true"><use href="#i-book"/></svg>
+      <span><span class="hub-faixa-titulo">Como Usar Este Registro</span><span class="hub-faixa-desc">Entenda a estrutura, as escalas e como preencher</span></span>
+      <span class="hub-faixa-chev" aria-hidden="true">›</span>
+    </button>
   </div>
-
-  <!-- Pacote 5: Modal ao clicar em card travado -->
-  <div class="p5-modal-overlay" id="p5Modal" onclick="if(event.target===this)p5FecharModal()">
-    <div class="p5-modal-card" role="dialog" aria-modal="true" aria-labelledby="p5ModalTitulo">
-      <div class="p5-modal-head">
-        <span class="p5-modal-icone"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg></span>
-        <div class="p5-modal-titulo" id="p5ModalTitulo">Antes de começar</div>
-      </div>
-      <div class="p5-modal-body">
-        Leia primeiro o "Como Usar Este Registro". Em poucos passos, vamos explicar como o registro funciona e orientar sobre como você poderá respondê-lo.
-      </div>
-      <div class="p5-modal-acoes">
-        <button class="p5-btn p5-btn-secondary" type="button" onclick="p5FecharModal()">Fechar</button>
-        <button class="p5-btn p5-btn-primary" type="button" onclick="p5IrParaComoUsar()">Ir para Como Usar →</button>
-      </div>
-    </div>
-  </div>
-
   <!-- Pacote 9: Modal ao clicar no card travado de Automonitoramento (anamnese pendente) -->
   <div class="p5-modal-overlay" id="p9Modal" onclick="if(event.target===this)p9FecharModal()">
     <div class="p5-modal-card" role="dialog" aria-modal="true" aria-labelledby="p9ModalTitulo">
@@ -4610,170 +4673,79 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
   </div>
 
   <!-- PASSO 1 — Checagem de humor -->
-  <div class="section" id="sec-auto-passo1" data-barra-titulo="Checagem de humor" data-barra-voltar="abrirSecao('sec-automonitoramento')" data-barra-voltar-rotulo="Voltar">
-    <div class="anam-card">
-      <div class="auto-sec-header" style="border-color:var(--c-action);">
-        <div class="auto-sec-icon" style="background:var(--c-action-tint);color:var(--c-action);"><svg class="ico" aria-hidden="true"><use href="#i-thermometer"/></svg></div>
-        <div>
-          <div class="auto-sec-title" style="color:var(--c-action);">Checagem Breve de Humor</div>
-          <div class="auto-sec-sub">Registre a data e avalie como está se sentindo</div>
+  <!-- Pacote 16.5c (AUT-03): checagem breve de humor. Sem contador de etapas; termina em "Quer continuar?". -->
+  <div class="section" id="sec-auto-passo1" data-barra-titulo="Checagem breve de humor" data-barra-sobretitulo="Automonitoramento" data-barra-voltar="abrirSecao('sec-automonitoramento')" data-barra-voltar-rotulo="Voltar">
+    <div class="chk">
+      <h2 class="chk-titulo">Como está seu humor agora?</h2>
+      <div class="chk-data" id="chkData">
+        <button type="button" class="chk-data-pill" id="chkDataPill" onclick="chkMostrarCampos(true)"><svg class="ico" aria-hidden="true"><use href="#i-calendar"/></svg><span id="chkDataTxt"></span><span class="chk-data-alterar">alterar</span></button>
+        <div class="chk-data-campos" id="chkDataCampos" hidden>
+          <input type="date" id="autoInpData" aria-label="Data" onchange="autoOnDataHoraChange()">
+          <input type="time" id="autoInpHora" aria-label="Horário" onchange="autoOnDataHoraChange()">
         </div>
       </div>
-      <div class="auto-field-row">
-        <div class="auto-field">
-          <label><svg class="ico" aria-hidden="true"><use href="#i-calendar"/></svg> Data <span class="req">*</span></label>
-          <input type="date" id="autoInpData" onchange="autoOnDataHoraChange()">
-        </div>
-        <div class="auto-field">
-          <label><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg> Horário <span class="req">*</span></label>
-          <input type="time" id="autoInpHora" onchange="autoOnDataHoraChange()">
-        </div>
+      <div class="chk-faixas" role="radiogroup" aria-label="Como está seu humor agora?">
+        <button type="button" class="chk-faixa" role="radio" aria-checked="false" data-nivel="1" onclick="autoSelecionarHumor(this,1)"><span class="chk-num">1</span><svg class="ico" aria-hidden="true"><use href="#i-humor-1"/></svg><span class="chk-nome">Muito mal</span><svg class="ico chk-check" aria-hidden="true"><use href="#i-check"/></svg></button>
+        <button type="button" class="chk-faixa" role="radio" aria-checked="false" data-nivel="2" onclick="autoSelecionarHumor(this,2)"><span class="chk-num">2</span><svg class="ico" aria-hidden="true"><use href="#i-humor-2"/></svg><span class="chk-nome">Mal</span><svg class="ico chk-check" aria-hidden="true"><use href="#i-check"/></svg></button>
+        <button type="button" class="chk-faixa" role="radio" aria-checked="false" data-nivel="3" onclick="autoSelecionarHumor(this,3)"><span class="chk-num">3</span><svg class="ico" aria-hidden="true"><use href="#i-humor-3"/></svg><span class="chk-nome">Mais ou menos</span><svg class="ico chk-check" aria-hidden="true"><use href="#i-check"/></svg></button>
+        <button type="button" class="chk-faixa" role="radio" aria-checked="false" data-nivel="4" onclick="autoSelecionarHumor(this,4)"><span class="chk-num">4</span><svg class="ico" aria-hidden="true"><use href="#i-humor-4"/></svg><span class="chk-nome">Bem</span><svg class="ico chk-check" aria-hidden="true"><use href="#i-check"/></svg></button>
+        <button type="button" class="chk-faixa" role="radio" aria-checked="false" data-nivel="5" onclick="autoSelecionarHumor(this,5)"><span class="chk-num">5</span><svg class="ico" aria-hidden="true"><use href="#i-humor-5"/></svg><span class="chk-nome">Muito bem</span><svg class="ico chk-check" aria-hidden="true"><use href="#i-check"/></svg></button>
       </div>
-      <p style="font-size:13px;color:var(--c-ink-2);text-align:center;font-weight:700;margin:14px 0 6px;">Como você define o seu humor neste momento? <span class="req" style="color:var(--c-reg-neg-ink);">*</span></p>
-      <div class="mood-grid">
-        <div class="mood-card m1" onclick="autoSelecionarHumor(this,1)"><span class="mood-emoji"><svg class="ico ico-humor-1" aria-hidden="true"><use href="#i-humor-1"/></svg></span><span class="mood-num">1</span><span class="mood-lbl">Muito negativo</span></div>
-        <div class="mood-card m2" onclick="autoSelecionarHumor(this,2)"><span class="mood-emoji"><svg class="ico ico-humor-2" aria-hidden="true"><use href="#i-humor-2"/></svg></span><span class="mood-num">2</span><span class="mood-lbl">Negativo</span></div>
-        <div class="mood-card m3" onclick="autoSelecionarHumor(this,3)"><span class="mood-emoji"><svg class="ico ico-humor-3" aria-hidden="true"><use href="#i-humor-3"/></svg></span><span class="mood-num">3</span><span class="mood-lbl">Neutro</span></div>
-        <div class="mood-card m4" onclick="autoSelecionarHumor(this,4)"><span class="mood-emoji"><svg class="ico ico-humor-4" aria-hidden="true"><use href="#i-humor-4"/></svg></span><span class="mood-num">4</span><span class="mood-lbl">Positivo</span></div>
-        <div class="mood-card m5" onclick="autoSelecionarHumor(this,5)"><span class="mood-emoji"><svg class="ico ico-humor-5" aria-hidden="true"><use href="#i-humor-5"/></svg></span><span class="mood-num">5</span><span class="mood-lbl">Muito positivo</span></div>
+      <div class="humor-desc-box" id="autoHumorDesc" aria-live="polite"></div>
+      <div class="chk-obs">
+        <label for="autoInpObsHumor">Observações (opcional)</label>
+        <p class="chk-obs-dica">Onde você estava, o que estava fazendo, com quem estava ou se estava só?</p>
+        <textarea id="autoInpObsHumor" rows="3"></textarea>
       </div>
-      <!-- Pacote 13.6.9.2 — descrição dinâmica de humor -->
-      <div class="humor-desc-box" id="autoHumorDesc"></div>
-      <div class="auto-obs-box">
-        <label>Observações (opcional):</label>
-        <textarea id="autoInpObsHumor" placeholder="Algo que queira registrar sobre esse momento..."></textarea>
-      </div>
-      <div class="auto-nav-duplo barra-acao">
-      <button class="auto-btn-next" id="autoBtnP1Proximo" onclick="autoIrParaPasso2()" disabled>
-        Próximo: Escolher Tipo de Registro →
-      </button>
-      </div>
+      <div class="rotulo-secao">Quer continuar?</div>
+      <button type="button" class="b56" id="chkBtnIniciar" onclick="chkIniciarNovoRegistro()" disabled><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg> Iniciar novo registro</button>
+      <button type="button" class="b56 b56-sec" id="chkBtnConcluir" onclick="chkConcluirSoChecagem()" disabled>Concluir só com a checagem de humor</button>
     </div>
   </div>
 
-  <!-- PASSO 2 — Escolher tipo -->
-  <div class="section" id="sec-auto-passo2" data-barra-titulo="Tipo de registro" data-barra-voltar="abrirSecao('sec-auto-passo1')" data-barra-voltar-rotulo="Voltar">
-    <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
-    <div class="anam-card">
-      <h3 style="font-family:var(--f-title);font-size:16px;color:var(--c-action);text-align:center;margin:0 0 6px;">Qual registro deseja preencher?</h3>
-      <p id="autoPasso2Sub" style="font-size:13px;color:var(--c-ink-3);text-align:center;margin-bottom:16px;">Selecione um tipo e clique em "Começar registro" abaixo.</p>
-      <div class="auto-split">
-        <button class="auto-card coral" id="autoCardNeg" type="button" onclick="autoSelecionarTipo('neg')">
-          <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-heart-crack"/></svg></span>
-          <div class="auto-card-title">Registro Negativo</div>
-          <div class="auto-card-desc" style="padding-right:0;">Situações conflituosas → emoções desagradáveis, pensamentos desadaptativos e comportamentos disfuncionais</div>
-        </button>
-        <button class="auto-card green" id="autoCardPos" type="button" onclick="autoSelecionarTipo('pos')">
-          <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg></span>
-          <div class="auto-card-title">Registro Positivo</div>
-          <div class="auto-card-desc" style="padding-right:0;">Situações conflituosas ou harmoniosas → emoções agradáveis, pensamentos adaptativos e comportamentos funcionais</div>
-        </button>
+  <!-- Pacote 16.5c (AUT-03b): checagem de humor enviada (só checagem, 1 linha na planilha) -->
+  <div class="section" id="sec-auto-checagem-enviada" data-barra-titulo="Checagem breve de humor" data-barra-sobretitulo="Automonitoramento" data-barra-voltar="">
+    <div class="chk-env">
+      <div class="chk-env-circ"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg></div>
+      <h2 class="chk-env-titulo">Checagem de humor enviada</h2>
+      <div class="chk-env-card">
+        <div class="chk-env-humor"><span id="chkEnvRosto"></span><span id="chkEnvNome"></span></div>
+        <div class="chk-env-data" id="chkEnvData"></div>
+        <div class="chk-env-obs" id="chkEnvObs" hidden></div>
       </div>
-      <!-- Pacote 10: botão novo "Começar registro →" — substitui o antigo "Finalizar e Revisar".
-           Começa desabilitado. Só libera depois que o paciente seleciona um card. -->
-      <div class="auto-nav-duplo barra-acao">
-        <button class="auto-btn-prev" onclick="abrirSecao('sec-auto-passo1')">← Anterior</button>
-      <button class="auto-btn-next p10-btn-comecar p10-disabled" id="p10BtnComecar" type="button" onclick="autoComecarRegistro()" style="margin-top:20px;">
-        Começar registro →
-      </button>
+      <p class="chk-env-nota">Fica em Meus Registros e no Painel de Evolução.</p>
+      <button type="button" class="b56 b56-sec" onclick="abrirSecao('sec-menu')">Voltar ao início</button>
+    </div>
+  </div>
+
+  <!-- Pacote 16.5c (AUT-03c): menu "Suas 5 etapas" — uma seção física; os dois tipos são blocos .auto-tipo com os ids
+       lógicos de sempre (sec-auto-menu-neg / sec-auto-menu-pos), como nas etapas (16.5d-1). Sem trilho, sem estado por etapa. -->
+  <div class="section" id="sec-auto-menu" data-barra-titulo="Suas 5 etapas" data-barra-sobretitulo="Registro Negativo" data-barra-voltar="abrirSecao('sec-automonitoramento')" data-barra-voltar-rotulo="Voltar" data-barra-acao="Salvar e sair" data-barra-acao-onclick="menuSalvarESair()" data-tipo="neg">
+    <div class="menu-humor" id="menuHumor">
+      <div class="menu-humor-head"><svg class="ico" aria-hidden="true"><use href="#i-thermometer"/></svg><span>Humor</span><button type="button" class="lnk" onclick="chkEditar()"><svg class="ico" aria-hidden="true"><use href="#i-pencil"/></svg> editar</button></div>
+      <div class="menu-humor-linha"><span id="menuHumorRosto"></span><span class="menu-humor-nome" id="menuHumorNome"></span><span class="menu-humor-data" id="menuHumorData"></span></div>
+    </div>
+    <p class="menu-dica">Toque em uma etapa para abrir.</p>
+    <div class="auto-tipo" id="sec-auto-menu-neg" data-tipo="neg" data-barra-titulo="Suas 5 etapas" data-barra-sobretitulo="Registro Negativo" data-barra-voltar="abrirSecao('sec-automonitoramento')">
+      <div class="metapas" role="list">
+        <button class="metapa neg" role="listitem" data-sec-idx="0" data-sec-tipo="neg" type="button" onclick="autoEntrarSecao('sec-auto-sit-a',0,'neg')"><span class="metapa-ico"><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg></span><span><span class="metapa-nome">Situação</span><span class="metapa-perg">O que aconteceu?</span></span><span class="metapa-chev" aria-hidden="true">›</span></button>
+        <button class="metapa neg" role="listitem" data-sec-idx="1" data-sec-tipo="neg" type="button" onclick="autoEntrarSecao('sec-auto-emo-a',1,'neg')"><span class="metapa-ico"><svg class="ico" aria-hidden="true"><use href="#i-heart-crack"/></svg></span><span><span class="metapa-nome">Emoções Desagradáveis</span><span class="metapa-perg">O que você sentiu?</span></span><span class="metapa-chev" aria-hidden="true">›</span></button>
+        <button class="metapa neg" role="listitem" data-sec-idx="2" data-sec-tipo="neg" type="button" onclick="autoEntrarSecao('sec-auto-fis-a',2,'neg')"><span class="metapa-ico"><svg class="ico" aria-hidden="true"><use href="#i-zap"/></svg></span><span><span class="metapa-nome">Reações Físicas de Mal-Estar</span><span class="metapa-perg">O que você sentiu no corpo?</span></span><span class="metapa-chev" aria-hidden="true">›</span></button>
+        <button class="metapa neg" role="listitem" data-sec-idx="3" data-sec-tipo="neg" type="button" onclick="autoEntrarSecao('sec-auto-pens-a',3,'neg')"><span class="metapa-ico"><svg class="ico" aria-hidden="true"><use href="#i-cloud-rain"/></svg></span><span><span class="metapa-nome">Pensamentos Desadaptativos</span><span class="metapa-perg">Quais pensamentos passaram pela sua mente?</span></span><span class="metapa-chev" aria-hidden="true">›</span></button>
+        <button class="metapa neg" role="listitem" data-sec-idx="4" data-sec-tipo="neg" type="button" onclick="autoEntrarSecao('sec-auto-comp-a',4,'neg')"><span class="metapa-ico"><svg class="ico" aria-hidden="true"><use href="#i-trend-down"/></svg></span><span><span class="metapa-nome">Comportamentos Disfuncionais</span><span class="metapa-perg">Como você reagiu a essa situação?</span></span><span class="metapa-chev" aria-hidden="true">›</span></button>
       </div>
     </div>
+    <div class="auto-tipo" id="sec-auto-menu-pos" data-tipo="pos" data-barra-titulo="Suas 5 etapas" data-barra-sobretitulo="Registro Positivo" data-barra-voltar="abrirSecao('sec-automonitoramento')" hidden>
+      <div class="metapas" role="list">
+        <button class="metapa pos" role="listitem" data-sec-idx="0" data-sec-tipo="pos" type="button" onclick="autoEntrarSecao('sec-auto-sit-b',0,'pos')"><span class="metapa-ico"><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg></span><span><span class="metapa-nome">Situação</span><span class="metapa-perg">O que aconteceu?</span></span><span class="metapa-chev" aria-hidden="true">›</span></button>
+        <button class="metapa pos" role="listitem" data-sec-idx="1" data-sec-tipo="pos" type="button" onclick="autoEntrarSecao('sec-auto-emo-b',1,'pos')"><span class="metapa-ico"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg></span><span><span class="metapa-nome">Emoções Agradáveis</span><span class="metapa-perg">O que você sentiu?</span></span><span class="metapa-chev" aria-hidden="true">›</span></button>
+        <button class="metapa pos" role="listitem" data-sec-idx="2" data-sec-tipo="pos" type="button" onclick="autoEntrarSecao('sec-auto-fis-b',2,'pos')"><span class="metapa-ico"><svg class="ico" aria-hidden="true"><use href="#i-leaf"/></svg></span><span><span class="metapa-nome">Reações Físicas de Bem-Estar</span><span class="metapa-perg">O que você sentiu no corpo?</span></span><span class="metapa-chev" aria-hidden="true">›</span></button>
+        <button class="metapa pos" role="listitem" data-sec-idx="3" data-sec-tipo="pos" type="button" onclick="autoEntrarSecao('sec-auto-pens-b',3,'pos')"><span class="metapa-ico"><svg class="ico" aria-hidden="true"><use href="#i-sun"/></svg></span><span><span class="metapa-nome">Pensamentos Adaptativos</span><span class="metapa-perg">Quais pensamentos passaram pela sua mente?</span></span><span class="metapa-chev" aria-hidden="true">›</span></button>
+        <button class="metapa pos" role="listitem" data-sec-idx="4" data-sec-tipo="pos" type="button" onclick="autoEntrarSecao('sec-auto-comp-b',4,'pos')"><span class="metapa-ico"><svg class="ico" aria-hidden="true"><use href="#i-trend-up"/></svg></span><span><span class="metapa-nome">Comportamentos Funcionais</span><span class="metapa-perg">Como você reagiu a essa situação?</span></span><span class="metapa-chev" aria-hidden="true">›</span></button>
+      </div>
+    </div>
+    <div class="barra-acao menu-rodape"><button type="button" class="b56" onclick="menuComecar()">Começar: Situação ›</button></div>
   </div>
-
-  <!-- MENU NEG (com barra gamificada) -->
-  <div class="section" id="sec-auto-menu-neg" data-barra-titulo="Registro Negativo" data-barra-voltar="abrirSecao('sec-auto-passo2')" data-barra-voltar-rotulo="Voltar">
-    <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
-
-    <div class="auto-grid">
-      <button class="auto-card gray" data-sec-idx="0" data-sec-tipo="neg" type="button" onclick="autoEntrarSecao('sec-auto-sit-a',0,'neg')">
-        <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg></span>
-        <div class="auto-card-title">Situação / Contexto</div>
-        <div class="auto-card-desc">O que estava acontecendo</div>
-        <span class="auto-card-arrow">›</span>
-      </button>
-      <button class="auto-card coral" data-sec-idx="1" data-sec-tipo="neg" type="button" onclick="autoEntrarSecao('sec-auto-emo-a',1,'neg')">
-        <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-heart-crack"/></svg></span>
-        <div class="auto-card-title">Emoções Desagradáveis</div>
-        <div class="auto-card-desc">Identifique e avalie as emoções de desconforto</div>
-        <span class="auto-card-arrow">›</span>
-      </button>
-      <button class="auto-card coral" data-sec-idx="2" data-sec-tipo="neg" type="button" onclick="autoEntrarSecao('sec-auto-fis-a',2,'neg')">
-        <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-zap"/></svg></span>
-        <div class="auto-card-title">Reações Físicas — Mal-Estar</div>
-        <div class="auto-card-desc">Sensações corporais incômodas</div>
-        <span class="auto-card-arrow">›</span>
-      </button>
-      <button class="auto-card coral" data-sec-idx="3" data-sec-tipo="neg" type="button" onclick="autoEntrarSecao('sec-auto-pens-a',3,'neg')">
-        <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-cloud-rain"/></svg></span>
-        <div class="auto-card-title">Pensamentos Desadaptativos</div>
-        <div class="auto-card-desc">Pensamentos negativos ou autocríticos</div>
-        <span class="auto-card-arrow">›</span>
-      </button>
-      <button class="auto-card coral" data-sec-idx="4" data-sec-tipo="neg" type="button" onclick="autoEntrarSecao('sec-auto-comp-a',4,'neg')">
-        <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-trend-down"/></svg></span>
-        <div class="auto-card-title">Comportamentos Disfuncionais</div>
-        <div class="auto-card-desc">Atitudes que pioraram a situação</div>
-        <span class="auto-card-arrow">›</span>
-      </button>
-    </div>
-    <div class="auto-nav-duplo barra-acao">
-      <button class="auto-btn-prev coral" onclick="abrirSecao('sec-auto-passo2')">← Anterior</button>
-    <button class="auto-btn-next coral" id="autoBtnFinalizarNeg" onclick="autoFinalizarTipo('neg')" disabled>
-      <svg class="ico" aria-hidden="true"><use href="#i-check"/></svg> Concluir Registro Negativo
-    </button>
-    </div>
-    <p style="font-size:13px;color:var(--c-ink-3);text-align:center;margin-top:8px;">
-      Complete todas as seções para concluir.
-    </p>
-  </div>
-
-  <!-- MENU POS -->
-  <div class="section" id="sec-auto-menu-pos" data-barra-titulo="Registro Positivo" data-barra-voltar="abrirSecao('sec-auto-passo2')" data-barra-voltar-rotulo="Voltar">
-    <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
-
-    <div class="auto-grid">
-      <button class="auto-card gray" data-sec-idx="0" data-sec-tipo="pos" type="button" onclick="autoEntrarSecao('sec-auto-sit-b',0,'pos')">
-        <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg></span>
-        <div class="auto-card-title">Situação / Contexto</div>
-        <div class="auto-card-desc">O que estava acontecendo</div>
-        <span class="auto-card-arrow">›</span>
-      </button>
-      <button class="auto-card green" data-sec-idx="1" data-sec-tipo="pos" type="button" onclick="autoEntrarSecao('sec-auto-emo-b',1,'pos')">
-        <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg></span>
-        <div class="auto-card-title">Emoções Agradáveis</div>
-        <div class="auto-card-desc">Identifique e avalie as emoções positivas</div>
-        <span class="auto-card-arrow">›</span>
-      </button>
-      <button class="auto-card green" data-sec-idx="2" data-sec-tipo="pos" type="button" onclick="autoEntrarSecao('sec-auto-fis-b',2,'pos')">
-        <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-leaf"/></svg></span>
-        <div class="auto-card-title">Reações Físicas — Bem-Estar</div>
-        <div class="auto-card-desc">Sensações corporais agradáveis</div>
-        <span class="auto-card-arrow">›</span>
-      </button>
-      <button class="auto-card green" data-sec-idx="3" data-sec-tipo="pos" type="button" onclick="autoEntrarSecao('sec-auto-pens-b',3,'pos')">
-        <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-sun"/></svg></span>
-        <div class="auto-card-title">Pensamentos Adaptativos</div>
-        <div class="auto-card-desc">Pensamentos mais equilibrados</div>
-        <span class="auto-card-arrow">›</span>
-      </button>
-      <button class="auto-card green" data-sec-idx="4" data-sec-tipo="pos" type="button" onclick="autoEntrarSecao('sec-auto-comp-b',4,'pos')">
-        <span class="auto-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-trend-up"/></svg></span>
-        <div class="auto-card-title">Comportamentos Funcionais</div>
-        <div class="auto-card-desc">Atitudes que ajudaram</div>
-        <span class="auto-card-arrow">›</span>
-      </button>
-    </div>
-    <div class="auto-nav-duplo barra-acao">
-      <button class="auto-btn-prev green" onclick="abrirSecao('sec-auto-passo2')">← Anterior</button>
-    <button class="auto-btn-next green" id="autoBtnFinalizarPos" onclick="autoFinalizarTipo('pos')" disabled>
-      <svg class="ico" aria-hidden="true"><use href="#i-check"/></svg> Concluir Registro Positivo
-    </button>
-    </div>
-    <p style="font-size:13px;color:var(--c-ink-3);text-align:center;margin-top:8px;">
-      Complete todas as seções para concluir.
-    </p>
-  </div>
-
   <!-- As 11 sub-seções ficam aqui -->
     <!-- SUB-SEÇÕES CLÍNICAS DO MÓDULO 2 v4 -->
 
@@ -8387,7 +8359,7 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
   </div>
 
   <!-- RESUMO -->
-  <div class="section" id="sec-auto-resumo" data-barra-titulo="Revisar e Enviar" data-barra-voltar="abrirSecao('sec-auto-passo2')" data-barra-voltar-rotulo="Voltar">
+  <div class="section" id="sec-auto-resumo" data-barra-titulo="Revisar e Enviar" data-barra-voltar="autoVoltarEditarRevisar()" data-barra-voltar-rotulo="Voltar">
     <div class="anam-card">
       <div class="auto-sec-header" style="border-color:var(--c-action);">
         <div class="auto-sec-icon" style="background:var(--c-action-tint);color:var(--c-action);"><svg class="ico" aria-hidden="true"><use href="#i-send"/></svg></div>
@@ -8657,8 +8629,12 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 // laço de renderização (pevDesenharHumor chama por ponto do gráfico); o cache é zerado quando
 // o tema do sistema muda (prefers-color-scheme), para o próximo desenho ler os valores novos.
 var VMC_TOK_CACHE = {};
+// Pacote 16.5c (D6): única fonte dos nomes dos níveis de humor 1–5 (checagem, menu, revisão, Meus Registros,
+// visão do profissional). Os valores gravados continuam 1–5.
+var HUMOR_NOMES = { 1: 'Muito mal', 2: 'Mal', 3: 'Mais ou menos', 4: 'Bem', 5: 'Muito bem' };
+
 // Pacote 16.5b: única fonte das faces do humor 1–5 — rostinhos i-humor-N do sprite, cor .ico-humor-N
-// (--c-humor-N-ink). Substitui os 6 mapas de emoji que existiam (PROF_HUMOR_EMOJIS, HIST_EMOJIS, HUMOR_MAP.emoji…).
+// (--c-humor-N-ink). Substitui os 6 mapas de emoji que existiam (até o 16.5b).
 // Fora de 1–5 devolve o "?" do sprite. HTML literal, nunca entrada do usuário — não escapar.
 function vmcHumorIcone(nivel, classeExtra) {
   var n = parseInt(nivel, 10);
@@ -9035,6 +9011,17 @@ function topbarAtualizar(idSecao) {
   if (titulo !== null) {
     bar.classList.add('tela'); bar.classList.remove('marca');
     document.getElementById('topbarTitulo').textContent = titulo;
+    // Pacote 16.5c: sobretítulo ("Automonitoramento", "Registro Negativo"…) e botão de ação ("Salvar e sair")
+    var sobre = sec.getAttribute('data-barra-sobretitulo') || '';
+    var sobreEl = document.getElementById('topbarSobre');
+    sobreEl.textContent = sobre;
+    sobreEl.className = 'topbar-sobre' + (sec.getAttribute('data-tipo') ? ' ' + sec.getAttribute('data-tipo') : '');
+    sobreEl.parentNode.classList.toggle('com-sobre', !!sobre);
+    var acao = sec.getAttribute('data-barra-acao') || '';
+    var acaoEl = document.getElementById('topbarAcao');
+    acaoEl.textContent = acao;
+    acaoEl.onclick = acao ? function () { (new Function(sec.getAttribute('data-barra-acao-onclick') || ''))(); } : null;
+    bar.classList.toggle('com-acao', !!acao);
     var btn = document.getElementById('topbarVoltar');
     // Pacote 16.4c: data-barra-voltar="" (atributo presente e vazio) = tela sem volta.
     // Ausente continua caindo no destino padrão, como nas 24 telas anteriores.
@@ -9055,7 +9042,7 @@ function topbarAtualizar(idSecao) {
     sub.textContent = txt; sub.classList.toggle('visivel', !!txt);
     sub.parentNode.classList.toggle('com-sub', !!txt);
   } else {
-    bar.classList.add('marca'); bar.classList.remove('tela', 'sem-voltar');
+    bar.classList.add('marca'); bar.classList.remove('tela', 'sem-voltar', 'com-acao');
   }
 }
 // Pacote 16.3: sair de um fluxo com dados em andamento pede confirmação; o rascunho já fica no aparelho.
@@ -9087,10 +9074,14 @@ function confirmarSaida(acao) {
 function sairModalFechar() { document.getElementById('sairModal').classList.remove('show'); }
 // destino do "voltar" fica dentro do mesmo fluxo? (ex.: etapa → hub) — então não é saída
 function destinoForaDoFluxo(codigo, idAtual) {
+  const noFluxo = fluxoRegistroTelas().indexOf(idAtual) !== -1;
   const m = /abrirSecao\('([^']+)'\)/.exec(codigo || '');
-  if (!m) return true;
+  // 16.5c: voltar da etapa ao menu e da revisão ao menu passam por função, não por abrirSecao('…')
+  if (!m) return !(noFluxo && /^(autoAbrirMenuTipo|autoVoltarEditarRevisar)\(/.test(String(codigo || '').trim()));
   const dest = m[1];
-  if (fluxoRegistroTelas().indexOf(idAtual) !== -1 && fluxoRegistroTelas().indexOf(dest) !== -1) return false;
+  if (noFluxo && fluxoRegistroTelas().indexOf(dest) !== -1) return false;
+  // 16.5c: a página Automonitoramento guarda o rascunho e mostra o aviso — sair da checagem ou do menu para ela não pede confirmação
+  if (noFluxo && dest === 'sec-automonitoramento') return false;
   return true;
 }
 
@@ -9134,15 +9125,17 @@ function progressoOcultar() { PROG_CFG = null; const el = document.getElementByI
 function progressoIr(i) { if (PROG_CFG && typeof PROG_CFG.irPara === 'function') PROG_CFG.irPara(i); }
 
 // Registro (checagem de humor + tipo + 5 etapas + revisão = 8): decide pela tela ativa
+// Pacote 16.5c: o trilho tem só as 5 etapas do registro ("Etapa N de 5"). Checagem, menu e revisão continuam
+// no fluxo (rascunho, "Sair sem enviar?"), mas sem trilho: valor -1.
 var PROG_REGISTRO_TELAS = {
-  'sec-auto-passo1': 1, 'sec-auto-passo2': 2,
-  'sec-auto-sit-a': 3, 'sec-auto-emo-a': 4, 'sec-auto-fis-a': 5, 'sec-auto-pens-a': 6, 'sec-auto-comp-a': 7,
-  'sec-auto-sit-b': 3, 'sec-auto-emo-b': 4, 'sec-auto-fis-b': 5, 'sec-auto-pens-b': 6, 'sec-auto-comp-b': 7,
+  'sec-auto-passo1': -1,
+  'sec-auto-sit-a': 1, 'sec-auto-emo-a': 2, 'sec-auto-fis-a': 3, 'sec-auto-pens-a': 4, 'sec-auto-comp-a': 5,
+  'sec-auto-sit-b': 1, 'sec-auto-emo-b': 2, 'sec-auto-fis-b': 3, 'sec-auto-pens-b': 4, 'sec-auto-comp-b': 5,
   // Pacote 16.5d-1: as 5 seções físicas também pertencem ao fluxo (o tipo vem do data-tipo delas)
-  'sec-auto-sit': 3, 'sec-auto-emo': 4, 'sec-auto-fis': 5, 'sec-auto-pens': 6, 'sec-auto-comp': 7,
-  'sec-auto-menu-neg': 0, 'sec-auto-menu-pos': 0, 'sec-auto-resumo': 8
+  'sec-auto-sit': 1, 'sec-auto-emo': 2, 'sec-auto-fis': 3, 'sec-auto-pens': 4, 'sec-auto-comp': 5,
+  'sec-auto-menu': -1, 'sec-auto-menu-neg': -1, 'sec-auto-menu-pos': -1, 'sec-auto-resumo': -1
 };
-var PROG_REGISTRO_NOMES = { 1: 'Humor', 2: 'Tipo de registro', 3: 'Situação', 4: 'Emoções', 5: 'Reações Físicas', 6: 'Pensamentos', 7: 'Comportamentos', 8: 'Revisar e enviar' };
+var PROG_REGISTRO_NOMES = { 1: 'Situação', 2: 'Emoções', 3: 'Reações Físicas', 4: 'Pensamentos', 5: 'Comportamentos' };
 function progressoParaTela(idSecao) {
   if (!(idSecao in PROG_REGISTRO_TELAS)) {
     if (idSecao !== 'sec-anamnese' && idSecao !== 'sec-escalas-aplicar') progressoOcultar(); // anamnese e escala definem o próprio
@@ -9152,19 +9145,14 @@ function progressoParaTela(idSecao) {
   if (!tipo) { const elFis = document.getElementById(idSecao); if (elFis && elFis.getAttribute('data-tipo')) tipo = elFis.getAttribute('data-tipo'); } // 16.5d-1: seção física
   const chaves = tipo === 'pos' ? ['sit-b', 'emo-b', 'fis-b', 'pens-b', 'comp-b'] : ['sit-a', 'emo-a', 'fis-a', 'pens-a', 'comp-a'];
   const secs = tipo === 'pos' ? AUTO_SEQ_POS : AUTO_SEQ_NEG;
-  let atual = PROG_REGISTRO_TELAS[idSecao];
+  const atual = PROG_REGISTRO_TELAS[idSecao];
+  if (atual < 1) { progressoOcultar(); return; } // 16.5c: checagem, menu e revisão ficam no fluxo, mas sem trilho
   const feitos = [];
-  if (atual === 0 || atual >= 3) feitos.push(1, 2); else if (atual === 2) feitos.push(1);
-  chaves.forEach((c, i) => { if (AUTO_STATE.preenchido[c]) feitos.push(3 + i); });
-  if (atual === 0) { const k = chaves.findIndex(c => !AUTO_STATE.preenchido[c]); atual = k === -1 ? 8 : 3 + k; }
+  chaves.forEach((c, i) => { if (AUTO_STATE.preenchido[c]) feitos.push(1 + i); });
   progressoDefinir({
-    total: 8, atual, nome: PROG_REGISTRO_NOMES[atual], nomes: PROG_REGISTRO_NOMES, feitos,
+    total: 5, atual, nome: PROG_REGISTRO_NOMES[atual], nomes: PROG_REGISTRO_NOMES, feitos,
     cor: tipo === 'neg' ? 'neg' : (tipo === 'pos' ? 'pos-reg' : 'pos'),
-    irPara: function (k) {
-      if (k === 1) abrirSecao('sec-auto-passo1');
-      else if (k === 2) abrirSecao('sec-auto-passo2');
-      else if (k <= 7 && tipo) autoEntrarSecao(secs[k - 3], k - 3, tipo);
-    }
+    irPara: function (k) { if (k >= 1 && k <= 5 && tipo) autoEntrarSecao(secs[k - 1], k - 1, tipo); }
   });
 }
 
@@ -9176,6 +9164,7 @@ function autoMostrarTipo(secFisica, bloco) {
   secFisica.querySelectorAll(':scope > .auto-tipo').forEach(function (b) { b.hidden = (b !== bloco); });
   secFisica.setAttribute('data-barra-titulo', bloco.getAttribute('data-barra-titulo') || '');
   secFisica.setAttribute('data-barra-voltar', bloco.getAttribute('data-barra-voltar') || '');
+  secFisica.setAttribute('data-barra-sobretitulo', bloco.getAttribute('data-barra-sobretitulo') || ''); // 16.5c
   // o cabeçalho cumulativo (Pacote 11.4a) só existe no Registro Negativo; no Positivo fica escondido
   var hdr = secFisica.querySelector(':scope > .p11-header');
   if (hdr && tipo === 'pos') hdr.style.display = 'none';
@@ -9209,15 +9198,18 @@ function abrirSecao(idSecao) {
     iniAbrir();
   }
   // Pacote 5: ao abrir a home do Módulo 2, verifica se precisa travar
-  if (idSecao === 'sec-automonitoramento' && typeof p5VerificarPrimeiraVez === 'function') {
-    p5VerificarPrimeiraVez().then(() => p5AplicarCadeados());
-    // Aplica já o estado atual (síncrono) enquanto a verificação roda
-    p5AplicarCadeados();
+  if (idSecao === 'sec-automonitoramento' && typeof hubAtualizar === 'function') {
+    // 16.5c: a página decide cadeado (D11), humor da checagem e rascunho; aplica já e de novo quando o servidor responder
+    hubAtualizar();
+    if (typeof p5VerificarPrimeiraVez === 'function') p5VerificarPrimeiraVez().then(() => hubAtualizar());
   }
   // Pacote 11.5: ao abrir o Como Usar, se o paciente já é veterano
   // confirmado (P5_STATE.primeiraVez === false), as 6 seções psicoeducativas
   // aparecem marcadas como lidas automaticamente. Se ainda não verificou,
   // roda agora para garantir — reusa o mesmo lerHistorico do Pacote 5.
+  if (idSecao === 'sec-auto-instrucoes') sessionStorage.setItem('autoComoUsarLido', '1'); // 16.5c (D11): abrir o Como Usar libera os cartões de tipo ao voltar
+  // 16.5c: menu "Suas 5 etapas" — por qualquer caminho (tipo escolhido, voltar da etapa, voltar da revisão)
+  if ((idSecao === 'sec-auto-menu-neg' || idSecao === 'sec-auto-menu-pos') && typeof menuAoAbrir === 'function') menuAoAbrir(idSecao);
   if (idSecao === 'sec-auto-instrucoes' && typeof p5VerificarPrimeiraVez === 'function') {
     p5VerificarPrimeiraVez().then(() => {
       if (P5_STATE.verificado && !P5_STATE.primeiraVez && typeof p11_5MarcarEduLidasParaVeterano === 'function') {
@@ -9526,14 +9518,7 @@ function iniNovoRegistro() {
   abrirModulo('automonitoramento');
   var ativa = document.querySelector('.section.active');
   if (!ativa || ativa.id !== 'sec-automonitoramento') return; // anamnese pendente: o modal já abriu
-  if (typeof p5VerificarPrimeiraVez === 'function') {
-    p5VerificarPrimeiraVez().then(function () {
-      p5AplicarCadeados();
-      p5ClicarCardBloquevel('iniciar');
-    });
-  } else {
-    p5ClicarCardBloquevel('iniciar');
-  }
+  autoIniciarNovoRegistro(); // 16.5c (D11): a checagem breve está sempre liberada; rascunho ou checagem pendente ficam na página
 }
 
 /* ============================================================
@@ -10103,7 +10088,6 @@ function profRenderizarAutomonitoramento_(registros) {
   var regs = registros.slice().reverse();
   window._HIST_REGS = regs;
 
-  var humorLbl = { 1:'Muito negativo', 2:'Negativo', 3:'Neutro', 4:'Positivo', 5:'Muito positivo' };
   var html = '';
 
   for (var i = 0; i < regs.length; i++) {
@@ -10121,7 +10105,7 @@ function profRenderizarAutomonitoramento_(registros) {
     html += '<div class="histc-mood m' + humor + '">' + vmcHumorIcone(humor) + '</div>';
     html += '<div class="histc-info">';
     html += '<div class="histc-date">' + dataFmt + ' · ' + hora + '</div>';
-    html += '<div class="histc-meta">Humor: <span class="humor-pill">' + humor + '/5 ' + (humorLbl[humor] || '') + '</span></div>';
+    html += '<div class="histc-meta">Humor: <span class="humor-pill">' + humor + '/5 ' + (HUMOR_NOMES[humor] || '') + '</span></div>';
     html += '</div>';
     html += '<button class="hist-btn-lupa" type="button" title="Ver registro completo" onclick="histAbrirModal(' + i + ')"><svg class=ico aria-hidden=true><use href=#i-search></use></svg></button>';
     html += '</div>';
@@ -12848,9 +12832,14 @@ function autoResetState() {
     const sum = gr.querySelector('.auto-group-summary');
     if (sum) sum.textContent = '';
   });
-  document.querySelectorAll('#sec-auto-passo1 .mood-card').forEach(c => c.classList.remove('selected'));
+  // 16.5c: faixas da checagem, caixa descritiva, tipo escolhido e botões
+  document.querySelectorAll('#sec-auto-passo1 .chk-faixa').forEach(c => c.setAttribute('aria-checked', 'false'));
+  const descBox = document.getElementById('autoHumorDesc');
+  if (descBox) { descBox.textContent = ''; descBox.classList.remove('visivel'); }
+  AUTO_STATE.tipoAtual = null;
   const inpObs = document.getElementById('autoInpObsHumor');
   if (inpObs) inpObs.value = '';
+  autoValidarPasso1();
   autoAtualizarProgressoMenus();
 }
 
@@ -12858,30 +12847,12 @@ function autoResetState() {
 // INICIAR NOVO REGISTRO
 // ============================================================
 async function autoIniciarNovoRegistro() {
-  // Verifica rascunho
-  const rascunho = autoCarregarRascunho();
-  if (rascunho && rascunho.dados && Object.keys(rascunho.dados).length > 1) {
-    if (confirm('Você tem um registro em andamento. Deseja continuar de onde parou?\n\nCancelar = descartar e começar novo.')) {
-      AUTO_STATE.dados = rascunho.dados;
-      AUTO_STATE.preenchido = rascunho.preenchido || {};
-      AUTO_STATE.seqNegAtual = rascunho.seqNegAtual || 0;
-      AUTO_STATE.seqPosAtual = rascunho.seqPosAtual || 0;
-      AUTO_STATE.primeiraVezNeg = rascunho.primeiraVezNeg !== false;
-      AUTO_STATE.primeiraVezPos = rascunho.primeiraVezPos !== false;
-      await autoVerificarPrimeiroNeg();
-      autoHidratarFormulario();
-      abrirSecao('sec-auto-passo1');
-      autoAtualizarBadgesData();
-      autoValidarPasso1();
-      return;
-    } else {
-      autoLimparRascunho();
-    }
-  }
+  // 16.5c: rascunho em andamento (humor + tipo) ou checagem feita nesta sessão → a página Automonitoramento
+  // mostra o aviso de rascunho ou a linha HUMOR (nada de confirm() nativo, D9). Senão, abre a checagem breve.
+  if (hubRascunhoEmAndamento() || AUTO_STATE.dados.humor_nivel) { abrirSecao('sec-automonitoramento'); return; }
   autoResetState();
   await autoVerificarPrimeiroNeg();
-  abrirSecao('sec-auto-passo1');
-  autoPreencherDataHoraAgora();
+  chkAbrir();
 }
 
 async function autoVerificarPrimeiroNeg() {
@@ -12938,6 +12909,8 @@ async function p5VerificarPrimeiraVez() {
       // Aceita qualquer registro como válido (neg, pos ou misto).
       P5_STATE.primeiraVez = regs.length === 0;
       P5_STATE.verificado = true;
+      // 16.5c: a página Automonitoramento também precisa saber se já houve um Negativo (Positivo trancado na primeira vez)
+      if (regs.some(r => r.neg_preenchido === 'sim')) { AUTO_STATE.primeiroNegFeitoGlobal = true; AUTO_STATE.primeiraVezNeg = false; AUTO_STATE.primeiraVezPos = false; }
     }
   } catch(e) {
     console.warn('[P5] Falha ao verificar histórico:', e);
@@ -12961,89 +12934,22 @@ function p5DeveBloquear() {
   return P5_STATE.primeiraVez === true;
 }
 
-// Aplica/remove os cadeados visuais nos 3 cards bloqueáveis.
-// "Como Usar" nunca é travado. Também controla o subtítulo de aviso
-// e o botão "Entendi" no fim do Como Usar.
-// PACOTE 11.5: quando o paciente é veterano (tem registros de Auto),
-// as 6 seções psicoeducativas são marcadas como lidas automaticamente.
-// Isso reusa o lerHistorico que o Pacote 5 já chama — zero chamada extra,
-// zero coluna nova na planilha. Lógica: "se tem registros, já passou por
-// aqui antes e pode ver tudo como lido".
-function p5AplicarCadeados() {
-  const bloquear = p5DeveBloquear();
-  const ids = ['autoCardIniciar', 'autoCardPainel', 'autoCardHistorico'];
-  ids.forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    if (bloquear) {
-      el.classList.add('locked');
-    } else {
-      el.classList.remove('locked');
-    }
-  });
-  // Subtítulo de aviso na home do Módulo 2
-  const sub = document.getElementById('p5SubAviso');
-  if (sub) sub.classList.toggle('show', bloquear);
-  // Botão "Entendi" no fim do Como Usar — só para primeira vez
-  const entendi = document.getElementById('p5EntendiBox');
-  if (entendi) entendi.classList.toggle('show', bloquear);
-  // Pacote 11.5: paciente veterano já viu o Como Usar antes.
-  // Marca automaticamente as 6 seções psicoeducativas como lidas.
-  if (P5_STATE.verificado && !P5_STATE.primeiraVez) {
-    if (typeof p11_5MarcarEduLidasParaVeterano === 'function') {
-      p11_5MarcarEduLidasParaVeterano();
-    }
-  }
-}
-
-// Handler dos 3 cards bloqueáveis. Se estiver travado, abre o modal.
-// Caso contrário, delega para a ação original de cada card.
+// 16.5c: os cadeados da página vivem em hubAtualizar() (D11: só os cartões de tipo; Painel e Meus Registros
+// ficam livres, como na rodada 3). A checagem breve nunca é travada. O modal "Antes de começar" saiu.
 function p5ClicarCardBloquevel(qual) {
-  const el = document.getElementById(
-    qual === 'iniciar'  ? 'autoCardIniciar'  :
-    qual === 'painel'   ? 'autoCardPainel'   :
-    qual === 'historico'? 'autoCardHistorico': null
-  );
-  if (el && el.classList.contains('locked')) {
-    p5AbrirModal();
-    return;
-  }
-  // Não travado: comportamento original
   if (qual === 'iniciar')   { autoIniciarNovoRegistro(); return; }
   if (qual === 'painel')    { abrirSecao('sec-auto-painel'); return; }
   if (qual === 'historico') { autoAbrirHistorico(); return; }
-}
-
-function p5AbrirModal() {
-  const m = document.getElementById('p5Modal');
-  if (m) m.classList.add('show');
-}
-
-function p5FecharModal() {
-  const m = document.getElementById('p5Modal');
-  if (m) m.classList.remove('show');
-}
-
-function p5IrParaComoUsar() {
-  p5FecharModal();
-  abrirSecao('sec-auto-instrucoes');
 }
 
 // Chamado pelo botão verde no fim do Como Usar.
 // Marca a flag, remove os cadeados e volta para o menu do Módulo 2.
 function p5MarcarComoUsarLido() {
   sessionStorage.setItem('autoComoUsarLido', '1');
-  p5AplicarCadeados();
+  // 16.5c: a página Automonitoramento reaplica os cadeados ao abrir (hubAtualizar)
   abrirSecao('sec-automonitoramento');
 }
 
-// Fechar modal com ESC
-document.addEventListener('keydown', function(e){
-  if (e.key === 'Escape') {
-    const m = document.getElementById('p5Modal');
-    if (m && m.classList.contains('show')) p5FecharModal();
-  }
-});
 
 /* Fim do Pacote 5 */
 
@@ -13111,7 +13017,7 @@ function p8AtualizarProgresso() {
    6 seções psicoeducativas como "não lidas" a cada login.
    Reusa a detecção de veterano que o Pacote 5 já faz via
    lerHistorico — zero chamada extra, zero coluna nova.
-   Chamado por p5AplicarCadeados quando P5_STATE.primeiraVez
+   Chamado por hubAtualizar (16.5c) quando P5_STATE.primeiraVez
    é false (veterano confirmado).
    ============================================================ */
 function p11_5MarcarEduLidasParaVeterano() {
@@ -13152,15 +13058,6 @@ function p8ClicarEntendi() {
    Funções de render reutilizam revPillsGrupo/revTituloGrupo
    que estão dentro de autoAbrirResumo (extração se necessário).
    ============================================================ */
-
-// Rótulos do humor (espelha HUMOR_MAP do Pacote 6). 16.5b: o rostinho vem de vmcHumorIcone(n), não daqui.
-const P11A_HUMOR = {
-  1: { label:'Muito negativo' },
-  2: { label:'Negativo' },
-  3: { label:'Neutro' },
-  4: { label:'Positivo' },
-  5: { label:'Muito positivo' }
-};
 
 // Configuração das 5 seções do Negativo (ordem clínica)
 const P11A_NEG_SECOES = [
@@ -13310,7 +13207,6 @@ function p11aRenderizarCabecalho(idSecaoAtual) {
   // Coleta dados do registro
   const coleta = p11aColetarDados();
   const d = coleta.dados;
-  const humor = P11A_HUMOR[coleta.humorNota] || P11A_HUMOR[3];
 
   // Determina status de cada seção (preenchida | atual | futura)
   const status = {};
@@ -13488,34 +13384,29 @@ function autoOnDataHoraChange() {
   autoSalvarRascunho();
 }
 
+// Pacote 13.6.9.2 — caixa de descrição do nível (textos do catálogo; 16.5c: uma só cor, --c-action-tint)
+var HUMOR_DESC = {
+  1: 'Estou me sentindo muito mal — com grande sofrimento ou desconforto emocional.',
+  2: 'Estou me sentindo mal — algo me incomoda e está afetando o meu dia.',
+  3: 'Não estou me sentindo bem nem mal — estou em um estado emocional estável.',
+  4: 'Estou me sentindo bem — com disposição e alguma satisfação.',
+  5: 'Estou me sentindo muito bem — com energia, leveza ou alegria.'
+};
 function autoSelecionarHumor(el, valor) {
-  document.querySelectorAll('#sec-auto-passo1 .mood-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
+  // 16.5c (AUT-03): faixas com role="radio"; el pode ser a faixa ou null (hidratação por valor)
+  document.querySelectorAll('#sec-auto-passo1 .chk-faixa').forEach(c => c.setAttribute('aria-checked', String(parseInt(c.getAttribute('data-nivel'), 10) === valor)));
   AUTO_STATE.dados.humor_nivel = valor;
   autoValidarPasso1();
   autoSalvarRascunho();
-  // Pacote 13.6.9.2 — caixa de descrição dinâmica
-  var HUMOR_DESC = {
-    1: { txt: 'Estou me sentindo muito mal — com grande sofrimento ou desconforto emocional.', cls: 'desc-1' },
-    2: { txt: 'Estou me sentindo mal — algo me incomoda e está afetando o meu dia.', cls: 'desc-2' },
-    3: { txt: 'Não estou me sentindo bem nem mal — estou em um estado emocional estável.', cls: 'desc-3' },
-    4: { txt: 'Estou me sentindo bem — com disposição e alguma satisfação.', cls: 'desc-4' },
-    5: { txt: 'Estou me sentindo muito bem — com energia, leveza ou alegria.', cls: 'desc-5' }
-  };
   var box = document.getElementById('autoHumorDesc');
-  if (box && HUMOR_DESC[valor]) {
-    var d = HUMOR_DESC[valor];
-    box.textContent = d.txt;
-    box.className = 'humor-desc-box ' + d.cls;
-    requestAnimationFrame(function() { box.classList.add('visivel'); });
-  }
+  if (box && HUMOR_DESC[valor]) { box.textContent = HUMOR_DESC[valor]; box.classList.add('visivel'); }
 }
 
+// 16.5c: os dois botões de continuação da checagem só abrem com data, hora e humor (nada escolhido = desabilitados,
+// como no 02_telas.md; por isso não há mensagem de humor obrigatório — não existe texto de hoje para ela)
 function autoValidarPasso1() {
-  const btn = document.getElementById('autoBtnP1Proximo');
-  if (!btn) return;
-  const ok = AUTO_STATE.dados.data_registro && AUTO_STATE.dados.hora_registro && AUTO_STATE.dados.humor_nivel;
-  btn.disabled = !ok;
+  const ok = !!(AUTO_STATE.dados.data_registro && AUTO_STATE.dados.hora_registro && AUTO_STATE.dados.humor_nivel);
+  ['chkBtnIniciar', 'chkBtnConcluir'].forEach(function (id) { const b = document.getElementById(id); if (b) b.disabled = !ok; });
 }
 
 function autoAtualizarBadgesData() {
@@ -13531,94 +13422,186 @@ function autoAtualizarBadgesData() {
   // Pacote 16.1: a barra mostra a data como subtítulo
   var ativa = document.querySelector('.section.active');
   if (ativa && typeof topbarAtualizar === 'function') topbarAtualizar(ativa.id);
+  if (typeof chkAtualizarPill === 'function') chkAtualizarPill(); // 16.5c: pílula "Hoje, dd/mm · hh:mm" da checagem
 }
 
-function autoIrParaPasso2() {
+/* ============================================================
+   Pacote 16.5c — checagem breve (AUT-03), checagem enviada (AUT-03b),
+   página Automonitoramento (AUT-02) e menu "Suas 5 etapas" (AUT-03c).
+   Substitui a tela "Tipo de registro" (passo 2) e os dois menus antigos.
+   ============================================================ */
+// Abre a checagem breve zerada (o chamador já limpou o estado) com data e hora de agora
+function chkAbrir() {
+  abrirSecao('sec-auto-passo1');
+  autoPreencherDataHoraAgora();
+  chkMostrarCampos(false);
+}
+// "Hoje, dd/mm · hh:mm" (ou "dd/mm/aaaa · hh:mm" quando não é hoje)
+function chkTextoDataHora(d, h, comHoje) {
+  if (!d) return '';
+  const partes = String(d).split('-'); if (partes.length !== 3) return String(d) + (h ? ' · ' + h : '');
+  const p2 = n => String(n).padStart(2, '0');
+  const agora = new Date();
+  const ehHoje = (agora.getFullYear() + '-' + p2(agora.getMonth() + 1) + '-' + p2(agora.getDate())) === d;
+  const data = (ehHoje && comHoje) ? 'Hoje, ' + partes[2] + '/' + partes[1] : partes[2] + '/' + partes[1]; // "dd/mm", como nas pranchas
+  return data + (h ? ' · ' + h : '');
+}
+function chkAtualizarPill() {
+  const el = document.getElementById('chkDataTxt');
+  if (el) el.textContent = chkTextoDataHora(AUTO_STATE.dados.data_registro, AUTO_STATE.dados.hora_registro, true);
+}
+// "alterar": troca a pílula pelos campos nativos de data e hora
+function chkMostrarCampos(mostrar) {
+  const pill = document.getElementById('chkDataPill'), campos = document.getElementById('chkDataCampos');
+  if (!pill || !campos) return;
+  pill.hidden = !!mostrar; campos.hidden = !mostrar;
+  if (mostrar) { const i = document.getElementById('autoInpData'); if (i) i.focus(); }
+}
+// "editar" (página Automonitoramento e menu): volta à checagem com os valores preenchidos
+function chkEditar() {
+  abrirSecao('sec-auto-passo1');
+  autoHidratarFormulario();
+  autoAtualizarBadgesData();
+  autoValidarPasso1();
+  chkMostrarCampos(false);
+}
+// "+ Iniciar novo registro": guarda a checagem em AUTO_STATE (nada é enviado) e vai escolher o tipo
+function chkIniciarNovoRegistro() {
   const obs = document.getElementById('autoInpObsHumor');
   AUTO_STATE.dados.humor_observacoes = obs ? obs.value.trim() : '';
   autoSalvarRascunho();
-  abrirSecao('sec-auto-passo2');
-  autoAplicarBloqueioPositivo();
-  // Pacote 10: resetar seleção ao entrar no Passo 2
-  p10ResetarSelecao();
+  if (AUTO_STATE.tipoAtual) { autoAbrirMenuTipo(AUTO_STATE.tipoAtual); return; } // veio do "editar" do menu
+  abrirSecao('sec-automonitoramento');
+}
+// "Concluir só com a checagem de humor": a mesma ação de gravação, só com os campos da checagem
+function chkConcluirSoChecagem() {
+  const obs = document.getElementById('autoInpObsHumor');
+  AUTO_STATE.dados.humor_observacoes = obs ? obs.value.trim() : '';
+  autoEnviarRegistro({ soChecagem: true });
+}
+// AUT-03b — confirmação da checagem enviada (dados = o que foi gravado; o estado já foi zerado)
+function chkMostrarEnviada(dados) {
+  const n = parseInt(dados.humor_nivel, 10);
+  document.getElementById('chkEnvRosto').innerHTML = vmcHumorIcone(n);
+  document.getElementById('chkEnvNome').textContent = HUMOR_NOMES[n] || '';
+  document.getElementById('chkEnvData').textContent = '· ' + chkTextoDataHora(dados.data_registro, dados.hora_registro, true).replace(' · ', ' às ');
+  const obsEl = document.getElementById('chkEnvObs');
+  const obs = String(dados.humor_observacoes || '').trim();
+  obsEl.textContent = obs ? '"' + obs + '"' : '';
+  obsEl.hidden = !obs;
+  abrirSecao('sec-auto-checagem-enviada');
+}
+// Linha HUMOR (rostinho · nome · "· dd/mm às hh:mm") na página Automonitoramento ('hub') e no menu ('menu')
+function humorLinhaPreencher(prefixo) {
+  const n = parseInt(AUTO_STATE.dados.humor_nivel, 10);
+  const rosto = document.getElementById(prefixo + 'HumorRosto'), nome = document.getElementById(prefixo + 'HumorNome'), data = document.getElementById(prefixo + 'HumorData');
+  if (!rosto || !nome || !data) return;
+  rosto.innerHTML = n ? vmcHumorIcone(n) : '';
+  nome.textContent = HUMOR_NOMES[n] || '';
+  data.textContent = AUTO_STATE.dados.data_registro ? '· ' + chkTextoDataHora(AUTO_STATE.dados.data_registro, AUTO_STATE.dados.hora_registro, false).replace(' · ', ' às ') : '';
 }
 
-// ============================================================
-// PACOTE 10 — Seleção de tipo no Passo 2 + botão "Começar registro"
-// ============================================================
-
-// Reseta a seleção visual e o botão (ao entrar no Passo 2)
-function p10ResetarSelecao() {
-  const cardNeg = document.getElementById('autoCardNeg');
-  const cardPos = document.getElementById('autoCardPos');
-  const btn = document.getElementById('p10BtnComecar');
-  if (cardNeg) cardNeg.classList.remove('p10-selecionado');
-  if (cardPos) cardPos.classList.remove('p10-selecionado');
-  if (btn) {
-    btn.classList.add('p10-disabled');
-    btn.removeAttribute('data-tipo');
-  }
+// ---------- página Automonitoramento (AUT-02) ----------
+// Rascunho "em andamento" = checagem feita e tipo escolhido (o paciente já passou pelo menu)
+function hubRascunhoEmAndamento() {
+  const r = autoCarregarRascunho();
+  return !!(r && r.dados && r.dados.humor_nivel && r.tipo);
 }
-
-// Chamada ao clicar em um card (Negativo ou Positivo)
-function autoSelecionarTipo(tipo) {
-  // Respeita o bloqueio do Positivo na primeira vez (Pacote 5 já configurou)
-  if (tipo === 'pos') {
-    const cardPos = document.getElementById('autoCardPos');
-    if (cardPos && cardPos.classList.contains('locked')) return;
-  }
-  const cardNeg = document.getElementById('autoCardNeg');
-  const cardPos = document.getElementById('autoCardPos');
-  const btn = document.getElementById('p10BtnComecar');
-
-  // Marca visualmente o card escolhido e desmarca o outro
-  if (cardNeg) cardNeg.classList.toggle('p10-selecionado', tipo === 'neg');
-  if (cardPos) cardPos.classList.toggle('p10-selecionado', tipo === 'pos');
-
-  // Habilita o botão e guarda o tipo
-  if (btn) {
-    btn.classList.remove('p10-disabled');
-    btn.setAttribute('data-tipo', tipo);
-  }
+// Regra dos Pacotes 5/10, preservada: na primeira vez, o Positivo só abre depois do primeiro Negativo
+function hubPositivoTrancado() {
+  return !AUTO_STATE.primeiroNegFeitoGlobal && AUTO_STATE.primeiraVezNeg && AUTO_STATE.dados.neg_preenchido !== 'sim';
 }
-
-// Chamada ao clicar em "Começar registro →"
-function autoComecarRegistro() {
-  const btn = document.getElementById('p10BtnComecar');
-  if (!btn || btn.classList.contains('p10-disabled')) return;
-  const tipo = btn.getAttribute('data-tipo');
-  if (!tipo) return;
+// Decide tudo o que a página mostra: aviso D11 + cartões bloqueados, linha HUMOR da checagem, aviso de rascunho
+function hubAtualizar() {
+  const bloquear = p5DeveBloquear(); // D11: nenhum registro gravado e "Como Usar" não aberto nesta sessão
+  const aviso = document.getElementById('p5SubAviso'); if (aviso) aviso.hidden = !bloquear;
+  const comoUsar = document.getElementById('autoCardComoUsar'); if (comoUsar) comoUsar.classList.toggle('destaque', bloquear);
+  const entendi = document.getElementById('p5EntendiBox'); if (entendi) entendi.classList.toggle('show', bloquear);
+  const emAndamento = hubRascunhoEmAndamento();
+  const rasc = document.getElementById('hubRascunho'); if (rasc) rasc.hidden = !emAndamento;
+  const tipos = document.getElementById('hubTipos'); if (tipos) tipos.hidden = emAndamento; // o aviso ocupa o lugar dos cartões (dúvida 2)
+  if (emAndamento) hubRenderRascunho(autoCarregarRascunho());
+  const temHumor = !emAndamento && !!AUTO_STATE.dados.humor_nivel;
+  const hh = document.getElementById('hubHumor'); if (hh) hh.hidden = !temHumor;
+  if (temHumor) humorLinhaPreencher('hub');
+  const posTrancado = hubPositivoTrancado();
+  [['autoCardNeg', bloquear], ['autoCardPos', bloquear || posTrancado]].forEach(function (par) {
+    const el = document.getElementById(par[0]); if (!el) return;
+    el.classList.toggle('bloqueado', par[1]);
+    el.setAttribute('aria-disabled', par[1] ? 'true' : 'false');
+  });
+  const nota = document.getElementById('hubNotaPositivo'); if (nota) nota.hidden = bloquear || !posTrancado || !P5_STATE.verificado;
+  // Pacote 11.5: paciente veterano já viu o Como Usar antes (marca as 6 seções como lidas)
+  if (P5_STATE.verificado && !P5_STATE.primeiraVez && typeof p11_5MarcarEduLidasParaVeterano === 'function') p11_5MarcarEduLidasParaVeterano();
+}
+function hubRenderRascunho(r) {
+  const chip = document.getElementById('hubRascunhoChip'); if (!chip) return;
+  const tipo = r.tipo === 'pos' ? 'pos' : 'neg';
+  const idx = Math.min(tipo === 'pos' ? (r.seqPosAtual || 0) : (r.seqNegAtual || 0), 4);
+  const seq = tipo === 'pos' ? AUTO_SEQ_POS : AUTO_SEQ_NEG;
+  const bloco = document.getElementById(seq[idx]);
+  const nomeEtapa = bloco ? (bloco.getAttribute('data-barra-titulo') || '') : ''; // nome da etapa lido do DOM
+  chip.className = 'hub-rascunho-chip ' + tipo;
+  chip.innerHTML = '<div class="hub-rascunho-tipo">' +
+    (tipo === 'pos' ? '<svg class=ico aria-hidden=true><use href=#i-heart></use></svg> Registro Positivo'
+                    : '<svg class=ico aria-hidden=true><use href=#i-heart-crack></use></svg> Registro Negativo') +
+    '</div>· Etapa ' + (idx + 1) + ' de 5 · ' + escapeHtmlAuto(nomeEtapa);
+}
+// Toque num CartãoTipo: bloqueado não faz nada; sem checagem nesta sessão, abre a checagem primeiro
+async function hubEscolherTipo(tipo) {
+  const card = document.getElementById(tipo === 'pos' ? 'autoCardPos' : 'autoCardNeg');
+  if (card && card.classList.contains('bloqueado')) return;
+  if (!AUTO_STATE.dados.humor_nivel) {
+    autoResetState();
+    await autoVerificarPrimeiroNeg();
+    chkAbrir();
+    return;
+  }
+  AUTO_STATE.tipoAtual = tipo;
+  autoSalvarRascunho();
   autoAbrirMenuTipo(tipo);
 }
-
-/* Fim do Pacote 10 — Mudança 1 */
-
-function autoAplicarBloqueioPositivo() {
-  // Na 1ª vez, positivo fica trancado até concluir 1º negativo
-  const cardPos = document.getElementById('autoCardPos');
-  const sub = document.getElementById('autoPasso2Sub');
-  if (!cardPos) return;
-  if (!AUTO_STATE.primeiroNegFeitoGlobal && AUTO_STATE.primeiraVezNeg && AUTO_STATE.dados.neg_preenchido !== 'sim') {
-    cardPos.classList.add('locked');
-    cardPos.disabled = true;
-    if (sub) sub.innerHTML = '<svg class=ico aria-hidden=true><use href=#i-lock></use></svg> Na sua primeira vez, preencha o Registro Negativo primeiro. O Positivo abre depois.';
-  } else {
-    cardPos.classList.remove('locked');
-    cardPos.disabled = false;
-    if (sub) sub.textContent = 'Você pode preencher um, outro ou ambos.';
-  }
+function hubContinuarRascunho() {
+  const r = autoCarregarRascunho(); if (!r || !r.dados) { hubAtualizar(); return; }
+  AUTO_STATE.dados = r.dados;
+  AUTO_STATE.preenchido = r.preenchido || {};
+  AUTO_STATE.seqNegAtual = r.seqNegAtual || 0;
+  AUTO_STATE.seqPosAtual = r.seqPosAtual || 0;
+  AUTO_STATE.primeiraVezNeg = r.primeiraVezNeg !== false;
+  AUTO_STATE.primeiraVezPos = r.primeiraVezPos !== false;
+  AUTO_STATE.tipoAtual = r.tipo === 'pos' ? 'pos' : 'neg';
+  autoHidratarFormulario();
+  autoAtualizarBadgesData();
+  autoAtualizarProgressoMenus();
+  autoAbrirMenuTipo(AUTO_STATE.tipoAtual);
+}
+function hubDescartarRascunho() {
+  autoLimparRascunho();
+  autoResetState();
+  hubAtualizar();
 }
 
+// ---------- menu "Suas 5 etapas" (AUT-03c) ----------
+// Os dois menus são blocos .auto-tipo de #sec-auto-menu (ids lógicos sec-auto-menu-neg / -pos, como nas etapas);
+// abrirSecao(bloco) mostra só o tipo e o hook de abrirSecao preenche a linha HUMOR e a sequência obrigatória.
 function autoAbrirMenuTipo(tipo) {
-  if (tipo === 'pos') {
-    const cardPos = document.getElementById('autoCardPos');
-    if (cardPos && cardPos.classList.contains('locked')) return;
-  }
-  const destino = tipo === 'neg' ? 'sec-auto-menu-neg' : 'sec-auto-menu-pos';
-  abrirSecao(destino);
-  autoAplicarSequenciaObrigatoria(tipo);
+  AUTO_STATE.tipoAtual = tipo === 'pos' ? 'pos' : 'neg';
+  abrirSecao(AUTO_STATE.tipoAtual === 'pos' ? 'sec-auto-menu-pos' : 'sec-auto-menu-neg');
   autoAtualizarProgressoMenus();
-  progressoParaTela(destino);
+}
+function menuAoAbrir(idBloco) {
+  AUTO_STATE.tipoAtual = idBloco === 'sec-auto-menu-pos' ? 'pos' : 'neg';
+  humorLinhaPreencher('menu');
+  autoAplicarSequenciaObrigatoria(AUTO_STATE.tipoAtual);
+}
+function menuComecar() {
+  const tipo = AUTO_STATE.tipoAtual === 'pos' ? 'pos' : 'neg';
+  autoEntrarSecao(tipo === 'pos' ? 'sec-auto-sit-b' : 'sec-auto-sit-a', 0, tipo);
+}
+// "Salvar e sair": grava o rascunho (humor + tipo + o que houver) e volta à página, que mostra o aviso (dúvida 1)
+function menuSalvarESair() {
+  autoSalvarRascunho();
+  abrirSecao('sec-automonitoramento');
 }
 
 function autoAplicarSequenciaObrigatoria(tipo) {
@@ -14008,11 +13991,7 @@ function autoAtualizarProgressoMenus() {
   Object.entries(AUTO_SEC_MAP).forEach(([secId, chave]) => {
     AUTO_STATE.preenchido[chave] = autoTemConteudoNaSecao(secId);
   });
-  // Habilita botões de finalizar tipo
-  const btnNeg = document.getElementById('autoBtnFinalizarNeg');
-  const btnPos = document.getElementById('autoBtnFinalizarPos');
-  if (btnNeg) btnNeg.disabled = !AUTO_STATE.preenchido['sit-a'];
-  if (btnPos) btnPos.disabled = !AUTO_STATE.preenchido['sit-b'];
+  // 16.5c: os botões "Concluir Registro …" dos menus saíram (a etapa 5 tem "Concluir e Revisar")
 }
 
 function autoTemConteudoNaSecao(secId) {
@@ -14095,15 +14074,6 @@ function autoAbrirResumo() {
 
   const d = AUTO_STATE.dados;
   const box = document.getElementById('autoResumoConteudo');
-
-  // ---- Rótulos do humor (16.5b: o rostinho vem de vmcHumorIcone) ----
-  const HUMOR_MAP = {
-    1: { label:'Muito negativo' },
-    2: { label:'Negativo' },
-    3: { label:'Neutro' },
-    4: { label:'Positivo' },
-    5: { label:'Muito positivo' }
-  };
 
   // ---- Utilitário: lê o título visível de um grupo do DOM ----
   function revTituloGrupo(chave) {
@@ -14200,11 +14170,11 @@ function autoAbrirResumo() {
 
   // Humor
   const hn = parseInt(d.humor_nivel) || 0;
-  const hInfo = HUMOR_MAP[hn] || { label:'—' };
+  const hNome = HUMOR_NOMES[hn] || '—'; // 16.5c: fonte única dos nomes
   html += '<div class="rev-humor">';
   html += '<div class="rev-humor-emoji">' + vmcHumorIcone(hn) + '</div>';
   html += '<div>';
-  html += '<div class="rev-humor-nivel">Humor: ' + (hn || '—') + '/5 — ' + hInfo.label + '</div>';
+  html += '<div class="rev-humor-nivel">Humor: ' + (hn || '—') + '/5 — ' + hNome + '</div>';
   if (d.data_registro && d.hora_registro) {
     const [y,m,dd] = d.data_registro.split('-');
     html += '<div class="rev-humor-data"><svg class=ico aria-hidden=true><use href=#i-calendar></use></svg> ' + dd + '/' + m + '/' + y + ' às ' + d.hora_registro + '</div>';
@@ -14297,16 +14267,23 @@ function escapeHtmlAuto(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-async function autoEnviarRegistro() {
+async function autoEnviarRegistro(opcoes) {
   const paciente = carregarSessao();
   if (!paciente) {
     alert('Sessão expirada. Faça login novamente.');
     logout();
     return;
   }
-  const dadosEnvio = Object.assign({}, AUTO_STATE.dados);
+  // 16.5c: "Concluir só com a checagem de humor" envia a MESMA ação só com os campos da checagem
+  // (neg_preenchido e pos_preenchido vazios) — 1 linha na planilha, nenhuma coluna nova.
+  const soChecagem = !!(opcoes && opcoes.soChecagem);
+  const dadosEnvio = soChecagem
+    ? { data_registro: AUTO_STATE.dados.data_registro, hora_registro: AUTO_STATE.dados.hora_registro,
+        humor_nivel: AUTO_STATE.dados.humor_nivel, humor_observacoes: AUTO_STATE.dados.humor_observacoes || '' }
+    : Object.assign({}, AUTO_STATE.dados);
 
-  const btn = document.getElementById('autoBtnEnviar');
+  const btn = document.getElementById(soChecagem ? 'chkBtnConcluir' : 'autoBtnEnviar');
+  const rotuloBtn = btn ? btn.textContent : '';
   if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
 
   const resp = await chamarServidor('salvarAutomonitoramento', {
@@ -14314,7 +14291,7 @@ async function autoEnviarRegistro() {
     dados: dadosEnvio,
   });
 
-  if (btn) { btn.disabled = false; btn.textContent = 'Enviar Registro'; }
+  if (btn) { btn.disabled = false; btn.textContent = soChecagem ? rotuloBtn : 'Enviar Registro'; }
 
   if (!resp.ok) {
     alert('Erro ao salvar: ' + (resp.erro || 'erro desconhecido'));
@@ -14339,6 +14316,7 @@ async function autoEnviarRegistro() {
   // Pacote 5: paciente deixou de ser "primeira vez", força nova verificação
   P5_STATE.verificado = false;
   P5_STATE.primeiraVez = false;
+  if (soChecagem) { chkMostrarEnviada(dadosEnvio); return; } // 16.5c: AUT-03b
   alert('Registro salvo com sucesso!');
   abrirSecao('sec-automonitoramento');
 }
@@ -14401,7 +14379,6 @@ async function autoAbrirHistorico() {
    ============================================================ */
 var HIST_FILTRO = 'todos';           // 'todos' | 'neg' | 'pos'
 var HIST_MESES_ABERTOS = {};         // Pacote 16.4.2: { '2026-09': true } — sobrevive à troca de filtro
-var HIST_HUMOR_LBL = {1:'Muito negativo',2:'Negativo',3:'Neutro',4:'Positivo',5:'Muito positivo'};
 var HIST_MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
                   'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 var HIST_CHIPS = [
@@ -14460,6 +14437,9 @@ function histMontarCartao(r, idx) {
   let tipos = '';
   if (histEhNeg(r)) tipos += '<span class="histc-tipo neg">Registro Negativo</span>';
   if (histEhPos(r)) tipos += '<span class="histc-tipo pos">Registro Positivo</span>';
+  // 16.5c: linha só de checagem (neg_preenchido e pos_preenchido vazios) — chip próprio e sem detalhe das etapas
+  const soChecagem = !histEhNeg(r) && !histEhPos(r);
+  if (soChecagem) tipos += '<span class="histc-tipo chk">Checagem de humor</span>';
   // Lista compacta (10 v4): cabeçalho com data/humor/tipo/lupa; o conteúdo
   // completo continua no modal da lupa (histAbrirModal).
   return '<div class="histc">' +
@@ -14470,11 +14450,12 @@ function histMontarCartao(r, idx) {
              '<div class="histc-info">' +
                '<div class="histc-date">' + dataFmt + ' · ' + hora + '</div>' +
                '<div class="histc-meta">Humor: <span class="humor-pill">' + humor + '/5 ' +
-                 (HIST_HUMOR_LBL[humor] || '') + '</span>' + tipos + '</div>' +
+                 (HUMOR_NOMES[humor] || '') + '</span>' + tipos + '</div>' +
              '</div>' +
+             (soChecagem ? '' :
              '<button class="hist-btn-lupa" type="button" title="Ver registro completo"' +
                ' onclick="histAbrirModal(' + idx + ')">' +
-               '<svg class=ico aria-hidden=true><use href=#i-search></use></svg></button>' +
+               '<svg class=ico aria-hidden=true><use href=#i-search></use></svg></button>') +
            '</div>' +
          '</div>';
 }
@@ -14627,7 +14608,6 @@ async function histAbrirModal(idx) {
     }
     const r = regs[idx];
 
-    const humorLbl = {1:'Muito negativo',2:'Negativo',3:'Neutro',4:'Positivo',5:'Muito positivo'};
     const humor = parseInt(r.humor_nivel, 10) || 3;
 
     const data = String(r.data_registro || '');
@@ -14638,7 +14618,7 @@ async function histAbrirModal(idx) {
 
     document.getElementById('histModalEmoji').innerHTML = vmcHumorIcone(humor); // 16.5b: rostinho do sprite (HTML literal, nunca entrada do usuário)
     document.getElementById('histModalData').textContent = dataFmt + ' · ' + hora;
-    document.getElementById('histModalHumor').innerHTML = 'Humor: <strong>' + humor + '/5 ' + (humorLbl[humor]||'') + '</strong>';
+    document.getElementById('histModalHumor').innerHTML = 'Humor: <strong>' + humor + '/5 ' + (HUMOR_NOMES[humor]||'') + '</strong>';
 
     // Montar conteúdo completo
     let html = '';
@@ -15194,6 +15174,7 @@ function autoSalvarRascunho() {
   try {
     sessionStorage.setItem(AUTO_RASCUNHO_KEY, JSON.stringify({
       dados: AUTO_STATE.dados,
+      tipo: AUTO_STATE.tipoAtual || null, // 16.5c: tipo escolhido na página Automonitoramento (rascunho "em andamento")
       preenchido: AUTO_STATE.preenchido,
       seqNegAtual: AUTO_STATE.seqNegAtual,
       seqPosAtual: AUTO_STATE.seqPosAtual,
@@ -15219,10 +15200,7 @@ function autoHidratarFormulario() {
   const d = AUTO_STATE.dados;
   if (d.data_registro) document.getElementById('autoInpData').value = d.data_registro;
   if (d.hora_registro) document.getElementById('autoInpHora').value = d.hora_registro;
-  if (d.humor_nivel) {
-    const card = document.querySelector(`#sec-auto-passo1 .mood-card.m${d.humor_nivel}`);
-    if (card) card.classList.add('selected');
-  }
+  if (d.humor_nivel) autoSelecionarHumor(null, parseInt(d.humor_nivel, 10)); // 16.5c: faixa + caixa descritiva
   if (d.humor_observacoes) {
     const obs = document.getElementById('autoInpObsHumor');
     if (obs) obs.value = d.humor_observacoes;

@@ -20,11 +20,15 @@ Pseudo-elementos que exibiam emoji (`.card.locked …::after`, `.auto-progress::
 
 | símbolo | nível do humor | classe de cor |
 |---|---|---|
-| `#i-humor-1` | 1 · Muito negativo | `.ico-humor-1` → `--c-humor-1-ink` |
-| `#i-humor-2` | 2 · Negativo | `.ico-humor-2` → `--c-humor-2-ink` |
-| `#i-humor-3` | 3 · Neutro | `.ico-humor-3` → `--c-humor-3-ink` |
-| `#i-humor-4` | 4 · Positivo | `.ico-humor-4` → `--c-humor-4-ink` |
-| `#i-humor-5` | 5 · Muito positivo | `.ico-humor-5` → `--c-humor-5-ink` |
+| `#i-humor-1` | 1 · Muito mal | `.ico-humor-1` → `--c-humor-1-ink` |
+| `#i-humor-2` | 2 · Mal | `.ico-humor-2` → `--c-humor-2-ink` |
+| `#i-humor-3` | 3 · Mais ou menos | `.ico-humor-3` → `--c-humor-3-ink` |
+| `#i-humor-4` | 4 · Bem | `.ico-humor-4` → `--c-humor-4-ink` |
+| `#i-humor-5` | 5 · Muito bem | `.ico-humor-5` → `--c-humor-5-ink` |
+
+Os nomes dos níveis seguem `HUMOR_NOMES` (16.5c, D6): Muito mal · Mal · Mais ou menos · Bem · Muito bem.
+
+**Rodada 3 (Pacote 16.5c):** o `icones.js` do Design traz `i-lock` (cadeado do primeiro acesso, `M5 11h14v10H5z` + arco). O sprite já tinha `#i-lock` desde o 16.2 (retângulo arredondado + o mesmo arco), com o mesmo significado; o id não foi duplicado e o desenho existente foi mantido. Usos novos do 16.5c: aviso D11 da página Automonitoramento e nota do Positivo trancado (`#i-lock`), botão "+ Iniciar novo registro" (`#i-plus`), bloco HUMOR (`#i-thermometer`, `#i-pencil`), círculo de confirmação da checagem enviada (`#i-check`), cartões do menu "Suas 5 etapas" (`#i-pin`, `#i-heart-crack`/`#i-heart`, `#i-zap`/`#i-leaf`, `#i-cloud-rain`/`#i-sun`, `#i-trend-down`/`#i-trend-up`), cartões da página (`#i-chart`, `#i-archive`, `#i-book`).
 
 ## Mapa emoji → símbolo (ocorrências contadas em `index.html` de produção)
 

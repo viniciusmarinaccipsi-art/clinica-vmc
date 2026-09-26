@@ -11,7 +11,8 @@ Cada arquivo desta pasta é o prompt completo de UMA fase. Abrir o Claude Code n
 | 5 | 16.5d-1 — unificar as 10 seções em 5, sem mudança visual | `Leia docs/prompts/16.5/PROMPT_16_5d1.md e execute do início ao fim.` | 16.4.4 |
 | 5½ | 16.5 pendências — captura de Meus Registros refeita + script pronto para a rodada 3 (não toca o app) | `Leia docs/prompts/16.5/PROMPT_16_5_pendencias.md e execute do início ao fim.` | 16.5d-1; pode rodar antes da rodada 3 |
 | — | rodada 3 do Design (em paralelo desde a ordem 1) | o usuário abre o Claude Design seguindo `VMC-offline\16.5_entrada_design\rodada3\MENSAGEM_para_colar_no_Design.md` (anexos + texto a colar); a entrega volta para `rodada3\entrega\` | — |
-| 6–9 | 16.5c, 16.5d-2, 16.5e, 16.5f | prompts escritos pelo chat **depois** que a rodada 3 chegar e passar pelo script do 16.5a | rodada 3 |
+| 6 | 16.5c — checagem breve, página Automonitoramento e menu "Suas 5 etapas" | `Leia docs/prompts/16.5/PROMPT_16_5c.md e execute do início ao fim.` | rodada 3 conferida (26/09, `rodada3\entrega\CONFERENCIA_rodada3.md`) + fase 5½ |
+| 7–9 | 16.5d-2, 16.5e, 16.5f | prompts escritos pelo chat depois do "ok" do 16.5c | 16.5c |
 
 Regras comuns a todos os prompts (o Code as lê no CLAUDE.md e em docs/): edições por `str_replace` com verificação (grep + `wc -l`); `node --check`; tags balanceadas fora dos `<script>`; zero cor fixa fora do `:root` em `index-dev.html`; Playwright com Chrome visível em 390×844 e 1280×800 (login com sigla inválida até a mensagem do servidor, zero `pageerror`, comparando com `index.html`); `git push` publica (Pages, ~1 min); nada de `clasp` (o 16.5 não toca `Código.js`); nenhum dado clínico em log ou relatório; `index.html` (produção) nunca é editado.
 

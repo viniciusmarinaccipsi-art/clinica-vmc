@@ -161,6 +161,68 @@ do seu tipo. O conteúdo clínico continua no HTML, no bloco do seu tipo
 - O cabeçalho cumulativo (`#p11aHdr-{etapa}-a`) vive na seção física e só é
   renderizado no Negativo (`P11A_NEG_SECOES`).
 
+## Registro: fluxo do paciente a partir do Pacote 16.5c
+
+**Início → checagem breve (`#sec-auto-passo1`) → página Automonitoramento
+(`#sec-automonitoramento`, escolha do tipo, D3) → menu "Suas 5 etapas"
+(`#sec-auto-menu`) → 5 etapas → Revisar e Enviar → envio.** A tela "Tipo de
+registro" (`sec-auto-passo2`) e os dois menus antigos saíram; a checagem não
+tem mais contador ("Etapa 1 de 8" acabou: o trilho `#prog` só conta as 5
+etapas, `PROG_REGISTRO_TELAS` com 1–5, e checagem/menu/revisão ficam no fluxo
+com valor -1, isto é, sem trilho).
+
+- **Checagem breve (AUT-03):** 5 faixas `.chk-faixa[role=radio]` com número,
+  rostinho `i-humor-N` e o nome de `HUMOR_NOMES` (D6: Muito mal · Mal · Mais ou
+  menos · Bem · Muito bem — **única fonte** dos nomes do humor, usada por
+  checagem, menu, revisão, Meus Registros, modal e visão do profissional; os
+  valores gravados continuam 1–5); pílula "Hoje, dd/mm · hh:mm" com "alterar"
+  (`chkMostrarCampos`); caixa descritiva (`HUMOR_DESC`, textos do catálogo);
+  observação com a pergunta fora do campo. Termina em "QUER CONTINUAR?" →
+  `chkIniciarNovoRegistro()` (guarda a checagem em `AUTO_STATE.dados`, nada é
+  enviado, e abre a página) ou `chkConcluirSoChecagem()` →
+  `autoEnviarRegistro({ soChecagem: true })`.
+- **Linha "só checagem":** a mesma ação `salvarAutomonitoramento` com apenas
+  `data_registro`, `hora_registro`, `humor_nivel`, `humor_observacoes`
+  (`neg_preenchido` e `pos_preenchido` vazios); nenhuma coluna nova, `Código.js`
+  intocado. Quem lê a linha: Meus Registros mostra o chip "Checagem de humor"
+  (`.histc-tipo.chk`) e não oferece a lupa; o Painel de Evolução usa
+  `humor_nivel` como em qualquer registro; a revisão nunca é aberta por esse
+  caminho. Depois de enviada, `chkMostrarEnviada()` abre AUT-03b
+  (`#sec-auto-checagem-enviada`, barra sem voltar) e um novo registro começa
+  outra checagem.
+- **Página Automonitoramento (AUT-02):** `hubAtualizar()` (chamado por
+  `abrirSecao`, e de novo quando `p5VerificarPrimeiraVez` responde) decide:
+  aviso D11 + CartõesTipo `.ctipo.bloqueado` (`aria-disabled`) enquanto
+  `p5DeveBloquear()` — nenhum registro gravado **e** "Como Usar" não aberto
+  nesta sessão (`sessionStorage.autoComoUsarLido`, gravado ao abrir a seção
+  de instruções); Painel e Meus Registros ficam livres; linha HUMOR
+  (`#hubHumor`) quando há checagem nesta sessão sem tipo; aviso de rascunho
+  (`#hubRascunho`, `hubRascunhoEmAndamento()` = rascunho com `humor_nivel` e
+  `tipo`) **no lugar** do bloco "QUE TIPO DE REGISTRO?" (dúvida 2), com
+  "Continuar registro" / "Descartar". Regra dos Pacotes 5/10 preservada: na
+  primeira vez o Positivo fica trancado até o primeiro Negativo
+  (`hubPositivoTrancado()`). `hubEscolherTipo(tipo)`: sem checagem nesta
+  sessão abre a checagem primeiro; com checagem, grava `AUTO_STATE.tipoAtual`
+  (vai para o rascunho como `tipo`) e abre o menu.
+- **Menu "Suas 5 etapas" (AUT-03c):** uma seção física `#sec-auto-menu` com
+  os dois tipos como blocos `.auto-tipo` (`#sec-auto-menu-neg` /
+  `#sec-auto-menu-pos` continuam sendo os ids lógicos, então
+  `abrirSecao('sec-auto-menu-neg')` das etapas e da revisão não mudou). Bloco
+  HUMOR com "editar" (`chkEditar()`), "Toque em uma etapa para abrir.", cinco
+  `.metapa` (ícone, nome completo em caixa alta, pergunta da etapa) sem estado
+  e sem trilho, rodapé fixo "Começar: Situação ›" (`menuComecar()`). Barra com
+  sobretítulo "Registro Negativo/Positivo" e ação "Salvar e sair"
+  (`menuSalvarESair()`: grava o rascunho e volta à página, que mostra o aviso).
+  Voltar (‹) vai para a página sem confirmação (`destinoForaDoFluxo` trata
+  `sec-automonitoramento`, `autoAbrirMenuTipo(` e `autoVoltarEditarRevisar(`
+  como destinos dentro do fluxo). O hook de `abrirSecao` chama
+  `menuAoAbrir(id)` por qualquer caminho de entrada.
+- **Barra única, atributos novos (16.5c):** `data-barra-sobretitulo` (linha em
+  caixa alta acima do título, cor da ação ou do tipo via `data-tipo`) e
+  `data-barra-acao` + `data-barra-acao-onclick` (pílula à direita; esconde badge
+  e hambúrguer enquanto existe). `autoMostrarTipo` copia o sobretítulo do bloco
+  para a seção física.
+
 ## Convenções de namespace (prefixos CSS/JS)
 
 | Prefixo | Escopo |
