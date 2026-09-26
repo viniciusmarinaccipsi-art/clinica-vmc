@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.4.4 (26/09/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.5d-1 (26/09/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -4777,10 +4777,12 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
   <!-- As 11 sub-seções ficam aqui -->
     <!-- SUB-SEÇÕES CLÍNICAS DO MÓDULO 2 v4 -->
 
-  <div class="section" id="sec-auto-sit-a" data-barra-titulo="Situação" data-barra-voltar="abrirSecao('sec-auto-menu-neg')">
+  <div class="section" id="sec-auto-sit" data-barra-titulo="Situação" data-barra-voltar="abrirSecao('sec-auto-menu-neg')" data-tipo="neg">
+    <!-- Pacote 16.5d-1: uma seção física por etapa; os dois tipos de registro são blocos .auto-tipo com os ids lógicos de sempre (sec-auto-sit-a = Negativo, sec-auto-sit-b = Positivo). abrirSecao(idLógico) mostra só o bloco do tipo. -->
     <!-- Pacote 11.4a: cabeçalho cumulativo (renderizado via JS) -->
     <div class="p11-header" id="p11aHdr-sit-a" style="display:none;"></div>
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
+    <div class="auto-tipo" id="sec-auto-sit-a" data-tipo="neg" data-barra-titulo="Situação" data-barra-voltar="abrirSecao('sec-auto-menu-neg')">
     <div class="anam-card">
       <div class="auto-sec-header" style="border-color:var(--c-ink-3);">
         <div class="auto-sec-icon" style="background:var(--c-surface-sub);color:var(--c-ink-3);"><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg></div>
@@ -4897,12 +4899,31 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <button class="auto-btn-next coral" onclick="autoAvancarSequencial('neg','sec-auto-emo-a')">Próximo →</button>
       </div>
     </div>
+    </div>
+    <div class="auto-tipo" id="sec-auto-sit-b" data-tipo="pos" data-barra-titulo="Situação" data-barra-voltar="abrirSecao('sec-auto-menu-pos')" hidden>
+    <div class="anam-card">
+      <div class="auto-sec-header" style="border-color:var(--c-ink-3);">
+        <div class="auto-sec-icon" style="background:var(--c-surface-sub);color:var(--c-ink-3);"><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg></div>
+        <div>
+          <div class="auto-sec-sub">O que estava acontecendo quando seu humor mudou <span class="req">*</span></div>
+        </div>
+      </div>
+      <!-- Pacote 3: caixa única (mesma lógica do lado negativo). -->
+      <div class="auto-field"><label>O que aconteceu? <span class="req">*</span></label><textarea data-auto-campo="pos_sit_o_que" rows="4" placeholder="Ex: Quando isso aconteceu? Onde você estava? Com quem você estava? O que você estava fazendo?"></textarea></div>
+      <div class="auto-nav-duplo barra-acao">
+        <button class="auto-btn-prev green" onclick="abrirSecao('sec-auto-menu-pos')">← Anterior</button>
+        <button class="auto-btn-next green" onclick="autoAvancarSequencial('pos','sec-auto-emo-b')">Próximo →</button>
+      </div>
+    </div>
+    </div>
   </div>
 
-  <div class="section" id="sec-auto-emo-a" data-barra-titulo="Emoções Desagradáveis" data-barra-voltar="abrirSecao('sec-auto-menu-neg')">
+  <div class="section" id="sec-auto-emo" data-barra-titulo="Emoções Desagradáveis" data-barra-voltar="abrirSecao('sec-auto-menu-neg')" data-tipo="neg">
+    <!-- Pacote 16.5d-1: uma seção física por etapa; os dois tipos de registro são blocos .auto-tipo com os ids lógicos de sempre (sec-auto-emo-a = Negativo, sec-auto-emo-b = Positivo). abrirSecao(idLógico) mostra só o bloco do tipo. -->
     <!-- Pacote 11.4a: cabeçalho cumulativo -->
     <div class="p11-header" id="p11aHdr-emo-a" style="display:none;"></div>
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
+    <div class="auto-tipo" id="sec-auto-emo-a" data-tipo="neg" data-barra-titulo="Emoções Desagradáveis" data-barra-voltar="abrirSecao('sec-auto-menu-neg')">
     <div class="anam-card">
       <div class="auto-sec-header" style="border-color:var(--c-reg-neg);">
         <div class="auto-sec-icon" style="background:var(--c-reg-neg-tint);color:var(--c-reg-neg-ink);"><svg class="ico" aria-hidden="true"><use href="#i-heart-crack"/></svg></div>
@@ -5391,12 +5412,505 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <button class="auto-btn-next coral" onclick="autoAvancarSequencial('neg','sec-auto-fis-a')">Próximo →</button>
       </div>
     </div>
+    </div>
+    <div class="auto-tipo" id="sec-auto-emo-b" data-tipo="pos" data-barra-titulo="Emoções Agradáveis" data-barra-voltar="abrirSecao('sec-auto-menu-pos')" hidden>
+    <div class="anam-card">
+      <div class="auto-sec-header" style="border-color:var(--c-pos);">
+        <div class="auto-sec-icon" style="background:var(--c-pos-tint);color:var(--c-pos-ink);"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg></div>
+        <div>
+          <div class="auto-sec-sub">Identifique as emoções agradáveis e avalie a intensidade de conforto <span class="req">*</span></div>
+        </div>
+      </div>
+      <div class="auto-scale green"><span>① Nenhum</span><span>② Pouco</span><span>③ Moderado</span><span>④ Muito</span><span>⑤ Intenso</span></div>
+
+      <div class="auto-group green" data-grupo="pos_emo_felicidade" data-tem-likert="1" style="background:var(--c-pos-tint);border-color:var(--c-pos);">
+        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
+          <div class="auto-group-head-main">
+            <div class="auto-group-title">1. Felicidade / Satisfação</div>
+            <div class="auto-group-desc">&quot;Quando nos sentimos bem com o momento presente.&quot;</div>
+            <div class="auto-group-summary"></div>
+          </div>
+          <div class="auto-group-chevron">›</div>
+        </div>
+        <div class="auto-group-body">
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Alegre"> Alegre</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Contente"> Contente</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Divertido(a)"> Divertido(a)</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Satisfeito(a)"> Satisfeito(a)</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Entusiasmado(a)"> Entusiasmado(a)</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option auto-option-is-outro">
+          <div class="auto-option-other">
+            <input type="checkbox">
+            <span class="auto-option-other-lbl">Outro:</span>
+            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
+          </div>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <div class="auto-group green" data-grupo="pos_emo_orgulho" data-tem-likert="1" style="background:var(--c-pos-tint);border-color:var(--c-pos);">
+        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
+          <div class="auto-group-head-main">
+            <div class="auto-group-title">2. Orgulho / Realização</div>
+            <div class="auto-group-desc">&quot;Quando reconhecemos nossas capacidades e conquistas.&quot;</div>
+            <div class="auto-group-summary"></div>
+          </div>
+          <div class="auto-group-chevron">›</div>
+        </div>
+        <div class="auto-group-body">
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Confiante"> Confiante</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Realizado(a)"> Realizado(a)</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Orgulhoso(a)"> Orgulhoso(a)</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Determinado(a)"> Determinado(a)</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Empoderado(a)"> Empoderado(a)</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option auto-option-is-outro">
+          <div class="auto-option-other">
+            <input type="checkbox">
+            <span class="auto-option-other-lbl">Outro:</span>
+            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
+          </div>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <div class="auto-group green" data-grupo="pos_emo_conexao" data-tem-likert="1" style="background:var(--c-pos-tint);border-color:var(--c-pos);">
+        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
+          <div class="auto-group-head-main">
+            <div class="auto-group-title">3. Conexão / Afeto</div>
+            <div class="auto-group-desc">&quot;Quando nos sentimos próximos e ligados a outras pessoas.&quot;</div>
+            <div class="auto-group-summary"></div>
+          </div>
+          <div class="auto-group-chevron">›</div>
+        </div>
+        <div class="auto-group-body">
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Grato(a)"> Grato(a)</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Amoroso(a)"> Amoroso(a)</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Acolhido(a)"> Acolhido(a)</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Afetuoso(a)"> Afetuoso(a)</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Compassivo(a)"> Compassivo(a)</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option auto-option-is-outro">
+          <div class="auto-option-other">
+            <input type="checkbox">
+            <span class="auto-option-other-lbl">Outro:</span>
+            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
+          </div>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <div class="auto-group green" data-grupo="pos_emo_calma" data-tem-likert="1" style="background:var(--c-pos-tint);border-color:var(--c-pos);">
+        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
+          <div class="auto-group-head-main">
+            <div class="auto-group-title">4. Calma / Serenidade</div>
+            <div class="auto-group-desc">&quot;Quando experimentamos tranquilidade interior e paz.&quot;</div>
+            <div class="auto-group-summary"></div>
+          </div>
+          <div class="auto-group-chevron">›</div>
+        </div>
+        <div class="auto-group-body">
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Calmo(a)"> Calmo(a)</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Sereno(a)"> Sereno(a)</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Seguro(a)"> Seguro(a)</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Aliviado(a)"> Aliviado(a)</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Tranquilo(a)"> Tranquilo(a)</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option auto-option-is-outro">
+          <div class="auto-option-other">
+            <input type="checkbox">
+            <span class="auto-option-other-lbl">Outro:</span>
+            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
+          </div>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <div class="auto-group green" data-grupo="pos_emo_esperanca" data-tem-likert="1" style="background:var(--c-pos-tint);border-color:var(--c-pos);">
+        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
+          <div class="auto-group-head-main">
+            <div class="auto-group-title">5. Esperança / Motivação</div>
+            <div class="auto-group-desc">&quot;Quando olhamos para o futuro com confiança.&quot;</div>
+            <div class="auto-group-summary"></div>
+          </div>
+          <div class="auto-group-chevron">›</div>
+        </div>
+        <div class="auto-group-body">
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Otimista"> Otimista</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Curioso(a)"> Curioso(a)</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Motivado(a)"> Motivado(a)</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Inspirado(a)"> Inspirado(a)</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Esperançoso(a)"> Esperançoso(a)</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option auto-option-is-outro">
+          <div class="auto-option-other">
+            <input type="checkbox">
+            <span class="auto-option-other-lbl">Outro:</span>
+            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
+          </div>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Conforto:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+      <div class="auto-nav-duplo barra-acao">
+        <button class="auto-btn-prev green" onclick="abrirSecao('sec-auto-sit-b')">← Anterior</button>
+        <button class="auto-btn-next green" onclick="autoAvancarSequencial('pos','sec-auto-fis-b')">Próximo →</button>
+      </div>
+    </div>
+    </div>
   </div>
 
-  <div class="section" id="sec-auto-fis-a" data-barra-titulo="Reações Físicas" data-barra-voltar="abrirSecao('sec-auto-menu-neg')">
+  <div class="section" id="sec-auto-fis" data-barra-titulo="Reações Físicas" data-barra-voltar="abrirSecao('sec-auto-menu-neg')" data-tipo="neg">
+    <!-- Pacote 16.5d-1: uma seção física por etapa; os dois tipos de registro são blocos .auto-tipo com os ids lógicos de sempre (sec-auto-fis-a = Negativo, sec-auto-fis-b = Positivo). abrirSecao(idLógico) mostra só o bloco do tipo. -->
     <!-- Pacote 11.4a: cabeçalho cumulativo -->
     <div class="p11-header" id="p11aHdr-fis-a" style="display:none;"></div>
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
+    <div class="auto-tipo" id="sec-auto-fis-a" data-tipo="neg" data-barra-titulo="Reações Físicas" data-barra-voltar="abrirSecao('sec-auto-menu-neg')">
     <div class="anam-card">
       <div class="auto-sec-header" style="border-color:var(--c-reg-neg);">
         <div class="auto-sec-icon" style="background:var(--c-reg-neg-tint);color:var(--c-reg-neg-ink);"><svg class="ico" aria-hidden="true"><use href="#i-zap"/></svg></div>
@@ -5885,12 +6399,505 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <button class="auto-btn-next coral" onclick="autoAvancarSequencial('neg','sec-auto-pens-a')">Próximo →</button>
       </div>
     </div>
+    </div>
+    <div class="auto-tipo" id="sec-auto-fis-b" data-tipo="pos" data-barra-titulo="Reações Físicas" data-barra-voltar="abrirSecao('sec-auto-menu-pos')" hidden>
+    <div class="anam-card">
+      <div class="auto-sec-header" style="border-color:var(--c-pos);">
+        <div class="auto-sec-icon" style="background:var(--c-pos-tint);color:var(--c-pos-ink);"><svg class="ico" aria-hidden="true"><use href="#i-leaf"/></svg></div>
+        <div>
+          <div class="auto-sec-sub">Identifique as sensações corporais de bem-estar e avalie a intensidade <span class="req">*</span></div>
+        </div>
+      </div>
+      <div class="auto-scale green"><span>① Nenhum</span><span>② Pouco</span><span>③ Moderado</span><span>④ Muito</span><span>⑤ Extremo</span></div>
+
+      <div class="auto-group green" data-grupo="pos_fis_calma" data-tem-likert="1" style="background:var(--c-pos-tint);border-color:var(--c-pos);">
+        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
+          <div class="auto-group-head-main">
+            <div class="auto-group-title">1. Desaceleração / Calma</div>
+            <div class="auto-group-desc">&quot;Quando o corpo desacelera de forma agradável.&quot;</div>
+            <div class="auto-group-summary"></div>
+          </div>
+          <div class="auto-group-chevron">›</div>
+        </div>
+        <div class="auto-group-body">
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Frequência cardíaca regular"> Frequência cardíaca regular</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Respiração lenta e profunda"> Respiração lenta e profunda</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Ausência de tremores ou sudorese"> Ausência de tremores ou sudorese</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Consciência corporal de conforto e segurança"> Consciência corporal de conforto e segurança</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Sensação de equilíbrio e estabilidade corporal"> Sensação de equilíbrio e estabilidade corporal</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option auto-option-is-outro">
+          <div class="auto-option-other">
+            <input type="checkbox">
+            <span class="auto-option-other-lbl">Outro:</span>
+            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
+          </div>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <div class="auto-group green" data-grupo="pos_fis_energia" data-tem-likert="1" style="background:var(--c-pos-tint);border-color:var(--c-pos);">
+        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
+          <div class="auto-group-head-main">
+            <div class="auto-group-title">2. Energia / Vitalidade</div>
+            <div class="auto-group-desc">&quot;Quando o corpo se sente ativo e com vigor.&quot;</div>
+            <div class="auto-group-summary"></div>
+          </div>
+          <div class="auto-group-chevron">›</div>
+        </div>
+        <div class="auto-group-body">
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Energia e disposição física"> Energia e disposição física</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Motivação para realizar atividades"> Motivação para realizar atividades</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Sensação de estar pleno e revigorado"> Sensação de estar pleno e revigorado</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Percepções corpóreas de força e vitalidade"> Percepções corpóreas de força e vitalidade</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Mente alerta e consciência plena dos movimentos"> Mente alerta e consciência plena dos movimentos</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option auto-option-is-outro">
+          <div class="auto-option-other">
+            <input type="checkbox">
+            <span class="auto-option-other-lbl">Outro:</span>
+            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
+          </div>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <div class="auto-group green" data-grupo="pos_fis_relaxamento" data-tem-likert="1" style="background:var(--c-pos-tint);border-color:var(--c-pos);">
+        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
+          <div class="auto-group-head-main">
+            <div class="auto-group-title">3. Relaxamento / Soltura</div>
+            <div class="auto-group-desc">&quot;Quando os músculos e o corpo se soltam.&quot;</div>
+            <div class="auto-group-summary"></div>
+          </div>
+          <div class="auto-group-chevron">›</div>
+        </div>
+        <div class="auto-group-body">
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Musculatura distensionada"> Musculatura distensionada</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Ombros e pescoço relaxados"> Ombros e pescoço relaxados</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Sensação de leveza na cabeça"> Sensação de leveza na cabeça</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Mãos e mandíbula descontraídos"> Mãos e mandíbula descontraídos</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Peito aberto e respiração confortável"> Peito aberto e respiração confortável</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option auto-option-is-outro">
+          <div class="auto-option-other">
+            <input type="checkbox">
+            <span class="auto-option-other-lbl">Outro:</span>
+            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
+          </div>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <div class="auto-group green" data-grupo="pos_fis_digestivo" data-tem-likert="1" style="background:var(--c-pos-tint);border-color:var(--c-pos);">
+        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
+          <div class="auto-group-head-main">
+            <div class="auto-group-title">4. Conforto Digestivo</div>
+            <div class="auto-group-desc">&quot;Quando a região do estômago está confortável.&quot;</div>
+            <div class="auto-group-summary"></div>
+          </div>
+          <div class="auto-group-chevron">›</div>
+        </div>
+        <div class="auto-group-body">
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Boca hidratada"> Boca hidratada</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Apetite regular e equilibrado"> Apetite regular e equilibrado</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Digestão tranquila e confortável"> Digestão tranquila e confortável</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Funcionamento intestinal regular"> Funcionamento intestinal regular</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Estômago calmo e sem desconforto"> Estômago calmo e sem desconforto</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option auto-option-is-outro">
+          <div class="auto-option-other">
+            <input type="checkbox">
+            <span class="auto-option-other-lbl">Outro:</span>
+            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
+          </div>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <div class="auto-group green" data-grupo="pos_fis_atencao" data-tem-likert="1" style="background:var(--c-pos-tint);border-color:var(--c-pos);">
+        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
+          <div class="auto-group-head-main">
+            <div class="auto-group-title">5. Atenção / Descanso</div>
+            <div class="auto-group-desc">&quot;Quando a mente está desperta e o corpo descansado.&quot;</div>
+            <div class="auto-group-summary"></div>
+          </div>
+          <div class="auto-group-chevron">›</div>
+        </div>
+        <div class="auto-group-body">
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Mente tranquila e desperta"> Mente tranquila e desperta</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Sono reparador e restaurador"> Sono reparador e restaurador</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Atenção e foco no momento presente"> Atenção e foco no momento presente</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Concentração e raciocínio preservados"> Concentração e raciocínio preservados</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Lucidez e organização nos pensamentos"> Lucidez e organização nos pensamentos</label>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        <div class="auto-option auto-option-is-outro">
+          <div class="auto-option-other">
+            <input type="checkbox">
+            <span class="auto-option-other-lbl">Outro:</span>
+            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
+          </div>
+          <div class="auto-item-likert">
+            <span class="auto-item-likert-label">Bem-estar:</span>
+            <div class="auto-item-likert-btns">
+              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
+              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+      <div class="auto-nav-duplo barra-acao">
+        <button class="auto-btn-prev green" onclick="abrirSecao('sec-auto-emo-b')">← Anterior</button>
+        <button class="auto-btn-next green" onclick="autoAvancarSequencial('pos','sec-auto-pens-b')">Próximo →</button>
+      </div>
+    </div>
+    </div>
   </div>
 
-  <div class="section" id="sec-auto-pens-a" data-barra-titulo="Pensamentos Desadaptativos" data-barra-voltar="abrirSecao('sec-auto-menu-neg')">
+  <div class="section" id="sec-auto-pens" data-barra-titulo="Pensamentos Desadaptativos" data-barra-voltar="abrirSecao('sec-auto-menu-neg')" data-tipo="neg">
+    <!-- Pacote 16.5d-1: uma seção física por etapa; os dois tipos de registro são blocos .auto-tipo com os ids lógicos de sempre (sec-auto-pens-a = Negativo, sec-auto-pens-b = Positivo). abrirSecao(idLógico) mostra só o bloco do tipo. -->
     <!-- Pacote 11.4a: cabeçalho cumulativo -->
     <div class="p11-header" id="p11aHdr-pens-a" style="display:none;"></div>
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
+    <div class="auto-tipo" id="sec-auto-pens-a" data-tipo="neg" data-barra-titulo="Pensamentos Desadaptativos" data-barra-voltar="abrirSecao('sec-auto-menu-neg')">
     <div class="anam-card">
       <div class="auto-sec-header" style="border-color:var(--c-reg-neg);">
         <div class="auto-sec-icon" style="background:var(--c-reg-neg-tint);color:var(--c-reg-neg-ink);"><svg class="ico" aria-hidden="true"><use href="#i-cloud-rain"/></svg></div>
@@ -6442,1214 +7449,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <button class="auto-btn-next coral" onclick="autoAvancarSequencial('neg','sec-auto-comp-a')">Próximo →</button>
       </div>
     </div>
-  </div>
-
-  <div class="section" id="sec-auto-comp-a" data-barra-titulo="Comportamentos Disfuncionais" data-barra-voltar="abrirSecao('sec-auto-menu-neg')">
-    <!-- Pacote 11.4a: cabeçalho cumulativo -->
-    <div class="p11-header" id="p11aHdr-comp-a" style="display:none;"></div>
-    <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
-    <div class="anam-card">
-      <div class="auto-sec-header" style="border-color:var(--c-reg-neg);">
-        <div class="auto-sec-icon" style="background:var(--c-reg-neg-tint);color:var(--c-reg-neg-ink);"><svg class="ico" aria-hidden="true"><use href="#i-trend-down"/></svg></div>
-        <div>
-          <div class="auto-sec-sub">Identifique seus comportamentos disfuncionais que pioraram a situação <span class="req">*</span></div>
-        </div>
-      </div>
-
-      <!-- Pacote 8: Caixa de texto livre para descrever comportamento -->
-      <div class="auto-field">
-        <label>Como você reagiu a essa situação? <span class="req">*</span></label>
-        <textarea data-auto-campo-comp="neg" rows="4" placeholder="O que você fez nessa situação? Como você agiu ou reagiu diante disso?"></textarea>
-      </div>
-
-      <h3 style="font-family:var(--f-title);font-size:14px;color:var(--c-reg-neg-ink);margin:18px 0 2px;">Tipo de Comportamento</h3>
-      <div style="font-size:13px;color:var(--c-ink-3);font-style:italic;margin:0 0 8px;">"Marque os tipos de comportamento disfuncional que você teve nessa situação."</div>
-
-      <div class="auto-group coral" data-grupo="neg_comp_evitacao" data-tem-likert="0" style="background:var(--c-reg-neg-tint);border-color:var(--c-reg-neg);">
-        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
-          <div class="auto-group-head-main">
-            <div class="auto-group-title">1. Evitação / Fuga</div>
-            <div class="auto-group-desc">&quot;Quando tentamos nos afastar daquilo que nos causa desconforto.&quot;</div>
-            <div class="auto-group-summary"></div>
-          </div>
-          <div class="auto-group-chevron">›</div>
-        </div>
-        <div class="auto-group-body">
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Saí ou fugi de situações ou lugares"> Saí ou fugi de situações ou lugares</label>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Cancelei compromissos e obrigações"> Cancelei compromissos e obrigações</label>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Não respondi as mensagens ou ligações"> Não respondi as mensagens ou ligações</label>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Procrastinei ou adiei tarefas importantes"> Procrastinei ou adiei tarefas importantes</label>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Evitei pessoas e/ou me expor às interações"> Evitei pessoas e/ou me expor às interações</label>
-        </div>
-        <div class="auto-option auto-option-is-outro">
-          <div class="auto-option-other">
-            <input type="checkbox">
-            <span class="auto-option-other-lbl">Outro:</span>
-            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
-          </div>
-        </div>
-        </div>
-      </div>
-
-      <div class="auto-group coral" data-grupo="neg_comp_isolamento" data-tem-likert="0" style="background:var(--c-reg-neg-tint);border-color:var(--c-reg-neg);">
-        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
-          <div class="auto-group-head-main">
-            <div class="auto-group-title">2. Isolamento / Retraimento</div>
-            <div class="auto-group-desc">&quot;Quando nos retraimos ou nos fechamos em nós mesmos.&quot;</div>
-            <div class="auto-group-summary"></div>
-          </div>
-          <div class="auto-group-chevron">›</div>
-        </div>
-        <div class="auto-group-body">
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Fiquei em silêncio ou me resguardei"> Fiquei em silêncio ou me resguardei</label>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Me afastei das pessoas ou evitei o contato"> Me afastei das pessoas ou evitei o contato</label>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Aceitei passivamente as situações que incomodam"> Aceitei passivamente as situações que incomodam</label>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Deixei de fazer atividades que antes eram prazerosas"> Deixei de fazer atividades que antes eram prazerosas</label>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Tive dificuldades para iniciar ou manter minhas obrigações"> Tive dificuldades para iniciar ou manter minhas obrigações</label>
-        </div>
-        <div class="auto-option auto-option-is-outro">
-          <div class="auto-option-other">
-            <input type="checkbox">
-            <span class="auto-option-other-lbl">Outro:</span>
-            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
-          </div>
-        </div>
-        </div>
-      </div>
-
-      <div class="auto-group coral" data-grupo="neg_comp_reatividade" data-tem-likert="0" style="background:var(--c-reg-neg-tint);border-color:var(--c-reg-neg);">
-        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
-          <div class="auto-group-head-main">
-            <div class="auto-group-title">3. Agitação / Reatividade</div>
-            <div class="auto-group-desc">&quot;Quando agimos de forma impulsiva ou explosiva.&quot;</div>
-            <div class="auto-group-summary"></div>
-          </div>
-          <div class="auto-group-chevron">›</div>
-        </div>
-        <div class="auto-group-body">
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Critiquei ou ataquei verbalmente alguém"> Critiquei ou ataquei verbalmente alguém</label>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Discuti, gritei, briguei ou busquei o conflito"> Discuti, gritei, briguei ou busquei o conflito</label>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Bati, quebrei ou arremessei coisas e objetos"> Bati, quebrei ou arremessei coisas e objetos</label>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Agi impulsivamente sem pensar nas consequências"> Agi impulsivamente sem pensar nas consequências</label>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Fui agressivo e/ou me expus a riscos desnecessários"> Fui agressivo e/ou me expus a riscos desnecessários</label>
-        </div>
-        <div class="auto-option auto-option-is-outro">
-          <div class="auto-option-other">
-            <input type="checkbox">
-            <span class="auto-option-other-lbl">Outro:</span>
-            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
-          </div>
-        </div>
-        </div>
-      </div>
-
-      <div class="auto-group coral" data-grupo="neg_comp_entorpecimento" data-tem-likert="0" style="background:var(--c-reg-neg-tint);border-color:var(--c-reg-neg);">
-        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
-          <div class="auto-group-head-main">
-            <div class="auto-group-title">4. Entorpecimento / Fuga emocional</div>
-            <div class="auto-group-desc">&quot;Quando buscamos aliviar ou anestesiar o que sentimos.&quot;</div>
-            <div class="auto-group-summary"></div>
-          </div>
-          <div class="auto-group-chevron">›</div>
-        </div>
-        <div class="auto-group-body">
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Comi em excesso ou compulsivamente"> Comi em excesso ou compulsivamente</label>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Dormi em excesso para &quot;fugir&quot; do que senti"> Dormi em excesso para &quot;fugir&quot; do que senti</label>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Fiz compras impulsivas ou gastos excessivos"> Fiz compras impulsivas ou gastos excessivos</label>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Uso de álcool ou drogas para lidar com emoções"> Uso de álcool ou drogas para lidar com emoções</label>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Uso excessivo de telas (internet, redes sociais, TV)"> Uso excessivo de telas (internet, redes sociais, TV)</label>
-        </div>
-        <div class="auto-option auto-option-is-outro">
-          <div class="auto-option-other">
-            <input type="checkbox">
-            <span class="auto-option-other-lbl">Outro:</span>
-            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
-          </div>
-        </div>
-        </div>
-      </div>
-
-      <div class="auto-group coral" data-grupo="neg_comp_controle" data-tem-likert="0" style="background:var(--c-reg-neg-tint);border-color:var(--c-reg-neg);">
-        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
-          <div class="auto-group-head-main">
-            <div class="auto-group-title">5. Busca excessiva de controle / Reasseguramento</div>
-            <div class="auto-group-desc">&quot;Quando tentamos controlar tudo ou buscamos aprovação.&quot;</div>
-            <div class="auto-group-summary"></div>
-          </div>
-          <div class="auto-group-chevron">›</div>
-        </div>
-        <div class="auto-group-body">
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Tentei ser perfeito ou controlar cada detalhe"> Tentei ser perfeito ou controlar cada detalhe</label>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Busquei por afirmação e/ou validação emocional"> Busquei por afirmação e/ou validação emocional</label>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Fiz verificações repetidas em busca de segurança"> Fiz verificações repetidas em busca de segurança</label>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Queixei-me ou reclamei repetidamente do problema"> Queixei-me ou reclamei repetidamente do problema</label>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Ruminei o problema: &quot;mastiguei&quot; mentalmente o ocorrido"> Ruminei o problema: &quot;mastiguei&quot; mentalmente o ocorrido</label>
-        </div>
-        <div class="auto-option auto-option-is-outro">
-          <div class="auto-option-other">
-            <input type="checkbox">
-            <span class="auto-option-other-lbl">Outro:</span>
-            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
-          </div>
-        </div>
-        </div>
-      </div>
-      <div class="auto-nav-duplo barra-acao">
-        <button class="auto-btn-prev coral" onclick="abrirSecao('sec-auto-pens-a')">← Anterior</button>
-        <button class="auto-btn-next coral" onclick="autoFinalizarTipo('neg')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg> Concluir e Revisar →</button>
-      </div>
     </div>
-  </div>
-
-  <div class="section" id="sec-auto-sit-b" data-barra-titulo="Situação" data-barra-voltar="abrirSecao('sec-auto-menu-pos')">
-    <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
-    <div class="anam-card">
-      <div class="auto-sec-header" style="border-color:var(--c-ink-3);">
-        <div class="auto-sec-icon" style="background:var(--c-surface-sub);color:var(--c-ink-3);"><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg></div>
-        <div>
-          <div class="auto-sec-sub">O que estava acontecendo quando seu humor mudou <span class="req">*</span></div>
-        </div>
-      </div>
-      <!-- Pacote 3: caixa única (mesma lógica do lado negativo). -->
-      <div class="auto-field"><label>O que aconteceu? <span class="req">*</span></label><textarea data-auto-campo="pos_sit_o_que" rows="4" placeholder="Ex: Quando isso aconteceu? Onde você estava? Com quem você estava? O que você estava fazendo?"></textarea></div>
-      <div class="auto-nav-duplo barra-acao">
-        <button class="auto-btn-prev green" onclick="abrirSecao('sec-auto-menu-pos')">← Anterior</button>
-        <button class="auto-btn-next green" onclick="autoAvancarSequencial('pos','sec-auto-emo-b')">Próximo →</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="section" id="sec-auto-emo-b" data-barra-titulo="Emoções Agradáveis" data-barra-voltar="abrirSecao('sec-auto-menu-pos')">
-    <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
-    <div class="anam-card">
-      <div class="auto-sec-header" style="border-color:var(--c-pos);">
-        <div class="auto-sec-icon" style="background:var(--c-pos-tint);color:var(--c-pos-ink);"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg></div>
-        <div>
-          <div class="auto-sec-sub">Identifique as emoções agradáveis e avalie a intensidade de conforto <span class="req">*</span></div>
-        </div>
-      </div>
-      <div class="auto-scale green"><span>① Nenhum</span><span>② Pouco</span><span>③ Moderado</span><span>④ Muito</span><span>⑤ Intenso</span></div>
-
-      <div class="auto-group green" data-grupo="pos_emo_felicidade" data-tem-likert="1" style="background:var(--c-pos-tint);border-color:var(--c-pos);">
-        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
-          <div class="auto-group-head-main">
-            <div class="auto-group-title">1. Felicidade / Satisfação</div>
-            <div class="auto-group-desc">&quot;Quando nos sentimos bem com o momento presente.&quot;</div>
-            <div class="auto-group-summary"></div>
-          </div>
-          <div class="auto-group-chevron">›</div>
-        </div>
-        <div class="auto-group-body">
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Alegre"> Alegre</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Contente"> Contente</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Divertido(a)"> Divertido(a)</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Satisfeito(a)"> Satisfeito(a)</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Entusiasmado(a)"> Entusiasmado(a)</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option auto-option-is-outro">
-          <div class="auto-option-other">
-            <input type="checkbox">
-            <span class="auto-option-other-lbl">Outro:</span>
-            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
-          </div>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        </div>
-      </div>
-
-      <div class="auto-group green" data-grupo="pos_emo_orgulho" data-tem-likert="1" style="background:var(--c-pos-tint);border-color:var(--c-pos);">
-        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
-          <div class="auto-group-head-main">
-            <div class="auto-group-title">2. Orgulho / Realização</div>
-            <div class="auto-group-desc">&quot;Quando reconhecemos nossas capacidades e conquistas.&quot;</div>
-            <div class="auto-group-summary"></div>
-          </div>
-          <div class="auto-group-chevron">›</div>
-        </div>
-        <div class="auto-group-body">
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Confiante"> Confiante</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Realizado(a)"> Realizado(a)</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Orgulhoso(a)"> Orgulhoso(a)</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Determinado(a)"> Determinado(a)</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Empoderado(a)"> Empoderado(a)</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option auto-option-is-outro">
-          <div class="auto-option-other">
-            <input type="checkbox">
-            <span class="auto-option-other-lbl">Outro:</span>
-            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
-          </div>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        </div>
-      </div>
-
-      <div class="auto-group green" data-grupo="pos_emo_conexao" data-tem-likert="1" style="background:var(--c-pos-tint);border-color:var(--c-pos);">
-        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
-          <div class="auto-group-head-main">
-            <div class="auto-group-title">3. Conexão / Afeto</div>
-            <div class="auto-group-desc">&quot;Quando nos sentimos próximos e ligados a outras pessoas.&quot;</div>
-            <div class="auto-group-summary"></div>
-          </div>
-          <div class="auto-group-chevron">›</div>
-        </div>
-        <div class="auto-group-body">
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Grato(a)"> Grato(a)</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Amoroso(a)"> Amoroso(a)</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Acolhido(a)"> Acolhido(a)</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Afetuoso(a)"> Afetuoso(a)</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Compassivo(a)"> Compassivo(a)</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option auto-option-is-outro">
-          <div class="auto-option-other">
-            <input type="checkbox">
-            <span class="auto-option-other-lbl">Outro:</span>
-            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
-          </div>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        </div>
-      </div>
-
-      <div class="auto-group green" data-grupo="pos_emo_calma" data-tem-likert="1" style="background:var(--c-pos-tint);border-color:var(--c-pos);">
-        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
-          <div class="auto-group-head-main">
-            <div class="auto-group-title">4. Calma / Serenidade</div>
-            <div class="auto-group-desc">&quot;Quando experimentamos tranquilidade interior e paz.&quot;</div>
-            <div class="auto-group-summary"></div>
-          </div>
-          <div class="auto-group-chevron">›</div>
-        </div>
-        <div class="auto-group-body">
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Calmo(a)"> Calmo(a)</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Sereno(a)"> Sereno(a)</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Seguro(a)"> Seguro(a)</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Aliviado(a)"> Aliviado(a)</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Tranquilo(a)"> Tranquilo(a)</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option auto-option-is-outro">
-          <div class="auto-option-other">
-            <input type="checkbox">
-            <span class="auto-option-other-lbl">Outro:</span>
-            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
-          </div>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        </div>
-      </div>
-
-      <div class="auto-group green" data-grupo="pos_emo_esperanca" data-tem-likert="1" style="background:var(--c-pos-tint);border-color:var(--c-pos);">
-        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
-          <div class="auto-group-head-main">
-            <div class="auto-group-title">5. Esperança / Motivação</div>
-            <div class="auto-group-desc">&quot;Quando olhamos para o futuro com confiança.&quot;</div>
-            <div class="auto-group-summary"></div>
-          </div>
-          <div class="auto-group-chevron">›</div>
-        </div>
-        <div class="auto-group-body">
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Otimista"> Otimista</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Curioso(a)"> Curioso(a)</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Motivado(a)"> Motivado(a)</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Inspirado(a)"> Inspirado(a)</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Esperançoso(a)"> Esperançoso(a)</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option auto-option-is-outro">
-          <div class="auto-option-other">
-            <input type="checkbox">
-            <span class="auto-option-other-lbl">Outro:</span>
-            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
-          </div>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Conforto:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        </div>
-      </div>
-      <div class="auto-nav-duplo barra-acao">
-        <button class="auto-btn-prev green" onclick="abrirSecao('sec-auto-sit-b')">← Anterior</button>
-        <button class="auto-btn-next green" onclick="autoAvancarSequencial('pos','sec-auto-fis-b')">Próximo →</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="section" id="sec-auto-fis-b" data-barra-titulo="Reações Físicas" data-barra-voltar="abrirSecao('sec-auto-menu-pos')">
-    <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
-    <div class="anam-card">
-      <div class="auto-sec-header" style="border-color:var(--c-pos);">
-        <div class="auto-sec-icon" style="background:var(--c-pos-tint);color:var(--c-pos-ink);"><svg class="ico" aria-hidden="true"><use href="#i-leaf"/></svg></div>
-        <div>
-          <div class="auto-sec-sub">Identifique as sensações corporais de bem-estar e avalie a intensidade <span class="req">*</span></div>
-        </div>
-      </div>
-      <div class="auto-scale green"><span>① Nenhum</span><span>② Pouco</span><span>③ Moderado</span><span>④ Muito</span><span>⑤ Extremo</span></div>
-
-      <div class="auto-group green" data-grupo="pos_fis_calma" data-tem-likert="1" style="background:var(--c-pos-tint);border-color:var(--c-pos);">
-        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
-          <div class="auto-group-head-main">
-            <div class="auto-group-title">1. Desaceleração / Calma</div>
-            <div class="auto-group-desc">&quot;Quando o corpo desacelera de forma agradável.&quot;</div>
-            <div class="auto-group-summary"></div>
-          </div>
-          <div class="auto-group-chevron">›</div>
-        </div>
-        <div class="auto-group-body">
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Frequência cardíaca regular"> Frequência cardíaca regular</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Respiração lenta e profunda"> Respiração lenta e profunda</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Ausência de tremores ou sudorese"> Ausência de tremores ou sudorese</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Consciência corporal de conforto e segurança"> Consciência corporal de conforto e segurança</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Sensação de equilíbrio e estabilidade corporal"> Sensação de equilíbrio e estabilidade corporal</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option auto-option-is-outro">
-          <div class="auto-option-other">
-            <input type="checkbox">
-            <span class="auto-option-other-lbl">Outro:</span>
-            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
-          </div>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        </div>
-      </div>
-
-      <div class="auto-group green" data-grupo="pos_fis_energia" data-tem-likert="1" style="background:var(--c-pos-tint);border-color:var(--c-pos);">
-        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
-          <div class="auto-group-head-main">
-            <div class="auto-group-title">2. Energia / Vitalidade</div>
-            <div class="auto-group-desc">&quot;Quando o corpo se sente ativo e com vigor.&quot;</div>
-            <div class="auto-group-summary"></div>
-          </div>
-          <div class="auto-group-chevron">›</div>
-        </div>
-        <div class="auto-group-body">
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Energia e disposição física"> Energia e disposição física</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Motivação para realizar atividades"> Motivação para realizar atividades</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Sensação de estar pleno e revigorado"> Sensação de estar pleno e revigorado</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Percepções corpóreas de força e vitalidade"> Percepções corpóreas de força e vitalidade</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Mente alerta e consciência plena dos movimentos"> Mente alerta e consciência plena dos movimentos</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option auto-option-is-outro">
-          <div class="auto-option-other">
-            <input type="checkbox">
-            <span class="auto-option-other-lbl">Outro:</span>
-            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
-          </div>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        </div>
-      </div>
-
-      <div class="auto-group green" data-grupo="pos_fis_relaxamento" data-tem-likert="1" style="background:var(--c-pos-tint);border-color:var(--c-pos);">
-        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
-          <div class="auto-group-head-main">
-            <div class="auto-group-title">3. Relaxamento / Soltura</div>
-            <div class="auto-group-desc">&quot;Quando os músculos e o corpo se soltam.&quot;</div>
-            <div class="auto-group-summary"></div>
-          </div>
-          <div class="auto-group-chevron">›</div>
-        </div>
-        <div class="auto-group-body">
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Musculatura distensionada"> Musculatura distensionada</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Ombros e pescoço relaxados"> Ombros e pescoço relaxados</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Sensação de leveza na cabeça"> Sensação de leveza na cabeça</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Mãos e mandíbula descontraídos"> Mãos e mandíbula descontraídos</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Peito aberto e respiração confortável"> Peito aberto e respiração confortável</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option auto-option-is-outro">
-          <div class="auto-option-other">
-            <input type="checkbox">
-            <span class="auto-option-other-lbl">Outro:</span>
-            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
-          </div>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        </div>
-      </div>
-
-      <div class="auto-group green" data-grupo="pos_fis_digestivo" data-tem-likert="1" style="background:var(--c-pos-tint);border-color:var(--c-pos);">
-        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
-          <div class="auto-group-head-main">
-            <div class="auto-group-title">4. Conforto Digestivo</div>
-            <div class="auto-group-desc">&quot;Quando a região do estômago está confortável.&quot;</div>
-            <div class="auto-group-summary"></div>
-          </div>
-          <div class="auto-group-chevron">›</div>
-        </div>
-        <div class="auto-group-body">
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Boca hidratada"> Boca hidratada</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Apetite regular e equilibrado"> Apetite regular e equilibrado</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Digestão tranquila e confortável"> Digestão tranquila e confortável</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Funcionamento intestinal regular"> Funcionamento intestinal regular</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Estômago calmo e sem desconforto"> Estômago calmo e sem desconforto</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option auto-option-is-outro">
-          <div class="auto-option-other">
-            <input type="checkbox">
-            <span class="auto-option-other-lbl">Outro:</span>
-            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
-          </div>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        </div>
-      </div>
-
-      <div class="auto-group green" data-grupo="pos_fis_atencao" data-tem-likert="1" style="background:var(--c-pos-tint);border-color:var(--c-pos);">
-        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
-          <div class="auto-group-head-main">
-            <div class="auto-group-title">5. Atenção / Descanso</div>
-            <div class="auto-group-desc">&quot;Quando a mente está desperta e o corpo descansado.&quot;</div>
-            <div class="auto-group-summary"></div>
-          </div>
-          <div class="auto-group-chevron">›</div>
-        </div>
-        <div class="auto-group-body">
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Mente tranquila e desperta"> Mente tranquila e desperta</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Sono reparador e restaurador"> Sono reparador e restaurador</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Atenção e foco no momento presente"> Atenção e foco no momento presente</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Concentração e raciocínio preservados"> Concentração e raciocínio preservados</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option">
-          <label class="auto-option-lbl"><input type="checkbox" data-item="Lucidez e organização nos pensamentos"> Lucidez e organização nos pensamentos</label>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        <div class="auto-option auto-option-is-outro">
-          <div class="auto-option-other">
-            <input type="checkbox">
-            <span class="auto-option-other-lbl">Outro:</span>
-            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
-          </div>
-          <div class="auto-item-likert">
-            <span class="auto-item-likert-label">Bem-estar:</span>
-            <div class="auto-item-likert-btns">
-              <button type="button" class="auto-item-likert-btn" data-valor="1">1</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="2">2</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="3">3</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="4">4</button>
-              <button type="button" class="auto-item-likert-btn" data-valor="5">5</button>
-            </div>
-          </div>
-        </div>
-        </div>
-      </div>
-      <div class="auto-nav-duplo barra-acao">
-        <button class="auto-btn-prev green" onclick="abrirSecao('sec-auto-emo-b')">← Anterior</button>
-        <button class="auto-btn-next green" onclick="autoAvancarSequencial('pos','sec-auto-pens-b')">Próximo →</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="section" id="sec-auto-pens-b" data-barra-titulo="Pensamentos Adaptativos" data-barra-voltar="abrirSecao('sec-auto-menu-pos')">
-    <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
+    <div class="auto-tipo" id="sec-auto-pens-b" data-tipo="pos" data-barra-titulo="Pensamentos Adaptativos" data-barra-voltar="abrirSecao('sec-auto-menu-pos')" hidden>
     <div class="anam-card">
       <div class="auto-sec-header" style="border-color:var(--c-pos);">
         <div class="auto-sec-icon" style="background:var(--c-pos-tint);color:var(--c-pos-ink);"><svg class="ico" aria-hidden="true"><use href="#i-sun"/></svg></div>
@@ -8150,10 +7951,213 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <button class="auto-btn-next green" onclick="autoAvancarSequencial('pos','sec-auto-comp-b')">Próximo →</button>
       </div>
     </div>
+    </div>
   </div>
 
-  <div class="section" id="sec-auto-comp-b" data-barra-titulo="Comportamentos Funcionais" data-barra-voltar="abrirSecao('sec-auto-menu-pos')">
+  <div class="section" id="sec-auto-comp" data-barra-titulo="Comportamentos Disfuncionais" data-barra-voltar="abrirSecao('sec-auto-menu-neg')" data-tipo="neg">
+    <!-- Pacote 16.5d-1: uma seção física por etapa; os dois tipos de registro são blocos .auto-tipo com os ids lógicos de sempre (sec-auto-comp-a = Negativo, sec-auto-comp-b = Positivo). abrirSecao(idLógico) mostra só o bloco do tipo. -->
+    <!-- Pacote 11.4a: cabeçalho cumulativo -->
+    <div class="p11-header" id="p11aHdr-comp-a" style="display:none;"></div>
     <div class="auto-date-wrap"><span class="auto-date-badge" data-auto-badge></span></div>
+    <div class="auto-tipo" id="sec-auto-comp-a" data-tipo="neg" data-barra-titulo="Comportamentos Disfuncionais" data-barra-voltar="abrirSecao('sec-auto-menu-neg')">
+    <div class="anam-card">
+      <div class="auto-sec-header" style="border-color:var(--c-reg-neg);">
+        <div class="auto-sec-icon" style="background:var(--c-reg-neg-tint);color:var(--c-reg-neg-ink);"><svg class="ico" aria-hidden="true"><use href="#i-trend-down"/></svg></div>
+        <div>
+          <div class="auto-sec-sub">Identifique seus comportamentos disfuncionais que pioraram a situação <span class="req">*</span></div>
+        </div>
+      </div>
+
+      <!-- Pacote 8: Caixa de texto livre para descrever comportamento -->
+      <div class="auto-field">
+        <label>Como você reagiu a essa situação? <span class="req">*</span></label>
+        <textarea data-auto-campo-comp="neg" rows="4" placeholder="O que você fez nessa situação? Como você agiu ou reagiu diante disso?"></textarea>
+      </div>
+
+      <h3 style="font-family:var(--f-title);font-size:14px;color:var(--c-reg-neg-ink);margin:18px 0 2px;">Tipo de Comportamento</h3>
+      <div style="font-size:13px;color:var(--c-ink-3);font-style:italic;margin:0 0 8px;">"Marque os tipos de comportamento disfuncional que você teve nessa situação."</div>
+
+      <div class="auto-group coral" data-grupo="neg_comp_evitacao" data-tem-likert="0" style="background:var(--c-reg-neg-tint);border-color:var(--c-reg-neg);">
+        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
+          <div class="auto-group-head-main">
+            <div class="auto-group-title">1. Evitação / Fuga</div>
+            <div class="auto-group-desc">&quot;Quando tentamos nos afastar daquilo que nos causa desconforto.&quot;</div>
+            <div class="auto-group-summary"></div>
+          </div>
+          <div class="auto-group-chevron">›</div>
+        </div>
+        <div class="auto-group-body">
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Saí ou fugi de situações ou lugares"> Saí ou fugi de situações ou lugares</label>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Cancelei compromissos e obrigações"> Cancelei compromissos e obrigações</label>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Não respondi as mensagens ou ligações"> Não respondi as mensagens ou ligações</label>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Procrastinei ou adiei tarefas importantes"> Procrastinei ou adiei tarefas importantes</label>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Evitei pessoas e/ou me expor às interações"> Evitei pessoas e/ou me expor às interações</label>
+        </div>
+        <div class="auto-option auto-option-is-outro">
+          <div class="auto-option-other">
+            <input type="checkbox">
+            <span class="auto-option-other-lbl">Outro:</span>
+            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <div class="auto-group coral" data-grupo="neg_comp_isolamento" data-tem-likert="0" style="background:var(--c-reg-neg-tint);border-color:var(--c-reg-neg);">
+        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
+          <div class="auto-group-head-main">
+            <div class="auto-group-title">2. Isolamento / Retraimento</div>
+            <div class="auto-group-desc">&quot;Quando nos retraimos ou nos fechamos em nós mesmos.&quot;</div>
+            <div class="auto-group-summary"></div>
+          </div>
+          <div class="auto-group-chevron">›</div>
+        </div>
+        <div class="auto-group-body">
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Fiquei em silêncio ou me resguardei"> Fiquei em silêncio ou me resguardei</label>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Me afastei das pessoas ou evitei o contato"> Me afastei das pessoas ou evitei o contato</label>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Aceitei passivamente as situações que incomodam"> Aceitei passivamente as situações que incomodam</label>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Deixei de fazer atividades que antes eram prazerosas"> Deixei de fazer atividades que antes eram prazerosas</label>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Tive dificuldades para iniciar ou manter minhas obrigações"> Tive dificuldades para iniciar ou manter minhas obrigações</label>
+        </div>
+        <div class="auto-option auto-option-is-outro">
+          <div class="auto-option-other">
+            <input type="checkbox">
+            <span class="auto-option-other-lbl">Outro:</span>
+            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <div class="auto-group coral" data-grupo="neg_comp_reatividade" data-tem-likert="0" style="background:var(--c-reg-neg-tint);border-color:var(--c-reg-neg);">
+        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
+          <div class="auto-group-head-main">
+            <div class="auto-group-title">3. Agitação / Reatividade</div>
+            <div class="auto-group-desc">&quot;Quando agimos de forma impulsiva ou explosiva.&quot;</div>
+            <div class="auto-group-summary"></div>
+          </div>
+          <div class="auto-group-chevron">›</div>
+        </div>
+        <div class="auto-group-body">
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Critiquei ou ataquei verbalmente alguém"> Critiquei ou ataquei verbalmente alguém</label>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Discuti, gritei, briguei ou busquei o conflito"> Discuti, gritei, briguei ou busquei o conflito</label>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Bati, quebrei ou arremessei coisas e objetos"> Bati, quebrei ou arremessei coisas e objetos</label>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Agi impulsivamente sem pensar nas consequências"> Agi impulsivamente sem pensar nas consequências</label>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Fui agressivo e/ou me expus a riscos desnecessários"> Fui agressivo e/ou me expus a riscos desnecessários</label>
+        </div>
+        <div class="auto-option auto-option-is-outro">
+          <div class="auto-option-other">
+            <input type="checkbox">
+            <span class="auto-option-other-lbl">Outro:</span>
+            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <div class="auto-group coral" data-grupo="neg_comp_entorpecimento" data-tem-likert="0" style="background:var(--c-reg-neg-tint);border-color:var(--c-reg-neg);">
+        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
+          <div class="auto-group-head-main">
+            <div class="auto-group-title">4. Entorpecimento / Fuga emocional</div>
+            <div class="auto-group-desc">&quot;Quando buscamos aliviar ou anestesiar o que sentimos.&quot;</div>
+            <div class="auto-group-summary"></div>
+          </div>
+          <div class="auto-group-chevron">›</div>
+        </div>
+        <div class="auto-group-body">
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Comi em excesso ou compulsivamente"> Comi em excesso ou compulsivamente</label>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Dormi em excesso para &quot;fugir&quot; do que senti"> Dormi em excesso para &quot;fugir&quot; do que senti</label>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Fiz compras impulsivas ou gastos excessivos"> Fiz compras impulsivas ou gastos excessivos</label>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Uso de álcool ou drogas para lidar com emoções"> Uso de álcool ou drogas para lidar com emoções</label>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Uso excessivo de telas (internet, redes sociais, TV)"> Uso excessivo de telas (internet, redes sociais, TV)</label>
+        </div>
+        <div class="auto-option auto-option-is-outro">
+          <div class="auto-option-other">
+            <input type="checkbox">
+            <span class="auto-option-other-lbl">Outro:</span>
+            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <div class="auto-group coral" data-grupo="neg_comp_controle" data-tem-likert="0" style="background:var(--c-reg-neg-tint);border-color:var(--c-reg-neg);">
+        <div class="auto-group-head" onclick="autoToggleGrupo(this)">
+          <div class="auto-group-head-main">
+            <div class="auto-group-title">5. Busca excessiva de controle / Reasseguramento</div>
+            <div class="auto-group-desc">&quot;Quando tentamos controlar tudo ou buscamos aprovação.&quot;</div>
+            <div class="auto-group-summary"></div>
+          </div>
+          <div class="auto-group-chevron">›</div>
+        </div>
+        <div class="auto-group-body">
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Tentei ser perfeito ou controlar cada detalhe"> Tentei ser perfeito ou controlar cada detalhe</label>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Busquei por afirmação e/ou validação emocional"> Busquei por afirmação e/ou validação emocional</label>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Fiz verificações repetidas em busca de segurança"> Fiz verificações repetidas em busca de segurança</label>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Queixei-me ou reclamei repetidamente do problema"> Queixei-me ou reclamei repetidamente do problema</label>
+        </div>
+        <div class="auto-option">
+          <label class="auto-option-lbl"><input type="checkbox" data-item="Ruminei o problema: &quot;mastiguei&quot; mentalmente o ocorrido"> Ruminei o problema: &quot;mastiguei&quot; mentalmente o ocorrido</label>
+        </div>
+        <div class="auto-option auto-option-is-outro">
+          <div class="auto-option-other">
+            <input type="checkbox">
+            <span class="auto-option-other-lbl">Outro:</span>
+            <input class="auto-option-other-inp" type="text" placeholder="especifique...">
+          </div>
+        </div>
+        </div>
+      </div>
+      <div class="auto-nav-duplo barra-acao">
+        <button class="auto-btn-prev coral" onclick="abrirSecao('sec-auto-pens-a')">← Anterior</button>
+        <button class="auto-btn-next coral" onclick="autoFinalizarTipo('neg')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg> Concluir e Revisar →</button>
+      </div>
+    </div>
+    </div>
+    <div class="auto-tipo" id="sec-auto-comp-b" data-tipo="pos" data-barra-titulo="Comportamentos Funcionais" data-barra-voltar="abrirSecao('sec-auto-menu-pos')" hidden>
     <div class="anam-card">
       <div class="auto-sec-header" style="border-color:var(--c-pos);">
         <div class="auto-sec-icon" style="background:var(--c-pos-tint);color:var(--c-pos-ink);"><svg class="ico" aria-hidden="true"><use href="#i-trend-up"/></svg></div>
@@ -8349,6 +8353,7 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <button class="auto-btn-prev green" onclick="abrirSecao('sec-auto-pens-b')">← Anterior</button>
         <button class="auto-btn-next green" onclick="autoFinalizarTipo('pos')"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg> Concluir e Revisar →</button>
       </div>
+    </div>
     </div>
   </div>
 
@@ -9057,17 +9062,16 @@ function topbarAtualizar(idSecao) {
 // (PROG_REGISTRO_TELAS é declarado mais abaixo; por isso a lista é lida na hora, não no carregamento)
 function fluxoRegistroTelas() { return Object.keys(PROG_REGISTRO_TELAS); }
 function fluxoEmAndamento() {
-  const at = document.querySelector('.section.active'); if (!at) return false;
-  const id = at.id;
+  const id = secaoAtivaId(); if (!id) return false;
   if (id === 'sec-anamnese') return !!(typeof ANAM_STATE !== 'undefined' && !ANAM_STATE.modoConsulta && sessionStorage.getItem('anamnese_rascunho'));
   if (fluxoRegistroTelas().indexOf(id) !== -1) return Object.keys(AUTO_STATE.dados || {}).length > 0 || Object.values(AUTO_STATE.preenchido || {}).some(Boolean);
   if (id === 'sec-escalas-aplicar') return Object.keys(ESC_STATE.respostas || {}).length > 0;
   return false;
 }
 function fluxoGuardarRascunho() {
-  const at = document.querySelector('.section.active'); if (!at) return;
-  if (fluxoRegistroTelas().indexOf(at.id) !== -1 && typeof autoSalvarRascunho === 'function') autoSalvarRascunho();
-  if (at.id === 'sec-escalas-aplicar' && typeof escSalvarRascunho === 'function') escSalvarRascunho();
+  const id = secaoAtivaId(); if (!id) return;
+  if (fluxoRegistroTelas().indexOf(id) !== -1 && typeof autoSalvarRascunho === 'function') autoSalvarRascunho();
+  if (id === 'sec-escalas-aplicar' && typeof escSalvarRascunho === 'function') escSalvarRascunho();
   // anamnese: o rascunho é gravado a cada passo (irParaProximoPasso/irParaPassoAnterior)
 }
 var SAIR_ACAO = null;
@@ -9134,6 +9138,8 @@ var PROG_REGISTRO_TELAS = {
   'sec-auto-passo1': 1, 'sec-auto-passo2': 2,
   'sec-auto-sit-a': 3, 'sec-auto-emo-a': 4, 'sec-auto-fis-a': 5, 'sec-auto-pens-a': 6, 'sec-auto-comp-a': 7,
   'sec-auto-sit-b': 3, 'sec-auto-emo-b': 4, 'sec-auto-fis-b': 5, 'sec-auto-pens-b': 6, 'sec-auto-comp-b': 7,
+  // Pacote 16.5d-1: as 5 seções físicas também pertencem ao fluxo (o tipo vem do data-tipo delas)
+  'sec-auto-sit': 3, 'sec-auto-emo': 4, 'sec-auto-fis': 5, 'sec-auto-pens': 6, 'sec-auto-comp': 7,
   'sec-auto-menu-neg': 0, 'sec-auto-menu-pos': 0, 'sec-auto-resumo': 8
 };
 var PROG_REGISTRO_NOMES = { 1: 'Humor', 2: 'Tipo de registro', 3: 'Situação', 4: 'Emoções', 5: 'Reações Físicas', 6: 'Pensamentos', 7: 'Comportamentos', 8: 'Revisar e enviar' };
@@ -9142,7 +9148,8 @@ function progressoParaTela(idSecao) {
     if (idSecao !== 'sec-anamnese' && idSecao !== 'sec-escalas-aplicar') progressoOcultar(); // anamnese e escala definem o próprio
     return;
   }
-  const tipo = /-b$|menu-pos$/.test(idSecao) ? 'pos' : (/-a$|menu-neg$/.test(idSecao) ? 'neg' : (idSecao === 'sec-auto-resumo' ? (AUTO_STATE.ultimoTipoFinalizado || 'neg') : null));
+  let tipo = /-b$|menu-pos$/.test(idSecao) ? 'pos' : (/-a$|menu-neg$/.test(idSecao) ? 'neg' : (idSecao === 'sec-auto-resumo' ? (AUTO_STATE.ultimoTipoFinalizado || 'neg') : null));
+  if (!tipo) { const elFis = document.getElementById(idSecao); if (elFis && elFis.getAttribute('data-tipo')) tipo = elFis.getAttribute('data-tipo'); } // 16.5d-1: seção física
   const chaves = tipo === 'pos' ? ['sit-b', 'emo-b', 'fis-b', 'pens-b', 'comp-b'] : ['sit-a', 'emo-a', 'fis-a', 'pens-a', 'comp-a'];
   const secs = tipo === 'pos' ? AUTO_SEQ_POS : AUTO_SEQ_NEG;
   let atual = PROG_REGISTRO_TELAS[idSecao];
@@ -9161,10 +9168,33 @@ function progressoParaTela(idSecao) {
   });
 }
 
+// Pacote 16.5d-1: as 10 seções lógicas do registro (sec-auto-{etapa}-{a|b}) são blocos .auto-tipo dentro
+// de 5 seções físicas (sec-auto-{etapa}). Abrir um bloco = ativar a seção dele e mostrar só o seu tipo.
+function autoMostrarTipo(secFisica, bloco) {
+  var tipo = bloco.getAttribute('data-tipo');
+  secFisica.setAttribute('data-tipo', tipo);
+  secFisica.querySelectorAll(':scope > .auto-tipo').forEach(function (b) { b.hidden = (b !== bloco); });
+  secFisica.setAttribute('data-barra-titulo', bloco.getAttribute('data-barra-titulo') || '');
+  secFisica.setAttribute('data-barra-voltar', bloco.getAttribute('data-barra-voltar') || '');
+  // o cabeçalho cumulativo (Pacote 11.4a) só existe no Registro Negativo; no Positivo fica escondido
+  var hdr = secFisica.querySelector(':scope > .p11-header');
+  if (hdr && tipo === 'pos') hdr.style.display = 'none';
+}
+// Id da seção lógica ativa: o bloco visível do registro, ou a própria seção nas demais telas
+function secaoAtivaId() {
+  var at = document.querySelector('.section.active'); if (!at) return null;
+  var bloco = at.querySelector(':scope > .auto-tipo:not([hidden])');
+  return bloco ? bloco.id : at.id;
+}
+
 function abrirSecao(idSecao) {
+  var alvo = document.getElementById(idSecao);
+  var bloco = (alvo && alvo.classList.contains('auto-tipo')) ? alvo : null;
+  var secFisica = bloco ? bloco.closest('.section') : alvo;
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById(idSecao).classList.add('active');
-  topbarAtualizar(idSecao);
+  secFisica.classList.add('active');
+  if (bloco) autoMostrarTipo(secFisica, bloco);
+  topbarAtualizar(secFisica.id);
   progressoParaTela(idSecao);
   window.scrollTo({ top: 0, behavior: 'smooth' });
   // Pacote 14.2.1: telas do módulo Agenda usam container largo no desktop
@@ -13616,9 +13646,8 @@ function autoEntrarSecao(idSecao, idx, tipo) {
 // Avança sequencialmente (chamado pelo botão "Próximo" das sub-seções)
 function autoAvancarSequencial(tipo, destino) {
   // Primeiro valida que a seção atual foi preenchida corretamente
-  const secAtual = document.querySelector('.section.active');
-  if (!secAtual) { abrirSecao(destino); return; }
-  const idAtual = secAtual.id;
+  const idAtual = secaoAtivaId(); // 16.5d-1: o bloco lógico visível (sec-auto-{etapa}-{a|b}), não a seção física
+  if (!idAtual) { abrirSecao(destino); return; }
   const valid = autoValidarSecao(idAtual);
   if (!valid.ok) {
     alert('' + valid.msg);

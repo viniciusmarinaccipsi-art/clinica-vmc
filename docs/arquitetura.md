@@ -129,6 +129,38 @@ novas na primeira operação que precisa delas (aditivo, sem migração).
 `body.vmc-largo` (hook em `abrirSecao`) libera `max-width` maior para
 telas que precisam (agenda/calendário); demais telas mantêm 800px.
 
+## Registro: estrutura única por etapa (Pacote 16.5d-1)
+
+Em `index-dev.html` o registro de automonitoramento tem **5 seções físicas**,
+`sec-auto-sit`, `sec-auto-emo`, `sec-auto-fis`, `sec-auto-pens` e
+`sec-auto-comp` (uma por etapa), em vez das 10 antigas. Dentro de cada uma,
+os dois tipos de registro são blocos `<div class="auto-tipo" data-tipo="neg|pos">`
+que **conservam os ids lógicos de sempre** (`sec-auto-emo-a` = Negativo,
+`sec-auto-emo-b` = Positivo) e carregam `data-barra-titulo`/`data-barra-voltar`
+do seu tipo. O conteúdo clínico continua no HTML, no bloco do seu tipo
+(DOM-first; nenhum array JS com textos).
+
+- `abrirSecao(id)` aceita o id lógico ou o físico: com id lógico, ativa a seção
+  física, chama `autoMostrarTipo(secao, bloco)` (mostra só o bloco daquele tipo
+  via `hidden`, copia título/voltar para a seção, esconde o cabeçalho cumulativo
+  no Positivo) e segue com `topbarAtualizar(físico)` + `progressoParaTela(lógico)`.
+- `secaoAtivaId()` devolve o id lógico do bloco visível (ou o id da seção nas
+  demais telas); é o que `autoAvancarSequencial`, `fluxoEmAndamento` e
+  `fluxoGuardarRascunho` usam. `PROG_REGISTRO_TELAS` contém os 5 ids físicos
+  além dos 10 lógicos, e `progressoParaTela` lê o tipo do `data-tipo` da seção
+  quando recebe um id físico (caminho do `p11aAbrirModal`).
+- Coleta (`autoColetarDadosDaSecao`), validação (`autoValidarSecao`),
+  `autoTemConteudoNaSecao`, `AUTO_SEC_MAP`, `AUTO_SEQ_*`, `autoFinalizarTipo`,
+  `autoAbrirResumo` e o rascunho continuam trabalhando pelos ids lógicos: cada
+  `getElementById('sec-auto-emo-a')` devolve o bloco, que contém exatamente os
+  campos e grupos de antes. Payload, chaves de coluna, `AUTO_SEPARADOR`,
+  `data-grupo`/`data-item`/`data-tem-likert` e `versao_formulario` não mudam
+  (prova: payloads iguais campo a campo antes e depois, relatório do 16.5d-1).
+- Um registro pode levar Negativo **e** Positivo (os dois blocos existem sempre
+  no DOM); por isso a coleta final percorre os 10 ids lógicos, como antes.
+- O cabeçalho cumulativo (`#p11aHdr-{etapa}-a`) vive na seção física e só é
+  renderizado no Negativo (`P11A_NEG_SECOES`).
+
 ## Convenções de namespace (prefixos CSS/JS)
 
 | Prefixo | Escopo |

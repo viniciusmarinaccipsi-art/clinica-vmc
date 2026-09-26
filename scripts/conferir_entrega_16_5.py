@@ -96,7 +96,7 @@ def secao_status(diferencas):
 # --------------------------------------------------------------------------
 # Item 1 — Gabarito do código
 # --------------------------------------------------------------------------
-RE_SECAO = re.compile(r'<div class="section" id="(sec-auto-[a-z0-9-]+)"')
+RE_SECAO = re.compile(r'<div class="(?:section|auto-tipo)" id="(sec-auto-[a-z0-9-]+)"')  # 16.5d-1: ids lógicos em div.auto-tipo
 RE_GRUPO = re.compile(r'<div class="auto-group[^"]*" data-grupo="([^"]+)"([^>]*)>')
 RE_TITULO = re.compile(r'<div class="auto-group-title">(.*?)</div>', re.S)
 RE_DESC = re.compile(r'<div class="auto-group-desc">(.*?)</div>', re.S)
