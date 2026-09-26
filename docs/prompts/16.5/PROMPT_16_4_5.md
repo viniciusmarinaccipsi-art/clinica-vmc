@@ -7,6 +7,11 @@ Sistema Clínico Digital VMC · 26/09/2026 · Tema G · decisão 1 das "11 pergu
 2. Só `index-dev.html` e `docs/design/tokens.css`. `index.html` e `Código.js` intocados; sem `clasp`. Pacote só de frontend: `git push` publica.
 3. Entradas: `docs/design/16.5/04_tokens.css` (o do Design, com `--f-title: 'Figtree'` e títulos 600) e `docs/design/16.5/CONFERENCIA_16_5a.md` item 4 (diff de tokens já feito).
 
+## Passo 0 — Ajustes de bordo herdados do 16.5a (mesmo commit ou commit `Docs:` separado, antes do passo 1)
+- `.gitignore`: acrescentar `!scripts/*.py` (o 16.5a precisou de `git add -f` para versionar `scripts/conferir_entrega_16_5.py`). Conferir com `git check-ignore -v scripts/conferir_entrega_16_5.py` que o arquivo deixou de ser ignorado.
+- `docs/licoes-aprendidas.md`: acrescentar as lições 79–84, copiadas da seção 8 do status (o usuário cola o trecho se você não tiver acesso ao status; o texto está reproduzido no fim deste prompt).
+- Branches locais já mesclados em `main`: `git branch -d pacote-16.4.3 pacote-17.0` (decisão C do usuário). Não tocar em `pacote-16` nem em nada remoto.
+
 ## Passos
 1. **Gabarito antes:** rodar `python scripts/conferir_entrega_16_5.py` e guardar a saída do item 1 (45 · 225 · 45 · 3).
 2. **Google Fonts:** no `<head>` de `index-dev.html`, o `<link>` de fontes passa a carregar só Figtree (pesos 400, 500, 600, 700; `display=swap`); a Newsreader sai do link e de qualquer `@font-face`/`preconnect` específico. Grep final: zero ocorrências de `Newsreader` em `index-dev.html` e em `docs/design/tokens.css`.
@@ -23,3 +28,11 @@ Sistema Clínico Digital VMC · 26/09/2026 · Tema G · decisão 1 das "11 pergu
 - [ ] Títulos visivelmente mais pesados que o texto (600 × 400), sem parecer negrito de sistema.
 - [ ] Console sem o erro 404 de `manifest.json`.
 - [ ] Login e navegação funcionando como antes.
+
+## Anexo — lições 79–84 para `docs/licoes-aprendidas.md` (numeração contínua; obsoletas continuam marcadas)
+- **79 — Conteúdo clínico nunca sai de prancha** (22/09/2026). A v1 do Design reescreveu itens, cortou grupos e renomeou grupos; o `mapa_campos.md` também errou. Textos clínicos vêm do HTML atual e um script compara o catálogo antes e depois de cada bloco (16.5a: `scripts/conferir_entrega_16_5.py`, `docs/design/16.5/gabarito_codigo.json`).
+- **80 — Tipografia só se avalia com a fonte real renderizada** (22/09/2026). Imagens geradas no ambiente de nuvem saem com DejaVu quando o Google Fonts não carrega; para avaliar fonte, renderizar com os arquivos reais (Fontsource).
+- **81 — Texto de interface só muda com motivo registrado** (22/09/2026), numa lista "hoje → proposta → motivo" que acompanha o pacote (tela saiu, texto falso, vocabulário, consistência, repetição, digitação, elemento novo, decisão).
+- **82 — A decisão de UX do usuário, registrada com imagem, prevalece sobre a prancha** (25–26/09/2026). O brief ao Design só sai depois das respostas; diferença entre prancha e decisão vira rodada nova do Design, nunca construção "do jeito da prancha".
+- **83 — Painel de conferência visual + prompts em arquivo** (26/09/2026). O documento que o usuário confere mostra as telas reais, o que muda/não muda, as fases com portões e o checklist; o que as ferramentas executam fica em `docs/prompts/` e no brief do Design, nunca colado no painel.
+- **84 — Arquivos do PC entram pelo terminal ligado ao Cowork ou pelo Claude Code, nunca pelo conector do Drive em base64** (25/09/2026).

@@ -1,6 +1,6 @@
 # Lições Aprendidas — Referência
 
-78 lições acumuladas no desenvolvimento (numeração original preservada —
+84 lições acumuladas no desenvolvimento (numeração original preservada —
 as conversas citam "lição #N"). Consultar antes de decisões não-triviais.
 Lições novas nascem na seção 8 do status_projeto_vmc.md e entram aqui na
 regeneração seguinte da skill clinica-vmc.
@@ -289,3 +289,17 @@ usados ao criar planilha nova — adicionar coluna = atualizar o array.
 **77. Ambiente Linux montando pasta do Windows tem `git` próprio — `core.autocrlf` diferente gera "modificado" falso em massa.** Um `device_bash` (VM Linux montando a pasta do Google Drive do Windows) rodou `git status`/`git diff` com sua própria configuração de git, distinta da do PowerShell que normalmente versiona o repositório; a árvore inteira apareceu "modificada", com o mesmo número de inserções e remoções por arquivo (ex.: 40.168+/40.168−), sem nenhum byte de conteúdo diferente — puro efeito de terminação de linha (CRLF ↔ LF), confirmado por `git diff --stat` simétrico e comparação literal de conteúdo. Antes de tratar um alerta de "alterações não commitadas" como risco, conferir se as inserções e remoções batem exatamente por arquivo e se o ambiente que rodou o `git` é o mesmo que normalmente commita. (16.4, 20/09/2026)
 
 **78. Campo que muda de tipo (emoji → HTML) exige re-auditar todo consumidor, não só a origem.** Desde o Pacote 16.2 `def.emoji` do catálogo `ESC_ESCALAS` passou a guardar markup SVG em vez de um caractere emoji, mas 5 pontos de renderização continuaram chamando `escapeHtmlAuto(def.emoji)`, herdado de quando o campo era texto puro — o ícone virava texto cru na tela (corrigido no 16.4.1). `grep` pelo nome do campo no arquivo inteiro, não só no ponto de origem da mudança, antes de fechar o pacote que muda o que um campo guarda. (16.4.1, 20/09/2026)
+
+## Pacote 16.5 — rodadas de Design, conteúdo clínico e textos de interface
+
+**79. Conteúdo clínico nunca sai de prancha.** A v1 do Design reescreveu itens, cortou grupos e renomeou grupos; o `mapa_campos.md` também errou. Textos clínicos vêm do HTML atual e um script compara o catálogo antes e depois de cada bloco (16.5a: `scripts/conferir_entrega_16_5.py`, `docs/design/16.5/gabarito_codigo.json`). (22/09/2026)
+
+**80. Tipografia só se avalia com a fonte real renderizada.** Imagens geradas no ambiente de nuvem saem com DejaVu quando o Google Fonts não carrega; para avaliar fonte, renderizar com os arquivos reais (Fontsource). (22/09/2026)
+
+**81. Texto de interface só muda com motivo registrado**, numa lista "hoje → proposta → motivo" que acompanha o pacote (tela saiu, texto falso, vocabulário, consistência, repetição, digitação, elemento novo, decisão). (22/09/2026)
+
+**82. A decisão de UX do usuário, registrada com imagem, prevalece sobre a prancha.** O brief ao Design só sai depois das respostas; diferença entre prancha e decisão vira rodada nova do Design, nunca construção "do jeito da prancha". (25–26/09/2026)
+
+**83. Painel de conferência visual + prompts em arquivo.** O documento que o usuário confere mostra as telas reais, o que muda/não muda, as fases com portões e o checklist; o que as ferramentas executam fica em `docs/prompts/` e no brief do Design, nunca colado no painel. (26/09/2026)
+
+**84. Arquivos do PC entram pelo terminal ligado ao Cowork ou pelo Claude Code, nunca pelo conector do Drive em base64.** (25/09/2026)

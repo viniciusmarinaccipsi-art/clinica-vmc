@@ -2,6 +2,7 @@
 Backup - */
 _para_apagar/
 *.py
+!scripts/*.py
 *.zip
 manifest.json
 credentials*.json
