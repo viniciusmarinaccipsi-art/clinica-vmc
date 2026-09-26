@@ -1,0 +1,42 @@
+# Panorama do Pacote 16.5 — leitura de contexto para o Claude Code
+
+Sistema Clínico Digital VMC · 26/09/2026 · escrito pelo chat (Cowork). Este arquivo é a versão em texto do painel "Pacote 16.5 · Mapa visual" (página privada do claude.ai que você não consegue abrir). Uma cópia do painel com as imagens está em `../VMC-offline/16.5_entrada_design/mapa_visual/index.html` (as telas em `img/`); você pode abrir as imagens de lá quando precisar ver uma tela.
+
+## 1. O projeto em três linhas
+- O VMC é um laboratório: sistema web de consultório de psicologia (TCC), vanilla JS num arquivo (`index.html`, produção; `index-dev.html`, página de teste do redesenho), backend Google Apps Script (`Código.js`), dados em Google Sheets. Usado com poucos pacientes; será reconstruído do zero no futuro, então cada melhoria é decidida por custo-benefício e tudo é registrado.
+- Regras que você já conhece de `CLAUDE.md`, `docs/arquitetura.md` e `docs/licoes-aprendidas.md` valem integralmente: DOM-first (conteúdo clínico vive no HTML, nunca em arrays JS), princípio aditivo só para dados vivos (`data-grupo`, `data-item`, `data-tem-likert`, colunas, ações do `doPost`, `versao_formulario`), edições por `str_replace` com verificação, validação completa, teste no publicado, nunca `index.html` nem `Código.js` neste pacote.
+- Estado do repositório em 26/09: `main` no Pacote 17.0 (`48b8fe3`); antes dele, 16.4.3 (`d09206a`, timeout por ação). `index-dev.html` 18.610 linhas; `Código.js` `VERSAO_PACOTE = '17.0'`, deploy @26. O 17.0 (escalas de Beck) está em espera dos textos e **não faz parte do 16.5**.
+
+## 2. O que é o Pacote 16.5
+Redesenho do fluxo de automonitoramento em `index-dev.html`, com o tema G (tokens, Figtree, sprite SVG), seguindo **a versão do usuário de 25/09** (documento "As 11 perguntas") — que prevalece sobre as pranchas do Design onde divergirem.
+
+Fluxo novo do paciente: Início → **Checagem breve de humor** (tela própria; 5 faixas com rostinho SVG e nomes Muito mal · Mal · Mais ou menos · Bem · Muito bem; observação de contexto; termina em "+ Iniciar novo registro" ou "Concluir só com a checagem de humor", que grava só data/hora/humor/observação) → **página Automonitoramento** ("QUE TIPO DE REGISTRO?": Registro Negativo, ameixa; Registro Positivo, verde-água; Painel, Meus Registros, Como Usar; cadeado do primeiro acesso; rascunho encontrado) → **menu "Suas 5 etapas"** (bloco HUMOR, um cartão por etapa, "Começar: Situação ›") → **5 etapas com estrutura única** (barra "REGISTRO NEGATIVO/POSITIVO · Etapa N de 5 · nome", trilho só indicador, cabeçalho cumulativo, grupos em cartões recolhíveis, **subgrupos em lista com check redondo**, **barra deslizante 1–5 sob o item marcado** nas etapas 2–4 com legenda e nota por extenso, "Outro: especifique…", rodapé com contagem e nome da próxima etapa, obrigatório avisado na tela) → **Revisar e Enviar** (chip "feita" por etapa, "Enviar Registro") → **Registro enviado** ("Seu terapeuta terá acesso…", "Se quiser continuar" com o outro tipo). Estados transversais: rascunho encontrado, "Sair sem enviar?", tudo em `sessionStorage`. Computador ≥ 900 px: coluna lateral fixa com "Suas 5 etapas" e "O que já está anotado".
+
+O que **não** muda: `Código.js`, planilha, nomes de campo, chaves técnicas, conteúdo clínico (45 grupos · 225 itens · 45 "Outro" · 3 legendas, letra por letra), `index.html`. Escalas, anamnese (Pacote 16.9), área do profissional e agenda ficam fora.
+
+## 3. As 5 etapas do registro (vocabulário)
+1 Situação (texto + tipo de contexto; sem intensidade) · 2 Emoções Desagradáveis / Agradáveis (intensidade: Desconforto/Conforto, Nenhum…Intenso) · 3 Reações Físicas de Mal-Estar / Bem-Estar (Mal-estar/Bem-estar, Nenhum…Extremo) · 4 Pensamentos Desadaptativos / Adaptativos (Acredito, Nada…Totalmente; caixa de texto + "Adicionar outro pensamento"; ajuda âmbar só no Negativo) · 5 Comportamentos Disfuncionais / Funcionais (texto + tipos; sem intensidade). Hoje as 10 seções existem em dobro no HTML (`sec-auto-{sit,emo,fis,pens,comp}-{a,b}`); o 16.5d-1 unifica em 5. A etapa 1 do Positivo não tem grupos (débito 8.6: o usuário criará os grupos num pacote futuro).
+
+## 4. Fontes de verdade para este pacote (em ordem)
+1. `CLAUDE.md`, `docs/arquitetura.md`, `docs/licoes-aprendidas.md`.
+2. Decisões do usuário: `../VMC-offline/16.5_entrada_design/rodada3/As_11_perguntas.pdf` e as imagens em `rodada3/referencia_25-09/` (V-01 a V-11) — prevalecem sobre pranchas.
+3. Entrega do Design, rodada 2 (25/09): `../VMC-offline/16.5_entrada_design/Diagnóstico de usabilidade do sistema/16.5/` (após o 16.5a, cópia leve em `docs/design/16.5/`): `02_telas.md`, `03_componentes.md`, `04_tokens.css`, `05_rostinhos.svg`, `06_contrato_de_leitura_v2.md` (22 itens de aceite), `catalogo.js` (dado de prancha; não entra no app), `icones.js`. Divergentes da decisão do usuário e aguardando a rodada 3: AUT-02, AUT-03 (fim da tela), AUT-03c (menu, novo), AUT-04 a 08 e 08p (lista + barra), AUT-11. Aprovadas como estão: AUT-03b, 09, 10, 12a/b/c.
+4. Conteúdo e textos: `16.5_catalogo_automonitoramento.md`, `16.5_textos_interface.md`, `16.5_brief_design.md` (em `../VMC-offline/16.5_entrada_design/`). Textos aceitos além da lista: "Nada marcado ainda", "Continuar registro"/"Sair", "Iniciar novo registro", "Concluir só com a checagem de humor", "Suas 5 etapas", "Toque em uma etapa para abrir.", "Começar: Situação ›", "QUE TIPO DE REGISTRO?", contagens do rodapé por etapa, instrução da Situação.
+5. Pedido da rodada 3: `../VMC-offline/16.5_entrada_design/rodada3/BRIEF_rodada3_design.md`; a entrega chegará em `rodada3/entrega/`.
+6. Status do projeto: `../status_projeto_vmc.md` (não versionado; contém IDs). Em conflito, o status vence.
+
+## 5. Ordem de execução (um prompt por fase; `README.md` desta pasta tem as linhas)
+Trilha do código, sem depender de prancha: **16.5a** conferência da entrega + gabarito clínico (`scripts/conferir_entrega_16_5.py`, `docs/design/16.5/gabarito_codigo.json`) → **16.4.5** fonte única Figtree + remoção do `manifest.json` → **16.5b** tokens novos mesclados + rostinhos `i-humor-1..5` no sprite + zero emoji → **16.4.4** validação da Situação do Positivo (só se reproduzido) → **16.5d-1** unificar as 10 seções em 5 sem mudança visual (prova: gabarito + payloads iguais). Em paralelo, o usuário envia a rodada 3 ao Design. Depois da rodada 3 conferida pelo script: **16.5c** checagem + página Automonitoramento + menu → **16.5d-2** visual das etapas → **16.5e** revisar/enviado/sair → **16.5f** computador → fechamento (teste do usuário com o paciente VMC, contrato v3, status, skill).
+
+Portões: o usuário testa em aba anônima ao fim de cada fase e diz "ok"; dentro da fase você executa tudo em sequência, sem pedir confirmação técnica, e termina com uma mensagem curta "publicado" + resultados.
+
+## 6. Travas que valem em todas as fases
+- **Gabarito clínico antes e depois** de qualquer bloco que toque `index-dev.html` (a partir do 16.5a): 45 · 225 · 45 · 3, igual byte a byte (ou equivalência provada quando a estrutura mudar).
+- `node --check`; tags balanceadas fora dos `<script>`; toda `var()` declarada no `:root`; zero cor fixa fora do `:root`; zero classe sem uso; piso tipográfico 13/14 px; toque ≥ 44 px; a partir do 16.5b, **zero emoji**.
+- Playwright com Chrome visível, 390×844 e 1280×800, login com sigla inválida até a mensagem do servidor, zero `pageerror`, comparando com `index.html` no mesmo minuto; telas internas com sessão simulada do paciente de teste (`salvarSessao({...})`); você nunca digita senha.
+- `git push` publica (Pages, ~1 min); teste no publicado com `?v=<pacote>`; sem `clasp`; `index.html` e `Código.js` intocados; nenhum dado clínico em log, captura ou relatório; relatório em `../VMC-offline/PACOTE_<n>_RELATORIO.md`; marcador do pacote no comentário da linha 2 de `index-dev.html`.
+- Texto de interface só muda com motivo registrado; conteúdo clínico não muda (exceto as duas descrições "repudio" → "repúdio" e "estomago" → "estômago", no 16.5d-2, motivo "digitação").
+- Bug encontrado no caminho vira pacote próprio; bug sem reprodução não vira commit.
+
+## 7. Como começar
+Leia este arquivo, depois `README.md` desta pasta, depois o prompt da fase pedida. Confirme `git pull` e o commit de `origin/main`. Se algo aqui contradisser o código real, o código real vence para fatos e o status vence para decisões; relate a divergência no relatório em vez de resolvê-la por conta própria.

@@ -1,0 +1,46 @@
+# PROMPT · Pacote 16.5a — Conferência da entrega do Design (rodada 2) + gabarito clínico
+
+Sistema Clínico Digital VMC · escrito em 26/09/2026 pelo chat (Cowork). Tema G (redesenho), Pacote 16.5, fase 1.
+
+## Contexto (ler antes de agir)
+1. `CLAUDE.md`, `docs/arquitetura.md`, `docs/licoes-aprendidas.md` (em especial: DOM-first, princípio aditivo restrito a dados vivos, disciplina de `str_replace`, lições 79–81 sobre conteúdo clínico e texto de interface).
+2. `git pull`; confirmar que `origin/main` está no Pacote 17.0 (commit `48b8fe3` ou posterior). `index-dev.html` deve estar marcado "Pacote 17.0" no comentário da linha 2.
+3. Este pacote é **só leitura, script e documentação**: não altera `index.html`, `index-dev.html` nem `Código.js`. `VERSAO_PACOTE` continua `'17.0'`. Commit + `git push`; sem `clasp`.
+4. Numeração vigente: 16.4.3 = timeout por ação (feito); 17.0 = Beck (feito); **16.4.4** = bug do Positivo (fase 4, prompt próprio); **16.4.5** = fonte única (fase 2, prompt próprio); **16.5a** = este.
+
+## Entradas
+- Entrega do Design, rodada 2 (25/09/2026): `../VMC-offline/16.5_entrada_design/Diagnóstico de usabilidade do sistema/16.5/` → `00_LEIA-ME.md`, `01_pranchas_16.5.html`, `01_pranchas_16.5.dc.html`, `01b_documento-mestre-v2.html` (14 MB), `01_png/` (16 PNG), `02_telas.md`, `03_componentes.md`, `04_tokens.css`, `05_rostinhos.svg`, `06_contrato_de_leitura_v2.md`, `catalogo.js`, `icones.js`, `support.js`.
+- O que foi enviado ao Design (fontes de verdade de texto e conteúdo): `../VMC-offline/16.5_entrada_design/16.5_brief_design.md`, `16.5_textos_interface.md`, `16.5_catalogo_automonitoramento.md`.
+- Versão do usuário de 25/09 (prevalece sobre a prancha onde divergirem): `../VMC-offline/16.5_entrada_design/rodada3/referencia_25-09/` (11 JPG + modelo do computador) e `BRIEF_rodada3_design.md` na pasta acima, que lista as 4 divergências já conhecidas (lugar da escolha do tipo; menu das etapas; subgrupos em lista + barra deslizante; computador).
+- Código: `index-dev.html` e `docs/design/tokens.css` do repositório.
+
+## Passo 0 — Levar a entrega leve para o repositório
+Criar `docs/design/16.5/` e copiar: `00_LEIA-ME.md`, `01_pranchas_16.5.html`, `02_telas.md`, `03_componentes.md`, `04_tokens.css`, `05_rostinhos.svg`, `06_contrato_de_leitura_v2.md`, `catalogo.js`, `icones.js`, e os três arquivos enviados ao Design (brief, textos, catálogo `.md`). Criar `docs/design/16.5/referencia_25-09/` e copiar os 11 JPG + o PNG do computador da pasta `rodada3/referencia_25-09/` (decisão D do usuário: no git vai a referência **atualizada**, não os PNG da rodada 2). **Não** copiar `01b_documento-mestre-v2.html`, `.dc.html`, `support.js` nem `01_png/` da rodada 2 (ficam só no Drive).
+
+## Passo 1 — Script `scripts/conferir_entrega_16_5.py` (Python 3 puro, sem dependência externa)
+Rodar a partir da raiz do repositório com um argumento opcional: a pasta da entrega (default `docs/design/16.5`). Imprimir contagens no terminal e gravar `docs/design/16.5/CONFERENCIA_16_5a.md` com uma seção por item abaixo, cada uma com "OK" ou a lista exata das diferenças. **Este script será reutilizado na rodada 3 e em todas as fases seguintes, então tem que ser reexecutável e determinístico.**
+
+1. **Gabarito do código.** De `index-dev.html`, nas 10 seções `sec-auto-{sit,emo,fis,pens,comp}-{a,b}` (a = negativo, b = positivo; confirmar os ids reais por grep antes de fixar), extrair cada `.auto-group[data-grupo]`: chave, título (`.auto-group-title`), descrição (`.auto-group-desc`, com `html.unescape`), itens (`input[data-item]`, na ordem do DOM), presença e forma exata do campo "Outro" do grupo (rótulo "Outro:" e dica "especifique..."), rótulo de intensidade (`.auto-item-likert-label` ou equivalente) quando houver, e a legenda da escala da seção (`.auto-scale` ou equivalente). Gravar `docs/design/16.5/gabarito_codigo.json` (UTF-8, chaves ordenadas, indentado). Esperado: **45 grupos · 225 itens · 45 "Outro" · 3 legendas** (Nenhum…Intenso; Nenhum…Extremo; Nada…Totalmente) · rótulos Desconforto:/Mal-estar:/Acredito: (negativo) e Conforto:/Bem-estar:/Acredito: (positivo). `pos.sit` sem grupos é esperado (débito 8.6).
+2. **`catalogo.js` × gabarito.** Carregar `export const catalogo` (JSON após remover o prefixo). Comparar seção a seção, na ordem: chave; título (`f"{n}. {titulo}"` deve bater com o título do código, ou o título puro — registrar qual forma o código usa); descrição; itens (igualdade exata após unescape); Outro/outroDica; legenda; rótulo. Esperado: **zero diferenças**.
+3. **Textos.** Para cada string de `export const textos` do `catalogo.js` (percorrer recursivamente) e para toda string entre aspas de `02_telas.md` e `03_componentes.md` (ignorar tokens `--x`, nomes de arquivo, códigos AUT-nn e trechos de código): existe literalmente em `index-dev.html`? Se não, está na coluna "Proposta" de `16.5_textos_interface.md`? Se em nenhum dos dois → "texto sem origem". Esperados sem origem e **já aceitos pelo usuário** (não são erro): "Nada marcado ainda", "Continuar registro", "Sair", "1 situação marcada", "2 reações físicas marcadas", "1 pensamento marcado", "2 comportamentos marcados", "Iniciar novo registro", "Concluir só com a checagem de humor", "Suas 5 etapas", "Toque em uma etapa para abrir.", "Começar: Situação ›", "QUE TIPO DE REGISTRO?". Qualquer outro → listar.
+4. **Tokens.** Diff `04_tokens.css` × `docs/design/tokens.css`, tema claro e escuro: NOVO / MUDOU / SUMIU. Esperado — NOVO: `--c-humor-1..5-bg`, `--c-humor-1..5-ink`, `--c-reg-neg-mid`, `--c-reg-pos-mid`, `--t-h2-sm`, `--t-legend`, `--hit-face`, `--w-likert-col`; MUDOU: `--f-title` (Newsreader → Figtree), `--t-display`, `--t-h1`…`--t-h4` (500 → 600); SUMIU: `--c-bdi2-*`, `--c-bai-*`, `--c-bg-page`, `--c-surface-2`, `--c-ink-4`, `--c-placeholder`, `--c-bg-app`, `--t-quote` e quaisquer outros que o repositório ganhou depois de 17/09 — **esses ficam**; o `04_tokens.css` será mesclado no 16.5b, nunca copiado por cima. Conferir também: toda `var(--x)` usada em `01_pranchas_16.5.html` existe em `04_tokens.css`; algum `#hex` no HTML das pranchas fora dos valores de `04_tokens.css`? (a entrega afirma zero).
+5. **Rostinhos.** `05_rostinhos.svg` tem exatamente 5 `<symbol id="i-humor-1..5" viewBox="0 0 24 24">`, só `circle`/`path`, sem `fill`/`stroke` próprios; ids não colidem com o sprite de `index-dev.html`. Registrar que o bloco `<metadata>` (C2PA) é descartado na importação.
+6. **Ícones.** Todo id de `icones.js` existe no sprite de `index-dev.html`? Listar os que faltam (além de `i-humor-*`).
+7. **Referência 25/09 × entrega.** Listar os JPG de `referencia_25-09/` com dimensões (cabeçalho JFIF/PNG) e registrar, por tela, se a prancha da rodada 2 diverge da versão 25/09 (usar a lista do `BRIEF_rodada3_design.md`, seção 1). Não é comparação de pixels: é o registro de quais telas aguardam a rodada 3 (AUT-02, AUT-03, AUT-03c, AUT-04 a 08, 08p, AUT-11) e quais estão aprovadas como estão (AUT-03b, AUT-09, AUT-10, AUT-12a/b/c).
+
+## Passo 2 — Leitura de `02_telas.md` e `03_componentes.md` (você lê; sem script)
+Anotar no relatório: (a) o que o código atual não tem e precisará ser construído: checagem breve como tela própria, página Automonitoramento com escolha do tipo, menu "Suas 5 etapas", lista de subgrupos com check redondo, barra deslizante 1–5 (controle nativo de faixa, 5 passos, 44 px), cabeçalho cumulativo novo, estados AUT-12, coluna lateral AUT-11; (b) confirmação de que **nenhum campo novo** é exigido e de que os contratos de dados vivos permanecem (`data-grupo`/`data-item`/`data-tem-likert`, "Item:nota" com `AUTO_SEPARADOR`, ações do `doPost`, `versao_formulario`) — citar por grep onde cada um está hoje; (c) inventário das funções que hoje leem `def.emoji`/faces do humor (grep por `emoji`, `humor`, `😀`-like) para o 16.5b; (d) medir e registrar as linhas exatas das 10 seções `sec-auto-*` (início/fim) e a contagem de linhas duplicadas entre a/b, base do 16.5d-1.
+
+## Passo 3 — Relatório e fechamento
+- `../VMC-offline/PACOTE_16_5a_RELATORIO.md` = `CONFERENCIA_16_5a.md` + o que foi commitado + os dados do Passo 2. Sem dado de paciente (o catálogo é conteúdo do sistema, não dado clínico).
+- Validações: o script roda limpo duas vezes seguidas com o mesmo resultado; `git status` limpo após o commit; nenhum arquivo do repositório fora de `docs/design/16.5/`, `scripts/` e o relatório foi tocado (`git diff --stat` no relatório).
+- Commit: `Pacote 16.5a - Conferencia da entrega do Design, gabarito clinico e referencia 25-09` · `git push`. Nada de `clasp`.
+- Mensagem final para o usuário (curta): "publicado" + os 7 resultados do script em uma linha cada (OK / n diferenças) + o caminho do relatório.
+
+## Checklist que o usuário e o chat vão conferir depois (deixe tudo verificável)
+- [ ] `docs/design/16.5/gabarito_codigo.json` existe e o relatório diz 45 · 225 · 45 · 3.
+- [ ] `CONFERENCIA_16_5a.md` item 2 = "OK" (ou diferenças listadas item a item).
+- [ ] Item 3 lista só os textos aceitos acima como "sem origem".
+- [ ] Item 4 lista os tokens NOVO/MUDOU esperados e marca os SUMIU como "ficam".
+- [ ] `docs/design/16.5/referencia_25-09/` tem 12 arquivos.
+- [ ] `git log -1` mostra o commit do 16.5a e `git diff --stat HEAD~1` não toca `index-dev.html`, `index.html` nem `Código.js`.
