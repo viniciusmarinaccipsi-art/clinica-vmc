@@ -1,0 +1,866 @@
+{
+  "neg": {
+    "comp": {
+      "grupos": [
+        {
+          "chave": "neg_comp_evitacao",
+          "data_tem_likert": "0",
+          "desc": "\"Quando tentamos nos afastar daquilo que nos causa desconforto.\"",
+          "itens": [
+            "Saí ou fugi de situações ou lugares",
+            "Cancelei compromissos e obrigações",
+            "Não respondi as mensagens ou ligações",
+            "Procrastinei ou adiei tarefas importantes",
+            "Evitei pessoas e/ou me expor às interações"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": null,
+          "titulo": "1. Evitação / Fuga"
+        },
+        {
+          "chave": "neg_comp_isolamento",
+          "data_tem_likert": "0",
+          "desc": "\"Quando nos retraimos ou nos fechamos em nós mesmos.\"",
+          "itens": [
+            "Fiquei em silêncio ou me resguardei",
+            "Me afastei das pessoas ou evitei o contato",
+            "Aceitei passivamente as situações que incomodam",
+            "Deixei de fazer atividades que antes eram prazerosas",
+            "Tive dificuldades para iniciar ou manter minhas obrigações"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": null,
+          "titulo": "2. Isolamento / Retraimento"
+        },
+        {
+          "chave": "neg_comp_reatividade",
+          "data_tem_likert": "0",
+          "desc": "\"Quando agimos de forma impulsiva ou explosiva.\"",
+          "itens": [
+            "Critiquei ou ataquei verbalmente alguém",
+            "Discuti, gritei, briguei ou busquei o conflito",
+            "Bati, quebrei ou arremessei coisas e objetos",
+            "Agi impulsivamente sem pensar nas consequências",
+            "Fui agressivo e/ou me expus a riscos desnecessários"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": null,
+          "titulo": "3. Agitação / Reatividade"
+        },
+        {
+          "chave": "neg_comp_entorpecimento",
+          "data_tem_likert": "0",
+          "desc": "\"Quando buscamos aliviar ou anestesiar o que sentimos.\"",
+          "itens": [
+            "Comi em excesso ou compulsivamente",
+            "Dormi em excesso para \"fugir\" do que senti",
+            "Fiz compras impulsivas ou gastos excessivos",
+            "Uso de álcool ou drogas para lidar com emoções",
+            "Uso excessivo de telas (internet, redes sociais, TV)"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": null,
+          "titulo": "4. Entorpecimento / Fuga emocional"
+        },
+        {
+          "chave": "neg_comp_controle",
+          "data_tem_likert": "0",
+          "desc": "\"Quando tentamos controlar tudo ou buscamos aprovação.\"",
+          "itens": [
+            "Tentei ser perfeito ou controlar cada detalhe",
+            "Busquei por afirmação e/ou validação emocional",
+            "Fiz verificações repetidas em busca de segurança",
+            "Queixei-me ou reclamei repetidamente do problema",
+            "Ruminei o problema: \"mastiguei\" mentalmente o ocorrido"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": null,
+          "titulo": "5. Busca excessiva de controle / Reasseguramento"
+        }
+      ],
+      "legenda": null,
+      "secao": "sec-auto-comp-a"
+    },
+    "emo": {
+      "grupos": [
+        {
+          "chave": "neg_emo_tristeza",
+          "data_tem_likert": "1",
+          "desc": "\"Quando sentimos que perdemos algo importante, que as coisas não estão bem conosco ou que o futuro parece sem esperança.\"",
+          "itens": [
+            "Triste",
+            "Solitário(a)",
+            "Deprimido(a)",
+            "Desanimado(a)",
+            "Desesperançoso(a)"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Desconforto:",
+          "titulo": "1. Tristeza / Depressão"
+        },
+        {
+          "chave": "neg_emo_ansiedade",
+          "data_tem_likert": "1",
+          "desc": "\"Quando percebemos perigo ou ameaça, sentimos que algo ruim pode acontecer ou temos incertezas sobre o futuro.\"",
+          "itens": [
+            "Ansioso(a)",
+            "Inseguro(a)",
+            "Apreensivo(a)",
+            "Preocupado(a)",
+            "Amedrontado(a)"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Desconforto:",
+          "titulo": "2. Ansiedade / Medo"
+        },
+        {
+          "chave": "neg_emo_raiva",
+          "data_tem_likert": "1",
+          "desc": "\"Quando não concordamos com algo, sentimos que fomos tratados de forma injusta ou desrespeitados.\"",
+          "itens": [
+            "Irritado(a)",
+            "Furioso(a)",
+            "Ofendido(a)",
+            "Frustrado(a)",
+            "Indignado(a)"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Desconforto:",
+          "titulo": "3. Raiva / Irritação"
+        },
+        {
+          "chave": "neg_emo_culpa",
+          "data_tem_likert": "1",
+          "desc": "\"Quando sentimos que cometemos um erro ou que há algo inadequado em nossas atitudes ou comportamentos.\"",
+          "itens": [
+            "Culpado(a)",
+            "Humilhado(a)",
+            "Arrependido(a)",
+            "Constrangido(a)",
+            "Envergonhado(a)"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Desconforto:",
+          "titulo": "4. Culpa / Vergonha"
+        },
+        {
+          "chave": "neg_emo_ciume",
+          "data_tem_likert": "1",
+          "desc": "\"Quando sentimos que um relacionamento está ameaçado ou que outros possuem algo que admiramos ou desejamos.\"",
+          "itens": [
+            "Invejoso(a)",
+            "Possessivo(a)",
+            "Enciumado(a)",
+            "Amargurado(a)",
+            "Desconfiado(a)"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Desconforto:",
+          "titulo": "5. Ciúme / Inveja"
+        }
+      ],
+      "legenda": [
+        "Nenhum",
+        "Pouco",
+        "Moderado",
+        "Muito",
+        "Intenso"
+      ],
+      "secao": "sec-auto-emo-a"
+    },
+    "fis": {
+      "grupos": [
+        {
+          "chave": "neg_fis_ativacao",
+          "data_tem_likert": "1",
+          "desc": "\"Quando as sensações corporais envolvem um estado de alerta ou preparação para agir diante de uma ameaça ou perigo.\"",
+          "itens": [
+            "Coração acelerado",
+            "Tremores ou estremecimentos",
+            "Respiração rápida ou ofegante",
+            "Sudorese ou calafrios repentinos",
+            "Agitação (dificuldade em ficar parado)"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Mal-estar:",
+          "titulo": "1. Ativação / Aceleração"
+        },
+        {
+          "chave": "neg_fis_desativacao",
+          "data_tem_likert": "1",
+          "desc": "\"Quando as sensações corporais envolvem um estado de apatia, como se faltassem forças, ânimo ou energia.\"",
+          "itens": [
+            "Cansaço ou fadiga",
+            "Sensação de esgotamento",
+            "Lentificação nos movimentos",
+            "Falta de energia ou disposição",
+            "Falta de interesse ou motivação"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Mal-estar:",
+          "titulo": "2. Desativação / Lentificação"
+        },
+        {
+          "chave": "neg_fis_tensao",
+          "data_tem_likert": "1",
+          "desc": "\"Quando as sensações corporais envolvem contrações ou rigidez muscular diante de algo estressante, ou que nos causa repudio e desaprovação.\"",
+          "itens": [
+            "Tensão ou rigidez muscular",
+            "Aperto ou pressão no peito",
+            "Punhos ou mandíbula cerrados",
+            "Ombros e pescoço enrijecidos",
+            "Peso ou dores na região da cabeça"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Mal-estar:",
+          "titulo": "3. Tensão / Contração"
+        },
+        {
+          "chave": "neg_fis_digestivas",
+          "data_tem_likert": "1",
+          "desc": "\"Quando as sensações corporais se manifestam na região do estomago e abdômen, ou interferem em nosso sistema digestivo ou apetite.\"",
+          "itens": [
+            "Boca seca ou salivação alterada",
+            "Enjoo, náuseas ou desconfortos abdominais",
+            "Alterações no apetite (comer mais ou menos)",
+            "Intestino alterado (diarreia ou prisão de ventre)",
+            "Estômago embrulhado ou irritado (queimação – azia)"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Mal-estar:",
+          "titulo": "4. Alterações Digestivas"
+        },
+        {
+          "chave": "neg_fis_sono",
+          "data_tem_likert": "1",
+          "desc": "\"Quando as sensações corporais interferem nossa percepção da realidade, estado de alerta, atenção, sono e vigília.\"",
+          "itens": [
+            "Dificuldades para dormir",
+            "Dificuldades de concentração",
+            "Despertares noturnos ou muito cedo",
+            "Confusão mental (dissossiação e/ou despersonalização)",
+            "Mente acelerada (dificuldades para desligar – pensamentos intrusivos)"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Mal-estar:",
+          "titulo": "5. Alterações no Sono e Concentração"
+        }
+      ],
+      "legenda": [
+        "Nenhum",
+        "Pouco",
+        "Moderado",
+        "Muito",
+        "Extremo"
+      ],
+      "secao": "sec-auto-fis-a"
+    },
+    "pens": {
+      "grupos": [
+        {
+          "chave": "neg_pens_sobre_mim",
+          "data_tem_likert": "1",
+          "desc": "\"Quando meus pensamentos são duros comigo mesmo.\"",
+          "itens": [
+            "\"Não sou bom o bastante ou suficiente\"",
+            "\"Não sou digno de ser amado ou valorizado\"",
+            "\"Sou problemático: há algo de errado comigo\"",
+            "\"Sou fracasso e não consigo lidar com as coisas\"",
+            "\"Sou uma farsa: me vejo incapaz ou incompetente\""
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Acredito:",
+          "titulo": "1. Pensamentos sobre Mim Mesmo (Autocrítica)"
+        },
+        {
+          "chave": "neg_pens_sobre_futuro",
+          "data_tem_likert": "1",
+          "desc": "\"Quando minha mente antecipa o pior cenário.\"",
+          "itens": [
+            "\"E se tudo der errado comigo?\"",
+            "\"Algo terrível poderá acontecer\"",
+            "\"Não serei capaz de lidar com isso\"",
+            "\"Nunca vou melhorar ou sair dessa situação\"",
+            "\"O futuro é desesperador ou sem esperança\""
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Acredito:",
+          "titulo": "2. Pensamentos sobre o Futuro"
+        },
+        {
+          "chave": "neg_pens_sobre_outros",
+          "data_tem_likert": "1",
+          "desc": "\"Quando interpreto as intenções dos outros de forma negativa.\"",
+          "itens": [
+            "\"Não posso confiar nas outras pessoas\"",
+            "\"Ninguém se importa comigo de verdade\"",
+            "\"As pessoas me julgam ou não gostam de mim\"",
+            "\"Estou sendo usado ou explorado pelos outros\"",
+            "\"Estão sendo injustos comigo ou me desrespeitando\""
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Acredito:",
+          "titulo": "3. Pensamentos sobre os Outros"
+        },
+        {
+          "chave": "neg_pens_cobranca",
+          "data_tem_likert": "1",
+          "desc": "\"Quando me cobro ou cobro os outros com regras inflexíveis.\"",
+          "itens": [
+            "\"Não posso errar ou falhar\"",
+            "\"Eu deveria dar conta de tudo\"",
+            "\"Eu precisava ser mais forte ou melhor\"",
+            "\"As pessoas deveriam agir de outra forma\"",
+            "\"Se não estiver perfeito, então não valerá a pena\""
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Acredito:",
+          "titulo": "4. Pensamentos de Cobrança"
+        },
+        {
+          "chave": "neg_pens_culpa",
+          "data_tem_likert": "1",
+          "desc": "\"Quando me responsabilizo excessivamente.\"",
+          "itens": [
+            "\"Eu não deveria ter feito ou dito aquilo\"",
+            "\"Mereço o que está acontecendo comigo\"",
+            "\"A culpa é minha, sou responsável por isso\"",
+            "\"Decepcionei, desapontei ou magoei as pessoas\"",
+            "\"Se souberem quem eu realmente sou vão me rejeitar\""
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Acredito:",
+          "titulo": "5. Pensamentos de Culpa / Autocondenação"
+        }
+      ],
+      "legenda": [
+        "Nada",
+        "Pouco",
+        "Moderado",
+        "Muito",
+        "Totalmente"
+      ],
+      "secao": "sec-auto-pens-a"
+    },
+    "sit": {
+      "grupos": [
+        {
+          "chave": "neg_sit_tipo_interpessoais",
+          "data_tem_likert": null,
+          "desc": "Marque quando envolveu interações com outras pessoas",
+          "itens": [
+            "Ser comparado com algo ou alguém",
+            "Receber críticas ou feedbacks negativos",
+            "Conflitos, brigas ou discussões com outra pessoa",
+            "Ser rejeitado, ignorado ou excluído numa situação",
+            "Ver-se incompreendido, invalidado ou desrespeitado"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": null,
+          "titulo": "1. Situações Interpessoais"
+        },
+        {
+          "chave": "neg_sit_tipo_desempenho",
+          "data_tem_likert": null,
+          "desc": "Marque quando envolveu avaliações sobre tarefas e resultados",
+          "itens": [
+            "Acúmulo de tarefas ou sobrecarga",
+            "Realizar tarefas novas ou desafiadoras",
+            "Receber pressão por prazos ou cobranças",
+            "Avaliação ou exposição diante de outras pessoas",
+            "Lidar com erros, falhas ou resultados abaixo do esperado"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": null,
+          "titulo": "2. Situações de Desempenho"
+        },
+        {
+          "chave": "neg_sit_tipo_solidao",
+          "data_tem_likert": null,
+          "desc": "Marque quando envolveu estar sozinho ou sem atividades",
+          "itens": [
+            "Lidar com o tédio e ociosidade",
+            "Estar sozinho e/ou sem atividades",
+            "Perceber-se inútil ou sem relevância",
+            "Cancelamento de planos ou expectativas frustradas",
+            "Sentir-se solitário e vazio em momentos específicos do dia"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": null,
+          "titulo": "3. Situações de Solidão / Inatividade"
+        },
+        {
+          "chave": "neg_sit_tipo_perda",
+          "data_tem_likert": null,
+          "desc": "Marque quando envolveu perdas, mudanças ou incertezas",
+          "itens": [
+            "Ter incertezas sobre o futuro",
+            "Passar por dificuldades financeiras",
+            "Mudanças inesperadas na rotina ou planos",
+            "Perda ou afastamento de alguém importante",
+            "Problemas de saúde (próprios ou de alguém próximo)"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": null,
+          "titulo": "4. Situações de Perda ou Mudança"
+        },
+        {
+          "chave": "neg_sit_tipo_internas",
+          "data_tem_likert": null,
+          "desc": "Marque quando envolveu gatilhos internos - sem um evento externo definido",
+          "itens": [
+            "Lembranças ou memórias indesejadas",
+            "Ruminando o que eu deveria fazer ou ter feito",
+            "Sensações físicas e emocionais desagradáveis",
+            "Pensamentos intrusivos que \"surgiram do nada\"",
+            "Imaginar como as coisas deveriam ser diferentes"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": null,
+          "titulo": "5. Situações Internas (sem evento externo claro)"
+        }
+      ],
+      "legenda": null,
+      "secao": "sec-auto-sit-a"
+    }
+  },
+  "pos": {
+    "comp": {
+      "grupos": [
+        {
+          "chave": "pos_comp_enfrentamento",
+          "data_tem_likert": "0",
+          "desc": "\"Quando escolhemos lidar com a situação de frente.\"",
+          "itens": [
+            "Resolver um problema pendente",
+            "Pedir ajuda ou buscar informação",
+            "Cumprir uma tarefa mesmo sem vontade",
+            "Tomar uma decisão que estava adiando",
+            "Enfrentar uma situação que vinha evitando"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": null,
+          "titulo": "1. Enfrentamento / Ação"
+        },
+        {
+          "chave": "pos_comp_conexao",
+          "data_tem_likert": "0",
+          "desc": "\"Quando nos aproximamos das pessoas.\"",
+          "itens": [
+            "Pedir ou oferecer ajuda",
+            "Participar de uma atividade em grupo",
+            "Aceitar ou propor um encontro social",
+            "Demonstrar afeto ou carinho a alguém",
+            "Conversar com alguém de confiança sobre como me sinto"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": null,
+          "titulo": "2. Conexão / Vínculo"
+        },
+        {
+          "chave": "pos_comp_expressao",
+          "data_tem_likert": "0",
+          "desc": "\"Quando expressamos o que sentimos de forma assertiva.\"",
+          "itens": [
+            "Ouvir o outro antes de responder",
+            "Dizer \"não\" quando necessário",
+            "Conversar para resolver um conflito",
+            "Expressar um incômodo de forma assertiva",
+            "Escrever sobre o que estou sentindo (diário, registro)"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": null,
+          "titulo": "3. Expressão / Comunicação"
+        },
+        {
+          "chave": "pos_comp_autocuidado",
+          "data_tem_likert": "0",
+          "desc": "\"Quando cuidamos de nós mesmos de forma saudável.\"",
+          "itens": [
+            "Alimentar-se de forma equilibrada",
+            "Manter uma rotina de sono adequada",
+            "Praticar atividade física ou exercício",
+            "Dedicar tempo a algo prazeroso ou relaxante",
+            "Praticar técnicas de relaxamento, respiração ou meditação"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": null,
+          "titulo": "4. Autocuidado / Regulação"
+        },
+        {
+          "chave": "pos_comp_aceitacao",
+          "data_tem_likert": "0",
+          "desc": "\"Quando reconhecemos o que não podemos mudar.\"",
+          "itens": [
+            "Permitir-se ser imperfeito",
+            "Reconhecer o que está fora do meu controle",
+            "Aceitar uma emoção difícil sem tentar eliminá-la",
+            "Praticar gratidão ou valorizar algo positivo no dia",
+            "Agir de acordo com meus valores mesmo com desconforto"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": null,
+          "titulo": "5. Aceitação / Flexibilidade"
+        }
+      ],
+      "legenda": null,
+      "secao": "sec-auto-comp-b"
+    },
+    "emo": {
+      "grupos": [
+        {
+          "chave": "pos_emo_felicidade",
+          "data_tem_likert": "1",
+          "desc": "\"Quando nos sentimos bem com o momento presente.\"",
+          "itens": [
+            "Alegre",
+            "Contente",
+            "Divertido(a)",
+            "Satisfeito(a)",
+            "Entusiasmado(a)"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Conforto:",
+          "titulo": "1. Felicidade / Satisfação"
+        },
+        {
+          "chave": "pos_emo_orgulho",
+          "data_tem_likert": "1",
+          "desc": "\"Quando reconhecemos nossas capacidades e conquistas.\"",
+          "itens": [
+            "Confiante",
+            "Realizado(a)",
+            "Orgulhoso(a)",
+            "Determinado(a)",
+            "Empoderado(a)"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Conforto:",
+          "titulo": "2. Orgulho / Realização"
+        },
+        {
+          "chave": "pos_emo_conexao",
+          "data_tem_likert": "1",
+          "desc": "\"Quando nos sentimos próximos e ligados a outras pessoas.\"",
+          "itens": [
+            "Grato(a)",
+            "Amoroso(a)",
+            "Acolhido(a)",
+            "Afetuoso(a)",
+            "Compassivo(a)"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Conforto:",
+          "titulo": "3. Conexão / Afeto"
+        },
+        {
+          "chave": "pos_emo_calma",
+          "data_tem_likert": "1",
+          "desc": "\"Quando experimentamos tranquilidade interior e paz.\"",
+          "itens": [
+            "Calmo(a)",
+            "Sereno(a)",
+            "Seguro(a)",
+            "Aliviado(a)",
+            "Tranquilo(a)"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Conforto:",
+          "titulo": "4. Calma / Serenidade"
+        },
+        {
+          "chave": "pos_emo_esperanca",
+          "data_tem_likert": "1",
+          "desc": "\"Quando olhamos para o futuro com confiança.\"",
+          "itens": [
+            "Otimista",
+            "Curioso(a)",
+            "Motivado(a)",
+            "Inspirado(a)",
+            "Esperançoso(a)"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Conforto:",
+          "titulo": "5. Esperança / Motivação"
+        }
+      ],
+      "legenda": [
+        "Nenhum",
+        "Pouco",
+        "Moderado",
+        "Muito",
+        "Intenso"
+      ],
+      "secao": "sec-auto-emo-b"
+    },
+    "fis": {
+      "grupos": [
+        {
+          "chave": "pos_fis_calma",
+          "data_tem_likert": "1",
+          "desc": "\"Quando o corpo desacelera de forma agradável.\"",
+          "itens": [
+            "Frequência cardíaca regular",
+            "Respiração lenta e profunda",
+            "Ausência de tremores ou sudorese",
+            "Consciência corporal de conforto e segurança",
+            "Sensação de equilíbrio e estabilidade corporal"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Bem-estar:",
+          "titulo": "1. Desaceleração / Calma"
+        },
+        {
+          "chave": "pos_fis_energia",
+          "data_tem_likert": "1",
+          "desc": "\"Quando o corpo se sente ativo e com vigor.\"",
+          "itens": [
+            "Energia e disposição física",
+            "Motivação para realizar atividades",
+            "Sensação de estar pleno e revigorado",
+            "Percepções corpóreas de força e vitalidade",
+            "Mente alerta e consciência plena dos movimentos"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Bem-estar:",
+          "titulo": "2. Energia / Vitalidade"
+        },
+        {
+          "chave": "pos_fis_relaxamento",
+          "data_tem_likert": "1",
+          "desc": "\"Quando os músculos e o corpo se soltam.\"",
+          "itens": [
+            "Musculatura distensionada",
+            "Ombros e pescoço relaxados",
+            "Sensação de leveza na cabeça",
+            "Mãos e mandíbula descontraídos",
+            "Peito aberto e respiração confortável"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Bem-estar:",
+          "titulo": "3. Relaxamento / Soltura"
+        },
+        {
+          "chave": "pos_fis_digestivo",
+          "data_tem_likert": "1",
+          "desc": "\"Quando a região do estômago está confortável.\"",
+          "itens": [
+            "Boca hidratada",
+            "Apetite regular e equilibrado",
+            "Digestão tranquila e confortável",
+            "Funcionamento intestinal regular",
+            "Estômago calmo e sem desconforto"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Bem-estar:",
+          "titulo": "4. Conforto Digestivo"
+        },
+        {
+          "chave": "pos_fis_atencao",
+          "data_tem_likert": "1",
+          "desc": "\"Quando a mente está desperta e o corpo descansado.\"",
+          "itens": [
+            "Mente tranquila e desperta",
+            "Sono reparador e restaurador",
+            "Atenção e foco no momento presente",
+            "Concentração e raciocínio preservados",
+            "Lucidez e organização nos pensamentos"
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Bem-estar:",
+          "titulo": "5. Atenção / Descanso"
+        }
+      ],
+      "legenda": [
+        "Nenhum",
+        "Pouco",
+        "Moderado",
+        "Muito",
+        "Extremo"
+      ],
+      "secao": "sec-auto-fis-b"
+    },
+    "pens": {
+      "grupos": [
+        {
+          "chave": "pos_pens_autocompaixao",
+          "data_tem_likert": "1",
+          "desc": "\"Quando consigo ser gentil comigo mesmo.\"",
+          "itens": [
+            "\"Mereço cuidar de mim\"",
+            "\"Errar faz parte de ser humano\"",
+            "\"Tenho qualidades e pontos fortes\"",
+            "\"Posso aprender com esta experiência\"",
+            "\"Estou fazendo o melhor que posso neste momento\""
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Acredito:",
+          "titulo": "1. Autocompaixão"
+        },
+        {
+          "chave": "pos_pens_esperanca",
+          "data_tem_likert": "1",
+          "desc": "\"Quando consigo ver além do momento difícil.\"",
+          "itens": [
+            "\"O futuro ainda está aberto\"",
+            "\"Isso é temporário — vai passar\"",
+            "\"Posso dar um passo de cada vez\"",
+            "\"Já enfrentei coisas difíceis antes e superei\"",
+            "\"Existem coisas que posso fazer para melhorar\""
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Acredito:",
+          "titulo": "2. Esperança / Perspectiva"
+        },
+        {
+          "chave": "pos_pens_confianca",
+          "data_tem_likert": "1",
+          "desc": "\"Quando consigo considerar as intenções dos outros de forma equilibrada.\"",
+          "itens": [
+            "\"Posso dar o benefício da dúvida\"",
+            "\"Posso pedir ajuda sem ser um fardo\"",
+            "\"Existem pessoas que se importam comigo\"",
+            "\"Talvez a pessoa não tenha tido a intenção de me magoar\"",
+            "\"Nem tudo é sobre mim — as pessoas têm seus próprios problemas\""
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Acredito:",
+          "titulo": "3. Confiança nos Outros"
+        },
+        {
+          "chave": "pos_pens_flexibilidade",
+          "data_tem_likert": "1",
+          "desc": "\"Quando consigo substituir regras rígidas por expectativas realistas.\"",
+          "itens": [
+            "\"Nem tudo depende de mim\"",
+            "\"Bom o suficiente também é bom\"",
+            "\"As pessoas são diferentes — e tudo bem\"",
+            "\"Posso aceitar o que não está no meu controle\"",
+            "\"Posso fazer o meu melhor sem exigir perfeição\""
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Acredito:",
+          "titulo": "4. Flexibilidade / Equilíbrio"
+        },
+        {
+          "chave": "pos_pens_responsabilidade",
+          "data_tem_likert": "1",
+          "desc": "\"Quando consigo avaliar minha responsabilidade de forma justa.\"",
+          "itens": [
+            "\"Posso reparar sem me destruir\"",
+            "\"Um erro não define quem eu sou\"",
+            "\"A responsabilidade é compartilhada\"",
+            "\"Posso me perdoar e seguir em frente\"",
+            "\"Fiz o que pude com o que sabia na época\""
+          ],
+          "n_outro": 1,
+          "outro": "Outro:",
+          "outroDica": "especifique...",
+          "rotulo": "Acredito:",
+          "titulo": "5. Responsabilidade Equilibrada"
+        }
+      ],
+      "legenda": [
+        "Nada",
+        "Pouco",
+        "Moderado",
+        "Muito",
+        "Totalmente"
+      ],
+      "secao": "sec-auto-pens-b"
+    },
+    "sit": {
+      "grupos": [],
+      "legenda": null,
+      "secao": "sec-auto-sit-b"
+    }
+  }
+}
