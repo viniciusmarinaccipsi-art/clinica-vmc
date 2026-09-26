@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.4.5 (26/09/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.5b (26/09/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -65,6 +65,16 @@
   --c-reg-pos-ink:   #245F5A;
   --c-reg-pos-tint:  #E2F0EE;
   --c-reg-pos-line:  #C9E2DF;
+  --c-reg-neg-mid:   #C69AB2;  /* 16.5: segmento atual do trilho (Negativo) — nunca recebe texto */
+  --c-reg-pos-mid:   #8FBFBA;  /* 16.5: segmento atual do trilho (Positivo) — nunca recebe texto */
+
+  /* ---------- Humor · 5 níveis, de ameixa (1) a verde-água (5); 3 é neutro (16.5) ----------
+     Fundo da faixa na checagem breve; ink = número, rostinho i-humor-N e nome do nível. */
+  --c-humor-1-bg:    #EFDCE4;  --c-humor-1-ink: #7A3E59;   /* Muito mal    · 6.3:1 */
+  --c-humor-2-bg:    #F6E9EF;  --c-humor-2-ink: #7A3E59;   /* Mal          · 7.0:1 */
+  --c-humor-3-bg:    #E7E6F5;  --c-humor-3-ink: #3D3A6B;   /* Mais ou menos· 8.6:1 — igual a --c-action-tint (neutro/ação) */
+  --c-humor-4-bg:    #EAF4F2;  --c-humor-4-ink: #245F5A;   /* Bem          · 6.9:1 */
+  --c-humor-5-bg:    #D9ECE9;  --c-humor-5-ink: #245F5A;   /* Muito bem    · 6.3:1 */
 
   /* ---------- Confirmação ---------- */
   --c-pos:           #2F7D77;  /* gravado com sucesso, preenchimento de progresso */
@@ -124,9 +134,11 @@
   --t-display:   600 32px/1.2 var(--f-title);
   --t-h1:        600 27px/1.2 var(--f-title);
   --t-h2:        600 24px/1.25 var(--f-title);
+  --t-h2-sm:     600 22px/1.25 var(--f-title);  /* 16.5: título da etapa no celular */
   --t-h3:        600 20px/1.3 var(--f-title);
   --t-h4:        600 18px/1.3 var(--f-title);
   --t-num:       600 19px/1.1 var(--f-title);
+  --t-legend:    400 14px/1.2 var(--f-text);    /* 16.5: palavra da legenda sob o número da escala */
   --t-body-lg:   400 16px/1.5 var(--f-text);
   --t-body:      400 14px/1.5 var(--f-text);
   --t-body-sm:   400 13px/1.45 var(--f-text);
@@ -155,6 +167,8 @@
   /* ---------- Alvo de toque e movimento ---------- */
   --hit-min:   44px;  /* mínimo absoluto */
   --hit-likert: 48px; /* botão circular Likert no celular */
+  --hit-face:   56px; /* 16.5: faixa de nível de humor */
+  --w-likert-col: 70px; /* 16.5: coluna mínima da escala 1–5 (cabe "Totalmente" a 14px) */
   --dur-fast:  120ms;
   --dur:       200ms;
   --ease:      cubic-bezier(.2,.8,.3,1);
@@ -202,6 +216,13 @@
     --c-reg-pos-ink: #8FD3CC;
     --c-reg-pos-tint:#16302E;
     --c-reg-pos-line:#234945;
+    --c-reg-neg-mid: #7E4E68;
+    --c-reg-pos-mid: #3F7A75;
+    --c-humor-1-bg: #3A2436; --c-humor-1-ink: #E4B4C9;
+    --c-humor-2-bg: #2E2130; --c-humor-2-ink: #E4B4C9;
+    --c-humor-3-bg: #262441; --c-humor-3-ink: #C4C2EE;
+    --c-humor-4-bg: #16302E; --c-humor-4-ink: #8FD3CC;
+    --c-humor-5-bg: #1C3D3A; --c-humor-5-ink: #8FD3CC;
     --c-pos:         #6FC0B8;
     --c-pos-ink:     #8FD3CC;
     --c-pos-tint:    #16302E;
@@ -3676,6 +3697,8 @@ body.vmc-largo .app{max-width:1360px;}
 .auto-card-icon .ico,.esc-card-icon .ico,.login-tipo-icon .ico,.p8-edu-icon .ico,.p5-modal-icone .ico,.login-icon .ico,.prof-pv-mod-icon .ico,.card-icon .ico{width:28px;height:28px;}
 .auto-sec-icon .ico{width:20px;height:20px;}
 .ico-pos{color:var(--c-pos);} .ico-warn{color:var(--c-warn);} .ico-risk2{color:var(--c-risk-ink-2);} .ico-risk{color:var(--c-risk);}
+/* Pacote 16.5b: rostinhos do humor — cor por nível (ameixa → verde-água), traço 2 como no 05_rostinhos.svg */
+.ico-humor-1{color:var(--c-humor-1-ink);stroke-width:2;} .ico-humor-2{color:var(--c-humor-2-ink);stroke-width:2;} .ico-humor-3{color:var(--c-humor-3-ink);stroke-width:2;} .ico-humor-4{color:var(--c-humor-4-ink);stroke-width:2;} .ico-humor-5{color:var(--c-humor-5-ink);stroke-width:2;}
 input:not([type="checkbox"]):not([type="radio"]),select,textarea{min-height:var(--hit-min);}
 input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 .btn-logout,.pac-hamburger-btn,.p11-mclose,.hist-modal-fechar,.pev-modal-fechar,.rr-submodal-close,.hist-modal-btn-fechar,.p11-abrir,.topbar-voltar,.cal-btn,.gra-voltar{min-width:var(--hit-min);min-height:var(--hit-min);}
@@ -3766,6 +3789,12 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
   <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z"/></symbol>
   <symbol id="i-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="currentColor" stroke="none"/></symbol>
   <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5M3 17l9 5 9-5"/></symbol>
+  <!-- Pacote 16.5b: rostinhos do humor 1–5 (docs/design/16.5/05_rostinhos.svg), cor por .ico-humor-N -->
+  <symbol id="i-humor-1" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7.5 8.5l3 1.5M16.5 8.5l-3 1.5"/><path d="M8.5 16.5c1-2 6-2 7 0"/></symbol>
+  <symbol id="i-humor-2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9.5h.01M15 9.5h.01"/><path d="M9 16c1-1.3 5-1.3 6 0"/></symbol>
+  <symbol id="i-humor-3" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9.5h.01M15 9.5h.01"/><path d="M9 15.5h6"/></symbol>
+  <symbol id="i-humor-4" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9.5h.01M15 9.5h.01"/><path d="M8.5 14.5c1 1.8 6 1.8 7 0"/></symbol>
+  <symbol id="i-humor-5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9h.01M15 9h.01"/><path d="M7.5 13.5c1 3.2 8 3.2 9 0"/></symbol>
 </svg>
 
 <div class="loading-overlay" id="loadingOverlay">
@@ -4094,7 +4123,7 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
   <div class="p5-modal-overlay" id="p135ReativarModal" onclick="if(event.target===this)p135FecharReativar()">
     <div class="p5-modal-card" role="dialog" aria-modal="true" style="max-width:400px;">
       <div class="p5-modal-head">
-        <span class="p5-modal-icone">▶️</span>
+        <span class="p5-modal-icone"><svg class="ico" aria-hidden="true"><use href="#i-refresh"/></svg></span>
         <div class="p5-modal-titulo">Reativar Paciente</div>
       </div>
       <div class="p5-modal-body">
@@ -4602,11 +4631,11 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       </div>
       <p style="font-size:13px;color:var(--c-ink-2);text-align:center;font-weight:700;margin:14px 0 6px;">Como você define o seu humor neste momento? <span class="req" style="color:var(--c-reg-neg-ink);">*</span></p>
       <div class="mood-grid">
-        <div class="mood-card m1" onclick="autoSelecionarHumor(this,1)"><span class="mood-emoji">😟</span><span class="mood-num">1</span><span class="mood-lbl">Muito negativo</span></div>
-        <div class="mood-card m2" onclick="autoSelecionarHumor(this,2)"><span class="mood-emoji">🙁</span><span class="mood-num">2</span><span class="mood-lbl">Negativo</span></div>
-        <div class="mood-card m3" onclick="autoSelecionarHumor(this,3)"><span class="mood-emoji">😐</span><span class="mood-num">3</span><span class="mood-lbl">Neutro</span></div>
-        <div class="mood-card m4" onclick="autoSelecionarHumor(this,4)"><span class="mood-emoji">🙂</span><span class="mood-num">4</span><span class="mood-lbl">Positivo</span></div>
-        <div class="mood-card m5" onclick="autoSelecionarHumor(this,5)"><span class="mood-emoji">😊</span><span class="mood-num">5</span><span class="mood-lbl">Muito positivo</span></div>
+        <div class="mood-card m1" onclick="autoSelecionarHumor(this,1)"><span class="mood-emoji"><svg class="ico ico-humor-1" aria-hidden="true"><use href="#i-humor-1"/></svg></span><span class="mood-num">1</span><span class="mood-lbl">Muito negativo</span></div>
+        <div class="mood-card m2" onclick="autoSelecionarHumor(this,2)"><span class="mood-emoji"><svg class="ico ico-humor-2" aria-hidden="true"><use href="#i-humor-2"/></svg></span><span class="mood-num">2</span><span class="mood-lbl">Negativo</span></div>
+        <div class="mood-card m3" onclick="autoSelecionarHumor(this,3)"><span class="mood-emoji"><svg class="ico ico-humor-3" aria-hidden="true"><use href="#i-humor-3"/></svg></span><span class="mood-num">3</span><span class="mood-lbl">Neutro</span></div>
+        <div class="mood-card m4" onclick="autoSelecionarHumor(this,4)"><span class="mood-emoji"><svg class="ico ico-humor-4" aria-hidden="true"><use href="#i-humor-4"/></svg></span><span class="mood-num">4</span><span class="mood-lbl">Positivo</span></div>
+        <div class="mood-card m5" onclick="autoSelecionarHumor(this,5)"><span class="mood-emoji"><svg class="ico ico-humor-5" aria-hidden="true"><use href="#i-humor-5"/></svg></span><span class="mood-num">5</span><span class="mood-lbl">Muito positivo</span></div>
       </div>
       <!-- Pacote 13.6.9.2 — descrição dinâmica de humor -->
       <div class="humor-desc-box" id="autoHumorDesc"></div>
@@ -8332,7 +8361,7 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
   <div class="hist-modal-overlay" id="histModalOverlay" onclick="if(event.target===this)histFecharModal()">
     <div class="hist-modal-card" role="dialog" aria-modal="true">
       <div class="hist-modal-head">
-        <div class="hist-modal-head-emoji" id="histModalEmoji">😐</div>
+        <div class="hist-modal-head-emoji" id="histModalEmoji"><svg class="ico ico-humor-3" aria-hidden="true"><use href="#i-humor-3"/></svg></div>
         <div class="hist-modal-head-info">
           <div class="hist-modal-head-data" id="histModalData">—</div>
           <div class="hist-modal-head-humor" id="histModalHumor">Humor: <strong>—</strong></div>
@@ -8623,6 +8652,15 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 // laço de renderização (pevDesenharHumor chama por ponto do gráfico); o cache é zerado quando
 // o tema do sistema muda (prefers-color-scheme), para o próximo desenho ler os valores novos.
 var VMC_TOK_CACHE = {};
+// Pacote 16.5b: única fonte das faces do humor 1–5 — rostinhos i-humor-N do sprite, cor .ico-humor-N
+// (--c-humor-N-ink). Substitui os 6 mapas de emoji que existiam (PROF_HUMOR_EMOJIS, HIST_EMOJIS, HUMOR_MAP.emoji…).
+// Fora de 1–5 devolve o "?" do sprite. HTML literal, nunca entrada do usuário — não escapar.
+function vmcHumorIcone(nivel, classeExtra) {
+  var n = parseInt(nivel, 10);
+  if (!(n >= 1 && n <= 5)) return '<svg class=ico aria-hidden=true><use href=#i-help></use></svg>';
+  return '<svg class="ico ico-humor-' + n + (classeExtra ? ' ' + classeExtra : '') + '" aria-hidden="true"><use href="#i-humor-' + n + '"></use></svg>';
+}
+
 function vmcTok(nome) {
   if (!(nome in VMC_TOK_CACHE)) VMC_TOK_CACHE[nome] = getComputedStyle(document.documentElement).getPropertyValue(nome).trim();
   return VMC_TOK_CACHE[nome];
@@ -9705,8 +9743,6 @@ function profEscHtml_(str) {
 }
 
 /* Pacote 13.2.3: renderiza chips de indicadores clínicos para um paciente */
-var PROF_HUMOR_EMOJIS = { 1:'😟', 2:'🙁', 3:'😐', 4:'🙂', 5:'😊' };
-
 function profRenderizarIndicadores_(p) {
   var chips = [];
 
@@ -9722,10 +9758,9 @@ function profRenderizarIndicadores_(p) {
     chips.push('<span class="prof-ind-chip ' + cls + '"><svg class=ico aria-hidden=true><use href=#i-calendar></use></svg> ' + txt + '</span>');
   }
 
-  // 2. Último humor (emoji + número)
+  // 2. Último humor (rostinho + número) — 16.5b: rostinho do sprite
   if (p.ind_ultimo_humor) {
-    var emoji = PROF_HUMOR_EMOJIS[p.ind_ultimo_humor] || '';
-    chips.push('<span class="prof-ind-chip chip-humor">' + emoji + ' Humor: ' + p.ind_ultimo_humor + '/5</span>');
+    chips.push('<span class="prof-ind-chip chip-humor">' + vmcHumorIcone(p.ind_ultimo_humor) + ' Humor: ' + p.ind_ultimo_humor + '/5</span>');
   }
 
   // 3. Total de registros de automonitoramento
@@ -9902,7 +9937,7 @@ function profBuildHeader_(iniciais, nome, sub) {
     var ativoAtual = String(PROF_PACIENTE_SEL.ativo || 'Sim').trim().toLowerCase();
     acoesHtml = '<div class="p135-acoes-wrap">';
     if (ativoAtual === 'nao') {
-      acoesHtml += '<button class="p135-btn p135-btn-reativar" onclick="p135AbrirReativar(\'' + profEscHtml_(PROF_PACIENTE_SEL.sigla) + '\')">▶️ Reativar</button>';
+      acoesHtml += '<button class="p135-btn p135-btn-reativar" onclick="p135AbrirReativar(\'' + profEscHtml_(PROF_PACIENTE_SEL.sigla) + '\')"><svg class=ico aria-hidden=true><use href=#i-refresh></use></svg> Reativar</button>';
       acoesHtml += '<button class="p135-btn p135-btn-excluir" onclick="p135AbrirExcluir(\'' + profEscHtml_(PROF_PACIENTE_SEL.sigla) + '\')"><svg class=ico aria-hidden=true><use href=#i-trash></use></svg> Excluir</button>';
     } else {
       acoesHtml += '<button class="p135-btn p135-btn-desativar" onclick="p135AbrirDesativar(\'' + profEscHtml_(PROF_PACIENTE_SEL.sigla) + '\')"><svg class=ico aria-hidden=true><use href=#i-pause></use></svg> Desativar</button>';
@@ -10038,7 +10073,6 @@ function profRenderizarAutomonitoramento_(registros) {
   var regs = registros.slice().reverse();
   window._HIST_REGS = regs;
 
-  var emojis = { 1:'😟', 2:'🙁', 3:'😐', 4:'🙂', 5:'😊' };
   var humorLbl = { 1:'Muito negativo', 2:'Negativo', 3:'Neutro', 4:'Positivo', 5:'Muito positivo' };
   var html = '';
 
@@ -10054,7 +10088,7 @@ function profRenderizarAutomonitoramento_(registros) {
 
     html += '<div class="histc">';
     html += '<div class="histc-head">';
-    html += '<div class="histc-mood m' + humor + '">' + (emojis[humor] || '<svg class=ico aria-hidden=true><use href=#i-help></use></svg>') + '</div>';
+    html += '<div class="histc-mood m' + humor + '">' + vmcHumorIcone(humor) + '</div>';
     html += '<div class="histc-info">';
     html += '<div class="histc-date">' + dataFmt + ' · ' + hora + '</div>';
     html += '<div class="histc-meta">Humor: <span class="humor-pill">' + humor + '/5 ' + (humorLbl[humor] || '') + '</span></div>';
@@ -13089,13 +13123,13 @@ function p8ClicarEntendi() {
    que estão dentro de autoAbrirResumo (extração se necessário).
    ============================================================ */
 
-// Mapa de humor para emojis e rótulos (espelha HUMOR_MAP do Pacote 6)
+// Rótulos do humor (espelha HUMOR_MAP do Pacote 6). 16.5b: o rostinho vem de vmcHumorIcone(n), não daqui.
 const P11A_HUMOR = {
-  1: { emoji:'😟', label:'Muito negativo' },
-  2: { emoji:'🙁', label:'Negativo' },
-  3: { emoji:'😐', label:'Neutro' },
-  4: { emoji:'🙂', label:'Positivo' },
-  5: { emoji:'😊', label:'Muito positivo' }
+  1: { label:'Muito negativo' },
+  2: { label:'Negativo' },
+  3: { label:'Neutro' },
+  4: { label:'Positivo' },
+  5: { label:'Muito positivo' }
 };
 
 // Configuração das 5 seções do Negativo (ordem clínica)
@@ -13268,7 +13302,7 @@ function p11aRenderizarCabecalho(idSecaoAtual) {
   const nPrev = Object.values(status).filter(v => v === 'filled').length;
   if (nPrev === 0) { hdrEl.innerHTML = ''; hdrEl.style.display = 'none'; return; }
   let c1 = '<div class="p11-linha">';
-  c1 += '<span class="p11-linha-txt">Humor ' + humor.emoji + ' · ' + nPrev + (nPrev === 1 ? ' etapa preenchida' : ' etapas preenchidas') + '</span>';
+  c1 += '<span class="p11-linha-txt">Humor ' + vmcHumorIcone(coleta.humorNota) + ' · ' + nPrev + (nPrev === 1 ? ' etapa preenchida' : ' etapas preenchidas') + '</span>';
   let c2 = '';
   if (nPrev >= 1) {
     c2 += '<button class="p11-modal-btn" type="button" onclick="p11aAbrirModal()"><span class="p11-modal-btn-ic"><svg class=ico aria-hidden=true><use href=#i-clipboard></use></svg></span> +' + nPrev + '</button>';
@@ -14030,13 +14064,13 @@ function autoAbrirResumo() {
   const d = AUTO_STATE.dados;
   const box = document.getElementById('autoResumoConteudo');
 
-  // ---- Mapa de emojis e labels do humor ----
+  // ---- Rótulos do humor (16.5b: o rostinho vem de vmcHumorIcone) ----
   const HUMOR_MAP = {
-    1: { emoji:'😟', label:'Muito negativo' },
-    2: { emoji:'🙁', label:'Negativo' },
-    3: { emoji:'😐', label:'Neutro' },
-    4: { emoji:'🙂', label:'Positivo' },
-    5: { emoji:'😊', label:'Muito positivo' }
+    1: { label:'Muito negativo' },
+    2: { label:'Negativo' },
+    3: { label:'Neutro' },
+    4: { label:'Positivo' },
+    5: { label:'Muito positivo' }
   };
 
   // ---- Utilitário: lê o título visível de um grupo do DOM ----
@@ -14134,9 +14168,9 @@ function autoAbrirResumo() {
 
   // Humor
   const hn = parseInt(d.humor_nivel) || 0;
-  const hInfo = HUMOR_MAP[hn] || { emoji:'<svg class=ico aria-hidden=true><use href=#i-help></use></svg>', label:'—' };
+  const hInfo = HUMOR_MAP[hn] || { label:'—' };
   html += '<div class="rev-humor">';
-  html += '<div class="rev-humor-emoji">' + hInfo.emoji + '</div>';
+  html += '<div class="rev-humor-emoji">' + vmcHumorIcone(hn) + '</div>';
   html += '<div>';
   html += '<div class="rev-humor-nivel">Humor: ' + (hn || '—') + '/5 — ' + hInfo.label + '</div>';
   if (d.data_registro && d.hora_registro) {
@@ -14335,7 +14369,6 @@ async function autoAbrirHistorico() {
    ============================================================ */
 var HIST_FILTRO = 'todos';           // 'todos' | 'neg' | 'pos'
 var HIST_MESES_ABERTOS = {};         // Pacote 16.4.2: { '2026-09': true } — sobrevive à troca de filtro
-var HIST_EMOJIS = {1:'😟',2:'🙁',3:'😐',4:'🙂',5:'😊'};
 var HIST_HUMOR_LBL = {1:'Muito negativo',2:'Negativo',3:'Neutro',4:'Positivo',5:'Muito positivo'};
 var HIST_MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
                   'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -14400,7 +14433,7 @@ function histMontarCartao(r, idx) {
   return '<div class="histc">' +
            '<div class="histc-head">' +
              '<div class="histc-mood m' + humor + '">' +
-               (HIST_EMOJIS[humor] || '<svg class=ico aria-hidden=true><use href=#i-help></use></svg>') +
+               vmcHumorIcone(humor) +
              '</div>' +
              '<div class="histc-info">' +
                '<div class="histc-date">' + dataFmt + ' · ' + hora + '</div>' +
@@ -14562,7 +14595,6 @@ async function histAbrirModal(idx) {
     }
     const r = regs[idx];
 
-    const emojis = {1:'😟',2:'🙁',3:'😐',4:'🙂',5:'😊'};
     const humorLbl = {1:'Muito negativo',2:'Negativo',3:'Neutro',4:'Positivo',5:'Muito positivo'};
     const humor = parseInt(r.humor_nivel, 10) || 3;
 
@@ -14572,7 +14604,7 @@ async function histAbrirModal(idx) {
     if (dm) dataFmt = dm[3] + '/' + dm[2] + '/' + dm[1];
     const hora = autoFormatarHora(r.hora_registro);
 
-    document.getElementById('histModalEmoji').textContent = emojis[humor] || '—';
+    document.getElementById('histModalEmoji').innerHTML = vmcHumorIcone(humor); // 16.5b: rostinho do sprite (HTML literal, nunca entrada do usuário)
     document.getElementById('histModalData').textContent = dataFmt + ' · ' + hora;
     document.getElementById('histModalHumor').innerHTML = 'Humor: <strong>' + humor + '/5 ' + (humorLbl[humor]||'') + '</strong>';
 
@@ -14846,15 +14878,14 @@ function p136RenderFormEdicao_(r) {
 
 function p136RenderHumor_(r) {
   var nivel = parseInt(r.humor_nivel, 10) || 3;
-  var emojis = {1:'😟',2:'🙁',3:'😐',4:'🙂',5:'😊'};
   var h = '<div style="margin-bottom:18px;">';
   h += '<div class="auto-sec-header" style="border-color:var(--c-action);margin-bottom:12px;">';
-  h += '<div class="auto-sec-icon" style="background:var(--c-action-tint);color:var(--c-action);">😐</div>';
+  h += '<div class="auto-sec-icon" style="background:var(--c-action-tint);color:var(--c-action);"><svg class=ico aria-hidden=true><use href=#i-humor-3></use></svg></div>';
   h += '<div><div class="auto-sec-title">Estado de Humor</div></div>';
   h += '</div>';
   h += '<div style="display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap;">';
   for (var i = 1; i <= 5; i++) {
-    h += '<button type="button" class="p136-humor-btn' + (i === nivel ? ' ativo' : '') + '" onclick="p136ToggleHumor(this,' + i + ')">' + (emojis[i]||i) + ' ' + i + '</button>';
+    h += '<button type="button" class="p136-humor-btn' + (i === nivel ? ' ativo' : '') + '" onclick="p136ToggleHumor(this,' + i + ')">' + vmcHumorIcone(i) + ' ' + i + '</button>';
   }
   h += '</div>';
   h += '<input type="hidden" id="p136HumorNivel" value="' + nivel + '">';
@@ -15511,11 +15542,11 @@ function pevRenderizar() {
       <div class="pev-bloco-sub">Cada ponto é um registro. Linhas tracejadas são dias sem registro.</div>
       <div class="pev-humor-wrap">
         <div class="pev-humor-legenda">
-          <div class="pev-humor-legenda-item"><span class="ic">😊</span><span class="nm">5</span></div>
-          <div class="pev-humor-legenda-item"><span class="ic">🙂</span><span class="nm">4</span></div>
-          <div class="pev-humor-legenda-item"><span class="ic">😐</span><span class="nm">3</span></div>
-          <div class="pev-humor-legenda-item"><span class="ic">🙁</span><span class="nm">2</span></div>
-          <div class="pev-humor-legenda-item"><span class="ic">😟</span><span class="nm">1</span></div>
+          <div class="pev-humor-legenda-item"><span class="ic"><svg class="ico ico-humor-5" aria-hidden="true"><use href="#i-humor-5"/></svg></span><span class="nm">5</span></div>
+          <div class="pev-humor-legenda-item"><span class="ic"><svg class="ico ico-humor-4" aria-hidden="true"><use href="#i-humor-4"/></svg></span><span class="nm">4</span></div>
+          <div class="pev-humor-legenda-item"><span class="ic"><svg class="ico ico-humor-3" aria-hidden="true"><use href="#i-humor-3"/></svg></span><span class="nm">3</span></div>
+          <div class="pev-humor-legenda-item"><span class="ic"><svg class="ico ico-humor-2" aria-hidden="true"><use href="#i-humor-2"/></svg></span><span class="nm">2</span></div>
+          <div class="pev-humor-legenda-item"><span class="ic"><svg class="ico ico-humor-1" aria-hidden="true"><use href="#i-humor-1"/></svg></span><span class="nm">1</span></div>
         </div>
         <div class="pev-humor-canvas-box">
           <canvas id="pevChartHumor"></canvas>

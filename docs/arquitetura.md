@@ -303,9 +303,18 @@ Planilha individual do paciente — abas:
   href="#i-x"/></svg>` (com texto ao lado) ou `role="img" aria-label` (só
   ícone); em strings JS a forma sem aspas `<svg class=ico aria-hidden=true><use
   href=#i-x></use></svg>`. `.ico-lg` 28 px nos cards do menu; pseudo-elementos
-  usam máscara (`--ico-lock/-check/-check-square/-alert`). Só as 5 faces da
-  escala de humor continuam emoji. Mapa emoji → símbolo em
-  `docs/design/icones.md`.
+  usam máscara (`--ico-lock/-check/-check-square/-alert`). **Zero emoji
+  (Pacote 16.5b):** as 5 faces do humor são `#i-humor-1` … `#i-humor-5`
+  (rostinhos da entrega do Design), geradas em JS só por `vmcHumorIcone(nivel)`
+  e coloridas por `.ico-humor-N` (`--c-humor-N-ink`); nenhum caractere
+  pictográfico existe em `index-dev.html`, e a validação do checklist confere
+  isso por varredura Unicode. Mapa emoji → símbolo em `docs/design/icones.md`.
+- **Tokens do 16.5 (Pacote 16.5b):** `--c-humor-1..5-bg/-ink` (faixa e tinta
+  de cada nível, claro e escuro), `--c-reg-neg-mid`/`--c-reg-pos-mid`
+  (segmento atual do trilho), `--t-h2-sm`, `--t-legend`, `--hit-face` (56 px)
+  e `--w-likert-col` (70 px) — mesclados a `tokens.css` e ao `:root` de
+  `index-dev.html`; os `-bg`, `-mid`, `--t-h2-sm`, `--t-legend`, `--hit-face`
+  e `--w-likert-col` ficam sem uso até o 16.5c/16.5d-2.
 - **Toque, piso tipográfico e foco (Pacote 16.2):** `--hit-min` (44 px) em
   tudo que se toca, Likert `--hit-likert` (48 px), checkbox tocável pelo
   `label`; nenhum `font-size` fixo abaixo de 13 px (rótulos em caixa alta usam

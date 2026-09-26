@@ -16,7 +16,15 @@ Todos os símbolos são **desenho próprio** (grade 24, traço 1,75 px, `current
 
 `.ico` = 1,25 em, `vertical-align:-.3em`, `fill:none`, `stroke:currentColor`. `.ico-lg` = 28 px (cards do menu). Contêineres de ícone (`.card-icon`, `.auto-card-icon`, `.esc-card-icon`, `.login-tipo-icon`, `.p8-edu-icon`, `.p5-modal-icone`, `.login-icon`, `.prof-pv-mod-icon`) fixam 28 px; `.auto-sec-icon` 20 px. Cor por token: `.ico-pos`, `.ico-warn`, `.ico-risk2`, `.ico-risk` (bolinhas de severidade).
 Pseudo-elementos que exibiam emoji (`.card.locked …::after`, `.auto-progress::before`, `.gbar-step.concluido::after`, `.auto-group-summary::before`, `.auto-sec-warn::before`, `.p11-tab.filled::after`) usam máscara (`--ico-lock`, `--ico-check`, `--ico-check-square`, `--ico-alert`, declaradas no `:root`) com `background:currentColor`.
-Exceção deliberada: as 5 faces da escala de humor (😟 🙁 😐 🙂 😊) continuam emoji, por terem significado clínico.
+**Zero emoji (Pacote 16.5b).** As 5 faces da escala de humor, que eram a última exceção, passaram a símbolos do sprite `#i-humor-1` … `#i-humor-5` (entrega do Design de 25/09, `docs/design/16.5/05_rostinhos.svg`: círculo + traços, grade 24, traço 2). A cor vem das classes `.ico-humor-1` … `.ico-humor-5` (`--c-humor-N-ink`, de ameixa a verde-água; o 3 é índigo neutro). Único ponto de geração em JS: `vmcHumorIcone(nivel)` — fora de 1–5 devolve `#i-help`. Consumidores: checagem de humor (`.mood-card`), cabeçalho cumulativo, revisão, Meus Registros (lista e modal), edição do registro pelo paciente, legenda do gráfico de humor do Painel e chips do profissional. Nenhum caractere da faixa de emoticons/pictogramas existe mais em `index-dev.html`.
+
+| símbolo | nível do humor | classe de cor |
+|---|---|---|
+| `#i-humor-1` | 1 · Muito negativo | `.ico-humor-1` → `--c-humor-1-ink` |
+| `#i-humor-2` | 2 · Negativo | `.ico-humor-2` → `--c-humor-2-ink` |
+| `#i-humor-3` | 3 · Neutro | `.ico-humor-3` → `--c-humor-3-ink` |
+| `#i-humor-4` | 4 · Positivo | `.ico-humor-4` → `--c-humor-4-ink` |
+| `#i-humor-5` | 5 · Muito positivo | `.ico-humor-5` → `--c-humor-5-ink` |
 
 ## Mapa emoji → símbolo (ocorrências contadas em `index.html` de produção)
 

@@ -53,6 +53,16 @@
   --c-reg-pos-ink:   #245F5A;
   --c-reg-pos-tint:  #E2F0EE;
   --c-reg-pos-line:  #C9E2DF;
+  --c-reg-neg-mid:   #C69AB2;  /* 16.5: segmento atual do trilho (Negativo) — nunca recebe texto */
+  --c-reg-pos-mid:   #8FBFBA;  /* 16.5: segmento atual do trilho (Positivo) — nunca recebe texto */
+
+  /* ---------- Humor · 5 níveis, de ameixa (1) a verde-água (5); 3 é neutro (16.5) ----------
+     Fundo da faixa na checagem breve; ink = número, rostinho i-humor-N e nome do nível. */
+  --c-humor-1-bg:    #EFDCE4;  --c-humor-1-ink: #7A3E59;   /* Muito mal    · 6.3:1 */
+  --c-humor-2-bg:    #F6E9EF;  --c-humor-2-ink: #7A3E59;   /* Mal          · 7.0:1 */
+  --c-humor-3-bg:    #E7E6F5;  --c-humor-3-ink: #3D3A6B;   /* Mais ou menos· 8.6:1 — igual a --c-action-tint (neutro/ação) */
+  --c-humor-4-bg:    #EAF4F2;  --c-humor-4-ink: #245F5A;   /* Bem          · 6.9:1 */
+  --c-humor-5-bg:    #D9ECE9;  --c-humor-5-ink: #245F5A;   /* Muito bem    · 6.3:1 */
 
   /* ---------- Confirmação ---------- */
   --c-pos:           #2F7D77;  /* gravado com sucesso, preenchimento de progresso */
@@ -112,9 +122,11 @@
   --t-display:   600 32px/1.2 var(--f-title);
   --t-h1:        600 27px/1.2 var(--f-title);
   --t-h2:        600 24px/1.25 var(--f-title);
+  --t-h2-sm:     600 22px/1.25 var(--f-title);  /* 16.5: título da etapa no celular */
   --t-h3:        600 20px/1.3 var(--f-title);
   --t-h4:        600 18px/1.3 var(--f-title);
   --t-num:       600 19px/1.1 var(--f-title);
+  --t-legend:    400 14px/1.2 var(--f-text);    /* 16.5: palavra da legenda sob o número da escala */
   --t-body-lg:   400 16px/1.5 var(--f-text);
   --t-body:      400 14px/1.5 var(--f-text);
   --t-body-sm:   400 13px/1.45 var(--f-text);
@@ -143,6 +155,8 @@
   /* ---------- Alvo de toque e movimento ---------- */
   --hit-min:   44px;  /* mínimo absoluto */
   --hit-likert: 48px; /* botão circular Likert no celular */
+  --hit-face:   56px; /* 16.5: faixa de nível de humor */
+  --w-likert-col: 70px; /* 16.5: coluna mínima da escala 1–5 (cabe "Totalmente" a 14px) */
   --dur-fast:  120ms;
   --dur:       200ms;
   --ease:      cubic-bezier(.2,.8,.3,1);
@@ -185,6 +199,13 @@
     --c-reg-pos-ink: #8FD3CC;
     --c-reg-pos-tint:#16302E;
     --c-reg-pos-line:#234945;
+    --c-reg-neg-mid: #7E4E68;
+    --c-reg-pos-mid: #3F7A75;
+    --c-humor-1-bg: #3A2436; --c-humor-1-ink: #E4B4C9;
+    --c-humor-2-bg: #2E2130; --c-humor-2-ink: #E4B4C9;
+    --c-humor-3-bg: #262441; --c-humor-3-ink: #C4C2EE;
+    --c-humor-4-bg: #16302E; --c-humor-4-ink: #8FD3CC;
+    --c-humor-5-bg: #1C3D3A; --c-humor-5-ink: #8FD3CC;
     --c-pos:         #6FC0B8;
     --c-pos-ink:     #8FD3CC;
     --c-pos-tint:    #16302E;
