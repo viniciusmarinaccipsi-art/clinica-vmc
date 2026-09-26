@@ -229,8 +229,14 @@ Planilha individual do paciente — abas:
   `--c-surface-2`, `--cal-*`). Regra: nenhum hex/rgba fixo fora dos dois
   `:root`; cor de texto usa a variante `-ink`; vermelho só em `--c-risk*`;
   escalas usam o par por instrumento (`--c-phq9-*` … `--c-srq20-*`);
-  registro usa `--c-reg-neg*` / `--c-reg-pos*`. Fontes: `--f-title`
-  (Newsreader 400–700) e `--f-text` (Figtree). Sombras `--sh-1/2/3/bar`.
+  registro usa `--c-reg-neg*` / `--c-reg-pos*`. **Fonte única (Pacote 16.4.5,
+  decisão 1 das "11 perguntas"):** `--f-title` e `--f-text` são ambos Figtree
+  (400, 500, 600, 700 pelo Google Fonts); títulos, escores e horas em 600
+  (`--t-display`, `--t-h1`…`--t-h4`, `--t-num`), texto em 400. A Newsreader
+  saiu do app e do `tokens.css`; nenhuma serifa em lugar nenhum. Regras
+  locais em `--f-title` também usam 600 (`.topbar-titulo`, `.prog-txt`).
+  Não existe mais `<link rel="manifest">` (débito 8.16). Sombras
+  `--sh-1/2/3/bar`.
 - **`vmcTok(nome)`:** lê um token do `:root` para o JS (Chart.js, cores de
   humor) com cache por nome, zerado no `change` de
   `matchMedia('(prefers-color-scheme: dark)')`. Nunca chamar dentro de laço
