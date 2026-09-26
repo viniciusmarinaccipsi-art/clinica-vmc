@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.5b (26/09/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.4.4 (26/09/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -13660,13 +13660,16 @@ function autoValidarSecao(idSecao) {
     if (!oQue || !oQue.value.trim()) {
       return { ok: false, msg: 'Preencha o campo "O que aconteceu?" antes de avançar.' };
     }
-    // Conta opções marcadas em qualquer grupo de tipo de situação
+    // Conta opções marcadas em qualquer grupo de tipo de situação.
+    // Pacote 16.4.4: a exigência só vale quando a seção tem grupos — a Situação do Positivo
+    // (sec-auto-sit-b) não tem nenhum [data-grupo] até o usuário criar os tipos (débito 8.6)
+    // e, sem esta condição, nunca passava da etapa 1.
     const gruposSit = sec.querySelectorAll('[data-grupo]');
     let temOpcaoMarcada = false;
     for (const gr of gruposSit) {
       if (autoContarItensMarcados(gr) > 0) { temOpcaoMarcada = true; break; }
     }
-    if (!temOpcaoMarcada) {
+    if (gruposSit.length > 0 && !temOpcaoMarcada) {
       return { ok: false, msg: 'Marque pelo menos uma opção em algum tipo de contexto antes de avançar.' };
     }
     return { ok: true };
