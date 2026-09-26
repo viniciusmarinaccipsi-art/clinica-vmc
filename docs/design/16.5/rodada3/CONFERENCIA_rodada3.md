@@ -9,7 +9,7 @@ Arquivos que a pasta não tem e vieram de `docs/design/16.5/`: `16.5_textos_inte
 | 0 | Catálogo | IGUAL |
 | 1 | Gabarito | OK (45 · 225 · 45 · 3) |
 | 2 | Catálogo × gabarito | OK |
-| 3 | Textos | 5 sem origem (além dos 2 aceitos) |
+| 3 | Textos | 4 sem origem (além dos 2 aceitos) |
 | 4 | Tokens | OK |
 | 5 | Rostinhos | OK |
 | 6 | Ícones | OK (faltam só nenhum) |
@@ -36,16 +36,16 @@ Seções (linha inicial–final em `index-dev.html`, total de linhas):
 
 | Seção | Início | Fim | Linhas | Grupos | Itens |
 |---|---|---|---|---|---|
-| `sec-auto-sit-a` | 4757 | 4874 | 118 | 5 | 25 |
-| `sec-auto-emo-a` | 4898 | 5387 | 490 | 5 | 25 |
-| `sec-auto-fis-a` | 5885 | 6374 | 490 | 5 | 25 |
-| `sec-auto-pens-a` | 6872 | 7424 | 553 | 5 | 25 |
-| `sec-auto-comp-a` | 7934 | 8131 | 198 | 5 | 25 |
-| `sec-auto-sit-b` | 4875 | 4891 | 17 | 0 | 0 |
-| `sec-auto-emo-b` | 5388 | 5878 | 491 | 5 | 25 |
-| `sec-auto-fis-b` | 6375 | 6865 | 491 | 5 | 25 |
-| `sec-auto-pens-b` | 7425 | 7927 | 503 | 5 | 25 |
-| `sec-auto-comp-b` | 8132 | 8332 | 201 | 5 | 25 |
+| `sec-auto-sit-a` | 4665 | 4841 | 177 | 5 | 25 |
+| `sec-auto-emo-a` | 4862 | 5060 | 199 | 5 | 25 |
+| `sec-auto-fis-a` | 5266 | 5464 | 199 | 5 | 25 |
+| `sec-auto-pens-a` | 5670 | 5931 | 262 | 5 | 25 |
+| `sec-auto-comp-a` | 6149 | 6325 | 177 | 5 | 25 |
+| `sec-auto-sit-b` | 4842 | 4856 | 15 | 0 | 0 |
+| `sec-auto-emo-b` | 5061 | 5260 | 200 | 5 | 25 |
+| `sec-auto-fis-b` | 5465 | 5664 | 200 | 5 | 25 |
+| `sec-auto-pens-b` | 5932 | 6143 | 212 | 5 | 25 |
+| `sec-auto-comp-b` | 6326 | 6505 | 180 | 5 | 25 |
 
 ## 2. `catalogo.js` × gabarito
 
@@ -54,11 +54,10 @@ Seções (linha inicial–final em `index-dev.html`, total de linhas):
 
 ## 3. Textos (`textos` do catalogo.js + strings entre aspas de 02/03)
 
-**5 diferença(s)** — 109 existem em `index-dev.html` · 23 na coluna "Proposta" · 2 aceitos pelo usuário · 8 só caixa alta · 13 modelos com N · 3 data/hora de exemplo · 3 abreviados · 5 compostos · **5 sem origem**
+**4 diferença(s)** — 118 existem em `index-dev.html` · 20 na coluna "Proposta" · 2 aceitos pelo usuário · 8 só caixa alta · 9 modelos com N · 3 data/hora de exemplo · 3 abreviados · 5 compostos · **4 sem origem**
 
 **Sem origem** (não estão em `index-dev.html`, nem na coluna "Proposta", nem na lista aceita):
 - `02_telas.md` — "Fazer também um Registro Negativo"
-- `02_telas.md` — "Item:nota"
 - `02_telas.md` — "O QUE JÁ ESTÁ ANOTADO"
 - `03_componentes.md` — "… · Extremo"
 - `catalogo.js:textos` — "Identifique as emoções desagradáveis e avalie a intensidade do desconforto"
@@ -82,12 +81,8 @@ Modelos com placeholder ou instância de modelo ("N marcado(s)", "Etapa N de 5 �
 - "COMPORTAMENTOS DISFUNCIONAIS · 2" — instância de "RÓTULO · N"
 - "Etapa 1 de 5 · Situação" — instância de "Etapa N de 5 · nome"
 - "Etapa 4 de 5 · Pensamentos Desadaptativos" — instância de "Etapa N de 5 · nome"
-- "Etapa N de 5 · nome completo" — placeholder N / nome
 - "N. Título" — placeholder N / nome
-- "Pensamentos Desadaptativos ›" — instância de "Nome da próxima etapa ›"
 - "REAÇÕES FÍSICAS DE MAL-ESTAR · 2" — instância de "RÓTULO · N"
-- "Reações Físicas de Bem-Estar ›" — instância de "Nome da próxima etapa ›"
-- "N marcado(s)" — placeholder N / nome
 - "N · Palavra" — placeholder N / nome
 - "Nome da próxima etapa ›" — placeholder N / nome
 - "· Etapa N de 5 · nome" — placeholder N / nome
@@ -113,7 +108,6 @@ Na coluna "Proposta" (texto novo previsto no arquivo de textos):
 - "2 emoções marcadas"
 - "2 marcados"
 - "3 · Moderado"
-- "5 itens"
 - "Abrir o Painel de Evolução"
 - "Confira as informações antes de enviar."
 - "Continuar de onde parei"
@@ -125,12 +119,10 @@ Na coluna "Proposta" (texto novo previsto no arquivo de textos):
 - "Na checagem você anotou:"
 - "O que você preencheu fica guardado enquanto esta aba estiver aberta."
 - "PENSAMENTOS DESADAPTATIVOS · 1"
-- "Reações Físicas de Mal-Estar ›"
 - "Registro enviado"
 - "SITUAÇÃO"
 - "Seu terapeuta terá acesso a este registro. Você pode corrigir depois em Meus Registros."
 - "Você pode corrigir depois em Meus Registros."
-- "ver tudo"
 - "· N"
 - "Ex.: o fato ou a conversa que mexeu com você."
 
@@ -140,7 +132,6 @@ Fragmentos de aspas aninhadas do Markdown, ignorados (não são textos de interf
 - "(a Situação do Positivo não tem grupos — débito 8.6) · rodapé sem contagem ·"
 - "(sem observação:"
 - "); na etapa 5,"
-- "+ frase"
 - ". No Positivo, a linha SITUAÇÃO mostra só a frase. Rodapé do cartão:"
 - "Triste **3** · Desanimado(a) **4**"
 - "com  (só quando há etapa feita; na etapa 1 não aparece) e"

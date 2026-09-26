@@ -223,6 +223,78 @@ com valor -1, isto é, sem trilho).
   e hambúrguer enquanto existe). `autoMostrarTipo` copia o sobretítulo do bloco
   para a seção física.
 
+## Registro: interior das 5 etapas (Pacote 16.5d-2)
+
+Em `index-dev.html` cada etapa (os dois tipos) segue `03_componentes.md` da rodada 3:
+
+- **BarraEtapa + Trilho:** a barra única ganha altura automática (`--topbar-h`, escrita por um
+  `ResizeObserver` em `#topbar`; `body.com-barra .app` usa `calc(var(--topbar-h) + 8px)`); com
+  sobretítulo, o título quebra em até 3 linhas (17 px, `text-wrap:balance`) em vez de cortar — fecha
+  o débito 8.22. `progressoParaTela` escreve "Etapa N de 5 · nome completo" no `#topbarTitulo` (nome
+  lido do `data-barra-titulo` do bloco) e passa `soTrilho:true` a `progressoDefinir`, que esconde
+  `#progTxt`: o trilho é só indicador (feito = `reg`, atual = `-mid`, a fazer = `-tint`). Os blocos
+  carregam `data-barra-sobretitulo` e `data-barra-acao="Salvar e sair"` (`etapaSalvarESair()`:
+  coleta a seção ativa, grava o rascunho com `etapa` e volta à página); `autoMostrarTipo` copia
+  também a ação para a seção física.
+- **TítuloEtapa:** `h2.auto-etapa-titulo` com a pergunta da etapa (mesmo texto do menu) +
+  `.auto-etapa-instr`; o `.auto-sec-header` (ícone + instrução) saiu das etapas. Os campos de texto
+  usam `aria-labelledby` para o h2 e a dica que era `placeholder` virou `p.auto-dica` visível
+  (`aria-describedby`); as caixas extras de Pensamentos (`p8AdicionarPensamento`) nascem sem
+  placeholder. O cartão branco `.anam-card` dentro das 5 seções vira só contêiner (sem fundo nem
+  padding): os grupos são os cartões.
+- **GrupoRecolhível:** `.auto-group[data-grupo]` (sem classe de cor; a cor vem do
+  `[data-tipo]` ancestral) com `.auto-group-head[role=button][aria-expanded]`, título,
+  `.auto-group-cont` ("5 itens" / "N marcado(s)", `autoAtualizarContagemGrupo`) e chevron; corpo com
+  `.auto-group-desc` (texto literal) e `.auto-lista[role=group]` (`aria-label` = título, lido do DOM em
+  `autoIniciarGrupos`). `autoToggleGrupo` abre um por vez dentro do bloco (`autoGrupoAbrir`).
+- **ListaSubgrupo:** todas as etapas usam a mesma estrutura — `.auto-option` > `label.auto-option-lbl`
+  com o **mesmo** `<input type="checkbox" data-item>` de sempre (visualmente oculto, semântica
+  nativa), `.auto-check` (28 px, `i-check`), `.auto-option-nome` e, com intensidade,
+  `.auto-option-nota` ("3 · Moderado"). "Outro:" é a última linha (`.auto-option-is-outro`:
+  `label.auto-option-other-chk` + `.auto-option-other-lbl` + `.auto-option-other-inp`; com texto
+  conta como marcado, apagar desmarca, tocar o check ou o rótulo abre o campo). A ramificação
+  "legacy" da Situação (checkbox solto) deixou de existir em `autoColetarDadosDaSecao`,
+  `autoContarItensMarcados` e `autoHidratarFormulario`.
+- **BarraDeslizante (controle nativo):** `.auto-item-likert` guarda só o rótulo no HTML
+  (`.auto-item-likert-label`, caixa alta por CSS) e a nota em `data-nota` (fonte da coleta:
+  `autoNotaDoItem`). Ao marcar o item, `autoBarraGarantir` constrói `.auto-slider` — trilha de
+  10 % a 90 % com 5 pontos, preenchimento e marcador de 44 px (`--hit-thumb`) com o número, posicionados
+  pela variável `--v` — e a legenda (`.auto-slider-legenda`, 5 colunas) lida da `.auto-scale
+  .auto-legenda-fonte` do bloco (DOM-first); por cima fica um `<input type="range" min=1 max=5
+  step=1>` transparente (largura `80% + 44px`, centrado nos pontos) que dá toque no ponto, arrasto,
+  setas/Home/End e leitor de tela (`aria-label` = "rótulo item", `aria-valuetext` = "N · Palavra").
+  `autoBarraDefinirValor(op, v|null)` atualiza tudo; `.sem-valor` (nasce assim) esconde marcador e
+  preenchimento; teclas 1–5 e o primeiro toque de seta no estado sem valor são tratados no `keydown`;
+  o `click` confirma a nota quando o toque cai no valor interno do controle (3), caso em que o
+  nativo não dispara `input`. Sangria `margin:0 -12px` no celular (5 colunas de 70 px em 390 px);
+  `max-width: var(--w-slider-desktop)` a partir de 900 px; só a palavra da legenda que não cabe
+  desce a 13 px (`autoLegendaAjustar`, medido ao construir, ao abrir a etapa e no `resize`).
+  Gravação inalterada: "Item:nota" com `AUTO_SEPARADOR`; desmarcar apaga a nota. O modal de edição
+  de Meus Registros (`p136RenderGrupo_`) monta a mesma lista e barra a partir do grupo original
+  (`p136InicializarBarras_`); sem nota, o item vai sem ":n" (antes recebia 3 em silêncio).
+- **Cabeçalho cumulativo (`cab*`):** `#cabHdr-{etapa}` na seção física, renderizado por
+  `cabRenderizar(idLógico)` no hook de `abrirSecao` para os dois tipos: linha HUMOR (rostinho +
+  `HUMOR_NOMES`) e, por etapa já preenchida (exceto a atual), ícone, rótulo, itens com a nota em
+  `<b>` e a frase em `<i>` (2 linhas, `-webkit-line-clamp`); "editar" volta à última etapa feita e
+  "ver tudo" abre o modal existente (`p11aAbrirModal`). **Só lê `AUTO_STATE.dados`** — mantido atual
+  por `autoColetarSecaoAtiva()` nos listeners de `change`/`input` — e nunca escreve nele: fecha o
+  débito 8.21 (o cabeçalho antigo coletava as 5 seções a cada render). `P11A_NEG_SECOES` e as
+  funções `p11a*` de render saíram; ficam só o modal e seu casco `.p11-m*`.
+- **RodapéEtapa:** `.auto-rodape.barra-acao` com `.auto-rodape-cont` (textos nos atributos
+  `data-cont-0/1/n` do próprio rodapé; `autoRodapeAtualizar(bloco)`), "‹" 56 px
+  (`aria-label="Etapa anterior"`; "Voltar" na etapa 1) e o primário com o nome da próxima etapa ou
+  "Concluir e Revisar". A Situação do Positivo não tem contagem (contrato v3, item 23).
+- **Obrigatório na tela (D9):** `autoValidarSecao` devolve `{ ok:false, msg, campo|itens|grupos }` e
+  `autoExibirAviso` põe a frase de sempre (`.auto-aviso[role=alert]`, `i-alert`, `--c-risk-ink`) sob o
+  campo (`aria-invalid` + borda de risco), sob a barra do item sem nota (`.auto-item-likert.erro`,
+  rótulo em risco; abre o grupo) ou após o bloco de grupos, e rola até o primeiro aviso;
+  `autoLimparAvisos` a cada mudança. `autoAvancarSequencial` e `autoFinalizarTipo` não usam mais
+  `alert()`.
+- **Rascunho:** grava `etapa` (`AUTO_STATE.etapaAtual`, definida ao abrir uma etapa e zerada no
+  menu); `hubContinuarRascunho` reabre essa etapa (ou o menu) e `hubRenderRascunho` mostra
+  "Etapa N de 5 · nome" a partir dela. `autoAtualizarBadgesData`, os `[data-auto-badge]` e o
+  subtítulo `#topbarSub` saíram (só mostravam a data nas etapas).
+
 ## Convenções de namespace (prefixos CSS/JS)
 
 | Prefixo | Escopo |
@@ -346,12 +418,10 @@ Planilha individual do paciente — abas:
   texto)`. Badge da sigla e hambúrguer do paciente vivem na barra (ids
   `userBadge`, `pacHamburgerWrap` preservados). O header institucional
   antigo existe só como marca reduzida no login (`.login-marca`).
-- **Cabeçalho cumulativo compacto (`.p11-header`, Pacote 16.3):**
-  `p11aRenderizarCabecalho` só resume o que já foi preenchido — linha
-  `.p11-linha` com "Humor 😐 · N etapas preenchidas", botão "+N" que abre o
-  modal existente e chevron `.p11-abrir` que expande a trilha `.p11-det`
-  (`p11aToggleDetalhes`). Sem etapa preenchida, não aparece. A navegação
-  entre etapas é do componente de progresso, não dele.
+- **Cabeçalho cumulativo (`.cab`, Pacote 16.5d-2):** substituiu o
+  `.p11-header` do 16.3 — ver "Registro: interior das 5 etapas". Cartão em
+  tinte do tipo, sempre visível (HUMOR na etapa 1), só leitura de
+  `AUTO_STATE.dados`.
 - **Título nunca duplicado:** quando o título do card repete o da barra, o
   card fica só com ícone + subtítulo (o asterisco de obrigatório vai para
   `.auto-sec-sub .req`).
@@ -361,8 +431,9 @@ Planilha individual do paciente — abas:
   `<button class="prog-seg feito">` (44 px de altura, largura do segmento) que
   chamam `progressoIr(i)` → `irPara(i)`; `progressoOcultar()` esconde.
   `abrirSecao()` chama `progressoParaTela(id)`, que usa `PROG_REGISTRO_TELAS`
-  (humor, tipo, 5 etapas, revisão = 8; nos hubs, atual = próxima etapa não
-  preenchida em `AUTO_STATE.preenchido`) e esconde nas telas sem fluxo. A
+  (5 etapas; checagem, menu e revisão = -1, sem trilho) e esconde nas telas
+  sem fluxo; desde o 16.5d-2 passa `soTrilho:true` (o título "Etapa N de 5 ·
+  nome completo" vai para a barra) e o segmento atual usa `--c-reg-*-mid`. A
   anamnese define o próprio em `renderPasso`/`renderRevisao`
   (`ANAM_PASSOS_NOMES`, 5 = 4 passos + revisão, volta por
   `anamIrParaPasso(k)`); a escala em `escAtualizarProgresso` (item atual =
