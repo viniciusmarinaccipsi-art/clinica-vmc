@@ -20,3 +20,5 @@ Regras comuns a todos os prompts (o Code as lê no CLAUDE.md e em docs/): ediç�
 ## Retomar em conversa nova do chat (Cowork)
 
 Colar como primeira mensagem: **"Pacote 16.5 — retomada. Leia o status do Projeto (seções 4 e 9) e o mapa visual; a rodada 3 do Design está em `VMC-offline\16.5_entrada_design\rodada3\entrega\`. Confira a entrega com `scripts/conferir_entrega_16_5.py` pelo terminal ligado e escreva o prompt do 16.5c."** A conversa nova tem tudo de que precisa: skill `clinica-vmc` (carrega sozinha), status no Projeto, mapa visual (link no status), esta pasta de prompts, o script de conferência e o terminal ligado à pasta `clinica-vmc`. O que ela **não** tem é a memória desta conversa — por isso qualquer decisão nova entra no status antes de trocar de conversa.
+
+- **PROMPT_16_5d3.md** — Cabeçalho cumulativo v2 (só grupos; etapa atual; trilha só ícones), data na checagem, "Checagem enviada" com gráfico. Depende da rodada 4 do Design em `../VMC-offline/16.5_entrada_design/rodada4/entrega/` conferida pelo script. Cole no Code: `Leia docs/prompts/16.5/PROMPT_16_5d3.md e execute do início ao fim.`

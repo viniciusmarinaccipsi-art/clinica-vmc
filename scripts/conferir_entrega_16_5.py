@@ -9,6 +9,8 @@ Uso (a partir da raiz do repositório):
 pasta_da_entrega: default `docs/design/16.5`. Deve conter 02_telas.md,
 03_componentes.md, 04_tokens.css, 05_rostinhos.svg, catalogo.js, icones.js,
 01_pranchas_16.5.html, 16.5_textos_interface.md e a pasta referencia_25-09/.
+Rodadas 3 e 4 (nomes _v3/_v4): o que a entrega não reenvia vem de docs/design/16.5
+(e, na rodada 4, 02_telas.md vem de docs/design/16.5/rodada3); a saída diz o que foi emprestado.
 
 Saídas (sempre reescritas, determinísticas, sem data/hora):
     <pasta>/gabarito_codigo.json   — gabarito clínico extraído de index-dev.html
@@ -664,7 +666,10 @@ def main():
     # Pacote 16.5 (pendências): a mesma chamada serve à rodada 2 (docs/design/16.5) e à rodada 3
     # (pasta da entrega). Nomes "_v3" valem como equivalentes; o que a rodada 3 não reenvia
     # (tokens, ícones, rostinhos, textos, referência 25/09) vem de docs/design/16.5, e a saída diz isso.
+    # Pacote 16.5d-3: nomes "_v4" (rodada 4) com a mesma lógica; a rodada 4 não reenvia 02_telas.md,
+    # que vem de docs/design/16.5/rodada3 (também declarado na saída).
     BASE_R2 = os.path.join('docs', 'design', '16.5')
+    BASE_R3 = os.path.join('docs', 'design', '16.5', 'rodada3')
     eh_base_r2 = os.path.normcase(os.path.abspath(pasta)) == os.path.normcase(os.path.abspath(BASE_R2))
 
     def um_dos(*nomes):
@@ -673,40 +678,44 @@ def main():
                 return n
         return None
 
-    pranchas_nome = um_dos('01_pranchas_16.5_v3.html', '01_pranchas_16.5.html')
-    contrato_nome = um_dos('06_contrato_de_leitura_v3.md', '06_contrato_de_leitura_v2.md')
-    rodada3 = bool(um_dos('01_pranchas_16.5_v3.html') or um_dos('06_contrato_de_leitura_v3.md'))
+    pranchas_nome = um_dos('01_pranchas_16.5_v4.html', '01_pranchas_16.5_v3.html', '01_pranchas_16.5.html')
+    contrato_nome = um_dos('06_contrato_de_leitura_v4.md', '06_contrato_de_leitura_v3.md', '06_contrato_de_leitura_v2.md')
+    rodada4 = bool(um_dos('01_pranchas_16.5_v4.html') or um_dos('06_contrato_de_leitura_v4.md'))
+    rodada3 = (not rodada4) and bool(um_dos('01_pranchas_16.5_v3.html') or um_dos('06_contrato_de_leitura_v3.md'))
+    rodada_n = 4 if rodada4 else (3 if rodada3 else 2)
     faltando = []
-    for f in ('00_LEIA-ME.md', '02_telas.md', '03_componentes.md', 'catalogo.js'):
+    obrigatorios = ('00_LEIA-ME.md', '03_componentes.md', 'catalogo.js') if rodada4 else ('00_LEIA-ME.md', '02_telas.md', '03_componentes.md', 'catalogo.js')
+    for f in obrigatorios:
         if not os.path.exists(p(f)):
             faltando.append(f)
     if not pranchas_nome:
-        faltando.append('01_pranchas_16.5_v3.html ou 01_pranchas_16.5.html')
+        faltando.append('01_pranchas_16.5_v4.html, 01_pranchas_16.5_v3.html ou 01_pranchas_16.5.html')
     if not contrato_nome:
-        faltando.append('06_contrato_de_leitura_v3.md ou 06_contrato_de_leitura_v2.md')
-    if rodada3 and not os.path.isdir(p('01_png')):
-        faltando.append('01_png/ (obrigatório na rodada 3)')
+        faltando.append('06_contrato_de_leitura_v4.md, 06_contrato_de_leitura_v3.md ou 06_contrato_de_leitura_v2.md')
+    if (rodada3 or rodada4) and not os.path.isdir(p('01_png')):
+        faltando.append('01_png/ (obrigatório a partir da rodada 3)')
     if faltando:
         raise SystemExit(f'Arquivo(s) obrigatório(s) ausente(s) em {pasta}: ' + ', '.join(faltando))
     for f in ('index-dev.html', os.path.join('docs', 'design', 'tokens.css')):
         if not os.path.exists(f):
             raise SystemExit(f'Arquivo do repositório ausente: {f} (rodar a partir da raiz)')
 
-    emprestados = []  # (nome, origem) do que veio de docs/design/16.5
+    emprestados = []  # nomes do que veio de docs/design/16.5 (ou de rodada3/, na rodada 4)
 
-    def ler_ou_base(nome):
+    def ler_ou_base(nome, bases=(BASE_R2,)):
         if os.path.exists(p(nome)):
             return ler(p(nome))
-        if os.path.exists(os.path.join(BASE_R2, nome)):
-            emprestados.append(nome)
-            return ler(os.path.join(BASE_R2, nome))
-        raise SystemExit(f'Arquivo ausente na pasta e em {BASE_R2}: {nome}')
+        for base in bases:
+            if os.path.exists(os.path.join(base, nome)):
+                emprestados.append(nome if base == BASE_R2 else f'{nome} (de {base.replace(os.sep, "/")})')
+                return ler(os.path.join(base, nome))
+        raise SystemExit(f'Arquivo ausente na pasta e em {", ".join(bases)}: {nome}')
 
     html_dev = ler('index-dev.html')
     tokens_repo = ler(os.path.join('docs', 'design', 'tokens.css'))
     catalogo_js = ler(p('catalogo.js'))
     icones_js = ler_ou_base('icones.js')
-    telas_md = ler(p('02_telas.md'))
+    telas_md = ler_ou_base('02_telas.md', (BASE_R3, BASE_R2)) if rodada4 else ler(p('02_telas.md'))
     comp_md = ler(p('03_componentes.md'))
     textos_md = ler_ou_base('16.5_textos_interface.md')
     tokens_design = ler_ou_base('04_tokens.css')
@@ -905,17 +914,22 @@ def main():
     saida.append('\n')
     resumo.append(f'7 Referência: {secao_status(difs7)} ({n_ref} arquivos)')
 
-    # ---- 8 (pendências 16.5): componentes e telas novos da rodada 3
+    # ---- 8 (pendências 16.5): componentes e telas novos da rodada 3; na rodada 4 (16.5d-3) os três
+    # parágrafos novos do 03_componentes.md (o 02_telas.md é o da rodada 3, emprestado — sem tela a conferir)
     # (o prompt chamou este item de "7"; aqui é 8 porque o 7 já era a referência 25/09 desde o 16.5a)
-    comp_esperados = ['ListaSubgrupo', 'BarraDeslizante', 'MenuEtapas']
+    if rodada4:
+        comp_esperados = ['CabeçalhoCumulativo v2', 'CartãoChecagemEnviada', 'GráficoHumor']
+        telas_grafias = {}
+    else:
+        comp_esperados = ['ListaSubgrupo', 'BarraDeslizante', 'MenuEtapas']
+        telas_grafias = {
+            'AUT-03c': [r'AUT-03c'],
+            'AUT-04 do Positivo': [r'AUT-04p', r'AUT-04 · Positivo', r'AUT-04 do Positivo', r'AUT-04 Positivo', r'AUT-04 \(Positivo\)'],
+        }
     comp_achados = {}
     for nome in comp_esperados:
-        m = re.search(r'^#+ .*' + nome, comp_md, re.M)
+        m = re.search(r'^#+ .*' + re.escape(nome), comp_md, re.M)
         comp_achados[nome] = m.group(0).strip() if m else None
-    telas_grafias = {
-        'AUT-03c': [r'AUT-03c'],
-        'AUT-04 do Positivo': [r'AUT-04p', r'AUT-04 · Positivo', r'AUT-04 do Positivo', r'AUT-04 Positivo', r'AUT-04 \(Positivo\)'],
-    }
     telas_achadas = {}
     for nome, pads in telas_grafias.items():
         achou = None
@@ -926,15 +940,18 @@ def main():
                 break
         telas_achadas[nome] = achou
     ausentes = [n for n, v in comp_achados.items() if not v] + [n for n, v in telas_achadas.items() if not v]
-    saida.append('## 8. Componentes e telas da rodada 3 (`03_componentes.md`, `02_telas.md`)\n\n')
+    saida.append(f'## 8. Componentes e telas da rodada {rodada_n if rodada_n > 2 else 3} (`03_componentes.md`, `02_telas.md`)\n\n')
     saida.append('Componentes (título de seção por grep):\n' + md_lista([f'`{n}`: ' + (f'encontrado — "{v}"' if v else 'ausente') for n, v in comp_achados.items()]))
-    saida.append('\nTelas:\n' + md_lista([f'`{n}`: ' + (f'encontrado — grafia "{v}"' if v else 'ausente') for n, v in telas_achadas.items()]))
-    if rodada3:
-        difs8 = [f'ausente na rodada 3: {n}' for n in ausentes]
+    if telas_grafias:
+        saida.append('\nTelas:\n' + md_lista([f'`{n}`: ' + (f'encontrado — grafia "{v}"' if v else 'ausente') for n, v in telas_achadas.items()]))
+    else:
+        saida.append('\nTelas: (a rodada 4 não reenvia `02_telas.md`; o conferido é o da rodada 3, emprestado)\n')
+    if rodada3 or rodada4:
+        difs8 = [f'ausente na rodada {rodada_n}: {n}' for n in ausentes]
         saida.append(f'\n**{secao_status(difs8)}**\n')
         if difs8:
             saida.append(md_lista(difs8))
-        resumo.append(f'8 Componentes da rodada 3: {secao_status(difs8)}')
+        resumo.append(f'8 Componentes da rodada {rodada_n}: {secao_status(difs8)}')
     else:
         if ausentes:
             saida.append(f'\n**AVISO** — componentes da rodada 3 ausentes (esperado na rodada 2): {", ".join(ausentes)}.\n')
@@ -944,20 +961,21 @@ def main():
             resumo.append('8 Componentes da rodada 3: OK')
     saida.append('\n')
 
-    # ---- PNG da rodada 3: nomes obrigatórios
-    if rodada3:
+    # ---- PNG das rodadas 3 e 4: nomes obrigatórios (prefixo do arquivo, antes do "_")
+    if rodada3 or rodada4:
         pngs = sorted(os.listdir(p('01_png'))) if os.path.isdir(p('01_png')) else []
-        faltam_png = [x for x in ('AUT-03c', 'AUT-11') if not any(x in n for n in pngs)]
-        saida.append(f'## 9. PNG da rodada 3 (`01_png/`)\n\n{len(pngs)} arquivos. ' + ('**OK** — `AUT-03c` e `AUT-11` presentes nos nomes.\n\n' if not faltam_png else f'**{len(faltam_png)} diferença(s)** — sem PNG com o nome: {", ".join(faltam_png)}.\n\n'))
-        resumo.append(f'9 PNG rodada 3: ' + ('OK' if not faltam_png else f'{len(faltam_png)} diferença(s)') + f' ({len(pngs)} arquivos)')
+        png_esperados = ('AUT-03', 'AUT-03b', 'AUT-04', 'AUT-05p', 'AUT-06', 'AUT-06alt', 'AUT-08', 'AUT-11') if rodada4 else ('AUT-03c', 'AUT-11')
+        faltam_png = [x for x in png_esperados if not any(n.startswith(x + '_') for n in pngs)]
+        saida.append(f'## 9. PNG da rodada {rodada_n} (`01_png/`)\n\n{len(pngs)} arquivos. ' + ('**OK** — ' + ', '.join(f'`{x}`' for x in png_esperados) + ' presentes nos nomes.\n\n' if not faltam_png else f'**{len(faltam_png)} diferença(s)** — sem PNG com o nome: {", ".join(faltam_png)}.\n\n'))
+        resumo.append(f'9 PNG rodada {rodada_n}: ' + ('OK' if not faltam_png else f'{len(faltam_png)} diferença(s)') + f' ({len(pngs)} arquivos)')
 
-    rodada_txt = 'rodada 3' if rodada3 else 'rodada 2'
+    rodada_txt = f'rodada {rodada_n}'
     cabecalho = (f'# Conferência 16.5 — entrega do Design ({rodada_txt}) × `index-dev.html`\n\n'
                  f'Gerado por `scripts/conferir_entrega_16_5.py` sobre `{pasta.replace(os.sep, "/")}` '
                  f'(pranchas: `{pranchas_nome}`; contrato: `{contrato_nome}`). '
                  'Reexecutável e determinístico (sem data/hora no corpo).\n\n')
     if emprestados:
-        cabecalho += 'Arquivos que a pasta não tem e vieram de `docs/design/16.5/`: ' + ', '.join(f'`{e}`' for e in emprestados) + '.\n\n'
+        cabecalho += 'Arquivos que a pasta não tem e vieram de `docs/design/16.5/` (ou da pasta indicada): ' + ', '.join(f'`{e}`' for e in emprestados) + '.\n\n'
     if falha_topo:
         cabecalho += '> **FALHA** — ' + ' '.join(falha_topo) + '\n\n'
     cabecalho += '| # | Item | Resultado |\n|---|---|---|\n'
@@ -966,7 +984,7 @@ def main():
         item, res = resto.split(': ', 1)
         cabecalho += f'| {num} | {item} | {res} |\n'
     cabecalho += '\n'
-    nome_saida = 'CONFERENCIA_16_5a.md' if eh_base_r2 else 'CONFERENCIA_rodada3.md'
+    nome_saida = 'CONFERENCIA_16_5a.md' if eh_base_r2 else f'CONFERENCIA_rodada{rodada_n}.md'
     gravar(p(nome_saida), cabecalho + ''.join(saida))
 
     for f in falha_topo:

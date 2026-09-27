@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.5d-2 (26/09/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.5d-3 (26/09/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -1578,11 +1578,26 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .chk-env-circ{width:96px;height:96px;border-radius:50%;background:var(--c-pos-tint);color:var(--c-pos-ink);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;}
 .chk-env-circ .ico{width:40px;height:40px;stroke-width:2;}
 .chk-env-titulo{font:var(--t-h2);color:var(--c-ink);margin:0 0 18px;}
-.chk-env-card{text-align:left;background:var(--c-surface);border:1px solid var(--c-line);border-left:4px solid var(--c-action);border-radius:var(--r-card);padding:14px 16px;box-shadow:var(--sh-1);}
-.chk-env-humor{display:flex;align-items:center;gap:var(--s-3);font:600 19px/1.2 var(--f-text);color:var(--c-ink);}
-.chk-env-humor .ico{width:30px;height:30px;stroke-width:2;}
-.chk-env-data{font:var(--t-body-lg);color:var(--c-ink-3);margin-top:6px;font-feature-settings:var(--num-tnum);}
-.chk-env-obs{font:var(--t-body-lg);color:var(--c-ink-2);margin-top:6px;}
+.chk-env-card{display:flex;flex-direction:column;gap:8px;text-align:left;background:var(--c-surface);border:1px solid var(--c-line);border-left:4px solid var(--c-action);border-radius:var(--r-card);padding:14px 16px 14px 14px;box-shadow:var(--sh-1);} /* 16.5d-3: CartãoChecagemEnviada §18 v4 */
+.chk-env-row{display:grid;grid-template-columns:24px minmax(0,1fr);gap:12px;align-items:center;}
+.chk-env-row>.ico{justify-self:center;stroke-width:2;}
+.chk-env-ico-humor{width:20px;height:20px;color:var(--c-action-ink);}
+.chk-env-lbl{font:var(--t-label);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--c-action-ink);}
+.chk-env-rosto{display:flex;justify-content:center;}
+.chk-env-rosto .ico{width:24px;height:24px;stroke-width:2;}
+.chk-env-nome{font:600 20px/1.2 var(--f-text);color:var(--c-ink);}
+.chk-env-ico-data{width:18px;height:18px;color:var(--c-ink-3);}
+.chk-env-data{font:var(--t-body);color:var(--c-ink-3);font-feature-settings:var(--num-tnum);}
+.chk-env-obs{font:var(--t-body);font-style:italic;color:var(--c-ink-2);} /* D3: 4.ª linha, só com observação */
+.chk-env-grafico{margin-top:12px;text-align:left;} /* 16.5d-3: GráficoHumor §19 v4 — bloco do Painel emprestado */
+.chk-env-bloco{margin-bottom:0;border-left:1px solid var(--c-line);}
+.chk-env-bloco .pev-periodo{margin:0 0 12px;background:var(--c-bg);box-shadow:none;}
+.chk-env-media{display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px 2px 0;border-top:1px solid var(--c-line-inner);}
+.chk-env-media-lbl{flex:1;font:var(--t-body);color:var(--c-ink-2);}
+.chk-env-media-num{font:600 19px/1 var(--f-text);color:var(--c-ink);font-feature-settings:var(--num-tnum);}
+.chk-env-media-chip{font:600 13px/1 var(--f-text);color:var(--c-action-ink);background:var(--c-action-tint);border-radius:999px;padding:6px 10px;white-space:nowrap;}
+.chk-env-vazio{padding:20px 0 8px;}
+.chk-env-tentar{margin-top:12px;}
 .chk-env-nota{font:var(--t-body-lg);color:var(--c-ink-3);margin:18px 0;}
 /* página Automonitoramento */
 .hub-aviso{display:flex;gap:var(--s-3);align-items:flex-start;background:var(--c-warn-tint);border:1px solid var(--c-warn-line);border-radius:var(--r-card);padding:14px 16px;color:var(--c-warn-ink);font:var(--t-body-lg);margin:4px 0 16px;}
@@ -1786,21 +1801,50 @@ input:focus-visible + .auto-check{outline:3px solid var(--c-action-ring);outline
 .auto-slider-legenda span.apertada{font-size:13px;letter-spacing:-.02em;} /* dúvida 6 do Design (usuário, 26/09): 13 px só na palavra que não cabe na coluna (autoLegendaAjustar); em 390 px nenhuma, em 375/360 só "Totalmente" */
 @media (min-width:900px){ .auto-item-likert{margin:0 0 0 42px;max-width:var(--w-slider-desktop);} .auto-item-likert-label,.auto-item-likert .auto-aviso{margin-left:0;} }
 
-/* CabeçalhoCumulativo (§3) */
-.cab{margin:0 0 14px;padding:14px 14px 4px;border-radius:var(--r-card);display:flex;flex-direction:column;gap:8px;}
-[data-tipo="neg"] .cab{background:var(--c-reg-neg-tint);}
-[data-tipo="pos"] .cab{background:var(--c-reg-pos-tint);}
-.cab-linha{display:grid;grid-template-columns:22px 116px minmax(0,1fr);gap:8px;align-items:start;}
-.cab-linha .ico{width:22px;height:22px;stroke-width:2;}
-.cab-rotulo{font:var(--t-label);letter-spacing:var(--ls-label);text-transform:uppercase;line-height:22px;}
-[data-tipo="neg"] .cab-linha .ico,[data-tipo="neg"] .cab-rotulo,[data-tipo="neg"] .cab-txt b{color:var(--c-reg-neg-ink);}
-[data-tipo="pos"] .cab-linha .ico,[data-tipo="pos"] .cab-rotulo,[data-tipo="pos"] .cab-txt b{color:var(--c-reg-pos-ink);}
-.cab-txt{font:400 14px/22px var(--f-text);color:var(--c-ink);overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow-wrap:anywhere;}
-.cab-txt i{color:var(--c-ink-2);}
-.cab-acoes{display:flex;justify-content:flex-end;gap:4px;}
-.cab-acao{display:inline-flex;align-items:center;gap:6px;min-height:var(--hit-min);padding:0 8px;border:none;background:none;color:var(--c-action);font:600 15px/1 var(--f-text);cursor:pointer;}
-.cab-acao .ico{width:18px;height:18px;}
-@media (max-width:359px){ .cab-linha{grid-template-columns:22px 96px minmax(0,1fr);} }
+/* Pacote 16.5d-3 — CabeçalhoCumulativo v2 (§3 da rodada 4; decisões P1–P4, D1 e D5 de 26/09): cartão em tinte do
+   tipo com quatro blocos separados por filete — humor + etapa atual, trilha das 5 etapas (no lugar do trilho #prog),
+   uma linha por etapa feita ou atual (rótulo em linha + só os grupos marcados), ações. Nenhuma cor fora dos tokens. */
+.cab{margin:6px 0 14px;border:1px solid var(--c-line);border-radius:var(--r-card);overflow:hidden;color:var(--c-ink);}
+[data-tipo="neg"] .cab{background:var(--c-reg-neg-tint);border-color:var(--c-reg-neg-line);}
+[data-tipo="pos"] .cab{background:var(--c-reg-pos-tint);border-color:var(--c-reg-pos-line);}
+.cab-humor{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 14px;min-height:64px;}
+.cab-humor-circ{width:40px;height:40px;border-radius:50%;background:var(--c-surface);display:flex;align-items:center;justify-content:center;}
+.cab-humor-circ .ico{width:26px;height:26px;stroke-width:2;} /* cor: .ico-humor-N (a tinta do próprio nível, P4) */
+.cab-lbl{display:block;font:var(--t-label);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--c-ink-3);}
+.cab-humor-nome{display:block;font:600 17px/1.25 var(--f-text);color:var(--c-ink);}
+.cab-preenchendo{text-align:right;}
+.cab-etapa-nome{display:block;font:600 15px/1.25 var(--f-text);white-space:nowrap;}
+.cab-trilha{display:flex;align-items:center;height:48px;padding:0 14px;border-top:1px solid var(--c-line-alpha);}
+.cab-no-item{width:44px;height:48px;flex:none;display:flex;align-items:center;justify-content:center;padding:0;border:none;background:none;font:inherit;color:inherit;}
+button.cab-no-item{cursor:pointer;}
+.cab-no{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--c-line-strong);color:var(--c-ink-3);}
+.cab-no .ico{width:18px;height:18px;stroke-width:2;}
+.cab-no-item.feita .cab-no{border-width:2px;color:var(--c-ink-inv);}
+.cab-no-item.atual .cab-no{border-width:2px;background:var(--c-surface);}
+.cab-traco{flex:1;min-width:6px;height:4px;border-radius:2px;background:var(--c-line-strong);}
+.cab-linhas{border-top:1px solid var(--c-line-alpha);}
+.cab-lin{display:grid;grid-template-columns:20px minmax(0,1fr);gap:10px;align-items:start;padding:9px 14px;}
+.cab-lin+.cab-lin{border-top:1px solid var(--c-line-alpha);}
+.cab-lin .ico{width:20px;height:20px;stroke-width:2;margin-top:1px;}
+.cab-lin.atual{background:var(--c-surface);}
+.cab-lin-txt{margin:0;min-width:0;font:var(--t-body);line-height:1.45;color:var(--c-ink);overflow-wrap:anywhere;}
+.cab-rot{font:var(--t-label);line-height:1.45;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;margin-right:8px;}
+.cab-vazio{font-style:italic;color:var(--c-ink-3);}
+.cab-frase{display:block;font:var(--t-body-sm);font-style:italic;line-height:1.4;color:var(--c-ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;} /* D5: 13 px, uma linha, cortada */
+.cab-acoes{display:flex;justify-content:flex-end;align-items:center;gap:2px;min-height:48px;padding:2px 6px;border-top:1px solid var(--c-line-alpha);}
+.cab-acao{display:inline-flex;align-items:center;gap:6px;min-height:var(--hit-min);padding:0 10px;border:none;background:none;border-radius:var(--r-field);color:var(--c-action);font:600 14px/1 var(--f-text);white-space:nowrap;cursor:pointer;}
+.cab-acao:hover{color:var(--c-action-hover);}
+.cab-acao .ico{width:16px;height:16px;}
+[data-tipo="neg"] .cab-humor-txt .cab-lbl,[data-tipo="neg"] .cab-etapa-nome,[data-tipo="neg"] .cab-rot,[data-tipo="neg"] .cab-lin .ico,[data-tipo="neg"] .cab-no-item.atual .cab-no{color:var(--c-reg-neg-ink);}
+[data-tipo="pos"] .cab-humor-txt .cab-lbl,[data-tipo="pos"] .cab-etapa-nome,[data-tipo="pos"] .cab-rot,[data-tipo="pos"] .cab-lin .ico,[data-tipo="pos"] .cab-no-item.atual .cab-no{color:var(--c-reg-pos-ink);}
+[data-tipo="neg"] .cab-lin.atual .ico{color:var(--c-reg-neg);}
+[data-tipo="pos"] .cab-lin.atual .ico{color:var(--c-reg-pos);}
+[data-tipo="neg"] .cab-no-item.feita .cab-no,[data-tipo="neg"] .cab-traco.cheio{background:var(--c-reg-neg);}
+[data-tipo="pos"] .cab-no-item.feita .cab-no,[data-tipo="pos"] .cab-traco.cheio{background:var(--c-reg-pos);}
+[data-tipo="neg"] .cab-no-item.feita .cab-no,[data-tipo="neg"] .cab-no-item.atual .cab-no{border-color:var(--c-reg-neg);}
+[data-tipo="pos"] .cab-no-item.feita .cab-no,[data-tipo="pos"] .cab-no-item.atual .cab-no{border-color:var(--c-reg-pos);}
+[data-tipo="neg"] .cab-no-item.atual .cab-no{box-shadow:0 0 0 4px var(--c-reg-neg-mid);} /* anel "mais acesa" */
+[data-tipo="pos"] .cab-no-item.atual .cab-no{box-shadow:0 0 0 4px var(--c-reg-pos-mid);}
 
 /* CartãoAjuda (§8): nasce recolhido; âmbar = ajuda */
 .p8-consulta{background:var(--c-warn-tint);border:1px solid var(--c-warn-line);border-radius:var(--r-card);margin:14px 0 16px;overflow:hidden;}
@@ -3691,17 +3735,9 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 .prog.visivel{display:block;}
 .prog-txt{display:block;font:600 15px/1.2 var(--f-title);color:var(--c-ink);}
 .prog-trilho{display:flex;gap:0;margin-top:-10px;}
-.prog.so-trilho .prog-txt{display:none;} /* 16.5d-2: nas etapas o título está na barra; o trilho é só indicador (§2) */
-.prog.so-trilho .prog-trilho{margin-top:-14px;} /* sem gap: cada segmento usa toda a largura como área de toque; o vão visual fica no ::before */
 .prog-seg{flex:1;min-width:0;height:var(--hit-min);min-height:var(--hit-min);padding:0;border:none;background:none;position:relative;cursor:default;}
 .prog-seg::before{content:'';position:absolute;left:2px;right:3px;top:50%;height:6px;margin-top:-3px;border-radius:3px;background:var(--c-line-strong);transition:background var(--dur) var(--ease);}
 .prog-seg.feito::before,.prog-seg.atual::before{background:var(--c-pos);}
-.prog.neg .prog-seg.feito::before{background:var(--c-reg-neg);}
-.prog.neg .prog-seg.atual::before{background:var(--c-reg-neg-mid);}
-.prog.neg .prog-seg::before{background:var(--c-reg-neg-tint);}
-.prog.pos-reg .prog-seg.feito::before{background:var(--c-reg-pos);}
-.prog.pos-reg .prog-seg.atual::before{background:var(--c-reg-pos-mid);}
-.prog.pos-reg .prog-seg::before{background:var(--c-reg-pos-tint);}
 .prog-seg.feito{cursor:pointer;}
 .prog-seg.feito:hover::before{opacity:.7;}
 
@@ -4631,11 +4667,15 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
     <div class="chk-env">
       <div class="chk-env-circ"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg></div>
       <h2 class="chk-env-titulo">Checagem de humor enviada</h2>
-      <div class="chk-env-card">
-        <div class="chk-env-humor"><span id="chkEnvRosto"></span><span id="chkEnvNome"></span></div>
-        <div class="chk-env-data" id="chkEnvData"></div>
-        <div class="chk-env-obs" id="chkEnvObs" hidden></div>
+      <!-- 16.5d-3 (§18 v4 + D3): grade de 24 px — HUMOR · rostinho + nome · agenda + data completa e hora · observação (só quando houver) -->
+      <div class="chk-env-card" role="status">
+        <div class="chk-env-row"><svg class="ico chk-env-ico-humor" aria-hidden="true"><use href="#i-thermometer"/></svg><span class="chk-env-lbl">Humor</span></div>
+        <div class="chk-env-row"><span class="chk-env-rosto" id="chkEnvRosto"></span><span class="chk-env-nome" id="chkEnvNome"></span></div>
+        <div class="chk-env-row"><svg class="ico chk-env-ico-data" aria-hidden="true"><use href="#i-calendar"/></svg><span class="chk-env-data" id="chkEnvData"></span></div>
+        <div class="chk-env-row" id="chkEnvObsRow" hidden><span aria-hidden="true"></span><span class="chk-env-obs" id="chkEnvObs"></span></div>
       </div>
+      <!-- 16.5d-3 (§19 v4): o gráfico "Humor ao longo do tempo" do Painel, montado por chkCarregarGrafico() -->
+      <div class="chk-env-grafico" id="chkEnvGrafico"></div>
       <p class="chk-env-nota">Fica em Meus Registros e no Painel de Evolução.</p>
       <button type="button" class="b56 b56-sec" onclick="abrirSecao('sec-menu')">Voltar ao início</button>
     </div>
@@ -7284,8 +7324,10 @@ function topbarDefinirTitulo(idSecao, titulo) {
 // Pacote 16.3 (T3): componente único de progresso ("Etapa N de T · nome" + trilho).
 // Substitui os pontos da anamnese, os pontos do humor, a barra com cadeado, o selo
 // "Preenchido", as tabs do cabeçalho cumulativo e a barra percentual das escalas.
-// cfg = { total, atual (1..total), nome, rotulo ('Etapa'|'Item'), cor ('pos'|'neg'|'pos-reg'),
+// cfg = { total, atual (1..total), nome, nomes, rotulo ('Etapa'|'Item'),
 //         feitos: [índices tocáveis], irPara: function(indice) }
+// 16.5d-3: usado só pela anamnese e pelas escalas — nas 5 etapas do registro a trilha do cabeçalho cumulativo
+// substitui este trilho (decisão P1), então as variantes de cor neg/pos-reg e o modo só-trilho saíram.
 // ============================================================
 var PROG_CFG = null;
 function progressoDefinir(cfg) {
@@ -7304,9 +7346,6 @@ function progressoDefinir(cfg) {
       : '<span class="' + cls + '" aria-hidden="true"></span>';
   }
   document.getElementById('progTrilho').innerHTML = h;
-  el.classList.toggle('so-trilho', !!cfg.soTrilho); // 16.5d-2: nas etapas o título está na barra
-  el.classList.remove('neg', 'pos-reg');
-  if (cfg.cor === 'neg' || cfg.cor === 'pos-reg') el.classList.add(cfg.cor);
   el.classList.add('visivel');
 }
 function progressoOcultar() { PROG_CFG = null; const el = document.getElementById('prog'); if (el) el.classList.remove('visivel'); }
@@ -7323,25 +7362,16 @@ var PROG_REGISTRO_TELAS = {
   'sec-auto-sit': 1, 'sec-auto-emo': 2, 'sec-auto-fis': 3, 'sec-auto-pens': 4, 'sec-auto-comp': 5,
   'sec-auto-menu': -1, 'sec-auto-menu-neg': -1, 'sec-auto-menu-pos': -1, 'sec-auto-resumo': -1
 };
-var PROG_REGISTRO_NOMES = { 1: 'Situação', 2: 'Emoções', 3: 'Reações Físicas', 4: 'Pensamentos', 5: 'Comportamentos' };
 function progressoParaTela(idSecao) {
   if (!(idSecao in PROG_REGISTRO_TELAS)) {
     if (idSecao !== 'sec-anamnese' && idSecao !== 'sec-escalas-aplicar') progressoOcultar(); // anamnese e escala definem o próprio
     return;
   }
-  let tipo = /-b$|menu-pos$/.test(idSecao) ? 'pos' : (/-a$|menu-neg$/.test(idSecao) ? 'neg' : (idSecao === 'sec-auto-resumo' ? (AUTO_STATE.ultimoTipoFinalizado || 'neg') : null));
-  if (!tipo) { const elFis = document.getElementById(idSecao); if (elFis && elFis.getAttribute('data-tipo')) tipo = elFis.getAttribute('data-tipo'); } // 16.5d-1: seção física
-  const chaves = tipo === 'pos' ? ['sit-b', 'emo-b', 'fis-b', 'pens-b', 'comp-b'] : ['sit-a', 'emo-a', 'fis-a', 'pens-a', 'comp-a'];
-  const secs = tipo === 'pos' ? AUTO_SEQ_POS : AUTO_SEQ_NEG;
+  // 16.5d-3 (decisão P1, 26/09): nas 5 etapas a trilha de ícones do cabeçalho cumulativo (cabTrilhaHtml) substitui o
+  // trilho #prog; checagem, menu e revisão já ficavam sem trilho (16.5c). O que resta aqui é o título da barra.
+  progressoOcultar();
   const atual = PROG_REGISTRO_TELAS[idSecao];
-  if (atual < 1) { progressoOcultar(); return; } // 16.5c: checagem, menu e revisão ficam no fluxo, mas sem trilho
-  const feitos = [];
-  chaves.forEach((c, i) => { if (AUTO_STATE.preenchido[c]) feitos.push(1 + i); });
-  progressoDefinir({
-    total: 5, atual, nome: PROG_REGISTRO_NOMES[atual], nomes: PROG_REGISTRO_NOMES, feitos, soTrilho: true,
-    cor: tipo === 'neg' ? 'neg' : (tipo === 'pos' ? 'pos-reg' : 'pos'),
-    irPara: function (k) { if (k >= 1 && k <= 5 && tipo) autoEntrarSecao(secs[k - 1], k - 1, tipo); }
-  });
+  if (atual < 1) return;
   // 16.5d-2 (BarraEtapa §1): o título da barra vira "Etapa N de 5 · nome completo" (nome lido do data-barra-titulo do bloco)
   const elEtapa = document.getElementById(idSecao);
   const nomeCompleto = elEtapa ? (elEtapa.getAttribute('data-barra-titulo') || '') : '';
@@ -11238,18 +11268,22 @@ function p8ClicarEntendi() {
 /* Fim do Pacote 8 */
 
 /* ============================================================
-   PACOTE 16.5d-2 — Cabeçalho cumulativo (CabeçalhoCumulativo §3, contrato v3 item 17)
+   PACOTE 16.5d-3 — Cabeçalho cumulativo v2 (CabeçalhoCumulativo §3 da rodada 4, contrato v4 item 17)
    ============================================================
-   Cartão em tinte do tipo no topo de cada etapa (Negativo e Positivo): linha HUMOR (rostinho i-humor-N + nome
-   de HUMOR_NOMES) e, por etapa já preenchida, ícone da etapa, rótulo, a definição dos subgrupos marcados com a
-   nota em <b> e a frase escrita em itálico (2 linhas, cortadas por CSS). "editar" volta à última etapa feita;
-   "ver tudo" abre o modal existente (p11aAbrirModal).
+   Cartão em tinte do tipo no topo de cada etapa (Negativo e Positivo), quatro blocos separados por filete:
+   (1) HUMOR — rostinho i-humor-N em círculo + nome de HUMOR_NOMES — e "PREENCHENDO" + nome curto da etapa;
+   (2) trilha das 5 etapas só com ícones (feita = tocável, leva à etapa; atual; futura). Decisão P1 (26/09):
+       nas etapas ela substitui o trilho #prog, que progressoParaTela passou a esconder;
+   (3) uma linha por etapa feita ou atual: ícone, rótulo em caixa alta correndo em linha e SÓ os nomes curtos
+       dos grupos marcados (nunca subgrupo, nunca nota — isso fica em "ver tudo"); a Situação acrescenta a
+       frase em itálico numa linha cortada; "…" quando vazia; a linha atual re-renderiza a cada mudança
+       (cabAtualizarAtual, chamada no mesmo caminho que atualiza o rodapé de contagem);
+   (4) "editar" abre o menu "Suas 5 etapas"; "ver tudo" abre o modal existente (p11aAbrirModal).
    Só LÊ AUTO_STATE.dados — mantido atual pelos listeners de change/input (autoColetarSecaoAtiva) — e nunca
-   escreve nele: fecha o débito 8.21 (a versão anterior coletava as 5 seções a cada render e, quando o
-   servidor respondia tarde, inseria chaves vazias no registro seguinte). Chaves dos grupos vêm do DOM.
+   escreve nele (o débito 8.21 continua fechado). Chaves e títulos dos grupos vêm do DOM (histTituloGrupo).
    ============================================================ */
 var CAB_ETAPAS = ['sit', 'emo', 'fis', 'pens', 'comp'];
-var CAB_ROTULOS = { sit: 'Situação', emo: 'Emoções', fis: 'Reações Físicas', pens: 'Pensamentos', comp: 'Comportamentos' };
+var CAB_ROTULOS = { sit: 'Situação', emo: 'Emoções', fis: 'Reações físicas', pens: 'Pensamentos', comp: 'Comportamentos' }; // grafia do bloco 1 da prancha v4; nas linhas vira caixa alta por CSS
 var CAB_ICONES = {
   neg: { sit: 'i-pin', emo: 'i-heart-crack', fis: 'i-zap', pens: 'i-cloud-rain', comp: 'i-trend-down' },
   pos: { sit: 'i-pin', emo: 'i-heart', fis: 'i-leaf', pens: 'i-sun', comp: 'i-trend-up' }
@@ -11260,47 +11294,92 @@ function cabTextoLivre(etapa, tipo) {
   const k = { sit: tipo + '_sit_o_que', pens: tipo + '_pens_o_que', comp: tipo + '_comp_o_que' }[etapa];
   return (k && d[k]) ? String(d[k]).trim() : '';
 }
-// itens marcados da etapa, na ordem dos grupos do DOM: [{ nome, nota }]
-function cabItens(etapa, tipo) {
+// Nome curto do grupo (LEIA-ME da rodada 4 + decisão D1 do usuário, 26/09): título do grupo pai sem o prefixo
+// repetido da etapa ("Situações de", "Pensamentos sobre o/os", "Pensamentos de"); se sobrar um parêntese, só o seu
+// conteúdo quando é uma palavra ("Autocrítica"), senão a parte antes dele ("Internas"). Não toca o catálogo nem a gravação.
+function cabNomeCurtoGrupo(titulo) {
+  let t = String(titulo || '').replace(/^\d+\.\s*/, '').replace(/^Situações (de )?/, '').replace(/^Pensamentos (sobre (os? )?|de )/, '').trim();
+  const m = t.match(/^(.*?)\s*\(([^)]*)\)\s*$/);
+  if (m) t = /^\S+$/.test(m[2].trim()) ? m[2].trim() : m[1].trim();
+  return t;
+}
+// Grupos da etapa com ≥ 1 item marcado ou "Outro" preenchido, na ordem do DOM: nomes curtos
+function cabGruposMarcados(etapa, tipo) {
   const bloco = document.getElementById(cabBlocoId(etapa, tipo)); if (!bloco) return [];
   const d = AUTO_STATE.dados || {}; const out = [];
   bloco.querySelectorAll('[data-grupo]').forEach(g => {
-    const val = d[g.getAttribute('data-grupo')]; if (!val) return;
-    String(val).split(AUTO_SEPARADOR).map(s => s.trim()).filter(Boolean).forEach(p => {
-      const m = p.match(/^(.*):(\d)$/);
-      out.push(m ? { nome: m[1], nota: m[2] } : { nome: p, nota: '' });
-    });
+    const chave = g.getAttribute('data-grupo');
+    if (String(d[chave] || '').trim()) out.push(cabNomeCurtoGrupo(histTituloGrupo(chave)));
   });
   return out;
 }
-function cabEtapaFeita(etapa, tipo) { return cabItens(etapa, tipo).length > 0 || !!cabTextoLivre(etapa, tipo); }
+function cabEtapaFeita(etapa, tipo) { return cabGruposMarcados(etapa, tipo).length > 0 || !!cabTextoLivre(etapa, tipo); }
+function cabIco(id) { return '<svg class=ico aria-hidden=true><use href=#' + id + '></use></svg>'; }
+// Bloco 1 — humor + etapa em preenchimento
+function cabHumorHtml(etapaAtual) {
+  const hn = parseInt((AUTO_STATE.dados || {}).humor_nivel, 10);
+  return '<div class="cab-humor"><span class="cab-humor-circ">' + vmcHumorIcone(hn) + '</span>' +
+    '<span class="cab-humor-txt"><span class="cab-lbl">Humor</span><span class="cab-humor-nome">' + escapeHtmlAuto(HUMOR_NOMES[hn] || '—') + '</span></span>' +
+    '<span class="cab-preenchendo"><span class="cab-lbl">Preenchendo</span><span class="cab-etapa-nome">' + CAB_ROTULOS[etapaAtual] + '</span></span></div>';
+}
+// Bloco 2 — trilha: o traço à esquerda de cada nó fica cheio quando esse nó é feito ou atual
+function cabTrilhaHtml(etapaAtual, tipo) {
+  const idx = CAB_ETAPAS.indexOf(etapaAtual);
+  let h = '<div class="cab-trilha" role="group" aria-label="Progresso: etapa ' + (idx + 1) + ' de 5">';
+  CAB_ETAPAS.forEach((et, i) => {
+    const estado = i === idx ? 'atual' : (cabEtapaFeita(et, tipo) ? 'feita' : 'futura');
+    const bloco = document.getElementById(cabBlocoId(et, tipo));
+    const nome = (bloco && bloco.getAttribute('data-barra-titulo')) || CAB_ROTULOS[et];
+    const rotulo = ('Etapa ' + (i + 1) + ' de 5 · ' + nome + (estado === 'futura' ? '' : ' · ' + estado)).replace(/"/g, '&quot;');
+    const no = '<span class="cab-no">' + cabIco(CAB_ICONES[tipo][et]) + '</span>';
+    if (i > 0) h += '<span class="cab-traco' + (estado === 'futura' ? '' : ' cheio') + '" aria-hidden="true"></span>';
+    h += estado === 'feita'
+      ? '<button type="button" class="cab-no-item feita" onclick="cabIrEtapa(' + i + ',\'' + tipo + '\')" aria-label="' + rotulo + '">' + no + '</button>'
+      : '<span class="cab-no-item ' + estado + '" role="img"' + (estado === 'atual' ? ' aria-current="step"' : '') + ' aria-label="' + rotulo + '">' + no + '</span>';
+  });
+  return h + '</div>';
+}
+// Bloco 3 — uma linha por etapa feita ou atual
+function cabFrase(et, tipo) { return et === 'sit' ? cabTextoLivre(et, tipo) : ''; } // só a Situação mostra a frase
+function cabGruposHtml(et, tipo) {
+  const grupos = (et === 'sit' && tipo === 'pos') ? [] : cabGruposMarcados(et, tipo); // Positivo, etapa 1: só a frase (grupos positivos são pacote futuro)
+  if (grupos.length) return grupos.map(escapeHtmlAuto).join(' · ');
+  return cabFrase(et, tipo) ? '' : '<span class="cab-vazio">…</span>';
+}
+function cabLinhaHtml(et, tipo, atual) {
+  const frase = cabFrase(et, tipo);
+  return '<div class="cab-lin' + (atual ? ' atual' : '') + '" data-etapa="' + et + '">' + cabIco(CAB_ICONES[tipo][et]) +
+    '<p class="cab-lin-txt"><span class="cab-rot">' + CAB_ROTULOS[et] + '</span><span class="cab-grupos"' + (atual ? ' aria-live="polite"' : '') + '>' + cabGruposHtml(et, tipo) + '</span>' +
+    (frase ? '<span class="cab-frase">' + escapeHtmlAuto(frase) + '</span>' : '') + '</p></div>';
+}
+// Bloco 4 — ações
+function cabAcoesHtml(tipo) {
+  return '<div class="cab-acoes"><button type="button" class="cab-acao" onclick="cabEditar(\'' + tipo + '\')">' + cabIco('i-pencil') + 'editar</button>' +
+    '<button type="button" class="cab-acao" onclick="p11aAbrirModal()">' + cabIco('i-layers') + 'ver tudo</button></div>';
+}
 function cabRenderizar(idLogico) {
   const m = /^sec-auto-(sit|emo|fis|pens|comp)-(a|b)$/.exec(idLogico || ''); if (!m) return;
   const etapaAtual = m[1], tipo = m[2] === 'b' ? 'pos' : 'neg';
   const el = document.getElementById('cabHdr-' + etapaAtual); if (!el) return;
-  const d = AUTO_STATE.dados || {};
-  const hn = parseInt(d.humor_nivel, 10) || 0;
-  let h = '<div class="cab-linha">' + vmcHumorIcone(hn || 3) + '<span class="cab-rotulo">Humor</span><span class="cab-txt">' + escapeHtmlAuto(HUMOR_NOMES[hn] || '') + '</span></div>';
-  let ultimaFeita = null;
-  CAB_ETAPAS.forEach(et => {
-    if (et === etapaAtual || !cabEtapaFeita(et, tipo)) return;
-    const partes = [];
-    if (!(et === 'sit' && tipo === 'pos')) { // contrato 17: no Positivo a Situação mostra só a frase
-      cabItens(et, tipo).forEach(i => partes.push(escapeHtmlAuto(i.nome) + (i.nota ? ' <b>' + i.nota + '</b>' : '')));
-    }
-    const frase = cabTextoLivre(et, tipo);
-    if (frase) partes.push('<i>' + escapeHtmlAuto(frase.replace(/ \| /g, ' · ')) + '</i>');
-    h += '<div class="cab-linha"><svg class=ico aria-hidden=true><use href=#' + CAB_ICONES[tipo][et] + '></use></svg>' +
-         '<span class="cab-rotulo">' + CAB_ROTULOS[et] + '</span><span class="cab-txt">' + partes.join(' · ') + '</span></div>';
-    ultimaFeita = et;
-  });
-  h += '<div class="cab-acoes">' +
-       (ultimaFeita ? '<button type="button" class="cab-acao" onclick="cabEditar(\'' + cabBlocoId(ultimaFeita, tipo) + '\')"><svg class=ico aria-hidden=true><use href=#i-pencil></use></svg>editar</button>' : '') +
-       '<button type="button" class="cab-acao" onclick="p11aAbrirModal()"><svg class=ico aria-hidden=true><use href=#i-layers></use></svg>ver tudo</button></div>';
-  el.innerHTML = h;
+  let linhas = '';
+  CAB_ETAPAS.forEach(et => { if (et === etapaAtual || cabEtapaFeita(et, tipo)) linhas += cabLinhaHtml(et, tipo, et === etapaAtual); });
+  el.innerHTML = cabHumorHtml(etapaAtual) + cabTrilhaHtml(etapaAtual, tipo) + '<div class="cab-linhas">' + linhas + '</div>' + cabAcoesHtml(tipo);
   el.hidden = false;
 }
-function cabEditar(idBloco) { abrirSecao(idBloco); }
+// Linha da etapa atual ao vivo: só o trecho dos grupos (região aria-live) e a frase; trilha e ações não são refeitas
+function cabAtualizarAtual() {
+  const m = /^sec-auto-(sit|emo|fis|pens|comp)-(a|b)$/.exec(secaoAtivaId() || ''); if (!m) return;
+  const et = m[1], tipo = m[2] === 'b' ? 'pos' : 'neg';
+  const el = document.getElementById('cabHdr-' + et); if (!el || el.hidden) return;
+  const lin = el.querySelector('.cab-lin.atual'); if (!lin) return;
+  const grupos = lin.querySelector('.cab-grupos'); if (grupos) grupos.innerHTML = cabGruposHtml(et, tipo);
+  const frase = cabFrase(et, tipo);
+  let fEl = lin.querySelector('.cab-frase');
+  if (frase && !fEl) { fEl = document.createElement('span'); fEl.className = 'cab-frase'; lin.querySelector('.cab-lin-txt').appendChild(fEl); }
+  if (fEl) { if (frase) fEl.textContent = frase; else fEl.remove(); }
+}
+function cabIrEtapa(i, tipo) { autoEntrarSecao(cabBlocoId(CAB_ETAPAS[i], tipo), i, tipo); } // nó feito da trilha (D2): o mesmo caminho do trilho antigo
+function cabEditar(tipo) { autoAbrirMenuTipo(tipo); } // "editar" → menu "Suas 5 etapas" (§3 v4)
 
 // Clique em tab da Camada 2 — navega para seção
 // Abre o modal do botão +N — NÃO navega pra tela Revisar.
@@ -11409,6 +11488,7 @@ function autoPreencherDataHoraAgora() {
 function autoOnDataHoraChange() {
   AUTO_STATE.dados.data_registro = document.getElementById('autoInpData').value;
   AUTO_STATE.dados.hora_registro = document.getElementById('autoInpHora').value;
+  chkAtualizarPill(); // 16.5d-3: a pílula acompanha o que foi alterado
   autoValidarPasso1();
   autoSalvarRascunho();
 }
@@ -11448,6 +11528,7 @@ function autoValidarPasso1() {
 function chkAbrir() {
   abrirSecao('sec-auto-passo1');
   autoPreencherDataHoraAgora();
+  chkAtualizarPill(); // 16.5d-3 (contrato v4 item 25): a pílula já nasce "Hoje, dd/mm · hh:mm"
   chkMostrarCampos(false);
 }
 // "Hoje, dd/mm · hh:mm" (ou "dd/mm/aaaa · hh:mm" quando não é hoje)
@@ -11476,6 +11557,7 @@ function chkEditar() {
   abrirSecao('sec-auto-passo1');
   autoHidratarFormulario();
   autoValidarPasso1();
+  chkAtualizarPill(); // 16.5d-3: pílula com a data/hora já escolhida
   chkMostrarCampos(false);
 }
 // "+ Iniciar novo registro": guarda a checagem em AUTO_STATE (nada é enviado) e vai escolher o tipo
@@ -11493,16 +11575,69 @@ function chkConcluirSoChecagem() {
   autoEnviarRegistro({ soChecagem: true });
 }
 // AUT-03b — confirmação da checagem enviada (dados = o que foi gravado; o estado já foi zerado)
+// 16.5d-3 (§18 v4 + D3): cartão em grade — HUMOR · rostinho + nome · data completa e hora no formato de Meus Registros
+// (formatarDataBR + autoFormatarHora; não é "Hoje" porque a tela pode ser revista) · observação, só quando houver.
 function chkMostrarEnviada(dados) {
   const n = parseInt(dados.humor_nivel, 10);
   document.getElementById('chkEnvRosto').innerHTML = vmcHumorIcone(n);
   document.getElementById('chkEnvNome').textContent = HUMOR_NOMES[n] || '';
-  document.getElementById('chkEnvData').textContent = '· ' + chkTextoDataHora(dados.data_registro, dados.hora_registro, true).replace(' · ', ' às ');
-  const obsEl = document.getElementById('chkEnvObs');
+  document.getElementById('chkEnvData').textContent = formatarDataBR(dados.data_registro) + ' · ' + autoFormatarHora(dados.hora_registro);
   const obs = String(dados.humor_observacoes || '').trim();
-  obsEl.textContent = obs ? '"' + obs + '"' : '';
-  obsEl.hidden = !obs;
+  document.getElementById('chkEnvObs').textContent = obs;
+  document.getElementById('chkEnvObsRow').hidden = !obs;
   abrirSecao('sec-auto-checagem-enviada');
+  chkCarregarGrafico(); // §19 v4: o gráfico entra depois de a seção estar visível (Chart.js responsivo); sem await — a confirmação não depende dele
+}
+// 16.5d-3 (§19 v4, contrato item 27): o gráfico "Humor ao longo do tempo" do Painel, emprestado — mesma montagem
+// (pevMontarBlocoHumor + pevDesenharHumor), mesmo seletor 7/30/90/Tudo (pevMontarSeletor + pevBindSeletor com escopo),
+// mesma média (pevCalcularResumo: "2.8", como no cartão HUMOR MÉDIO — decisão D4) e os mesmos dados do cache PEV_STATE,
+// lido e preenchido como o Início faz (iniLerQuieto, sem overlay). Nenhuma segunda implementação de gráfico.
+var CHK_ENV = { periodo: null, chart: null, seq: 0 };
+async function chkCarregarGrafico() {
+  const seq = ++CHK_ENV.seq;
+  chkRenderGrafico(null); // "carregando": bloco com a legenda e sem linha, média "—"
+  const pac = carregarSessao();
+  if (!pac) { chkRenderGraficoErro(); return; }
+  const agora = Date.now();
+  let regs = null;
+  if (!PEV_STATE.invalidado && PEV_STATE.registros.length > 0 && (agora - PEV_STATE.carregadoEm < PEV_STATE.cacheTtlMs)) {
+    regs = PEV_STATE.registros;
+  } else {
+    const resp = await iniLerQuieto('lerHistorico', { sigla: pac.sigla });
+    if (seq !== CHK_ENV.seq) return; // outra checagem começou enquanto esta resposta viajava
+    if (resp && resp.ok) {
+      regs = resp.automonitoramento || [];
+      PEV_STATE.registros = regs; PEV_STATE.carregadoEm = agora; PEV_STATE.invalidado = false; // o mesmo preenchimento do cache que o Início faz (periodoAuto fica com o Painel)
+    }
+  }
+  if (!regs) { chkRenderGraficoErro(); return; }
+  CHK_ENV.periodo = pevPeriodoInicial(regs); // menor recorte com ≥ 3 registros, como no Painel
+  chkRenderGrafico(regs);
+}
+function chkRenderGrafico(regs) {
+  const cont = document.getElementById('chkEnvGrafico'); if (!cont) return;
+  if (CHK_ENV.chart) { try { CHK_ENV.chart.destroy(); } catch (e) {} CHK_ENV.chart = null; }
+  const carregando = !regs;
+  const recorte = carregando ? [] : pevFiltrarPorPeriodo(regs, CHK_ENV.periodo);
+  const media = recorte.length ? pevCalcularResumo(recorte).humorMedio : '—';
+  const nivel = Number.isFinite(parseFloat(media)) ? Math.round(parseFloat(media)) : 0; // chip = nível arredondado (meio para cima)
+  let corpo = null;
+  if (!carregando && regs.length === 0) corpo = '<div class="pev-vazio chk-env-vazio"><div class="pev-vazio-titulo">Você ainda não tem registros</div></div>';
+  else if (!carregando && recorte.length === 0) corpo = '<div class="pev-vazio chk-env-vazio"><div class="pev-vazio-titulo">Nenhum registro nesse período</div></div>';
+  const rodape = carregando
+    ? '<div class="chk-env-media"><span class="chk-env-media-num">—</span></div>'
+    : '<div class="chk-env-media"><span class="chk-env-media-lbl">' + (CHK_ENV.periodo === 'tudo' ? 'Humor médio em todos os registros' : 'Humor médio nos ' + CHK_ENV.periodo + ' dias') + '</span>' +
+      '<span class="chk-env-media-num">' + media + '</span>' + (nivel ? '<span class="chk-env-media-chip">' + HUMOR_NOMES[nivel] + '</span>' : '') + '</div>';
+  cont.innerHTML = pevMontarBlocoHumor('chkEnvCanvas', { meio: carregando ? '' : pevMontarSeletor(CHK_ENV.periodo), corpo: corpo, fim: rodape, classe: 'chk-env-bloco' });
+  if (carregando) return;
+  pevBindSeletor(cont, function (p) { CHK_ENV.periodo = p; chkRenderGrafico(regs); });
+  if (recorte.length) { try { CHK_ENV.chart = pevDesenharHumor(recorte, document.getElementById('chkEnvCanvas')); } catch (e) { console.warn('[Checagem enviada] gráfico: ' + e.message); } }
+}
+function chkRenderGraficoErro() {
+  const cont = document.getElementById('chkEnvGrafico'); if (!cont) return;
+  cont.innerHTML = '<div class="pev-bloco chk-env-bloco"><div class="pev-vazio chk-env-vazio"><span class="pev-vazio-icon"><svg class=ico aria-hidden=true><use href=#i-alert></use></svg></span>' +
+    '<div class="pev-vazio-titulo">Falha de conexão</div><div class="pev-vazio-texto">Verifique sua internet e tente novamente.</div>' +
+    '<button type="button" class="b56 b56-sec chk-env-tentar" onclick="chkCarregarGrafico()">Tentar de novo</button></div></div>';
 }
 // Linha HUMOR (rostinho · nome · "· dd/mm às hh:mm") na página Automonitoramento ('hub') e no menu ('menu')
 function humorLinhaPreencher(prefixo) {
@@ -11680,10 +11815,9 @@ function autoAvancarSequencial(tipo, destino) {
   }
 
   autoSalvarRascunho();
-  abrirSecao(destino);
+  abrirSecao(destino); // já chama progressoParaTela (16.5d-3: a chamada repetida saiu)
   autoAplicarSequenciaObrigatoria(tipo);
   autoAtualizarProgressoMenus();
-  progressoParaTela(destino);
 }
 
 // ============================================================
@@ -12073,6 +12207,16 @@ function autoAposMudancaNoGrupo(grupo) {
   autoLimparAvisos(bloco);
   autoRodapeAtualizar(bloco);
   autoColetarSecaoAtiva();
+  cabAtualizarAtual(); // 16.5d-3: linha da etapa atual no cabeçalho, no mesmo caminho da contagem
+  autoSalvarRascunho();
+  autoAtualizarProgressoMenus();
+}
+// Depois de qualquer mudança num campo de texto da etapa (Situação, Pensamentos, Comportamentos): avisos, dados,
+// cabeçalho, rascunho e menus — um só caminho para os listeners de change e input (16.5d-3)
+function autoAposMudancaNoTexto(campo) {
+  autoLimparAvisos(campo.closest('.auto-tipo'));
+  autoColetarSecaoAtiva();
+  cabAtualizarAtual();
   autoSalvarRascunho();
   autoAtualizarProgressoMenus();
 }
@@ -12086,12 +12230,7 @@ document.addEventListener('change', function(e) {
     const grupo = e.target.closest('[data-grupo]');
     if (grupo) autoAposMudancaNoGrupo(grupo);
   }
-  if (e.target.matches('[data-auto-campo], [data-auto-campo-pens], [data-auto-campo-comp]')) {
-    autoLimparAvisos(e.target.closest('.auto-tipo'));
-    autoColetarSecaoAtiva();
-    autoSalvarRascunho();
-    autoAtualizarProgressoMenus();
-  }
+  if (e.target.matches('[data-auto-campo], [data-auto-campo-pens], [data-auto-campo-comp]')) autoAposMudancaNoTexto(e.target);
 });
 
 document.addEventListener('input', function(e) {
@@ -12113,12 +12252,7 @@ document.addEventListener('input', function(e) {
     if (grupo) autoAposMudancaNoGrupo(grupo);
     return;
   }
-  if (e.target.matches('[data-auto-campo], [data-auto-campo-pens], [data-auto-campo-comp]')) {
-    autoLimparAvisos(e.target.closest('.auto-tipo'));
-    autoColetarSecaoAtiva();
-    autoSalvarRascunho();
-    autoAtualizarProgressoMenus();
-  }
+  if (e.target.matches('[data-auto-campo], [data-auto-campo-pens], [data-auto-campo-comp]')) autoAposMudancaNoTexto(e.target);
 });
 
 // Teclado: 1–5 na barra = nota direta; primeiro toque de seta no estado "sem valor" mostra o marcador (no 3);
@@ -13679,22 +13813,7 @@ function pevRenderizar() {
 
     ${pevMontarSeletor()}
 
-    <div class="pev-bloco">
-      <div class="pev-bloco-titulo"><svg class=ico aria-hidden=true><use href=#i-trend-up></use></svg> Humor ao longo do tempo</div>
-      <div class="pev-bloco-sub">Cada ponto é um registro. Linhas tracejadas são dias sem registro.</div>
-      <div class="pev-humor-wrap">
-        <div class="pev-humor-legenda">
-          <div class="pev-humor-legenda-item"><span class="ic"><svg class="ico ico-humor-5" aria-hidden="true"><use href="#i-humor-5"/></svg></span><span class="nm">5</span></div>
-          <div class="pev-humor-legenda-item"><span class="ic"><svg class="ico ico-humor-4" aria-hidden="true"><use href="#i-humor-4"/></svg></span><span class="nm">4</span></div>
-          <div class="pev-humor-legenda-item"><span class="ic"><svg class="ico ico-humor-3" aria-hidden="true"><use href="#i-humor-3"/></svg></span><span class="nm">3</span></div>
-          <div class="pev-humor-legenda-item"><span class="ic"><svg class="ico ico-humor-2" aria-hidden="true"><use href="#i-humor-2"/></svg></span><span class="nm">2</span></div>
-          <div class="pev-humor-legenda-item"><span class="ic"><svg class="ico ico-humor-1" aria-hidden="true"><use href="#i-humor-1"/></svg></span><span class="nm">1</span></div>
-        </div>
-        <div class="pev-humor-canvas-box">
-          <canvas id="pevChartHumor"></canvas>
-        </div>
-      </div>
-    </div>
+    ${pevMontarBlocoHumor('pevChartHumor')}
 
     <div class="pev-secao-divider neg">
       <div class="pev-secao-divider-icon"><svg class=ico aria-hidden=true><use href=#i-heart-crack></use></svg></div>
@@ -13714,12 +13833,14 @@ function pevRenderizar() {
   `;
 
   pevBindSeletor();
-  pevDesenharHumor(regs);
+  PEV_STATE.charts.humor = pevDesenharHumor(regs);
   PEV_SECOES.forEach(s => pevDesenharBarras(s, regs));
 }
 
 // ----- 8. SELETOR DE PERÍODO -----
-function pevMontarSeletor() {
+// 16.5d-3: `periodo` opcional (a "Checagem enviada" tem o seu; sem argumento vale o do Painel)
+function pevMontarSeletor(periodo) {
+  const atual = (periodo === undefined) ? PEV_STATE.periodoAtual : periodo;
   const opcoes = [
     { v: 7, lbl: '7 dias' },
     { v: 30, lbl: '30 dias' },
@@ -13729,25 +13850,59 @@ function pevMontarSeletor() {
   return `
     <div class="pev-periodo">
       ${opcoes.map(o => `
-        <button class="pev-periodo-btn ${o.v == PEV_STATE.periodoAtual ? 'active' : ''}"
+        <button class="pev-periodo-btn ${o.v == atual ? 'active' : ''}"
                 data-pev-periodo="${o.v}" type="button">${o.lbl}</button>
       `).join('')}
     </div>`;
 }
 
-function pevBindSeletor() {
-  document.querySelectorAll('.pev-periodo-btn').forEach(btn => {
+// 16.5d-3: escopo por contêiner (o Painel e a "Checagem enviada" têm seletores próprios e não podem ligar um o do
+// outro); `aoEscolher(periodo)` troca o comportamento padrão do Painel. Sem argumentos = o de sempre.
+function pevBindSeletor(raiz, aoEscolher) {
+  const base = raiz || document.getElementById('pevConteudo') || document;
+  base.querySelectorAll('.pev-periodo-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const v = btn.dataset.pevPeriodo;
-      PEV_STATE.periodoAtual = (v === 'tudo') ? 'tudo' : parseInt(v, 10);
+      const periodo = (v === 'tudo') ? 'tudo' : parseInt(v, 10);
+      if (aoEscolher) { aoEscolher(periodo); return; }
+      PEV_STATE.periodoAtual = periodo;
       PEV_STATE.periodoAuto = false; // Pacote 16.4a: escolha manual manda
       pevRenderizar();
     });
   });
 }
 
+// 16.5d-3: bloco "Humor ao longo do tempo" (título, legenda, rostinhos 5→1 e canvas) montado uma vez só — serve ao
+// Painel e à "Checagem enviada" (§19 v4). opts = { meio: html entre a legenda e o gráfico, corpo: html no lugar do
+// gráfico, fim: html depois do gráfico, classe: classe extra do .pev-bloco }
+function pevMontarBlocoHumor(canvasId, opts) {
+  const o = opts || {};
+  const grafico = `
+      <div class="pev-humor-wrap">
+        <div class="pev-humor-legenda">
+          <div class="pev-humor-legenda-item"><span class="ic"><svg class="ico ico-humor-5" aria-hidden="true"><use href="#i-humor-5"/></svg></span><span class="nm">5</span></div>
+          <div class="pev-humor-legenda-item"><span class="ic"><svg class="ico ico-humor-4" aria-hidden="true"><use href="#i-humor-4"/></svg></span><span class="nm">4</span></div>
+          <div class="pev-humor-legenda-item"><span class="ic"><svg class="ico ico-humor-3" aria-hidden="true"><use href="#i-humor-3"/></svg></span><span class="nm">3</span></div>
+          <div class="pev-humor-legenda-item"><span class="ic"><svg class="ico ico-humor-2" aria-hidden="true"><use href="#i-humor-2"/></svg></span><span class="nm">2</span></div>
+          <div class="pev-humor-legenda-item"><span class="ic"><svg class="ico ico-humor-1" aria-hidden="true"><use href="#i-humor-1"/></svg></span><span class="nm">1</span></div>
+        </div>
+        <div class="pev-humor-canvas-box">
+          <canvas id="${canvasId || 'pevChartHumor'}"></canvas>
+        </div>
+      </div>`;
+  return `
+    <div class="pev-bloco${o.classe ? ' ' + o.classe : ''}">
+      <div class="pev-bloco-titulo"><svg class=ico aria-hidden=true><use href=#i-trend-up></use></svg> Humor ao longo do tempo</div>
+      <div class="pev-bloco-sub">Cada ponto é um registro. Linhas tracejadas são dias sem registro.</div>
+      ${o.meio || ''}
+      ${o.corpo || grafico}
+      ${o.fim || ''}
+    </div>`;
+}
+
 // ----- 9. GRÁFICO DE HUMOR -----
-function pevDesenharHumor(regs) {
+// 16.5d-3: `canvas` opcional (a "Checagem enviada" passa o seu); devolve o Chart (o Painel guarda em PEV_STATE.charts.humor)
+function pevDesenharHumor(regs, canvas) {
   const pontos = regs.map(r => {
     const m = String(r.data_registro || '').match(/(\d{4})-(\d{2})-(\d{2})/);
     if (!m) return null;
@@ -13759,7 +13914,7 @@ function pevDesenharHumor(regs) {
     return { dt, humor: parseInt(r.humor_nivel, 10) || 3 };
   }).filter(Boolean).sort((a, b) => a.dt - b.dt);
 
-  if (pontos.length === 0) return;
+  if (pontos.length === 0) return null;
 
   const labels = pontos.map(p => {
     const dd = String(p.dt.getDate()).padStart(2, '0');
@@ -13776,8 +13931,8 @@ function pevDesenharHumor(regs) {
     return vmcTok('--c-pos');
   };
 
-  const ctx = document.getElementById('pevChartHumor').getContext('2d');
-  PEV_STATE.charts.humor = new Chart(ctx, {
+  const ctx = (canvas || document.getElementById('pevChartHumor')).getContext('2d');
+  return new Chart(ctx, {
     type: 'line',
     data: {
       labels,
@@ -14879,7 +15034,7 @@ function escAtualizarProgresso() {
   const proximo = ids.findIndex(id => ESC_STATE.respostas[id] === undefined);
   progressoDefinir({
     total: totalComFuncional, atual: proximo === -1 ? totalComFuncional : proximo + 1, rotulo: 'Item',
-    nome: ESC_STATE.escalaAtual, feitos, cor: 'pos',
+    nome: ESC_STATE.escalaAtual, feitos,
     irPara: function (k) { const box = document.getElementById('escItemBox-' + ids[k - 1]); if (box) box.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
   });
   void pct;

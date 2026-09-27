@@ -158,8 +158,8 @@ do seu tipo. O conteúdo clínico continua no HTML, no bloco do seu tipo
   (prova: payloads iguais campo a campo antes e depois, relatório do 16.5d-1).
 - Um registro pode levar Negativo **e** Positivo (os dois blocos existem sempre
   no DOM); por isso a coleta final percorre os 10 ids lógicos, como antes.
-- O cabeçalho cumulativo (`#p11aHdr-{etapa}-a`) vive na seção física e só é
-  renderizado no Negativo (`P11A_NEG_SECOES`).
+- O cabeçalho cumulativo (`#cabHdr-{etapa}`; v2 desde o 16.5d-3) vive na seção física e é
+  renderizado para os dois tipos pelo hook de `abrirSecao` (ver "Registro: interior das 5 etapas").
 
 ## Registro: fluxo do paciente a partir do Pacote 16.5c
 
@@ -176,7 +176,9 @@ com valor -1, isto é, sem trilho).
   menos · Bem · Muito bem — **única fonte** dos nomes do humor, usada por
   checagem, menu, revisão, Meus Registros, modal e visão do profissional; os
   valores gravados continuam 1–5); pílula "Hoje, dd/mm · hh:mm" com "alterar"
-  (`chkMostrarCampos`); caixa descritiva (`HUMOR_DESC`, textos do catálogo);
+  (`chkMostrarCampos`; desde o 16.5d-3 ela já nasce preenchida com a data e a hora
+  de agora — `chkAtualizarPill` em `chkAbrir`, `chkEditar` e na troca dos campos,
+  contrato v4 item 25); caixa descritiva (`HUMOR_DESC`, textos do catálogo);
   observação com a pergunta fora do campo. Termina em "QUER CONTINUAR?" →
   `chkIniciarNovoRegistro()` (guarda a checagem em `AUTO_STATE.dados`, nada é
   enviado, e abre a página) ou `chkConcluirSoChecagem()` →
@@ -189,7 +191,23 @@ com valor -1, isto é, sem trilho).
   `humor_nivel` como em qualquer registro; a revisão nunca é aberta por esse
   caminho. Depois de enviada, `chkMostrarEnviada()` abre AUT-03b
   (`#sec-auto-checagem-enviada`, barra sem voltar) e um novo registro começa
-  outra checagem.
+  outra checagem. **AUT-03b desde o 16.5d-3 (§18/§19 da rodada 4, contrato v4
+  itens 26–27):** cartão `role="status"` em grade de 24 px — `i-thermometer` +
+  HUMOR · rostinho + nome do nível · `i-calendar` + data completa e hora
+  (`formatarDataBR` + `autoFormatarHora`, o formato de Meus Registros) · a
+  observação em itálico como 4.ª linha só quando houver (D3) — e, abaixo, o
+  gráfico "Humor ao longo do tempo" **do Painel, emprestado**: `chkCarregarGrafico()`
+  (sem `await`; a confirmação não depende dele) lê o cache `PEV_STATE` ou busca
+  `lerHistorico` por `iniLerQuieto` e preenche o cache como o Início faz, escolhe o
+  recorte por `pevPeriodoInicial` e chama `chkRenderGrafico(regs)` →
+  `pevMontarBlocoHumor('chkEnvCanvas', {…})` + `pevMontarSeletor(periodo)` +
+  `pevBindSeletor(contêiner, aoEscolher)` + `pevDesenharHumor(recorte, canvas)`;
+  rodapé "Humor médio nos N dias" / "em todos os registros" com a média de
+  `pevCalcularResumo` (a mesma string do cartão HUMOR MÉDIO, "2.8" — decisão D4) e
+  o chip `HUMOR_NOMES[Math.round(média)]`; estados carregando (legenda sem linha,
+  "—"), sem registros no recorte ("Nenhum registro nesse período"), falha
+  ("Falha de conexão" + "Tentar de novo"). Estado próprio `CHK_ENV`
+  (`periodo`, `chart`, `seq`); nenhuma segunda implementação de gráfico.
 - **Página Automonitoramento (AUT-02):** `hubAtualizar()` (chamado por
   `abrirSecao`, e de novo quando `p5VerificarPrimeiraVez` responde) decide:
   aviso D11 + CartõesTipo `.ctipo.bloqueado` (`aria-disabled`) enquanto
@@ -231,8 +249,10 @@ Em `index-dev.html` cada etapa (os dois tipos) segue `03_componentes.md` da roda
   `ResizeObserver` em `#topbar`; `body.com-barra .app` usa `calc(var(--topbar-h) + 8px)`); com
   sobretítulo, o título quebra em até 3 linhas (17 px, `text-wrap:balance`) em vez de cortar — fecha
   o débito 8.22. `progressoParaTela` escreve "Etapa N de 5 · nome completo" no `#topbarTitulo` (nome
-  lido do `data-barra-titulo` do bloco) e passa `soTrilho:true` a `progressoDefinir`, que esconde
-  `#progTxt`: o trilho é só indicador (feito = `reg`, atual = `-mid`, a fazer = `-tint`). Os blocos
+  lido do `data-barra-titulo` do bloco) e, **desde o 16.5d-3 (decisão P1)**, esconde o `#prog` em todas
+  as telas do registro: o progresso das 5 etapas é a trilha de ícones do cabeçalho cumulativo
+  (abaixo); `progressoDefinir` perdeu `soTrilho` e as cores `neg`/`pos-reg` e serve só à anamnese e às
+  escalas. Os blocos
   carregam `data-barra-sobretitulo` e `data-barra-acao="Salvar e sair"` (`etapaSalvarESair()`:
   coleta a seção ativa, grava o rascunho com `etapa` e volta à página); `autoMostrarTipo` copia
   também a ação para a seção física.
@@ -272,14 +292,33 @@ Em `index-dev.html` cada etapa (os dois tipos) segue `03_componentes.md` da roda
   Gravação inalterada: "Item:nota" com `AUTO_SEPARADOR`; desmarcar apaga a nota. O modal de edição
   de Meus Registros (`p136RenderGrupo_`) monta a mesma lista e barra a partir do grupo original
   (`p136InicializarBarras_`); sem nota, o item vai sem ":n" (antes recebia 3 em silêncio).
-- **Cabeçalho cumulativo (`cab*`):** `#cabHdr-{etapa}` na seção física, renderizado por
-  `cabRenderizar(idLógico)` no hook de `abrirSecao` para os dois tipos: linha HUMOR (rostinho +
-  `HUMOR_NOMES`) e, por etapa já preenchida (exceto a atual), ícone, rótulo, itens com a nota em
-  `<b>` e a frase em `<i>` (2 linhas, `-webkit-line-clamp`); "editar" volta à última etapa feita e
-  "ver tudo" abre o modal existente (`p11aAbrirModal`). **Só lê `AUTO_STATE.dados`** — mantido atual
-  por `autoColetarSecaoAtiva()` nos listeners de `change`/`input` — e nunca escreve nele: fecha o
-  débito 8.21 (o cabeçalho antigo coletava as 5 seções a cada render). `P11A_NEG_SECOES` e as
-  funções `p11a*` de render saíram; ficam só o modal e seu casco `.p11-m*`.
+- **Cabeçalho cumulativo v2 (`cab*`, Pacote 16.5d-3; §3 da rodada 4, contrato v4 item 17):**
+  `#cabHdr-{etapa}` na seção física, renderizado por `cabRenderizar(idLógico)` no hook de
+  `abrirSecao` para os dois tipos. Cartão em tinte do tipo com quatro blocos separados por filete
+  `--c-line-alpha`: **(1)** `.cab-humor` — rostinho `i-humor-N` num círculo `--c-surface` de 40 px
+  (tinta do próprio nível, P4), "HUMOR" + `HUMOR_NOMES` e, à direita, "PREENCHENDO" + nome curto da
+  etapa (`CAB_ROTULOS`, fonte única dos rótulos curtos; `PROG_REGISTRO_NOMES` saiu); **(2)**
+  `.cab-trilha` — 5 nós de 36 px com o ícone da etapa (`CAB_ICONES`), traço de 4 px; feita = fundo
+  `reg` e ícone `--c-ink-inv`, tocável (`<button>` → `cabIrEtapa` → `autoEntrarSecao`, o mesmo
+  caminho do trilho antigo, D2); atual = `--c-surface` com borda `reg`, anel `--c-reg-*-mid` e
+  `aria-current="step"`; futura = contorno `--c-line-strong`; o traço à esquerda de um nó fica cheio
+  quando esse nó é feito ou atual; **(3)** `.cab-lin` — uma linha por etapa **feita ou atual**
+  (`cabEtapaFeita`: grupo marcado ou texto livre em `AUTO_STATE.dados`), ícone + rótulo em caixa alta
+  correndo em linha (`.cab-rot`, `--t-label`, nunca quebra) + **só os nomes curtos dos grupos
+  marcados** separados por " · " (`cabGruposMarcados`: chave e título lidos do DOM por
+  `histTituloGrupo`; `cabNomeCurtoGrupo` tira o prefixo da etapa — `Situações (de )?`,
+  `Pensamentos (sobre (os? )?|de )` — e, sobrando parêntese, usa só o seu conteúdo quando é uma
+  palavra, senão a parte antes: "Autocrítica", "Internas" — decisão D1); nunca subgrupo, nunca nota;
+  "…" quando vazia; a Situação acrescenta a frase em itálico 13 px numa linha cortada (D5); no
+  Positivo a etapa 1 mostra só a frase; a linha atual tem fundo `--c-surface` e a região
+  `aria-live` fica só no trecho dos grupos (`.cab-grupos`), atualizado por `cabAtualizarAtual()` no
+  mesmo caminho da contagem do rodapé (`autoAposMudancaNoGrupo` e `autoAposMudancaNoTexto`, o
+  caminho único dos campos de texto nos listeners de `change`/`input`); **(4)** `.cab-acoes` —
+  "editar" (`cabEditar` → `autoAbrirMenuTipo`, abre "Suas 5 etapas") e "ver tudo" (modal existente
+  `p11aAbrirModal`), sempre presentes, inclusive na etapa 1 (P3). **Só lê `AUTO_STATE.dados`** —
+  mantido atual por `autoColetarSecaoAtiva()` — e nunca escreve nele (débito 8.21 continua
+  fechado). Fica o modal e seu casco `.p11-m*`. Nuance aceita: item marcado sem nota num grupo com
+  escala só entra na linha quando ganha a nota (a coleta o omite; a nota é obrigatória, D9).
 - **RodapéEtapa:** `.auto-rodape.barra-acao` com `.auto-rodape-cont` (textos nos atributos
   `data-cont-0/1/n` do próprio rodapé; `autoRodapeAtualizar(bloco)`), "‹" 56 px
   (`aria-label="Etapa anterior"`; "Voltar" na etapa 1) e o primário com o nome da próxima etapa ou
@@ -418,9 +457,10 @@ Planilha individual do paciente — abas:
   texto)`. Badge da sigla e hambúrguer do paciente vivem na barra (ids
   `userBadge`, `pacHamburgerWrap` preservados). O header institucional
   antigo existe só como marca reduzida no login (`.login-marca`).
-- **Cabeçalho cumulativo (`.cab`, Pacote 16.5d-2):** substituiu o
+- **Cabeçalho cumulativo (`.cab`, Pacote 16.5d-2 → v2 no 16.5d-3):** substituiu o
   `.p11-header` do 16.3 — ver "Registro: interior das 5 etapas". Cartão em
-  tinte do tipo, sempre visível (HUMOR na etapa 1), só leitura de
+  tinte do tipo com quatro blocos (humor + etapa atual, trilha, linhas por
+  etapa, ações), sempre visível (na etapa 1 já com a linha "…"), só leitura de
   `AUTO_STATE.dados`.
 - **Título nunca duplicado:** quando o título do card repete o da barra, o
   card fica só com ícone + subtítulo (o asterisco de obrigatório vai para
@@ -432,15 +472,16 @@ Planilha individual do paciente — abas:
   chamam `progressoIr(i)` → `irPara(i)`; `progressoOcultar()` esconde.
   `abrirSecao()` chama `progressoParaTela(id)`, que usa `PROG_REGISTRO_TELAS`
   (5 etapas; checagem, menu e revisão = -1, sem trilho) e esconde nas telas
-  sem fluxo; desde o 16.5d-2 passa `soTrilho:true` (o título "Etapa N de 5 ·
-  nome completo" vai para a barra) e o segmento atual usa `--c-reg-*-mid`. A
+  sem fluxo; o título "Etapa N de 5 · nome completo" vai para a barra (16.5d-2)
+  e, **desde o 16.5d-3, o `#prog` fica escondido em todas as telas do registro**
+  (decisão P1: a trilha de ícones do cabeçalho cumulativo é o único indicador
+  de progresso das etapas; `soTrilho`, `.prog.neg` e `.prog.pos-reg` saíram). A
   anamnese define o próprio em `renderPasso`/`renderRevisao`
   (`ANAM_PASSOS_NOMES`, 5 = 4 passos + revisão, volta por
   `anamIrParaPasso(k)`); a escala em `escAtualizarProgresso` (item atual =
-  próximo não respondido; tocar rola até `#escItemBox-<id>`). Cor `--c-pos`;
-  `.prog.neg` / `.prog.pos-reg` nas etapas do registro. Substituiu pontos da
-  anamnese, pontos do humor, barra gamificada, selo "Preenchido", tabs do
-  cabeçalho cumulativo e barra percentual das escalas.
+  próximo não respondido; tocar rola até `#escItemBox-<id>`). Cor `--c-pos`.
+  Substituiu pontos da anamnese, pontos do humor, barra gamificada, selo
+  "Preenchido", tabs do cabeçalho cumulativo e barra percentual das escalas.
 - **Barra de ação (`.barra-acao`, Pacote 16.3):** classe no contêiner dos
   botões de navegação já existentes (`.auto-nav-duplo`, `.anam-nav`,
   `.esc-nav`). Em ≤ 600 px vira fixa no rodapé (`--sh-bar`, 64 px +
@@ -507,3 +548,13 @@ Planilha individual do paciente — abas:
   recolhíveis (`.aberto` + seta `.esch-bloco-chevron`), com `escHistToggleBloco`
   (`ESC_HIST_STATE.abertos`, `data-esc`) e `histToggleMes` (`HIST_MESES_ABERTOS`,
   `data-mes`) como adaptadores.
+- **Gráfico de humor emprestado (Pacote 16.5d-3):** o bloco "Humor ao longo do
+  tempo" do Painel virou três funções com o contêiner por parâmetro —
+  `pevMontarBlocoHumor(canvasId, {meio, corpo, fim, classe})` (título, legenda,
+  rostinhos 5→1 e canvas), `pevDesenharHumor(regs, canvas)` (devolve o Chart;
+  o Painel guarda em `PEV_STATE.charts.humor`, a "Checagem enviada" em
+  `CHK_ENV.chart`) e `pevBindSeletor(raiz, aoEscolher)` (liga só os
+  `.pev-periodo-btn` do contêiner — sem argumentos, `#pevConteudo` e o
+  comportamento de sempre; com `aoEscolher`, o chamador decide) +
+  `pevMontarSeletor(periodo)`. Padrão "empréstimo" sem segunda implementação;
+  o Painel não mudou de comportamento.
