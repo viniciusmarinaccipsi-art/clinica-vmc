@@ -73,6 +73,12 @@ módulos (anamnese pendente, primeira vez).
 ### Cache 30s (padrão `pev*`)
 Para dados do servidor que mudam pouco na sessão (`lerHistorico`,
 `lerEscalas`). SEMPRE invalidar após operação de escrita correspondente.
+**Todo cache por paciente é descartado no logout** (Pacote 16.5d-3.2, débito
+8.28): `descartarCachesPaciente_()`, chamada por `logout()` e
+`logoutProfissional()`, zera `PEV_STATE` (registros, `carregadoEm`, `invalidado`,
+`charts` destruídos), `ESC_HIST_STATE` (inclusive `visaoProfissional`),
+`CHK_ENV.chart` e `window._HIST_REGS`. Cache novo por paciente = entrar nessa
+função.
 
 ### Detecção de veterano
 "Paciente tem ≥1 registro = já passou pelo onboarding". Derivar de

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.5d-3.1 (27/09/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.5d-3.2 (27/09/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -7849,6 +7849,7 @@ var PROF_SESSAO = null;
 function logoutProfissional() {
   PROF_SESSAO = null;
   PROF_PACIENTE_SEL = null;
+  descartarCachesPaciente_(); // 16.5d-3.2: a visão do profissional também preenche ESC_HIST_STATE e _HIST_REGS
   document.getElementById('userBadge').classList.remove('visible');
   resetarTelaLogin_();
   abrirSecao('sec-login');
@@ -9021,8 +9022,32 @@ function pacIniciarEdicaoAnamnese() {
 
 /* Fim do Pacote 13.4.1 */
 
+// Pacote 16.5d-3.2 (débito 8.28, sigilo): todo cache por paciente com TTL (Painel, histórico de escalas) e os
+// gráficos desenhados com esses dados são descartados nos dois logouts. Sem isto, outro paciente na mesma aba em
+// menos de 30 s veria o Painel/histórico do anterior. Só exibição; nada gravado.
+function descartarCachesPaciente_() {
+  if (typeof PEV_STATE !== 'undefined') {
+    Object.keys(PEV_STATE.charts || {}).forEach(function (k) { try { PEV_STATE.charts[k] && PEV_STATE.charts[k].destroy(); } catch (e) {} });
+    PEV_STATE.charts = {};
+    PEV_STATE.registros = [];
+    PEV_STATE.carregadoEm = 0;
+    PEV_STATE.invalidado = true;
+    PEV_STATE.periodoAuto = true;
+  }
+  if (typeof ESC_HIST_STATE !== 'undefined') {
+    ESC_HIST_STATE.registros = [];
+    ESC_HIST_STATE.carregadoEm = 0;
+    ESC_HIST_STATE.invalidado = true;
+    ESC_HIST_STATE.abertos = {};
+    ESC_HIST_STATE.visaoProfissional = false;
+  }
+  if (typeof CHK_ENV !== 'undefined' && CHK_ENV.chart) { try { CHK_ENV.chart.destroy(); } catch (e) {} CHK_ENV.chart = null; }
+  window._HIST_REGS = null; // Meus Registros (sem TTL; refeito a cada abertura, mas não fica em memória entre sessões)
+}
+
 function logout() {
   limparSessao();
+  descartarCachesPaciente_(); // 16.5d-3.2
   // Pacote 5: reseta estado de primeira vez ao deslogar
   if (typeof P5_STATE !== 'undefined') {
     P5_STATE.verificado = false;
