@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.5d-3.2 (27/09/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.5e (27/09/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -45,6 +45,7 @@
   --c-line-strong:   #D6D5E4;  /* borda de botão secundário, campo, moldura de tela */
   --c-line-alpha:    rgba(29,27,43,.08);  /* 16.5 r3: divisor sobre fundo tinte (herda o tom do fundo) */
   --c-scrim:         rgba(29,27,43,.45);  /* 16.5 r3: fundo escurecido atrás de folha inferior e modal */
+  --c-inv-alpha:     rgba(255,255,255,.20); /* 16.5e: botão translúcido sobre cabeçalho cheio (índigo) */
 
   /* ---------- Ação · índigo ---------- */
   --c-action:        #4C4A8F;  /* botão primário, link, aba ativa, seleção */
@@ -208,6 +209,7 @@
     --c-line-strong: #3E3B57;
     --c-line-alpha:  rgba(255,255,255,.10);
     --c-scrim:       rgba(0,0,0,.60);
+    --c-inv-alpha:   rgba(255,255,255,.14);
     --c-action:      #A8A5E0;
     --c-action-hover:#B8B5EA;
     --c-action-press:#9895D6;
@@ -1385,10 +1387,11 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 /* Pacote 10: Card selecionado no Passo 2 de 2 */
 
 
-/* Modal do +N */
+/* Casco de modal .p11-m* (Pacote 11.6): desde o 16.5e só o modal de detalhes das escalas (#eschModalDetalhe) o usa;
+   os dois rgba() fixos viraram token (débito 8.27d) */
 .p11-mov{
   position:fixed;top:0;left:0;right:0;bottom:0;
-  background:rgba(0,0,0,.55);display:none;
+  background:var(--c-scrim);display:none;
   align-items:flex-start;justify-content:center;
   z-index:100;padding:30px 16px;overflow-y:auto;
 }
@@ -1409,14 +1412,11 @@ body.vmc-largo .topbar-in{max-width:1360px;}
   font-size:15px;margin:0;display:inline-flex;align-items:center;gap:8px;
 }
 .p11-mclose{
-  background:rgba(255,255,255,.2);border:none;color:var(--c-ink-inv);
+  background:var(--c-inv-alpha);border:none;color:var(--c-ink-inv);
   width:28px;height:28px;border-radius:50%;cursor:pointer;
   font-size:17px;font-weight:bold;line-height:1;
 }
 .p11-mbody{padding:16px 18px 24px;}
-
-@media (max-width:540px){
-}
 
 /* ============================================================
    PACOTE 5 — Cadeado no fluxo de primeira vez
@@ -1664,6 +1664,58 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .metapa:active{border-left-width:6px;}
 .metapa.seq-bloqueado{pointer-events:none;opacity:.45;}
 .menu-rodape{margin-top:18px;}
+/* ============================================================
+   Pacote 16.5e — Revisar e Enviar (AUT-09, §13 BlocoRevisão), Registro enviado (AUT-10) e
+   FolhaInferior "Sair sem enviar?" (AUT-12c, §14). Só tokens; a cor do tipo vem do [data-tipo] da seção.
+   ============================================================ */
+.rvs-intro{font:var(--t-body-lg);color:var(--c-ink-2);margin:6px 0 14px;}
+.rvs-bloco{display:flex;flex-direction:column;gap:10px;background:var(--c-surface);border:1px solid var(--c-line);border-left:4px solid var(--c-reg-neg);border-radius:14px;padding:14px 16px;box-shadow:var(--sh-1);margin:0 0 12px;}
+[data-tipo="pos"] .rvs-bloco{border-left-color:var(--c-reg-pos);}
+.rvs-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.rvs-head>.ico{width:20px;height:20px;flex-shrink:0;color:var(--c-reg-neg-ink);}
+[data-tipo="pos"] .rvs-head>.ico{color:var(--c-reg-pos-ink);}
+.rvs-rot{flex:1;min-width:0;font:var(--t-label);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--c-ink-2);}
+.rvs-feita{display:inline-flex;align-items:center;gap:4px;font:600 13px/1 var(--f-text);color:var(--c-pos-ink);background:var(--c-pos-tint);border-radius:999px;padding:5px 9px;white-space:nowrap;}
+.rvs-feita .ico{width:14px;height:14px;stroke-width:2.5;}
+.rvs-frase{font:400 16px/1.45 var(--f-text);color:var(--c-ink);margin:0;white-space:pre-line;}
+.rvs-frase-pens{font-style:italic;}
+.rvs-chips{display:flex;flex-wrap:wrap;gap:8px;}
+.rvs-chip{font:600 14px/1.3 var(--f-text);color:var(--c-reg-neg-ink);background:var(--c-reg-neg-tint);border-radius:999px;padding:6px 12px;}
+[data-tipo="pos"] .rvs-chip{color:var(--c-reg-pos-ink);background:var(--c-reg-pos-tint);}
+.rvs-linhas{display:flex;flex-direction:column;gap:10px;}
+.rvs-lin{display:grid;grid-template-columns:minmax(0,1fr) 120px 24px;gap:12px;align-items:center;}
+.rvs-lin-nome{font:400 16px/1.35 var(--f-text);color:var(--c-ink);}
+.rvs-barra{display:block;height:8px;border-radius:4px;background:var(--c-reg-neg-tint);overflow:hidden;}
+.rvs-barra-fill{display:block;height:100%;border-radius:4px;background:var(--c-reg-neg);}
+[data-tipo="pos"] .rvs-barra{background:var(--c-reg-pos-tint);}
+[data-tipo="pos"] .rvs-barra-fill{background:var(--c-reg-pos);}
+.rvs-nota{font:600 16px/1 var(--f-text);color:var(--c-ink);text-align:right;font-feature-settings:var(--num-tnum);}
+.rvs-vazio{font:var(--t-body);color:var(--c-ink-3);margin:0;}
+.rvs-rodape{font:var(--t-body);color:var(--c-ink-3);text-align:center;margin:18px 0 12px;}
+.rvs-aviso .auto-aviso{margin:0 0 12px;}
+.b56.enviando::before{content:'';width:18px;height:18px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite;}
+/* Registro enviado (AUT-10): reaproveita .chk-env (círculo, título) da checagem enviada */
+.env-titulo{margin-bottom:6px;}
+.env-data{font:var(--t-body-lg);color:var(--c-ink-3);font-feature-settings:var(--num-tnum);margin:0 0 16px;}
+.env-txt{font:var(--t-body-lg);color:var(--c-ink-2);margin:0 0 8px;}
+.env-rotulo{text-align:left;}
+.env-lista{background:var(--c-surface);border:1px solid var(--c-line);border-radius:var(--r-card);box-shadow:var(--sh-1);margin:0 0 16px;text-align:left;overflow:hidden;}
+.env-item{display:flex;align-items:center;gap:14px;width:100%;min-height:56px;padding:0 16px;border:none;border-top:1px solid var(--c-line);background:none;text-align:left;font:600 17px/1.3 var(--f-text);color:var(--c-action-ink);cursor:pointer;}
+.env-item:first-child{border-top:none;}
+.env-item:hover{background:var(--c-surface-sub);}
+.env-item .ico{width:22px;height:22px;flex-shrink:0;}
+.env-item.pos{color:var(--c-reg-pos-ink);}
+.env-item.neg{color:var(--c-reg-neg-ink);}
+/* FolhaInferior (§14): fundo --c-scrim, folha com alça; no computador vira cartão centrado */
+.folha-scrim{display:none;position:fixed;inset:0;background:var(--c-scrim);z-index:10000;align-items:flex-end;justify-content:center;animation:p5-fade .2s ease-out;}
+.folha-scrim.show{display:flex;}
+.folha{width:100%;max-width:768px;background:var(--c-surface);border-radius:var(--r-sheet) var(--r-sheet) 0 0;box-shadow:var(--sh-3);padding:20px 16px calc(24px + env(safe-area-inset-bottom));animation:folha-sobe .25s ease-out;}
+@keyframes folha-sobe{from{transform:translateY(24px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.folha-alca{display:flex;align-items:center;justify-content:center;width:100%;height:var(--hit-min);margin:-16px 0 0;border:none;background:none;cursor:pointer;}
+.folha-alca span{width:40px;height:4px;border-radius:2px;background:var(--c-line-strong);}
+.folha-titulo{font:600 22px/1.25 var(--f-text);color:var(--c-ink);margin:0 0 10px;}
+.folha-txt{font:400 15px/1.5 var(--f-text);color:var(--c-ink-2);margin:0 0 18px;}
+@media (min-width:900px){ .folha-scrim{align-items:center;padding:20px;} .folha{max-width:440px;border-radius:var(--r-sheet);} }
 /* Meus Registros: linha só de checagem */
 .histc-tipo.chk{background:var(--c-humor-3-bg);color:var(--c-humor-3-ink);}
 
@@ -1866,14 +1918,6 @@ button.cab-no-item{cursor:pointer;}
 .p8-consulta-card-perguntas p{margin:2px 0;}
 
 /* Revisar e Enviar — visual de hoje até o 16.5e (as três classes só existem nessa tela agora) */
-.auto-sec-sub{font:var(--t-body-sm);color:var(--c-ink-3);}
-.auto-btn-next{display:block;width:100%;margin-top:18px;padding:14px;background:var(--c-action);color:var(--c-ink-inv);border:none;border-radius:var(--r-field);font-family:var(--f-text);font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;}
-.auto-btn-next:hover:not(:disabled){transform:translateY(-1px);box-shadow:var(--sh-2);}
-.auto-btn-next:disabled{opacity:.5;cursor:not-allowed;}
-.auto-nav-duplo{display:flex;gap:10px;margin-top:18px;align-items:stretch;}
-.auto-nav-duplo .auto-btn-next{margin-top:0;flex:1;}
-.auto-nav-duplo .auto-btn-prev{flex:0 0 40%;padding:14px;border:2px solid transparent;border-radius:var(--r-field);font-family:var(--f-text);font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;background:var(--c-surface-sub);color:var(--c-ink-2);}
-.auto-nav-duplo .auto-btn-prev:hover{background:var(--c-line);transform:translateY(-1px);}
 
 /* RodapéEtapa (§9): contagem centrada + "‹" 56 + próxima etapa */
 .auto-rodape{display:flex;flex-direction:column;gap:8px;margin-top:18px;}
@@ -2034,17 +2078,6 @@ button.cab-no-item{cursor:pointer;}
 /* ============================================================
    PACOTE 6 — Revisar Registro (infográfico completo)
    ============================================================ */
-.rev-humor{
-  padding:16px 18px;border-bottom:1px solid var(--c-line);
-  display:flex;align-items:center;gap:14px;
-}
-.rev-humor-emoji{font-size:36px;line-height:1;}
-.rev-humor-nivel{
-  font-family:var(--f-title);font-size:15px;font-weight:700;color:var(--c-ink);
-}
-.rev-humor-data{font:var(--t-body-sm);color:var(--c-ink-3);margin-top:2px;}
-.rev-humor-obs{font:var(--t-body-sm);color:var(--c-ink-2);margin-top:4px;font-style:italic;}
-
 .rev-secao{padding:16px 18px 10px;}
 .rev-secao-titulo{
   font-family:var(--f-title);font-size:15px;font-weight:700;
@@ -2100,10 +2133,6 @@ button.cab-no-item{cursor:pointer;}
   padding:1px 6px;font-weight:800;
 }
 .rev-sep{height:1px;background:var(--c-line);margin:6px 0 14px;}
-.rev-footer-note{
-  font:var(--t-body-sm);text-align:center;color:var(--c-ink-3);
-  padding:8px 18px 4px;
-}
 
 /* Instruções */
 .instr-box{background:var(--c-surface);border-radius:var(--r-card);padding:22px 20px;margin:10px 0;box-shadow:var(--sh-1);border:1px solid var(--c-line);}
@@ -3756,7 +3785,6 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
   .barra-acao .btn-step-prev,.barra-acao .esc-btn-secondary{flex:0 0 38%;}
   body:has(.section.active .barra-acao) .app{padding-bottom:calc(100px + 64px);}
 }
-.sair-modal-txt{font:var(--t-body);color:var(--c-ink-2);margin:0 0 var(--s-4);}
 </style>
 </head>
 <body>
@@ -3835,20 +3863,15 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
   <span class="erro-rede-txt">O servidor não respondeu. Verifique a conexão e tente de novo.</span>
   <button type="button" class="erro-rede-btn" id="vmcErroRedeBtn">Tentar de novo</button>
 </div>
-<!-- Pacote 16.3: sair de um fluxo (anamnese, registro, escala) com dados em andamento -->
-<div class="p5-modal-overlay" id="sairModal" onclick="if(event.target===this)sairModalFechar()">
-  <div class="p5-modal-card" role="dialog" aria-modal="true" aria-labelledby="sairModalTitulo" style="max-width:380px;">
-    <div class="p5-modal-head">
-      <span class="p5-modal-icone"><svg class="ico" aria-hidden="true"><use href="#i-save"/></svg></span>
-      <div class="p5-modal-titulo" id="sairModalTitulo">Sair sem gravar?</div>
-    </div>
-    <div class="p5-modal-body">
-      <p class="sair-modal-txt">Seu rascunho fica salvo neste aparelho. Ao voltar, você continua de onde parou.</p>
-      <div class="p5-modal-acoes">
-        <button type="button" class="p5-btn p5-btn-secondary" onclick="sairModalFechar()">Continuar aqui</button>
-        <button type="button" class="p5-btn p5-btn-primary" id="sairModalConfirmar">Sair</button>
-      </div>
-    </div>
+<!-- Pacote 16.3 → 16.5e (AUT-12c, §14 FolhaInferior): sair de um fluxo (anamnese, registro, escala) com dados em andamento.
+     Aberta só por confirmarSaida(); fecha pela alça, pelo fundo ou por Esc. -->
+<div class="folha-scrim" id="sairFolha" onclick="if(event.target===this)sairModalFechar()">
+  <div class="folha" role="dialog" aria-modal="true" aria-labelledby="sairFolhaTitulo">
+    <button type="button" class="folha-alca" aria-label="Fechar" onclick="sairModalFechar()"><span></span></button>
+    <h2 class="folha-titulo" id="sairFolhaTitulo">Sair sem enviar?</h2>
+    <p class="folha-txt">O que você preencheu fica guardado enquanto esta aba estiver aberta.</p>
+    <button type="button" class="b56" id="sairFolhaContinuar" onclick="sairModalFechar()">Continuar registro</button>
+    <button type="button" class="b56 b56-sec" id="sairModalConfirmar">Sair</button>
   </div>
 </div>
 
@@ -4663,6 +4686,7 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <textarea id="autoInpObsHumor" rows="3"></textarea>
       </div>
       <div class="rotulo-secao">Quer continuar?</div>
+      <div class="rvs-aviso" id="chkAviso"></div>
       <button type="button" class="b56" id="chkBtnIniciar" onclick="chkIniciarNovoRegistro()" disabled><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg> Iniciar novo registro</button>
       <button type="button" class="b56 b56-sec" id="chkBtnConcluir" onclick="chkConcluirSoChecagem()" disabled>Concluir só com a checagem de humor</button>
     </div>
@@ -4683,19 +4707,23 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <!-- 16.5d-3 (§19 v4): o gráfico "Humor ao longo do tempo" do Painel, montado por chkCarregarGrafico() -->
       <div class="chk-env-grafico" id="chkEnvGrafico"></div>
       <p class="chk-env-nota">Fica em Meus Registros e no Painel de Evolução.</p>
+      <!-- 16.5e: atalho para o registro completo reaproveitando a checagem enviada (texto aceito pelo usuário em 26/09) -->
+      <button type="button" class="b56" onclick="chkFazerRegistroCompleto()"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg> Fazer um registro completo</button>
       <button type="button" class="b56 b56-sec" onclick="abrirSecao('sec-menu')">Voltar ao início</button>
     </div>
   </div>
 
   <!-- Pacote 16.5c (AUT-03c): menu "Suas 5 etapas" — uma seção física; os dois tipos são blocos .auto-tipo com os ids
        lógicos de sempre (sec-auto-menu-neg / sec-auto-menu-pos), como nas etapas (16.5d-1). Sem trilho, sem estado por etapa. -->
+  <!-- 16.5e: os blocos carregam a ação "Salvar e sair" (autoMostrarTipo copia a ação do bloco para a seção desde o 16.5d-2;
+       sem o atributo no bloco a pílula sumia do menu). -->
   <div class="section" id="sec-auto-menu" data-barra-titulo="Suas 5 etapas" data-barra-sobretitulo="Registro Negativo" data-barra-voltar="abrirSecao('sec-automonitoramento')" data-barra-voltar-rotulo="Voltar" data-barra-acao="Salvar e sair" data-barra-acao-onclick="menuSalvarESair()" data-tipo="neg">
     <div class="menu-humor" id="menuHumor">
       <div class="menu-humor-head"><svg class="ico" aria-hidden="true"><use href="#i-thermometer"/></svg><span>Humor</span><button type="button" class="lnk" onclick="chkEditar()"><svg class="ico" aria-hidden="true"><use href="#i-pencil"/></svg> editar</button></div>
       <div class="menu-humor-linha"><span id="menuHumorRosto"></span><span class="menu-humor-nome" id="menuHumorNome"></span><span class="menu-humor-data" id="menuHumorData"></span></div>
     </div>
     <p class="menu-dica">Toque em uma etapa para abrir.</p>
-    <div class="auto-tipo" id="sec-auto-menu-neg" data-tipo="neg" data-barra-titulo="Suas 5 etapas" data-barra-sobretitulo="Registro Negativo" data-barra-voltar="abrirSecao('sec-automonitoramento')">
+    <div class="auto-tipo" id="sec-auto-menu-neg" data-tipo="neg" data-barra-titulo="Suas 5 etapas" data-barra-sobretitulo="Registro Negativo" data-barra-voltar="abrirSecao('sec-automonitoramento')" data-barra-acao="Salvar e sair" data-barra-acao-onclick="menuSalvarESair()">
       <div class="metapas" role="list">
         <button class="metapa neg" role="listitem" data-sec-idx="0" data-sec-tipo="neg" type="button" onclick="autoEntrarSecao('sec-auto-sit-a',0,'neg')"><span class="metapa-ico"><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg></span><span><span class="metapa-nome">Situação</span><span class="metapa-perg">O que aconteceu?</span></span><span class="metapa-chev" aria-hidden="true">›</span></button>
         <button class="metapa neg" role="listitem" data-sec-idx="1" data-sec-tipo="neg" type="button" onclick="autoEntrarSecao('sec-auto-emo-a',1,'neg')"><span class="metapa-ico"><svg class="ico" aria-hidden="true"><use href="#i-heart-crack"/></svg></span><span><span class="metapa-nome">Emoções Desagradáveis</span><span class="metapa-perg">O que você sentiu?</span></span><span class="metapa-chev" aria-hidden="true">›</span></button>
@@ -4704,7 +4732,7 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <button class="metapa neg" role="listitem" data-sec-idx="4" data-sec-tipo="neg" type="button" onclick="autoEntrarSecao('sec-auto-comp-a',4,'neg')"><span class="metapa-ico"><svg class="ico" aria-hidden="true"><use href="#i-trend-down"/></svg></span><span><span class="metapa-nome">Comportamentos Disfuncionais</span><span class="metapa-perg">Como você reagiu a essa situação?</span></span><span class="metapa-chev" aria-hidden="true">›</span></button>
       </div>
     </div>
-    <div class="auto-tipo" id="sec-auto-menu-pos" data-tipo="pos" data-barra-titulo="Suas 5 etapas" data-barra-sobretitulo="Registro Positivo" data-barra-voltar="abrirSecao('sec-automonitoramento')" hidden>
+    <div class="auto-tipo" id="sec-auto-menu-pos" data-tipo="pos" data-barra-titulo="Suas 5 etapas" data-barra-sobretitulo="Registro Positivo" data-barra-voltar="abrirSecao('sec-automonitoramento')" data-barra-acao="Salvar e sair" data-barra-acao-onclick="menuSalvarESair()" hidden>
       <div class="metapas" role="list">
         <button class="metapa pos" role="listitem" data-sec-idx="0" data-sec-tipo="pos" type="button" onclick="autoEntrarSecao('sec-auto-sit-b',0,'pos')"><span class="metapa-ico"><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg></span><span><span class="metapa-nome">Situação</span><span class="metapa-perg">O que aconteceu?</span></span><span class="metapa-chev" aria-hidden="true">›</span></button>
         <button class="metapa pos" role="listitem" data-sec-idx="1" data-sec-tipo="pos" type="button" onclick="autoEntrarSecao('sec-auto-emo-b',1,'pos')"><span class="metapa-ico"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg></span><span><span class="metapa-nome">Emoções Agradáveis</span><span class="metapa-perg">O que você sentiu?</span></span><span class="metapa-chev" aria-hidden="true">›</span></button>
@@ -6592,24 +6620,37 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
   </div>
 
   <!-- RESUMO -->
-  <div class="section" id="sec-auto-resumo" data-barra-titulo="Revisar e Enviar" data-barra-voltar="autoVoltarEditarRevisar()" data-barra-voltar-rotulo="Voltar">
-    <div class="anam-card">
-      <div class="auto-sec-header" style="border-color:var(--c-action);">
-        <div class="auto-sec-icon" style="background:var(--c-action-tint);color:var(--c-action);"><svg class="ico" aria-hidden="true"><use href="#i-send"/></svg></div>
-        <div>
-          <div class="auto-sec-title" style="color:var(--c-action);">Revisar Registro</div>
-          <div class="auto-sec-sub">Confira as informações antes de enviar</div>
-        </div>
+  <!-- Pacote 16.5e (AUT-09, §13 BlocoRevisão): Revisar e Enviar — bloco HUMOR (o mesmo .menu-humor do menu e da página) e um
+       BlocoRevisão por etapa, montados por revisarAbrir() só a partir de AUTO_STATE.dados + DOM. data-tipo e sobretítulo são
+       escritos pelo JS conforme o tipo. Voltar da barra → etapa 5 (ou à etapa de origem, quando aberta por "ver tudo"). -->
+  <div class="section" id="sec-auto-revisar" data-barra-titulo="Revisar e Enviar" data-barra-sobretitulo="Registro Negativo" data-tipo="neg" data-barra-voltar="autoVoltarEditarRevisar()" data-barra-voltar-rotulo="Voltar">
+    <p class="rvs-intro" id="rvsIntro">Confira as informações antes de enviar.</p>
+    <div class="menu-humor" id="rvsHumor">
+      <div class="menu-humor-head"><svg class="ico" aria-hidden="true"><use href="#i-thermometer"/></svg><span>Humor</span><button type="button" class="lnk" onclick="revisarEditarHumor()"><svg class="ico" aria-hidden="true"><use href="#i-pencil"/></svg> editar</button></div>
+      <div class="menu-humor-linha"><span id="rvsHumorRosto"></span><span class="menu-humor-nome" id="rvsHumorNome"></span><span class="menu-humor-data" id="rvsHumorData"></span></div>
+    </div>
+    <div id="rvsBlocos"></div>
+    <div class="rvs-aviso" id="rvsAviso"></div>
+    <div id="rvsEnvio">
+      <p class="rvs-rodape">Você pode corrigir depois em Meus Registros.</p>
+      <button type="button" class="b56" id="autoBtnEnviar" onclick="autoEnviarRegistro()"><svg class="ico" aria-hidden="true"><use href="#i-send"/></svg> Enviar Registro</button>
+    </div>
+  </div>
+
+  <!-- Pacote 16.5e (AUT-10): Registro enviado — barra sem voltar; "Fazer também…" reaproveita a checagem já enviada
+       (mesma data, hora e humor no payload, sem nova checagem). O espaço do cartão de risco fica para o 16.6. -->
+  <div class="section" id="sec-auto-enviado" data-barra-titulo="Registro enviado" data-barra-sobretitulo="Registro Negativo" data-tipo="neg" data-barra-voltar="">
+    <div class="chk-env">
+      <div class="chk-env-circ"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg></div>
+      <h2 class="chk-env-titulo env-titulo">Registro enviado</h2>
+      <p class="env-data" id="envData"></p>
+      <p class="env-txt">Seu terapeuta terá acesso a este registro. Você pode corrigir depois em Meus Registros.</p>
+      <div class="rotulo-secao env-rotulo">Se quiser continuar</div>
+      <div class="env-lista">
+        <button type="button" class="env-item pos" id="envFazerTambem" onclick="enviadoFazerTambem()"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg><span>Fazer também um Registro Positivo</span></button>
+        <button type="button" class="env-item" onclick="abrirSecao('sec-auto-painel')"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><span>Abrir o Painel de Evolução</span></button>
       </div>
-      <div id="autoResumoConteudo"></div>
-      <div class="auto-nav-duplo barra-acao">
-        <button class="auto-btn-prev" onclick="autoVoltarEditarRevisar()">
-        ← Voltar e Editar
-        </button>
-        <button class="auto-btn-next" id="autoBtnEnviar" onclick="autoEnviarRegistro()">
-        <svg class="ico" aria-hidden="true"><use href="#i-send"/></svg> Enviar Registro
-        </button>
-      </div>
+      <button type="button" class="b56 b56-sec" onclick="abrirSecao('sec-menu')">Voltar ao início</button>
     </div>
   </div>
 
@@ -7295,16 +7336,23 @@ function fluxoGuardarRascunho() {
   // anamnese: o rascunho é gravado a cada passo (irParaProximoPasso/irParaPassoAnterior)
 }
 var SAIR_ACAO = null;
+// 16.5e (AUT-12c, §14 FolhaInferior): "Sair sem enviar?" numa folha inferior. confirmarSaida() continua o único ponto de
+// decisão (voltar da barra, ⏻, "Salvar e sair" da etapa e do menu, Cancelar da escala). "Sair" mantém o rascunho na aba.
 function confirmarSaida(acao) {
   if (!fluxoEmAndamento()) { acao(); return; }
   fluxoGuardarRascunho();
   SAIR_ACAO = acao;
-  const modal = document.getElementById('sairModal');
-  document.getElementById('sairModalConfirmar').onclick = function () { sairModalFechar(); const a = SAIR_ACAO; SAIR_ACAO = null; if (a) a(); };
-  modal.classList.add('show');
-  document.getElementById('sairModalConfirmar').focus();
+  const noRegistro = fluxoRegistroTelas().indexOf(secaoAtivaId()) !== -1;
+  const continuar = document.getElementById('sairFolhaContinuar');
+  continuar.textContent = noRegistro ? 'Continuar registro' : 'Continuar aqui'; // anamnese e escala mantêm o rótulo de sempre
+  document.getElementById('sairModalConfirmar').onclick = function () { const a = SAIR_ACAO; sairModalFechar(); if (a) a(); }; // a ação é lida antes de fechar (fechar zera SAIR_ACAO)
+  document.getElementById('sairFolha').classList.add('show');
+  continuar.focus();
 }
-function sairModalFechar() { document.getElementById('sairModal').classList.remove('show'); }
+function sairModalFechar() { document.getElementById('sairFolha').classList.remove('show'); SAIR_ACAO = null; }
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') { const f = document.getElementById('sairFolha'); if (f && f.classList.contains('show')) sairModalFechar(); }
+});
 // destino do "voltar" fica dentro do mesmo fluxo? (ex.: etapa → hub) — então não é saída
 function destinoForaDoFluxo(codigo, idAtual) {
   const noFluxo = fluxoRegistroTelas().indexOf(idAtual) !== -1;
@@ -7366,7 +7414,7 @@ var PROG_REGISTRO_TELAS = {
   'sec-auto-sit-b': 1, 'sec-auto-emo-b': 2, 'sec-auto-fis-b': 3, 'sec-auto-pens-b': 4, 'sec-auto-comp-b': 5,
   // Pacote 16.5d-1: as 5 seções físicas também pertencem ao fluxo (o tipo vem do data-tipo delas)
   'sec-auto-sit': 1, 'sec-auto-emo': 2, 'sec-auto-fis': 3, 'sec-auto-pens': 4, 'sec-auto-comp': 5,
-  'sec-auto-menu': -1, 'sec-auto-menu-neg': -1, 'sec-auto-menu-pos': -1, 'sec-auto-resumo': -1
+  'sec-auto-menu': -1, 'sec-auto-menu-neg': -1, 'sec-auto-menu-pos': -1, 'sec-auto-revisar': -1
 };
 function progressoParaTela(idSecao) {
   if (!(idSecao in PROG_REGISTRO_TELAS)) {
@@ -7452,6 +7500,7 @@ function abrirSecao(idSecao) {
   if (/^sec-auto-(sit|emo|fis|pens|comp)-(a|b)$/.test(idSecao)) {
     if (typeof cabRenderizar === 'function') cabRenderizar(idSecao);
     if (typeof autoRodapeAtualizar === 'function') autoRodapeAtualizar(alvo);
+    if (typeof revisarAjustarRodape === 'function') revisarAjustarRodape(alvo); // 16.5e: etapa aberta pelo "editar" da revisão volta a ela
     if (typeof autoLegendaAjustarVisiveis === 'function') autoLegendaAjustarVisiveis(); // barras restauradas com a etapa ainda oculta
     AUTO_STATE.etapaAtual = idSecao;
   }
@@ -11084,6 +11133,7 @@ function autoResetState() {
   document.querySelectorAll('.auto-tipo').forEach(b => { autoLimparAvisos(b); autoRodapeAtualizar(b); });
   document.querySelectorAll('.p8-consulta.open').forEach(c => autoToggleAjuda(c.querySelector('.p8-consulta-head')));
   AUTO_STATE.etapaAtual = null;
+  AUTO_STATE.revisaoRetorno = null; AUTO_STATE.revisaoLeitura = null; // 16.5e
   // 16.5c: faixas da checagem, caixa descritiva, tipo escolhido e botões
   document.querySelectorAll('#sec-auto-passo1 .chk-faixa').forEach(c => c.setAttribute('aria-checked', 'false'));
   const descBox = document.getElementById('autoHumorDesc');
@@ -11235,7 +11285,10 @@ function p8AdicionarPensamento(tipo) {
 
 function p8RemoverPensamento(btn) {
   const wrap = btn.closest('.p8-pens-extra');
-  if (wrap) wrap.remove();
+  if (!wrap) return;
+  const bloco = wrap.closest('.auto-tipo');
+  wrap.remove();
+  if (bloco) autoAposMudancaNoTexto(bloco); // 16.5e (débito 8.27b): recoleta — cabeçalho, rascunho e revisão atualizam na hora
 }
 
 // Abre/fecha um accordion psicoeducativo e marca como lido
@@ -11309,7 +11362,7 @@ function p8ClicarEntendi() {
        dos grupos marcados (nunca subgrupo, nunca nota — isso fica em "ver tudo"); a Situação acrescenta a
        frase em itálico numa linha cortada; "…" quando vazia; a linha atual re-renderiza a cada mudança
        (cabAtualizarAtual, chamada no mesmo caminho que atualiza o rodapé de contagem);
-   (4) "editar" abre o menu "Suas 5 etapas"; "ver tudo" abre o modal existente (p11aAbrirModal).
+   (4) "editar" abre o menu "Suas 5 etapas"; "ver tudo" abre a revisão (AUT-09) em leitura, sem botão de envio (16.5e).
    Só LÊ AUTO_STATE.dados — mantido atual pelos listeners de change/input (autoColetarSecaoAtiva) — e nunca
    escreve nele (o débito 8.21 continua fechado). Chaves e títulos dos grupos vêm do DOM (histTituloGrupo).
    ============================================================ */
@@ -11386,7 +11439,7 @@ function cabLinhaHtml(et, tipo, atual) {
 // Bloco 4 — ações
 function cabAcoesHtml(tipo) {
   return '<div class="cab-acoes"><button type="button" class="cab-acao" onclick="cabEditar(\'' + tipo + '\')">' + cabIco('i-pencil') + 'editar</button>' +
-    '<button type="button" class="cab-acao" onclick="p11aAbrirModal()">' + cabIco('i-layers') + 'ver tudo</button></div>';
+    '<button type="button" class="cab-acao" onclick="revisarVerTudo(\'' + tipo + '\')">' + cabIco('i-layers') + 'ver tudo</button></div>';
 }
 function cabRenderizar(idLogico) {
   const m = /^sec-auto-(sit|emo|fis|pens|comp)-(a|b)$/.exec(idLogico || ''); if (!m) return;
@@ -11412,60 +11465,7 @@ function cabAtualizarAtual() {
 function cabIrEtapa(i, tipo) { autoEntrarSecao(cabBlocoId(CAB_ETAPAS[i], tipo), i, tipo); } // nó feito da trilha (D2): o mesmo caminho do trilho antigo
 function cabEditar(tipo) { autoAbrirMenuTipo(tipo); } // "editar" → menu "Suas 5 etapas" (§3 v4)
 
-// Clique em tab da Camada 2 — navega para seção
-// Abre o modal do botão +N — NÃO navega pra tela Revisar.
-// Estratégia: chama autoAbrirResumo() pra popular #autoResumoConteudo,
-// captura o HTML, volta à seção original e clona o conteúdo no modal.
-function p11aAbrirModal() {
-  // 1) Lembra a seção atualmente visível (pra não perder o lugar do paciente)
-  let secaoAtualId = null;
-  document.querySelectorAll('.section.active').forEach(el => {
-    if (!secaoAtualId) secaoAtualId = el.id;
-  });
-
-  // 2) Chama autoAbrirResumo que popula #autoResumoConteudo e faz abrirSecao('sec-auto-resumo')
-  if (typeof autoAbrirResumo === 'function') {
-    try {
-      autoAbrirResumo();
-    } catch(e) {
-      console.warn('[p11a] Erro ao montar resumo:', e);
-    }
-  }
-
-  // 3) Captura o HTML do resumo gerado
-  const fonte = document.getElementById('autoResumoConteudo');
-  const destino = document.getElementById('p11aModalConteudo');
-  if (fonte && destino) {
-    // Remove o rodapé "Após enviar, este registro será salvo." — não se aplica aqui
-    let html = fonte.innerHTML;
-    html = html.replace(/<div class="rev-footer-note">[^<]*<\/div>/g, '');
-    destino.innerHTML = html;
-  }
-
-  // 4) Volta à seção original (autoAbrirResumo trocou pra sec-auto-resumo — desfaz)
-  if (secaoAtualId && secaoAtualId !== 'sec-auto-resumo' && typeof abrirSecao === 'function') {
-    abrirSecao(secaoAtualId);
-  }
-
-  // 5) Abre o modal
-  const mov = document.getElementById('p11aModal');
-  if (mov) mov.classList.add('show');
-}
-
-function p11aFecharModal() {
-  const mov = document.getElementById('p11aModal');
-  if (mov) mov.classList.remove('show');
-}
-
-// Fechar modal com ESC
-document.addEventListener('keydown', function(e){
-  if (e.key === 'Escape') {
-    const m = document.getElementById('p11aModal');
-    if (m && m.classList.contains('show')) p11aFecharModal();
-  }
-});
-
-/* Fim do Pacote 11.6 (cabeçalho cumulativo / ex-11.4a) */
+/* Fim do Pacote 11.6 (cabeçalho cumulativo / ex-11.4a) — o modal "+N" (p11a*) saiu no 16.5e: "ver tudo" abre a revisão em leitura */
 
 /* ============================================================
    PACOTE 9 — Cadeado da Anamnese no Menu Principal
@@ -11596,6 +11596,7 @@ function chkIniciarNovoRegistro() {
   const obs = document.getElementById('autoInpObsHumor');
   AUTO_STATE.dados.humor_observacoes = obs ? obs.value.trim() : '';
   autoSalvarRascunho();
+  if (AUTO_STATE.revisaoRetorno) { revisarAbrir(AUTO_STATE.revisaoRetorno); return; } // 16.5e: veio do "editar" da revisão
   if (AUTO_STATE.tipoAtual) { autoAbrirMenuTipo(AUTO_STATE.tipoAtual); return; } // veio do "editar" do menu
   abrirSecao('sec-automonitoramento');
 }
@@ -11616,8 +11617,26 @@ function chkMostrarEnviada(dados) {
   const obs = String(dados.humor_observacoes || '').trim();
   document.getElementById('chkEnvObs').textContent = obs;
   document.getElementById('chkEnvObsRow').hidden = !obs;
+  CHK_ENV.dados = { data_registro: dados.data_registro, hora_registro: dados.hora_registro, humor_nivel: dados.humor_nivel, humor_observacoes: dados.humor_observacoes || '' }; // 16.5e: "Fazer um registro completo"
   abrirSecao('sec-auto-checagem-enviada');
   chkCarregarGrafico(); // §19 v4: o gráfico entra depois de a seção estar visível (Chart.js responsivo); sem await — a confirmação não depende dele
+}
+// 16.5e (AUT-03b): "Fazer um registro completo" — a checagem já enviada vira a checagem do registro (mesma data, hora e
+// humor no payload; nenhuma nova checagem) e a página Automonitoramento oferece os dois tipos com a linha HUMOR.
+function chkFazerRegistroCompleto() {
+  if (!CHK_ENV.dados) { abrirSecao('sec-automonitoramento'); return; }
+  autoReaproveitarChecagem(CHK_ENV.dados);
+  abrirSecao('sec-automonitoramento');
+}
+// Estado zerado + só os 4 campos da checagem de volta (o formulário da checagem acompanha, para o "editar")
+function autoReaproveitarChecagem(c) {
+  autoResetState();
+  AUTO_STATE.dados.data_registro = c.data_registro;
+  AUTO_STATE.dados.hora_registro = c.hora_registro;
+  AUTO_STATE.dados.humor_nivel = c.humor_nivel;
+  AUTO_STATE.dados.humor_observacoes = c.humor_observacoes || '';
+  autoHidratarFormulario();
+  autoValidarPasso1();
 }
 // 16.5d-3 (§19 v4, contrato item 27): o gráfico "Humor ao longo do tempo" do Painel, emprestado — mesma montagem
 // (pevMontarBlocoHumor + pevDesenharHumor), mesmo seletor 7/30/90/Tudo (pevMontarSeletor + pevBindSeletor com escopo),
@@ -11692,6 +11711,7 @@ function hubPositivoTrancado() {
 }
 // Decide tudo o que a página mostra: aviso D11 + cartões bloqueados, linha HUMOR da checagem, aviso de rascunho
 function hubAtualizar() {
+  AUTO_STATE.revisaoRetorno = null; AUTO_STATE.revisaoLeitura = null; // 16.5e: fora das etapas a revisão não é destino
   const bloquear = p5DeveBloquear(); // D11: nenhum registro gravado e "Como Usar" não aberto nesta sessão
   const aviso = document.getElementById('p5SubAviso'); if (aviso) aviso.hidden = !bloquear;
   const comoUsar = document.getElementById('autoCardComoUsar'); if (comoUsar) comoUsar.classList.toggle('destaque', bloquear);
@@ -11776,6 +11796,7 @@ function autoAbrirMenuTipo(tipo) {
 function menuAoAbrir(idBloco) {
   AUTO_STATE.tipoAtual = idBloco === 'sec-auto-menu-pos' ? 'pos' : 'neg';
   AUTO_STATE.etapaAtual = null; // 16.5d-2: rascunho salvo do menu volta ao menu
+  AUTO_STATE.revisaoRetorno = null; AUTO_STATE.revisaoLeitura = null; // 16.5e
   humorLinhaPreencher('menu');
   autoAplicarSequenciaObrigatoria(AUTO_STATE.tipoAtual);
 }
@@ -11784,9 +11805,9 @@ function menuComecar() {
   autoEntrarSecao(tipo === 'pos' ? 'sec-auto-sit-b' : 'sec-auto-sit-a', 0, tipo);
 }
 // "Salvar e sair": grava o rascunho (humor + tipo + o que houver) e volta à página, que mostra o aviso (dúvida 1)
+// 16.5e (AUT-12c): a saída passa pela folha "Sair sem enviar?" (confirmarSaida guarda o rascunho e, em "Sair", executa a ação)
 function menuSalvarESair() {
-  autoSalvarRascunho();
-  abrirSecao('sec-automonitoramento');
+  confirmarSaida(function () { abrirSecao('sec-automonitoramento'); });
 }
 // 16.5d-2 (BarraEtapa §1): "Salvar e sair" dentro de uma etapa — coleta o que está na tela, grava o rascunho
 // (com a etapa) e volta à página Automonitoramento, que mostra o aviso "Você tem um registro em andamento."
@@ -11794,8 +11815,7 @@ function etapaSalvarESair() {
   const id = secaoAtivaId();
   if (id && AUTO_SEC_MAP[id]) autoColetarDadosDaSecao(id);
   autoAtualizarProgressoMenus();
-  autoSalvarRascunho();
-  abrirSecao('sec-automonitoramento');
+  confirmarSaida(function () { abrirSecao('sec-automonitoramento'); }); // 16.5e: folha "Sair sem enviar?"
 }
 
 function autoAplicarSequenciaObrigatoria(tipo) {
@@ -11846,6 +11866,7 @@ function autoAvancarSequencial(tipo, destino) {
   }
 
   autoSalvarRascunho();
+  if (AUTO_STATE.revisaoRetorno === tipo) { revisarAbrir(tipo); return; } // 16.5e: "editar" da revisão → concluir volta a ela
   abrirSecao(destino); // já chama progressoParaTela (16.5d-3: a chamada repetida saiu)
   autoAplicarSequenciaObrigatoria(tipo);
   autoAtualizarProgressoMenus();
@@ -12362,229 +12383,133 @@ function autoFinalizarTipo(tipo) {
       return;
     }
   }
-  // Todas validadas — prossegue com o fluxo original
-  for (const sid of secoesPorTipo[tipo]) {
-    autoColetarDadosDaSecao(sid);
-  }
+  // Todas validadas — coleta as 10 seções lógicas (as mesmas chaves de sempre no payload: o outro tipo vai vazio)
+  Object.keys(AUTO_SEC_MAP).forEach(autoColetarDadosDaSecao);
   AUTO_STATE.dados[tipo + '_preenchido'] = 'sim';
   AUTO_STATE.ultimoTipoFinalizado = tipo;
   autoSalvarRascunho();
-  autoAbrirResumo();
+  revisarAbrir(tipo); // 16.5e (AUT-09)
 }
 
-// Pacote 10 v2 — chamada pelo botão "← Voltar e Editar" no Revisar Registro
+// Voltar da barra na revisão (16.5e): "ver tudo" volta à etapa de origem (uma rolagem só); a revisão do envio volta à etapa 5
 function autoVoltarEditarRevisar() {
-  const tipo = AUTO_STATE.ultimoTipoFinalizado || 'neg';
-  const destino = tipo === 'pos' ? 'sec-auto-menu-pos' : 'sec-auto-menu-neg';
-  abrirSecao(destino);
+  const origem = AUTO_STATE.revisaoLeitura; AUTO_STATE.revisaoLeitura = null;
+  if (origem && document.getElementById(origem)) { abrirSecao(origem); return; }
+  const tipo = AUTO_STATE.ultimoTipoFinalizado || AUTO_STATE.tipoAtual || 'neg';
+  abrirSecao(tipo === 'pos' ? 'sec-auto-comp-b' : 'sec-auto-comp-a');
 }
 
-// ============================================================
-// RESUMO E ENVIO
-// ============================================================
-function autoAbrirResumo() {
-  // Coleta final
-  const todas = ['sec-auto-sit-a','sec-auto-emo-a','sec-auto-fis-a','sec-auto-pens-a','sec-auto-comp-a',
-                 'sec-auto-sit-b','sec-auto-emo-b','sec-auto-fis-b','sec-auto-pens-b','sec-auto-comp-b'];
-  todas.forEach(autoColetarDadosDaSecao);
-
-  if (AUTO_STATE.preenchido['sit-a'] || AUTO_STATE.preenchido['emo-a'] || AUTO_STATE.preenchido['fis-a'] ||
-      AUTO_STATE.preenchido['pens-a'] || AUTO_STATE.preenchido['comp-a']) {
-    AUTO_STATE.dados.neg_preenchido = 'sim';
-  }
-  if (AUTO_STATE.preenchido['sit-b'] || AUTO_STATE.preenchido['emo-b'] || AUTO_STATE.preenchido['fis-b'] ||
-      AUTO_STATE.preenchido['pens-b'] || AUTO_STATE.preenchido['comp-b']) {
-    AUTO_STATE.dados.pos_preenchido = 'sim';
-  }
-
-  const d = AUTO_STATE.dados;
-  const box = document.getElementById('autoResumoConteudo');
-
-  // ---- Utilitário: lê o título visível de um grupo do DOM ----
-  function revTituloGrupo(chave) {
-    const el = document.querySelector('[data-grupo="' + chave + '"] .auto-group-title');
-    if (!el) return chave;
-    // Remove o prefixo numérico "1. " se existir
-    return el.textContent.replace(/^\d+\.\s*/, '').trim();
-  }
-
-  // ---- Utilitário: monta pills de um grupo ----
-  function revPillsGrupo(valorCelula, cor, temLikert) {
-    if (!valorCelula) return '';
-    const partes = String(valorCelula).split(AUTO_SEPARADOR).map(s => s.trim()).filter(Boolean);
-    if (partes.length === 0) return '';
-    let html = '';
-    partes.forEach(p => {
-      if (temLikert) {
-        const match = p.match(/^(.+):(\d)$/);
-        if (match) {
-          html += '<span class="rev-pill ' + cor + '">' + escapeHtmlAuto(match[1]) +
-            ' <span class="rev-pill-valor">' + match[2] + '</span></span>';
-        } else {
-          html += '<span class="rev-pill ' + cor + '">' + escapeHtmlAuto(p) + '</span>';
-        }
-      } else {
-        html += '<span class="rev-pill ' + cor + '">' + escapeHtmlAuto(p) + '</span>';
-      }
+/* ============================================================
+   Pacote 16.5e — REVISAR E ENVIAR (AUT-09, §13 BlocoRevisão) e REGISTRO ENVIADO (AUT-10)
+   ============================================================
+   revisarAbrir(tipo) monta a tela só a partir de AUTO_STATE.dados + DOM: nome completo da etapa
+   (data-barra-titulo do bloco), ícones (CAB_ICONES), itens marcados por grupo (texto gravado, "Item:nota"),
+   textos livres (cabTextoLivre). Nunca escreve em AUTO_STATE.dados (neg_preenchido é decisão de
+   autoFinalizarTipo, não da revisão — débito 8.27a). Chip "feita" quando a etapa tem conteúdo; contagem
+   "· N" = itens marcados (a Situação não tem contagem); etapas 1 e 5 mostram chips, 2–4 item + barra + nota.
+   "editar" abre a etapa mantendo o preenchido e o rodapé dela passa a "Concluir e Revisar" (volta para cá).
+   "ver tudo" do cabeçalho abre a mesma tela em leitura (sem envio) e o voltar retorna à etapa de origem.
+   ============================================================ */
+function revisarItens(etapa, tipo) {
+  const bloco = document.getElementById(cabBlocoId(etapa, tipo)); if (!bloco) return [];
+  const d = AUTO_STATE.dados || {}; const out = [];
+  bloco.querySelectorAll('[data-grupo]').forEach(g => {
+    const likert = g.getAttribute('data-tem-likert') === '1';
+    String(d[g.getAttribute('data-grupo')] || '').split(AUTO_SEPARADOR).map(x => x.trim()).filter(Boolean).forEach(p => {
+      const m = likert ? p.match(/^(.+):([1-5])$/) : null;
+      out.push({ nome: m ? m[1] : p, nota: m ? parseInt(m[2], 10) : null });
     });
-    return html;
+  });
+  return out;
+}
+function revisarTextos(etapa, tipo) {
+  return cabTextoLivre(etapa, tipo).split(' | ').map(x => x.trim()).filter(Boolean); // Pensamentos: várias caixas separadas por " | "
+}
+function revisarBlocoHtml(etapa, tipo) {
+  const bloco = document.getElementById(cabBlocoId(etapa, tipo));
+  const nome = (bloco && bloco.getAttribute('data-barra-titulo')) || CAB_ROTULOS[etapa];
+  const itens = revisarItens(etapa, tipo);
+  const textos = revisarTextos(etapa, tipo);
+  const feita = itens.length > 0 || textos.length > 0;
+  let corpo = textos.map(t => etapa === 'pens'
+    ? '<p class="rvs-frase rvs-frase-pens"><q>' + escapeHtmlAuto(t) + '</q></p>'
+    : '<p class="rvs-frase">' + escapeHtmlAuto(t) + '</p>').join('');
+  if (itens.length && (etapa === 'sit' || etapa === 'comp')) {
+    corpo += '<div class="rvs-chips">' + itens.map(i => '<span class="rvs-chip">' + escapeHtmlAuto(i.nome) + '</span>').join('') + '</div>';
+  } else if (itens.length) {
+    corpo += '<div class="rvs-linhas">' + itens.map(i => '<div class="rvs-lin"><span class="rvs-lin-nome">' + escapeHtmlAuto(i.nome) + '</span>' +
+      (i.nota ? '<span class="rvs-barra" aria-hidden="true"><span class="rvs-barra-fill" style="width:' + (i.nota * 20) + '%"></span></span><span class="rvs-nota" aria-label="nota ' + i.nota + '">' + i.nota + '</span>'
+              : '<span></span><span class="rvs-nota"></span>') + '</div>').join('') + '</div>';
   }
-
-  // ---- Utilitário: monta uma categoria inteira (Emoções, Físicas, etc.) ----
-  // Recebe array de chaves de grupo (ex: neg_emo_tristeza, neg_emo_ansiedade...)
-  function revCategoria(icone, label, chaves, cor, temLikert) {
-    // Filtra só grupos que foram preenchidos
-    const preenchidos = chaves.filter(k => d[k] && d[k].trim());
-    if (preenchidos.length === 0) return '';
-    let html = '<div class="rev-cat">';
-    html += '<div class="rev-cat-head">';
-    html += '<div class="rev-cat-icon ' + cor + '">' + icone + '</div>';
-    html += '<div class="rev-cat-label">' + escapeHtmlAuto(label) + '</div>';
-    html += '</div>';
-    preenchidos.forEach(k => {
-      const titulo = revTituloGrupo(k);
-      const pills = revPillsGrupo(d[k], cor, temLikert);
-      html += '<div class="rev-grupo ' + cor + '">';
-      html += '<div class="rev-grupo-nome">' + escapeHtmlAuto(titulo) + '</div>';
-      html += '<div class="rev-grupo-itens">' + pills + '</div>';
-      html += '</div>';
-    });
-    html += '</div><div class="rev-sep"></div>';
-    return html;
-  }
-
-  // ---- Utilitário: renderiza bloco(s) de texto livre antes dos grupos ----
-  // Aceita 1 texto único (string) ou múltiplos separados por " | "
-  function revBlocoTextoLivre(texto, cor) {
-    if (!texto || !String(texto).trim()) return '';
-    const partes = String(texto).split(' | ').map(s => s.trim()).filter(Boolean);
-    let html = '';
-    partes.forEach(p => {
-      html += '<div class="rev-sit-texto ' + cor + '" style="margin-bottom:6px;">' + escapeHtmlAuto(p) + '</div>';
-    });
-    return html;
-  }
-
-  // ---- Utilitário: categoria com texto livre antes (Pensamentos/Comportamentos) ----
-  function revCategoriaComTexto(icone, label, textoLivre, chaves, cor, temLikert) {
-    const preenchidos = chaves.filter(k => d[k] && d[k].trim());
-    const temTextoLivre = textoLivre && String(textoLivre).trim();
-    if (preenchidos.length === 0 && !temTextoLivre) return '';
-    let html = '<div class="rev-cat">';
-    html += '<div class="rev-cat-head">';
-    html += '<div class="rev-cat-icon ' + cor + '">' + icone + '</div>';
-    html += '<div class="rev-cat-label">' + escapeHtmlAuto(label) + '</div>';
-    html += '</div>';
-    // Texto livre PRIMEIRO
-    html += revBlocoTextoLivre(textoLivre, cor);
-    // Depois os grupos
-    preenchidos.forEach(k => {
-      const titulo = revTituloGrupo(k);
-      const pills = revPillsGrupo(d[k], cor, temLikert);
-      html += '<div class="rev-grupo ' + cor + '">';
-      html += '<div class="rev-grupo-nome">' + escapeHtmlAuto(titulo) + '</div>';
-      html += '<div class="rev-grupo-itens">' + pills + '</div>';
-      html += '</div>';
-    });
-    html += '</div><div class="rev-sep"></div>';
-    return html;
-  }
-
-  // ---- Início da montagem ----
-  let html = '';
-
-  // Humor
-  const hn = parseInt(d.humor_nivel) || 0;
-  const hNome = HUMOR_NOMES[hn] || '—'; // 16.5c: fonte única dos nomes
-  html += '<div class="rev-humor">';
-  html += '<div class="rev-humor-emoji">' + vmcHumorIcone(hn) + '</div>';
-  html += '<div>';
-  html += '<div class="rev-humor-nivel">Humor: ' + (hn || '—') + '/5 — ' + hNome + '</div>';
-  if (d.data_registro && d.hora_registro) {
-    const [y,m,dd] = d.data_registro.split('-');
-    html += '<div class="rev-humor-data"><svg class=ico aria-hidden=true><use href=#i-calendar></use></svg> ' + dd + '/' + m + '/' + y + ' às ' + d.hora_registro + '</div>';
-  }
-  if (d.humor_observacoes) {
-    html += '<div class="rev-humor-obs">"' + escapeHtmlAuto(d.humor_observacoes) + '"</div>';
-  }
-  html += '</div></div>';
-
-  // ---- REGISTRO NEGATIVO ----
-  if (d.neg_preenchido === 'sim') {
-    html += '<div class="rev-secao">';
-    html += '<div class="rev-secao-titulo coral"><svg class=ico aria-hidden=true><use href=#i-heart-crack></use></svg> Registro Negativo</div>';
-
-    // Situação: texto livre em cima, grupos e subitens abaixo
-    const sitTipos = ['neg_sit_tipo_interpessoais','neg_sit_tipo_desempenho','neg_sit_tipo_solidao','neg_sit_tipo_perda','neg_sit_tipo_internas'];
-    const sitPreenchidos = sitTipos.filter(k => d[k] && d[k].trim());
-    if (sitPreenchidos.length > 0 || (d.neg_sit_o_que && d.neg_sit_o_que.trim())) {
-      html += '<div class="rev-cat">';
-      html += '<div class="rev-cat-head"><div class="rev-cat-icon coral"><svg class=ico aria-hidden=true><use href=#i-pin></use></svg></div><div class="rev-cat-label">Situação</div></div>';
-      // Texto livre primeiro
-      if (d.neg_sit_o_que && d.neg_sit_o_que.trim()) {
-        html += '<div class="rev-sit-texto coral" style="margin-bottom:8px;">' + escapeHtmlAuto(d.neg_sit_o_que) + '</div>';
-      }
-      // Depois os grupos com subitens
-      if (sitPreenchidos.length > 0) {
-        sitPreenchidos.forEach(k => {
-          const titulo = revTituloGrupo(k);
-          const partes = String(d[k]).split(AUTO_SEPARADOR).map(s => s.trim()).filter(Boolean);
-          html += '<div class="rev-grupo coral"><div class="rev-grupo-nome">' + escapeHtmlAuto(titulo) + '</div>';
-          html += '<div class="rev-grupo-itens">';
-          partes.forEach(p => {
-            html += '<span class="rev-pill coral">' + escapeHtmlAuto(p) + '</span>';
-          });
-          html += '</div></div>';
-        });
-      }
-      html += '</div><div class="rev-sep"></div>';
-    }
-
-    // Emoções
-    html += revCategoria('<svg class=ico aria-hidden=true><use href=#i-heart-crack></use></svg>', 'Emoções', ['neg_emo_tristeza','neg_emo_ansiedade','neg_emo_raiva','neg_emo_culpa','neg_emo_ciume'], 'coral', true);
-    // Reações Físicas
-    html += revCategoria('<svg class=ico aria-hidden=true><use href=#i-zap></use></svg>', 'Reações Físicas', ['neg_fis_ativacao','neg_fis_desativacao','neg_fis_tensao','neg_fis_digestivas','neg_fis_sono'], 'coral', true);
-    // Pensamentos (com texto livre)
-    html += revCategoriaComTexto('<svg class=ico aria-hidden=true><use href=#i-cloud-rain></use></svg>', 'Pensamentos', d.neg_pens_o_que, ['neg_pens_sobre_mim','neg_pens_sobre_futuro','neg_pens_sobre_outros','neg_pens_cobranca','neg_pens_culpa'], 'amber', true);
-    // Comportamentos (com texto livre)
-    html += revCategoriaComTexto('<svg class=ico aria-hidden=true><use href=#i-trend-down></use></svg>', 'Comportamentos', d.neg_comp_o_que, ['neg_comp_evitacao','neg_comp_isolamento','neg_comp_reatividade','neg_comp_entorpecimento','neg_comp_controle'], 'coral', false);
-
-    html += '</div>';
-  }
-
-  // ---- REGISTRO POSITIVO ----
-  if (d.pos_preenchido === 'sim') {
-    html += '<div class="rev-secao">';
-    html += '<div class="rev-secao-titulo green"><svg class=ico aria-hidden=true><use href=#i-heart></use></svg> Registro Positivo</div>';
-
-    // Situação
-    if (d.pos_sit_o_que && d.pos_sit_o_que.trim()) {
-      html += '<div class="rev-cat">';
-      html += '<div class="rev-cat-head"><div class="rev-cat-icon green"><svg class=ico aria-hidden=true><use href=#i-pin></use></svg></div><div class="rev-cat-label">Situação</div></div>';
-      html += '<div class="rev-sit-texto green">' + escapeHtmlAuto(d.pos_sit_o_que) + '</div>';
-      html += '</div><div class="rev-sep"></div>';
-    }
-
-    // Emoções
-    html += revCategoria('<svg class=ico aria-hidden=true><use href=#i-heart></use></svg>', 'Emoções', ['pos_emo_felicidade','pos_emo_orgulho','pos_emo_conexao','pos_emo_calma','pos_emo_esperanca'], 'green', true);
-    // Reações Físicas
-    html += revCategoria('<svg class=ico aria-hidden=true><use href=#i-leaf></use></svg>', 'Reações Físicas', ['pos_fis_calma','pos_fis_energia','pos_fis_relaxamento','pos_fis_digestivo','pos_fis_atencao'], 'green', true);
-    // Pensamentos (com texto livre)
-    html += revCategoriaComTexto('<svg class=ico aria-hidden=true><use href=#i-sun></use></svg>', 'Pensamentos', d.pos_pens_o_que, ['pos_pens_autocompaixao','pos_pens_esperanca','pos_pens_confianca','pos_pens_flexibilidade','pos_pens_responsabilidade'], 'green', true);
-    // Comportamentos (com texto livre)
-    html += revCategoriaComTexto('<svg class=ico aria-hidden=true><use href=#i-trend-up></use></svg>', 'Comportamentos', d.pos_comp_o_que, ['pos_comp_enfrentamento','pos_comp_conexao','pos_comp_expressao','pos_comp_autocuidado','pos_comp_aceitacao'], 'green', false);
-
-    html += '</div>';
-  }
-
-  if (!d.neg_preenchido && !d.pos_preenchido) {
-    html += '<div class="auto-sec-warn">Você ainda não preencheu nenhum registro (negativo ou positivo). Volte ao passo anterior e selecione ao menos um tipo.</div>';
-  }
-
-  html += '<div class="rev-footer-note">Após enviar, este registro será salvo.</div>';
-
-  box.innerHTML = html;
-  abrirSecao('sec-auto-resumo');
+  if (!corpo) corpo = '<p class="rvs-vazio">…</p>';
+  const idx = CAB_ETAPAS.indexOf(etapa);
+  return '<div class="rvs-bloco" role="group" aria-label="' + escapeHtmlAuto(nome) + '"><div class="rvs-head">' + cabIco(CAB_ICONES[tipo][etapa]) +
+    '<span class="rvs-rot">' + escapeHtmlAuto(nome) + (etapa === 'sit' ? '' : '&nbsp;·&nbsp;' + itens.length) + '</span>' + // a contagem não desce sozinha de linha
+    (feita ? '<span class="rvs-feita">' + cabIco('i-check') + 'feita</span>' : '') +
+    '<button type="button" class="lnk" onclick="revisarEditar(' + idx + ',\'' + tipo + '\')">' + cabIco('i-pencil') + 'editar</button></div>' + corpo + '</div>';
+}
+// opts.leitura = "ver tudo" (sem envio); opts.origem = etapa de onde veio (o voltar retorna a ela)
+function revisarAbrir(tipo, opts) {
+  opts = opts || {};
+  tipo = tipo === 'pos' ? 'pos' : 'neg';
+  AUTO_STATE.revisaoRetorno = null;
+  AUTO_STATE.revisaoLeitura = opts.leitura ? (opts.origem || null) : null;
+  const sec = document.getElementById('sec-auto-revisar');
+  sec.setAttribute('data-tipo', tipo);
+  sec.setAttribute('data-barra-sobretitulo', tipo === 'pos' ? 'Registro Positivo' : 'Registro Negativo');
+  humorLinhaPreencher('rvs');
+  document.getElementById('rvsBlocos').innerHTML = CAB_ETAPAS.map(et => revisarBlocoHtml(et, tipo)).join('');
+  document.getElementById('rvsAviso').innerHTML = '';
+  document.getElementById('rvsIntro').hidden = !!opts.leitura;
+  document.getElementById('rvsEnvio').hidden = !!opts.leitura;
+  abrirSecao('sec-auto-revisar');
+}
+function revisarVerTudo(tipo) {
+  autoColetarSecaoAtiva(); // o estado já acompanha a tela; garante o último toque
+  revisarAbrir(tipo, { leitura: true, origem: secaoAtivaId() });
+}
+function revisarEditar(idx, tipo) {
+  const leitura = !!AUTO_STATE.revisaoLeitura;
+  AUTO_STATE.revisaoLeitura = null;
+  AUTO_STATE.revisaoRetorno = leitura ? null : tipo; // no fluxo de envio, concluir a etapa volta à revisão
+  autoEntrarSecao(cabBlocoId(CAB_ETAPAS[idx], tipo), idx, tipo);
+}
+function revisarEditarHumor() {
+  const tipo = document.getElementById('sec-auto-revisar').getAttribute('data-tipo');
+  if (!AUTO_STATE.revisaoLeitura) AUTO_STATE.revisaoRetorno = tipo; // "Iniciar novo registro" da checagem volta à revisão
+  AUTO_STATE.revisaoLeitura = null;
+  chkEditar();
+}
+// Rodapé da etapa aberta pelo "editar" da revisão: o primário vira "Concluir e Revisar" (autoAvancarSequencial volta à revisão);
+// fora desse caso o rótulo original (nome da próxima etapa) é restaurado
+function revisarAjustarRodape(bloco) {
+  const btn = bloco && bloco.querySelector('.auto-rodape-next'); if (!btn) return;
+  if (!btn.hasAttribute('data-rotulo-original')) btn.setAttribute('data-rotulo-original', btn.textContent.trim());
+  const voltar = AUTO_STATE.revisaoRetorno && AUTO_STATE.revisaoRetorno === bloco.getAttribute('data-tipo');
+  btn.textContent = voltar ? 'Concluir e Revisar' : btn.getAttribute('data-rotulo-original');
+}
+// AUT-10 — Registro enviado (dados = o que foi gravado; o estado já foi zerado)
+function enviadoMostrar(dados, tipo) {
+  const sec = document.getElementById('sec-auto-enviado');
+  sec.setAttribute('data-tipo', tipo);
+  sec.setAttribute('data-barra-sobretitulo', tipo === 'pos' ? 'Registro Positivo' : 'Registro Negativo');
+  document.getElementById('envData').textContent = chkTextoDataHora(dados.data_registro, dados.hora_registro, true);
+  const outro = tipo === 'pos' ? 'neg' : 'pos';
+  const b = document.getElementById('envFazerTambem');
+  b.className = 'env-item ' + outro;
+  b.innerHTML = cabIco(outro === 'pos' ? 'i-heart' : 'i-heart-crack') + '<span>Fazer também um Registro ' + (outro === 'pos' ? 'Positivo' : 'Negativo') + '</span>';
+  abrirSecao('sec-auto-enviado');
+}
+// "Fazer também…": etapa 1 do outro tipo com a checagem já enviada (sem nova checagem; mesma data/hora/humor no payload)
+function enviadoFazerTambem() {
+  const e = AUTO_STATE.ultimoEnvio;
+  if (!e) { abrirSecao('sec-automonitoramento'); return; }
+  const outro = e.tipo === 'pos' ? 'neg' : 'pos';
+  autoReaproveitarChecagem(e);
+  AUTO_STATE.tipoAtual = outro;
+  autoSalvarRascunho();
+  autoAplicarSequenciaObrigatoria(outro);
+  autoEntrarSecao(outro === 'pos' ? 'sec-auto-sit-b' : 'sec-auto-sit-a', 0, outro);
 }
 
 function escapeHtmlAuto(s) {
@@ -12607,21 +12532,28 @@ async function autoEnviarRegistro(opcoes) {
         humor_nivel: AUTO_STATE.dados.humor_nivel, humor_observacoes: AUTO_STATE.dados.humor_observacoes || '' }
     : Object.assign({}, AUTO_STATE.dados);
 
+  // 16.5e: estado "enviando" (botão desabilitado com spinner, rótulo mantido); erro do servidor vira aviso na tela
   const btn = document.getElementById(soChecagem ? 'chkBtnConcluir' : 'autoBtnEnviar');
-  const rotuloBtn = btn ? btn.textContent : '';
-  if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
+  const aviso = document.getElementById(soChecagem ? 'chkAviso' : 'rvsAviso');
+  if (aviso) aviso.innerHTML = '';
+  if (btn) { btn.disabled = true; btn.classList.add('enviando'); btn.setAttribute('aria-busy', 'true'); }
 
   const resp = await chamarServidor('salvarAutomonitoramento', {
     sigla: paciente.sigla,
     dados: dadosEnvio,
   });
 
-  if (btn) { btn.disabled = false; btn.textContent = soChecagem ? rotuloBtn : 'Enviar Registro'; }
+  if (btn) { btn.disabled = false; btn.classList.remove('enviando'); btn.removeAttribute('aria-busy'); }
 
   if (!resp.ok) {
-    alert('Erro ao salvar: ' + (resp.erro || 'erro desconhecido'));
+    const av = autoAvisoEl('Erro ao salvar: ' + (resp.erro || 'erro desconhecido'));
+    if (aviso) { aviso.appendChild(av); av.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
     return;
   }
+  // 16.5e: o que a tela "Registro enviado" e "Fazer também…" precisam (o estado é zerado logo abaixo)
+  const tipoEnviado = AUTO_STATE.ultimoTipoFinalizado || (dadosEnvio.pos_preenchido === 'sim' && dadosEnvio.neg_preenchido !== 'sim' ? 'pos' : 'neg');
+  AUTO_STATE.ultimoEnvio = { tipo: tipoEnviado, data_registro: dadosEnvio.data_registro, hora_registro: dadosEnvio.hora_registro,
+    humor_nivel: dadosEnvio.humor_nivel, humor_observacoes: dadosEnvio.humor_observacoes || '' };
 
   // Se concluiu um negativo, marca que não é mais primeira vez
   if (dadosEnvio.neg_preenchido === 'sim') {
@@ -12642,8 +12574,7 @@ async function autoEnviarRegistro(opcoes) {
   P5_STATE.verificado = false;
   P5_STATE.primeiraVez = false;
   if (soChecagem) { chkMostrarEnviada(dadosEnvio); return; } // 16.5c: AUT-03b
-  alert('Registro salvo com sucesso!');
-  abrirSecao('sec-automonitoramento');
+  enviadoMostrar(dadosEnvio, tipoEnviado); // 16.5e: AUT-10 no lugar do alert()
 }
 
 // ============================================================
@@ -12928,7 +12859,7 @@ async function histAbrirModal(idx) {
     const regs = window._HIST_REGS;
     if (!regs || !regs[idx]) {
       console.warn('[histAbrirModal] Registro não encontrado no índice', idx, 'regs.length=', regs ? regs.length : 0);
-      alert('Não foi possível abrir este registro. Tente recarregar a página.');
+      histAvisoNaTela('Não foi possível abrir este registro. Tente recarregar a página.'); // 16.5e: sem alert()
       return;
     }
     const r = regs[idx];
@@ -13004,8 +12935,17 @@ async function histAbrirModal(idx) {
 
   } catch (err) {
     console.error('[histAbrirModal] Erro:', err);
-    alert('Erro ao abrir o registro: ' + (err && err.message || err));
+    try { histFecharModal(); } catch (e) {}
+    histAvisoNaTela('Erro ao abrir o registro: ' + (err && err.message || err)); // 16.5e: sem alert()
   }
+}
+// 16.5e: aviso de Meus Registros na própria lista (mesmo .auto-aviso das etapas), no lugar do alert()
+function histAvisoNaTela(msg) {
+  const box = document.getElementById('autoHistLista'); if (!box) return;
+  box.querySelectorAll(':scope > .auto-aviso').forEach(a => a.remove());
+  const av = autoAvisoEl(msg);
+  box.insertAdjacentElement('afterbegin', av);
+  av.scrollIntoView({ block: 'center', behavior: 'smooth' });
 }
 
 function histFecharModal() {
@@ -13137,6 +13077,9 @@ async function p136SalvarEdicao() {
     r.editado_em = resp.editado_em || '';
     r.editando_quem = '';
   }
+  // 16.5e (débito 8.27c): o Painel e o Início leem o registro corrigido na próxima abertura
+  if (typeof pevInvalidarCache === 'function') pevInvalidarCache();
+  if (typeof iniInvalidar === 'function') iniInvalidar();
 
   var modal = document.getElementById('histModalOverlay');
   modal._p136Editando = false;
@@ -13192,6 +13135,11 @@ function p136ColetarDados_() {
       var cb = optEl.querySelector('input[type="checkbox"]');
       if (!cb || !cb.checked) return;
       var item = cb.getAttribute('data-item');
+      if (!item && optEl.querySelector('.auto-option-other')) { // 16.5e (8.24): "Outro (texto)" gravado como na coleta das etapas
+        var txtOutro = optEl.querySelector('.auto-option-other input[type="text"]');
+        if (!txtOutro || !txtOutro.value.trim()) return;
+        item = 'Outro (' + txtOutro.value.trim() + ')';
+      }
       if (!item) return;
       if (temLikert) {
         var nota = autoNotaDoItem(optEl); // 16.5d-2: barra deslizante; sem nota, o item vai sem ":n" (antes recebia 3 em silêncio)
@@ -13209,8 +13157,8 @@ function p136ColetarDados_() {
 function p136RenderFormEdicao_(r) {
   var html = '<div class="p136-form-wrap">';
   html += p136RenderHumor_(r);
-  html += p136RenderSecao_(r, 'neg', 'coral', '<svg class=ico aria-hidden=true><use href=#i-heart-crack></use></svg> Registro Negativo');
-  html += p136RenderSecao_(r, 'pos', 'green', '<svg class=ico aria-hidden=true><use href=#i-heart></use></svg> Registro Positivo');
+  html += p136RenderSecao_(r, 'neg');
+  html += p136RenderSecao_(r, 'pos');
   html += '</div>';
   return html;
 }
@@ -13242,12 +13190,12 @@ function p136ToggleHumor(btn, val) {
   if (inp) inp.value = val;
 }
 
-function p136RenderSecao_(r, tipo, cor, titulo) {
+function p136RenderSecao_(r, tipo) {
   var preenchido = String(r[tipo + '_preenchido'] || 'nao').trim() === 'sim';
-  var corVar = tipo === 'neg' ? 'coral' : 'green';
+  var corVar = tipo === 'neg' ? '--c-reg-neg' : '--c-reg-pos'; // 16.5e (débito 8.26): tokens do tipo, não --coral/--green
   var h = '<div style="margin-bottom:18px;">';
-  h += '<div class="auto-sec-header" style="border-color:var(--' + corVar + ');margin-bottom:12px;">';
-  h += '<div class="auto-sec-icon" style="background:var(--' + corVar + '-bg);color:var(--' + corVar + ');">' + (tipo==='neg'?'<svg class=ico aria-hidden=true><use href=#i-heart-crack></use></svg>':'<svg class=ico aria-hidden=true><use href=#i-heart></use></svg>') + '</div>';
+  h += '<div class="auto-sec-header" style="border-color:var(' + corVar + ');margin-bottom:12px;">';
+  h += '<div class="auto-sec-icon" style="background:var(' + corVar + '-tint);color:var(' + corVar + '-ink);">' + (tipo==='neg'?'<svg class=ico aria-hidden=true><use href=#i-heart-crack></use></svg>':'<svg class=ico aria-hidden=true><use href=#i-heart></use></svg>') + '</div>';
   h += '<div><div class="auto-sec-title">' + (tipo==='neg' ? 'Registro Negativo' : 'Registro Positivo') + '</div></div>';
   h += '</div>';
   h += '<label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--c-ink-2);cursor:pointer;margin-bottom:12px;">';
@@ -13324,8 +13272,21 @@ function p136RenderGrupo_(r, chave, comLikert) {
     if (comLikert) h += '<div class="auto-item-likert" data-nota="' + (intensidades[item] || '') + '"><span class="auto-item-likert-label">' + escapeHtmlAuto(rotulo) + '</span></div>';
     h += '</div>';
   });
+  // 16.5e (débito 8.24): a linha "Outro:" das etapas, já preenchida quando o registro tem "Outro (…)" gravado
+  var outroChave = Object.keys(marcados).find(function (k) { return k.indexOf('Outro (') === 0; });
+  var outroTxt = outroChave ? outroChave.slice(7, -1) : '';
+  h += '<div class="auto-option auto-option-is-outro' + (outroChave ? ' marked' : '') + '">';
+  h += '<div class="auto-option-other"><label class="auto-option-other-chk"><input type="checkbox" aria-label="Outro"' + (outroChave ? ' checked' : '') + ' onchange="p136ToggleLikert(this)"><span class="auto-check" aria-hidden="true"><svg class=ico aria-hidden=true><use href=#i-check></use></svg></span></label>';
+  h += '<span class="auto-option-other-lbl">Outro:</span><input class="auto-option-other-inp" type="text" placeholder="especifique..." aria-label="Outro" value="' + escapeHtmlAuto(outroTxt) + '" oninput="p136OutroInput(this)"></div>';
+  if (comLikert) h += '<div class="auto-item-likert" data-nota="' + (outroChave && intensidades[outroChave] ? intensidades[outroChave] : '') + '"><span class="auto-item-likert-label">' + escapeHtmlAuto(rotulo) + '</span></div>';
+  h += '</div>';
   h += '</div></div></div>';
   return h;
+}
+// Campo do "Outro" no modal de edição: com texto conta como marcado; apagar desmarca (a mesma regra §5 das etapas)
+function p136OutroInput(inp) {
+  var wrap = inp.closest('.auto-option-other'); var cb = wrap && wrap.querySelector('input[type="checkbox"]');
+  if (cb) { cb.checked = !!inp.value.trim(); autoAtualizarOptionMarked(cb); }
 }
 // Depois de montar o form de edição: cada item marcado com intensidade ganha a barra já no valor gravado
 function p136InicializarBarras_() {
@@ -15111,7 +15072,7 @@ function escCarregarRascunho(codigo) {
 }
 function escLimparRascunho() { try { sessionStorage.removeItem(ESC_RASCUNHO_KEY); } catch (e) {} }
 
-// A confirmação de saída ("Sair sem gravar?") é feita por confirmarSaida() antes de chegar aqui;
+// A confirmação de saída ("Sair sem enviar?", folha do 16.5e) é feita por confirmarSaida() antes de chegar aqui;
 // o rascunho fica no aparelho e volta ao reabrir a mesma escala.
 function escCancelarAplicacao() {
   ESC_STATE.escalaAtual = null;
@@ -16951,18 +16912,5 @@ function calMiniNavegar(direcao) {
 /* Fim do Pacote 14.2 — Agenda Visual */
 
 </script>
-
-<!-- ============================================================
-     PACOTE 11.6 — Modal do botão +N (preview do registro até aqui)
-     ============================================================ -->
-<div class="p11-mov" id="p11aModal" onclick="if(event.target===this)p11aFecharModal()">
-  <div class="p11-mbox">
-    <div class="p11-mhead">
-      <h3 class="p11-mtitle"><svg class="ico" aria-hidden="true"><use href="#i-clipboard"/></svg> O que você já preencheu</h3>
-      <button class="p11-mclose" type="button" onclick="p11aFecharModal()">×</button>
-    </div>
-    <div class="p11-mbody" id="p11aModalConteudo"></div>
-  </div>
-</div>
 </body>
 </html>

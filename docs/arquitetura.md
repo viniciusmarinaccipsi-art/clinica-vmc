@@ -102,7 +102,9 @@ uma vez só.
 
 ### Padrão "empréstimo" de função
 Função faz várias coisas e você quer uma: chame, capture o output,
-desfaça o efeito colateral. Ex: modal `📋 +N` reusa `autoAbrirResumo()`.
+desfaça o efeito colateral. Ex.: o gráfico de humor da "Checagem enviada" reusa as
+funções do Painel (16.5d-3). (O exemplo antigo — modal "+N" sobre `autoAbrirResumo()` —
+saiu no 16.5e: "ver tudo" abre a própria tela de revisão em leitura.)
 
 ### Cores neutras para estados compartilhados
 Estado com mesmo significado em contextos de cores diferentes usa azul
@@ -154,10 +156,10 @@ do seu tipo. O conteúdo clínico continua no HTML, no bloco do seu tipo
   demais telas); é o que `autoAvancarSequencial`, `fluxoEmAndamento` e
   `fluxoGuardarRascunho` usam. `PROG_REGISTRO_TELAS` contém os 5 ids físicos
   além dos 10 lógicos, e `progressoParaTela` lê o tipo do `data-tipo` da seção
-  quando recebe um id físico (caminho do `p11aAbrirModal`).
+  quando recebe um id físico.
 - Coleta (`autoColetarDadosDaSecao`), validação (`autoValidarSecao`),
   `autoTemConteudoNaSecao`, `AUTO_SEC_MAP`, `AUTO_SEQ_*`, `autoFinalizarTipo`,
-  `autoAbrirResumo` e o rascunho continuam trabalhando pelos ids lógicos: cada
+  a revisão (`revisar*`, 16.5e) e o rascunho continuam trabalhando pelos ids lógicos: cada
   `getElementById('sec-auto-emo-a')` devolve o bloco, que contém exatamente os
   campos e grupos de antes. Payload, chaves de coluna, `AUTO_SEPARADOR`,
   `data-grupo`/`data-item`/`data-tem-likert` e `versao_formulario` não mudam
@@ -320,11 +322,14 @@ Em `index-dev.html` cada etapa (os dois tipos) segue `03_componentes.md` da roda
   `aria-live` fica só no trecho dos grupos (`.cab-grupos`), atualizado por `cabAtualizarAtual()` no
   mesmo caminho da contagem do rodapé (`autoAposMudancaNoGrupo` e `autoAposMudancaNoTexto`, o
   caminho único dos campos de texto nos listeners de `change`/`input`); **(4)** `.cab-acoes` —
-  "editar" (`cabEditar` → `autoAbrirMenuTipo`, abre "Suas 5 etapas") e "ver tudo" (modal existente
-  `p11aAbrirModal`), sempre presentes, inclusive na etapa 1 (P3). **Só lê `AUTO_STATE.dados`** —
-  mantido atual por `autoColetarSecaoAtiva()` — e nunca escreve nele (débito 8.21 continua
-  fechado). Fica o modal e seu casco `.p11-m*`. Nuance aceita: item marcado sem nota num grupo com
-  escala só entra na linha quando ganha a nota (a coleta o omite; a nota é obrigatória, D9).
+  "editar" (`cabEditar` → `autoAbrirMenuTipo`, abre "Suas 5 etapas") e "ver tudo" (desde o 16.5e
+  `revisarVerTudo(tipo)`: a tela "Revisar e Enviar" em leitura, sem botão de envio, e o voltar da barra
+  retorna à etapa de origem — débito 8.27a; o modal "+N" `p11a*` saiu, o casco `.p11-m*` fica só para o
+  detalhe do histórico de escalas), sempre presentes, inclusive na etapa 1 (P3). **Só lê
+  `AUTO_STATE.dados`** — mantido atual por `autoColetarSecaoAtiva()` (inclusive ao remover uma caixa de
+  pensamento, `p8RemoverPensamento` → `autoAposMudancaNoTexto`, 8.27b) — e nunca escreve nele (débito
+  8.21 continua fechado). Nuance aceita: item marcado sem nota num grupo com escala só entra na linha
+  quando ganha a nota (a coleta o omite; a nota é obrigatória, D9).
 - **RodapéEtapa:** `.auto-rodape.barra-acao` com `.auto-rodape-cont` (textos nos atributos
   `data-cont-0/1/n` do próprio rodapé; `autoRodapeAtualizar(bloco)`), "‹" 56 px
   (`aria-label="Etapa anterior"`; "Voltar" na etapa 1) e o primário com o nome da próxima etapa ou
@@ -334,7 +339,46 @@ Em `index-dev.html` cada etapa (os dois tipos) segue `03_componentes.md` da roda
   campo (`aria-invalid` + borda de risco), sob a barra do item sem nota (`.auto-item-likert.erro`,
   rótulo em risco; abre o grupo) ou após o bloco de grupos, e rola até o primeiro aviso;
   `autoLimparAvisos` a cada mudança. `autoAvancarSequencial` e `autoFinalizarTipo` não usam mais
-  `alert()`.
+  `alert()`. **Avisos na tela no lugar de `alert()` (16.5e):** o mesmo `autoAvisoEl(msg)` serve ao erro
+  do servidor no envio (`#rvsAviso` na revisão, `#chkAviso` na checagem) e a Meus Registros
+  (`histAvisoNaTela`, no topo de `#autoHistLista`); o sucesso do envio é a tela "Registro enviado".
+  Nenhum diálogo nativo resta no fluxo do registro (só "Sessão expirada" antes do `logout()`; os
+  `alert()` de anamnese e escalas ficam como candidatos).
+- **Revisar e Enviar (AUT-09, §13 BlocoRevisão, Pacote 16.5e):** seção `#sec-auto-revisar`
+  (substituiu `#sec-auto-resumo`/`autoAbrirResumo`), aberta por `autoFinalizarTipo(tipo)` → coleta as
+  10 seções lógicas (as mesmas 56 chaves de sempre no payload; o outro tipo vai vazio), grava
+  `<tipo>_preenchido='sim'` e chama `revisarAbrir(tipo)`. A revisão **só lê** `AUTO_STATE.dados` + DOM:
+  bloco HUMOR = o mesmo `.menu-humor` do menu (`humorLinhaPreencher('rvs')`, "editar" →
+  `revisarEditarHumor` → checagem, cujo "Iniciar novo registro" volta à revisão); um `.rvs-bloco` por
+  etapa (`revisarBlocoHtml`): ícone `CAB_ICONES`, rótulo em caixa alta com o nome completo lido do
+  `data-barra-titulo` do bloco e a contagem "· N" de itens marcados (Situação sem contagem), chip
+  "feita" (`.rvs-feita`) quando há conteúdo, "editar" (`revisarEditar` → `autoEntrarSecao` com
+  `AUTO_STATE.revisaoRetorno = tipo`: o rodapé da etapa vira "Concluir e Revisar" —
+  `revisarAjustarRodape` no hook de `abrirSecao` — e `autoAvancarSequencial` volta à revisão em vez de
+  avançar; a flag zera no menu, na página e ao reabrir a revisão); corpo = textos livres
+  (`cabTextoLivre`, Pensamentos em itálico entre aspas `<q>`), chips dos itens marcados nas etapas 1 e 5
+  (`.rvs-chip`) e linhas item + barra (largura = nota/5, `.rvs-barra-fill`) + nota nas etapas 2–4
+  (`revisarItens`: texto gravado "Item:nota" por `data-grupo`, inclusive "Outro (…)"). Rodapé
+  "Você pode corrigir depois em Meus Registros." + `#autoBtnEnviar` (`.b56`, `i-send`); enviando =
+  `disabled` + `.enviando` (spinner) + `aria-busy`. `data-tipo` e `data-barra-sobretitulo` da seção
+  são escritos por `revisarAbrir`; voltar da barra (`autoVoltarEditarRevisar`) → etapa 5 do tipo, ou
+  à etapa de origem quando aberta por "ver tudo" (`AUTO_STATE.revisaoLeitura`).
+- **Registro enviado (AUT-10, 16.5e):** `autoEnviarRegistro` guarda `AUTO_STATE.ultimoEnvio`
+  (tipo + os 4 campos da checagem) antes de `autoResetState()`, invalida `PEV_STATE`/`INI_STATE`
+  como antes e abre `#sec-auto-enviado` por `enviadoMostrar(dados, tipo)` (barra sem voltar,
+  `i-check`, "Hoje, dd/mm · hh:mm" por `chkTextoDataHora`, lista "SE QUISER CONTINUAR"). "Fazer também
+  um Registro Positivo/Negativo" → `enviadoFazerTambem()` → `autoReaproveitarChecagem(ultimoEnvio)`
+  (estado zerado + só data, hora, humor e observação de volta, formulário hidratado) → etapa 1 do outro
+  tipo, sem nova checagem e com o mesmo humor/hora no payload. "Abrir o Painel de Evolução" e "Voltar
+  ao início" são `abrirSecao`. O espaço do cartão de risco fica para o 16.6. A mesma
+  `autoReaproveitarChecagem` serve ao botão "Fazer um registro completo" da "Checagem enviada"
+  (`chkFazerRegistroCompleto`, `CHK_ENV.dados`), que leva à página Automonitoramento com a linha
+  HUMOR preenchida.
+- **Edição em Meus Registros (16.5e, débitos 8.24/8.26/8.27c):** `p136RenderGrupo_` monta a linha
+  "Outro:" das etapas já preenchida quando o registro tem "Outro (…)" gravado (texto e nota) e
+  `p136ColetarDados_` grava de volta "Outro (texto)[:nota]" como a coleta das etapas
+  (`p136OutroInput` aplica a regra §5: texto = marcado); `p136RenderSecao_` usa `--c-reg-neg*`/
+  `--c-reg-pos*`; `p136SalvarEdicao` chama `pevInvalidarCache()` e `iniInvalidar()` ao salvar.
 - **Rascunho:** grava `etapa` (`AUTO_STATE.etapaAtual`, definida ao abrir uma etapa e zerada no
   menu); `hubContinuarRascunho` reabre essa etapa (ou o menu) e `hubRenderRascunho` mostra
   "Etapa N de 5 · nome" a partir dela. `autoAtualizarBadgesData`, os `[data-auto-badge]` e o
@@ -349,7 +393,8 @@ Em `index-dev.html` cada etapa (os dois tipos) segue `03_componentes.md` da roda
 | `pev*` / `PEV_*` | Painel de Evolução |
 | `rev-*` | Infográfico Revisar |
 | `hist-*` | Meus Registros (lista) |
-| `p5*`, `p8*`, `p9*`, `p10*`, `p11*`, `p11a*` | Pacotes 5–11.6 |
+| `p5*`, `p8*`, `p9*`, `p10*`, `p11*` | Pacotes 5–11.6 (`p11a*`, o modal "+N", saiu no 16.5e) |
+| `rvs-*` / `revisar*`, `env-*` / `enviado*`, `folha*` | Revisar e Enviar, Registro enviado, FolhaInferior (16.5e) |
 | `esc*` / `ESC_*` | Módulo 4 Escalas (inclui histórico 12.7) |
 | `rr-*` | Telas de resultado unificadas (12.7.2) |
 | `prof-*`, `prof-pv-*`, `prof-cad-*`, `prof-edit-*` | Área do profissional (13.2+) |
@@ -495,13 +540,22 @@ Planilha individual do paciente — abas:
   direita) e `body:has(.section.active .barra-acao) .app` ganha
   `padding-bottom`; no desktop fica no fim do card. `@keyframes fadeIn` das
   seções é só opacidade (um `transform` na seção deslocaria a barra fixa).
-- **Sair sem gravar (Pacote 16.3):** `confirmarSaida(acao)` abre `#sairModal`
-  (padrão `.p5-modal-*`) quando `fluxoEmAndamento()` — anamnese com rascunho
-  fora do modo consulta, registro com dados ou etapa preenchida, escala com
-  resposta — depois de `fluxoGuardarRascunho()`. Pontos cobertos: voltar da
-  barra quando `destinoForaDoFluxo(codigo, idAtual)` (etapa → hub não pede),
-  sair (⏻ → `confirmarSaida(logout)`), Cancelar da escala
-  (`confirmarSaida(escCancelarAplicacao)`, sem `confirm()` nativo).
+- **"Sair sem enviar?" — FolhaInferior (Pacote 16.3 → 16.5e, AUT-12c, §14):**
+  `confirmarSaida(acao)` abre a folha `#sairFolha` (`.folha-scrim` em `--c-scrim`,
+  `.folha` com alça de 44 px, `role="dialog" aria-modal="true"`, título "Sair sem
+  enviar?", texto "O que você preencheu fica guardado enquanto esta aba estiver
+  aberta.", botões `.b56` "Continuar registro" — "Continuar aqui" na anamnese e na
+  escala — e "Sair"; fecha pela alça, pelo fundo ou por Esc; a partir de 900 px vira
+  cartão centrado) quando `fluxoEmAndamento()` — anamnese com rascunho fora do modo
+  consulta, registro com dados ou etapa preenchida, escala com resposta — depois de
+  `fluxoGuardarRascunho()`. **É o padrão de confirmação de saída** e o único ponto de
+  decisão: voltar da barra quando `destinoForaDoFluxo(codigo, idAtual)` (etapa → menu
+  e menu → página não pedem), sair (⏻ → `confirmarSaida(logout)`), "Salvar e sair"
+  da etapa e do menu (`etapaSalvarESair`/`menuSalvarESair` → `confirmarSaida(→ página)`,
+  16.5e), Cancelar da escala (`confirmarSaida(escCancelarAplicacao)`, sem `confirm()`
+  nativo). O modal `.p5-modal-*` continua para os demais diálogos (p9, escalas). O
+  botão "voltar" do sistema (histórico do navegador) não é interceptado — o app não
+  usa `pushState`; candidato 16.5e.1.
 - **Rascunhos no `sessionStorage`:** registro `AUTO_RASCUNHO_KEY`
   (`automon_rascunho_v4`, `autoSalvarRascunho`), anamnese
   `anamnese_rascunho` (gravado a cada passo) e, desde o 16.3, escala

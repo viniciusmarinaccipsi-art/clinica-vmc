@@ -33,6 +33,7 @@
   --c-line-strong:   #D6D5E4;  /* borda de botão secundário, campo, moldura de tela */
   --c-line-alpha:    rgba(29,27,43,.08);  /* 16.5 r3: divisor sobre fundo tinte (herda o tom do fundo) */
   --c-scrim:         rgba(29,27,43,.45);  /* 16.5 r3: fundo escurecido atrás de folha inferior e modal */
+  --c-inv-alpha:     rgba(255,255,255,.20); /* 16.5e: botão translúcido sobre cabeçalho cheio (índigo) */
 
   /* ---------- Ação · índigo ---------- */
   --c-action:        #4C4A8F;  /* botão primário, link, aba ativa, seleção */
@@ -191,6 +192,7 @@
     --c-line-strong: #3E3B57;
     --c-line-alpha:  rgba(255,255,255,.10);
     --c-scrim:       rgba(0,0,0,.60);
+    --c-inv-alpha:   rgba(255,255,255,.14);
     --c-action:      #A8A5E0;
     --c-action-hover:#B8B5EA;
     --c-action-press:#9895D6;

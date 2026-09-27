@@ -1,16 +1,22 @@
-# Conferência 16.5a — entrega do Design (rodada 2) × `index-dev.html`
+# Conferência 16.5 — entrega do Design (rodada 2) × `index-dev.html`
 
-Gerado por `scripts/conferir_entrega_16_5.py` sobre `docs/design/16.5`. Reexecutável e determinístico (sem data/hora no corpo).
+Gerado por `scripts/conferir_entrega_16_5.py` sobre `docs/design/16.5` (pranchas: `01_pranchas_16.5.html`; contrato: `06_contrato_de_leitura_v2.md`). Reexecutável e determinístico (sem data/hora no corpo).
 
 | # | Item | Resultado |
 |---|---|---|
+| 0 | Catálogo | IGUAL (mesmo arquivo) |
 | 1 | Gabarito | OK (45 · 225 · 45 · 3) |
 | 2 | Catálogo × gabarito | OK |
-| 3 | Textos | 4 sem origem (além dos 1 aceitos) |
+| 3 | Textos | 3 sem origem (além dos 1 aceitos) |
 | 4 | Tokens | 2 diferença(s) |
 | 5 | Rostinhos | OK |
-| 6 | Ícones | OK (faltam só i-humor-1, i-humor-2, i-humor-3, i-humor-4, i-humor-5) |
+| 6 | Ícones | OK (faltam só nenhum) |
 | 7 | Referência | OK (12 arquivos) |
+| 8 | Componentes da rodada 3 | ausentes (esperado na rodada 2) |
+
+## 0. Catálogo idêntico à rodada 2 (`catalogo.js` × `docs/design/16.5/catalogo.js`)
+
+**IGUAL** — a pasta conferida é a própria rodada 2 (mesmo arquivo).
 
 ## 1. Gabarito do código (`gabarito_codigo.json`)
 
@@ -27,16 +33,16 @@ Seções (linha inicial–final em `index-dev.html`, total de linhas):
 
 | Seção | Início | Fim | Linhas | Grupos | Itens |
 |---|---|---|---|---|---|
-| `sec-auto-sit-a` | 4752 | 4872 | 121 | 5 | 25 |
-| `sec-auto-emo-a` | 4874 | 5366 | 493 | 5 | 25 |
-| `sec-auto-fis-a` | 5368 | 5860 | 493 | 5 | 25 |
-| `sec-auto-pens-a` | 5862 | 6417 | 556 | 5 | 25 |
-| `sec-auto-comp-a` | 6419 | 6619 | 201 | 5 | 25 |
-| `sec-auto-sit-b` | 6621 | 6637 | 17 | 0 | 0 |
-| `sec-auto-emo-b` | 6639 | 7129 | 491 | 5 | 25 |
-| `sec-auto-fis-b` | 7131 | 7621 | 491 | 5 | 25 |
-| `sec-auto-pens-b` | 7623 | 8125 | 503 | 5 | 25 |
-| `sec-auto-comp-b` | 8127 | 8327 | 201 | 5 | 25 |
+| `sec-auto-sit-a` | 4726 | 4902 | 177 | 5 | 25 |
+| `sec-auto-emo-a` | 4923 | 5121 | 199 | 5 | 25 |
+| `sec-auto-fis-a` | 5327 | 5525 | 199 | 5 | 25 |
+| `sec-auto-pens-a` | 5731 | 5992 | 262 | 5 | 25 |
+| `sec-auto-comp-a` | 6210 | 6386 | 177 | 5 | 25 |
+| `sec-auto-sit-b` | 4903 | 4917 | 15 | 0 | 0 |
+| `sec-auto-emo-b` | 5122 | 5321 | 200 | 5 | 25 |
+| `sec-auto-fis-b` | 5526 | 5725 | 200 | 5 | 25 |
+| `sec-auto-pens-b` | 5993 | 6204 | 212 | 5 | 25 |
+| `sec-auto-comp-b` | 6387 | 6566 | 180 | 5 | 25 |
 
 ## 2. `catalogo.js` × gabarito
 
@@ -45,12 +51,11 @@ Seções (linha inicial–final em `index-dev.html`, total de linhas):
 
 ## 3. Textos (`textos` do catalogo.js + strings entre aspas de 02/03)
 
-**4 diferença(s)** — 95 existem em `index-dev.html` · 38 na coluna "Proposta" · 1 aceitos pelo usuário · 7 só caixa alta · 12 modelos com N · 3 data/hora de exemplo · 3 abreviados · 4 compostos · **4 sem origem**
+**3 diferença(s)** — 125 existem em `index-dev.html` · 13 na coluna "Proposta" · 1 aceitos pelo usuário · 8 só caixa alta · 9 modelos com N · 3 data/hora de exemplo · 2 abreviados · 4 compostos · **3 sem origem**
 
 **Sem origem** (não estão em `index-dev.html`, nem na coluna "Proposta", nem na lista aceita):
 - `02_telas.md` — "Fazer também um Registro Negativo"
 - `02_telas.md` — "O QUE JÁ ESTÁ ANOTADO"
-- `02_telas.md` — "Reações Físicas de Bem-Estar ›"
 - `catalogo.js:textos` — "Identifique as emoções desagradáveis e avalie a intensidade do desconforto"
 
 Aceitos pelo usuário (não são erro):
@@ -63,6 +68,7 @@ Só a caixa difere (o Design usa `text-transform`; LEIA-ME, dúvida 5):
 - "DESCONFORTO:"
 - "MAL-ESTAR:"
 - "QUER CONTINUAR?"
+- "REGISTRO POSITIVO"
 - "SE QUISER CONTINUAR"
 
 Modelos com placeholder ou instância de modelo ("N marcado(s)", "Etapa N de 5 · nome", "RÓTULO · N"):
@@ -70,12 +76,9 @@ Modelos com placeholder ou instância de modelo ("N marcado(s)", "Etapa N de 5 �
 - "COMPORTAMENTOS DISFUNCIONAIS · 2" — instância de "RÓTULO · N"
 - "Etapa 1 de 5 · Situação" — instância de "Etapa N de 5 · nome"
 - "Etapa 4 de 5 · Pensamentos Desadaptativos" — instância de "Etapa N de 5 · nome"
-- "Etapa N de 5 · nome completo" — placeholder N / nome
 - "N · Palavra" — placeholder N / nome
 - "N. Título" — placeholder N / nome
-- "Pensamentos Desadaptativos ›" — instância de "Nome da próxima etapa ›"
 - "REAÇÕES FÍSICAS DE MAL-ESTAR · 2" — instância de "RÓTULO · N"
-- "N marcado(s)" — placeholder N / nome
 - "Nome da próxima etapa ›" — placeholder N / nome
 - "· Etapa N de 5 · nome" — placeholder N / nome
 
@@ -85,7 +88,6 @@ Data/hora de exemplo da prancha:
 - "· Hoje, 22/09 às 10:05"
 
 Texto existente abreviado com "…":
-- "Fazer também…"
 - "O que estava passando pela minha mente instantes antes…"
 - "Precisa de ajuda?…"
 
@@ -96,50 +98,24 @@ Compostos de partes que existem (separadores " · ", "/", ": "):
 - "Nenhum · Pouco · Moderado · Muito · Intenso/Extremo" — todas as partes existem: Nenhum | Pouco | Moderado | Muito | Intenso | Extremo
 
 Na coluna "Proposta" (texto novo previsto no arquivo de textos):
-- ". A checagem breve de humor já está liberada."
 - "2 emoções marcadas"
 - "2 marcados"
-- "5 itens"
-- "Abrir o Painel de Evolução"
-- "Antes do registro completo, leia o"
-- "Checagem breve de humor"
-- "Checagem de humor enviada"
-- "Como está seu humor agora?"
-- "Concluir só com a checagem de humor"
-- "Confira as informações antes de enviar."
 - "Continuar de onde parei"
 - "Descartar e começar novo"
 - "EMOÇÕES DESAGRADÁVEIS · 2"
 - "Etapa 2 de 5 · Emoções Desagradáveis"
-- "Fazer também um Registro Positivo"
 - "Faça a checagem breve de humor e, se quiser, siga para o registro completo."
-- "Fica em Meus Registros e no Painel de Evolução."
 - "Hoje, 22/09 · 10:05"
 - "Na checagem você anotou:"
-- "O que você preencheu fica guardado enquanto esta aba estiver aberta."
-- "Onde você estava, o que estava fazendo, com quem estava ou se estava só?"
 - "PENSAMENTOS DESADAPTATIVOS · 1"
-- "Reações Físicas de Mal-Estar ›"
-- "Registro enviado"
+- "REGISTRO NEGATIVO"
 - "SITUAÇÃO"
-- "Sair sem enviar?"
-- "Salvar e sair"
-- "Seu terapeuta terá acesso a este registro. Você pode corrigir depois em Meus Registros."
-- "Você pode corrigir depois em Meus Registros."
-- "Voltar ao início"
-- "· N"
 - "Ex.: o fato ou a conversa que mexeu com você."
-- "Mais ou menos"
-- "Muito bem"
-- "Muito mal"
-- "O que você sentiu no corpo?"
-- "O que você sentiu?"
 
 Fragmentos de aspas aninhadas do Markdown, ignorados (não são textos de interface):
 - "(Nada … Totalmente) · rodapé"
 - "(sem observação:"
 - "); na etapa 5,"
-- "+ frase"
 - ", **sem escala** · rodapé"
 - ". Aberto: título + contagem, descrição completa em itálico, chips dos 5 itens + chip tracejado"
 - ". No Positivo, a linha SITUAÇÃO mostra só a frase. Rodapé do cartão:"
@@ -156,30 +132,10 @@ Fragmentos de aspas aninhadas do Markdown, ignorados (não são textos de interf
 ### Tema claro
 
 NOVO (entram no 16.5b, mesclados):
-- `--c-humor-1-bg`: `#EFDCE4`
-- `--c-humor-1-ink`: `#7A3E59`
-- `--c-humor-2-bg`: `#F6E9EF`
-- `--c-humor-2-ink`: `#7A3E59`
-- `--c-humor-3-bg`: `#E7E6F5`
-- `--c-humor-3-ink`: `#3D3A6B`
-- `--c-humor-4-bg`: `#EAF4F2`
-- `--c-humor-4-ink`: `#245F5A`
-- `--c-humor-5-bg`: `#D9ECE9`
-- `--c-humor-5-ink`: `#245F5A`
-- `--c-reg-neg-mid`: `#C69AB2`
-- `--c-reg-pos-mid`: `#8FBFBA`
-- `--hit-face`: `56px`
-- `--t-h2-sm`: `600 22px/1.25 var(--f-title)`
-- `--t-legend`: `400 14px/1.2 var(--f-text)`
-- `--w-likert-col`: `70px`
+- (nenhum)
 
 MUDOU (16.4.5 troca só as linhas de fonte/peso):
-- `--f-title`: `'Newsreader', Georgia, serif` → `'Figtree', system-ui, sans-serif`
-- `--t-display`: `500 32px/1.2 var(--f-title)` → `600 32px/1.2 var(--f-title)`
-- `--t-h1`: `500 27px/1.2 var(--f-title)` → `600 27px/1.2 var(--f-title)`
-- `--t-h2`: `500 24px/1.25 var(--f-title)` → `600 24px/1.25 var(--f-title)`
-- `--t-h3`: `500 20px/1.3 var(--f-title)` → `600 20px/1.3 var(--f-title)`
-- `--t-h4`: `500 18px/1.3 var(--f-title)` → `600 18px/1.3 var(--f-title)`
+- (nenhum)
 
 SUMIU no arquivo do Design — **ficam** no repositório (ganhos após 17/09):
 - `--c-bai-ink`: `#4F5B23`
@@ -189,25 +145,42 @@ SUMIU no arquivo do Design — **ficam** no repositório (ganhos após 17/09):
 - `--c-bg-app`: `var(--c-bg)`
 - `--c-bg-page`: `var(--c-bg)`
 - `--c-ink-4`: `var(--c-ink-3)`
+- `--c-line-alpha`: `rgba(29,27,43,.08)`
 - `--c-placeholder`: `var(--c-ink-3)`
+- `--c-scrim`: `rgba(29,27,43,.45)`
 - `--c-surface-2`: `var(--c-surface-sub)`
+- `--hit-thumb`: `44px`
 - `--t-quote`: `italic 400 18px/1.5 var(--f-title)`
+- `--w-slider-desktop`: `400px`
+
+Já aplicados no repositório com o mesmo valor do Design (16.4.5 / 16.5b):
+- `--c-humor-1-bg`
+- `--c-humor-2-bg`
+- `--c-humor-3-bg`
+- `--c-humor-4-bg`
+- `--c-humor-5-bg`
+- `--c-humor-1-ink`
+- `--c-humor-2-ink`
+- `--c-humor-3-ink`
+- `--c-humor-4-ink`
+- `--c-humor-5-ink`
+- `--c-reg-neg-mid`
+- `--c-reg-pos-mid`
+- `--t-h2-sm`
+- `--t-legend`
+- `--hit-face`
+- `--w-likert-col`
+- `--f-title`
+- `--t-display`
+- `--t-h1`
+- `--t-h2`
+- `--t-h3`
+- `--t-h4`
 
 ### Tema escuro
 
 NOVO (entram no 16.5b, mesclados):
-- `--c-humor-1-bg`: `#3A2436`
-- `--c-humor-1-ink`: `#E4B4C9`
-- `--c-humor-2-bg`: `#2E2130`
-- `--c-humor-2-ink`: `#E4B4C9`
-- `--c-humor-3-bg`: `#262441`
-- `--c-humor-3-ink`: `#C4C2EE`
-- `--c-humor-4-bg`: `#16302E`
-- `--c-humor-4-ink`: `#8FD3CC`
-- `--c-humor-5-bg`: `#1C3D3A`
-- `--c-humor-5-ink`: `#8FD3CC`
-- `--c-reg-neg-mid`: `#7E4E68`
-- `--c-reg-pos-mid`: `#3F7A75`
+- (nenhum)
 
 MUDOU (16.4.5 troca só as linhas de fonte/peso):
 - (nenhum)
@@ -217,6 +190,8 @@ SUMIU no arquivo do Design — **ficam** no repositório (ganhos após 17/09):
 - `--c-bai-tint`: `#232815`
 - `--c-bdi2-ink`: `#A9B9E8`
 - `--c-bdi2-tint`: `#1B2135`
+- `--c-line-alpha`: `rgba(255,255,255,.10)`
+- `--c-scrim`: `rgba(0,0,0,.60)`
 
 ### Pranchas (`01_pranchas_16.5.html`)
 
@@ -252,17 +227,15 @@ Fora das telas (cromo do visualizador; informativo, não conta como diferença):
 
 **OK** — símbolos: ['i-humor-1', 'i-humor-2', 'i-humor-3', 'i-humor-4', 'i-humor-5']; bloco `<metadata>` (C2PA) presente: sim — é descartado na importação para o sprite.
 
+Já no sprite de `index-dev.html` com o mesmo desenho (16.5b): `i-humor-1`, `i-humor-2`, `i-humor-3`, `i-humor-4`, `i-humor-5`.
+
 
 ## 6. Ícones (`icones.js` × sprite de `index-dev.html`)
 
-**OK** — 28 ids em icones.js; sprite tem 55 símbolos.
+**OK** — 28 ids em icones.js; sprite tem 60 símbolos.
 
 Ausentes do sprite (esperado: só `i-humor-1..5`, que entram no 16.5b):
-- `i-humor-1`
-- `i-humor-2`
-- `i-humor-3`
-- `i-humor-4`
-- `i-humor-5`
+- (nenhum)
 
 Ausentes além de `i-humor-*`:
 - (nenhum)
@@ -289,4 +262,17 @@ Ausentes além de `i-humor-*`:
 Aprovadas como estão, sem imagem de referência (não mudam na rodada 3): AUT-03b, AUT-12a, AUT-12b, AUT-12c.
 
 Aguardam a rodada 3: AUT-02, AUT-03 (fim da tela), AUT-03c (nova), AUT-04 a AUT-08, AUT-08p, AUT-11.
+
+## 8. Componentes e telas da rodada 3 (`03_componentes.md`, `02_telas.md`)
+
+Componentes (título de seção por grep):
+- `ListaSubgrupo`: ausente
+- `BarraDeslizante`: ausente
+- `MenuEtapas`: ausente
+
+Telas:
+- `AUT-03c`: ausente
+- `AUT-04 do Positivo`: ausente
+
+**AVISO** — componentes da rodada 3 ausentes (esperado na rodada 2): ListaSubgrupo, BarraDeslizante, MenuEtapas, AUT-03c, AUT-04 do Positivo.
 
