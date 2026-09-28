@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.5e (27/09/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.5f (28/09/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -1715,7 +1715,7 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .folha-alca span{width:40px;height:4px;border-radius:2px;background:var(--c-line-strong);}
 .folha-titulo{font:600 22px/1.25 var(--f-text);color:var(--c-ink);margin:0 0 10px;}
 .folha-txt{font:400 15px/1.5 var(--f-text);color:var(--c-ink-2);margin:0 0 18px;}
-@media (min-width:900px){ .folha-scrim{align-items:center;padding:20px;} .folha{max-width:440px;border-radius:var(--r-sheet);} }
+@media (min-width:900px){ .folha-scrim{align-items:center;padding:20px;} .folha{max-width:480px;border-radius:var(--r-sheet);} } /* 16.5f (decisão 7): centrada, máx. 480 px */
 /* Meus Registros: linha só de checagem */
 .histc-tipo.chk{background:var(--c-humor-3-bg);color:var(--c-humor-3-ink);}
 
@@ -1853,7 +1853,7 @@ input:focus-visible + .auto-check{outline:3px solid var(--c-action-ring);outline
 [data-tipo="pos"] .auto-slider-legenda span.ativo{color:var(--c-reg-pos-ink);}
 .auto-item-likert .auto-aviso{margin:6px 12px 0 54px;}
 .auto-slider-legenda span.apertada{font-size:13px;letter-spacing:-.02em;} /* dúvida 6 do Design (usuário, 26/09): 13 px só na palavra que não cabe na coluna (autoLegendaAjustar); em 390 px nenhuma, em 375/360 só "Totalmente" */
-@media (min-width:900px){ .auto-item-likert{margin:0 0 0 42px;max-width:var(--w-slider-desktop);} .auto-item-likert-label,.auto-item-likert .auto-aviso{margin-left:0;} }
+/* 16.5f: a barra deslizante no computador (coluna direita de 400 px) está no bloco "Pacote 16.5f", depois do cabeçalho v2 */
 
 /* Pacote 16.5d-3 — CabeçalhoCumulativo v2 (§3 da rodada 4; decisões P1–P4, D1 e D5 de 26/09): cartão em tinte do
    tipo com quatro blocos separados por filete — humor + etapa atual, trilha das 5 etapas (no lugar do trilho #prog),
@@ -1899,6 +1899,95 @@ button.cab-no-item{cursor:pointer;}
 [data-tipo="pos"] .cab-no-item.feita .cab-no,[data-tipo="pos"] .cab-no-item.atual .cab-no{border-color:var(--c-reg-pos);}
 [data-tipo="neg"] .cab-no-item.atual .cab-no{box-shadow:0 0 0 4px var(--c-reg-neg-mid);} /* anel "mais acesa" */
 [data-tipo="pos"] .cab-no-item.atual .cab-no{box-shadow:0 0 0 4px var(--c-reg-pos-mid);}
+
+/* ============================================================
+   Pacote 16.5f — Computador ≥ 900 px (AUT-11 da rodada 3 + decisão P do usuário, 28/09). Nas 5 etapas a seção
+   vira grade [lateral | conteúdo] e o cabeçalho v2 é o MESMO nó, reposicionado: a trilha vai para cima do título
+   (largura do conteúdo, fundo tinte, sem borda); a lateral (sticky) recebe o cartão "Suas 5 etapas" (gerado do DOM
+   do menu, com estado) e o cartão do que já está anotado (humor + linhas em modo detalhe nas etapas 2–4 + ações).
+   Item marcado em duas colunas (esquerda: check + nome + nota + rótulo; direita: barra de 400 px); grupos fechados
+   com a descrição visível; rodapé inline; telas de leitura centradas a 720 px. Abaixo de 900 px nada muda: a
+   ordem do celular (humor, trilha, linhas, ações) vem de `order`, e .cab-corpo/.cab-anotado são display:contents.
+   Só tokens; a cor do tipo vem do [data-tipo] da seção. ============================================================ */
+.cab:not([hidden]){display:flex;flex-direction:column;}
+.cab-corpo,.cab-anotado{display:contents;}
+.cab-etapas,.cab-humor-editar,.cab-itens{display:none;}
+.cab-humor{order:0;}.cab-trilha{order:1;}.cab-linhas{order:2;}.cab-acoes{order:3;}
+@media (min-width:900px){
+  body:has(.section.active > .cab:not([hidden])) .app{max-width:1136px;padding:calc(var(--topbar-h,52px) + 28px) 32px 100px;} /* 28 abaixo da barra fixa */
+  body:has(.section.active > .cab:not([hidden])) .topbar-in{max-width:1136px;}
+  .section.active:has(> .cab:not([hidden])){display:grid;grid-template-columns:280px minmax(0,1fr);grid-template-areas:"lateral trilha" "lateral conteudo";column-gap:32px;row-gap:0;align-items:start;}
+  .section.active > .cab:not([hidden]){display:contents;}
+  .auto-tipo:not([hidden]){grid-area:conteudo;max-width:760px;}
+  /* trilha acima do título, na largura do conteúdo, desconectada da lateral */
+  .cab-trilha{grid-area:trilha;height:56px;padding:0 16px;margin:0 0 16px;border:none;border-radius:var(--r-card);}
+  [data-tipo="neg"] .cab-trilha{background:var(--c-reg-neg-tint);}
+  [data-tipo="pos"] .cab-trilha{background:var(--c-reg-pos-tint);}
+  /* lateral sticky: cartão 1 "Suas 5 etapas" + cartão 2 do que já está anotado */
+  .cab-corpo{grid-area:lateral;display:flex;flex-direction:column;gap:16px;position:sticky;top:calc(var(--topbar-h,52px) + 16px);}
+  .cab-etapas{display:block;background:var(--c-surface);border:1px solid var(--c-line);border-radius:var(--r-card);padding:14px 10px 8px;box-shadow:var(--sh-1);}
+  .cab-etapas-tit{display:block;font:var(--t-label);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--c-ink-2);margin:0 0 8px 10px;}
+  .cab-etapa{display:grid;grid-template-columns:28px minmax(0,1fr) 20px;gap:12px;align-items:center;width:100%;min-height:52px;padding:6px 10px;border:none;border-radius:var(--r-field);background:none;text-align:left;font:inherit;color:var(--c-ink-3);}
+  button.cab-etapa{cursor:pointer;}
+  button.cab-etapa:hover{background:var(--c-surface-sub);}
+  .cab-etapa-circ{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--c-line-strong);background:var(--c-surface);font:600 14px/1 var(--f-text);color:var(--c-ink-3);}
+  .cab-etapa-circ .ico{width:14px;height:14px;stroke-width:2.5;}
+  .cab-etapa-nome{font:400 15px/1.3 var(--f-text);color:var(--c-ink);}
+  .cab-etapa-ico{display:flex;color:var(--c-ink-3);}
+  .cab-etapa-ico .ico{width:20px;height:20px;stroke-width:2;}
+  .cab-etapa.feita .cab-etapa-circ{border-color:transparent;color:var(--c-ink-inv);}
+  .cab-etapa.feita .cab-etapa-ico{color:var(--c-ink-2);}
+  [data-tipo="neg"] .cab-etapa.feita .cab-etapa-circ{background:var(--c-reg-neg);}
+  [data-tipo="pos"] .cab-etapa.feita .cab-etapa-circ{background:var(--c-reg-pos);}
+  .cab-etapa.atual .cab-etapa-nome{font-weight:600;}
+  [data-tipo="neg"] .cab-etapa.atual{background:var(--c-reg-neg-tint);}
+  [data-tipo="pos"] .cab-etapa.atual{background:var(--c-reg-pos-tint);}
+  [data-tipo="neg"] .cab-etapa.atual .cab-etapa-circ,[data-tipo="neg"] .cab-etapa.atual .cab-etapa-ico{border-color:var(--c-reg-neg);color:var(--c-reg-neg-ink);}
+  [data-tipo="pos"] .cab-etapa.atual .cab-etapa-circ,[data-tipo="pos"] .cab-etapa.atual .cab-etapa-ico{border-color:var(--c-reg-pos);color:var(--c-reg-pos-ink);}
+  .cab-anotado{display:block;border:1px solid var(--c-line);border-radius:var(--r-card);overflow:hidden;}
+  [data-tipo="neg"] .cab-anotado{background:var(--c-reg-neg-tint);border-color:var(--c-reg-neg-line);}
+  [data-tipo="pos"] .cab-anotado{background:var(--c-reg-pos-tint);border-color:var(--c-reg-pos-line);}
+  .cab-preenchendo{display:none;}
+  .cab-humor-editar{display:inline-flex;}
+  /* modo detalhe (decisão P): nas etapas 2–4 a linha mostra os itens marcados com barra + nota (reusa .rvs-lin da revisão) */
+  .cab-lin[data-etapa="emo"] .cab-grupos,.cab-lin[data-etapa="fis"] .cab-grupos,.cab-lin[data-etapa="pens"] .cab-grupos{display:none;}
+  .cab-lin[data-etapa="emo"] .cab-itens,.cab-lin[data-etapa="fis"] .cab-itens,.cab-lin[data-etapa="pens"] .cab-itens{display:block;grid-column:2;margin-top:2px;}
+  .cab-itens .rvs-linhas{gap:6px;}
+  .cab-itens .rvs-lin{grid-template-columns:minmax(0,1fr) 84px 18px;gap:8px;}
+  .cab-itens .rvs-lin-nome{font:400 14px/1.3 var(--f-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .cab-itens .rvs-barra{height:6px;background:var(--c-surface);}
+  .cab-itens .rvs-nota{font-size:14px;}
+  /* item marcado em duas colunas: esquerda check + nome + nota + rótulo; direita a BarraDeslizante de 400 px */
+  [data-tem-likert="1"] .auto-option.marked{display:grid;grid-template-columns:minmax(0,1fr) var(--w-slider-desktop);grid-template-areas:"lbl sl" "rot leg" "avs avs";column-gap:24px;align-items:start;padding:8px 0;} /* só nos grupos com escala; Situação e Comportamentos continuam em uma linha */
+  .auto-option.marked > .auto-option-lbl{grid-area:lbl;display:grid;grid-template-columns:28px minmax(0,1fr);grid-template-areas:"chk nome" ". nota";column-gap:14px;row-gap:2px;min-height:0;padding:4px 0 0;align-items:center;}
+  .auto-option.marked > .auto-option-lbl .auto-check{grid-area:chk;}
+  .auto-option.marked > .auto-option-lbl .auto-option-nome{grid-area:nome;}
+  .auto-option.marked > .auto-option-lbl .auto-option-nota{grid-area:nota;justify-self:start;}
+  .auto-option.marked > .auto-option-other{grid-area:lbl;flex-wrap:wrap;min-height:0;padding:4px 0 0;}
+  .auto-option.marked > .auto-option-other .auto-option-nota{flex-basis:100%;padding-left:42px;margin-top:-6px;}
+  .auto-option.marked .auto-item-likert{display:contents;}
+  .auto-option.marked .auto-item-likert-label{grid-area:rot;margin:0 0 0 42px;}
+  .auto-option.marked .auto-slider{grid-area:sl;}
+  .auto-option.marked .auto-slider-legenda{grid-area:leg;}
+  .auto-option.marked .auto-item-likert .auto-aviso{grid-area:avs;margin:6px 0 0 42px;}
+  /* grupos fechados mostram a descrição (só a lista fica recolhida) */
+  .auto-group:not(.open) .auto-group-body{display:block;padding:0 16px 12px;}
+  .auto-group:not(.open) .auto-lista{display:none;}
+  .auto-group:not(.open) .auto-group-desc{margin:0;}
+  .auto-group:not(.open) .auto-group-head{min-height:56px;padding-bottom:4px;}
+  /* rodapé inline: "‹" · contagem · próxima etapa (seletor com .auto-tipo porque as regras do RodapéEtapa vêm depois no arquivo) */
+  .auto-tipo .auto-rodape{display:grid;grid-template-columns:56px minmax(0,1fr) auto;grid-template-areas:"prev cont next";align-items:center;gap:14px;}
+  .auto-tipo .auto-rodape-cont{grid-area:cont;text-align:left;}
+  .auto-tipo .auto-rodape-btns{display:contents;}
+  .auto-tipo .auto-rodape-prev{grid-area:prev;}
+  .auto-tipo .auto-rodape-next{grid-area:next;padding:0 28px;}
+  /* telas de leitura: coluna única centrada a 720 px (§17 estendido) */
+  #sec-auto-passo1,#sec-auto-checagem-enviada,#sec-auto-menu,#sec-auto-revisar,#sec-auto-enviado{max-width:720px;margin-left:auto;margin-right:auto;}
+}
+@media (min-width:1280px){
+  body:has(.section.active > .cab:not([hidden])) .app,body:has(.section.active > .cab:not([hidden])) .topbar-in{max-width:1176px;}
+  .section.active:has(> .cab:not([hidden])){grid-template-columns:320px minmax(0,1fr);}
+}
 
 /* CartãoAjuda (§8): nasce recolhido; âmbar = ajuda */
 .p8-consulta{background:var(--c-warn-tint);border:1px solid var(--c-warn-line);border-radius:var(--r-card);margin:14px 0 16px;overflow:hidden;}
@@ -11404,7 +11493,8 @@ function cabHumorHtml(etapaAtual) {
   const hn = parseInt((AUTO_STATE.dados || {}).humor_nivel, 10);
   return '<div class="cab-humor"><span class="cab-humor-circ">' + vmcHumorIcone(hn) + '</span>' +
     '<span class="cab-humor-txt"><span class="cab-lbl">Humor</span><span class="cab-humor-nome">' + escapeHtmlAuto(HUMOR_NOMES[hn] || '—') + '</span></span>' +
-    '<span class="cab-preenchendo"><span class="cab-lbl">Preenchendo</span><span class="cab-etapa-nome">' + CAB_ROTULOS[etapaAtual] + '</span></span></div>';
+    '<span class="cab-preenchendo"><span class="cab-lbl">Preenchendo</span><span class="cab-etapa-nome">' + CAB_ROTULOS[etapaAtual] + '</span></span>' +
+    '<button type="button" class="lnk cab-humor-editar" onclick="chkEditar()">' + cabIco('i-pencil') + 'editar</button></div>'; // 16.5f: "editar" do humor só na lateral do computador (o mesmo chkEditar do menu)
 }
 // Bloco 2 — trilha: o traço à esquerda de cada nó fica cheio quando esse nó é feito ou atual
 function cabTrilhaHtml(etapaAtual, tipo) {
@@ -11430,11 +11520,38 @@ function cabGruposHtml(et, tipo) {
   if (grupos.length) return grupos.map(escapeHtmlAuto).join(' · ');
   return cabFrase(et, tipo) ? '' : '<span class="cab-vazio">…</span>';
 }
+// 16.5f — modo detalhe (decisão P): nas etapas 2–4 a lateral do computador mostra os itens marcados com barra + nota,
+// lidos de AUTO_STATE.dados pela mesma revisarItens/revisarLinhasHtml da tela "Revisar e Enviar"; no celular fica oculto por CSS
+var CAB_ETAPAS_DETALHE = ['emo', 'fis', 'pens'];
+function cabItensHtml(et, tipo) { return CAB_ETAPAS_DETALHE.indexOf(et) === -1 ? '' : revisarLinhasHtml(revisarItens(et, tipo)); }
 function cabLinhaHtml(et, tipo, atual) {
   const frase = cabFrase(et, tipo);
   return '<div class="cab-lin' + (atual ? ' atual' : '') + '" data-etapa="' + et + '">' + cabIco(CAB_ICONES[tipo][et]) +
     '<p class="cab-lin-txt"><span class="cab-rot">' + CAB_ROTULOS[et] + '</span><span class="cab-grupos"' + (atual ? ' aria-live="polite"' : '') + '>' + cabGruposHtml(et, tipo) + '</span>' +
-    (frase ? '<span class="cab-frase">' + escapeHtmlAuto(frase) + '</span>' : '') + '</p></div>';
+    (frase ? '<span class="cab-frase">' + escapeHtmlAuto(frase) + '</span>' : '') + '</p>' +
+    (CAB_ETAPAS_DETALHE.indexOf(et) === -1 ? '' : '<div class="cab-itens">' + cabItensHtml(et, tipo) + '</div>') + '</div>';
+}
+// 16.5f — cartão "Suas 5 etapas" da lateral do computador (AUT-11): gerado do DOM do menu (#sec-auto-menu-<tipo> .metapa:
+// nome completo + ícone; título = data-barra-titulo do menu), com estado — feita (círculo cheio + i-check, clicável, o mesmo
+// cabIrEtapa da trilha), atual (número com borda, fundo tinte), a fazer (número cinza). O menu continua sem estado (§17).
+function cabEtapasHtml(etapaAtual, tipo) {
+  const menu = document.getElementById('sec-auto-menu');
+  const titulo = ((menu && menu.getAttribute('data-barra-titulo')) || '').trim();
+  const idx = CAB_ETAPAS.indexOf(etapaAtual);
+  let h = '<div class="cab-etapas" role="group" aria-label="' + escapeHtmlAuto(titulo) + '"><span class="cab-etapas-tit">' + escapeHtmlAuto(titulo) + '</span>';
+  document.querySelectorAll('#sec-auto-menu-' + tipo + ' .metapa').forEach((m, i) => {
+    const et = CAB_ETAPAS[i]; if (!et) return;
+    const estado = i === idx ? 'atual' : (cabEtapaFeita(et, tipo) ? 'feita' : 'futura');
+    const nomeEl = m.querySelector('.metapa-nome'); const nome = (nomeEl ? nomeEl.textContent : CAB_ROTULOS[et]).trim();
+    const use = m.querySelector('.metapa-ico use'); const icone = use ? String(use.getAttribute('href') || '').replace('#', '') : CAB_ICONES[tipo][et];
+    const corpo = '<span class="cab-etapa-circ" aria-hidden="true">' + (estado === 'feita' ? cabIco('i-check') : (i + 1)) + '</span>' +
+      '<span class="cab-etapa-nome">' + escapeHtmlAuto(nome) + '</span><span class="cab-etapa-ico" aria-hidden="true">' + cabIco(icone) + '</span>';
+    const rotulo = ('Etapa ' + (i + 1) + ' de 5 · ' + nome + (estado === 'futura' ? '' : ' · ' + estado)).replace(/"/g, '&quot;');
+    h += estado === 'feita'
+      ? '<button type="button" class="cab-etapa feita" onclick="cabIrEtapa(' + i + ',\'' + tipo + '\')" aria-label="' + rotulo + '">' + corpo + '</button>'
+      : '<span class="cab-etapa ' + estado + '" role="img"' + (estado === 'atual' ? ' aria-current="step"' : '') + ' aria-label="' + rotulo + '">' + corpo + '</span>';
+  });
+  return h + '</div>';
 }
 // Bloco 4 — ações
 function cabAcoesHtml(tipo) {
@@ -11447,7 +11564,10 @@ function cabRenderizar(idLogico) {
   const el = document.getElementById('cabHdr-' + etapaAtual); if (!el) return;
   let linhas = '';
   CAB_ETAPAS.forEach(et => { if (et === etapaAtual || cabEtapaFeita(et, tipo)) linhas += cabLinhaHtml(et, tipo, et === etapaAtual); });
-  el.innerHTML = cabHumorHtml(etapaAtual) + cabTrilhaHtml(etapaAtual, tipo) + '<div class="cab-linhas">' + linhas + '</div>' + cabAcoesHtml(tipo);
+  // 16.5f: trilha + corpo (cartão "Suas 5 etapas" + cartão do que já está anotado). No celular a ordem humor → trilha →
+  // linhas → ações vem do CSS (`order`); no computador a trilha vai para cima do título e o corpo para a lateral (grid areas).
+  el.innerHTML = cabTrilhaHtml(etapaAtual, tipo) + '<div class="cab-corpo">' + cabEtapasHtml(etapaAtual, tipo) +
+    '<div class="cab-anotado">' + cabHumorHtml(etapaAtual) + '<div class="cab-linhas">' + linhas + '</div>' + cabAcoesHtml(tipo) + '</div></div>';
   el.hidden = false;
 }
 // Linha da etapa atual ao vivo: só o trecho dos grupos (região aria-live) e a frase; trilha e ações não são refeitas
@@ -11457,6 +11577,7 @@ function cabAtualizarAtual() {
   const el = document.getElementById('cabHdr-' + et); if (!el || el.hidden) return;
   const lin = el.querySelector('.cab-lin.atual'); if (!lin) return;
   const grupos = lin.querySelector('.cab-grupos'); if (grupos) grupos.innerHTML = cabGruposHtml(et, tipo);
+  const itens = lin.querySelector('.cab-itens'); if (itens) itens.innerHTML = cabItensHtml(et, tipo); // 16.5f: modo detalhe ao vivo
   const frase = cabFrase(et, tipo);
   let fEl = lin.querySelector('.cab-frase');
   if (frase && !fEl) { fEl = document.createElement('span'); fEl.className = 'cab-frase'; lin.querySelector('.cab-lin-txt').appendChild(fEl); }
@@ -12203,7 +12324,8 @@ function autoLegendaAjustar(lk) {
   lk.querySelectorAll('.auto-slider-legenda span').forEach(s => { s.classList.remove('apertada'); if (s.scrollWidth > s.clientWidth) s.classList.add('apertada'); });
 }
 function autoLegendaAjustarVisiveis() {
-  document.querySelectorAll('.auto-option.marked .auto-item-likert').forEach(lk => { if (lk.offsetParent !== null) autoLegendaAjustar(lk); });
+  // 16.5f: no computador o .auto-item-likert é display:contents (offsetParent null) — a visibilidade é medida na legenda
+  document.querySelectorAll('.auto-option.marked .auto-item-likert').forEach(lk => { const leg = lk.querySelector('.auto-slider-legenda'); if ((leg || lk).offsetParent !== null) autoLegendaAjustar(lk); });
 }
 var AUTO_LEGENDA_TIMER = null;
 window.addEventListener('resize', function () { clearTimeout(AUTO_LEGENDA_TIMER); AUTO_LEGENDA_TIMER = setTimeout(autoLegendaAjustarVisiveis, 150); });
@@ -12422,6 +12544,13 @@ function revisarItens(etapa, tipo) {
   });
   return out;
 }
+// Linhas item + barra (largura = nota/5) + nota — usadas pela revisão e, desde o 16.5f, pelo modo detalhe da lateral (cabItensHtml)
+function revisarLinhasHtml(itens) {
+  if (!itens || !itens.length) return '';
+  return '<div class="rvs-linhas">' + itens.map(i => '<div class="rvs-lin"><span class="rvs-lin-nome">' + escapeHtmlAuto(i.nome) + '</span>' +
+    (i.nota ? '<span class="rvs-barra" aria-hidden="true"><span class="rvs-barra-fill" style="width:' + (i.nota * 20) + '%"></span></span><span class="rvs-nota" aria-label="nota ' + i.nota + '">' + i.nota + '</span>'
+            : '<span></span><span class="rvs-nota"></span>') + '</div>').join('') + '</div>';
+}
 function revisarTextos(etapa, tipo) {
   return cabTextoLivre(etapa, tipo).split(' | ').map(x => x.trim()).filter(Boolean); // Pensamentos: várias caixas separadas por " | "
 }
@@ -12437,9 +12566,7 @@ function revisarBlocoHtml(etapa, tipo) {
   if (itens.length && (etapa === 'sit' || etapa === 'comp')) {
     corpo += '<div class="rvs-chips">' + itens.map(i => '<span class="rvs-chip">' + escapeHtmlAuto(i.nome) + '</span>').join('') + '</div>';
   } else if (itens.length) {
-    corpo += '<div class="rvs-linhas">' + itens.map(i => '<div class="rvs-lin"><span class="rvs-lin-nome">' + escapeHtmlAuto(i.nome) + '</span>' +
-      (i.nota ? '<span class="rvs-barra" aria-hidden="true"><span class="rvs-barra-fill" style="width:' + (i.nota * 20) + '%"></span></span><span class="rvs-nota" aria-label="nota ' + i.nota + '">' + i.nota + '</span>'
-              : '<span></span><span class="rvs-nota"></span>') + '</div>').join('') + '</div>';
+    corpo += revisarLinhasHtml(itens);
   }
   if (!corpo) corpo = '<p class="rvs-vazio">…</p>';
   const idx = CAB_ETAPAS.indexOf(etapa);

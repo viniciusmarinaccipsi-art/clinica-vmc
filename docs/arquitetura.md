@@ -619,6 +619,58 @@ Planilha individual do paciente — abas:
   `pevMontarSeletor(periodo)`. Padrão "empréstimo" sem segunda implementação;
   o Painel não mudou de comportamento.
 
+## Registro no computador ≥ 900 px (Pacote 16.5f)
+
+Breakpoints 900 e 1280 (AUT-11 da rodada 3 + decisão P do usuário, 28/09;
+`02_telas.md` linha 5: nenhuma medida em vw/vh). Abaixo de 900 px nada muda.
+
+- **Grade da etapa:** a seção física ativa que tem cabeçalho v2 renderizado
+  (`.section.active:has(> .cab:not([hidden]))`) vira `grid 280px minmax(0,1fr)`
+  (320 px a partir de 1280), `column-gap` 32, áreas `"lateral trilha" /
+  "lateral conteudo"`; o bloco `.auto-tipo` visível ocupa `conteudo` com
+  `max-width: 760px`. Só nessas telas o `.app` e a `.topbar-in` alargam para
+  1136/1176 px (`body:has(…)`), padding 28/32.
+- **Cabeçalho v2 = mesmo nó, reposicionado.** `cabRenderizar` monta
+  `.cab-trilha` + `.cab-corpo` [ `.cab-etapas` + `.cab-anotado` [ `.cab-humor`,
+  `.cab-linhas`, `.cab-acoes` ] ]. No celular `.cab` é flex-coluna,
+  `.cab-corpo`/`.cab-anotado` são `display:contents` e a ordem humor → trilha
+  → linhas → ações vem de `order`; `.cab-etapas`, `.cab-humor-editar` e
+  `.cab-itens` ficam ocultos. No computador `.cab` é `display:contents`: a
+  trilha vai para a área `trilha` (acima do título, na largura do conteúdo,
+  fundo `-tint` do tipo, sem borda) e `.cab-corpo` para a área `lateral`
+  (`position: sticky`, `top = --topbar-h + 16`), sem cabeçalho cumulativo
+  acima do conteúdo.
+- **Cartão "Suas 5 etapas"** (`cabEtapasHtml`): título = `data-barra-titulo`
+  do `#sec-auto-menu`; uma linha por `.metapa` do menu do tipo (nome completo
+  e ícone lidos do DOM), com estado — feita = círculo cheio na cor do tipo com
+  `i-check`, `<button>` → `cabIrEtapa` (o mesmo caminho da trilha); atual =
+  número com borda, fundo `-tint`, `aria-current="step"`; a fazer = número
+  cinza. O menu (AUT-03c) continua sem estado. Não é atualizado ao vivo (como
+  a trilha): renderiza ao abrir a etapa.
+- **Modo detalhe** (`cabItensHtml`, só ≥ 900 por CSS): nas linhas de
+  Emoções, Reações físicas e Pensamentos a lateral mostra os itens marcados
+  com barra (largura = nota/5) + nota — `revisarItens` + `revisarLinhasHtml`,
+  as mesmas funções da tela "Revisar e Enviar" (classes `.rvs-lin*`
+  reusadas, item longo cortado com "…"); Situação e Comportamentos continuam
+  com os grupos. `cabAtualizarAtual` refaz o `.cab-itens` da etapa atual no
+  mesmo caminho do rodapé. A linha HUMOR ganha "editar" (`chkEditar`, o
+  mesmo do menu) no lugar de "PREENCHENDO".
+- **Item marcado em duas colunas:** `.auto-option.marked` vira `grid
+  minmax(0,1fr) var(--w-slider-desktop)` com áreas `"lbl sl" / "rot leg" /
+  "avs avs"`; o `label.auto-option-lbl` vira grade `28px 1fr` (check | nome /
+  nota) e o `.auto-item-likert` é `display:contents` — rótulo ("ACREDITO:") na
+  coluna esquerda sob a nota, `.auto-slider` e legenda na coluna direita de
+  400 px. As variáveis (`--v`) e as classes (`.sem-valor`, `.erro`) continuam
+  no `.auto-item-likert` e herdam normalmente; `autoLegendaAjustarVisiveis`
+  passou a medir a visibilidade pela legenda (o `offsetParent` de um
+  `display:contents` é nulo).
+- **Grupos fechados** mostram a descrição (`.auto-group-body` visível, só a
+  `.auto-lista` recolhida). **Rodapé inline:** `.auto-rodape` vira grade
+  `56px 1fr auto` (‹ · contagem à esquerda · próxima etapa).
+- **Telas de leitura** (`#sec-auto-passo1`, `#sec-auto-checagem-enviada`,
+  `#sec-auto-menu`, `#sec-auto-revisar`, `#sec-auto-enviado`): coluna única
+  centrada, `max-width: 720px`. Folha "Sair sem enviar?": centrada, 480 px.
+
 ## Esteira de teste dos pacotes de frontend (Pacote 16.5-esteira, 28/09/2026)
 
 Quatro peças versionadas em `scripts/` substituem o que cada pacote reescrevia
