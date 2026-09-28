@@ -618,3 +618,44 @@ Planilha individual do paciente — abas:
   comportamento de sempre; com `aoEscolher`, o chamador decide) +
   `pevMontarSeletor(periodo)`. Padrão "empréstimo" sem segunda implementação;
   o Painel não mudou de comportamento.
+
+## Esteira de teste dos pacotes de frontend (Pacote 16.5-esteira, 28/09/2026)
+
+Quatro peças versionadas em `scripts/` substituem o que cada pacote reescrevia
+(diagnóstico em `..\VMC-offline\ESTEIRA_16_5_DUPLICACOES_E_ADEQUACOES.md`):
+
+- **`scripts/vmc_playwright_base.js`** — módulo dos roteiros Playwright.
+  `abrirNavegador()` (Chrome instalado, aba visível), `viewportsDe("390,1280")`,
+  `abrir(browser, url, vp, {modo, rotulo, dirCap})` → objeto `S` com a página,
+  a coleta (`S.R`: `pageerror`, `dialogos`, `consoleErros`, `requests`,
+  `payloads` sem `sigla`, `edicoes`, `capturas`) e os helpers: `ir`, `login`
+  (sigla inexistente), `simularSessao`, `iniciarRegistro(tipo, nivel)`,
+  `preencherEtapas(tipo, {comOutro})`, `enviar`, `esperarSecao`,
+  `esperarPayload`, `foto(nome)` (nome fixo `<rotulo>_<tela>_<largura>.png`),
+  `escrever`/`abrirGrupo`/`marcar`/`nota`/`outro`/`nextBtn`/`clicarAcao`,
+  medidores `medirTopbar`, `medirCab`, `medirRevisao`, `medirEnviado`,
+  `medirFolha`. Rota do Apps Script com modos `fingir` (gravação e edição
+  interceptadas, nada gravado) e `real`; `S.bloquearEnvio = n` simula n falhas
+  de rede. O roteiro de cada pacote (`..\PACOTE_<N>_fluxo.js`, 60–100 linhas)
+  só descreve o fluxo; exemplo completo: `..\PACOTE_16_5e_fluxo_base.js`.
+- **`scripts/vmc_fumaca.js`** — fumaça no publicado (uma janela, um viewport):
+  espera o Pages servir o marcador (`--marcador`), login inválido até a
+  mensagem do servidor, envio fingido até "Registro enviado", chaves do
+  payload × `--baseline`, `pageerror`/`dialog` 0; JSON e captura em
+  `..\VMC-offline\fumaca\`; código de saída 1 em qualquer falha.
+- **`scripts/validar_index_dev.py`** — validação estática do checklist:
+  `node --check` por bloco, tags fora de `<script>` por profundidade,
+  `var()` sem declaração (reconhece `setProperty`), hex fora dos `:root`
+  (falha) e `rgba()` (não pode aumentar), classes sem uso (só as novas
+  falham), `font-size` < 13 px, emoji, marcadores, `fetch(` ≤ 2, texto
+  proibido fora de comentários, função nova sem chamador e função removida
+  ainda referenciada; tabela antes × depois contra `HEAD` (`--ref`) ou contra
+  a linha de base gravada por `--antes` e lida por `--depois`.
+- **`scripts/conferir_entrega_16_5.py --so-gabarito`** — md5 do gabarito
+  clínico sem regenerar `CONFERENCIA_*.md` (que só muda com rodada nova do
+  Design).
+
+Duas passagens de navegador por pacote: local em modo fingir (completa, antes
+do commit) e fumaça no publicado. Envio real só quando o contrato, `Código.js`
+ou a planilha mudarem, ou no fechamento de fase. Modelo de prompt com as
+regras: `docs/prompts/MODELO_PROMPT.md`.

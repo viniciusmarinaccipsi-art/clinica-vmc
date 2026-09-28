@@ -19,6 +19,11 @@ e um resumo no terminal (uma linha por item).
 
 Python 3 puro, sem dependência externa. Reexecutável: rodar duas vezes gera
 arquivos byte a byte iguais.
+
+Pacote 16.5-esteira: `--so-gabarito [index-dev.html]` só extrai o gabarito e imprime o md5
+(e o compara com o gabarito_codigo.json versionado), sem gravar nada — é o gabarito
+"antes/depois" de cada pacote. A conferência completa (que regenera CONFERENCIA_*.md)
+fica para quando chega rodada nova do Design.
 """
 import html
 import json
@@ -657,7 +662,32 @@ def md_lista(itens, vazio='(nenhum)'):
     return ''.join(f'- {x}\n' for x in itens)
 
 
+def so_gabarito():
+    """Pacote 16.5-esteira: `--so-gabarito` extrai o gabarito de index-dev.html e imprime o md5 do JSON
+    (os mesmos bytes que `gabarito_codigo.json` teria) sem tocar em CONFERENCIA_*.md nem em gabarito_codigo.json.
+    Uso: python scripts/conferir_entrega_16_5.py --so-gabarito [index-dev.html]"""
+    import hashlib
+    arquivo = next((a for a in sys.argv[1:] if not a.startswith('--')), 'index-dev.html')
+    if not os.path.exists(arquivo):
+        raise SystemExit(f'Arquivo ausente: {arquivo} (rodar a partir da raiz do repositório)')
+    gab, _ = extrair_gabarito(ler(arquivo))
+    cont = contar_gabarito(gab)
+    corpo = (json.dumps(gab, ensure_ascii=False, indent=2, sort_keys=True) + '\n').encode('utf-8')
+    md5 = hashlib.md5(corpo).hexdigest()
+    difs = [f'{k}: {cont[k]} (esperado {ESPERADO[k]})' for k in ('grupos', 'itens', 'outro', 'legendas') if cont[k] != ESPERADO[k]]
+    print(f'gabarito {arquivo}: md5 {md5} · {cont["grupos"]} grupos · {cont["itens"]} itens · {cont["outro"]} "Outro" · {cont["legendas"]} legendas' + (' · DIFERENÇAS: ' + '; '.join(difs) if difs else ' · OK'))
+    ref = os.path.join('docs', 'design', '16.5', 'gabarito_codigo.json')
+    if os.path.exists(ref):
+        with open(ref, 'rb') as f:
+            md5_ref = hashlib.md5(f.read()).hexdigest()
+        print(f'gabarito_codigo.json versionado: md5 {md5_ref} · ' + ('IGUAL' if md5_ref == md5 else 'DIFERENTE — o conteúdo clínico mudou (ou o JSON versionado está desatualizado)'))
+        return 0 if md5_ref == md5 and not difs else 1
+    return 0 if not difs else 1
+
+
 def main():
+    if '--so-gabarito' in sys.argv:
+        sys.exit(so_gabarito())
     pasta = sys.argv[1] if len(sys.argv) > 1 else os.path.join('docs', 'design', '16.5')
     pasta = pasta.rstrip('/\\')
     raiz = os.getcwd()
