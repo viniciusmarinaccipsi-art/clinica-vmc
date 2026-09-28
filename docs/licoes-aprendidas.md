@@ -303,3 +303,7 @@ usados ao criar planilha nova — adicionar coluna = atualizar o array.
 **83. Painel de conferência visual + prompts em arquivo.** O documento que o usuário confere mostra as telas reais, o que muda/não muda, as fases com portões e o checklist; o que as ferramentas executam fica em `docs/prompts/` e no brief do Design, nunca colado no painel. (26/09/2026)
 
 **84. Arquivos do PC entram pelo terminal ligado ao Cowork ou pelo Claude Code, nunca pelo conector do Drive em base64.** (25/09/2026)
+
+**85–93.** Registradas na seção 8 do status (`..\status_projeto_vmc.md`, 26–28/09/2026); migram para cá na próxima regeneração da skill.
+
+**94. Classe reaproveitada entre componentes herda regras que o novo não pediu.** O cartão "Suas 5 etapas" da lateral (16.5f) reusou `.cab-etapa-nome` do "Preenchendo" do cabeçalho v2 e herdou o `white-space:nowrap` que nunca pediu — os nomes de duas linhas passaram por cima do ícone; a regra de cor por tipo (`[data-tipo] .cab-etapa-nome`) também venceu a cor declarada na lateral sem ninguém notar. Componente novo = classe nova (`.cab-lat-nome`), ou grep de **todas** as regras da classe (incluindo as de maior especificidade e as de outras media queries) antes de reusar; o roteiro mede a sobreposição real entre vizinhos da grade, não só a existência da classe. Irmã da lição 92. (16.5f.1, 28/09/2026)

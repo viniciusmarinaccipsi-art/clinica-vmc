@@ -642,7 +642,9 @@ Breakpoints 900 e 1280 (AUT-11 da rodada 3 + decisão P do usuário, 28/09;
   acima do conteúdo.
 - **Cartão "Suas 5 etapas"** (`cabEtapasHtml`): título = `data-barra-titulo`
   do `#sec-auto-menu`; uma linha por `.metapa` do menu do tipo (nome completo
-  e ícone lidos do DOM), com estado — feita = círculo cheio na cor do tipo com
+  e ícone lidos do DOM; o nome usa a classe própria `.cab-lat-nome` e quebra
+  em duas linhas — 16.5f.1: `.cab-etapa-nome` é do "Preenchendo" do celular,
+  com `nowrap`), com estado — feita = círculo cheio na cor do tipo com
   `i-check`, `<button>` → `cabIrEtapa` (o mesmo caminho da trilha); atual =
   número com borda, fundo `-tint`, `aria-current="step"`; a fazer = número
   cinza. O menu (AUT-03c) continua sem estado. Não é atualizado ao vivo (como

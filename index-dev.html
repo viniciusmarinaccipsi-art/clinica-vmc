@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.5f (28/09/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.5f.1 (28/09/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -1889,8 +1889,8 @@ button.cab-no-item{cursor:pointer;}
 .cab-acao{display:inline-flex;align-items:center;gap:6px;min-height:var(--hit-min);padding:0 10px;border:none;background:none;border-radius:var(--r-field);color:var(--c-action);font:600 14px/1 var(--f-text);white-space:nowrap;cursor:pointer;}
 .cab-acao:hover{color:var(--c-action-hover);}
 .cab-acao .ico{width:16px;height:16px;}
-[data-tipo="neg"] .cab-humor-txt .cab-lbl,[data-tipo="neg"] .cab-etapa-nome,[data-tipo="neg"] .cab-rot,[data-tipo="neg"] .cab-lin .ico,[data-tipo="neg"] .cab-no-item.atual .cab-no{color:var(--c-reg-neg-ink);}
-[data-tipo="pos"] .cab-humor-txt .cab-lbl,[data-tipo="pos"] .cab-etapa-nome,[data-tipo="pos"] .cab-rot,[data-tipo="pos"] .cab-lin .ico,[data-tipo="pos"] .cab-no-item.atual .cab-no{color:var(--c-reg-pos-ink);}
+[data-tipo="neg"] .cab-humor-txt .cab-lbl,[data-tipo="neg"] .cab-etapa-nome,[data-tipo="neg"] .cab-lat-nome,[data-tipo="neg"] .cab-rot,[data-tipo="neg"] .cab-lin .ico,[data-tipo="neg"] .cab-no-item.atual .cab-no{color:var(--c-reg-neg-ink);}
+[data-tipo="pos"] .cab-humor-txt .cab-lbl,[data-tipo="pos"] .cab-etapa-nome,[data-tipo="pos"] .cab-lat-nome,[data-tipo="pos"] .cab-rot,[data-tipo="pos"] .cab-lin .ico,[data-tipo="pos"] .cab-no-item.atual .cab-no{color:var(--c-reg-pos-ink);}
 [data-tipo="neg"] .cab-lin.atual .ico{color:var(--c-reg-neg);}
 [data-tipo="pos"] .cab-lin.atual .ico{color:var(--c-reg-pos);}
 [data-tipo="neg"] .cab-no-item.feita .cab-no,[data-tipo="neg"] .cab-traco.cheio{background:var(--c-reg-neg);}
@@ -1932,14 +1932,14 @@ button.cab-no-item{cursor:pointer;}
   button.cab-etapa:hover{background:var(--c-surface-sub);}
   .cab-etapa-circ{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--c-line-strong);background:var(--c-surface);font:600 14px/1 var(--f-text);color:var(--c-ink-3);}
   .cab-etapa-circ .ico{width:14px;height:14px;stroke-width:2.5;}
-  .cab-etapa-nome{font:400 15px/1.3 var(--f-text);color:var(--c-ink);}
+  .cab-lat-nome{font:400 15px/1.3 var(--f-text);min-width:0;white-space:normal;overflow-wrap:anywhere;} /* 16.5f.1: classe própria — .cab-etapa-nome é do "Preenchendo" do celular (nowrap) */
   .cab-etapa-ico{display:flex;color:var(--c-ink-3);}
   .cab-etapa-ico .ico{width:20px;height:20px;stroke-width:2;}
   .cab-etapa.feita .cab-etapa-circ{border-color:transparent;color:var(--c-ink-inv);}
   .cab-etapa.feita .cab-etapa-ico{color:var(--c-ink-2);}
   [data-tipo="neg"] .cab-etapa.feita .cab-etapa-circ{background:var(--c-reg-neg);}
   [data-tipo="pos"] .cab-etapa.feita .cab-etapa-circ{background:var(--c-reg-pos);}
-  .cab-etapa.atual .cab-etapa-nome{font-weight:600;}
+  .cab-etapa.atual .cab-lat-nome{font-weight:600;}
   [data-tipo="neg"] .cab-etapa.atual{background:var(--c-reg-neg-tint);}
   [data-tipo="pos"] .cab-etapa.atual{background:var(--c-reg-pos-tint);}
   [data-tipo="neg"] .cab-etapa.atual .cab-etapa-circ,[data-tipo="neg"] .cab-etapa.atual .cab-etapa-ico{border-color:var(--c-reg-neg);color:var(--c-reg-neg-ink);}
@@ -11545,7 +11545,7 @@ function cabEtapasHtml(etapaAtual, tipo) {
     const nomeEl = m.querySelector('.metapa-nome'); const nome = (nomeEl ? nomeEl.textContent : CAB_ROTULOS[et]).trim();
     const use = m.querySelector('.metapa-ico use'); const icone = use ? String(use.getAttribute('href') || '').replace('#', '') : CAB_ICONES[tipo][et];
     const corpo = '<span class="cab-etapa-circ" aria-hidden="true">' + (estado === 'feita' ? cabIco('i-check') : (i + 1)) + '</span>' +
-      '<span class="cab-etapa-nome">' + escapeHtmlAuto(nome) + '</span><span class="cab-etapa-ico" aria-hidden="true">' + cabIco(icone) + '</span>';
+      '<span class="cab-lat-nome">' + escapeHtmlAuto(nome) + '</span><span class="cab-etapa-ico" aria-hidden="true">' + cabIco(icone) + '</span>';
     const rotulo = ('Etapa ' + (i + 1) + ' de 5 · ' + nome + (estado === 'futura' ? '' : ' · ' + estado)).replace(/"/g, '&quot;');
     h += estado === 'feita'
       ? '<button type="button" class="cab-etapa feita" onclick="cabIrEtapa(' + i + ',\'' + tipo + '\')" aria-label="' + rotulo + '">' + corpo + '</button>'
