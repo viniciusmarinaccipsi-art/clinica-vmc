@@ -8,8 +8,6 @@ manifest.json
 credentials*.json
 token*.json
 
-# O status vive em ..\status_projeto_vmc.md (Drive) e contém IDs: nunca entra no repositório.
-status_projeto_vmc.md
 # Arquivos de bloqueio do Office/Word (~$nome) criados ao abrir um .md no Word
 ~$*
 
