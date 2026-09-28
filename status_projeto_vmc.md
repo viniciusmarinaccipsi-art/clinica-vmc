@@ -1,0 +1,266 @@
+# Sistema Clínico Digital VMC — Status do Projeto
+
+**Versão deste documento:** 28/09/2026, 7ª edição (28/09 ~14:45, chat: **16.5e fechado — ok do usuário dado**, via roteiro visual de 7 telas conduzido pelo chat no navegador (pílula "Salvar e sair" → folha "Sair sem enviar?"; "ver tudo" → revisão em leitura → "editar" volta à etapa e retorna à revisão; Revisar e Enviar completo com bloco HUMOR, chip "feita", contagem, chips/barra/nota, "Outro (…)"; "Enviar Registro" → spinner → "Registro enviado"; AUT-03b com "Fazer um registro completo"; ⏻ no meio do fluxo → mesma folha de saída; Meus Registros → editar registro com "Outro" → campo `<textbox>` real, débito 8.24 confirmado); sem divergências; próximo passo do 16.5: escrever e conduzir o 16.5f; 6ª edição 28/09 ~00:30, Code: Pacote 16.5e publicado — `4586d3a`; Revisar e Enviar, Registro enviado, folha "Sair sem enviar?", débitos 8.24/8.26/8.27 fechados; as 9 caixas do checklist conferidas pelo Code no publicado; 5ª edição 27/09 ~15:05, Code: Pacote 16.5d-3.2 publicado — `318f06a`, débito 8.28 fechado, checklist conferido no publicado; 4ª edição 27/09 14:55: 16.5d-3 e 16.5d-3.1 aprovados pelo usuário no publicado; Pacote 16.5d-3.2 (débito 8.28, sigilo) aprovado e com prompt gravado; mapa visual com a seção 4b explicando os débitos 8.27–8.29; dois computadores com o mesmo caminho C:; 3ª edição 27/09 01:15: Pacote 16.5d-3 publicado pelo Code — cabeçalho cumulativo v2, data na checagem, "Checagem enviada" com gráfico —, commit `ce7accd`; Git/Node/Playwright instalados no PC VINÍCIUS-DELL; débitos 16.5d-3.1 e pedido de ícones no tema escuro registrados; 26/09, madrugada: trilha do código do 16.5 concluída — 16.5a, 16.4.5, 16.5b, 16.4.4, 16.5d-1 publicados em `index-dev.html`, commits `9ddd8b8`, `e2794ea`/`cc8decb`/`d0834d5`, `77ad833`, `08eb944`, `7efec59`; aguarda a rodada 3 do Design; 26/09: Fase 0 do Pacote 16.5 — status sincronizado com o repositório [16.4.3 e 17.0 registrados], numeração acertada, plano do 16.5 em duas trilhas com as decisões de 25–26/09, mapa visual e prompts; 23/09: Pacotes 16.4.3 e 17.0 publicados pelo Claude Code; 20/09: fechamento do Pacote 16.4; 16/09: Pacote 15.0; reescrito do zero em 14/09/2026; o histórico completo até 10/07/2026 está congelado em `repo-github\Backup - STATUS\status_projeto_vmc_10-07-26.md` e não é carregado por padrão).
+**Fonte de verdade:** este doc (estado, roadmap, débitos, decisões) + skill `clinica-vmc` v. 20/09/2026 (princípios, fluxo; detalhe técnico e lições 1–78 em `docs/` do repositório). Em conflito, **este doc vence**. Números de código vêm do repositório, não de descrições. **Enquanto o 16.5 estiver aberto, o painel de conferência é o mapa visual "Pacote 16.5 · Mapa visual"** (https://claude.ai/artifact/Ra4TMw9YcHLUXdci9VXtQ4): telas, fases, checklists e o estado de cada fase vivem lá; este status guarda o resumo e as decisões.
+
+---
+
+## 0. Natureza do projeto — ler antes de qualquer proposta
+
+- O VMC é um **laboratório**: protótipo em desenvolvimento, **não divulgado**, usado com uma parcela pequena dos pacientes. Não é um sistema em larga escala e não deve ser tratado como tal.
+- Decisão de 14/09/2026: ao fim da exploração, o sistema será **reconstruído do zero** (ou resetado), limpo, levando apenas o aprendizado e o histórico necessários. O código atual é meio, não produto.
+- Consequências para o trabalho (revisto em 17/09/2026): (a) **melhorias no sistema atual são decididas item a item, por custo-benefício**; (b) fora do custo-benefício ficam reescrever o código inteiro e preparar escala para muitos profissionais; (c) toda ideia pertinente fica **registrada** no roadmap (seção 4), por tema, com o estado "feito / candidato / adiado"; (d) peso morto é **removido**, não preservado — o princípio aditivo vale para contratos de dados vivos, não para o resto.
+- Decisão de 17/09/2026: o **redesenho** (tema G) está na fase de teste do laboratório — usar o sistema inteiro com o layout novo em `index-dev.html` antes de decidir a produção.
+- **Decisão de 25–26/09/2026: nas telas do automonitoramento, a versão do usuário de 25/09 (documento "As 11 perguntas") prevalece sobre as pranchas do Design.** Onde a rodada 2 do Design diverge, o Design corrige na rodada 3; o Code não constrói tela divergente.
+- Sigilo continua valendo mesmo com poucos pacientes: nada de dados clínicos, senhas ou tokens em documentos, logs ou exemplos.
+
+---
+
+## 1. Estado em produção (validado em 16/09/2026 — Pacote 15.0; página de teste do redesenho no Pacote 17.0 desde 23/09/2026)
+
+| Item | Valor |
+|---|---|
+| Site público | https://viniciusmarinaccipsi-art.github.io/clinica-vmc/ |
+| **Página de teste do redesenho** | https://viniciusmarinaccipsi-art.github.io/clinica-vmc/index-dev.html — Pacote **16.5e** (commit `4586d3a`, 27/09/2026; 16.5d-3.2 `318f06a`; 16.5d-3.1 `56d9704`; 16.5d-3 `ce7accd`, 16.5c `f5570f6` e 16.5d-2 `2633107`); mesmo `APPS_SCRIPT_URL` e mesmo backend da produção; testar com o paciente VMC em aba anônima. Produção (`index.html`) **não é tocada** pelo tema G até validação do usuário |
+| Área administrativa | https://viniciusmarinaccipsi-art.github.io/clinica-vmc/admin.html |
+| Repositório | https://github.com/viniciusmarinaccipsi-art/clinica-vmc |
+| `index.html` | Pacote **15.0** — 18.011 linhas (marcador no comentário da linha 2; tag `v15.0`) |
+| `index-dev.html` | Pacote **16.5e** — 16.916 linhas (27/09/2026); Revisar e Enviar, Registro enviado e folha "Sair sem enviar?" (16.5e), logout zera caches (16.5d-3.2), tema G até o 16.4.2, timeout por ação (16.4.3), Beck (17.0), Figtree única sem manifest (16.4.5), tokens do 16.5 e rostinhos SVG com zero emoji (16.5b), validação da Situação do Positivo (16.4.4), 5 seções físicas do registro (16.5d-1), **checagem breve + página Automonitoramento + menu "Suas 5 etapas" (16.5c), etapas com lista de subgrupos e barra deslizante (16.5d-2), cabeçalho cumulativo v2 com trilha de ícones, pílula de data preenchida e AUT-03b com o gráfico do Painel (16.5d-3), ícones com cor por token nos dois temas (16.5d-3.1), logout descarta os caches por paciente (16.5d-3.2)**; commits `21b544a` → `7efec59`, `f5570f6`, `2633107`, `ce7accd`, `462879d` … `56d9704`, `318f06a` |
+| **Esteira neste PC (VINÍCIUS-DELL)** | Git 2.55, Node 24.19 e `@playwright/test` global instalados em 26/09/2026 via winget (antes só havia Python 3.13 e Chrome). O primeiro `git push` exigiu o login do usuário no GitHub (Git Credential Manager) num PowerShell do Windows — o Code não faz esse login; depois disso a credencial ficou guardada e o Code consegue dar push. Servidor local para Playwright/inspeção: `python -m http.server 8765 --directory repo-github` (`.claude\launch.json` na raiz `clinica-vmc`) |
+| `admin.html` | Pacote **13.1.2** — 1.277 linhas |
+| `Código.js` no Apps Script (o "`Code.gs`") | Pacote **17.0** — 2.953 linhas, `VERSAO_PACOTE = '17.0'`. Implantação de produção na versão **@26** (17.0, 23/09/2026); @25 = 15.0; @24 = 14.1. O 17.0 é **aditivo** (1 ação nova `lerItensInstrumento`, a 33ª; nenhuma coluna nova no paciente) e a produção `index.html` não o usa. **O 16.5 não altera o backend** |
+| `sw.js` | Removido no 15.0 |
+| `ping` do backend | `{"ok":true,"versao_pacote":"17.0",...}` desde o deploy @26. `versao_pacote` sai da constante `VERSAO_PACOTE` e é a verificação oficial de deploy |
+| Apps Script | Uma implantação (URL fixa); redeploy sempre como "Nova versão" da mesma implantação |
+| `scriptId` (clasp) | `1mM6eRnAQkKakmAtaZ_myXcbZJeVc04ImDq2TigGjK9TyeYNLXw_j5E6-` — projeto "Clinca VMC - Servidor" |
+| `deploymentId` (produção) | `AKfycbx7kHrVq7KizCWCVeEhTpsBFcU36Vc1zUBWF1AuJxdPD3iO5K4LIPuZs2vXXr1OK94eAg` — o mesmo da `APPS_SCRIPT_URL` do `index.html`, do `index-dev.html` e do `admin.html`. Implantação `@HEAD` de teste (`AKfycbygGeoJ24aUSnY6NdFbFguwRL20Brkhu70LJ0H07oon`) não é usada pelo site |
+| Arquivo de código no Apps Script | `Código.js` (nome real que o clasp exige) |
+| **17.0 em espera** | Os textos das escalas de Beck vivem na aba privada `Itens_Instrumentos` da `Sistema_VMC` (nunca no código público). O pacote parou na "PARADA 1 de 3": o modelo Excel para o usuário preencher está pronto (seção 7 do `PACOTE_17_0_RELATORIO.md`). **Fica registrado e aguarda**; não faz parte do 16.5 |
+
+**IDs (Drive):** pasta `clinica-vmc` `1SwAhNZXNPvBUvr8qzF0WsQveHrSMca7Q` · planilha global `Sistema_VMC` `1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0` · pasta `Profissional_Vinicius` `1gd-Pqj26HAG4c1t_iXDXyC29HxjCl6hJ` · Controle `1fJSLiIJprqJgdwDhDar-8SNJcZNlnRmJb6efalOuwgM` · planilha do paciente de teste VMC `1m-48ULMZ6KFL43R-duiV75rCWqGQ8JDKijPDfsBL8QU` · pasta `repo-github` `1-ZhZbVoNiVA56dvsSjPStyL5cNOvkd_b` · `Backup - STATUS` `1DaC_oLdMzs7oxOg3GLA4y2GybBs8fffM`.
+
+**Senhas:** fora deste documento (gerenciador de senhas do usuário). A senha do profissional VMC usa o sinal de menos U+2212, não hífen — sempre copiar/colar.
+
+**Pacientes cadastrados:** a fonte é a planilha Controle; este documento não mantém lista. Paciente de teste: sigla VMC. Controle do profissional VMC: 16 pacientes (15 ativos, 1 desativado) em 16/09/2026.
+
+**Pasta local `C:\Users\cardi\Meu Drive\clinica-vmc\` — o mesmo caminho nos dois computadores (desktop e notebook VINÍCIUS-DELL) desde 26/09/2026, quando o Drive do notebook passou a sincronizar em `C:`; a letra `G:` não é mais usada em instrução nenhuma (estrutura real em 26/09/2026):**
+```
+clinica-vmc\
+├── Sistema_VMC                      (planilha global; aba privada Itens_Instrumentos desde o 17.0)
+├── Profissional_Vinicius\           (Controle + Pacientes\ + Pacientes_Desativados\)
+├── repo-github\                     (git: branch main = origin/main; clasp ligado ao projeto)
+│   ├── index.html  index-dev.html  admin.html  Código.js  appsscript.json
+│   ├── CLAUDE.md  docs\arquitetura.md  docs\licoes-aprendidas.md
+│   ├── docs\design\tokens.css  mapa_campos.md  icones.md      (entrega do Design em texto — 16.0/16.2)
+│   ├── docs\escalas\ESPEC_escalas_beck.md                     (17.0)
+│   ├── docs\prompts\16.5\            (a criar na Fase 0: prompts do Claude Code, um por fase)
+│   ├── docs\design\16.5\             (a criar no 16.5a: entrega do Design em texto + gabarito + conferência)
+│   ├── .gitignore  .claspignore  .clasp.json (ignorado)
+│   ├── Backup - CODE\  Backup - INDEX\  Backup - STATUS\   (histórico; não sobem ao GitHub)
+├── VMC-offline\                     (entregas do Claude Design: 12 HTML da rodada 1 + tokens.css + mapa_campos.md;
+│   │                                 css-extraido\, diagnostico_codigo_16.md; capturas_16_*\; baseline_16_4.json)
+│   ├── 16.5_entrada_design\          (16.5_brief_design.md, 16.5_textos_interface.md, 16.5_catalogo_automonitoramento.md,
+│   │   │                              16.5_telas_referencia\ — o que foi enviado ao Design em 22–23/09)
+│   │   ├── Diagnóstico de usabilidade do sistema\16.5\   (ENTREGA DA RODADA 2, 25/09: 00_LEIA-ME, pranchas, 01_png,
+│   │   │                              02_telas, 03_componentes, 04_tokens.css, 05_rostinhos.svg, 06_contrato v2, catalogo.js, icones.js)
+│   │   └── rodada3\                  (a criar na Fase 0: brief da rodada 3 + referências da versão 25/09)
+│   ├── ROTEIRO_pacote_16_5.md        (rascunho de 25/09, superado pelo mapa visual)
+│   └── _to_delete\PROMPT_pacote_16_5a.md   (prompt da conversa anterior; decisão A de 26/09: descartar)
+├── capturas_15_0\
+├── adicionar_pacientes.py  criar_paciente.py  setup_planilhas.py  migracao_13_0_1.py  migrar_items_13_6_9_1.py  limpeza_15_0.py
+├── biblioteca_distorcoes_cognitivas.md
+├── status_projeto_vmc.md            (este arquivo; cópia-mestra no Projeto claude.ai)
+├── PACOTE_*_RELATORIO.md            (15.0, 16.0, 16.0.1, 16.1, 16.2, 16.2.1, 16.3, 16.4, 16.4.3, 17.0) + scripts PACOTE_16_4_3_*.js
+└── credentials.json  token.json     (OAuth dos scripts Python — NUNCA abrir, pedir ou mover)
+```
+
+---
+
+## 2. Arquitetura (resumo — detalhes em `docs/arquitetura.md` do repositório)
+
+- **Frontend:** SPA `index.html` em vanilla JS (sem framework), Chart.js via CDN, `sessionStorage` apenas; `admin.html` separado. Hospedagem GitHub Pages. **Sistema visual (desde o 16.0, em `index-dev.html`):** `tokens.css` do Design no `:root` (tema claro + escuro por `prefers-color-scheme`; tokens de Beck `--c-bdi2-*`/`--c-bai-*` desde o 17.0), fontes Newsreader (títulos) + Figtree (texto) via Google Fonts — **a Newsreader sai no 16.4.5** —, zero cor fixa fora do `:root`; gráficos leem os tokens em runtime por `vmcTok()`.
+- **Backend:** Google Apps Script como Web App; `doPost` roteia por `acao` — **33 ações** no 17.0 (30 do 13.7.6 + `profLerGrade`/`profSalvarGrade` do 14.1 + `lerItensInstrumento` do 17.0). Famílias: paciente, profissional, admin. `profissional_id` sempre derivado server-side via `Indice_Siglas`; funções admin revalidam credenciais a cada chamada. **`chamarServidor` (index-dev) tem timeout por ação desde o 16.4.3:** 20 s com 1 repetição para leitura curta e login; 60 s sem repetição para leituras pesadas do profissional (`VMC_ACOES_PESADAS`) e para as 23 gravações (`VMC_ACOES_GRAVACAO`); aviso na marca dos 20 s; faixa "Tentar de novo" sem perder o preenchido. `admin.html` tem `fetch` próprio sem timeout (débito 8.18).
+- **Dados (Google Sheets):** `Sistema_VMC` (Profissionais, Admins, Indice_Siglas, Itens_Instrumentos) → `Profissional_<sigla>\` com Controle (pacientes + `Config_Agenda` + `Grade_Horarios`) e `Pacientes\<sigla>` (uma planilha por paciente) + `Pacientes_Desativados\`.
+- **Abas da planilha do paciente — contagens reais:** Anamnese **56** colunas · Automonitoramento **64** · Escalas **38** (o 17.0 não acrescentou coluna: BDI-II/BAI usam `item_01…item_21` e `observacoes`).
+- **Scripts administrativos:** Python local com gspread + OAuth.
+
+---
+
+## 3. O que está entregue (por módulo, sem histórico de pacotes)
+
+- **Acesso:** login por sigla + senha para três perfis; menu hamburger do paciente; troca de senha pelo paciente e pelo profissional.
+- **Módulo 1 — Anamnese:** 4 passos, ViaCEP, accordions DSM-5 (13 categorias), medicação em 7 classes, até 3 pessoas de confiança, sinais de risco com contatos de emergência, modo consulta, edição pelo paciente e pelo profissional (sempre row 2).
+- **Módulo 2 — Automonitoramento (estado atual, a ser redesenhado no 16.5):** checagem de humor dentro do registro ("Etapa 1 de 8"); escolha do tipo antes do humor; Registro Negativo em 5 etapas com cabeçalho cumulativo; Registro Positivo em 5 etapas sem cabeçalho cumulativo (débito 8.1) e **sem tipos de situação** (débito 8.6 — decisão do usuário de 26/09: os 5 grupos positivos serão criados por ele num pacote futuro, sem previsão; da etapa 2 em diante o Positivo já tem estrutura igual à do Negativo); menus das etapas; Como Usar com 6 accordions e cadeado de primeira vez; Painel de Evolução; Meus Registros agrupados por mês; edição inline com lock de presença. Conteúdo clínico (conferido em 22/09/2026): 45 grupos, 225 itens, 45 campos "Outro", 3 legendas.
+- **Módulo 4 — Escalas:** PHQ-9, GAD-7, PSS-10, DASS-21, SRQ-20 num motor único aditivo; alertas de risco em 3 camadas; tela de resultado unificada; histórico por escala. **17.0 (só `index-dev.html`):** BDI-II e BAI respondidos pelo paciente, com os textos fora do código (aba privada `Itens_Instrumentos`, entregues só com sessão válida e hash de integridade); escore oculto do paciente; **aguardando o preenchimento dos textos pelo usuário (parada 1 de 3)**.
+- **Área administrativa (`admin.html`)** e **Área do profissional:** como no 15.0.
+- **Módulo Consultório Digital (Etapa 14):** Grade de Atendimento e Agenda Visual; sessões vazias (`CAL_SESSOES = []`).
+- **Módulo 3 — Formulação:** só o card "Em breve".
+
+---
+
+## 4. Roadmap — por tema; cada item com estado (feito / candidato / adiado / decisão do usuário)
+
+### Tema A — Esteira e limpeza
+- Etapa 0 — Esteira nova — **CONCLUÍDA 14/09/2026**. Pacote 15.0 — Limpeza — **CONCLUÍDO 16/09/2026**. Separar o `index.html` em módulos — *adiado* (novo sistema). Índice de indicadores gravado na escrita — *candidato*.
+
+### Tema B — Qualidade e teste
+- Página de teste publicada (`index-dev.html`) — *feito no 16.0*. Staging do Apps Script — *candidato* (quando um pacote alterar `Código.js` de novo). Smoke test Playwright — *candidato, recomendado*; embrião em `PACOTE_16_0_1_playwright.js` e `PACOTE_16_4_3_*.js`.
+- Timeout e nova tentativa em `chamarServidor` — *feito no 16.2.1*; sem repetição em gravação — *16.2.2*; **timeout por ação (três faixas) — feito no 16.4.3 (23/09/2026, commit `d09206a`)**. Pendência do 16.4.3: as três leituras pesadas do profissional não foram cronometradas (exigem a senha do usuário).
+- Chave de idempotência por gravação (backend) — *candidato* (débito 8.14).
+- **Gabarito do conteúdo clínico + script de comparação — entra no 16.5a** e trava todas as fases seguintes.
+
+### Tema C — Segurança e proteção de dados
+- Backup automático e exportação por paciente — *candidato, recomendado*. Senhas com salt e sessão do admin por token — *candidato*. Registro de acesso — *adiado*. Onde vive o prontuário — *adiado*.
+
+### Tema D — Núcleo clínico
+- **Escalas de Beck (BDI-II, BAI) — Pacote 17.0 feito em 23/09/2026** (commit `48b8fe3`, deploy @26, tag `v17.0`); em espera dos textos (parada 1 de 3). Não entra no 16.5.
+- Módulo 3 — Formulação — *candidato*. Painel de alertas consolidado — *candidato*. Lembretes de periodicidade — *candidato*.
+- Checagem breve de humor — **entra no 16.5** (porta de entrada; enviada sozinha ou seguida do registro; nomes Muito mal · Mal · Mais ou menos · Bem · Muito bem).
+- Cabeçalho cumulativo no Registro Positivo — **entra no 16.5** (débito 8.1). Tipos de situação positiva — **decisão do usuário 26/09: pacote futuro, sem previsão** (débito 8.6).
+- Critério clínico do cartão de risco do registro — *decisão do usuário*, no 16.6.
+- Anamnese preenchida pelo paciente — **Pacote 16.9, separado** (decisão L, 26/09).
+- Módulos 5 e 6 — *adiado*.
+
+### Tema E — Consultório Digital 14.3–14.6 — decisão do usuário pendente. Nada do 14.x avança.
+
+### Tema F — Transcrição de sessões — exploração aberta.
+
+### Tema G — Redesenho (Claude Design) — EM ANDAMENTO
+
+**Fontes:** projeto no Claude Design https://claude.ai/design/p/e40780ec-5558-4da3-8e1e-0e57c2cfc69a (rodada 1, 17/09: 12 pranchas + `tokens.css` + `mapa_campos.md`); **rodada 2 (25/09)** em `VMC-offline\16.5_entrada_design\Diagnóstico de usabilidade do sistema\16.5\` (16 telas AUT-02 a AUT-12, `02_telas.md`, `03_componentes.md`, `04_tokens.css` com Figtree única e tokens novos, `05_rostinhos.svg`, `06_contrato_de_leitura_v2.md` com 22 itens, `catalogo.js` gerado por script: 45·225·45·3); **versão do usuário de 25/09** = documento "As 11 perguntas" (11 decisões + imagens), que prevalece; **mapa visual** https://claude.ai/artifact/Ra4TMw9YcHLUXdci9VXtQ4 (painel de conferência do 16.5). Direção: paleta "Lavanda clínica"; cor por significado; **nenhum nome de campo muda**.
+
+**Objetivo (17/09):** sistema inteiro com o layout novo em `index-dev.html`; promoção a `index.html` só após validação no uso.
+
+| Pacote | Conteúdo | Estado |
+|---|---|---|
+| 16.0 / 16.0.1 | Fundação visual: tokens, fontes, `vmcTok()`; nasce `index-dev.html` | **feito** (`21b544a`, `7c8d772`) |
+| 16.1 | Barra única de 52 px; cabeçalho cumulativo em 1 linha | **feito** (`620e385`) |
+| 16.2 / 16.2.1 / 16.2.2 | Tamanhos, toque, foco, sprite SVG (emoji só no humor); timeout 20 s + "Tentar de novo"; sem repetição em gravação | **feito** (`7a5ee32`, `effa6b8`, `4ae37c8`) |
+| 16.3 | Progresso único "Etapa N de T" e `.barra-acao`; "Sair sem gravar?" | **feito** (`3c2fd76`) |
+| 16.4 (+16.4.1, 16.4.2) | Início, Painel no período com dados, Meus Registros por mês | **feito** (`5165155` → `f96036e`, 20/09) |
+| **16.4.3** | **Timeout por ação em `chamarServidor`** (20 s / 60 s pesadas / 60 s gravações; aviso aos 20 s) | **feito** (`d09206a`, 23/09) — pré-requisito do 17.0 |
+| **17.0** | Escalas de Beck (tema D; tocou `Código.js`, deploy @26) | **feito, em espera dos textos** (`48b8fe3`, 23/09) |
+| **16.4.4** | Validação da Situação do Registro Positivo (seção sem `[data-grupo]` exige só o texto), em `autoValidarSecao`. Não cria conteúdo | **feito** (`08eb944`, 26/09): bug reproduzido no publicado antes da edição; Positivo avança com texto |
+| **16.4.5** | **Fonte única Figtree** no app inteiro (Newsreader sai; títulos 600); `manifest.json` removido (8.16); `.gitignore` com `!scripts/*.py`; lições 79–84 em `docs/`; branches locais apagados | **feito** (`e2794ea`, `cc8decb`, `d0834d5`, 26/09): `document.fonts` só Figtree; zero Newsreader |
+| **16.5** | Redesenho do automonitoramento — blocos abaixo; **não altera `Código.js` nem a planilha** | **Trilha do código concluída em 26/09**; fases 16.5c–f aguardam a rodada 3 do Design |
+| 16.5a | Conferir a entrega da rodada 2 + **gabarito clínico** (`docs/design/16.5/gabarito_codigo.json`, `scripts/conferir_entrega_16_5.py`); entrega leve e referência 25/09 em `docs/design/16.5/` | **feito** (`9ddd8b8`, 26/09): 45·225·45·3; catálogo = 0 diferenças; 4 textos sem origem legítimos; 2 rgba nas pranchas → rodada 3 |
+| 16.5b | 16 tokens novos (claro) + 12 (escuro) mesclados; `i-humor-1..5` no sprite (55 → 60 símbolos); gerador único `vmcHumorIcone(nivel)` no lugar de 6 mapas de emoji; 2 "▶ Reativar" do profissional trocados por ícone; **zero emoji** em `index-dev.html` (produção: 374) | **feito** (`77ad833`, 26/09) |
+| 16.5d-1 | **5 seções físicas** `sec-auto-{sit,emo,fis,pens,comp}` com os dois tipos como blocos `.auto-tipo` (ids lógicos antigos preservados; `abrirSecao` aceita id lógico ou físico; `secaoAtivaId()`); payload de `salvarAutomonitoramento` igual campo a campo (56 chaves) em 3 comparações; 11/12 capturas idênticas; gabarito igual; 2 registros reais gravados no VMC (26/09 03:35). Sem redução de linhas (+29): as 1.440 duplicadas são os botões Likert, que o 16.5d-2 substitui | **feito** (`7efec59`, 26/09) |
+| *rodada 3 do Design* | Pranchas corrigidas conforme a versão 25/09 (lista na "Pendência com o Design") | **pedido escrito na Fase 0; usuário envia** |
+| 16.5c | Checagem breve (termina em "Iniciar novo registro" / "Concluir só com a checagem"), página Automonitoramento com escolha do tipo e cadeado do 1º acesso, menu "Suas 5 etapas", rascunho encontrado; tela "Tipo de registro" antiga sai | depois da rodada 3 |
+| 16.5d-2 | Visual das etapas: cartões recolhíveis, subgrupos em lista com check redondo, **barra deslizante** 1–5 sob o item marcado (etapas 2–4), cabeçalho cumulativo, rodapé com contagem, obrigatório na tela | **feito** (`2633107`, 26/09); cabeçalho reprovado no teste do usuário → rodada 4 do Design + 16.5d-3 |
+| **16.5d-3.2** | `logout()` e `logoutProfissional()` descartam os caches por paciente (`PEV_STATE` + gráficos, `ESC_HIST_STATE`, `CHK_ENV.chart`, `_HIST_REGS`) via `descartarCachesPaciente_()` — sigilo, débito 8.28 | **feito e publicado** (`318f06a`, 27/09): Playwright no publicado prova caches zerados no logout e Painel/histórico rebuscados do servidor ao reentrar em < 30 s; relatório `VMC-offline\PACOTE_16_5d3_2_RELATORIO.md` |
+| **16.5d-3.1** | Ícones visíveis no tema escuro (Início e Instruções): só CSS, cor por token no contêiner do ícone, círculo de 36 px com ícone de 20 px nas Instruções; contraste ≥ 6,3:1 nos dois temas. **Textos (regra do usuário, 27/09: o card do Início repete o título da página que abre):** card "Meus registros e evolução" → "Automonitoramento"; barra de escalas "Módulo 4 — Escalas e Inventários" → "Escalas e Inventários" | **feito** (`462879d`, `89262e2`, `9a933a7`, 27/09; capturas em `capturas_16_5d3_1/`; seção 6b do relatório do 16.5d-3). Publicado em 27/09 (`56d9704`, push pelo Code com a credencial que o Git Credential Manager guardou no login do usuário) |
+| **16.5d-3** | **Cabeçalho cumulativo v2** (§3 da rodada 4: humor + "PREENCHENDO", trilha de ícones no lugar do trilho `#prog`, uma linha por etapa só com os grupos marcados, frase da Situação, "editar" → menu, "ver tudo" → detalhe; decisões P1–P4/D1–D5), **pílula da checagem preenchida ao abrir**, **AUT-03b** com cartão §18 e o gráfico do Painel emprestado (§19: 7/30/90/Tudo + humor médio "2.8"). Rodada 4 versionada em `docs/design/16.5/rodada4/`; script de conferência aceita `_v4` | **feito** (`ce7accd`, 27/09): gabarito igual; Playwright local e no publicado com `pageerror` 0; 3 linhas reais no VMC (01:11–01:12); relatório `VMC-offline\PACOTE_16_5d3_RELATORIO.md`. **Aguarda o teste do usuário** (`?v=165d3`, checklist do prompt) |
+| **16.5e** | **Revisar e Enviar** (AUT-09: bloco HUMOR + um BlocoRevisão por etapa com chip "feita", contagem, chips/barras, "editar" que volta à revisão; só leitura do estado), **Registro enviado** (AUT-10: "Fazer também…" reaproveita a checagem, Painel, Voltar ao início), **folha "Sair sem enviar?"** (AUT-12c em `confirmarSaida`), `alert()` do fluxo → aviso na tela, "Fazer um registro completo" na AUT-03b; débitos 8.24, 8.26, 8.27 a–d; pílula "Salvar e sair" do menu restaurada (regressão do 16.5d-2); token `--c-inv-alpha` | **feito, publicado e fechado** (`4586d3a`, 27/09; push pelo Code): Playwright local (fingir + real: 3 linhas no VMC 27/09 16:16–16:17 com as mesmas colunas de 01:11) e no publicado (`?v=165e`, 390/1280, `pageerror` 0, **diálogos nativos 0**, 56 chaves iguais à linha de base); as 9 caixas do checklist do prompt foram conferidas pelo Code no publicado (relatório §7); **ok do usuário dado em 28/09** — roteiro visual de 7 telas conduzido pelo chat via navegador (login feito pelo usuário; chat operou o restante): pílula "Salvar e sair" → folha "Sair sem enviar?"; "ver tudo" → revisão em leitura → "editar" volta à etapa e retorna à revisão; Revisar e Enviar completo (HUMOR, chip "feita", contagem, chips/barra/nota, "Outro (…)"); envio real (spinner → "Registro enviado"); AUT-03b com "Fazer um registro completo"; ⏻ no meio do fluxo → mesma folha (inclusive o "Sair" real testado, que descarta o rascunho como documentado); Meus Registros → editar registro com "Outro" → campo `<textbox>` real, populado e editável (**débito 8.24 confirmado ao vivo**) — nenhuma divergência |
+| 16.5f | Computador ≥ 900 px: lateral (etapas + cabeçalho v2 em coluna com itens/nota nas etapas 2–4), trilha acima do conteúdo, barra deslizante em duas colunas, telas de leitura em 720 px centrados — decisão P | **próxima fase do 16.5** — decisões fechadas em 28/09 (mapa §4c); prompt no modelo novo, depois do 16.5-esteira |
+| 16.6 | Escalas no celular, resultado sem dados técnicos, cartões de risco (escalas e registro; **único ponto do tema G que tocará `Código.js`**, devolvendo `pessoa_confianca_*`) | candidato |
+| 16.7 | Dashboard do profissional (depende da prancha 1280 px) + separar registros de checagens na contagem | candidato |
+| 16.8 | Prontuário com resumo clínico | candidato |
+| 16.9 | Onboarding/anamnese em 5 passos (prancha 09) | candidato — logo após o 16.5 se o foco continuar no paciente |
+
+**Decisões de produto/UX tomadas em 25/09 ("As 11 perguntas") e 26/09 (mapa):** (1) Figtree em tudo, pacote 16.4.5; (2) nomes do humor Muito mal · Mal · Mais ou menos · Bem · Muito bem; (3) um tipo por registro, escolhido **na página Automonitoramento depois da checagem breve**; "Registro enviado" oferece o outro tipo; (4) obrigatório avisado na tela, junto do campo; (5) **menu das etapas continua** ("Suas 5 etapas"; Design repensa a apresentação), trilho só indicador a partir da etapa 1; (6) cadeado do "Como Usar": checagem sempre liberada, registro completo após a psicoeducação; (7) frase da revisão "Você pode corrigir depois em Meus Registros."; (8) APP-02/APP-03 descartadas; (9) observação da checagem como referência na Situação, dica pede o fato; (10) grupos em cartões recolhíveis, **subgrupos em lista com check redondo, régua 1–5 vira barra deslizante** (arrastar), nota por extenso, gravação "Item:nota" igual; (11) textos: coluna "Proposta"; aceitos "Nada marcado ainda", "Continuar registro"/"Sair", "Iniciar novo registro", "Suas 5 etapas", contagens do rodapé por etapa, instrução da Situação. (A) prompt antigo descartado; (B) portão de aprovação entre fases + um extra entre d-1 e d-2; (C) branches locais já mescladas apagadas na Fase 0; (D) referências de imagem no git = versão 25/09 e depois a rodada 3 (as da rodada 2 ficam só no Drive); (E) 16.4.4 mantido como correção técnica; grupos positivos = pacote futuro do usuário; (H) etapa 1 do Positivo entra no pedido da rodada 3; (I) grafias: "repudio"/"estomago" (descrições de grupo) corrigidas no 16.5d-2 com motivo "digitação"; "dissossiação", "Sou fracasso…", "Ruminando…" (itens = chave gravada) ficam → débito 8.17; (J) rótulo "DESCONFORTO:" em caixa alta; (K) coluna lateral do computador permanece; (L) anamnese = 16.9. **(P, 28/09 — 16.5f, ver seção 4c do mapa visual):** computador ≥ 900 px = lateral com o cartão "SUAS 5 ETAPAS" (feitas ✓ clicáveis, atual em tinte) + cabeçalho v2 em coluna, **com itens + barra + nota nas etapas 2–4** (exceção à decisão M, que segue valendo no celular) e grupos na Situação e nos Comportamentos; **sem** cabeçalho cumulativo acima do conteúdo; **trilha de ícones acima do título, desconectada da lateral** (decisão técnica do chat); Revisar e Enviar, Registro enviado, menu e checagem em coluna de 720 px centrada; barra deslizante real em duas colunas (`grid minmax(0,1fr) 400px`). Antes do 16.5f: pacote **16.5-esteira** (`VMC-offline\ESTEIRA_16_5_DUPLICACOES_E_ADEQUACOES.md` §3.2, aprovado pelo usuário em 28/09 com os ajustes do chat: status escrito pelo Code no Drive e copiado ao Projeto pelo chat; roteiro visual do usuário só das telas novas; conferência do chat reduzida a commit/linha 2/edição do status).
+
+**Decisões técnicas:** `catalogo.js` do Design é dado de prancha e **não entra no app** (DOM-first); barra deslizante = controle nativo de faixa com 5 passos, 44 px, teclado e leitor de tela; `04_tokens.css` é **mesclado**, nunca copiado por cima (o repo ganhou tokens depois de 17/09); rascunho continua em `sessionStorage`; prompts do Code em `docs/prompts/16.5/` do repositório; leitura de arquivos do PC pelo terminal ligado ao Cowork ou pelo Code, nunca pelo conector do Drive em base64.
+
+**Pendência com o Design — rodada 3 (o que deve voltar para `VMC-offline\16.5_entrada_design\rodada3\entrega\`):** `00_LEIA-ME.md` (índice, o que mudou, regra a regra, respostas às dúvidas); `01_pranchas_16.5_v3.html` com AUT-02 (escolha do tipo; primeiro acesso; rascunho), AUT-03 (fim com "Iniciar novo registro"/"Concluir só com a checagem"), **AUT-03c menu "Suas 5 etapas"**, AUT-04 a AUT-08 e AUT-08p com **lista de subgrupos + barra deslizante**, **AUT-04 do Positivo** (só texto), AUT-11 com as mesmas mudanças e a coluna lateral, AUT-12a/b/c se mudarem; `01_png\` (390 px a 2×, AUT-11 a 1280 px); `02_telas.md` e `03_componentes.md` atualizados (componentes novos: ListaSubgrupo, BarraDeslizante, MenuEtapas); `04_tokens.css` só se houver token novo (diff declarado); `06_contrato_de_leitura_v3.md`; `catalogo.js` idêntico ao da rodada 2 (ou regenerado e igual); `icones.js` com ícones novos, se houver. Dashboard e prontuário 1280 px continuam pendentes para o 16.7/16.8.
+
+**Rodada 3 do Design — recebida e conferida (26/09 05:55):** pasta `VMC-offline\16.5_entrada_design\rodada3\entrega\` (renomeada de `16.5_rodada3`); script: catálogo byte a byte igual à rodada 2, gabarito 45·225·45·3, componentes ListaSubgrupo/BarraDeslizante/MenuEtapas e telas AUT-03c/AUT-04p presentes, 18 PNG, 4 tokens novos (`--c-line-alpha`, `--c-scrim`, `--hit-thumb`, `--w-slider-desktop`), `i-lock` novo; textos sem invenção (8 "sem origem" = os pedidos no item 1.6 do brief + "Item:nota" + legenda abreviada). Relatório `entrega\CONFERENCIA_rodada3.md`. **Dúvidas do Design respondidas pelo usuário (26/09, "ok nas 6"):** (1) "Salvar e sair" no menu grava rascunho com humor + tipo e volta à página Automonitoramento com aviso; (2) com rascunho, o aviso substitui o bloco "QUE TIPO DE REGISTRO?"; (3) Situação e Comportamentos sem nota por extenso (não há intensidade no dado); (4) barra deslizante nasce vazia, nota obrigatória; (5) Voltar do menu → página Automonitoramento; (6) legenda a 13 px só abaixo de 360 px. Sugestões: toque direto no ponto da barra aceito; marcar etapa "aberta" no menu recusado (menu sem estado). **Checagem sozinha:** conferido no código que `salvarAutomonitoramento` não exige `neg/pos_preenchido`; "Concluir só com a checagem de humor" é frontend puro (mesma ação, flags vazias), sem coluna nova nem `Código.js`; consumidores ajustados no 16.5c (chip "CHECAGEM DE HUMOR" em Meus Registros).
+
+**16.5c fechado no código (26/09 09:04, commit `f5570f6`), conferido nas fontes pelo chat:** linha 2 = "Pacote 16.5c" no clone e no publicado; `sec-auto-passo2` = 0; nomes antigos do humor = 0; emoji = 0; `HUMOR_NOMES` fonte única (7 usos); "Módulo 2" só em 3 comentários JS; `index.html` e `Código.js` sem diff desde `7efec59`; rodada 3 versionada em `docs/design/16.5/rodada3/`; 51 capturas em `capturas_16_5c/`; relatório 72 linhas. Decisões do Code registradas: "+ Iniciar novo registro" não envia a checagem (vai na linha do registro completo; difere do `02_telas.md`); AUT-03b só com "Voltar ao início" ("Fazer um registro completo" não está na lista de textos — candidato a texto aceito no 16.5e); humor obrigatório por botões desabilitados, sem mensagem nova; menu unificado (`#sec-auto-menu` com blocos `-neg`/`-pos`, padrão do 16.5d-1); `i-lock` já existia no sprite. **Testado em 26/09 11:20** (chat conduzindo o Claude in Chrome na sessão logada do VMC, 1000 px): caixas 1–7 ✅ (página, checagem, só-checagem → Meus Registros com chip → Painel, novo registro → HUMOR → menu, Salvar e sair/Continuar/Descartar, Voltar, etapa 1 de 5); caixa 8 (primeiro acesso) pulada — o VMC tem registros; provada pelo Code com histórico vazio simulado. **16.5c fechado.** Observação: o Painel do paciente conta as checagens em "REGISTROS" (mesmo caso do 8.23).
+
+**16.5d-2 publicado pelo Code (26/09 12:27, commit `2633107`), conferido nas fontes pelo chat:** linha 2 = 16.5d-2; `index-dev.html` −1.753 linhas líquidas (botões Likert duplicados fora); 3 `input type="range"` (modelos por etapa), itens e "Outro" como `type="checkbox"` reais (302), emoji 0, `index.html`/`Código.js` sem diff desde `7efec59`; 78 capturas em `capturas_16_5d2/`; relatório de 100 linhas; gabarito md5 igual antes/depois (225 `data-item`, 40 `data-tem-likert`, 45 "Outro", 180 rótulos); envio real de um Negativo e um Positivo às 12:27 com as mesmas colunas das linhas de 10:05. Fecha **8.21** (cabeçalho só-leitura) e **8.22** (título em até 3 linhas). Desvios registrados: barra nativa nasce internamente em 3 para as setas funcionarem (visual "sem valor" preservado); legenda 13 px por medição (`autoLegendaAjustar`), em 320 px ainda transborda 2–8 px (abaixo do mínimo de 360 do Design — aceito); grafias "repudio"/"estomago" **não** alteradas porque o prompt exigia gabarito byte a byte — a decisão I passa para o débito 8.17 (pacote de conteúdo com gabarito regenerado). **Aguarda o teste do usuário** (`?v=165d2`, 10 caixas no fim do prompt; pode ser conduzido pelo chat via Claude in Chrome como no 16.5c).
+
+**16.5d-3 publicado pelo Code (27/09 ~00:45, commit `ce7accd`; push feito pelo usuário):** ver a linha da tabela acima e o relatório. Decisões do Code registradas: "feita" = etapa com grupo marcado ou texto em `AUTO_STATE.dados` (linhas na ordem sit→comp; Pensamentos/Comportamentos só com texto mostram "…"); item marcado sem nota entra na linha só quando ganha a nota (a coleta o omite; nota obrigatória); regex do nome curto corrigida em relação ao LEIA-ME (`^Pensamentos (sobre (os? )?|de )`); humor médio "2.8" (string do Painel) com chip `HUMOR_NOMES[round]`; observação da checagem como 4.ª linha sem aspas; trilha com `role="group"` + botões (não `listitem`); `aria-live` só no trecho dos grupos. **Pedido do usuário em 27/09 (tema escuro):** ícones do Início (`.card-icon`) e das Instruções (`.p8-edu-icon`) ficavam pretos/imperceptíveis no modo escuro — corrigido no **16.5d-3.1** (`462879d`, só CSS; ver a linha da tabela). `docs/design/16.5/CONFERENCIA_16_5a.md` está modificado no clone (regeneração do script) e ficou fora do commit por decisão do usuário: entra no 16.5e.
+
+**16.5d-3 e 16.5d-3.1 fechados (27/09 14:51, "ok" do usuário no publicado; conferido pelo chat: `main` = `origin/main`, linha 2 = 16.5d-3.1 no clone e no GitHub, `index.html`/`Código.js` intocados).** Débito 8.28 (logout não zera os caches — outro paciente na mesma aba em < 30 s veria o Painel e o histórico do anterior) aprovado como **Pacote 16.5d-3.2**, prompt em `docs/prompts/16.5/PROMPT_16_5d3_2.md`, antes do 16.5e. Explicação didática dos débitos 8.27 a–d, 8.28 e 8.29 (tela, gesto, o que aparece, pacote que fecha) na seção 4b do mapa visual.
+
+**16.5e fechado (28/09 ~14:45, ok do usuário dado):** roteiro visual de 7 telas — pílula "Salvar e sair" → folha "Sair sem enviar?" (alça, fundo, Esc); "ver tudo" → Revisar e Enviar em leitura → "editar" volta à etapa e retorna à revisão; Revisar e Enviar completo (bloco HUMOR, chip "feita", contagem, chips nas etapas 1 e 5, item + barra + nota nas 2–4, "Outro (…)"); "Enviar Registro" (spinner) → "Registro enviado" ("Hoje, dd/mm · hh:mm", frase, "Fazer também…", Painel, Voltar ao início); AUT-03b com "Fazer um registro completo"; ⏻ no meio do fluxo → mesma folha (o "Sair" real também foi testado, sem querer, e confirmou que o rascunho é descartado, como a folha avisa); Meus Registros → editar registro com "Outro" → campo `<textbox>` real, marcado e populado (**débito 8.24 fechado**) — conduzido pelo chat via navegador (login sempre digitado pelo usuário), sem divergências em relação ao especificado. Dois registros de teste reais ficaram gravados no paciente VMC nesse roteiro (28/09, madrugada e tarde).
+
+**Próximo (atualizado 28/09 14:45):** 16.5e publicado, conferido pelo Code e **fechado com o ok do usuário** (`4586d3a`, `?v=165e`; relatório `VMC-offline\PACOTE_16_5e_RELATORIO.md`; roteiro visual de 7 telas em §4 acima). Agora: **16.5f** (computador ≥ 900 px: coluna lateral, barra em duas colunas — prompt a escrever pelo chat) → fechamento do 16.5 (teste com o VMC, contrato v4, status, skill + CLAUDE.md). Decidir o candidato **16.5e.1** (voltar do sistema/celular: o app não usa histórico do navegador, então o botão voltar sai da página; a folha cobre "Salvar e sair" e ⏻).
+
+---
+
+## 5. Débitos técnicos vigentes (só os abertos)
+
+| # | Débito | Decisão |
+|---|---|---|
+| 8.1 | Registro Positivo sem cabeçalho cumulativo | **Entra no 16.5d** |
+| 8.3 | Módulo 3 Formulação em "Em breve" | Prioridade da exploração clínica |
+| 8.5 | Lembretes de periodicidade | Exploração clínica |
+| 8.6 | Tipos de situação positiva (5 grupos × 5 subgrupos + Outro) | **Pacote futuro do usuário, sem previsão (26/09)**; até lá a etapa 1 do Positivo é só texto (16.4.4 garante que ela avança) |
+| 8.14 | Gravação sem chave de idempotência | Candidato no tema B; mitigado no 16.2.2/16.4.3 |
+| 8.15 | Produção mantém `escapeHtmlAuto(def.emoji)` em 5 pontos | Só na promoção do `index.html` |
+| **8.17** | Grafia em 3 itens do catálogo + 2 descrições ("repudio", "estomago" — decisão I, adiadas do 16.5d-2 porque o gabarito exige igualdade byte a byte) ("dissossiação" [etapa 3, grupo 5], "Sou fracasso…" [etapa 4, grupo 1], "Ruminando…" [etapa 1, grupo 5]) — item é chave gravada | Pacote de revisão de conteúdo com script de migração (padrão 13.6.9.1), junto da revisão do Positivo |
+| **8.18** | `admin.html` tem `fetch` próprio sem timeout | Candidato; fora do tema G |
+| **8.19** | `lerHistorico` cresce com o paciente (131 KB / 51 registros; 4–5 s) | Anotado (16.4.3); muda de faixa de timeout se passar de 20 s |
+| **8.20** | `favicon.ico` 404 no console (Chrome pede sozinho; Pages não tem; igual na produção) | Cosmético; entra quando houver ícone do app (novo sistema ou promoção) |
+| **8.23** | Contadores de registros passam a incluir checagens sozinhas (linhas sem `neg/pos_preenchido`): visão do profissional e "REGISTROS" do Painel do paciente (16.5c) | **16.7** dashboard do profissional (separar checagens de registros) |
+| **8.25** | Barra deslizante sem valor: leitor de tela anuncia "3 de 5" (não há texto aceito para "sem nota") | texto a decidir pelo usuário; entra na lista de textos |
+
+| **8.30** | Botão "voltar" do sistema (navegador/celular) sai da página no meio do registro: o app não usa `pushState`/`popstate` (16.5e) | Candidato **16.5e.1**: um estado de histórico por tela do fluxo; popstate → folha "Sair sem enviar?" na etapa, etapa 5 na revisão, Início na tela "Registro enviado" |
+| **8.31** | `alert()` restantes: "Sessão expirada" (2, antes do `logout()`), anamnese (9) e escalas (5) | Candidato — mesmo padrão do 16.5e (`autoAvisoEl` na tela) quando o tema chegar à anamnese e às escalas |
+Resolvidos: 8.2, 8.8, 8.12, 8.11, 8.13 (16.2.1/16.4.3 em `index-dev`), **8.16 (16.4.5)**, **8.21 e 8.22 (16.5d-2)**, **8.29 (16.5d-3.1: ícones do Início e das Instruções com cor por token nos dois temas)**, **8.28 (16.5d-3.2: `descartarCachesPaciente_()` nos dois logouts)**., **8.24, 8.26 e 8.27 a–d (16.5e: "Outro" na edição, tokens em `p136RenderSecao_`, "ver tudo" → revisão em leitura, `p8RemoverPensamento` recoleta, `p136SalvarEdicao` invalida caches, `rgba()` do `.p11-m*` → tokens; **8.24 reconfirmado ao vivo no roteiro visual de 28/09**)**
+
+---
+
+## 6. Aprendizados e requisitos para o novo sistema (acumular aqui)
+
+**Repetir no novo sistema**
+- Multi-tenant lógico com isolamento por código; revalidação de credenciais; credenciais admin só em memória.
+- `versao_formulario` em cada registro; contratos de dados estáveis (chaves técnicas ≠ rótulos).
+- Fonte única no DOM para listas do formulário. Motor aditivo de escalas; renderer único; tintura por escala.
+- Terminologia clínica consolidada; alertas em camadas; modal em vez de navegação no meio de um fluxo; validação completa antes de ação definitiva; default seguro em estado assíncrono.
+- Migrações destrutivas com dupla confirmação, log, dry-run, verificação pós-execução.
+- Toda chamada externa atrás de wrapper único com backoff; **toda chamada ao backend com timeout por classe de ação** (16.4.3: leitura curta repete, gravação e leitura pesada não).
+- Re-auditar todo consumidor por `grep` quando o tipo de conteúdo de um campo muda (16.4.1).
+- Sistema visual por tokens desde o dia 1; **uma fonte só** (16.4.5).
+- Página de teste publicada com o mesmo backend para pacotes de frontend.
+- **Conteúdo clínico como dado versionado e conferido por script** (16.5a). **Texto de interface só muda com motivo registrado.**
+- **Texto de instrumento protegido fora do código público**, entregue só com sessão e hash de integridade (17.0).
+- **Decisão de UX do usuário registrada com imagem (documento "As 11 perguntas") antes de o Code construir**; a prancha do Design é insumo, não contrato; diferenças voltam ao Design como rodada, nunca são construídas "do jeito da prancha".
+- **Painel de conferência visual por pacote grande** (mapa do 16.5): telas reais, o que muda/não muda, fases com portões e checklist objetivo — e prompts em arquivos que as ferramentas leem, não dentro do painel.
+- **QA visual de fechamento conduzido pelo chat no navegador** (16.5e, 28/09): um roteiro tela a tela, com o chat operando o navegador e decidindo se cada tela bate com o especificado, fecha o pacote sem exigir que o usuário navegue e descreva cada print manualmente — login continua sendo sempre do usuário.
+
+**Não repetir**
+- Arquivo único de 18 mil linhas; "nunca apagar"; deploy manual; testar em produção; status que acumula histórico; senhas em documentos; uma planilha aberta por paciente por carga; abas/colunas reservadas; 355 cores fixas; emoji como ícone; 4 cabeçalhos e 6 mecânicas de progresso; prancha de Design com conteúdo clínico de memória; julgar tipografia com fonte substituta.
+- **Ler pastas pesadas pelo conector do Drive** (base64 obriga a reenviar o conteúdo; 25/09): arquivos do PC entram pelo terminal ligado ao Cowork ou pelo Claude Code no repositório.
+- **Deixar decisões de UX abertas enquanto o Design desenha**: a rodada 2 foi feita antes das respostas às 11 perguntas e três telas voltaram (menu, lugar da escolha do tipo, lista + barra).
+
+---
+
+## 7. Descartado no reset (não vai para o novo sistema)
+
+Nomenclatura `index_pacoteN_vX.html` e pastas `Backup - *`; preparação PWA; aba `Painel`; colunas `neg_dist_*`; "funções existentes nunca são modificadas"; `status_projeto_vmc_enxuto.md`; numeração 2.x–14.x como estrutura de documentação; conversões do status em Google Docs; dependência de anexar `index.html`; paleta antiga (coral/âmbar/verde por módulo, Nunito/Quicksand) e as 108 classes sem uso; **Newsreader** (a partir do 16.4.5); telas "Tipo de registro" e "Etapa 1 de 8 · Humor" (a partir do 16.5c).
+
+---
+
+## 8. Lições novas desde a última regeneração da skill (para incorporar na próxima)
+
+- **79 — Conteúdo clínico nunca sai de prancha** (22/09). **80 — Tipografia só se avalia com a fonte real** (22/09). **81 — Texto de interface só muda com motivo registrado** (22/09).
+- **82 — A decisão de UX do usuário, registrada com imagem, prevalece sobre a prancha** (25–26/09): o brief ao Design só sai depois das respostas; diferença entre prancha e decisão vira rodada nova, não construção.
+- **83 — Painel de conferência visual + prompts em arquivo** (26/09): o documento que o usuário confere mostra as telas reais e o checklist; o que as ferramentas executam fica em `docs/prompts/` e no brief, nunca colado no painel.
+- **84 — Arquivos do PC pelo terminal ligado, nunca pelo conector em base64** (25/09).
+- **85 — Conferir as ferramentas do PC antes de qualquer pacote** (26–27/09): um PC novo sincronizado pelo Drive tem o repositório, mas não a esteira (`where.exe git node npm`); instalar antes de começar, e lembrar que o `git push` exige o login do usuário — o Code não faz login no GitHub.
+- **86 — O cabeçalho cumulativo só lê `AUTO_STATE.dados` e mostra grupos, não itens** (16.5d-3): a linha da etapa atual atualiza pelo mesmo caminho que atualiza o rodapé de contagem; nomes de grupo vêm do DOM com regra de nome curto documentada; nada de listas de texto em JS.
+- **87 — Quando um mecanismo passa a copiar atributos do bloco para a seção, todo bloco precisa do atributo** (16.5e): `autoMostrarTipo` copia `data-barra-acao` desde o 16.5d-2 e os blocos do menu não o tinham — a pílula "Salvar e sair" sumiu do menu sem erro nenhum. Grep pelos atributos copiados em todos os blocos `.auto-tipo` ao mudar o copiador; o teste de fluxo mede o texto da ação da barra.
+- **88 — Uma linha de base medida no código anterior antes de mexer** (16.5e): o payload (56 chaves, ordenadas) foi capturado por Playwright no HEAD antes da primeira edição e comparado depois — a igualdade é prova, não estimativa. Vale para qualquer contrato que o pacote promete não mudar.
+- **89 — Login é sempre do usuário, mesmo em QA guiado pelo chat** (28/09): o chat pode conduzir o navegador e decidir tela a tela, mas nunca digita a senha do paciente de teste — nem a real nem uma "gerada" — porque o site publicado não é `localhost`; o usuário digita e o chat retoma a partir daí.
+
+**Regras a levar à skill e ao `CLAUDE.md`:** no fechamento do **16.4.5**: fonte única Figtree (sai a Newsreader da seção 6 da skill). No fechamento do **16.5**: zero emoji (as faces do humor viram SVG); "Enviar" para o registro e "Salvar" só para o rascunho; fluxo checagem → escolha do tipo → menu → etapas; lista de subgrupos + barra deslizante como componente; gabarito clínico obrigatório antes/depois de qualquer bloco que toque o registro.
+
+---
+
+## 9. Como iniciar uma conversa (a partir de 26/09/2026, enquanto o 16.5 estiver aberto)
+
+0. **Artefatos vivos desta fase** (atualizar pelo URL, nunca criar cópia): mapa visual "Pacote 16.5 · Mapa visual" — https://claude.ai/artifact/Ra4TMw9YcHLUXdci9VXtQ4 (cópia offline em `VMC-offline\16.5_entrada_design\mapa_visual\index.html`); página "Passos de agora · 16.5" — https://claude.ai/artifact/9DXotGTnXS9V6HqS6EbNC6 (cópia em `rodada3\PASSOS_de_agora.html`). O usuário conversa pelos comentários dessas páginas ("Send to Claude"); relatórios do Code chegam como comentário e são conferidos nas fontes (clone, publicado, planilha via Chrome logado), nunca no relatório.
+0. **Mensagem de abertura** (colar): "Pacote 16.5 — retomada. Leia o status do Projeto (seções 4, 5 e 9) e o mapa visual (seções 4 e 4b); 16.5c, 16.5d-2, 16.5d-3, 16.5d-3.1, 16.5d-3.2 e **16.5e estão fechados** (16.5e: `4586d3a`, ok do usuário dado em 28/09 via roteiro visual de 7 telas); escreva o prompt do 16.5f e conduza o fechamento do 16.5." A conversa nova não herda a memória da anterior: o que ela sabe é este status, a skill, o mapa, `docs/prompts/16.5/` e o terminal ligado à pasta `clinica-vmc` — decisão nova entra aqui antes de trocar de conversa.
+1. A skill `clinica-vmc` carrega sozinha; ler **este status** (Projeto) e abrir o **mapa visual** (link no topo) na fase em andamento.
+2. **Abrir o Claude Code na pasta do repositório:** PowerShell → `cd "C:\Users\cardi\Meu Drive\clinica-vmc\repo-github"` → `claude`. Os prompts estão em `docs\prompts\16.5\`; a linha a colar em cada fase está no mapa.
+3. Dizer em qual fase se está. Decisões técnicas: Claude. Produto, clínica e UX: usuário (as do 16.5 já estão tomadas na seção 4).
+4. Módulo visual: referência = versão 25/09 do usuário (+ pranchas da rodada 3 quando chegarem) → `index-dev.html` publicado → produção após validação do usuário.
+5. Edições por `str_replace` com verificação; validação (`node --check`, tags, CSS vars, Playwright de fluxo com `pageerror`); gabarito clínico antes e depois de qualquer bloco do 16.5.
+6. Pacote só de frontend: `git push` basta (Pages). `clasp` e `VERSAO_PACOTE` só quando `Código.js` mudar (não é o caso do 16.5).
+7. Ao fechar cada fase: relatório `PACOTE_<n>_RELATORIO.md` pelo Code; estado da fase no mapa; ao fechar o 16.4.5 e o 16.5, este status (seções 1, 4, 5, 6, 8) e a skill.
+
+*Documento mantido a cada fechamento de pacote. Versões anteriores: `repo-github\Backup - STATUS\`.*
