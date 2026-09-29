@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.5f.1 (28/09/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.4.6 (28/09/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -4414,6 +4414,12 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg>
       <span>Antes do registro completo, leia o "Como Usar Este Registro". A checagem breve de humor já está liberada.</span>
     </div>
+    <!-- Pacote 16.4.6 (decisão do usuário, 28/09): sem confirmação do servidor, no lugar do aviso de primeira vez;
+         o "Tentar de novo" da faixa #vmcErroRede refaz a verificação. -->
+    <div class="hub-aviso" id="p5SubAvisoFalha" role="status" hidden>
+      <svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg>
+      <span>Não foi possível confirmar seus registros agora.</span>
+    </div>
     <div class="menu-humor" id="hubHumor" hidden>
       <div class="menu-humor-head"><svg class="ico" aria-hidden="true"><use href="#i-thermometer"/></svg><span>Humor</span><button type="button" class="lnk" onclick="chkEditar()"><svg class="ico" aria-hidden="true"><use href="#i-pencil"/></svg> editar</button></div>
       <div class="menu-humor-linha"><span id="hubHumorRosto"></span><span class="menu-humor-nome" id="hubHumorNome"></span><span class="menu-humor-data" id="hubHumorData"></span></div>
@@ -7232,25 +7238,23 @@ const STATUS_TRATAMENTO = [
 /* ============================================================
    COMUNICAÇÃO COM O APPS SCRIPT
    ============================================================ */
-// Pacote 16.2.1 (débito 8.13): timeout de 20 s, uma nova tentativa automática após 2 s e, na
-// segunda falha, faixa na tela atual com "Tentar de novo" que repete a MESMA chamada. A promessa
-// só resolve com a resposta do servidor, então quem chama mantém o contrato (mesmos parâmetros,
-// mesmo retorno) e nada do que foi digitado se perde. Falha = timeout, erro de rede, HTTP fora
-// de 2xx ou corpo que não é JSON (o 404 do Apps Script chega como HTML).
-// Pacote 16.4.3: o limite passa a ser POR AÇÃO. O corte único de 20 s do 16.2.1 serve à
-// leitura curta, mas não à leitura pesada do profissional (profListarPacientes abre uma
-// planilha por paciente em laço; profLerDadosPaciente lê as três abas de um paciente) nem
-// à gravação, que não pode ser repetida. Três faixas:
-//   VMC_TIMEOUT_MS (20 s)            leitura curta, login e lock — repetem sozinhas uma vez;
-//   VMC_TIMEOUT_PESADO_MS (60 s)     leitura pesada do profissional — SEM repetição
-//                                    automática: a segunda varredura custaria outro minuto e
-//                                    dobraria a cota da Sheets API. Quem decide é o usuário,
-//                                    na faixa "Tentar de novo";
-//   VMC_TIMEOUT_GRAVACAO_MS (60 s)   toda ação de VMC_ACOES_GRAVACAO — já sem repetição
-//                                    automática desde o 16.2.2.
-var VMC_TIMEOUT_MS = 20000;
-var VMC_TIMEOUT_PESADO_MS = 60000;
-var VMC_TIMEOUT_GRAVACAO_MS = 60000;
+// Pacote 16.2.1 (débito 8.13): na falha, faixa na tela atual com "Tentar de novo" que repete a
+// MESMA chamada. A promessa só resolve com a resposta do servidor, então quem chama mantém o
+// contrato (mesmos parâmetros, mesmo retorno) e nada do que foi digitado se perde. Falha =
+// estouro de tempo, erro de rede, HTTP fora de 2xx, corpo que não é JSON (o 404 do Apps Script
+// chega como HTML) ou, desde o 16.4.6, resposta ok:true sem os dados da ação pedida.
+// Pacote 16.4.6: um limite só para toda ação (o 16.4.3 tinha três faixas: 20/60/60 s). Medido
+// em 28/09/2026, curl × página Execuções do Apps Script: na "janela lenta" do Google o script
+// executa em 0,4–7 s, mas a resposta chega 18–50 s depois — e o pedido que o navegador corta
+// continua executando no servidor. O corte de 20 s com repetição falhava sempre nessa janela e
+// dobrava o trabalho. Agora:
+//   VMC_TIMEOUT_MS (60 s)   toda ação; aos VMC_AVISO_MS (20 s) o overlay avisa "aguarde até 1 minuto";
+//   repetição automática    UMA vez, após VMC_RETRY_MS, só para leitura curta e login (fora de
+//                           VMC_ACOES_GRAVACAO e de VMC_ACOES_PESADAS) e só em erro que NÃO é
+//                           estouro de tempo (HTTP, HTML, rede, resposta sem os dados da ação);
+//   leitura pesada e gravação nunca repetem sozinhas — quem decide é o usuário, na faixa.
+var VMC_TIMEOUT_MS = 60000;
+var VMC_AVISO_MS = 20000;
 var VMC_RETRY_MS = 2000;
 // Pacote 16.2.2: ações que gravam, editam, excluem ou travam registro — tabela do doPost em
 // Código.js (32 ações em 18/09/2026; ficam de fora só ping, autenticar, ler*, listar* e profLerGrade).
@@ -7271,75 +7275,110 @@ var VMC_ACOES_GRAVACAO = [
 // visível) em 23/09/2026 — números no relatório do pacote. São as únicas leituras que
 // varrem mais de uma planilha, e as únicas que perdem a repetição automática.
 var VMC_ACOES_PESADAS = ['profListarPacientes', 'profLerDadosPaciente'];
+// Pacote 16.4.6: leituras que várias telas pedem juntas (Início, página Automonitoramento, checagem).
+// Pedido idêntico já em andamento é devolvido a quem pedir de novo, em vez de abrir outro no servidor
+// (antes: login → Início → "Novo registro" disparava 3 lerHistorico quase juntos).
+var VMC_ACOES_COMPARTILHADAS = ['lerHistorico', 'lerEscalas'];
+var VMC_EM_ANDAMENTO = {};
+// Pacote 16.4.6: campos que uma resposta ok:true da ação traz (basta um). Sem eles a resposta não veio
+// da ação pedida — em 28/09 um POST redirecionado terminou no doGet, que responde {ok:true} sem dados —
+// e conta como erro, nunca como "0 registros" ou login feito.
+var VMC_CAMPO_DA_RESPOSTA = {
+  lerHistorico: ['automonitoramento'], lerEscalas: ['escalas'], autenticar: ['paciente', 'profissional', 'admin']
+};
 
-async function _chamarUmaVez_(payload, limiteMs) {
-  const limite = limiteMs || VMC_TIMEOUT_MS;
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), limite);
-  // Em ação de limite estendido, avisar na marca dos 20 s: antes do 16.4.3 o usuário via
-  // o erro nesse ponto; sem aviso ele veria um overlay parado por um minuto.
-  const aviso = limite > VMC_TIMEOUT_MS
-    ? setTimeout(() => loadingMensagem('O servidor está demorando; aguarde até 1 minuto…'), VMC_TIMEOUT_MS)
-    : null;
+function _chamarUmaVez_(payload) {
+  const chave = VMC_ACOES_COMPARTILHADAS.indexOf(payload.acao) !== -1 ? JSON.stringify(payload) : '';
+  if (chave && VMC_EM_ANDAMENTO[chave]) return VMC_EM_ANDAMENTO[chave];
+  const pedido = (async () => {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), VMC_TIMEOUT_MS);
+    try {
+      const resposta = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'cors',
+        redirect: 'follow',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
+        signal: ctrl.signal,
+      });
+      if (!resposta.ok) throw new Error('HTTP ' + resposta.status);
+      const texto = await resposta.text();
+      let json;
+      try { json = JSON.parse(texto); }
+      catch (e) { throw new Error('Resposta não é JSON: ' + texto.slice(0, 40)); }
+      const campos = VMC_CAMPO_DA_RESPOSTA[payload.acao];
+      if (campos && json && json.ok === true && !campos.some(c => json[c] !== undefined && json[c] !== null)) {
+        throw new Error('Resposta sem os dados de ' + payload.acao + ' (outra rota)');
+      }
+      return json;
+    } finally {
+      clearTimeout(timer);
+    }
+  })();
+  if (chave) {
+    VMC_EM_ANDAMENTO[chave] = pedido;
+    const soltar = () => { delete VMC_EM_ANDAMENTO[chave]; };
+    pedido.then(soltar, soltar);
+  }
+  return pedido;
+}
+
+// Pacote 16.4.6: a regra de repetição da leitura curta e do login — erro que não é estouro de tempo
+// repete uma vez após VMC_RETRY_MS; estouro de tempo não (o servidor continua executando o pedido
+// cortado, e na janela lenta a segunda tentativa demoraria o mesmo). aoRepetir avisa quem mostra o overlay.
+async function _chamarComRepeticao_(payload, aoRepetir) {
   try {
-    const resposta = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'cors',
-      redirect: 'follow',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload),
-      signal: ctrl.signal,
-    });
-    if (!resposta.ok) throw new Error('HTTP ' + resposta.status);
-    const texto = await resposta.text();
-    try { return JSON.parse(texto); }
-    catch (e) { throw new Error('Resposta não é JSON: ' + texto.slice(0, 40)); }
-  } finally {
-    clearTimeout(timer);
-    if (aviso) clearTimeout(aviso);
+    return await _chamarUmaVez_(payload);
+  } catch (erro1) {
+    if (erro1.name === 'AbortError') throw erro1;
+    console.warn('Servidor não respondeu (1ª tentativa):', erro1.message);
+    if (aoRepetir) aoRepetir();
+    await new Promise(r => setTimeout(r, VMC_RETRY_MS));
+    return await _chamarUmaVez_(payload);
   }
 }
 
+// Pacote 16.4.6: todas as chamadas que falharam juntas esperam o MESMO clique. Antes, a segunda trocava
+// o onclick da primeira e uma delas esperava para sempre ("Novo registro": verificação de primeira vez +
+// "já fez Negativo" — o cadeado da página não saía nem com o servidor de volta, até recarregar).
+// Abrir e fechar a faixa dispara 'vmc-faixa-rede', que a página Automonitoramento escuta.
+var VMC_ESPERANDO_FAIXA = [];
 function _aguardarTentarDeNovo_() {
   return new Promise(resolve => {
     const faixa = document.getElementById('vmcErroRede');
     const btn = document.getElementById('vmcErroRedeBtn');
+    VMC_ESPERANDO_FAIXA.push(resolve);
     faixa.classList.add('visivel');
-    btn.onclick = () => { faixa.classList.remove('visivel'); btn.onclick = null; resolve(); };
+    document.dispatchEvent(new Event('vmc-faixa-rede'));
+    btn.onclick = () => {
+      faixa.classList.remove('visivel'); btn.onclick = null;
+      document.dispatchEvent(new Event('vmc-faixa-rede'));
+      VMC_ESPERANDO_FAIXA.splice(0).forEach(r => r());
+    };
     btn.focus();
   });
 }
 
 async function chamarServidor(acao, dados = {}) {
   const payload = { acao, ...dados };
-  // Pacote 16.4.3: limite e repetição saem da classe da ação, não de um valor único.
+  // Pacote 16.4.6: limite único (VMC_TIMEOUT_MS); o que muda por classe é a repetição automática.
   const ehGravacao = VMC_ACOES_GRAVACAO.indexOf(acao) !== -1;
   const ehPesada = VMC_ACOES_PESADAS.indexOf(acao) !== -1;
-  const limite = ehGravacao ? VMC_TIMEOUT_GRAVACAO_MS
-               : ehPesada  ? VMC_TIMEOUT_PESADO_MS
-                           : VMC_TIMEOUT_MS;
-  const repeteSozinho = !ehGravacao && !ehPesada; // só leitura curta e login repetem
+  const repeteSozinho = !ehGravacao && !ehPesada; // só leitura curta e login repetem (e nunca por estouro de tempo)
   for (;;) {
     mostrarLoading(true);
+    // Aviso na marca dos 20 s: sem ele o usuário veria um overlay parado por até um minuto.
+    const aviso = setTimeout(() => loadingMensagem('O servidor está demorando; aguarde até 1 minuto…'), VMC_AVISO_MS);
     try {
-      try {
-        return await _chamarUmaVez_(payload, limite);
-      } catch (erro1) {
-        if (!repeteSozinho) {
-          console.error('Erro ao chamar servidor (' + (ehGravacao ? 'gravação' : 'leitura pesada') +
-            ', sem repetição automática):', erro1.message);
-        } else {
-          console.warn('Servidor não respondeu (1ª tentativa):', erro1.message);
-          loadingMensagem('O servidor demorou; tentando de novo…');
-          await new Promise(r => setTimeout(r, VMC_RETRY_MS));
-          try {
-            return await _chamarUmaVez_(payload, limite);
-          } catch (erro2) {
-            console.error('Erro ao chamar servidor (2ª tentativa):', erro2.message);
-          }
-        }
-      }
+      return repeteSozinho
+        ? await _chamarComRepeticao_(payload, () => loadingMensagem('O servidor demorou; tentando de novo…'))
+        : await _chamarUmaVez_(payload);
+    } catch (erro) {
+      console.error('Erro ao chamar servidor' + (repeteSozinho ? '' : ' (' + (ehGravacao ? 'gravação' : 'leitura pesada') +
+        ', sem repetição automática)') + ':', erro.message);
     } finally {
+      clearTimeout(aviso);
       mostrarLoading(false);
     }
     await _aguardarTentarDeNovo_();
@@ -7797,10 +7836,11 @@ function iniRenderContinuidade(d) {
   box.innerHTML = html;
 }
 
-// Leitura silenciosa: uma tentativa, sem overlay e sem faixa de erro global.
+// Leitura silenciosa: sem overlay e sem faixa de erro global. 16.4.6: com a regra de repetição da
+// leitura curta (erro que não é estouro de tempo repete uma vez) e o pedido em andamento compartilhado.
 async function iniLerQuieto(acao, dados) {
   try {
-    return await _chamarUmaVez_(Object.assign({ acao: acao }, dados));
+    return await _chamarComRepeticao_(Object.assign({ acao: acao }, dados));
   } catch (e) {
     console.warn('[Início] ' + acao + ' não respondeu: ' + e.message);
     return null;
@@ -11246,13 +11286,29 @@ async function autoIniciarNovoRegistro() {
   chkAbrir();
 }
 
+// Pacote 16.4.6: lerHistorico com o cache de 30 s do Painel (PEV_STATE), como o Início e a checagem já
+// faziam — para a verificação de primeira vez (P5) e a de "já fez Negativo". Sem cache fresco é o
+// chamarServidor de sempre (overlay e faixa), e o pedido idêntico em andamento é compartilhado em
+// _chamarUmaVez_. A resposta boa alimenta o cache como o Início faz (periodoAuto fica com o Painel).
+async function lerHistoricoComCache(sigla) {
+  const agora = Date.now();
+  if (!PEV_STATE.invalidado && PEV_STATE.registros.length > 0 && (agora - PEV_STATE.carregadoEm < PEV_STATE.cacheTtlMs)) {
+    return { ok: true, automonitoramento: PEV_STATE.registros };
+  }
+  const resp = await chamarServidor('lerHistorico', { sigla: sigla });
+  if (resp && resp.ok && Array.isArray(resp.automonitoramento)) {
+    PEV_STATE.registros = resp.automonitoramento; PEV_STATE.carregadoEm = agora; PEV_STATE.invalidado = false;
+  }
+  return resp;
+}
+
 async function autoVerificarPrimeiroNeg() {
   // Consulta o histórico para saber se já existe algum registro negativo concluído
   // Retorna true se é paciente novo (nunca fez negativo), false se já fez.
   const paciente = carregarSessao();
   if (!paciente) return;
   try {
-    const resp = await chamarServidor('lerHistorico', { sigla: paciente.sigla });
+    const resp = await lerHistoricoComCache(paciente.sigla); // 16.4.6: cache de 30 s ou o pedido em andamento
     if (resp && resp.ok) {
       const regs = resp.automonitoramento || [];
       const algumNeg = regs.some(r => r.neg_preenchido === 'sim');
@@ -11281,7 +11337,8 @@ async function autoVerificarPrimeiroNeg() {
 const P5_STATE = {
   verificado: false,       // já consultou o servidor?
   primeiraVez: false,      // paciente nunca fez nenhum registro de Auto?
-  carregando: false        // evita chamadas paralelas
+  carregando: false,       // evita chamadas paralelas
+  falhou: false            // 16.4.6: a última verificação terminou sem resposta válida (a página mostra a frase de falha)
 };
 
 // Verifica se o paciente é "primeira vez" (zero registros de Auto).
@@ -11292,8 +11349,9 @@ async function p5VerificarPrimeiraVez() {
   const paciente = carregarSessao();
   if (!paciente) return;
   P5_STATE.carregando = true;
+  P5_STATE.falhou = false;
   try {
-    const resp = await chamarServidor('lerHistorico', { sigla: paciente.sigla });
+    const resp = await lerHistoricoComCache(paciente.sigla); // 16.4.6: cache de 30 s ou o pedido em andamento
     if (resp && resp.ok) {
       const regs = resp.automonitoramento || [];
       // "Primeira vez" = nenhum registro de Auto de nenhum tipo.
@@ -11302,8 +11360,11 @@ async function p5VerificarPrimeiraVez() {
       P5_STATE.verificado = true;
       // 16.5c: a página Automonitoramento também precisa saber se já houve um Negativo (Positivo trancado na primeira vez)
       if (regs.some(r => r.neg_preenchido === 'sim')) { AUTO_STATE.primeiroNegFeitoGlobal = true; AUTO_STATE.primeiraVezNeg = false; AUTO_STATE.primeiraVezPos = false; }
+    } else {
+      P5_STATE.falhou = true;
     }
   } catch(e) {
+    P5_STATE.falhou = true;
     console.warn('[P5] Falha ao verificar histórico:', e);
   } finally {
     P5_STATE.carregando = false;
@@ -11834,9 +11895,17 @@ function hubPositivoTrancado() {
 function hubAtualizar() {
   AUTO_STATE.revisaoRetorno = null; AUTO_STATE.revisaoLeitura = null; // 16.5e: fora das etapas a revisão não é destino
   const bloquear = p5DeveBloquear(); // D11: nenhum registro gravado e "Como Usar" não aberto nesta sessão
-  const aviso = document.getElementById('p5SubAviso'); if (aviso) aviso.hidden = !bloquear;
-  const comoUsar = document.getElementById('autoCardComoUsar'); if (comoUsar) comoUsar.classList.toggle('destaque', bloquear);
-  const entendi = document.getElementById('p5EntendiBox'); if (entendi) entendi.classList.toggle('show', bloquear);
+  // 16.4.6 (decisão do usuário, 28/09): a orientação de primeira vez (aviso, destaque do Como Usar, "Entendi")
+  // só aparece quando o servidor CONFIRMOU zero registros. Sem confirmação os cartões continuam trancados
+  // (default seguro): enquanto carrega, nenhum aviso; na falha (faixa "O servidor não respondeu" aberta ou
+  // resposta sem ok), a frase de falha no mesmo lugar — o "Tentar de novo" da faixa refaz a verificação.
+  const primeiraVezConfirmada = bloquear && P5_STATE.verificado;
+  const faixaAberta = document.getElementById('vmcErroRede').classList.contains('visivel');
+  const falhaSemConfirmar = bloquear && !P5_STATE.verificado && (P5_STATE.falhou || faixaAberta);
+  const aviso = document.getElementById('p5SubAviso'); if (aviso) aviso.hidden = !primeiraVezConfirmada;
+  const avisoFalha = document.getElementById('p5SubAvisoFalha'); if (avisoFalha) avisoFalha.hidden = !falhaSemConfirmar;
+  const comoUsar = document.getElementById('autoCardComoUsar'); if (comoUsar) comoUsar.classList.toggle('destaque', primeiraVezConfirmada);
+  const entendi = document.getElementById('p5EntendiBox'); if (entendi) entendi.classList.toggle('show', primeiraVezConfirmada);
   const emAndamento = hubRascunhoEmAndamento();
   const rasc = document.getElementById('hubRascunho'); if (rasc) rasc.hidden = !emAndamento;
   const tipos = document.getElementById('hubTipos'); if (tipos) tipos.hidden = emAndamento; // o aviso ocupa o lugar dos cartões (dúvida 2)
@@ -11854,6 +11923,9 @@ function hubAtualizar() {
   // Pacote 11.5: paciente veterano já viu o Como Usar antes (marca as 6 seções como lidas)
   if (P5_STATE.verificado && !P5_STATE.primeiraVez && typeof p11_5MarcarEduLidasParaVeterano === 'function') p11_5MarcarEduLidasParaVeterano();
 }
+// 16.4.6: a faixa "O servidor não respondeu" abre e fecha fora do ciclo da página (_aguardarTentarDeNovo_);
+// a página Automonitoramento acompanha para trocar o aviso do topo.
+document.addEventListener('vmc-faixa-rede', function () { if (secaoAtivaId() === 'sec-automonitoramento') hubAtualizar(); });
 function hubRenderRascunho(r) {
   const chip = document.getElementById('hubRascunhoChip'); if (!chip) return;
   const tipo = r.tipo === 'pos' ? 'pos' : 'neg';

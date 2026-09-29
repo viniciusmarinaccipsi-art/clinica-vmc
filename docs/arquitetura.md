@@ -585,15 +585,27 @@ Planilha individual do paciente — abas:
   tudo que se toca, Likert `--hit-likert` (48 px), checkbox tocável pelo
   `label`; nenhum `font-size` fixo abaixo de 13 px (rótulos em caixa alta usam
   `--t-label`); zero `outline:none` — vale o `:focus-visible` do `tokens.css`.
-- **`chamarServidor` (Pacotes 16.2.1–16.2.2):** `_chamarUmaVez_` com
-  `AbortController` (`VMC_TIMEOUT_MS` = 20 s; falha = timeout, rede, HTTP fora
-  de 2xx ou corpo não-JSON); repetição automática uma vez após `VMC_RETRY_MS`
-  (2 s) **só** para ações fora de `VMC_ACOES_GRAVACAO` (as 23 do `doPost` que
-  gravam, editam, excluem ou travam registro — conferir por grep no
-  `Código.js` ao criar ação nova); na falha final, `_aguardarTentarDeNovo_`
-  mostra a faixa `#vmcErroRede` ("O servidor não respondeu…") e a promessa só
-  resolve com a resposta real, preservando o contrato de quem chamou. A
-  consulta de CEP (ViaCEP) é o único `fetch` fora do wrapper.
+- **`chamarServidor` (Pacotes 16.2.1–16.2.2; limite e repetição revistos no
+  16.4.6):** `_chamarUmaVez_` com `AbortController` e um limite só,
+  `VMC_TIMEOUT_MS` = 60 s, com o aviso "aguarde até 1 minuto" aos `VMC_AVISO_MS`
+  (20 s). Falha = estouro de tempo, rede, HTTP fora de 2xx, corpo não-JSON ou
+  resposta `ok:true` sem o campo da ação (`VMC_CAMPO_DA_RESPOSTA` — um POST
+  redirecionado pode terminar no `doGet`). Repetição automática uma vez após
+  `VMC_RETRY_MS` (2 s) **só** para leitura curta e login — fora de
+  `VMC_ACOES_GRAVACAO` (as 23 do `doPost` que gravam, editam, excluem ou travam
+  registro; conferir por grep no `Código.js` ao criar ação nova) e de
+  `VMC_ACOES_PESADAS` — e **só** em erro que não é estouro de tempo: o pedido
+  que o navegador corta continua executando no servidor (lição 95). Pedido
+  idêntico de `VMC_ACOES_COMPARTILHADAS` (`lerHistorico`, `lerEscalas`) já em
+  andamento é devolvido a quem pedir de novo. Na falha final,
+  `_aguardarTentarDeNovo_` mostra a faixa `#vmcErroRede` ("O servidor não
+  respondeu…"); **um clique retoma todas as chamadas em espera**, a promessa só
+  resolve com a resposta real (contrato de quem chamou preservado) e a faixa
+  avisa a página pelo evento `vmc-faixa-rede`. `iniLerQuieto` (Início,
+  checagem) segue a mesma regra sem overlay nem faixa; `lerHistoricoComCache`
+  serve a verificação de primeira vez e a de "já fez Negativo" pelo cache de
+  30 s de `PEV_STATE`. A consulta de CEP (ViaCEP) é o único `fetch` fora do
+  wrapper.
 - **Início, período do Painel e blocos recolhíveis (Pacote 16.4):** `#sec-menu`
   virou o Início (`data-barra-titulo="Início"`, `data-barra-voltar=""` = tela sem
   volta via `.topbar.sem-voltar`): saudação com o primeiro nome de
