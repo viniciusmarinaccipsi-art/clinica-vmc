@@ -749,21 +749,37 @@ contratos de dados); o e-mail é só o identificador de login.
   crachá, menos `ping`, `autenticar`, `pedirRedefinicao` e `definirSenha`;
   sigla e profissional saem do crachá, nunca do payload. Rotacionar o segredo
   derruba todas as sessões. Profissional e admin deixam de reenviar a senha.
-- **Convite e redefinição:** `profEnviarConvite(sigla)`,
-  `admEnviarConvite(profissional_id)` e `pedirRedefinicao(tipo, email)`
+- **Convite e redefinição:** `profEnviarConvite(sigla, canal, contato)`,
+  `admEnviarConvite(profissional_id, canal)` e `pedirRedefinicao(tipo, email)`
   (resposta idêntica exista ou não o e-mail) geram um token aleatório de uso
   único, válido por 48 h, guardado só como SHA-256 na aba `Tokens` da
   `Sistema_VMC` (colunas `token_hash`, `tipo`, `sigla`, `expira`, `usado`);
-  o e-mail sai por `MailApp` com nome "Clínica VMC" contendo só o link
-  `index.html?ativar=<token>`; a tela "Crie sua senha" chama
+  `canal` = `email` (envia) ou `link` (só gera); ambos devolvem o link, que o
+  botão WhatsApp da área do profissional abre em `wa.me/55<dígitos>` com a
+  mensagem aprovada (nenhum envio automático). O e-mail sai por `MailApp` com
+  remetente "COGNIATIVO", em HTML simples com texto puro de reserva: linha de
+  destaque (nome + subtítulo) no topo, um único link `index.html?ativar=<token>`
+  e a assinatura do profissional no fim; a tela "Crie sua senha" chama
   `definirSenha(token, senha)`, que grava o hash e marca o token como usado;
   o cliente apaga o token da URL com `history.replaceState`.
+- **Contato do paciente (decisão de 30/09):** o cadastro (Controle: `email`,
+  `telefone`, só dígitos) é a única fonte; as colunas `email` e `telefone` da
+  aba Anamnese permanecem (dados reais) e são espelhadas pelo servidor a cada
+  gravação da anamnese, ignorando o que o cliente mandar nessas chaves; o
+  formulário de anamnese não pergunta; o editor do profissional pré-carrega
+  os campos de cadastro com os valores da anamnese quando a Controle está
+  vazia, e `_atualizarContatoPaciente_` grava a Controle por nome de cabeçalho.
+- **Marca (COGNIATIVO):** nome em caixa alta; frase de destaque "pensar,
+  registrar, transformar" logo abaixo do nome, no login e na barra do Início;
+  subtítulo oficial "Psicoterapia para além das sessões, com intervenções cognitivo-comportamentais no dia a dia." em letra miúda (piso de 13 px) no rodapé do login e nos
+  e-mails; admin e documentos só com o subtítulo. Títulos internos mudam no
+  pacote de renomeação.
 - **Senha:** hash `v2$<sal_hex>$<iter>$<hmac_sha256_hex>` com sal por usuário
   e iterações calibradas para 200–400 ms no Apps Script; mínimo de 8
   caracteres; comparação em tempo constante; 5 falhas por (perfil, e-mail)
   → 15 min de bloqueio (`CacheService`, chave `falha:<tipo>:<email>`);
   mensagem única "E-mail ou senha incorretos", inclusive para conta inativa.
-- **Cadastro:** `profCadastrarPaciente` recebe nome e e-mail; o servidor gera a
+- **Cadastro:** `profCadastrarPaciente` recebe nome, e-mail e telefone; o servidor gera a
   sigla (iniciais + desambiguação, dentro de `^[A-Z0-9_]{2,10}$`) e envia o
   convite. `bootstrapAcesso18_1(emailAdmin, emailProf)` é função de uso único
   rodada pelo usuário no editor após o deploy: grava os e-mails das contas
@@ -787,3 +803,14 @@ uma vez pelo usuário no editor (gatilhos rodam o código HEAD: o pacote faz só
 `clasp push`, sem deploy do web app). O `ping` passa a devolver `url`
 (`ScriptApp.getService().getUrl()`), prova necessária para um staging por
 implantação (candidato E2-lite no status).
+
+## Registro e edição pelo profissional (Pacote 18.5 — decisão de 30/09/2026)
+
+O profissional passa a criar e editar registros de automonitoramento, escalas
+e anamnese de qualquer paciente seu (hoje só edita anamnese e automonitoramento).
+Toda criação ou edição pelo profissional grava autoria no servidor
+(`editado_por` = profissional, `editado_em`), e o paciente vê no item a marca
+"registrado/alterado pelo seu psicólogo em `<data>`", para que autorrelato e
+anotação do terapeuta nunca se confundam. Depende do B7 (colunas de autoria
+controladas pelo servidor, Pacote 18.10). Conceituação cognitiva fica para o
+Módulo 3.
