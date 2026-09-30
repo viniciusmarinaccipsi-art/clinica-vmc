@@ -115,6 +115,8 @@ clinica-vmc\
 
 **Fontes:** projeto no Claude Design https://claude.ai/design/p/e40780ec-5558-4da3-8e1e-0e57c2cfc69a; rodadas 2, 3 e 4 versionadas em `docs/design/16.5/`; versão do usuário de 25/09 ("As 11 perguntas") prevalece sobre as pranchas; mapa visual https://claude.ai/artifact/Ra4TMw9YcHLUXdci9VXtQ4 (histórico). Direção: paleta "Lavanda clínica"; cor por significado; **nenhum nome de campo muda**.
 
+**Objetivo (17/09):** sistema inteiro com o layout novo em `index-dev.html`; promoção a `index.html` só após validação no uso.
+
 | Pacote | Conteúdo | Estado |
 |---|---|---|
 | 16.0 / 16.0.1 · 16.1 · 16.2 / 16.2.1 / 16.2.2 · 16.3 · 16.4 (+16.4.1, 16.4.2) | Fundação visual, barra única, tamanhos/toque/sprite, timeout, progresso único, Início/Painel/Meus Registros | **feitos** (`21b544a` → `f96036e`, 17–20/09) |
