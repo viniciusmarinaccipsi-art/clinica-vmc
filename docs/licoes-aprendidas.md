@@ -165,8 +165,10 @@ travamento total da tela do paciente).
 `_tsNormalizar_(val)`: se `instanceof Date` → `.toISOString()`; senão
 `String(val).trim()`.
 
-**50. A senha do profissional VMC contém minus sign (U+2212), não hífen
-comum.** Sempre copiar/colar da fonte segura; nunca digitar à mão.
+**50. Credenciais podem conter caracteres visualmente ambíguos** (sinais
+tipográficos que se confundem com os do teclado). Sempre copiar/colar da
+fonte segura; nunca digitar à mão, e nunca descrever a forma de uma senha
+em documento, lição ou status (reescrita em 30/09/2026).
 
 ## Padrões arquiteturais
 
@@ -304,8 +306,26 @@ usados ao criar planilha nova — adicionar coluna = atualizar o array.
 
 **84. Arquivos do PC entram pelo terminal ligado ao Cowork ou pelo Claude Code, nunca pelo conector do Drive em base64.** (25/09/2026)
 
-**85–93.** Registradas na seção 8 do status (`..\status_projeto_vmc.md`, 26–28/09/2026); migram para cá na próxima regeneração da skill.
+**85. Conferir as ferramentas do PC antes de qualquer pacote.** Um PC novo sincronizado pelo Drive tem o repositório, mas não a esteira (`where.exe git node npm`); instalar antes de começar, e lembrar que o `git push` exige o login do usuário — o Code não faz login no GitHub. (26–27/09/2026)
+
+**86. O cabeçalho cumulativo só lê `AUTO_STATE.dados` e mostra grupos, não itens.** A linha da etapa atual atualiza pelo mesmo caminho que atualiza o rodapé de contagem; nomes de grupo vêm do DOM com regra de nome curto documentada; nada de listas de texto em JS. (16.5d-3)
+
+**87. Quando um mecanismo passa a copiar atributos do bloco para a seção, todo bloco precisa do atributo.** `autoMostrarTipo` copia `data-barra-acao` desde o 16.5d-2 e os blocos do menu não o tinham — a pílula "Salvar e sair" sumiu do menu sem erro nenhum. Grep pelos atributos copiados em todos os blocos `.auto-tipo` ao mudar o copiador; o teste de fluxo mede o texto da ação da barra. (16.5e)
+
+**88. Uma linha de base medida no código anterior antes de mexer.** O payload (56 chaves, ordenadas) foi capturado por Playwright no HEAD antes da primeira edição e comparado depois — a igualdade é prova, não estimativa. Vale para qualquer contrato que o pacote promete não mudar. (16.5e)
+
+**89. Login é sempre do usuário, mesmo em QA guiado pelo chat.** O chat pode conduzir o navegador e decidir tela a tela, mas nunca digita a senha do paciente de teste — nem a real nem uma "gerada" — porque o site publicado não é `localhost`; o usuário digita e o chat retoma a partir daí. (28/09/2026)
+
+**90. Esteira versionada, roteiro só descreve o fluxo.** O que se repete de pacote a pacote (helpers Playwright, validação estática, gabarito, modelo de prompt) vive em `scripts/` e `docs/prompts/`, com prova de equivalência (o roteiro do 16.5e reexecutado sobre o módulo gera o mesmo JSON). Sinais de que algo devia ter sido versionado: o mesmo bloco copiado 3+ vezes, uma regra de validação que muda de sessão para sessão sem registro, um arquivo gerado que suja todo commit. A validação versionada também acha o que o olho deixa passar (função sem chamador que sobrou do 16.5e → débito 8.32). (16.5-esteira, 28/09/2026)
+
+**91. O status tem um único arquivo-fonte.** O arquivo do Drive é a fonte; o Code edita lá e copia para o repositório no mesmo commit (decisão de 28/09, que substituiu a exclusão pelo `.gitignore`); uma cópia que não é copiada no mesmo passo fica uma edição atrás em menos de um dia. (28/09/2026)
+
+**92. Regra nova em media query não vence regra antiga declarada depois; a medição pega, o olho não.** O rodapé em grade e o `padding-top` do `.app` alargado "não pegaram" porque as regras do RodapéEtapa e do `.app` vêm depois no arquivo com a mesma especificidade — o roteiro Playwright acusou (`display: flex`, trilha em y = 28 sob a barra) antes do commit. Regra: toda regra nova que sobrepõe uma antiga leva um seletor mais específico (`.auto-tipo .auto-rodape`) ou entra depois dela, e o roteiro mede o `display`/posição real, não só a existência da classe. Corolário: `display:contents` zera o `offsetParent` — quem testa visibilidade por ele precisa olhar um filho renderizado. (16.5f, 28/09/2026)
+
+**93. Capturas comparáveis exigem relógio congelado, e ainda assim oscilam.** Com `page.clock.setFixedTime` as 10 capturas de 390 saíram byte a byte iguais à linha de base em duas de três corridas; na terceira, duas divergiram por oscilação de renderização (fonte web) e voltaram a bater na seguinte. "Diferente" numa corrida só vira regressão quando se repete. (16.5f)
 
 **94. Classe reaproveitada entre componentes herda regras que o novo não pediu.** O cartão "Suas 5 etapas" da lateral (16.5f) reusou `.cab-etapa-nome` do "Preenchendo" do cabeçalho v2 e herdou o `white-space:nowrap` que nunca pediu — os nomes de duas linhas passaram por cima do ícone; a regra de cor por tipo (`[data-tipo] .cab-etapa-nome`) também venceu a cor declarada na lateral sem ninguém notar. Componente novo = classe nova (`.cab-lat-nome`), ou grep de **todas** as regras da classe (incluindo as de maior especificidade e as de outras media queries) antes de reusar; o roteiro mede a sobreposição real entre vizinhos da grade, não só a existência da classe. Irmã da lição 92. (16.5f.1, 28/09/2026)
 
 **95. Lentidão do Apps Script se mede também do lado do servidor, antes de mexer no limite do cliente.** Em 28/09 o `ping` levou 18–50 s pelo curl, mas a página **Execuções** do projeto mostrou essas execuções com 0,4–1,7 s (e as leituras da sessão real com 2,7–6,9 s): o atraso estava na entrega da resposta pelo Google, depois do script, e o pedido que o navegador corta **continua executando** no servidor. Cortar em 20 s e repetir só dobrava o trabalho e falhava sempre nessa janela — o limite passou a 60 s com aviso aos 20 s, e a repetição automática ficou só para erro que não é estouro de tempo. Na mesma janela, um POST redirecionado terminou no `doGet` (`{ok:true}` sem dados): resposta sem o campo da ação conta como erro. E uma faixa de erro compartilhada precisa retomar **todas** as chamadas em espera — com duas falhas juntas, a segunda trocava o `onclick` da primeira e o cadeado da página Automonitoramento ficava preso até recarregar. Irmã das lições 72 e 74. (16.4.6, 28/09/2026)
+
+**96. Autenticar só no login não é autenticar.** Onze ações do backend aceitavam apenas a sigla porque "a autenticação já foi feita no login"; com a URL do Apps Script pública, siglas de duas ou três letras e acesso anônimo, qualquer pessoa lia a anamnese e os registros de qualquer paciente e gravava neles. Toda ação precisa provar quem chama (crachá assinado com validade, sigla e profissional derivados do crachá, `ativo` conferido a cada chamada), e a prova de que isso vale é um POST direto sem crachá devolvendo `ok:false`. Irmã das lições 44 e 45. (consultoria de 27/09/2026; pacote 18.1)

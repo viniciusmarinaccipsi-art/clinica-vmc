@@ -480,10 +480,12 @@ Planilha individual do paciente — abas:
 ## Sistema visual (Pacote 16.x — só `index-dev.html`)
 
 - **Tokens:** `docs/design/tokens.css` (cópia da entrega do Design) substitui o
-  `:root` antigo. 99 tokens claros + 58 sobrescritos em
-  `@media (prefers-color-scheme: dark)`, mais apelidos (`--c-bg-page`,
-  `--c-surface-2`, `--cal-*`). Regra: nenhum hex/rgba fixo fora dos dois
-  `:root`; cor de texto usa a variante `-ink`; vermelho só em `--c-risk*`;
+  `:root` antigo. 132 tokens claros + 76 sobrescritos em
+  `@media (prefers-color-scheme: dark)` (contagem de 30/09/2026 no
+  `index-dev.html`; os 16.5b/16.5e acrescentaram tokens ao arquivo de 17/09),
+  mais apelidos (`--c-bg-page`, `--c-surface-2`, `--cal-*`) num terceiro bloco.
+  Regra: nenhum hex fixo fora dos três `:root` e `rgba()` não aumenta
+  (24 ocorrências toleradas em 30/09; o validador acusa qualquer acréscimo); cor de texto usa a variante `-ink`; vermelho só em `--c-risk*`;
   escalas usam o par por instrumento (`--c-phq9-*` … `--c-srq20-*`);
   registro usa `--c-reg-neg*` / `--c-reg-pos*`. **Fonte única (Pacote 16.4.5,
   decisão 1 das "11 perguntas"):** `--f-title` e `--f-text` são ambos Figtree
@@ -725,3 +727,63 @@ Duas passagens de navegador por pacote: local em modo fingir (completa, antes
 do commit) e fumaça no publicado. Envio real só quando o contrato, `Código.js`
 ou a planilha mudarem, ou no fechamento de fase. Modelo de prompt com as
 regras: `docs/prompts/MODELO_PROMPT.md`.
+
+## Acesso por e-mail e crachá de sessão (Pacote 18.1 — desenho aprovado em 30/09/2026)
+
+Decisão do usuário (29/09): virada única, sem compatibilidade com a senha
+antiga e sem migração de hash; pacientes reconvidados aos poucos. A sigla
+continua sendo a chave interna de tudo (planilhas, pastas, `Indice_Siglas`,
+contratos de dados); o e-mail é só o identificador de login.
+
+- **Identidade:** unicidade de conta = (perfil, e-mail), porque a mesma pessoa
+  pode ser admin, profissional e paciente com o mesmo e-mail. A tela de login
+  mantém a escolha do perfil. `Indice_Siglas` ganha a coluna `email`
+  (aditiva) para resolver e-mail → sigla → profissional dono numa leitura;
+  Controle, Profissionais e Admins ganham `email` para exibição e convite. O
+  índice passa a ser gravado por nome de cabeçalho.
+- **Crachá de sessão (`token`):** emitido por `autenticar(tipo, email, senha)`;
+  assinado por HMAC-SHA256 com segredo em `PropertiesService` (script), carrega
+  `tipo|sigla|profissional_id|expira` (6 h); validar = recomputar a assinatura
+  e conferir a validade; `ativo` conferido a cada chamada. Sem armazenamento
+  de sessão (o `CacheService` pode expirar antes das 6 h). Toda ação exige o
+  crachá, menos `ping`, `autenticar`, `pedirRedefinicao` e `definirSenha`;
+  sigla e profissional saem do crachá, nunca do payload. Rotacionar o segredo
+  derruba todas as sessões. Profissional e admin deixam de reenviar a senha.
+- **Convite e redefinição:** `profEnviarConvite(sigla)`,
+  `admEnviarConvite(profissional_id)` e `pedirRedefinicao(tipo, email)`
+  (resposta idêntica exista ou não o e-mail) geram um token aleatório de uso
+  único, válido por 48 h, guardado só como SHA-256 na aba `Tokens` da
+  `Sistema_VMC` (colunas `token_hash`, `tipo`, `sigla`, `expira`, `usado`);
+  o e-mail sai por `MailApp` com nome "Clínica VMC" contendo só o link
+  `index.html?ativar=<token>`; a tela "Crie sua senha" chama
+  `definirSenha(token, senha)`, que grava o hash e marca o token como usado;
+  o cliente apaga o token da URL com `history.replaceState`.
+- **Senha:** hash `v2$<sal_hex>$<iter>$<hmac_sha256_hex>` com sal por usuário
+  e iterações calibradas para 200–400 ms no Apps Script; mínimo de 8
+  caracteres; comparação em tempo constante; 5 falhas por (perfil, e-mail)
+  → 15 min de bloqueio (`CacheService`, chave `falha:<tipo>:<email>`);
+  mensagem única "E-mail ou senha incorretos", inclusive para conta inativa.
+- **Cadastro:** `profCadastrarPaciente` recebe nome e e-mail; o servidor gera a
+  sigla (iniciais + desambiguação, dentro de `^[A-Z0-9_]{2,10}$`) e envia o
+  convite. `bootstrapAcesso18_1(emailAdmin, emailProf)` é função de uso único
+  rodada pelo usuário no editor após o deploy: grava os e-mails das contas
+  admin e profissional, gera tokens de ativação e registra os links no log.
+- **Fora do código:** as funções de teste (`testarSetup`,
+  `testarAdmin13_1_1`) e os utilitários mortos (`criarAbaEscalas`,
+  `atualizarSchemaSistemaVMC`) saem no 18.1; `doGet` devolve `ok:false`.
+- **Cliente:** `sessionStorage.paciente` guarda sigla, e-mail e crachá; as
+  sessões de profissional e admin ficam em memória com o crachá; `chamarServidor`
+  acrescenta `token` a todo payload; `{ok:false, codigo:"sessao_expirada"}`
+  leva ao login com aviso na tela (nunca `alert()`).
+
+## Backup e monitoramento (Pacote E3)
+
+`backupDiario_()` copia a `Sistema_VMC`, cada Controle e cada planilha de
+paciente para `Backups/AAAA-MM-DD/` (`DriveApp.makeCopy`), apaga pastas com
+mais de 30 dias e registra o resultado na aba `Backups` da `Sistema_VMC`;
+`monitorarPing_()` chama o `ping` da implantação de produção de hora em hora
+e envia e-mail em falha; `instalarGatilhos()` cria os dois gatilhos e é rodada
+uma vez pelo usuário no editor (gatilhos rodam o código HEAD: o pacote faz só
+`clasp push`, sem deploy do web app). O `ping` passa a devolver `url`
+(`ScriptApp.getService().getUrl()`), prova necessária para um staging por
+implantação (candidato E2-lite no status).
