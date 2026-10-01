@@ -792,17 +792,31 @@ contratos de dados); o e-mail é só o identificador de login.
   acrescenta `token` a todo payload; `{ok:false, codigo:"sessao_expirada"}`
   leva ao login com aviso na tela (nunca `alert()`).
 
-## Backup e monitoramento (Pacote E3)
+## Backup e monitoramento (Pacote E3 — ativado em 30/09/2026, ajustado em 01/10)
 
-`backupDiario_()` copia a `Sistema_VMC`, cada Controle e cada planilha de
-paciente para `Backups/AAAA-MM-DD/` (`DriveApp.makeCopy`), apaga pastas com
-mais de 30 dias e registra o resultado na aba `Backups` da `Sistema_VMC`;
-`monitorarPing_()` chama o `ping` da implantação de produção de hora em hora
-e envia e-mail em falha; `instalarGatilhos()` cria os dois gatilhos e é rodada
-uma vez pelo usuário no editor (gatilhos rodam o código HEAD: o pacote faz só
-`clasp push`, sem deploy do web app). O `ping` passa a devolver `url`
-(`ScriptApp.getService().getUrl()`), prova necessária para um staging por
-implantação (candidato E2-lite no status).
+`backupSobDemanda_()` (invólucro público `rodarBackupAgora`) copia a
+`Sistema_VMC`, cada Controle e cada planilha de paciente (profissionais
+ativos ou não) para `Backups/AAAA-MM-DD/` (`DriveApp.makeCopy`), confere o
+resultado contra uma expectativa derivada da Controle e registra uma linha
+na aba `Backups` da `Sistema_VMC`. **Roda sob demanda, quando o Code
+indica** (mudança com risco de perda) — nunca por gatilho. Guarda **as
+últimas 5 cópias** (`pastasExcedentes`; a limpeza só roda com o dia fechado
+limpo). Backup que falha nunca parece saudável: falha total lança exceção e
+falha parcial manda e-mail ao dono.
+
+`monitorarPing_()` (invólucro `rodarMonitorAgora`) chama o `ping` da
+implantação de produção **1× ao dia** (gatilho único criado por
+`instalarGatilhos()`, entre 7 h e 8 h, America/Sao_Paulo) e envia e-mail
+**só em falha** (máximo 1 por hora). O `ping` devolve `url`
+(`ScriptApp.getService().getUrl()`) e `hora_servidor`, prova necessária
+para um staging por implantação (candidato E2-lite no status).
+
+Manifesto (`appsscript.json`): os `oauthScopes` são **explícitos** — a
+declaração substitui a inferência automática, então serviço novo no
+`Código.js` exige acrescentar o escopo correspondente no mesmo pacote,
+senão falha em execução. `executionApi: { access: "MYSELF" }` limita a API
+de execução ao dono e **não** toca `webapp.access: ANYONE_ANONYMOUS`; é
+seguro carregar para a produção no deploy do 18.1.
 
 ## Registro e edição pelo profissional (Pacote 18.5 — decisão de 30/09/2026)
 

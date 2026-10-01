@@ -61,6 +61,7 @@
 // ID da planilha global Sistema_VMC.
 // Criada pelo script Python migracao_13_0_1.py.
 // Pacote 17.0 — Escalas de Beck: acao lerItensInstrumento (23/09/2026)
+// Pacote E3 — backup diário e monitor do ping (só clasp push, sem deploy)
 var VERSAO_PACOTE = '17.0';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
@@ -170,7 +171,7 @@ function doPost(e) {
     var resposta;
     switch (acao) {
       case 'ping':
-        resposta = { ok: true, versao_pacote: VERSAO_PACOTE, versao_formulario: VERSAO_FORMULARIO, versao: VERSAO_FORMULARIO, mensagem: 'Servidor respondendo (Pacote ' + VERSAO_PACOTE + ')' };
+        resposta = { ok: true, versao_pacote: VERSAO_PACOTE, versao_formulario: VERSAO_FORMULARIO, versao: VERSAO_FORMULARIO, url: _e3UrlDoServico_(), hora_servidor: _e3HoraServidor_(), mensagem: 'Servidor respondendo (Pacote ' + VERSAO_PACOTE + ')' };
         break;
 
       case 'autenticar':
@@ -2950,4 +2951,779 @@ function salvarGradeAtendimento(profSigla, profSenha, config, grade) {
   }
 
   return { ok: true, mensagem: 'Grade de atendimento salva.', total_janelas: grade.length };
+}
+
+
+// ============================================================
+// BACKUP E MONITORAMENTO (Pacote E3)
+// ============================================================
+//
+// Nada aqui passa pelo doPost. O backup roda SOB DEMANDA (rodarBackupAgora,
+// indicado pelo Code antes de mudanca com risco de perda — decisao do
+// usuario de 30/09); so o monitor roda por gatilho de tempo, 1x ao dia.
+// Gatilhos executam o codigo HEAD do projeto, por isso o E3 faz so
+// `clasp push`, sem deploy do web app. Nenhuma acao do doPost muda de
+// contrato (o ping so ganha campos).
+//
+// Erros usam console.error (severidade ERROR no Cloud Logging, coerente
+// com exceptionLogging: STACKDRIVER) e nunca carregam conteudo clinico —
+// so nome de planilha e mensagem da excecao. Mensagens informativas usam
+// Logger.log, o padrao do resto do arquivo.
+//
+// REGRA DE OURO, decidida em 30/09 depois de duas revisoes adversariais:
+// backup que falha NAO pode parecer saudavel. Em ordem de importancia:
+//   1. toda fonte que DEVIA existir e conferida contra uma expectativa
+//      independente (a lista de pacientes da Controle), nao contra o que o
+//      proprio backup conseguiu enumerar;
+//   2. subpasta obrigatoria ausente e ERRO, nao "nada a copiar";
+//   3. nome de destino repetido na mesma execucao e ERRO, nunca "ja estava
+//      copiado" — senao um arquivo que nunca foi copiado entra na conta;
+//   4. a retencao SO roda quando o backup do dia fechou limpo, e o texto do
+//      log e o e-mail sao montados DEPOIS dela, para nao mentirem;
+//   5. falha total lanca excecao; falha parcial manda e-mail, e se o e-mail
+//      nao sair, lanca tambem.
+// Na duvida o pacote guarda dados a mais e grita, nunca apaga em silencio.
+
+var ABA_BACKUPS = 'Backups';
+var HEADERS_BACKUPS = ['data_hora', 'arquivos', 'erros', 'duracao_s', 'detalhe'];
+
+// Quantas copias de backup ficam guardadas (as mais recentes). A limpeza
+// so roda quando o backup do dia fechou limpo. Decisao do usuario (30/09).
+var E3_RETENCAO_COPIAS = 5;
+
+// URL da implantacao de PRODUCAO (@26). E a mesma constante APPS_SCRIPT_URL
+// de index.html, index-dev.html e admin.html: se a implantacao mudar, os
+// quatro pontos mudam juntos. Publica por decisao do usuario (28/09).
+var E3_PING_URL = 'https://script.google.com/macros/s/AKfycbx7kHrVq7KizCWCVeEhTpsBFcU36Vc1zUBWF1AuJxdPD3iO5K4LIPuZs2vXXr1OK94eAg/exec';
+
+// Propriedade do script que guarda a hora do ultimo aviso por e-mail
+// (limite de 1 e-mail por hora). Nenhum segredo vive aqui.
+var E3_PROP_ULTIMO_AVISO = 'e3_ultimo_aviso_ping';
+
+// Subpastas de paciente na pasta do profissional. `Pacientes` e OBRIGATORIA
+// (cadastrarProfissional sempre cria, e cadastrarPaciente devolve erro sem
+// ela); `Pacientes_Desativados` so nasce na primeira desativacao.
+var E3_SUBPASTAS_PACIENTE = [
+  { nome: 'Pacientes', obrigatoria: true },
+  { nome: 'Pacientes_Desativados', obrigatoria: false }
+];
+
+// Separador entre o prefixo e o nome original no arquivo de backup. NAO
+// pertence ao alfabeto das siglas (/^[A-Z0-9_]+$/), logo a primeira
+// ocorrencia delimita o prefixo sem ambiguidade — ao contrario de '_'.
+var E3_SEPARADOR = ' - ';
+
+
+// ------------------------------------------------------------
+// Funcoes puras (testadas em Node antes do clasp push)
+// ------------------------------------------------------------
+
+/**
+ * Nome da pasta do dia, AAAA-MM-DD.
+ *
+ * Nao usa Utilities.formatDate de proposito: precisa ser pura para rodar
+ * em Node no teste. O appsscript.json fixa timeZone America/Sao_Paulo, e
+ * os metodos de Date no Apps Script respeitam o fuso do projeto — logo
+ * getFullYear/getMonth/getDate ja devolvem a data civil de Sao Paulo.
+ */
+function nomeDaPastaDoDia(data) {
+  var a = data.getFullYear();
+  var m = data.getMonth() + 1;
+  var d = data.getDate();
+  return a + '-' + (m < 10 ? '0' + m : m) + '-' + (d < 10 ? '0' + d : d);
+}
+
+/**
+ * Dada a lista de nomes de subpasta de Backups/, devolve as que EXCEDEM as
+ * `manter` copias mais recentes. Nomes AAAA-MM-DD ordenam cronologicamente
+ * como texto, entao basta ordenar e cortar.
+ *
+ * Nome que nao seja exatamente AAAA-MM-DD e ignorado: pasta que nao foi
+ * criada pelo backup nunca vai para a lixeira. Uma pasta com nome de data
+ * criada a mao pelo usuario conta como copia — nao ha como distinguir pelo
+ * nome, e isso esta registrado no relatorio do pacote.
+ */
+function pastasExcedentes(lista, manter) {
+  var n = Number(manter);
+  if (!isFinite(n) || n < 1) return [];
+  var validas = [];
+  for (var i = 0; i < lista.length; i++) {
+    var nome = String(lista[i]);
+    if (/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(nome)) validas.push(nome);
+  }
+  validas.sort(); // crescente: mais antigas primeiro
+  if (validas.length <= n) return [];
+  return validas.slice(0, validas.length - n);
+}
+
+/**
+ * Nome do arquivo dentro da pasta do dia: `<prefixo> - <nome original>`.
+ *
+ * A pasta do dia e plana e toda Controle se chama "Clinica VMC - Controle"
+ * (NOME_CONTROLE): sem prefixo a restauracao com mais de um profissional
+ * fica ambigua, e duas Controles colidiriam. O prefixo tambem torna o nome
+ * de destino previsivel, que e o que permite a idempotencia.
+ *
+ * O prefixo vazio (so a planilha global) mantem o nome original. Quem
+ * chama no caminho do profissional passa a sigla ou, se ela faltar, o
+ * profissional_id — nunca vazio.
+ */
+function nomeDoBackup(prefixo, nomeOriginal) {
+  var p = String(prefixo == null ? '' : prefixo).trim();
+  var nome = String(nomeOriginal == null ? '' : nomeOriginal);
+  return p ? p + ' - ' + nome : nome;
+}
+
+/**
+ * Corta um texto em `max` caracteres.
+ */
+function e3Truncar(texto, max) {
+  var t = String(texto == null ? '' : texto);
+  return t.length <= max ? t : t.slice(0, max);
+}
+
+/**
+ * Celula que comeca com = + - @ vira texto: o Sheets nunca interpreta o
+ * detalhe do log como formula.
+ *
+ * Versao local do E3. O Pacote 18.2 cria o _celulaSegura_ global para
+ * toda gravacao; quando criar, esta funcao sai e o E3 passa a usar aquele.
+ */
+function e3TextoSeguro(valor) {
+  var t = String(valor == null ? '' : valor);
+  return /^[=+\-@]/.test(t) ? "'" + t : t;
+}
+
+/**
+ * Monta o texto da coluna `detalhe`: o resumo da falta na frente, depois a
+ * lista de erros. Chamada DEPOIS da retencao, para nao congelar um texto
+ * que a retencao ainda pode contradizer.
+ */
+function detalheDoBackup(faltam, esperados, detalhes) {
+  var texto = detalhes.join(' | ');
+  if (faltam > 0) {
+    var resumo = 'faltam ' + faltam + ' de ' + esperados + ' arquivo(s) na pasta do dia';
+    texto = texto ? resumo + ' | ' + texto : resumo;
+  }
+  return texto;
+}
+
+
+// ------------------------------------------------------------
+// Auxiliares de Drive, de log e de aviso
+// ------------------------------------------------------------
+
+/**
+ * Pasta raiz clinica-vmc = pai da planilha global Sistema_VMC.
+ * Mesmo caminho usado em cadastrarProfissional: nenhum ID de pasta
+ * hardcoded no backend.
+ */
+function _e3PastaRaiz_() {
+  var pastasPai = DriveApp.getFileById(SISTEMA_VMC_ID).getParents();
+  if (!pastasPai.hasNext()) {
+    throw new Error('Nao consegui localizar a pasta raiz clinica-vmc');
+  }
+  return pastasPai.next();
+}
+
+/**
+ * Subpasta de nome dado, criando se faltar.
+ */
+function _e3ObterOuCriarPasta_(pastaPai, nome) {
+  var iter = pastaPai.getFoldersByName(nome);
+  return iter.hasNext() ? iter.next() : pastaPai.createFolder(nome);
+}
+
+/**
+ * E-mail do dono do script. Nunca vem de codigo.
+ */
+function _e3EmailDoDono_() {
+  try {
+    return Session.getEffectiveUser().getEmail() || '';
+  } catch (e) {
+    return '';
+  }
+}
+
+/**
+ * Aba Backups garantida, no padrao _garantirColunasX_(): cria a aba se
+ * faltar e garante CADA coluna de HEADERS_BACKUPS pelo NOME, inclusive em
+ * aba que ja existia sem cabecalho ou com cabecalho incompleto.
+ *
+ * Devolve { aba, cabecalhos } — a gravacao e sempre por nome, nunca por
+ * posicao (regra dura do projeto).
+ */
+function _e3GarantirAbaBackups_(planilha) {
+  var aba = planilha.getSheetByName(ABA_BACKUPS);
+  if (!aba) {
+    aba = planilha.insertSheet(ABA_BACKUPS);
+    aba.getRange(1, 1, 1, HEADERS_BACKUPS.length).setValues([HEADERS_BACKUPS]);
+    aba.setFrozenRows(1);
+    aba.getRange(1, 1, 1, HEADERS_BACKUPS.length).setFontWeight('bold');
+    return { aba: aba, cabecalhos: HEADERS_BACKUPS.slice() };
+  }
+
+  var ultima = aba.getLastColumn();
+  var header = ultima > 0 ? aba.getRange(1, 1, 1, ultima).getValues()[0] : [];
+  for (var i = 0; i < header.length; i++) header[i] = String(header[i]).trim();
+
+  HEADERS_BACKUPS.forEach(function (col) {
+    if (header.indexOf(col) === -1) {
+      ultima++;
+      aba.getRange(1, ultima).setValue(col).setFontWeight('bold');
+      header.push(col);
+    }
+  });
+  if (aba.getFrozenRows() < 1) aba.setFrozenRows(1);
+  return { aba: aba, cabecalhos: header };
+}
+
+/**
+ * Grava uma linha por execucao na aba Backups, montando a linha pelo NOME
+ * do cabecalho (padrao das linhas de cadastro deste arquivo).
+ */
+function _e3RegistrarBackup_(inicio, arquivos, erros, detalhe) {
+  try {
+    var planilha = SpreadsheetApp.openById(SISTEMA_VMC_ID);
+    var g = _e3GarantirAbaBackups_(planilha);
+    var duracao = Math.round((new Date().getTime() - inicio.getTime()) / 1000);
+
+    var valores = {
+      data_hora: Utilities.formatDate(inicio, 'America/Sao_Paulo', 'yyyy-MM-dd HH:mm:ss'),
+      arquivos: arquivos,
+      erros: erros,
+      duracao_s: duracao,
+      detalhe: e3TextoSeguro(e3Truncar(detalhe, 2000))
+    };
+
+    var linha = [];
+    for (var i = 0; i < g.cabecalhos.length; i++) {
+      var col = g.cabecalhos[i];
+      linha.push(Object.prototype.hasOwnProperty.call(valores, col) ? valores[col] : '');
+    }
+    g.aba.appendRow(linha);
+  } catch (e) {
+    console.error('E3 backup: nao consegui registrar na aba Backups: ' + String(e));
+  }
+}
+
+/**
+ * E-mail ao dono quando o backup do dia nao fechou limpo.
+ * Sem limite por hora: o gatilho e diario, e backup quebrado todo dia deve
+ * incomodar todo dia.
+ *
+ * `retencaoRodou` e passado de fora: o texto nao pode afirmar que nada foi
+ * apagado quando a retencao rodou e falhou no meio.
+ */
+function _e3AvisarBackup_(inicio, esperados, presentes, detalhes, retencaoRodou) {
+  var dono = _e3EmailDoDono_();
+  if (!dono) {
+    console.error('E3 backup: sem e-mail do dono; aviso de falha nao enviado.');
+    return false;
+  }
+  var quando = Utilities.formatDate(inicio, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm:ss');
+  var sobreRetencao = retencaoRodou
+    ? 'A retencao de 30 dias JA havia rodado nesta execucao quando o erro apareceu: confira na ' +
+      'lixeira do Drive se alguma pasta de backup foi apagada e restaure se precisar.'
+    : 'A retencao de 30 dias NAO rodou nesta execucao: nenhum backup antigo foi apagado.';
+
+  var texto =
+    'O backup diario nao fechou limpo.\n\n' +
+    'Hora (America/Sao_Paulo): ' + quando + '\n' +
+    'Arquivos esperados: ' + esperados + '\n' +
+    'Arquivos presentes na pasta do dia: ' + presentes + '\n' +
+    'Erros: ' + detalhes.length + '\n\n' +
+    'Detalhe (nomes de planilha e mensagens de erro, sem conteudo de paciente):\n' +
+    e3Truncar(detalhes.join('\n'), 3000) + '\n\n' +
+    sobreRetencao + '\n' +
+    'Confira a aba Backups da Sistema_VMC e a pagina Execucoes do projeto.';
+  try {
+    MailApp.sendEmail({
+      to: dono,
+      subject: 'Clinica VMC - backup diario com falha',
+      body: texto,
+      name: 'Clínica VMC'
+    });
+    return true;
+  } catch (e) {
+    console.error('E3 backup: falha ao enviar o e-mail de aviso: ' + String(e));
+    return false;
+  }
+}
+
+/**
+ * Copia um File para a pasta do dia com o nome de destino dado, SE ele
+ * ainda nao estiver la. Idempotente entre execucoes do mesmo dia.
+ *
+ * `usados` acumula os nomes de destino JA tratados NESTA execucao: nome
+ * repetido e colisao (dois arquivos diferentes disputando o mesmo destino)
+ * e vira ERRO, nunca "ja estava copiado" — sem isso, um arquivo que nunca
+ * foi copiado entraria na contagem de presentes.
+ *
+ * Devolve { ok, novo } — `novo:false` com `ok:true` significa "copiado por
+ * uma execucao anterior de hoje".
+ */
+function _e3CopiarSeFaltar_(arquivo, pastaDia, nomeDestino, usados) {
+  try {
+    if (Object.prototype.hasOwnProperty.call(usados, nomeDestino)) {
+      console.error('E3 backup: nome de destino repetido nesta execucao: "' + nomeDestino + '".');
+      return { ok: false, novo: false,
+               erro: 'nome de destino repetido nesta execucao: ' + nomeDestino };
+    }
+    usados[nomeDestino] = true;
+
+    if (pastaDia.getFilesByName(nomeDestino).hasNext()) {
+      return { ok: true, novo: false, nome: nomeDestino };
+    }
+    arquivo.makeCopy(nomeDestino, pastaDia);
+    return { ok: true, novo: true, nome: nomeDestino };
+  } catch (e) {
+    console.error('E3 backup: falha ao copiar "' + nomeDestino + '": ' + String(e));
+    return { ok: false, novo: false, erro: nomeDestino + ': ' + String(e) };
+  }
+}
+
+/**
+ * Idem, para um arquivo identificado por ID.
+ */
+function _e3CopiarPorIdSeFaltar_(id, pastaDia, prefixo, usados) {
+  try {
+    var arquivo = DriveApp.getFileById(id);
+    return _e3CopiarSeFaltar_(arquivo, pastaDia,
+                              nomeDoBackup(prefixo, arquivo.getName()), usados);
+  } catch (e) {
+    console.error('E3 backup: falha ao abrir o arquivo ' + id + ': ' + String(e));
+    return { ok: false, novo: false, erro: 'id ' + id + ': ' + String(e) };
+  }
+}
+
+/**
+ * Quantos pacientes a Controle do profissional declara (linhas com sigla).
+ * E a expectativa INDEPENDENTE contra a qual o numero de planilhas
+ * encontradas no Drive e conferido: sem ela, `esperados` seria apenas o que
+ * o backup conseguiu enumerar, e arquivo-fonte ausente passaria batido.
+ *
+ * Devolve -1 quando nao foi possivel apurar (a conferencia e omitida e o
+ * motivo vai para o detalhe).
+ */
+function _e3PacientesDeclarados_(controle) {
+  try {
+    var linhas = lerAbaComoObjetos(controle, ABA_PACIENTES);
+    var n = 0;
+    for (var i = 0; i < linhas.length; i++) {
+      if (String(linhas[i].sigla || '').trim()) n++;
+    }
+    return n;
+  } catch (e) {
+    console.error('E3 backup: nao consegui contar os pacientes da Controle: ' + String(e));
+    return -1;
+  }
+}
+
+
+// ------------------------------------------------------------
+// backupSobDemanda_ — copia sob demanda, guardando as ultimas 5
+// ------------------------------------------------------------
+
+/**
+ * Copia a Sistema_VMC, a Controle de CADA profissional (ativo ou nao) e
+ * cada planilha de paciente (ativa e desativada) para
+ * Backups/AAAA-MM-DD/ dentro da pasta clinica-vmc.
+ *
+ * Escopo sem filtro por decisao do usuario de 30/09: desativar um
+ * profissional preserva os dados de proposito (ver desativarProfissional,
+ * "mantemos historico"), e o status e o docs/arquitetura.md mandam copiar
+ * "cada Controle e cada planilha de paciente", sem qualificador.
+ *
+ * Roda SOB DEMANDA, pelo involucro rodarBackupAgora, quando o Code
+ * indica (mudanca com risco de perda). Nao ha gatilho de backup.
+ * Lanca excecao em falha TOTAL e em falha parcial sem e-mail, para o Apps
+ * Script avisar o dono.
+ */
+function backupSobDemanda_() {
+  var inicio = new Date();
+  var hoje = nomeDaPastaDoDia(inicio);
+  var esperados = 0;   // arquivos que este backup DEVIA ter na pasta do dia
+  var novos = 0;       // copiados agora
+  var jaTinha = 0;     // copiados por execucao anterior de hoje
+  var detalhes = [];
+  var usados = {};     // nomes de destino tratados nesta execucao
+
+  function contar(res) {
+    esperados++;
+    if (!res.ok) { detalhes.push(res.erro); return; }
+    if (res.novo) novos++; else jaTinha++;
+  }
+
+  function falhar(msg) {
+    detalhes.push(msg);
+    console.error('E3 backup: ' + msg);
+  }
+
+  var pastaBackups, pastaDia;
+  try {
+    pastaBackups = _e3ObterOuCriarPasta_(_e3PastaRaiz_(), 'Backups');
+    pastaDia = _e3ObterOuCriarPasta_(pastaBackups, hoje);
+  } catch (e) {
+    console.error('E3 backup: pasta de destino indisponivel: ' + String(e));
+    _e3RegistrarBackup_(inicio, 0, 1, 'pasta de destino: ' + String(e));
+    _e3AvisarBackup_(inicio, 0, 0, ['pasta de destino: ' + String(e)], false);
+    throw new Error('E3 backup: pasta de destino indisponivel.');
+  }
+
+  // 1. Planilha global (sem prefixo: nao pertence a nenhum profissional)
+  contar(_e3CopiarPorIdSeFaltar_(SISTEMA_VMC_ID, pastaDia, '', usados));
+
+  // 2. Cada profissional: Controle + planilhas de pacientes
+  var profs = [];
+  try {
+    profs = lerAbaComoObjetos(SpreadsheetApp.openById(SISTEMA_VMC_ID), ABA_PROFISSIONAIS);
+  } catch (e) {
+    falhar('aba ' + ABA_PROFISSIONAIS + ': ' + String(e));
+  }
+
+  // Lista vazia e ERRO, nao "nada a fazer": lerAbaComoObjetos devolve []
+  // sem excecao quando a aba nao existe ou foi renomeada.
+  if (profs.length === 0) {
+    falhar('aba ' + ABA_PROFISSIONAIS + ' vazia ou inacessivel: nenhum profissional lido');
+  }
+
+  for (var i = 0; i < profs.length; i++) {
+    var prof = profs[i];
+    var idProf = String(prof.profissional_id || '(sem id)');
+    var siglaProf = String(prof.sigla || '').trim();
+
+    // O prefixo nunca fica vazio: sem sigla, cai no profissional_id, senao
+    // duas Controles colidiriam no mesmo nome de destino.
+    var prefixo = siglaProf || idProf;
+    if (!siglaProf) {
+      falhar(idProf + ': sem sigla na aba ' + ABA_PROFISSIONAIS +
+             ' (prefixo do backup caiu no profissional_id)');
+    }
+
+    if (!prof.pasta_drive_id) {
+      falhar(idProf + ': sem pasta_drive_id — Controle e pacientes NAO entraram no backup');
+      continue;
+    }
+
+    var pastaProf;
+    try {
+      pastaProf = DriveApp.getFolderById(prof.pasta_drive_id);
+    } catch (e) {
+      falhar(idProf + ' pasta inacessivel (Controle e pacientes NAO entraram): ' + String(e));
+      continue;
+    }
+
+    // 2a. Controle do profissional
+    var controle = null;
+    try {
+      var iterCtrl = pastaProf.getFilesByName(NOME_CONTROLE);
+      if (iterCtrl.hasNext()) {
+        var arqCtrl = iterCtrl.next();
+        contar(_e3CopiarSeFaltar_(arqCtrl, pastaDia,
+                                  nomeDoBackup(prefixo, NOME_CONTROLE), usados));
+        try {
+          controle = SpreadsheetApp.openById(arqCtrl.getId());
+        } catch (e) {
+          falhar(idProf + ': Controle copiada mas ilegivel para conferencia: ' + String(e));
+        }
+      } else {
+        esperados++;
+        falhar(idProf + ': Controle nao encontrada na pasta do profissional');
+      }
+    } catch (e) {
+      esperados++;
+      falhar(idProf + ' Controle: ' + String(e));
+    }
+
+    // 2b. Pacientes/ (obrigatoria) e Pacientes_Desativados/ (opcional)
+    var encontradas = 0;
+    for (var s = 0; s < E3_SUBPASTAS_PACIENTE.length; s++) {
+      var sub = E3_SUBPASTAS_PACIENTE[s];
+      try {
+        var iterSub = pastaProf.getFoldersByName(sub.nome);
+        var achouPasta = false;
+        // Pode existir mais de uma pasta com o mesmo nome: varre TODAS.
+        while (iterSub.hasNext()) {
+          achouPasta = true;
+          var arquivos = iterSub.next().getFiles();
+          while (arquivos.hasNext()) {
+            var arq = arquivos.next();
+            contar(_e3CopiarSeFaltar_(arq, pastaDia,
+                                      nomeDoBackup(prefixo, arq.getName()), usados));
+            encontradas++;
+          }
+        }
+        if (!achouPasta && sub.obrigatoria) {
+          falhar(idProf + ': subpasta ' + sub.nome + ' nao encontrada — nenhuma planilha de ' +
+                 'paciente deste profissional entrou no backup');
+        }
+      } catch (e) {
+        falhar(idProf + ' ' + sub.nome + ' (enumeracao interrompida): ' + String(e));
+      }
+    }
+
+    // 2c. Conferencia contra a expectativa INDEPENDENTE da Controle
+    if (controle) {
+      var declarados = _e3PacientesDeclarados_(controle);
+      if (declarados < 0) {
+        falhar(idProf + ': nao foi possivel conferir o numero de pacientes da Controle');
+      } else if (encontradas < declarados) {
+        esperados += (declarados - encontradas);
+        falhar(idProf + ': a Controle declara ' + declarados + ' paciente(s) e o Drive tem ' +
+               encontradas + ' planilha(s) — ' + (declarados - encontradas) + ' fonte(s) ausente(s)');
+      }
+    }
+  }
+
+  var presentes = novos + jaTinha;
+  var faltam = esperados - presentes;
+  // Toda falta deveria nascer de um erro ja registrado. Falta sem erro e bug
+  // de contagem deste proprio bloco: essa sim e erro novo.
+  if (faltam > 0 && detalhes.length === 0) {
+    falhar('contagem inconsistente: faltam ' + faltam + ' de ' + esperados +
+           ' arquivo(s) sem erro registrado');
+  }
+
+  // 3. Retencao: SO com o backup do dia fechado limpo. Na duvida guarda.
+  var limpoAntes = detalhes.length === 0 && presentes > 0 && faltam === 0;
+  var retencaoRodou = false;
+  if (limpoAntes) {
+    retencaoRodou = true;
+    try {
+      var nomes = [];
+      var iterTodas = pastaBackups.getFolders();
+      while (iterTodas.hasNext()) nomes.push(iterTodas.next().getName());
+      var velhas = pastasExcedentes(nomes, E3_RETENCAO_COPIAS);
+      for (var v = 0; v < velhas.length; v++) {
+        try {
+          var iterVelha = pastaBackups.getFoldersByName(velhas[v]);
+          while (iterVelha.hasNext()) iterVelha.next().setTrashed(true);
+        } catch (e) {
+          falhar('retencao ' + velhas[v] + ': ' + String(e));
+        }
+      }
+      if (velhas.length) Logger.log('E3 backup: ' + velhas.length + ' pasta(s) antiga(s) na lixeira.');
+    } catch (e) {
+      falhar('retencao: ' + String(e));
+    }
+  } else {
+    Logger.log('E3 backup: retencao NAO rodou (backup do dia com pendencia). Nada foi apagado.');
+  }
+
+  // 4. Texto e veredito montados DEPOIS da retencao, para nao mentirem
+  var detalheTexto = detalheDoBackup(faltam, esperados, detalhes);
+  var limpo = detalhes.length === 0 && presentes > 0 && faltam === 0;
+
+  _e3RegistrarBackup_(inicio, presentes, detalhes.length, detalheTexto);
+  Logger.log('E3 backup: ' + presentes + '/' + esperados + ' arquivo(s) em Backups/' + hoje +
+             '/ (' + novos + ' novo(s), ' + jaTinha + ' de execucao anterior de hoje), ' +
+             detalhes.length + ' erro(s); retencao ' + (retencaoRodou ? 'rodou' : 'NAO rodou') + '.');
+
+  // 5. Avisar o dono: e-mail em qualquer falha, excecao quando o aviso nao
+  //    basta (falha total) ou quando o proprio aviso nao saiu
+  var emailEnviado = false;
+  if (detalhes.length > 0) {
+    emailEnviado = _e3AvisarBackup_(inicio, esperados, presentes, detalhes, retencaoRodou);
+  }
+  if (presentes === 0) {
+    throw new Error('E3 backup: nenhum arquivo copiado (0 de ' + esperados + '). ' +
+                    'Veja a aba Backups e o Cloud Logging.');
+  }
+  if (detalhes.length > 0 && !emailEnviado) {
+    throw new Error('E3 backup: ' + detalhes.length + ' erro(s) e o aviso por e-mail nao saiu. ' +
+                    'Veja a aba Backups e o Cloud Logging.');
+  }
+
+  return {
+    ok: limpo,
+    esperados: esperados,
+    presentes: presentes,
+    novos: novos,
+    ja_existiam: jaTinha,
+    erros: detalhes.length,
+    retencao_rodou: retencaoRodou,
+    pasta: hoje
+  };
+}
+
+
+// ------------------------------------------------------------
+// monitorarPing_ — monitor horario da implantacao de producao
+// ------------------------------------------------------------
+
+/**
+ * Chama o ping da implantacao de producao. Se a resposta nao tiver
+ * ok:true e versao_pacote, avisa o dono por e-mail (no maximo 1 por hora).
+ *
+ * O limite de tempo e o proprio do UrlFetchApp (~60 s, nao configuravel
+ * no Apps Script); o tempo decorrido vai para o log.
+ */
+function monitorarPing_() {
+  var inicio = new Date();
+  var codigo = 0;
+  var corpo = '';
+  var falha = '';
+
+  try {
+    var resp = UrlFetchApp.fetch(E3_PING_URL, {
+      method: 'post',
+      contentType: 'text/plain;charset=utf-8',
+      payload: JSON.stringify({ acao: 'ping' }),
+      followRedirects: true,
+      muteHttpExceptions: true
+    });
+    codigo = resp.getResponseCode();
+    corpo = resp.getContentText();
+  } catch (e) {
+    falha = 'excecao na chamada: ' + String(e);
+  }
+
+  if (!falha && codigo !== 200) {
+    falha = 'HTTP ' + codigo;
+  }
+  if (!falha) {
+    var dados = null;
+    try { dados = JSON.parse(corpo); } catch (e) { dados = null; }
+    if (!dados || dados.ok !== true || !dados.versao_pacote) {
+      falha = 'resposta sem ok:true e versao_pacote';
+    }
+  }
+
+  var decorrido = Math.round((new Date().getTime() - inicio.getTime()) / 1000);
+  if (!falha) {
+    Logger.log('E3 monitor: ping OK em ' + decorrido + ' s.');
+    return { ok: true, segundos: decorrido };
+  }
+
+  console.error('E3 monitor: ' + falha + ' (' + decorrido + ' s).');
+  var enviado = _e3AvisarFalhaPing_(inicio, falha, codigo, corpo);
+  return { ok: false, falha: falha, segundos: decorrido, email_enviado: enviado };
+}
+
+/**
+ * E-mail de aviso ao dono, no maximo 1 por hora.
+ */
+function _e3AvisarFalhaPing_(agora, falha, codigo, corpo) {
+  var props = PropertiesService.getScriptProperties();
+  var ultimo = Number(props.getProperty(E3_PROP_ULTIMO_AVISO) || 0);
+  var agoraMs = agora.getTime();
+  if (ultimo && (agoraMs - ultimo) < 3600000) {
+    Logger.log('E3 monitor: aviso silenciado (menos de 1 h desde o ultimo).');
+    return false;
+  }
+
+  var dono = _e3EmailDoDono_();
+  if (!dono) {
+    console.error('E3 monitor: sem e-mail do dono; aviso nao enviado.');
+    return false;
+  }
+
+  var quando = Utilities.formatDate(agora, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm:ss');
+  var texto =
+    'O monitor horario nao conseguiu confirmar que o servidor esta no ar.\n\n' +
+    'Hora (America/Sao_Paulo): ' + quando + '\n' +
+    'Problema: ' + falha + '\n' +
+    'Codigo HTTP: ' + (codigo ? codigo : '(sem resposta)') + '\n\n' +
+    'Inicio da resposta (200 caracteres):\n' + e3Truncar(corpo, 200) + '\n\n' +
+    'Confira a implantacao de producao e a pagina Execucoes do projeto.';
+
+  try {
+    MailApp.sendEmail({
+      to: dono,
+      subject: 'Clinica VMC - servidor sem resposta no ping',
+      body: texto,
+      name: 'Clínica VMC'
+    });
+    props.setProperty(E3_PROP_ULTIMO_AVISO, String(agoraMs));
+    Logger.log('E3 monitor: aviso enviado ao dono.');
+    return true;
+  } catch (e) {
+    console.error('E3 monitor: falha ao enviar e-mail: ' + String(e));
+    return false;
+  }
+}
+
+
+// ------------------------------------------------------------
+// instalarGatilhos — uso unico
+// ------------------------------------------------------------
+
+/**
+ * Remove gatilhos anteriores (backup e monitor, inclusive os que apontam
+ * para o nome antigo backupDiario_) e cria UM so: monitorarPing_ diario.
+ * O backup nao tem gatilho — e sob demanda (decisao do usuario de 30/09).
+ * Rodada uma vez; repetir e seguro (apaga antes de criar).
+ */
+function instalarGatilhos() {
+  var alvos = ['backupDiario_', 'backupSobDemanda_', 'monitorarPing_'];
+  var removidos = 0;
+
+  var existentes = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < existentes.length; i++) {
+    if (alvos.indexOf(existentes[i].getHandlerFunction()) !== -1) {
+      ScriptApp.deleteTrigger(existentes[i]);
+      removidos++;
+    }
+  }
+
+  ScriptApp.newTrigger('monitorarPing_')
+    .timeBased()
+    .atHour(7)
+    .everyDays(1)
+    .inTimezone('America/Sao_Paulo')
+    .create();
+
+  var msg = 'E3: ' + removidos + ' gatilho(s) antigo(s) removido(s). Criado: ' +
+            'monitorarPing_ (diario, entre 7 h e 8 h, America/Sao_Paulo). ' +
+            'Backup e sob demanda (rodarBackupAgora), sem gatilho.';
+  Logger.log(msg);
+  return msg;
+}
+
+
+// ------------------------------------------------------------
+// Execucao manual (Pacote E3, 30/09/2026)
+// ------------------------------------------------------------
+//
+// backupSobDemanda_ e monitorarPing_ terminam em `_`, o que no Apps Script
+// marca funcao PRIVADA: o gatilho de tempo chama sem problema, mas ela nao
+// aparece no seletor de funcao do editor. Estes dois involucros publicos
+// existem so para permitir a execucao manual de verificacao (pelo editor
+// ou por `clasp run`), sem renomear o que instalarGatilhos registra como
+// handler.
+//
+// Nao sao acao do doPost: o web app so roteia pelo switch de doPost, logo
+// isto NAO amplia a superficie exposta na web.
+
+function rodarBackupAgora() {
+  return backupSobDemanda_();
+}
+
+function rodarMonitorAgora() {
+  return monitorarPing_();
+}
+
+
+// ------------------------------------------------------------
+// Auxiliares do ping (Pacote E3, decisao 4)
+// ------------------------------------------------------------
+
+/**
+ * URL da implantacao que esta atendendo a chamada. Prova necessaria para
+ * o candidato E2-lite (staging por implantacao). Nunca derruba o ping.
+ */
+function _e3UrlDoServico_() {
+  try {
+    return ScriptApp.getService().getUrl() || '';
+  } catch (e) {
+    return '';
+  }
+}
+
+/**
+ * Hora do servidor no fuso do consultorio.
+ */
+function _e3HoraServidor_() {
+  return Utilities.formatDate(new Date(), 'America/Sao_Paulo', "yyyy-MM-dd'T'HH:mm:ss");
 }
