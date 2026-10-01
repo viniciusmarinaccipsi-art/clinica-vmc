@@ -3,18 +3,11 @@
  * SISTEMA CLINICO DIGITAL VMC - Google Apps Script (Servidor)
  * ============================================================
  *
- * VERSAO 13.4 - CADASTRO DE PACIENTE PELO PROFISSIONAL
+ * A versao em producao e a constante VERSAO_PACOTE (devolvida pelo ping).
  *
- * Mudancas desta versao:
- *   - 13.4: Nova rota profCadastrarPaciente + funcao cadastrarPaciente()
- *   - Headers das 4 abas definidos como constantes (HEADERS_ANAMNESE etc)
- *   - 13.3.1: Nova rota profLerDadosPaciente (anamnese)
- *   - 13.3.2: + automonitoramento
- *   - 13.3.3: + escalas. lerDadosPaciente retorna tudo de uma vez
- *   - Funcoes admin: listar, cadastrar, atualizar, trocar senha e
- *     ativar/desativar profissionais
- *   - atualizarSchemaSistemaVMC: garante colunas extras na aba
- *     Profissionais (telefone, crp, data_inicio)
+ * Acesso (Pacote 18.1): login por perfil + e-mail + senha; toda acao,
+ * menos ping/autenticar/pedirRedefinicao/definirSenha, exige o cracha de
+ * sessao (payload.token), do qual o servidor deriva sigla e profissional.
  *
  * Infraestrutura multi-tenant (13.0.2):
  *   - Uma planilha global "Sistema_VMC" governa tudo
@@ -35,16 +28,6 @@
  *   - Admins: lista de admins (apenas Vinicius por enquanto)
  *   - Indice_Siglas: mapa global "sigla -> tipo -> profissional dono"
  *
- * Funcoes principais (assinatura externa MANTIDA - frontend antigo
- * continua funcionando sem alteracao):
- *   1. autenticar(sigla, senha, tipo?) - valida login
- *      - tipo opcional: 'paciente' (default), 'profissional' ou 'admin'
- *   2. salvarAnamnese(sigla, dados) - salva anamnese
- *   3. salvarAutomonitoramento(sigla, dados) - salva registro
- *   4. lerHistorico(sigla) - retorna registros anteriores
- *   5. salvarEscala(sigla, dados) - salva aplicacao de escala
- *   6. lerEscalas(sigla) - retorna historico de escalas
- *
  * ISOLAMENTO DE DADOS (regra de seguranca critica):
  *   - O profissional_id dono de uma sigla e SEMPRE derivado server-side
  *     consultando o Indice_Siglas. NUNCA aceitamos profissional_id do
@@ -62,7 +45,8 @@
 // Criada pelo script Python migracao_13_0_1.py.
 // Pacote 17.0 — Escalas de Beck: acao lerItensInstrumento (23/09/2026)
 // Pacote E3 — backup diário e monitor do ping (só clasp push, sem deploy)
-var VERSAO_PACOTE = '17.0';
+// Pacote 18.1 — acesso por e-mail, cracha de sessao, convite e redefinicao (01/10/2026)
+var VERSAO_PACOTE = '18.1';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -74,6 +58,8 @@ var ABA_INDICE_SIGLAS  = 'Indice_Siglas';
 // Os enunciados NAO ficam no codigo - o repositorio e o site sao publicos.
 // Uma linha por texto; colunas: instrumento, tipo, item, opcao, texto, ativo.
 var ABA_ITENS_INSTRUMENTOS = 'Itens_Instrumentos';
+// Pacote 18.1: links de convite e redefinicao (so o SHA-256 do token fica aqui).
+var ABA_TOKENS = 'Tokens';
 
 // Nome da aba dentro de cada Controle de profissional.
 // Mantemos o nome "Pacientes" da versao anterior por compatibilidade
@@ -168,195 +154,191 @@ function doPost(e) {
     var payload = JSON.parse(e.postData.contents);
     var acao = payload.acao;
 
+    // Pacote 18.1: toda acao fora de ACOES_PUBLICAS exige o cracha de sessao.
+    // Sigla e profissional saem do cracha (payload.sigla e ignorado);
+    // payload.siglaPaciente continua sendo o alvo das acoes do profissional,
+    // conferido contra o dono em cada funcao.
+    var s = null;
+    if (ACOES_PUBLICAS.indexOf(acao) === -1) {
+      s = _validarToken_(payload.token);
+      if (!s) return _respostaJson_(_respostaSessaoExpirada_());
+    }
+
     var resposta;
     switch (acao) {
       case 'ping':
         resposta = { ok: true, versao_pacote: VERSAO_PACOTE, versao_formulario: VERSAO_FORMULARIO, versao: VERSAO_FORMULARIO, url: _e3UrlDoServico_(), hora_servidor: _e3HoraServidor_(), mensagem: 'Servidor respondendo (Pacote ' + VERSAO_PACOTE + ')' };
         break;
 
+      // Pacote 18.1 - acoes publicas (sem cracha)
       case 'autenticar':
-        // tipo e opcional: se ausente, assume 'paciente' (compatibilidade
-        // com frontend pre-13.1 que ainda nao tem o seletor de tipo)
-        resposta = autenticar(payload.sigla, payload.senha, payload.tipo);
+        resposta = autenticar(payload.tipo, payload.email, payload.senha);
         break;
 
+      case 'pedirRedefinicao':
+        resposta = pedirRedefinicao(payload.tipo, payload.email);
+        break;
+
+      case 'definirSenha':
+        resposta = definirSenha(payload.ativar, payload.senha);
+        break;
+
+      // Acoes do paciente (sigla do cracha)
       case 'salvarAnamnese':
-        resposta = salvarAnamnese(payload.sigla, payload.dados);
+        resposta = _exigir_(s, 'paciente') || salvarAnamnese(s.sigla, payload.dados);
         break;
 
       case 'salvarAutomonitoramento':
-        resposta = salvarAutomonitoramento(payload.sigla, payload.dados);
+        resposta = _exigir_(s, 'paciente') || salvarAutomonitoramento(s.sigla, payload.dados);
         break;
 
       case 'lerHistorico':
-        resposta = lerHistorico(payload.sigla);
+        resposta = _exigir_(s, 'paciente') || lerHistorico(s.sigla);
         break;
 
       case 'salvarEscala':
-        resposta = salvarEscala(payload.sigla, payload.dados);
+        resposta = _exigir_(s, 'paciente') || salvarEscala(s.sigla, payload.dados);
         break;
 
       case 'lerEscalas':
-        resposta = lerEscalas(payload.sigla);
+        resposta = _exigir_(s, 'paciente') || lerEscalas(s.sigla);
         break;
 
-      // Pacote 17.0 - textos dos inventarios (BDI-II, BAI). Exige sessao valida
-      // (paciente ou profissional); sem 'instrumento' devolve so quais estao
-      // liberados, para o menu decidir o que mostrar. Nao grava nada.
+      // Pacote 17.0 - textos dos inventarios (BDI-II, BAI). Paciente ou
+      // profissional; sem 'instrumento' devolve so quais estao liberados.
       case 'lerItensInstrumento':
-        resposta = lerItensInstrumento(payload);
+        resposta = lerItensInstrumento(payload, s);
         break;
 
-      // Pacote 13.4.1 - Acoes do paciente
       case 'alterarSenhaPaciente':
-        resposta = alterarSenhaPaciente(payload.sigla, payload.senhaAtual, payload.novaSenha);
+        resposta = _exigir_(s, 'paciente') || alterarSenhaPaciente(s.sigla, payload.senhaAtual, payload.novaSenha);
         break;
 
       case 'pacienteAtualizarAnamnese':
-        resposta = pacienteAtualizarAnamnese(payload.sigla, payload.dados);
+        resposta = _exigir_(s, 'paciente') || pacienteAtualizarAnamnese(s.sigla, payload.dados);
         break;
 
-      // ============================================================
-      // PACOTE 13.2 - ACOES DO PROFISSIONAL
-      // ============================================================
-      case 'profListarPacientes':
-        resposta = listarPacientesDoProfissional(payload.profSigla, payload.profSenha);
-        break;
-
-      case 'profLerDadosPaciente':
-        resposta = lerDadosPaciente(payload.profSigla, payload.profSenha, payload.siglaPaciente);
-        break;
-
-      // Pacote 13.4
-      case 'profCadastrarPaciente':
-        resposta = cadastrarPaciente(payload.profSigla, payload.profSenha, payload.dados);
-        break;
-
-      case 'profSalvarAnamnese':
-        resposta = profSalvarAnamnese(payload.profSigla, payload.profSenha, payload.siglaPaciente, payload.dados);
-        break;
-
-      // Pacote 13.6 - Edição de automonitoramento
       case 'pacienteMarcarEditandoAuto':
-        resposta = pacienteMarcarEditandoAuto(payload.sigla, payload.timestamp);
+        resposta = _exigir_(s, 'paciente') || pacienteMarcarEditandoAuto(s.sigla, payload.timestamp);
         break;
 
       case 'pacienteLimparEditandoAuto':
-        resposta = pacienteLimparEditandoAuto(payload.sigla, payload.timestamp);
+        resposta = _exigir_(s, 'paciente') || pacienteLimparEditandoAuto(s.sigla, payload.timestamp);
         break;
 
       case 'pacienteEditarAutomonitoramento':
-        resposta = pacienteEditarAutomonitoramento(payload.sigla, payload.timestamp, payload.dados);
+        resposta = _exigir_(s, 'paciente') || pacienteEditarAutomonitoramento(s.sigla, payload.timestamp, payload.dados);
+        break;
+
+      // Lock de presenca (13.6.2): paciente le o proprio; profissional, o de um paciente seu.
+      case 'lerEditandoAuto':
+        resposta = lerEditandoAuto(_siglaAlvoLeitura_(s, payload.sigla), payload.timestamp);
+        break;
+
+      // Acoes do profissional (profissional do cracha; siglaPaciente = alvo)
+      case 'profListarPacientes':
+        resposta = listarPacientesDoProfissional(s);
+        break;
+
+      case 'profLerDadosPaciente':
+        resposta = lerDadosPaciente(s, payload.siglaPaciente);
+        break;
+
+      case 'profCadastrarPaciente':
+        resposta = cadastrarPaciente(s, payload.dados);
+        break;
+
+      case 'profSalvarAnamnese':
+        resposta = profSalvarAnamnese(s, payload.siglaPaciente, payload.dados, payload.contato);
+        break;
+
+      case 'profEnviarConvite':
+        resposta = profEnviarConvite(s, payload.siglaPaciente, payload.canal, payload.contato);
         break;
 
       case 'profMarcarEditandoAuto':
-        resposta = profMarcarEditandoAuto(payload.profSigla, payload.profSenha, payload.siglaPaciente, payload.timestamp);
+        resposta = profMarcarEditandoAuto(s, payload.siglaPaciente, payload.timestamp);
         break;
 
       case 'profLimparEditandoAuto':
-        resposta = profLimparEditandoAuto(payload.profSigla, payload.profSenha, payload.siglaPaciente, payload.timestamp);
+        resposta = profLimparEditandoAuto(s, payload.siglaPaciente, payload.timestamp);
         break;
 
       case 'profEditarAutomonitoramento':
-        resposta = profEditarAutomonitoramento(payload.profSigla, payload.profSenha, payload.siglaPaciente, payload.timestamp, payload.dados);
+        resposta = profEditarAutomonitoramento(s, payload.siglaPaciente, payload.timestamp, payload.dados);
         break;
 
-      // Pacote 13.6.2: leitura em tempo real do lock de presença
-      case 'lerEditandoAuto':
-        resposta = lerEditandoAuto(payload.sigla, payload.timestamp);
-        break;
-
-      // Pacote 13.5 - Desativar / Reativar / Excluir paciente
       case 'profDesativarPaciente':
-        resposta = profDesativarPaciente(payload.profSigla, payload.profSenha, payload.siglaPaciente);
+        resposta = profDesativarPaciente(s, payload.siglaPaciente);
         break;
 
       case 'profReativarPaciente':
-        resposta = profReativarPaciente(payload.profSigla, payload.profSenha, payload.siglaPaciente);
+        resposta = profReativarPaciente(s, payload.siglaPaciente);
         break;
 
       case 'profExcluirPaciente':
-        resposta = profExcluirPaciente(payload.profSigla, payload.profSenha, payload.siglaPaciente, payload.confirmacaoSigla);
+        resposta = profExcluirPaciente(s, payload.siglaPaciente, payload.confirmacaoSigla);
         break;
 
-      // Pacote 13.7 - Alterar senha do paciente pelo profissional
       case 'profAlterarSenhaPaciente':
-        resposta = profAlterarSenhaPaciente(payload.profSigla, payload.profSenha, payload.sigla_paciente, payload.nova_senha);
+        resposta = profAlterarSenhaPaciente(s, payload.sigla_paciente, payload.nova_senha);
         break;
 
-      // ============================================================
-      // PACOTE 13.1 - ACOES ADMIN (todas exigem adminSigla + adminSenha
-      // que sao revalidadas em cada chamada)
-      // ============================================================
-      case 'admListarProfissionais':
-        resposta = listarProfissionais(payload.adminSigla, payload.adminSenha);
-        break;
-
-      case 'admCadastrarProfissional':
-        resposta = cadastrarProfissional(
-          payload.adminSigla, payload.adminSenha, payload.dados
-        );
-        break;
-
-      case 'admAtualizarProfissional':
-        resposta = atualizarProfissional(
-          payload.adminSigla, payload.adminSenha,
-          payload.profissionalId, payload.mudancas
-        );
-        break;
-
-      case 'admTrocarSenhaProfissional':
-        resposta = trocarSenhaProfissional(
-          payload.adminSigla, payload.adminSenha,
-          payload.profissionalId, payload.novaSenha
-        );
-        break;
-
-      case 'admDesativarProfissional':
-        resposta = desativarProfissional(
-          payload.adminSigla, payload.adminSenha, payload.profissionalId
-        );
-        break;
-
-      case 'admReativarProfissional':
-        resposta = reativarProfissional(
-          payload.adminSigla, payload.adminSenha, payload.profissionalId
-        );
-        break;
-
-      // ============================================================
-      // PACOTE 14.1 - GRADE DE ATENDIMENTO (Modulo Consultorio Digital)
-      // ============================================================
       case 'profLerGrade':
-        resposta = lerGradeAtendimento(payload.profSigla, payload.profSenha);
+        resposta = lerGradeAtendimento(s);
         break;
 
       case 'profSalvarGrade':
-        resposta = salvarGradeAtendimento(payload.profSigla, payload.profSenha, payload.config, payload.grade);
+        resposta = salvarGradeAtendimento(s, payload.config, payload.grade);
+        break;
+
+      // Acoes do admin (admin do cracha)
+      case 'admListarProfissionais':
+        resposta = listarProfissionais(s);
+        break;
+
+      case 'admCadastrarProfissional':
+        resposta = cadastrarProfissional(s, payload.dados);
+        break;
+
+      case 'admAtualizarProfissional':
+        resposta = atualizarProfissional(s, payload.profissionalId, payload.mudancas);
+        break;
+
+      case 'admTrocarSenhaProfissional':
+        resposta = trocarSenhaProfissional(s, payload.profissionalId, payload.novaSenha);
+        break;
+
+      case 'admDesativarProfissional':
+        resposta = desativarProfissional(s, payload.profissionalId);
+        break;
+
+      case 'admReativarProfissional':
+        resposta = reativarProfissional(s, payload.profissionalId);
+        break;
+
+      case 'admEnviarConvite':
+        resposta = admEnviarConvite(s, payload.profissionalId, payload.canal);
         break;
 
       default:
         resposta = { ok: false, erro: 'Acao desconhecida: ' + acao };
     }
 
-    return ContentService
-      .createTextOutput(JSON.stringify(resposta))
-      .setMimeType(ContentService.MimeType.JSON);
+    return _respostaJson_(resposta);
 
   } catch (erro) {
-    return ContentService
-      .createTextOutput(JSON.stringify({ ok: false, erro: String(erro) }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return _respostaJson_({ ok: false, erro: String(erro) });
   }
 }
 
 function doGet(e) {
+  return _respostaJson_({ ok: false, erro: 'Use POST' });
+}
+
+function _respostaJson_(obj) {
   return ContentService
-    .createTextOutput(JSON.stringify({
-      ok: true,
-      mensagem: 'Sistema Clinico Digital VMC - Backend 13.4 (multi-tenant)',
-      versao: VERSAO_FORMULARIO
-    }))
+    .createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
@@ -542,148 +524,664 @@ function buscarPaciente(sigla) {
 
 
 // ============================================================
-// AUTENTICACAO
+// PACOTE 18.1 - ACESSO POR E-MAIL E CRACHA DE SESSAO
+// ============================================================
+// Desenho em docs/arquitetura.md, secao "Acesso por e-mail e cracha de
+// sessao". Virada unica (decisao de 29/09/2026): sem hash v1, sem senha
+// antiga; cada conta entra por convite ou redefinicao (link de uso unico).
+//   - Conta = (perfil, e-mail normalizado). E-mail -> sigla pela coluna
+//     `email` do Indice_Siglas; a sigla continua sendo a chave interna.
+//   - Cracha: base64url("tipo|sigla|profissional_id|expira") + "." + HMAC
+//     SHA-256 (hex) com o segredo SEGREDO_SESSAO das propriedades do script.
+//     Validade 6 h; `ativo` conferido a cada chamada; sem estado no servidor.
+//   - Senha: "v2$<sal_hex>$<iter>$<hash_hex>" (HMAC-SHA256 iterado, sal por
+//     usuario). Senha, hash, cracha e segredo nunca vao para o Logger.
 // ============================================================
 
-/**
- * Valida o login. Suporta 3 tipos de usuario.
- *
- * Entrada:
- *   sigla - codigo do usuario
- *   senha - senha em texto puro
- *   tipo  - 'paciente' (default), 'profissional' ou 'admin'
- *
- * Saida (paciente):
- *   { ok: true, paciente: { sigla, anamnese_preenchida, data_anamnese } }
- * Saida (profissional):
- *   { ok: true, profissional: { profissional_id, sigla, nome_completo } }
- * Saida (admin):
- *   { ok: true, admin: { admin_id, sigla, nome_completo } }
- * Saida (erro): { ok: false, erro: "..." }
- */
-function autenticar(sigla, senha, tipo) {
-  if (!sigla || !senha) {
-    return { ok: false, erro: 'Sigla e senha sao obrigatorias' };
-  }
+var SITE_URL = 'https://viniciusmarinaccipsi-art.github.io/clinica-vmc/index.html';
+var ACOES_PUBLICAS = ['ping', 'autenticar', 'pedirRedefinicao', 'definirSenha'];
+var PERFIS = ['paciente', 'profissional', 'admin'];
+var SESSAO_HORAS = 6;
+var LINK_HORAS = 48;
+// Iteracoes do hash v2. Calibracao: alvo de 200-400 ms por conferencia no
+// Apps Script. Comecou em 5000 (18.1); medir com medirHashSenha() no editor
+// depois da virada e ajustar aqui (hashes antigos guardam o proprio iter).
+var ITER_SENHA = 5000;
+var SENHA_MINIMA = 8;
+var FALHAS_MAX = 5;            // 5 falhas por (perfil, e-mail) ...
+var BLOQUEIO_SEG = 15 * 60;    // ... bloqueiam por 15 minutos
+var EMAILS_DIA_MAX = 20;
+var COLUNAS_TOKENS = ['token_hash', 'tipo', 'sigla', 'profissional_id', 'finalidade', 'expira', 'usado', 'criado_em'];
 
-  // Default: paciente (compatibilidade com frontend pre-13.1)
-  var tipoLimpo = String(tipo || 'paciente').trim().toLowerCase();
+// Textos aprovados pelo usuario (PROMPT_18_1.md, 30/09/2026)
+var MSG_SESSAO = 'Sua sessão expirou. Entre de novo para continuar.';
+var MSG_LOGIN = 'E-mail ou senha incorretos.';
+var MSG_BLOQUEIO = 'Muitas tentativas. Aguarde 15 minutos e tente de novo.';
+var MSG_LINK = 'Este link não é mais válido. Peça um novo em "Esqueci a senha" ou fale com seu terapeuta.';
+var MSG_REDEFINICAO = 'Se o e-mail estiver cadastrado, o link chegará em alguns minutos. Confira também a caixa de spam.';
+var EMAIL_DESTAQUE = 'COGNIATIVO — Psicoterapia para além das sessões, com intervenções cognitivo-comportamentais no dia a dia.';
+var EMAIL_ASSINATURA = ['Vinícius Marinacci Cardim', 'Psicólogo — CRP 06/165128'];
+var EMAIL_FORMACAO = [
+  'Mestrando em Saúde Mental e Psiquiatria — Faculdade de Ciências Médicas, UNICAMP',
+  'Especialização em Terapia Cognitivo-Comportamental — PUC-RS',
+  'Especialização em Neurociências e Comportamento — PUC-RS'
+];
 
-  if (tipoLimpo === 'admin') {
-    return autenticarAdmin(sigla, senha);
-  }
-  if (tipoLimpo === 'profissional') {
-    return autenticarProfissional(sigla, senha);
-  }
-  // Default: paciente
-  return autenticarPaciente(sigla, senha);
+// ---------- funcoes puras (testadas em Node: scratchpad check_18_1.js) ----------
+
+function normalizarEmail(email) {
+  return String(email || '').trim().toLowerCase();
 }
 
-function autenticarPaciente(sigla, senha) {
-  var paciente = buscarPaciente(sigla);
-  if (!paciente) {
-    return { ok: false, erro: 'Sigla ou senha incorretos' };
-  }
-
-  if (String(paciente.ativo).trim().toLowerCase() !== 'sim') {
-    return { ok: false, erro: 'Paciente inativo' };
-  }
-
-  var hashDigitada = gerarHashSenha(senha);
-  if (hashDigitada !== String(paciente.senha_hash).trim()) {
-    return { ok: false, erro: 'Sigla ou senha incorretos' };
-  }
-
-  return {
-    ok: true,
-    paciente: {
-      sigla: paciente.sigla,
-      anamnese_preenchida: paciente.data_anamnese !== '' && paciente.data_anamnese !== null,
-      data_anamnese: paciente.data_anamnese
-    }
-  };
+function emailValido(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || ''));
 }
 
-function autenticarProfissional(sigla, senha) {
-  var profissionalId = resolverProfissionalIdPorSigla(sigla, 'profissional');
-  if (!profissionalId) {
-    return { ok: false, erro: 'Sigla ou senha incorretos' };
-  }
-
-  var prof = buscarProfissional(profissionalId);
-  if (!prof) {
-    return { ok: false, erro: 'Sigla ou senha incorretos' };
-  }
-
-  if (String(prof.ativo).trim().toLowerCase() !== 'sim') {
-    return { ok: false, erro: 'Profissional inativo' };
-  }
-
-  var hashDigitada = gerarHashSenha(senha);
-  if (hashDigitada !== String(prof.senha_hash).trim()) {
-    return { ok: false, erro: 'Sigla ou senha incorretos' };
-  }
-
-  return {
-    ok: true,
-    profissional: {
-      profissional_id: prof.profissional_id,
-      sigla: prof.sigla,
-      nome_completo: prof.nome_completo,
-      email: prof.email || ''
-    }
-  };
+/** Telefone so com digitos; '' se vazio. */
+function normalizarTelefone(tel) {
+  return String(tel || '').replace(/\D/g, '');
 }
 
-function autenticarAdmin(sigla, senha) {
-  var adminId = resolverProfissionalIdPorSigla(sigla, 'admin');
-  if (!adminId) {
-    return { ok: false, erro: 'Sigla ou senha incorretos' };
+/** Contato normalizado do paciente: {email, telefone} ou {erro}. Vazio e permitido. */
+function normalizarContato(contato) {
+  contato = contato || {};
+  var email = normalizarEmail(contato.email);
+  var telefone = normalizarTelefone(contato.telefone);
+  if (email && !emailValido(email)) return { erro: 'E-mail inválido.' };
+  if (telefone && telefone.length !== 10 && telefone.length !== 11) {
+    return { erro: 'Telefone inválido: use DDD + número (10 ou 11 dígitos).' };
   }
-
-  var adm = buscarAdmin(adminId);
-  if (!adm) {
-    return { ok: false, erro: 'Sigla ou senha incorretos' };
-  }
-
-  if (String(adm.ativo).trim().toLowerCase() !== 'sim') {
-    return { ok: false, erro: 'Admin inativo' };
-  }
-
-  var hashDigitada = gerarHashSenha(senha);
-  if (hashDigitada !== String(adm.senha_hash).trim()) {
-    return { ok: false, erro: 'Sigla ou senha incorretos' };
-  }
-
-  return {
-    ok: true,
-    admin: {
-      admin_id: adm.admin_id,
-      sigla: adm.sigla,
-      nome_completo: adm.nome_completo
-    }
-  };
+  return { email: email, telefone: telefone };
 }
 
-/**
- * Gera o hash SHA-256 de uma senha. Mesmo algoritmo que o Python
- * (hashlib.sha256).
- */
-function gerarHashSenha(senha) {
-  var bytes = Utilities.computeDigest(
-    Utilities.DigestAlgorithm.SHA_256,
-    senha,
-    Utilities.Charset.UTF_8
-  );
+function _hex_(bytes) {
   var hex = '';
   for (var i = 0; i < bytes.length; i++) {
-    var b = bytes[i];
-    if (b < 0) b += 256;
-    var h = b.toString(16);
-    if (h.length === 1) h = '0' + h;
-    hex += h;
+    var v = bytes[i] < 0 ? bytes[i] + 256 : bytes[i];
+    hex += (v < 16 ? '0' : '') + v.toString(16);
   }
   return hex;
+}
+
+function _bytesDeHex_(hex) {
+  var out = [];
+  for (var i = 0; i + 1 < hex.length; i += 2) {
+    var v = parseInt(hex.substr(i, 2), 16);
+    out.push(v > 127 ? v - 256 : v);
+  }
+  return out;
+}
+
+function _sha256Hex_(texto) {
+  return _hex_(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(texto), Utilities.Charset.UTF_8));
+}
+
+function _hmacHex_(mensagem, chave) {
+  return _hex_(Utilities.computeHmacSha256Signature(String(mensagem), String(chave), Utilities.Charset.UTF_8));
+}
+
+/** Comparacao em tempo constante (mesmo custo qualquer que seja a primeira diferenca). */
+function _iguaisTempoConstante_(a, b) {
+  a = String(a || ''); b = String(b || '');
+  var dif = a.length ^ b.length;
+  var n = Math.max(a.length, b.length);
+  for (var i = 0; i < n; i++) {
+    dif |= (a.charCodeAt(i % (a.length || 1)) || 0) ^ (b.charCodeAt(i % (b.length || 1)) || 0);
+  }
+  return dif === 0;
+}
+
+function _aleatorioHex_() {
+  return Utilities.getUuid().replace(/-/g, '');
+}
+
+function _b64url_(dados) {
+  var b64 = typeof dados === 'string'
+    ? Utilities.base64EncodeWebSafe(dados, Utilities.Charset.UTF_8)
+    : Utilities.base64EncodeWebSafe(dados);
+  return b64.replace(/=+$/, '');
+}
+
+function _deB64url_(texto) {
+  var s = String(texto);
+  while (s.length % 4) s += '=';
+  return Utilities.newBlob(Utilities.base64DecodeWebSafe(s)).getDataAsString('UTF-8');
+}
+
+/** Hash v2: HMAC-SHA256 iterado, com a senha como chave e o sal como semente. */
+function _hashSenha_(senha, salHex, iter) {
+  var bloco = String(salHex);
+  for (var i = 0; i < iter; i++) bloco = _hmacHex_(bloco, senha);
+  return 'v2$' + salHex + '$' + iter + '$' + bloco;
+}
+
+function gerarHashSenhaV2(senha) {
+  return _hashSenha_(senha, _aleatorioHex_(), ITER_SENHA);
+}
+
+/** Confere a senha contra o hash guardado. So aceita v2 (o v1 morreu na virada). */
+function conferirSenha(senha, guardado) {
+  var partes = String(guardado || '').split('$');
+  if (partes.length !== 4 || partes[0] !== 'v2') return false;
+  var iter = parseInt(partes[2], 10);
+  if (!(iter > 0) || !senha) return false;
+  return _iguaisTempoConstante_(_hashSenha_(String(senha), partes[1], iter), String(guardado));
+}
+
+/** Cracha de sessao: dados = {tipo, sigla, profissional_id}; agoraMs = Date.now(). */
+function emitirToken(dados, segredo, agoraMs) {
+  var expira = agoraMs + SESSAO_HORAS * 3600 * 1000;
+  var corpo = _b64url_([dados.tipo, dados.sigla, dados.profissional_id, expira].join('|'));
+  return corpo + '.' + _hmacHex_(corpo, segredo);
+}
+
+/** Le e confere a assinatura e a validade; devolve {tipo, sigla, profissional_id, expira} ou null. */
+function lerToken(token, segredo, agoraMs) {
+  if (!token || !segredo) return null;
+  var partes = String(token).split('.');
+  if (partes.length !== 2 || !partes[0] || !partes[1]) return null;
+  if (!_iguaisTempoConstante_(_hmacHex_(partes[0], segredo), partes[1])) return null;
+  var campos;
+  try { campos = _deB64url_(partes[0]).split('|'); } catch (e) { return null; }
+  if (campos.length !== 4) return null;
+  var expira = parseInt(campos[3], 10);
+  if (!(expira > agoraMs)) return null;
+  if (PERFIS.indexOf(campos[0]) === -1 || !campos[1] || !campos[2]) return null;
+  return { tipo: campos[0], sigla: campos[1], profissional_id: campos[2], expira: expira };
+}
+
+/** Link de uso unico: 32 bytes aleatorios em base64url (o servidor guarda so o SHA-256). */
+function gerarTokenLink() {
+  return _b64url_(_bytesDeHex_(_aleatorioHex_() + _aleatorioHex_()));
+}
+
+/**
+ * Sigla gerada para paciente novo: iniciais do nome (2-3 letras, sem acento,
+ * sem "de/da/do/das/dos/e"); se colidir com `existentes` (lista em caixa alta),
+ * acrescenta 2 caracteres aleatorios. Sempre dentro de ^[A-Z0-9_]{2,10}$.
+ */
+function gerarSiglaPaciente(nome, existentes, aleatorio) {
+  aleatorio = aleatorio || Math.random;
+  var limpo = String(nome || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/[^A-Z ]/g, ' ');
+  var palavras = limpo.split(/\s+/).filter(function (p) { return p && ['DE', 'DA', 'DO', 'DAS', 'DOS', 'E'].indexOf(p) === -1; });
+  var base;
+  if (palavras.length === 0) base = 'PAC';
+  else if (palavras.length === 1) base = palavras[0].slice(0, 2);
+  else if (palavras.length === 2) base = palavras[0][0] + palavras[1][0];
+  else base = palavras[0][0] + palavras[1][0] + palavras[palavras.length - 1][0];
+  if (base.length < 2) base = (base + 'X').slice(0, 2);
+  var usados = {};
+  (existentes || []).forEach(function (x) { usados[String(x).toUpperCase()] = true; });
+  if (!usados[base]) return base;
+  var alfabeto = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  for (var t = 0; t < 50; t++) {
+    var cand = base + alfabeto[Math.floor(aleatorio() * alfabeto.length)] + alfabeto[Math.floor(aleatorio() * alfabeto.length)];
+    if (!usados[cand]) return cand;
+  }
+  return null;
+}
+
+/** Corpo dos e-mails (texto puro e HTML simples), com os textos aprovados. */
+function montarEmail(tipoEmail, nome, link) {
+  var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
+  var convite = tipoEmail === 'convite';
+  var assunto = convite ? 'Seu acesso ao COGNIATIVO' : 'Redefinir a sua senha no COGNIATIVO';
+  var ola = convite ? 'Olá, ' + nome + '.' : 'Olá.';
+  var paragrafo = convite
+    ? 'Seu acesso ao COGNIATIVO, o sistema de acompanhamento que usamos entre as sessões, está pronto. Para criar a sua senha, abra este link (ele vale por 48 horas e só funciona uma vez):'
+    : 'Recebemos um pedido para redefinir a sua senha no COGNIATIVO. Para criar uma senha nova, abra este link (vale por 48 horas e só funciona uma vez):';
+  var aviso = convite
+    ? 'Se você não esperava este e-mail, ignore-o. Nada será alterado.'
+    : 'Se você não pediu isso, ignore este e-mail. Sua senha atual continua a mesma.';
+  var texto = [EMAIL_DESTAQUE, '', ola, '', paragrafo, '', link, '', aviso, '']
+    .concat(EMAIL_ASSINATURA).concat(EMAIL_FORMACAO).join('\n');
+  var html = '<p><strong>' + esc(EMAIL_DESTAQUE) + '</strong></p>' +
+    '<p>' + esc(ola) + '</p>' +
+    '<p>' + esc(paragrafo) + '</p>' +
+    '<p><a href="' + esc(link) + '">' + esc(link) + '</a></p>' +
+    '<p>' + esc(aviso) + '</p>' +
+    '<p>' + EMAIL_ASSINATURA.map(esc).join('<br>') + '<br>' +
+    '<span style="font-size:12px">' + EMAIL_FORMACAO.map(esc).join('<br>') + '</span></p>';
+  return { assunto: assunto, texto: texto, html: html };
+}
+
+function primeiroNome(nome) {
+  return String(nome || '').trim().split(/\s+/)[0] || '';
+}
+
+// ---------- planilhas: colunas, indice e tokens ----------
+
+/** Garante as colunas em `lista` no cabecalho da aba (aditivo); devolve o cabecalho. */
+function _garantirColunas_(aba, lista) {
+  var ultima = Math.max(aba.getLastColumn(), 1);
+  var header = aba.getRange(1, 1, 1, ultima).getValues()[0];
+  if (header.length === 1 && header[0] === '') header = [];
+  lista.forEach(function (col) {
+    if (header.indexOf(col) === -1) {
+      header.push(col);
+      aba.getRange(1, header.length).setValue(col).setFontWeight('bold');
+    }
+  });
+  return header;
+}
+
+/** Grava uma linha nova pelo nome do cabecalho (campos ausentes ficam vazios). */
+function _anexarPorCabecalho_(aba, header, valores) {
+  aba.appendRow(header.map(function (col) { return valores[col] !== undefined ? valores[col] : ''; }));
+}
+
+function _abaIndice_() {
+  var aba = SpreadsheetApp.openById(SISTEMA_VMC_ID).getSheetByName(ABA_INDICE_SIGLAS);
+  _garantirColunas_(aba, ['sigla_global', 'sigla', 'tipo', 'profissional_id', 'data_cadastro', 'email']);
+  return aba;
+}
+
+function _anexarIndice_(sigla, tipo, profissionalId, email) {
+  var aba = _abaIndice_();
+  var header = aba.getRange(1, 1, 1, aba.getLastColumn()).getValues()[0];
+  _anexarPorCabecalho_(aba, header, {
+    sigla_global: sigla + '|' + tipo + '|' + profissionalId,
+    sigla: sigla, tipo: tipo, profissional_id: profissionalId,
+    data_cadastro: Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd'),
+    email: normalizarEmail(email)
+  });
+}
+
+/** Linhas do Indice como objetos {linha, sigla, tipo, profissional_id, email}. */
+function _lerIndice_() {
+  var aba = _abaIndice_();
+  var dados = aba.getDataRange().getValues();
+  var h = dados[0];
+  var iS = h.indexOf('sigla'), iT = h.indexOf('tipo'), iP = h.indexOf('profissional_id'), iE = h.indexOf('email');
+  var out = [];
+  for (var i = 1; i < dados.length; i++) {
+    out.push({
+      linha: i + 1,
+      sigla: String(dados[i][iS] || '').trim().toUpperCase(),
+      tipo: String(dados[i][iT] || '').trim().toLowerCase(),
+      profissional_id: String(dados[i][iP] || '').trim(),
+      email: normalizarEmail(dados[i][iE])
+    });
+  }
+  return { aba: aba, header: h, linhas: out };
+}
+
+function _contaPorEmail_(tipo, email) {
+  var idx = _lerIndice_();
+  for (var i = 0; i < idx.linhas.length; i++) {
+    var l = idx.linhas[i];
+    if (l.tipo === tipo && l.email && l.email === email) return l;
+  }
+  return null;
+}
+
+/** Grava o e-mail de (sigla, tipo) no Indice. Recusa e-mail ja usado por outra conta do mesmo perfil. */
+function _gravarEmailIndice_(sigla, tipo, email) {
+  var idx = _lerIndice_();
+  var alvo = null;
+  for (var i = 0; i < idx.linhas.length; i++) {
+    var l = idx.linhas[i];
+    if (l.tipo !== tipo) continue;
+    if (l.sigla === String(sigla).toUpperCase()) alvo = l;
+    else if (email && l.email === email) return { ok: false, erro: 'Este e-mail já está em uso por outra conta.' };
+  }
+  if (!alvo) return { ok: false, erro: 'Conta não encontrada no índice.' };
+  idx.aba.getRange(alvo.linha, idx.header.indexOf('email') + 1).setValue(email);
+  return { ok: true };
+}
+
+/** Atualiza colunas de uma linha localizada por `chave` = valor (comparacao sem caixa). */
+function _atualizarLinhaPorChave_(aba, colChave, valorChave, campos) {
+  var header = _garantirColunas_(aba, Object.keys(campos));
+  var dados = aba.getDataRange().getValues();
+  var iChave = header.indexOf(colChave);
+  if (iChave === -1) return false;
+  var alvo = String(valorChave).trim().toUpperCase();
+  for (var i = 1; i < dados.length; i++) {
+    if (String(dados[i][iChave]).trim().toUpperCase() === alvo) {
+      for (var col in campos) aba.getRange(i + 1, header.indexOf(col) + 1).setValue(campos[col]);
+      return true;
+    }
+  }
+  return false;
+}
+
+function _abaTokens_() {
+  var planilha = SpreadsheetApp.openById(SISTEMA_VMC_ID);
+  var aba = planilha.getSheetByName(ABA_TOKENS);
+  if (!aba) aba = planilha.insertSheet(ABA_TOKENS);
+  _garantirColunas_(aba, COLUNAS_TOKENS);
+  return aba;
+}
+
+/** Gera um link de uso unico (48 h) para (tipo, sigla); invalida o anterior ainda nao usado. */
+function _criarLinkAtivacao_(tipo, sigla, profissionalId, finalidade) {
+  var aba = _abaTokens_();
+  var dados = aba.getDataRange().getValues();
+  var h = dados[0];
+  var iT = h.indexOf('tipo'), iS = h.indexOf('sigla'), iU = h.indexOf('usado');
+  for (var i = 1; i < dados.length; i++) {
+    if (String(dados[i][iT]) === tipo && String(dados[i][iS]).toUpperCase() === String(sigla).toUpperCase() && !String(dados[i][iU])) {
+      aba.getRange(i + 1, iU + 1).setValue('substituido');
+    }
+  }
+  var bruto = gerarTokenLink();
+  var agora = new Date();
+  _anexarPorCabecalho_(aba, h, {
+    token_hash: _sha256Hex_(bruto), tipo: tipo, sigla: String(sigla).toUpperCase(),
+    profissional_id: profissionalId, finalidade: finalidade,
+    expira: new Date(agora.getTime() + LINK_HORAS * 3600 * 1000).toISOString(),
+    usado: '', criado_em: agora.toISOString()
+  });
+  return SITE_URL + '?ativar=' + bruto;
+}
+
+/** Localiza o link pelo token bruto; devolve {linha, tipo, sigla, profissional_id} se valido. */
+function _linkValido_(bruto) {
+  if (!bruto) return null;
+  var aba = _abaTokens_();
+  var dados = aba.getDataRange().getValues();
+  var h = dados[0];
+  var alvo = _sha256Hex_(String(bruto));
+  var iH = h.indexOf('token_hash'), iE = h.indexOf('expira'), iU = h.indexOf('usado');
+  for (var i = 1; i < dados.length; i++) {
+    if (String(dados[i][iH]) !== alvo) continue;
+    var expira = dados[i][iE] instanceof Date ? dados[i][iE].getTime() : Date.parse(String(dados[i][iE]));
+    if (String(dados[i][iU]) || !(expira > Date.now())) return null;
+    return {
+      aba: aba, linha: i + 1, colUsado: iU + 1,
+      tipo: String(dados[i][h.indexOf('tipo')]),
+      sigla: String(dados[i][h.indexOf('sigla')]),
+      profissional_id: String(dados[i][h.indexOf('profissional_id')])
+    };
+  }
+  return null;
+}
+
+// ---------- contas: leitura do registro de cada perfil ----------
+
+/** Registro da conta (tipo, sigla, profissional_id): {ativo, senha_hash, nome, email, extra} ou null. */
+function _registroDaConta_(tipo, sigla, profissionalId) {
+  if (tipo === 'paciente') {
+    var pac = buscarPaciente(sigla);
+    if (!pac || pac.__profissional_id !== profissionalId) return null;
+    var dono = buscarProfissional(profissionalId);
+    var ativoPac = String(pac.ativo || '').trim().toLowerCase() === 'sim' && !!dono && String(dono.ativo).trim().toLowerCase() === 'sim';
+    return {
+      ativo: ativoPac, senha_hash: pac.senha_hash, nome: pac.nome || '', email: normalizarEmail(pac.email),
+      extra: { anamnese_preenchida: pac.data_anamnese !== '' && pac.data_anamnese !== null, data_anamnese: pac.data_anamnese }
+    };
+  }
+  if (tipo === 'profissional') {
+    var prof = buscarProfissional(profissionalId);
+    if (!prof || String(prof.sigla).trim().toUpperCase() !== String(sigla).toUpperCase()) return null;
+    return {
+      ativo: String(prof.ativo).trim().toLowerCase() === 'sim', senha_hash: prof.senha_hash,
+      nome: prof.nome_completo || '', email: normalizarEmail(prof.email),
+      extra: { profissional_id: prof.profissional_id, nome_completo: prof.nome_completo }
+    };
+  }
+  if (tipo === 'admin') {
+    var adm = buscarAdmin(profissionalId);
+    if (!adm || String(adm.sigla).trim().toUpperCase() !== String(sigla).toUpperCase()) return null;
+    return {
+      ativo: String(adm.ativo).trim().toLowerCase() === 'sim', senha_hash: adm.senha_hash,
+      nome: adm.nome_completo || '', email: normalizarEmail(adm.email),
+      extra: { admin_id: adm.admin_id, nome_completo: adm.nome_completo }
+    };
+  }
+  return null;
+}
+
+/** Grava o hash v2 da senha na linha da conta. */
+function _gravarSenhaDaConta_(tipo, sigla, profissionalId, senha) {
+  var hash = gerarHashSenhaV2(senha);
+  if (tipo === 'paciente') {
+    var controle = abrirControleDoProfissional(profissionalId);
+    if (!controle) return false;
+    return _atualizarLinhaPorChave_(controle.getSheetByName(ABA_PACIENTES), 'sigla', sigla, { senha_hash: hash });
+  }
+  var global = SpreadsheetApp.openById(SISTEMA_VMC_ID);
+  if (tipo === 'profissional') return _atualizarLinhaPorChave_(global.getSheetByName(ABA_PROFISSIONAIS), 'profissional_id', profissionalId, { senha_hash: hash });
+  if (tipo === 'admin') return _atualizarLinhaPorChave_(global.getSheetByName(ABA_ADMINS), 'admin_id', profissionalId, { senha_hash: hash });
+  return false;
+}
+
+// ---------- cracha ----------
+
+function _segredoSessao_() {
+  return PropertiesService.getScriptProperties().getProperty('SEGREDO_SESSAO');
+}
+
+function _respostaSessaoExpirada_() {
+  return { ok: false, codigo: 'sessao_expirada', erro: MSG_SESSAO };
+}
+
+/** Confere o cracha e o `ativo` da conta; devolve a sessao {tipo, sigla, profissional_id, ...} ou null. */
+function _validarToken_(token) {
+  var dados = lerToken(token, _segredoSessao_(), Date.now());
+  if (!dados) return null;
+  var reg = _registroDaConta_(dados.tipo, dados.sigla, dados.profissional_id);
+  if (!reg || !reg.ativo) return null;
+  dados.nome = reg.nome;
+  dados.email = reg.email;
+  return dados;
+}
+
+/** null se a sessao for do perfil exigido; senao a resposta de sessao expirada. */
+function _exigir_(s, tipo) {
+  return (s && s.tipo === tipo) ? null : _respostaSessaoExpirada_();
+}
+
+/** Auth no formato antigo das funcoes prof* ({ok, profissional:{profissional_id, sigla, ...}}). */
+function _authProfissional_(s) {
+  if (!s || s.tipo !== 'profissional') return _respostaSessaoExpirada_();
+  return { ok: true, profissional: { profissional_id: s.profissional_id, sigla: s.sigla, nome_completo: s.nome, email: s.email } };
+}
+
+/** Admin da sessao (objeto da aba Admins) ou null. */
+function _admDaSessao_(s) {
+  if (!s || s.tipo !== 'admin') return null;
+  return buscarAdmin(s.profissional_id);
+}
+
+/** Sigla do paciente para leituras abertas a paciente e profissional (lerEditandoAuto). */
+function _siglaAlvoLeitura_(s, siglaPayload) {
+  if (!s) return null;
+  if (s.tipo === 'paciente') return s.sigla;
+  if (s.tipo === 'profissional' && siglaPayload && resolverProfissionalIdPorSigla(siglaPayload, 'paciente') === s.profissional_id) return siglaPayload;
+  return null;
+}
+
+// ---------- acoes publicas ----------
+
+/**
+ * Login por perfil + e-mail + senha.
+ * Saida: { ok:true, token, perfil:{tipo, sigla, nome, email, ...} } ou
+ *        { ok:false, erro } (mensagem unica, tambem para conta inativa).
+ */
+function autenticar(tipo, email, senha) {
+  var t = String(tipo || '').trim().toLowerCase();
+  var e = normalizarEmail(email);
+  if (PERFIS.indexOf(t) === -1 || !e || !senha) return { ok: false, erro: MSG_LOGIN };
+
+  var cache = CacheService.getScriptCache();
+  var chave = 'falha:' + t + ':' + e;
+  var falhas = parseInt(cache.get(chave) || '0', 10);
+  if (falhas >= FALHAS_MAX) return { ok: false, codigo: 'bloqueado', erro: MSG_BLOQUEIO };
+
+  var conta = _contaPorEmail_(t, e);
+  var reg = conta ? _registroDaConta_(t, conta.sigla, conta.profissional_id) : null;
+  var confere = reg ? conferirSenha(senha, reg.senha_hash) : (_hashSenha_(String(senha), '0', ITER_SENHA) && false);
+  if (!reg || !reg.ativo || !confere) {
+    cache.put(chave, String(falhas + 1), BLOQUEIO_SEG);
+    return { ok: false, erro: MSG_LOGIN };
+  }
+  cache.remove(chave);
+
+  var segredo = _segredoSessao_();
+  if (!segredo) return { ok: false, erro: 'Servidor sem segredo de sessão: rode bootstrapAcesso18_1 no editor.' };
+  var perfil = { tipo: t, sigla: conta.sigla, nome: reg.nome, email: e };
+  for (var k in reg.extra) perfil[k] = reg.extra[k];
+  return {
+    ok: true,
+    token: emitirToken({ tipo: t, sigla: conta.sigla, profissional_id: conta.profissional_id }, segredo, Date.now()),
+    perfil: perfil
+  };
+}
+
+/** Pede um link de redefinicao. Resposta identica exista ou nao o e-mail. */
+function pedirRedefinicao(tipo, email) {
+  var resposta = { ok: true, mensagem: MSG_REDEFINICAO };
+  var t = String(tipo || '').trim().toLowerCase();
+  var e = normalizarEmail(email);
+  if (PERFIS.indexOf(t) === -1 || !emailValido(e)) return resposta;
+  var conta = _contaPorEmail_(t, e);
+  if (!conta) return resposta;
+  var reg = _registroDaConta_(t, conta.sigla, conta.profissional_id);
+  if (!reg || !reg.ativo) return resposta;
+  var link = _criarLinkAtivacao_(t, conta.sigla, conta.profissional_id, 'redefinicao');
+  _enviarEmail_(e, montarEmail('redefinicao', '', link));
+  return resposta;
+}
+
+/**
+ * Cria a senha a partir do link (?ativar=<token>).
+ * Sem `senha`: so confere o link e devolve {ok, tipo, email} (tela "Crie sua senha").
+ * Com `senha`: grava o hash v2, marca o link como usado e devolve {ok, tipo, email}.
+ */
+function definirSenha(ativar, senha) {
+  var link = _linkValido_(ativar);
+  if (!link) return { ok: false, codigo: 'link_invalido', erro: MSG_LINK };
+  var reg = _registroDaConta_(link.tipo, link.sigla, link.profissional_id);
+  if (!reg || !reg.ativo || !reg.email) return { ok: false, codigo: 'link_invalido', erro: MSG_LINK };
+  if (senha === undefined || senha === null || senha === '') return { ok: true, tipo: link.tipo, email: reg.email };
+  if (String(senha).length < SENHA_MINIMA) return { ok: false, erro: 'Escolha uma senha com pelo menos 8 caracteres.' };
+  if (!_gravarSenhaDaConta_(link.tipo, link.sigla, link.profissional_id, String(senha))) {
+    return { ok: false, erro: 'Não foi possível gravar a senha. Tente de novo.' };
+  }
+  link.aba.getRange(link.linha, link.colUsado).setValue(new Date().toISOString());
+  CacheService.getScriptCache().remove('falha:' + link.tipo + ':' + reg.email);
+  return { ok: true, tipo: link.tipo, email: reg.email };
+}
+
+// ---------- convites ----------
+
+/** Envia um e-mail do COGNIATIVO respeitando o limite diario. Devolve true se enviou. */
+function _enviarEmail_(para, email) {
+  var props = PropertiesService.getScriptProperties();
+  var chave = 'emails:' + Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd');
+  var enviados = parseInt(props.getProperty(chave) || '0', 10);
+  if (enviados >= EMAILS_DIA_MAX) return false;
+  MailApp.sendEmail({ to: para, subject: email.assunto, body: email.texto, htmlBody: email.html, name: 'COGNIATIVO' });
+  props.setProperty(chave, String(enviados + 1));
+  return true;
+}
+
+/** Grava e-mail e telefone do paciente na Controle (e o e-mail no Indice), normalizados. */
+function _atualizarContatoPaciente_(sigla, contato) {
+  var c = normalizarContato(contato);
+  if (c.erro) return { ok: false, erro: c.erro };
+  var dono = resolverProfissionalIdPorSigla(sigla, 'paciente');
+  var controle = dono ? abrirControleDoProfissional(dono) : null;
+  if (!controle) return { ok: false, erro: 'Controle do profissional não encontrada.' };
+  var idx = _gravarEmailIndice_(sigla, 'paciente', c.email);
+  if (!idx.ok) return idx;
+  if (!_atualizarLinhaPorChave_(controle.getSheetByName(ABA_PACIENTES), 'sigla', sigla, { email: c.email, telefone: c.telefone })) {
+    return { ok: false, erro: 'Paciente não encontrado na Controle.' };
+  }
+  return { ok: true, email: c.email, telefone: c.telefone };
+}
+
+/** Nome do paciente para o convite: anamnese, senao o nome do cadastro. */
+function _nomeDoPaciente_(paciente) {
+  try {
+    var anam = lerAbaComoObjetos(SpreadsheetApp.openById(extrairIdDaUrl(paciente.link_planilha_individual)), ABA_ANAMNESE);
+    if (anam.length && anam[0].nome_completo) return String(anam[0].nome_completo);
+  } catch (e) { /* sem anamnese: usa o cadastro */ }
+  return String(paciente.nome || '');
+}
+
+/**
+ * Convite do paciente. canal = 'email' (envia) ou 'link' (so gera, para o WhatsApp).
+ * contato (opcional) = {email, telefone}: grava na Controle antes de gerar o link.
+ * Saida: { ok:true, link, email, telefone, enviado }.
+ */
+function profEnviarConvite(s, siglaPaciente, canal, contato) {
+  var auth = _authProfissional_(s);
+  if (!auth.ok) return auth;
+  if (!siglaPaciente || resolverProfissionalIdPorSigla(siglaPaciente, 'paciente') !== s.profissional_id) {
+    return { ok: false, erro: 'Este paciente nao pertence a voce' };
+  }
+  if (contato) {
+    var c = _atualizarContatoPaciente_(siglaPaciente, contato);
+    if (!c.ok) return c;
+  }
+  var pac = buscarPaciente(siglaPaciente);
+  if (!pac) return { ok: false, erro: 'Paciente nao encontrado' };
+  if (String(pac.ativo || '').trim().toLowerCase() !== 'sim') return { ok: false, erro: 'Paciente desativado.' };
+  var email = normalizarEmail(pac.email);
+  if (!email) return { ok: false, erro: 'Cadastre o e-mail do paciente antes do convite.' };
+  var link = _criarLinkAtivacao_('paciente', pac.sigla, s.profissional_id, 'convite');
+  var enviado = false;
+  if (canal === 'email') {
+    enviado = _enviarEmail_(email, montarEmail('convite', primeiroNome(_nomeDoPaciente_(pac)), link));
+    if (!enviado) return { ok: false, erro: 'Limite diário de e-mails atingido. Use o botão WhatsApp ou tente amanhã.', link: link };
+  }
+  return { ok: true, link: link, email: email, telefone: normalizarTelefone(pac.telefone), enviado: enviado };
+}
+
+/** Convite do profissional pelo admin. canal = 'email' | 'link'. Saida: { ok, link, enviado }. */
+function admEnviarConvite(s, profissionalId, canal) {
+  var adm = _admDaSessao_(s);
+  if (!adm) return _respostaSessaoExpirada_();
+  var prof = buscarProfissional(profissionalId);
+  if (!prof) return { ok: false, erro: 'Profissional nao encontrado: ' + profissionalId };
+  if (String(prof.ativo).trim().toLowerCase() !== 'sim') return { ok: false, erro: 'Profissional desativado.' };
+  var email = normalizarEmail(prof.email);
+  if (!emailValido(email)) return { ok: false, erro: 'Cadastre o e-mail do profissional antes do convite.' };
+  var idx = _gravarEmailIndice_(prof.sigla, 'profissional', email);
+  if (!idx.ok) return idx;
+  var link = _criarLinkAtivacao_('profissional', String(prof.sigla).toUpperCase(), prof.profissional_id, 'convite');
+  var enviado = false;
+  if (canal === 'email') {
+    enviado = _enviarEmail_(email, montarEmail('convite', primeiroNome(prof.nome_completo), link));
+    if (!enviado) return { ok: false, erro: 'Limite diário de e-mails atingido. Use o botão WhatsApp ou tente amanhã.', link: link };
+  }
+  return { ok: true, link: link, enviado: enviado };
+}
+
+// ---------- editor do Apps Script (uso do usuario) ----------
+
+/**
+ * Uso unico, no editor, logo depois do deploy do 18.1 (apagada no 18.2):
+ * grava o segredo do cracha (se nao existir), os e-mails do admin ADM_VMC e
+ * do profissional VMC (Admins, Profissionais e Indice_Siglas) e escreve no
+ * Logger os dois links de ativacao. Nenhuma senha passa por aqui.
+ */
+function bootstrapAcesso18_1(emailAdmin, emailProf) {
+  var ea = normalizarEmail(emailAdmin), ep = normalizarEmail(emailProf);
+  if (!emailValido(ea) || !emailValido(ep)) throw new Error('Informe os dois e-mails: bootstrapAcesso18_1("admin@...", "prof@...")');
+  var props = PropertiesService.getScriptProperties();
+  if (!props.getProperty('SEGREDO_SESSAO')) {
+    props.setProperty('SEGREDO_SESSAO', Utilities.getUuid() + Utilities.getUuid());
+    Logger.log('Segredo de sessao criado.');
+  }
+  var global = SpreadsheetApp.openById(SISTEMA_VMC_ID);
+  if (!_atualizarLinhaPorChave_(global.getSheetByName(ABA_ADMINS), 'admin_id', 'ADM_VMC', { email: ea })) throw new Error('ADM_VMC nao encontrado na aba Admins');
+  if (!_atualizarLinhaPorChave_(global.getSheetByName(ABA_PROFISSIONAIS), 'profissional_id', 'PROF_VMC', { email: ep })) throw new Error('PROF_VMC nao encontrado na aba Profissionais');
+  var r1 = _gravarEmailIndice_('ADM_VMC', 'admin', ea);
+  var r2 = _gravarEmailIndice_('VMC', 'profissional', ep);
+  if (!r1.ok || !r2.ok) throw new Error('Indice_Siglas: ' + (r1.erro || r2.erro));
+  Logger.log('Link do admin (48 h, uso unico): ' + _criarLinkAtivacao_('admin', 'ADM_VMC', 'ADM_VMC', 'convite'));
+  Logger.log('Link do profissional (48 h, uso unico): ' + _criarLinkAtivacao_('profissional', 'VMC', 'PROF_VMC', 'convite'));
+}
+
+/** Calibracao do ITER_SENHA (alvo 200-400 ms): rodar no editor e ler o Logger. */
+function medirHashSenha() {
+  var t0 = Date.now();
+  _hashSenha_('medicao-sem-uso', _aleatorioHex_(), ITER_SENHA);
+  Logger.log('ITER_SENHA=' + ITER_SENHA + ': ' + (Date.now() - t0) + ' ms');
 }
 
 
@@ -694,22 +1192,18 @@ function gerarHashSenha(senha) {
 /**
  * Lista todos os pacientes de um profissional.
  *
- * Revalida credenciais em cada chamada (licao 22).
+ * Profissional vem do cracha de sessao (s), conferido no doPost.
  * Le a Controle do profissional e retorna dados basicos.
  * Para cada paciente com anamnese preenchida, tenta ler o nome
- * completo da aba Anamnese da planilha individual.
- *
- * Parametros:
- *   profSigla - sigla do profissional
- *   profSenha - senha em texto plano
+ * completo da aba Anamnese da planilha individual (senao, o nome do cadastro).
  *
  * Retorna:
  *   { ok: true, pacientes: [ { sigla, nome_completo, data_cadastro,
  *     data_anamnese, ativo } ] }
  */
-function listarPacientesDoProfissional(profSigla, profSenha) {
+function listarPacientesDoProfissional(s) {
   // 1. Revalidar credenciais do profissional
-  var authResult = autenticar(profSigla, profSenha, 'profissional');
+  var authResult = _authProfissional_(s);
   if (!authResult.ok) {
     return authResult; // { ok: false, erro: '...' }
   }
@@ -738,6 +1232,7 @@ function listarPacientesDoProfissional(profSigla, profSenha) {
   var idxDataCad = cabecalhos.indexOf('data_cadastro');
   var idxDataAnam = cabecalhos.indexOf('data_anamnese');
   var idxAtivo = cabecalhos.indexOf('ativo');
+  var idxNomeCad = cabecalhos.indexOf('nome'); // Pacote 18.1: nome do cadastro
 
   var lista = [];
 
@@ -748,7 +1243,7 @@ function listarPacientesDoProfissional(profSigla, profSenha) {
 
     var pacObj = {
       sigla: siglaPac,
-      nome_completo: '',
+      nome_completo: idxNomeCad >= 0 ? String(row[idxNomeCad] || '').trim() : '',
       data_cadastro: idxDataCad >= 0 ? formatarDataParaExibicao_(row[idxDataCad]) : '',
       data_anamnese: idxDataAnam >= 0 ? formatarDataParaExibicao_(row[idxDataAnam]) : '',
       ativo: idxAtivo >= 0 ? String(row[idxAtivo] || '').trim() : 'Sim',
@@ -778,7 +1273,7 @@ function listarPacientesDoProfissional(profSigla, profSenha) {
             if (idxNome >= 0) {
               var ultimaLinha = abaAnam.getLastRow();
               var nome = abaAnam.getRange(ultimaLinha, idxNome + 1).getValue();
-              pacObj.nome_completo = String(nome || '').trim();
+              if (String(nome || '').trim()) pacObj.nome_completo = String(nome).trim();
             }
           }
 
@@ -863,21 +1358,17 @@ function listarPacientesDoProfissional(profSigla, profSenha) {
  * Pacote 13.3.1: Le dados de um paciente para visualizacao pelo profissional.
  *
  * Seguranca:
- *   1. Revalida credenciais do profissional em cada chamada
+ *   1. Profissional do cracha de sessao (s)
  *   2. Verifica que o paciente pertence a este profissional (isolamento multi-tenant)
- *   3. Retorna dados read-only (anamnese por enquanto; futuramente auto + escalas)
- *
- * Parametros:
- *   profSigla      - sigla do profissional autenticado
- *   profSenha      - senha em texto plano
- *   siglaPaciente  - sigla do paciente a consultar
+ *   3. Retorna dados read-only
  *
  * Retorna:
- *   { ok: true, anamnese: { ... } | null, anamnese_preenchida: bool }
+ *   { ok: true, anamnese: { ... } | null, anamnese_preenchida: bool,
+ *     contato: { email, telefone } (cadastro, Pacote 18.1), ... }
  */
-function lerDadosPaciente(profSigla, profSenha, siglaPaciente) {
+function lerDadosPaciente(s, siglaPaciente) {
   // 1. Revalidar credenciais do profissional
-  var authResult = autenticar(profSigla, profSenha, 'profissional');
+  var authResult = _authProfissional_(s);
   if (!authResult.ok) {
     return authResult;
   }
@@ -927,7 +1418,10 @@ function lerDadosPaciente(profSigla, profSenha, siglaPaciente) {
     automonitoramento: automonitoramento,
     total_auto: automonitoramento.length,
     escalas: escalas,
-    total_escalas: escalas.length
+    total_escalas: escalas.length,
+    // Pacote 18.1: contato do cadastro (Controle), unica fonte de e-mail e telefone
+    contato: { email: normalizarEmail(paciente.email), telefone: normalizarTelefone(paciente.telefone) },
+    nome_cadastro: String(paciente.nome || '')
   };
 }
 
@@ -954,6 +1448,27 @@ function formatarDataParaExibicao_(valor) {
 // GRAVACAO DE DADOS
 // ============================================================
 
+/**
+ * Pacote 18.1: `email` e `telefone` da aba Anamnese espelham o cadastro
+ * (Controle), ignorando o que o cliente mandar nessas chaves. Se o cadastro
+ * ainda estiver vazio (paciente antigo antes da conferencia do usuario), o
+ * valor que ja esta na linha 2 da Anamnese e mantido - nada se perde.
+ */
+function _espelharContatoAnamnese_(aba, dados, paciente) {
+  var copia = {};
+  for (var k in (dados || {})) copia[k] = dados[k];
+  var atual = {};
+  if (aba.getLastRow() >= 2) {
+    var cab = aba.getRange(1, 1, 1, aba.getLastColumn()).getValues()[0];
+    var lin = aba.getRange(2, 1, 1, cab.length).getValues()[0];
+    atual.email = cab.indexOf('email') >= 0 ? lin[cab.indexOf('email')] : '';
+    atual.telefone = cab.indexOf('telefone') >= 0 ? lin[cab.indexOf('telefone')] : '';
+  }
+  copia.email = normalizarEmail(paciente.email) || atual.email || '';
+  copia.telefone = normalizarTelefone(paciente.telefone) || atual.telefone || '';
+  return copia;
+}
+
 function salvarAnamnese(sigla, dados) {
   var paciente = buscarPaciente(sigla);
   if (!paciente) return { ok: false, erro: 'Paciente nao encontrado' };
@@ -962,6 +1477,7 @@ function salvarAnamnese(sigla, dados) {
   var planilha = SpreadsheetApp.openById(planilhaIndividualId);
   var aba = planilha.getSheetByName(ABA_ANAMNESE);
 
+  dados = _espelharContatoAnamnese_(aba, dados, paciente);
   var linha = montarLinha(aba, dados);
   aba.appendRow(linha);
 
@@ -1141,8 +1657,7 @@ function salvarEscala(sigla, dados) {
   if (!aba) {
     return {
       ok: false,
-      erro: 'Aba "Escalas" nao encontrada na planilha individual. ' +
-            'Rode criarAbaEscalas() no editor do Apps Script para criar a aba.'
+      erro: 'Aba "Escalas" nao encontrada na planilha individual.'
     };
   }
 
@@ -1171,96 +1686,6 @@ function lerEscalas(sigla) {
     escalas: registros
   };
 }
-
-/**
- * Utilitario para criar a aba "Escalas" nas planilhas individuais
- * de todos os pacientes ativos do PROFISSIONAL VINICIUS.
- *
- * No 13.0.2 a planilha VMC ja tem a aba Escalas (criada no Pacote
- * 12.2). Esta funcao continua existindo para uso futuro quando novos
- * pacientes forem cadastrados.
- *
- * IMPORTANTE: esta versao cria abas apenas nos pacientes do
- * profissional PROF_VMC. Quando o sistema crescer para multiplos
- * profissionais, sera generalizada para receber profissional_id.
- */
-function criarAbaEscalas() {
-  var PROF_PADRAO = 'PROF_VMC';
-  var cabecalhos = [
-    'timestamp', 'versao_formulario', 'data_aplicacao',
-    'instrumento', 'versao_instrumento',
-    'item_01', 'item_02', 'item_03', 'item_04', 'item_05',
-    'item_06', 'item_07', 'item_08', 'item_09', 'item_10',
-    'item_11', 'item_12', 'item_13', 'item_14', 'item_15',
-    'item_16', 'item_17', 'item_18', 'item_19', 'item_20', 'item_21',
-    'item_funcional', 'item_funcional_texto',
-    'escore_total', 'escore_depressao', 'escore_ansiedade', 'escore_estresse',
-    'faixa',
-    'alerta_risco_flag', 'alerta_risco_item', 'alerta_risco_valor',
-    'observacoes', 'tempo_preenchimento_seg'
-  ];
-
-  Logger.log('=== criarAbaEscalas() - profissional ' + PROF_PADRAO + ' ===');
-
-  var controle = abrirControleDoProfissional(PROF_PADRAO);
-  if (!controle) {
-    Logger.log('ERRO: nao consegui abrir a Controle do profissional ' + PROF_PADRAO);
-    return;
-  }
-
-  var abaCtrl = controle.getSheetByName(ABA_PACIENTES);
-  var dados = abaCtrl.getDataRange().getValues();
-  if (dados.length < 2) {
-    Logger.log('Nenhum paciente cadastrado.');
-    return;
-  }
-
-  var cabCtrl = dados[0];
-  var idxSigla = cabCtrl.indexOf('sigla');
-  var idxAtivo = cabCtrl.indexOf('ativo');
-  var idxLink  = cabCtrl.indexOf('link_planilha_individual');
-
-  var criadas = 0, puladas = 0, erros = 0;
-
-  for (var i = 1; i < dados.length; i++) {
-    var sigla = String(dados[i][idxSigla]).trim();
-    var ativo = String(dados[i][idxAtivo]).trim().toLowerCase();
-    var link  = String(dados[i][idxLink]).trim();
-    if (!sigla) continue;
-    if (ativo !== 'sim') {
-      Logger.log('[' + sigla + '] paciente inativo - pulando');
-      continue;
-    }
-
-    try {
-      var pid = extrairIdDaUrl(link);
-      if (!pid) {
-        Logger.log('[' + sigla + '] link ausente - PULADO');
-        erros++;
-        continue;
-      }
-      var pInd = SpreadsheetApp.openById(pid);
-      var existente = pInd.getSheetByName(ABA_ESCALAS);
-      if (existente) {
-        Logger.log('[' + sigla + '] aba ja existe - pulando');
-        puladas++;
-        continue;
-      }
-      var nova = pInd.insertSheet(ABA_ESCALAS);
-      nova.getRange(1, 1, 1, cabecalhos.length).setValues([cabecalhos]);
-      nova.setFrozenRows(1);
-      nova.getRange(1, 1, 1, cabecalhos.length).setFontWeight('bold');
-      Logger.log('[' + sigla + '] aba CRIADA');
-      criadas++;
-    } catch (e) {
-      Logger.log('[' + sigla + '] ERRO: ' + String(e));
-      erros++;
-    }
-  }
-
-  Logger.log('=== Resumo: criadas=' + criadas + ' puladas=' + puladas + ' erros=' + erros + ' ===');
-}
-
 
 // ============================================================
 // PACOTE 17.0 - ITENS DOS INVENTARIOS (BDI-II, BAI)
@@ -1326,26 +1751,12 @@ function _itensHashConteudo_(linhas) {
 }
 
 /**
- * Confere a sessao de quem pediu os textos.
- * Profissional: (profSigla, profSenha) revalidados a cada chamada, como nas
- * demais acoes prof*. Paciente: sigla existente e ativa na Controle do
- * profissional dono - mesmo nivel das demais acoes de paciente (lerHistorico,
- * lerEscalas). Sem nenhum dos dois, recusa.
+ * Confere a sessao de quem pediu os textos: cracha de paciente ou de
+ * profissional (assinatura, validade e `ativo` ja conferidos no doPost).
+ * Admin ou sem cracha: recusa.
  */
-function _itensSessaoValida_(payload) {
-  if (payload.profSigla && payload.profSenha) {
-    var auth = autenticarProfissional(payload.profSigla, payload.profSenha);
-    if (!auth || !auth.ok) return { ok: false, erro: 'Sessao invalida' };
-    return { ok: true, quem: 'profissional' };
-  }
-  if (payload.sigla) {
-    var pac = buscarPaciente(payload.sigla);
-    if (!pac) return { ok: false, erro: 'Sessao invalida' };
-    if (String(pac.ativo || 'Sim').trim().toLowerCase() !== 'sim') {
-      return { ok: false, erro: 'Sessao invalida' };
-    }
-    return { ok: true, quem: 'paciente' };
-  }
+function _itensSessaoValida_(s) {
+  if (s && (s.tipo === 'paciente' || s.tipo === 'profissional')) return { ok: true, quem: s.tipo };
   return { ok: false, erro: 'Sessao invalida' };
 }
 
@@ -1426,17 +1837,16 @@ function _itensMontarTextos_(linhas) {
 /**
  * Acao lerItensInstrumento.
  *
- * Entrada (paciente):     { sigla }                      [+ instrumento]
- * Entrada (profissional): { profSigla, profSenha }       [+ instrumento]
+ * Entrada: payload [+ instrumento]; s = sessao do cracha (paciente ou profissional).
  *
  * Sem 'instrumento': { ok: true, liberados: ['bdi2'] } - so a lista, sem texto,
  *   para o menu decidir quais cartoes mostrar.
  * Com 'instrumento' liberado: { ok: true, instrumento, hash, textos: {...} }.
  * Com 'instrumento' nao liberado: { ok: false, erro, motivo } - sem texto.
  */
-function lerItensInstrumento(payload) {
+function lerItensInstrumento(payload, s) {
   payload = payload || {};
-  var sessao = _itensSessaoValida_(payload);
+  var sessao = _itensSessaoValida_(s);
   if (!sessao.ok) return { ok: false, erro: sessao.erro };
 
   var sistema;
@@ -1486,49 +1896,22 @@ function lerItensInstrumento(payload) {
 /**
  * Paciente altera sua propria senha.
  *
- * Valida senha atual, grava novo hash na Controle do profissional dono.
+ * Sigla do cracha; confere a senha atual (hash v2) e grava o novo hash v2
+ * na Controle do profissional dono.
  */
 function alterarSenhaPaciente(sigla, senhaAtual, novaSenha) {
   if (!sigla) return { ok: false, erro: 'Sigla obrigatoria' };
   if (!senhaAtual) return { ok: false, erro: 'Senha atual obrigatoria' };
-  if (!novaSenha || novaSenha.length < 6) {
-    return { ok: false, erro: 'Nova senha obrigatoria, minimo 6 caracteres' };
+  if (!novaSenha || String(novaSenha).length < SENHA_MINIMA) {
+    return { ok: false, erro: 'Escolha uma senha com pelo menos 8 caracteres.' };
   }
-
-  // 1. Validar credenciais atuais
-  var authResult = autenticar(sigla, senhaAtual, 'paciente');
-  if (!authResult.ok) {
-    return { ok: false, erro: 'Senha atual incorreta' };
+  var paciente = buscarPaciente(sigla);
+  if (!paciente) return { ok: false, erro: 'Paciente nao encontrado' };
+  if (!conferirSenha(senhaAtual, paciente.senha_hash)) return { ok: false, erro: 'Senha atual incorreta' };
+  if (!_gravarSenhaDaConta_('paciente', paciente.sigla, paciente.__profissional_id, String(novaSenha))) {
+    return { ok: false, erro: 'Paciente nao encontrado na Controle' };
   }
-
-  // 2. Localizar o paciente na Controle do profissional dono
-  var profissionalId = resolverProfissionalIdPorSigla(sigla, 'paciente');
-  if (!profissionalId) return { ok: false, erro: 'Paciente nao encontrado' };
-
-  var controle = abrirControleDoProfissional(profissionalId);
-  if (!controle) return { ok: false, erro: 'Controle do profissional nao encontrada' };
-
-  var aba = controle.getSheetByName(ABA_PACIENTES);
-  if (!aba) return { ok: false, erro: 'Aba Pacientes nao encontrada' };
-
-  var dados = aba.getDataRange().getValues();
-  var cabecalhos = dados[0];
-  var idxSigla = cabecalhos.indexOf('sigla');
-  var idxHash = cabecalhos.indexOf('senha_hash');
-
-  if (idxSigla === -1 || idxHash === -1) {
-    return { ok: false, erro: 'Estrutura da Controle invalida' };
-  }
-
-  // 3. Encontrar e atualizar
-  for (var i = 1; i < dados.length; i++) {
-    if (String(dados[i][idxSigla]).trim().toUpperCase() === String(sigla).trim().toUpperCase()) {
-      aba.getRange(i + 1, idxHash + 1).setValue(gerarHashSenha(novaSenha));
-      return { ok: true, mensagem: 'Senha alterada com sucesso' };
-    }
-  }
-
-  return { ok: false, erro: 'Paciente nao encontrado na Controle' };
+  return { ok: true, mensagem: 'Senha alterada com sucesso' };
 }
 
 
@@ -1555,7 +1938,8 @@ function pacienteAtualizarAnamnese(sigla, dados) {
   var aba = planilha.getSheetByName(ABA_ANAMNESE);
   if (!aba) return { ok: false, erro: 'Aba Anamnese nao encontrada' };
 
-  // 2. Montar linha e sobrescrever
+  // 2. Montar linha e sobrescrever (e-mail e telefone espelham o cadastro)
+  dados = _espelharContatoAnamnese_(aba, dados, paciente);
   var cabecalhos = aba.getRange(1, 1, 1, aba.getLastColumn()).getValues()[0];
   var agora = new Date();
   var linha = [];
@@ -1597,19 +1981,22 @@ function pacienteAtualizarAnamnese(sigla, dados) {
  *   - Planilha individual com 3 abas (Anamnese, Automonitoramento,
  *     Escalas) usando headers padrao
  *   - Move planilha para pasta Pacientes/ do profissional
- *   - Linha na Controle do profissional
- *   - Linha no Indice_Siglas
+ *   - Linha na Controle do profissional (sem senha: o acesso nasce no convite)
+ *   - Linha no Indice_Siglas (com o e-mail)
+ *   - Link de convite (canal 'link'), devolvido para o WhatsApp
  *
  * Seguranca:
- *   - Revalida credenciais do profissional em cada chamada
+ *   - Profissional do cracha de sessao
  *   - profissional_id derivado server-side (nunca do payload)
- *   - Unicidade da sigla verificada globalmente no Indice_Siglas
+ *   - Sigla gerada pelo servidor (gerarSiglaPaciente), unica no Indice_Siglas
+ *   - E-mail unico entre os pacientes (conta = perfil + e-mail)
  *
- * Entrada: dados = { sigla, nomeCompleto, senhaInicial }
+ * Entrada: dados = { nomeCompleto, email, telefone }
+ * Saida:   { ok, sigla, link, email, telefone }
  */
-function cadastrarPaciente(profSigla, profSenha, dados) {
-  // 1. Revalidar credenciais do profissional
-  var authResult = autenticar(profSigla, profSenha, 'profissional');
+function cadastrarPaciente(s, dados) {
+  // 1. Profissional do cracha
+  var authResult = _authProfissional_(s);
   if (!authResult.ok) {
     return authResult;
   }
@@ -1618,24 +2005,22 @@ function cadastrarPaciente(profSigla, profSenha, dados) {
   // 2. Validar dados de entrada
   if (!dados) return { ok: false, erro: 'Dados do paciente ausentes' };
 
-  var sigla = String(dados.sigla || '').trim().toUpperCase();
   var nome  = String(dados.nomeCompleto || '').trim();
-  var senha = String(dados.senhaInicial || '');
-
-  if (!sigla) return { ok: false, erro: 'Sigla obrigatoria' };
-  if (!/^[A-Z0-9_]{2,10}$/.test(sigla)) {
-    return { ok: false, erro: 'Sigla deve ter 2-10 caracteres (letras maiusculas, numeros, underline)' };
-  }
   if (!nome) return { ok: false, erro: 'Nome completo obrigatorio' };
-  if (!senha || senha.length < 6) {
-    return { ok: false, erro: 'Senha obrigatoria, minimo 6 caracteres' };
-  }
+  var contato = normalizarContato({ email: dados.email, telefone: dados.telefone });
+  if (contato.erro) return { ok: false, erro: contato.erro };
+  if (!contato.email) return { ok: false, erro: 'E-mail do paciente obrigatório.' };
 
-  // 3. Verificar unicidade da sigla (paciente) no Indice_Siglas
-  var pacExistente = resolverProfissionalIdPorSigla(sigla, 'paciente');
-  if (pacExistente) {
-    return { ok: false, erro: 'Ja existe um paciente com a sigla "' + sigla + '"' };
+  // 3. Unicidade do e-mail e sigla gerada (Indice_Siglas)
+  var indice = _lerIndice_().linhas;
+  var siglasPac = [];
+  for (var n = 0; n < indice.length; n++) {
+    if (indice[n].tipo !== 'paciente') continue;
+    if (indice[n].email === contato.email) return { ok: false, erro: 'Este e-mail já está em uso por outra conta.' };
+    siglasPac.push(indice[n].sigla);
   }
+  var sigla = gerarSiglaPaciente(nome, siglasPac);
+  if (!sigla || !/^[A-Z0-9_]{2,10}$/.test(sigla)) return { ok: false, erro: 'Nao foi possivel gerar a sigla do paciente.' };
 
   // 4. Localizar pasta Pacientes/ do profissional
   var prof = buscarProfissional(profissionalId);
@@ -1696,36 +2081,27 @@ function cadastrarPaciente(profSigla, profSenha, dados) {
       return { ok: false, erro: 'Aba Pacientes nao encontrada na Controle. Planilha criada em: ' + linkPlanilha };
     }
 
-    var cabCtrl = abaCtrl.getRange(1, 1, 1, abaCtrl.getLastColumn()).getValues()[0];
-    var linhaCtrl = [];
-    for (var i = 0; i < cabCtrl.length; i++) {
-      var col = cabCtrl[i];
-      if      (col === 'sigla')                      linhaCtrl.push(sigla);
-      else if (col === 'senha_hash')                 linhaCtrl.push(gerarHashSenha(senha));
-      else if (col === 'link_planilha_individual')   linhaCtrl.push(linkPlanilha);
-      else if (col === 'data_cadastro')              linhaCtrl.push(hoje);
-      else if (col === 'data_anamnese')              linhaCtrl.push('');
-      else if (col === 'ativo')                      linhaCtrl.push('Sim');
-      else if (col === 'observacoes')                linhaCtrl.push('');
-      else                                           linhaCtrl.push('');
-    }
-    abaCtrl.appendRow(linhaCtrl);
+    // Linha gravada pelo nome do cabecalho; senha_hash vazio ate o convite
+    var cabCtrl = _garantirColunas_(abaCtrl, ['email', 'telefone', 'nome']);
+    _anexarPorCabecalho_(abaCtrl, cabCtrl, {
+      sigla: sigla, senha_hash: '', link_planilha_individual: linkPlanilha,
+      data_cadastro: hoje, data_anamnese: '', ativo: 'Sim', observacoes: '',
+      email: contato.email, telefone: contato.telefone, nome: nome
+    });
 
-    // 8. Adicionar linha no Indice_Siglas
-    var planilhaGlobal = SpreadsheetApp.openById(SISTEMA_VMC_ID);
-    var abaIdx = planilhaGlobal.getSheetByName(ABA_INDICE_SIGLAS);
-    abaIdx.appendRow([
-      sigla + '|paciente|' + profissionalId,
-      sigla,
-      'paciente',
-      profissionalId,
-      hoje
-    ]);
+    // 8. Adicionar linha no Indice_Siglas (por nome de cabecalho, com o e-mail)
+    _anexarIndice_(sigla, 'paciente', profissionalId, contato.email);
+
+    // 9. Link de convite (canal 'link'): o profissional envia por e-mail ou WhatsApp
+    var link = _criarLinkAtivacao_('paciente', sigla, profissionalId, 'convite');
 
     return {
       ok: true,
       mensagem: 'Paciente cadastrado com sucesso',
-      sigla: sigla
+      sigla: sigla,
+      link: link,
+      email: contato.email,
+      telefone: contato.telefone
     };
 
   } catch (e) {
@@ -1744,11 +2120,14 @@ function cadastrarPaciente(profSigla, profSenha, dados) {
  * Se ja existe anamnese (row 2), SOBRESCREVE.
  * Se nao existe, INSERE nova linha.
  *
- * Seguranca: revalida credenciais + verifica ownership multi-tenant.
+ * Seguranca: profissional do cracha + verifica ownership multi-tenant.
+ * Pacote 18.1: contato (opcional) = {email, telefone} grava o cadastro
+ * (Controle) antes; sem ele, a Controle nao muda. E-mail e telefone da
+ * Anamnese espelham o cadastro.
  */
-function profSalvarAnamnese(profSigla, profSenha, siglaPaciente, dados) {
+function profSalvarAnamnese(s, siglaPaciente, dados, contato) {
   // 1. Revalidar credenciais
-  var authResult = autenticar(profSigla, profSenha, 'profissional');
+  var authResult = _authProfissional_(s);
   if (!authResult.ok) return authResult;
   var profissionalId = authResult.profissional.profissional_id;
 
@@ -1759,6 +2138,11 @@ function profSalvarAnamnese(profSigla, profSenha, siglaPaciente, dados) {
   if (profIdDono !== profissionalId) return { ok: false, erro: 'Este paciente nao pertence a voce' };
 
   if (!dados) return { ok: false, erro: 'Dados da anamnese ausentes' };
+
+  if (contato) {
+    var rc = _atualizarContatoPaciente_(siglaPaciente, contato);
+    if (!rc.ok) return rc;
+  }
 
   // 3. Abrir planilha individual
   var paciente = buscarPaciente(siglaPaciente);
@@ -1772,7 +2156,8 @@ function profSalvarAnamnese(profSigla, profSenha, siglaPaciente, dados) {
   var aba = planilha.getSheetByName(ABA_ANAMNESE);
   if (!aba) return { ok: false, erro: 'Aba Anamnese nao encontrada' };
 
-  // 4. Montar linha usando headers existentes
+  // 4. Montar linha usando headers existentes (e-mail e telefone espelham o cadastro)
+  dados = _espelharContatoAnamnese_(aba, dados, paciente);
   var cabecalhos = aba.getRange(1, 1, 1, aba.getLastColumn()).getValues()[0];
   var agora = new Date();
   var linha = [];
@@ -1806,11 +2191,8 @@ function profSalvarAnamnese(profSigla, profSenha, siglaPaciente, dados) {
 // ============================================================
 // PACOTE 13.1 - FUNCOES ADMIN
 // ============================================================
-// Todas as funcoes admin recebem (adminSigla, adminSenha) e revalidam
-// essas credenciais antes de qualquer operacao. Isso garante que:
-//   1. Apenas admins ativos podem chamar essas funcoes
-//   2. A senha e verificada SERVER-SIDE em cada chamada
-//   3. Nao confiamos em "ja autenticou antes" - cada chamada e isolada
+// Todas as funcoes admin recebem a sessao (s) do cracha, conferido no
+// doPost (assinatura, validade e `ativo` a cada chamada).
 // ============================================================
 
 
@@ -1946,8 +2328,8 @@ function pacienteEditarAutomonitoramento(sigla, timestamp, dados) {
 
 // --- Profissional: marcar / limpar / salvar ---
 
-function profMarcarEditandoAuto(profSigla, profSenha, siglaPaciente, timestamp) {
-  var auth = autenticar(profSigla, profSenha, 'profissional');
+function profMarcarEditandoAuto(s, siglaPaciente, timestamp) {
+  var auth = _authProfissional_(s);
   if (!auth.ok) return auth;
   var profId = auth.profissional.profissional_id;
   var dono = resolverProfissionalIdPorSigla(siglaPaciente, 'paciente');
@@ -1958,7 +2340,7 @@ function profMarcarEditandoAuto(profSigla, profSenha, siglaPaciente, timestamp) 
   var linha = _encontrarLinhaAuto_(planilhaId, timestamp);
   if (!linha) return { ok: false, erro: 'Registro nao encontrado' };
   var agora = Utilities.formatDate(new Date(), 'America/Sao_Paulo', "yyyy-MM-dd'T'HH:mm:ss");
-  var quem = 'profissional:' + profSigla;
+  var quem = 'profissional:' + s.sigla;
   _atualizarCamposLinha_(linha.aba, linha.rowIndex, linha.cabecalhos, {
     editando_quem:  quem,
     editando_desde: agora
@@ -1966,8 +2348,8 @@ function profMarcarEditandoAuto(profSigla, profSenha, siglaPaciente, timestamp) 
   return { ok: true, editando_quem: quem };
 }
 
-function profLimparEditandoAuto(profSigla, profSenha, siglaPaciente, timestamp) {
-  var auth = autenticar(profSigla, profSenha, 'profissional');
+function profLimparEditandoAuto(s, siglaPaciente, timestamp) {
+  var auth = _authProfissional_(s);
   if (!auth.ok) return auth;
   var profId = auth.profissional.profissional_id;
   var dono = resolverProfissionalIdPorSigla(siglaPaciente, 'paciente');
@@ -1983,9 +2365,9 @@ function profLimparEditandoAuto(profSigla, profSenha, siglaPaciente, timestamp) 
   return { ok: true };
 }
 
-function profEditarAutomonitoramento(profSigla, profSenha, siglaPaciente, timestamp, dados) {
+function profEditarAutomonitoramento(s, siglaPaciente, timestamp, dados) {
   if (!siglaPaciente || !timestamp || !dados) return { ok: false, erro: 'Parametros incompletos' };
-  var auth = autenticar(profSigla, profSenha, 'profissional');
+  var auth = _authProfissional_(s);
   if (!auth.ok) return auth;
   var profId = auth.profissional.profissional_id;
   var dono = resolverProfissionalIdPorSigla(siglaPaciente, 'paciente');
@@ -2018,8 +2400,8 @@ function profEditarAutomonitoramento(profSigla, profSenha, siglaPaciente, timest
  * Desativa um paciente.
  * Marca ativo = Nao na Controle e move planilha para Pacientes_Desativados/.
  */
-function profDesativarPaciente(profSigla, profSenha, siglaPaciente) {
-  var authResult = autenticar(profSigla, profSenha, 'profissional');
+function profDesativarPaciente(s, siglaPaciente) {
+  var authResult = _authProfissional_(s);
   if (!authResult.ok) return authResult;
   var profissionalId = authResult.profissional.profissional_id;
 
@@ -2069,8 +2451,8 @@ function profDesativarPaciente(profSigla, profSenha, siglaPaciente) {
  * Reativa um paciente.
  * Marca ativo = Sim na Controle e move planilha de volta para Pacientes/.
  */
-function profReativarPaciente(profSigla, profSenha, siglaPaciente) {
-  var authResult = autenticar(profSigla, profSenha, 'profissional');
+function profReativarPaciente(s, siglaPaciente) {
+  var authResult = _authProfissional_(s);
   if (!authResult.ok) return authResult;
   var profissionalId = authResult.profissional.profissional_id;
 
@@ -2117,8 +2499,8 @@ function profReativarPaciente(profSigla, profSenha, siglaPaciente) {
  * Confirmacao dupla: confirmacaoSigla deve ser igual a siglaPaciente.
  * Move planilha para lixeira, remove da Controle e do Indice_Siglas.
  */
-function profExcluirPaciente(profSigla, profSenha, siglaPaciente, confirmacaoSigla) {
-  var authResult = autenticar(profSigla, profSenha, 'profissional');
+function profExcluirPaciente(s, siglaPaciente, confirmacaoSigla) {
+  var authResult = _authProfissional_(s);
   if (!authResult.ok) return authResult;
   var profissionalId = authResult.profissional.profissional_id;
 
@@ -2171,9 +2553,10 @@ function profExcluirPaciente(profSigla, profSenha, siglaPaciente, confirmacaoSig
     var abaIdx = planilhaGlobal.getSheetByName(ABA_INDICE_SIGLAS);
     if (abaIdx) {
       var dadosIdx = abaIdx.getDataRange().getValues();
-      for (var k = dadosIdx.length - 1; k >= 0; k--) {
-        var siglaCel = String(dadosIdx[k][1] || '').trim().toUpperCase();
-        var tipoCel  = String(dadosIdx[k][2] || '').trim().toLowerCase();
+      var iSig = dadosIdx[0].indexOf('sigla'), iTip = dadosIdx[0].indexOf('tipo');
+      for (var k = dadosIdx.length - 1; k >= 1; k--) {
+        var siglaCel = String(dadosIdx[k][iSig] || '').trim().toUpperCase();
+        var tipoCel  = String(dadosIdx[k][iTip] || '').trim().toLowerCase();
         if (siglaCel === String(siglaPaciente).trim().toUpperCase() && tipoCel === 'paciente') {
           abaIdx.deleteRow(k + 1);
           break;
@@ -2191,15 +2574,15 @@ function profExcluirPaciente(profSigla, profSenha, siglaPaciente, confirmacaoSig
  * Pacote 13.7 — Altera a senha de um paciente pelo profissional responsável.
  * Não exige senha atual do paciente — o profissional tem autoridade.
  */
-function profAlterarSenhaPaciente(profSigla, profSenha, siglaPaciente, novaSenha) {
+function profAlterarSenhaPaciente(s, siglaPaciente, novaSenha) {
   // 1. Autenticar profissional
-  var authResult = autenticar(profSigla, profSenha, 'profissional');
+  var authResult = _authProfissional_(s);
   if (!authResult.ok) return authResult;
   var profissionalId = authResult.profissional.profissional_id;
 
   // 2. Validar nova senha
-  if (!novaSenha || String(novaSenha).length < 6) {
-    return { ok: false, erro: 'Nova senha deve ter no minimo 6 caracteres.' };
+  if (!novaSenha || String(novaSenha).length < SENHA_MINIMA) {
+    return { ok: false, erro: 'Escolha uma senha com pelo menos 8 caracteres.' };
   }
 
   // 3. Abrir Controle do profissional e atualizar hash
@@ -2218,7 +2601,7 @@ function profAlterarSenhaPaciente(profSigla, profSenha, siglaPaciente, novaSenha
     return { ok: false, erro: 'Estrutura da Controle invalida.' };
   }
 
-  var novoHash = gerarHashSenha(String(novaSenha));
+  var novoHash = gerarHashSenhaV2(String(novaSenha));
 
   for (var i = 1; i < dados.length; i++) {
     if (String(dados[i][idxSigla]).trim().toUpperCase() === String(siglaPaciente).trim().toUpperCase()) {
@@ -2255,79 +2638,13 @@ function _alterarStatusPacienteControle_(profissionalId, siglaPaciente, novoStat
 
 
 /**
- * Valida credenciais de admin. Retorna o objeto admin se OK, ou
- * null se invalido. Usado internamente por todas as acoes admin.
- */
-function validarCredenciaisAdmin(adminSigla, adminSenha) {
-  if (!adminSigla || !adminSenha) return null;
-
-  var adminId = resolverProfissionalIdPorSigla(adminSigla, 'admin');
-  if (!adminId) return null;
-
-  var adm = buscarAdmin(adminId);
-  if (!adm) return null;
-  if (String(adm.ativo).trim().toLowerCase() !== 'sim') return null;
-
-  var hash = gerarHashSenha(adminSenha);
-  if (hash !== String(adm.senha_hash).trim()) return null;
-
-  return adm;
-}
-
-
-/**
- * Garante que a aba Profissionais do Sistema_VMC tem todas as colunas
- * necessarias para o Pacote 13.1: telefone, crp, data_inicio.
- *
- * Idempotente: se as colunas ja existem, nao faz nada. Pode ser
- * chamada quantas vezes quiser.
- *
- * Esta funcao deve ser rodada UMA VEZ no editor do Apps Script apos
- * o deploy do Pacote 13.1.1.
- */
-function atualizarSchemaSistemaVMC() {
-  Logger.log('=== atualizarSchemaSistemaVMC ===');
-
-  var planilha = SpreadsheetApp.openById(SISTEMA_VMC_ID);
-  var aba = planilha.getSheetByName(ABA_PROFISSIONAIS);
-  if (!aba) {
-    Logger.log('ERRO: aba Profissionais nao encontrada.');
-    return;
-  }
-
-  var cabecalhos = aba.getRange(1, 1, 1, Math.max(aba.getLastColumn(), 1)).getValues()[0];
-  Logger.log('Cabecalhos atuais: ' + JSON.stringify(cabecalhos));
-
-  var necessarias = ['telefone', 'crp', 'data_inicio'];
-  var adicionadas = [];
-
-  for (var i = 0; i < necessarias.length; i++) {
-    var col = necessarias[i];
-    if (cabecalhos.indexOf(col) === -1) {
-      var novaPosicao = cabecalhos.length + 1;
-      aba.getRange(1, novaPosicao).setValue(col);
-      aba.getRange(1, novaPosicao).setFontWeight('bold');
-      cabecalhos.push(col);
-      adicionadas.push(col);
-      Logger.log('Adicionada coluna "' + col + '" na posicao ' + novaPosicao);
-    } else {
-      Logger.log('Coluna "' + col + '" ja existe (posicao ' +
-                 (cabecalhos.indexOf(col) + 1) + ')');
-    }
-  }
-
-  Logger.log('=== Total adicionado: ' + adicionadas.length + ' ===');
-}
-
-
-/**
  * Lista todos os profissionais cadastrados no sistema.
  *
  * Retorna: { ok: true, total: N, profissionais: [...] }
  * Cada profissional inclui todos os campos EXCETO senha_hash.
  */
-function listarProfissionais(adminSigla, adminSenha) {
-  var adm = validarCredenciaisAdmin(adminSigla, adminSenha);
+function listarProfissionais(s) {
+  var adm = _admDaSessao_(s);
   if (!adm) return { ok: false, erro: 'Credenciais de admin invalidas' };
 
   var planilha = SpreadsheetApp.openById(SISTEMA_VMC_ID);
@@ -2359,22 +2676,22 @@ function listarProfissionais(adminSigla, adminSenha) {
  *   - Linha em Sistema_VMC -> aba Profissionais
  *   - Linha em Sistema_VMC -> aba Indice_Siglas
  *
+ * Pacote 18.1: sem senha inicial - o acesso nasce no convite (admEnviarConvite).
+ *
  * Entrada: dados = {
- *   sigla, senhaInicial, nomeCompleto, email,
- *   telefone, crp, dataInicio
+ *   sigla, nomeCompleto, email, telefone, crp, dataInicio
  * }
  */
-function cadastrarProfissional(adminSigla, adminSenha, dados) {
-  var adm = validarCredenciaisAdmin(adminSigla, adminSenha);
+function cadastrarProfissional(s, dados) {
+  var adm = _admDaSessao_(s);
   if (!adm) return { ok: false, erro: 'Credenciais de admin invalidas' };
 
   if (!dados) return { ok: false, erro: 'Dados do profissional ausentes' };
 
   var sigla = String(dados.sigla || '').trim().toUpperCase();
-  var senha = String(dados.senhaInicial || '');
   var nome  = String(dados.nomeCompleto || '').trim();
-  var email = String(dados.email || '').trim();
-  var tel   = String(dados.telefone || '').trim();
+  var email = normalizarEmail(dados.email);
+  var tel   = normalizarTelefone(dados.telefone);
   var crp   = String(dados.crp || '').trim();
   var dataInicio = String(dados.dataInicio || '').trim();
 
@@ -2382,10 +2699,9 @@ function cadastrarProfissional(adminSigla, adminSenha, dados) {
   if (!/^[A-Z0-9_]{2,15}$/.test(sigla)) {
     return { ok: false, erro: 'Sigla deve ter 2-15 caracteres (letras maiusculas, numeros, underline)' };
   }
-  if (!senha || senha.length < 6) {
-    return { ok: false, erro: 'Senha obrigatoria, minimo 6 caracteres' };
-  }
   if (!nome) return { ok: false, erro: 'Nome completo obrigatorio' };
+  if (!emailValido(email)) return { ok: false, erro: 'E-mail inválido.' };
+  if (_contaPorEmail_('profissional', email)) return { ok: false, erro: 'Este e-mail já está em uso por outra conta.' };
 
   var profExistente = resolverProfissionalIdPorSigla(sigla, 'profissional');
   if (profExistente) {
@@ -2420,7 +2736,8 @@ function cadastrarProfissional(adminSigla, adminSenha, dados) {
     abaControle.setName(ABA_PACIENTES);
     var cabecalhosControle = [
       'sigla', 'senha_hash', 'link_planilha_individual',
-      'data_cadastro', 'data_anamnese', 'ativo', 'observacoes'
+      'data_cadastro', 'data_anamnese', 'ativo', 'observacoes',
+      'email', 'telefone', 'nome'
     ];
     abaControle.getRange(1, 1, 1, cabecalhosControle.length).setValues([cabecalhosControle]);
     abaControle.setFrozenRows(1);
@@ -2437,7 +2754,7 @@ function cadastrarProfissional(adminSigla, adminSenha, dados) {
       var col = cabProf[i];
       if      (col === 'profissional_id') linhaProf.push(profissionalId);
       else if (col === 'sigla')           linhaProf.push(sigla);
-      else if (col === 'senha_hash')      linhaProf.push(gerarHashSenha(senha));
+      else if (col === 'senha_hash')      linhaProf.push('');
       else if (col === 'nome_completo')   linhaProf.push(nome);
       else if (col === 'email')           linhaProf.push(email);
       else if (col === 'pasta_drive_id')  linhaProf.push(pastaProfId);
@@ -2450,14 +2767,7 @@ function cadastrarProfissional(adminSigla, adminSenha, dados) {
     }
     abaProf.appendRow(linhaProf);
 
-    var abaIdx = planilhaGlobal.getSheetByName(ABA_INDICE_SIGLAS);
-    abaIdx.appendRow([
-      sigla + '|profissional|' + profissionalId,
-      sigla,
-      'profissional',
-      profissionalId,
-      hoje
-    ]);
+    _anexarIndice_(sigla, 'profissional', profissionalId, email);
 
     return {
       ok: true,
@@ -2485,8 +2795,8 @@ function cadastrarProfissional(adminSigla, adminSenha, dados) {
  * pasta_drive_id, data_cadastro. Use funcoes especificas (troca senha,
  * desativar) para esses.
  */
-function atualizarProfissional(adminSigla, adminSenha, profissionalId, mudancas) {
-  var adm = validarCredenciaisAdmin(adminSigla, adminSenha);
+function atualizarProfissional(s, profissionalId, mudancas) {
+  var adm = _admDaSessao_(s);
   if (!adm) return { ok: false, erro: 'Credenciais de admin invalidas' };
 
   if (!profissionalId) return { ok: false, erro: 'profissionalId obrigatorio' };
@@ -2507,6 +2817,19 @@ function atualizarProfissional(adminSigla, adminSenha, profissionalId, mudancas)
   var dados = aba.getDataRange().getValues();
   var cabecalhos = dados[0];
   var idxId = cabecalhos.indexOf('profissional_id');
+
+  // Pacote 18.1: e-mail e o login do profissional - normalizado, unico e
+  // copiado para o Indice_Siglas; telefone so com digitos.
+  if (mudancas.telefone !== undefined) mudancas.telefone = normalizarTelefone(mudancas.telefone);
+  if (mudancas.email !== undefined) {
+    mudancas.email = normalizarEmail(mudancas.email);
+    if (mudancas.email && !emailValido(mudancas.email)) return { ok: false, erro: 'E-mail inválido.' };
+    var profAtual = buscarProfissional(profissionalId);
+    if (profAtual) {
+      var ri = _gravarEmailIndice_(profAtual.sigla, 'profissional', mudancas.email);
+      if (!ri.ok) return ri;
+    }
+  }
 
   for (var i = 1; i < dados.length; i++) {
     if (String(dados[i][idxId]).trim() === String(profissionalId).trim()) {
@@ -2531,16 +2854,16 @@ function atualizarProfissional(adminSigla, adminSenha, profissionalId, mudancas)
 
 
 /**
- * Troca a senha do profissional. Senha nova precisa ter no minimo 6
+ * Troca a senha do profissional (hash v2). Senha nova com no minimo 8
  * caracteres.
  */
-function trocarSenhaProfissional(adminSigla, adminSenha, profissionalId, novaSenha) {
-  var adm = validarCredenciaisAdmin(adminSigla, adminSenha);
+function trocarSenhaProfissional(s, profissionalId, novaSenha) {
+  var adm = _admDaSessao_(s);
   if (!adm) return { ok: false, erro: 'Credenciais de admin invalidas' };
 
   if (!profissionalId) return { ok: false, erro: 'profissionalId obrigatorio' };
-  if (!novaSenha || String(novaSenha).length < 6) {
-    return { ok: false, erro: 'Senha nova invalida (minimo 6 caracteres)' };
+  if (!novaSenha || String(novaSenha).length < SENHA_MINIMA) {
+    return { ok: false, erro: 'Escolha uma senha com pelo menos 8 caracteres.' };
   }
 
   var planilha = SpreadsheetApp.openById(SISTEMA_VMC_ID);
@@ -2552,7 +2875,7 @@ function trocarSenhaProfissional(adminSigla, adminSenha, profissionalId, novaSen
 
   for (var i = 1; i < dados.length; i++) {
     if (String(dados[i][idxId]).trim() === String(profissionalId).trim()) {
-      aba.getRange(i + 1, idxSenha + 1).setValue(gerarHashSenha(String(novaSenha)));
+      aba.getRange(i + 1, idxSenha + 1).setValue(gerarHashSenhaV2(String(novaSenha)));
       return { ok: true, mensagem: 'Senha trocada com sucesso' };
     }
   }
@@ -2565,16 +2888,16 @@ function trocarSenhaProfissional(adminSigla, adminSenha, profissionalId, novaSen
  * Indice_Siglas (mantemos historico). Profissional inativo nao
  * consegue mais logar.
  */
-function desativarProfissional(adminSigla, adminSenha, profissionalId) {
-  return _alterarStatusProfissional(adminSigla, adminSenha, profissionalId, 'nao');
+function desativarProfissional(s, profissionalId) {
+  return _alterarStatusProfissional(s, profissionalId, 'nao');
 }
 
-function reativarProfissional(adminSigla, adminSenha, profissionalId) {
-  return _alterarStatusProfissional(adminSigla, adminSenha, profissionalId, 'sim');
+function reativarProfissional(s, profissionalId) {
+  return _alterarStatusProfissional(s, profissionalId, 'sim');
 }
 
-function _alterarStatusProfissional(adminSigla, adminSenha, profissionalId, novoStatus) {
-  var adm = validarCredenciaisAdmin(adminSigla, adminSenha);
+function _alterarStatusProfissional(s, profissionalId, novoStatus) {
+  var adm = _admDaSessao_(s);
   if (!adm) return { ok: false, erro: 'Credenciais de admin invalidas' };
 
   if (!profissionalId) return { ok: false, erro: 'profissionalId obrigatorio' };
@@ -2596,174 +2919,6 @@ function _alterarStatusProfissional(adminSigla, adminSenha, profissionalId, novo
     }
   }
   return { ok: false, erro: 'Profissional nao encontrado: ' + profissionalId };
-}
-
-
-// ============================================================
-// TESTES INTERNOS (rodar manualmente no editor)
-// ============================================================
-
-/**
- * Teste de fumaca apos o redeploy do Pacote 13.0.2.
- * Roda este e olha o Logger para conferir.
- *
- * Como rodar: selecione "testarSetup" no menu superior do editor
- * e clique em "Executar".
- */
-function testarSetup() {
-  Logger.log('=== Teste Pacote 13.0.2 - multi-tenant ===');
-
-  // Teste 1: hash conhecido
-  var hash = gerarHashSenha('teste1');
-  var hashEsperado = '15bf532d22345576b4a51b96da4754c039ef3458494066d76828e893d69ebd1e';
-  Logger.log('Hash de "teste1": ' + hash);
-  Logger.log('Hash correto?     ' + (hash === hashEsperado));
-
-  // Teste 2: resolver sigla VMC paciente -> deve dar PROF_VMC
-  var profId = resolverProfissionalIdPorSigla('VMC', 'paciente');
-  Logger.log('VMC paciente -> profissional dono: ' + profId);
-
-  // Teste 3: encontrar paciente VMC
-  var paciente = buscarPaciente('VMC');
-  Logger.log('Paciente VMC encontrado? ' + (paciente !== null));
-  if (paciente) {
-    Logger.log('  sigla: ' + paciente.sigla);
-    Logger.log('  ativo: ' + paciente.ativo);
-    Logger.log('  link:  ' + paciente.link_planilha_individual);
-    Logger.log('  prof:  ' + paciente.__profissional_id);
-  }
-
-  // Teste 4: autenticar VMC paciente
-  var resPac = autenticar('VMC', 'vinicius2026', 'paciente');
-  Logger.log('Login VMC paciente / vinicius2026: ' + JSON.stringify(resPac));
-
-  // Teste 5: autenticar VMC profissional
-  var resProf = autenticar('VMC', 'V!N!C!U$-P$!', 'profissional');
-  Logger.log('Login VMC profissional: ' + JSON.stringify(resProf));
-
-  // Teste 6: autenticar admin
-  var resAdm = autenticar('ADM_VMC', 'V!N!C!U$-@DM', 'admin');
-  Logger.log('Login ADM_VMC admin: ' + JSON.stringify(resAdm));
-
-  // Teste 7: compatibilidade com frontend antigo (sem tipo)
-  var resCompat = autenticar('VMC', 'vinicius2026');
-  Logger.log('Login VMC sem tipo (compatibilidade): ' + JSON.stringify(resCompat));
-
-  // Teste 8: senha errada
-  var resErr = autenticar('VMC', 'senhaErrada', 'paciente');
-  Logger.log('Login VMC senha errada: ' + JSON.stringify(resErr));
-
-  Logger.log('=== Fim dos testes ===');
-}
-
-
-/**
- * Teste das funcoes admin (Pacote 13.1.1).
- *
- * IMPORTANTE: este teste cadastra um profissional fake "TESTEPROF"
- * e o deixa cadastrado. Voce vai ver no Drive:
- *   - Pasta clinica-vmc/Profissional_TESTEPROF/
- *   - Subpasta Pacientes/
- *   - Planilha Clinica VMC - Controle (vazia)
- *
- * Depois de validar que esta tudo OK, voce pode apagar manualmente
- * (jogar a pasta na lixeira), e tambem remover a linha do TESTEPROF
- * das abas Profissionais e Indice_Siglas do Sistema_VMC.
- *
- * (No Pacote 13.1.2 vamos ter botao "Desativar" pela interface.)
- *
- * Como rodar: selecione "testarAdmin13_1_1" no dropdown e clique
- * em Executar.
- */
-function testarAdmin13_1_1() {
-  Logger.log('=== Teste Pacote 13.1.1 - Funcoes Admin ===');
-
-  var admSigla = 'ADM_VMC';
-  var admSenha = 'V!N!C!U$-@DM';
-
-  // Teste 1: listarProfissionais com credenciais corretas
-  Logger.log('--- Teste 1: listar profissionais ---');
-  var r1 = listarProfissionais(admSigla, admSenha);
-  Logger.log('Resultado: ' + JSON.stringify(r1));
-
-  // Teste 2: listarProfissionais com senha errada
-  Logger.log('--- Teste 2: listar com senha errada ---');
-  var r2 = listarProfissionais(admSigla, 'senhaErrada');
-  Logger.log('Resultado: ' + JSON.stringify(r2));
-
-  // Teste 3: cadastrar profissional fake
-  Logger.log('--- Teste 3: cadastrar TESTEPROF ---');
-  var r3 = cadastrarProfissional(admSigla, admSenha, {
-    sigla: 'TESTEPROF',
-    senhaInicial: 'senha123',
-    nomeCompleto: 'Profissional de Teste',
-    email: 'teste@exemplo.com',
-    telefone: '11999998888',
-    crp: '06/123456',
-    dataInicio: '2026-05-11'
-  });
-  Logger.log('Resultado: ' + JSON.stringify(r3));
-
-  // Teste 4: tentar cadastrar de novo (deve falhar - sigla duplicada)
-  Logger.log('--- Teste 4: cadastrar TESTEPROF novamente (deve falhar) ---');
-  var r4 = cadastrarProfissional(admSigla, admSenha, {
-    sigla: 'TESTEPROF',
-    senhaInicial: 'senha456',
-    nomeCompleto: 'Outro Teste'
-  });
-  Logger.log('Resultado: ' + JSON.stringify(r4));
-
-  // Teste 5: atualizar nome
-  Logger.log('--- Teste 5: atualizar nome do TESTEPROF ---');
-  var r5 = atualizarProfissional(admSigla, admSenha, 'PROF_TESTEPROF', {
-    nomeCompleto: 'Profissional de Teste ATUALIZADO',
-    email: 'novo@exemplo.com'
-  });
-  Logger.log('Resultado: ' + JSON.stringify(r5));
-
-  // Teste 6: trocar senha
-  Logger.log('--- Teste 6: trocar senha do TESTEPROF ---');
-  var r6 = trocarSenhaProfissional(admSigla, admSenha, 'PROF_TESTEPROF', 'novaSenha789');
-  Logger.log('Resultado: ' + JSON.stringify(r6));
-
-  // Teste 7: tentar logar como TESTEPROF com senha nova
-  Logger.log('--- Teste 7: logar TESTEPROF com nova senha ---');
-  var r7 = autenticar('TESTEPROF', 'novaSenha789', 'profissional');
-  Logger.log('Resultado: ' + JSON.stringify(r7));
-
-  // Teste 8: desativar
-  Logger.log('--- Teste 8: desativar TESTEPROF ---');
-  var r8 = desativarProfissional(admSigla, admSenha, 'PROF_TESTEPROF');
-  Logger.log('Resultado: ' + JSON.stringify(r8));
-
-  // Teste 9: tentar logar quando inativo (deve falhar)
-  Logger.log('--- Teste 9: logar TESTEPROF inativo (deve falhar) ---');
-  var r9 = autenticar('TESTEPROF', 'novaSenha789', 'profissional');
-  Logger.log('Resultado: ' + JSON.stringify(r9));
-
-  // Teste 10: reativar
-  Logger.log('--- Teste 10: reativar TESTEPROF ---');
-  var r10 = reativarProfissional(admSigla, admSenha, 'PROF_TESTEPROF');
-  Logger.log('Resultado: ' + JSON.stringify(r10));
-
-  // Teste 11: listar de novo (deve aparecer TESTEPROF)
-  Logger.log('--- Teste 11: listar profissionais final ---');
-  var r11 = listarProfissionais(admSigla, admSenha);
-  Logger.log('Total: ' + r11.total);
-  for (var i = 0; i < r11.profissionais.length; i++) {
-    Logger.log('  ' + r11.profissionais[i].profissional_id + ' - ' +
-               r11.profissionais[i].nome_completo + ' (' +
-               r11.profissionais[i].ativo + ')');
-  }
-
-  Logger.log('=== Fim dos testes 13.1.1 ===');
-  Logger.log('');
-  Logger.log('ATENCAO: TESTEPROF foi cadastrado de verdade!');
-  Logger.log('Confira no Drive:');
-  Logger.log('  clinica-vmc/Profissional_TESTEPROF/');
-  Logger.log('    Clinica VMC - Controle (vazia)');
-  Logger.log('    Pacientes/');
-  Logger.log('Apos validar, apague manualmente.');
 }
 
 
@@ -2801,14 +2956,14 @@ function _gradeObterOuCriarAba_(controle, nomeAba, cabecalhos) {
 
 /**
  * Le a grade de atendimento do profissional.
- * Entrada: profSigla, profSenha (revalidados a cada chamada)
+ * Entrada: s (sessao do profissional, do cracha)
  * Saida: { ok:true, config:{...}, grade:[{dia_semana,hora_inicio,hora_fim,modalidade,ativo}] }
  * Se as abas ainda nao existem, retorna config padrao e grade vazia
  * (primeiro acesso) sem criar nada.
  */
-function lerGradeAtendimento(profSigla, profSenha) {
+function lerGradeAtendimento(s) {
   // 1. Revalidar credenciais (padrao consolidado do Pacote 13.2)
-  var authResult = autenticar(profSigla, profSenha, 'profissional');
+  var authResult = _authProfissional_(s);
   if (!authResult.ok) return authResult;
 
   var profissionalId = authResult.profissional.profissional_id;
@@ -2866,7 +3021,7 @@ function lerGradeAtendimento(profSigla, profSenha) {
 /**
  * Salva a grade de atendimento do profissional.
  * Entrada:
- *   profSigla, profSenha - revalidados a cada chamada
+ *   s      - sessao do profissional (cracha)
  *   config - { duracao_slot_min, antecedencia_min_horas }
  *   grade  - [{dia_semana, hora_inicio, hora_fim, modalidade, ativo}]
  * Cria as abas Config_Agenda e Grade_Horarios automaticamente no
@@ -2875,9 +3030,9 @@ function lerGradeAtendimento(profSigla, profSenha) {
  * (config nao e historico clinico; o principio aditivo se aplica
  * ao schema das colunas, que nunca muda).
  */
-function salvarGradeAtendimento(profSigla, profSenha, config, grade) {
+function salvarGradeAtendimento(s, config, grade) {
   // 1. Revalidar credenciais
-  var authResult = autenticar(profSigla, profSenha, 'profissional');
+  var authResult = _authProfissional_(s);
   if (!authResult.ok) return authResult;
 
   var profissionalId = authResult.profissional.profissional_id;
