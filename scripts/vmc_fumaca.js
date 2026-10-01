@@ -3,7 +3,7 @@
    publicado e os três logins por viewport. Uma janela do Chrome, um viewport (390 por padrão):
      1. (opcional) espera o Pages servir o marcador da linha 2 (`--marcador "Pacote 16.5f"`, até `--espera` s);
      2. abre a página e lê o marcador;
-     3. login com sigla inexistente até a mensagem do servidor (mede segundos; `pageerror` 0);
+     3. login com e-mail inexistente até a mensagem do servidor (mede segundos; `pageerror` 0; Pacote 18.1);
      4. sessão simulada do paciente de teste → checagem → Negativo completo → Revisar e Enviar → envio FINGIDO
         (rota interceptada; nada gravado) até "Registro enviado"; compara as chaves do payload com a linha de base;
      5. uma captura (`<rotulo>_fumaca_enviado_<w>.png`) e um JSON de resultado; sai com código 1 se algo falhar.
@@ -14,7 +14,8 @@
    Exemplo: node scripts/vmc_fumaca.js "https://viniciusmarinaccipsi-art.github.io/clinica-vmc/index-dev.html?v=165f" --marcador "Pacote 16.5f"
    `--baseline`: JSON com as chaves esperadas do payload — aceita `{negativo:{chaves:[…]}}` (formato do
    baseline_payload_16_5e.json), `{chaves:[…]}` ou uma lista. Sem `--baseline`, só registra a contagem.
-   Nenhum dado clínico no log; senha nunca passa por aqui (o login é com sigla inexistente). */
+   Nenhum dado clínico no log; senha nunca passa por aqui (o login é com e-mail inexistente). Desde o 18.1 as leituras
+   da sessão simulada respondem localmente (vmc_playwright_base.js), porque o servidor real exige crachá. */
 'use strict';
 const path = require('path');
 const fs = require('fs');

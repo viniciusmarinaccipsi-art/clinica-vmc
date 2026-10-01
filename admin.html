@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#4A3B6B">
-<title>Clínica VMC — Área Administrativa</title>
+<title>COGNIATIVO — Área Administrativa</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ==========================================================
@@ -379,7 +379,14 @@ body {
   display:flex;
   gap:6px;
   justify-content:flex-end;
+  flex-wrap:wrap;
 }
+/* Pacote 18.1: WhatsApp por profissional (link de convite gerado nesta tela) e links do login */
+a.btn-icon { text-decoration:none; display:inline-flex; align-items:center; }
+a.btn-icon[aria-disabled="true"] { opacity:.5; cursor:not-allowed; }
+.adm-link { background:none; border:none; color:var(--adm); font-weight:600; font-size:13px; cursor:pointer;
+  text-decoration:underline; padding:8px; font-family:'Nunito', sans-serif; }
+.adm-links { text-align:center; margin-top:6px; }
 .btn-icon {
   background:var(--w);
   border:1px solid var(--gray-lt);
@@ -538,8 +545,8 @@ body {
 <div class="app">
 
   <div class="app-header">
-    <h1>Clínica VMC</h1>
-    <p>Sistema Clínico Digital</p>
+    <h1>COGNIATIVO</h1>
+    <p>Psicoterapia para além das sessões, com intervenções cognitivo-comportamentais no dia a dia.</p>
     <span class="adm-badge">Área Administrativa</span>
   </div>
 
@@ -549,21 +556,34 @@ body {
   <div class="section active" id="sec-login-adm">
     <div class="login-card">
       <div class="login-icon">🔐</div>
-      <div class="login-title">Acesso Administrativo</div>
-      <div class="login-sub">Apenas administradores autorizados podem entrar aqui.</div>
+      <div class="login-title" id="admLoginTitulo">Acesso Administrativo</div>
+      <div class="login-sub" id="admLoginSub">Apenas administradores autorizados podem entrar aqui.</div>
 
-      <div class="field">
-        <label for="admSigla">Sigla</label>
-        <input type="text" id="admSigla" autocomplete="off" autocapitalize="characters" maxlength="15" placeholder="Sua sigla de admin">
-      </div>
-      <div class="field">
-        <label for="admSenha">Senha</label>
-        <input type="password" id="admSenha" autocomplete="current-password" placeholder="Sua senha">
-      </div>
+      <!-- Pacote 18.1: login por e-mail; "Esqueci a senha" manda o link de redefinição (tela "Crie sua senha" no index.html) -->
+      <div id="admEntrar">
+        <div class="field">
+          <label for="admEmail">E-mail</label>
+          <input type="email" id="admEmail" autocomplete="username" inputmode="email" autocapitalize="off">
+        </div>
+        <div class="field">
+          <label for="admSenha">Senha</label>
+          <input type="password" id="admSenha" autocomplete="current-password" placeholder="Sua senha">
+        </div>
 
-      <button class="btn-primary" id="admBtnLogin" onclick="admFazerLogin()">Entrar</button>
+        <button class="btn-primary" id="admBtnLogin" onclick="admFazerLogin()">Entrar</button>
+        <div class="adm-links"><button class="adm-link" type="button" onclick="admMostrarLogin('esqueci')">Esqueci a senha</button></div>
+      </div>
+      <div class="hidden" id="admEsqueci">
+        <div class="field">
+          <label for="admEmailEsqueci">E-mail</label>
+          <input type="email" id="admEmailEsqueci" autocomplete="username" inputmode="email" autocapitalize="off">
+        </div>
+        <button class="btn-primary" id="admBtnEsqueci" onclick="admPedirRedefinicao()">Enviar link</button>
+        <div class="adm-links"><button class="adm-link" type="button" onclick="admMostrarLogin('entrar')">Voltar</button></div>
+      </div>
 
       <div class="alert alert-error hidden" id="admLoginError"></div>
+      <div class="alert alert-success hidden" id="admLoginOk"></div>
 
       <div class="login-footer">
         Esta é a área administrativa do sistema. Para acessar como
@@ -586,6 +606,10 @@ body {
       </div>
       <button class="btn-logout" onclick="admLogout()">Sair</button>
     </div>
+
+    <!-- Pacote 18.1: confirmação do convite e erros das ações da tabela -->
+    <div class="alert alert-success hidden" id="dashMsg" role="status"></div>
+    <div class="alert alert-error hidden" id="dashErro" role="alert"></div>
 
     <div class="dash-actions">
       <div class="dash-title">
@@ -636,15 +660,16 @@ body {
         <div class="field">
           <label for="cadSigla">Sigla <span style="color:var(--red);">*</span></label>
           <input type="text" id="cadSigla" autocapitalize="characters" maxlength="15" placeholder="Ex: JOAO">
-          <div class="hint">Identificador único. Letras maiúsculas, números e underline. Será usada como login.</div>
+          <div class="hint">Identificador único. Letras maiúsculas, números e underline.</div>
         </div>
         <div class="field">
           <label for="cadNome">Nome completo <span style="color:var(--red);">*</span></label>
           <input type="text" id="cadNome" placeholder="Ex: João Silva">
         </div>
         <div class="field">
-          <label for="cadEmail">Email</label>
+          <label for="cadEmail">Email <span style="color:var(--red);">*</span></label>
           <input type="email" id="cadEmail" placeholder="joao@exemplo.com">
+          <div class="hint">Será usado como login. O acesso nasce no convite (botão "Enviar convite" na lista).</div>
         </div>
         <div class="field">
           <label for="cadTelefone">Telefone</label>
@@ -657,11 +682,6 @@ body {
         <div class="field">
           <label for="cadDataInicio">Data de início</label>
           <input type="date" id="cadDataInicio">
-        </div>
-        <div class="field">
-          <label for="cadSenha">Senha inicial <span style="color:var(--red);">*</span></label>
-          <input type="text" id="cadSenha" placeholder="Mínimo 6 caracteres">
-          <div class="hint">O profissional pode trocar depois pela interface dele.</div>
         </div>
         <div class="alert alert-error hidden" id="cadError"></div>
         <div class="alert alert-success hidden" id="cadSuccess"></div>
@@ -734,11 +754,11 @@ body {
         Não é possível recuperar a senha antiga depois.</p>
         <div class="field">
           <label for="senhaNova">Nova senha</label>
-          <input type="text" id="senhaNova" placeholder="Mínimo 6 caracteres">
+          <input type="password" id="senhaNova" placeholder="Mínimo 8 caracteres">
         </div>
         <div class="field">
           <label for="senhaConfirma">Confirmar nova senha</label>
-          <input type="text" id="senhaConfirma" placeholder="Digite a mesma senha de novo">
+          <input type="password" id="senhaConfirma" placeholder="Digite a mesma senha de novo">
         </div>
         <input type="hidden" id="senhaProfId">
         <div class="alert alert-error hidden" id="senhaError"></div>
@@ -793,9 +813,9 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx7kHrVq7KizCWC
 
 // Estado global da área admin (em memória apenas)
 const ADM_STATE = {
-  sigla: null,         // sigla do admin logado (para revalidar em cada chamada)
-  senha: null,         // senha do admin logado (idem)
+  token: null,         // Pacote 18.1: crachá de sessão do admin (memória apenas; nunca a senha)
   nomeCompleto: null,
+  convites: {},        // Pacote 18.1: profissional_id -> link do último convite gerado nesta tela (WhatsApp)
   profissionais: [],
   statusPendente: null,  // {profId, sigla, acao: 'desativar'|'reativar'}
 };
@@ -804,10 +824,14 @@ const ADM_STATE = {
 /* ============================================================
    CHAMADA AO SERVIDOR
    ============================================================ */
+// Pacote 18.1: ações sem crachá; todas as outras levam ADM_STATE.token.
+const ADM_ACOES_PUBLICAS = ['ping', 'autenticar', 'pedirRedefinicao', 'definirSenha'];
+
 async function admChamarServidor(acao, dados = {}) {
   mostrarLoading(true);
   try {
     const payload = { acao, ...dados };
+    if (ADM_ACOES_PUBLICAS.indexOf(acao) === -1) payload.token = ADM_STATE.token || '';
     const resposta = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       mode: 'cors',
@@ -816,6 +840,10 @@ async function admChamarServidor(acao, dados = {}) {
       body: JSON.stringify(payload),
     });
     const json = await resposta.json();
+    if (json && json.ok === false && json.codigo === 'sessao_expirada') {
+      admLogout();
+      mostrarErro(document.getElementById('admLoginError'), json.erro || 'Sua sessão expirou. Entre de novo para continuar.');
+    }
     return json;
   } catch (erro) {
     console.error('Erro ao chamar servidor:', erro);
@@ -844,15 +872,15 @@ function admIrPara(idSecao) {
    LOGIN ADMIN
    ============================================================ */
 async function admFazerLogin() {
-  const sigla = document.getElementById('admSigla').value.trim().toUpperCase();
+  const email = document.getElementById('admEmail').value.trim().toLowerCase();
   const senha = document.getElementById('admSenha').value;
   const erroBox = document.getElementById('admLoginError');
   const btn = document.getElementById('admBtnLogin');
 
   erroBox.classList.add('hidden');
 
-  if (!sigla || !senha) {
-    erroBox.textContent = 'Preencha sigla e senha.';
+  if (!email || !senha) {
+    erroBox.textContent = 'Preencha e-mail e senha.';
     erroBox.classList.remove('hidden');
     return;
   }
@@ -861,7 +889,7 @@ async function admFazerLogin() {
   btn.textContent = 'Entrando...';
 
   const resp = await admChamarServidor('autenticar', {
-    sigla, senha, tipo: 'admin'
+    tipo: 'admin', email, senha
   });
 
   btn.disabled = false;
@@ -874,18 +902,20 @@ async function admFazerLogin() {
     return;
   }
 
-  // Guarda credenciais em memória para revalidar em cada chamada admin
-  ADM_STATE.sigla = sigla;
-  ADM_STATE.senha = senha;
-  ADM_STATE.nomeCompleto = resp.admin.nome_completo;
+  // Pacote 18.1: guarda só o crachá de sessão (memória); a senha não fica em lugar nenhum
+  const perfil = resp.perfil || {};
+  ADM_STATE.token = resp.token;
+  ADM_STATE.nomeCompleto = perfil.nome_completo || perfil.nome;
+  ADM_STATE.convites = {};
 
   // Limpa os campos do form de login
-  document.getElementById('admSigla').value = '';
+  document.getElementById('admEmail').value = '';
   document.getElementById('admSenha').value = '';
+  document.getElementById('admLoginOk').classList.add('hidden');
 
   // Atualiza header e vai pro dashboard
-  document.getElementById('dashUserNome').textContent = resp.admin.nome_completo;
-  document.getElementById('dashUserSigla').textContent = 'Admin · ' + resp.admin.sigla;
+  document.getElementById('dashUserNome').textContent = ADM_STATE.nomeCompleto || perfil.sigla;
+  document.getElementById('dashUserSigla').textContent = 'Admin · ' + perfil.sigla;
 
   admIrPara('sec-dash');
   await admCarregarProfissionais();
@@ -893,11 +923,36 @@ async function admFazerLogin() {
 
 function admLogout() {
   // Limpa estado em memória (não tem sessionStorage por segurança)
-  ADM_STATE.sigla = null;
-  ADM_STATE.senha = null;
+  ADM_STATE.token = null;
   ADM_STATE.nomeCompleto = null;
   ADM_STATE.profissionais = [];
+  ADM_STATE.convites = {};
+  ['modalCadastro','modalEditar','modalSenha','modalStatus'].forEach(admFecharModal);
+  admMostrarLogin('entrar');
   admIrPara('sec-login-adm');
+}
+
+/* Pacote 18.1: "Esqueci a senha" do admin (link de redefinição; resposta idêntica exista ou não o e-mail) */
+function admMostrarLogin(tela) {
+  const esqueci = tela === 'esqueci';
+  document.getElementById('admLoginTitulo').textContent = esqueci ? 'Esqueci a senha' : 'Acesso Administrativo';
+  document.getElementById('admLoginSub').textContent = esqueci
+    ? 'Informe o e-mail cadastrado. Se ele estiver no sistema, você receberá um link para criar uma senha nova.'
+    : 'Apenas administradores autorizados podem entrar aqui.';
+  document.getElementById('admEntrar').classList.toggle('hidden', esqueci);
+  document.getElementById('admEsqueci').classList.toggle('hidden', !esqueci);
+  document.getElementById('admLoginError').classList.add('hidden');
+  if (esqueci) document.getElementById('admLoginOk').classList.add('hidden');
+}
+
+async function admPedirRedefinicao() {
+  const email = document.getElementById('admEmailEsqueci').value.trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return mostrarErro(document.getElementById('admLoginError'), 'E-mail inválido');
+  await admChamarServidor('pedirRedefinicao', { tipo: 'admin', email });
+  admMostrarLogin('entrar');
+  const ok = document.getElementById('admLoginOk');
+  ok.textContent = 'Se o e-mail estiver cadastrado, o link chegará em alguns minutos. Confira também a caixa de spam.';
+  ok.classList.remove('hidden');
 }
 
 
@@ -905,15 +960,14 @@ function admLogout() {
    CARREGAR E RENDERIZAR LISTA DE PROFISSIONAIS
    ============================================================ */
 async function admCarregarProfissionais() {
-  const resp = await admChamarServidor('admListarProfissionais', {
-    adminSigla: ADM_STATE.sigla,
-    adminSenha: ADM_STATE.senha
-  });
+  const resp = await admChamarServidor('admListarProfissionais', {});
 
   if (!resp.ok) {
-    alert('Erro ao carregar profissionais: ' + (resp.erro || 'erro desconhecido'));
-    // Sessão pode ter expirado; volta pro login
-    admLogout();
+    // Pacote 18.1: aviso na tela do login em vez de alert(); sessão expirada já voltou ao login
+    if (resp.codigo !== 'sessao_expirada') {
+      admLogout();
+      mostrarErro(document.getElementById('admLoginError'), 'Erro ao carregar profissionais: ' + (resp.erro || 'erro desconhecido'));
+    }
     return;
   }
 
@@ -946,6 +1000,14 @@ function admRenderizarTabela() {
     const nome = escapeHtml(p.nome_completo || '—');
     const email = escapeHtml(p.email || '—');
     const crp = escapeHtml(p.crp || '—');
+    // Pacote 18.1: WhatsApp só com telefone e depois de um convite gerado nesta tela
+    const tel = String(p.telefone || '').replace(/\D/g, '');
+    const telOk = tel.length === 10 || tel.length === 11;
+    const link = ADM_STATE.convites[p.profissional_id] || '';
+    const whats = (telOk && link)
+      ? `<a class="btn-icon" target="_blank" rel="noopener" aria-disabled="false" href="${escapeHtml(admLinkWhatsApp(tel, link))}">WhatsApp</a>`
+      : `<a class="btn-icon" target="_blank" rel="noopener" aria-disabled="true" onclick="return false"${telOk ? '' : ' title="Cadastre o telefone para enviar pelo WhatsApp"'}>WhatsApp</a>`;
+    const convite = ativo ? `<button class="btn-icon" onclick="admEnviarConvite('${profId}')">Enviar convite</button>${whats}` : '';
 
     const btnStatus = ativo
       ? `<button class="btn-icon danger" onclick="admConfirmarDesativar('${profId}','${sigla}')">Desativar</button>`
@@ -962,6 +1024,7 @@ function admRenderizarTabela() {
           <div class="prof-actions">
             <button class="btn-icon" onclick="admAbrirModalEditar('${profId}')">Editar</button>
             <button class="btn-icon" onclick="admAbrirModalSenha('${profId}','${sigla}')">Senha</button>
+            ${convite}
             ${btnStatus}
           </div>
         </td>
@@ -973,11 +1036,35 @@ function admRenderizarTabela() {
 
 
 /* ============================================================
+   Pacote 18.1: CONVITE DO PROFISSIONAL (e-mail) E WHATSAPP
+   ============================================================ */
+function admLinkWhatsApp(telefone, link) {
+  const msg = 'Olá! Aqui é o Vinícius. Seu acesso ao COGNIATIVO está pronto. Toque no link para criar sua senha: ' + link + '. Ele vale por 48 horas.';
+  return 'https://wa.me/55' + String(telefone || '').replace(/\D/g, '') + '?text=' + encodeURIComponent(msg);
+}
+
+async function admEnviarConvite(profId) {
+  const msg = document.getElementById('dashMsg');
+  const erro = document.getElementById('dashErro');
+  msg.classList.add('hidden'); erro.classList.add('hidden');
+  const resp = await admChamarServidor('admEnviarConvite', { profissionalId: profId, canal: 'email' });
+  if (resp && resp.link) ADM_STATE.convites[profId] = resp.link;
+  admRenderizarTabela();
+  if (!resp || !resp.ok) {
+    if (resp && resp.codigo === 'sessao_expirada') return;
+    return mostrarErro(erro, (resp && resp.erro) || 'Erro ao enviar o convite.');
+  }
+  msg.textContent = 'Convite enviado.';
+  msg.classList.remove('hidden');
+}
+
+
+/* ============================================================
    MODAL: CADASTRAR
    ============================================================ */
 function admAbrirModalCadastro() {
   // Limpa form
-  ['cadSigla','cadNome','cadEmail','cadTelefone','cadCRP','cadDataInicio','cadSenha']
+  ['cadSigla','cadNome','cadEmail','cadTelefone','cadCRP','cadDataInicio']
     .forEach(id => document.getElementById(id).value = '');
   document.getElementById('cadError').classList.add('hidden');
   document.getElementById('cadSuccess').classList.add('hidden');
@@ -1002,8 +1089,7 @@ async function admSalvarCadastro() {
     email: document.getElementById('cadEmail').value.trim(),
     telefone: document.getElementById('cadTelefone').value.trim(),
     crp: document.getElementById('cadCRP').value.trim(),
-    dataInicio: document.getElementById('cadDataInicio').value,
-    senhaInicial: document.getElementById('cadSenha').value
+    dataInicio: document.getElementById('cadDataInicio').value
   };
 
   // Validação básica no cliente (servidor revalida)
@@ -1016,16 +1102,14 @@ async function admSalvarCadastro() {
   if (!dados.nomeCompleto) {
     return mostrarErro(erroBox, 'Nome completo obrigatório.');
   }
-  if (!dados.senhaInicial || dados.senhaInicial.length < 6) {
-    return mostrarErro(erroBox, 'Senha obrigatória, mínimo 6 caracteres.');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dados.email)) {
+    return mostrarErro(erroBox, 'E-mail inválido');
   }
 
   btn.disabled = true;
   btn.textContent = 'Cadastrando...';
 
   const resp = await admChamarServidor('admCadastrarProfissional', {
-    adminSigla: ADM_STATE.sigla,
-    adminSenha: ADM_STATE.senha,
     dados
   });
 
@@ -1091,8 +1175,6 @@ async function admSalvarEdicao() {
   btn.textContent = 'Salvando...';
 
   const resp = await admChamarServidor('admAtualizarProfissional', {
-    adminSigla: ADM_STATE.sigla,
-    adminSenha: ADM_STATE.senha,
     profissionalId: profId,
     mudancas
   });
@@ -1139,8 +1221,8 @@ async function admSalvarNovaSenha() {
   const novaSenha = document.getElementById('senhaNova').value;
   const confirma = document.getElementById('senhaConfirma').value;
 
-  if (!novaSenha || novaSenha.length < 6) {
-    return mostrarErro(erroBox, 'Senha deve ter no mínimo 6 caracteres.');
+  if (!novaSenha || novaSenha.length < 8) {
+    return mostrarErro(erroBox, 'Senha deve ter no mínimo 8 caracteres.');
   }
   if (novaSenha !== confirma) {
     return mostrarErro(erroBox, 'As senhas digitadas não coincidem.');
@@ -1150,8 +1232,6 @@ async function admSalvarNovaSenha() {
   btn.textContent = 'Trocando...';
 
   const resp = await admChamarServidor('admTrocarSenhaProfissional', {
-    adminSigla: ADM_STATE.sigla,
-    adminSenha: ADM_STATE.senha,
     profissionalId: profId,
     novaSenha
   });
@@ -1215,8 +1295,6 @@ async function admConfirmarStatus() {
   btn.textContent = 'Processando...';
 
   const resp = await admChamarServidor(acao, {
-    adminSigla: ADM_STATE.sigla,
-    adminSenha: ADM_STATE.senha,
     profissionalId: pendente.profId
   });
 
@@ -1265,7 +1343,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 // Enter no login dispara entrar
-['admSigla','admSenha'].forEach(id => {
+['admEmail','admSenha'].forEach(id => {
   document.getElementById(id).addEventListener('keydown', (e) => {
     if (e.key === 'Enter') admFazerLogin();
   });

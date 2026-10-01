@@ -41,6 +41,14 @@ const ALTURA_PADRAO = { 390: 844, 1000: 700, 1280: 800 };
 const ACOES_EDICAO = ['pacienteMarcarEditandoAuto', 'pacienteLimparEditandoAuto', 'pacienteEditarAutomonitoramento'];
 const RE_HOJE = /^Hoje, \d{2}\/\d{2} · \d{2}:\d{2}$/;
 const SIGLA_TESTE = 'VMC';
+// Pacote 18.1: ações sem crachá; todas as outras exigem token no servidor real. Em modo "fingir" as leituras
+// abaixo respondem localmente (a sessão simulada não tem crachá válido) — nada sai do navegador.
+const ACOES_PUBLICAS = ['ping', 'autenticar', 'pedirRedefinicao', 'definirSenha'];
+const RESPOSTAS_FINGIDAS = {
+  lerHistorico: { ok: true, fingido: true, anamnese_preenchida: true, anamnese: { nome_completo: 'Paciente de teste' }, automonitoramento: [], total_registros: 0 },
+  lerEscalas: { ok: true, fingido: true, total: 0, escalas: [] },
+  lerItensInstrumento: { ok: true, fingido: true, liberados: [] }
+};
 
 /* "390" | "390,1280" | "390x844,1000x700" | undefined → lista de {w,h}. Sem argumento: celular + computador. */
 function viewportsDe(texto) {
@@ -82,8 +90,10 @@ async function abrir(browser, url, vp, opts) {
   const ctx = await browser.newContext(ctxOpts);
   const page = await ctx.newPage();
   const erros = [];
-  const R = { viewport: vp.w + 'x' + vp.h, modo: o.modo, capturas: [], dialogos: [], payloads: [], edicoes: [], consoleErros: [], requests: [], pageerror: erros };
-  const S = { page, ctx, vp, modo: o.modo, rotulo: o.rotulo, dirCap: o.dirCap, R, bloquearEnvio: 0 };
+  const R = { viewport: vp.w + 'x' + vp.h, modo: o.modo, capturas: [], dialogos: [], payloads: [], edicoes: [], consoleErros: [], requests: [], chavesPorAcao: {}, pageerror: erros };
+  // S.servidor (opcional, do roteiro): (acao, corpo) => resposta | undefined — servidor simulado por page.route
+  const S = { page, ctx, vp, modo: o.modo, rotulo: o.rotulo, dirCap: o.dirCap, R, bloquearEnvio: 0, servidor: null };
+  const responder = (route, obj) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(obj) });
 
   page.on('pageerror', e => erros.push(e.message.slice(0, 200)));
   page.on('crash', () => erros.push('CRASH do renderizador'));
@@ -93,16 +103,18 @@ async function abrir(browser, url, vp, opts) {
     let corpo = null;
     try { corpo = JSON.parse(route.request().postData() || 'null'); } catch (e) { /* GET ou corpo não-JSON */ }
     const acao = corpo && corpo.acao;
-    if (acao) R.requests.push(acao);
+    if (acao) { R.requests.push(acao); R.chavesPorAcao[acao] = Array.from(new Set((R.chavesPorAcao[acao] || []).concat(Object.keys(corpo)))); }
+    if (acao && S.servidor) { const r = await S.servidor(acao, corpo); if (r !== undefined) { if (acao === 'salvarAutomonitoramento') { const c = JSON.parse(JSON.stringify(corpo)); delete c.sigla; delete c.token; R.payloads.push(c); } await responder(route, r); return; } }
     if (acao === 'salvarAutomonitoramento') {
       if (S.bloquearEnvio > 0) { S.bloquearEnvio--; await route.abort('failed'); return; }
-      const c = JSON.parse(JSON.stringify(corpo)); delete c.sigla; R.payloads.push(c);
+      const c = JSON.parse(JSON.stringify(corpo)); delete c.sigla; delete c.token; R.payloads.push(c);
       if (o.modo === 'fingir') { await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, fingido: true }) }); return; }
     }
     if (o.acoesFingidas.indexOf(acao) !== -1) {
-      if (acao === 'pacienteEditarAutomonitoramento') { const c = JSON.parse(JSON.stringify(corpo)); delete c.sigla; R.edicoes.push(c); }
+      if (acao === 'pacienteEditarAutomonitoramento') { const c = JSON.parse(JSON.stringify(corpo)); delete c.sigla; delete c.token; R.edicoes.push(c); }
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, fingido: true, editado_em: '' }) }); return;
     }
+    if (o.modo === 'fingir' && acao && ACOES_PUBLICAS.indexOf(acao) === -1 && RESPOSTAS_FINGIDAS[acao]) { await responder(route, RESPOSTAS_FINGIDAS[acao]); return; }
     await route.continue();
   });
 
@@ -122,21 +134,21 @@ async function abrir(browser, url, vp, opts) {
   /* ---------- navegação ---------- */
   S.ir = async () => { await page.goto(url, { waitUntil: 'load', timeout: o.gotoTimeout }); await S.sleep(800); R.marcador = await S.marcador(); return R.marcador; };
 
-  /* Login (sigla inexistente por padrão) até a mensagem do servidor: {mensagem, segundos}. Nunca usar credencial real aqui. */
-  S.login = async (sigla, senha, maxSeg) => {
+  /* Login (e-mail inexistente por padrão — Pacote 18.1) até a mensagem do servidor: {mensagem, segundos}. Nunca usar credencial real aqui. */
+  S.login = async (email, senha, maxSeg) => {
     await page.click('#loginTipoPaciente'); await S.sleep(200);
-    await page.fill('#inputSigla', sigla || 'ZZZ'); await page.fill('#inputSenha', senha || 'senha-invalida-de-teste');
+    await page.fill('#inputEmail', email || 'teste-inexistente@exemplo.com'); await page.fill('#inputSenha', senha || 'senha-invalida-de-teste');
     const t0 = Date.now(); await page.click('#btnLogin');
     let msg = '';
     for (let i = 0; i < (maxSeg || 60); i++) { await S.sleep(1000); msg = await page.evaluate(() => { const el = document.getElementById('loginError'); return (!el || el.classList.contains('hidden')) ? '' : el.textContent.trim(); }); if (msg) break; }
     return { mensagem: msg || '(sem mensagem em ' + (maxSeg || 60) + ' s)', segundos: Math.round((Date.now() - t0) / 1000) };
   };
 
-  /* Sessão simulada do paciente de teste (sem senha). opts: {sigla, secao, comoUsarLido, veterano} */
+  /* Sessão simulada do paciente de teste (sem senha; crachá fictício, recusado pelo servidor real). opts: {sigla, secao, comoUsarLido, veterano} */
   S.simularSessao = async (so) => {
     const p = Object.assign({ sigla: SIGLA_TESTE, secao: 'sec-automonitoramento', comoUsarLido: true, veterano: true }, so || {});
     await page.evaluate(p => {
-      sessionStorage.clear(); salvarSessao({ sigla: p.sigla, anamnese_preenchida: true });
+      sessionStorage.clear(); salvarSessao({ sigla: p.sigla, anamnese_preenchida: true, token: 'cracha-simulado' });
       if (p.comoUsarLido) sessionStorage.setItem('autoComoUsarLido', '1');
       atualizarBadgeUsuario(); atualizarMenuConformeSessao();
       if (p.veterano) { P5_STATE.verificado = true; P5_STATE.primeiraVez = false; }
@@ -263,4 +275,4 @@ async function abrir(browser, url, vp, opts) {
   return S;
 }
 
-module.exports = { carregarPlaywright, VIEWPORTS, viewportsDe, ACOES_EDICAO, RE_HOJE, SIGLA_TESTE, abrirNavegador, abrir, gravarResultado, resumo, falhar };
+module.exports = { carregarPlaywright, VIEWPORTS, viewportsDe, ACOES_EDICAO, ACOES_PUBLICAS, RE_HOJE, SIGLA_TESTE, abrirNavegador, abrir, gravarResultado, resumo, falhar };

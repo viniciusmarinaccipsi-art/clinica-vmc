@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html (tema G) — Pacote 16.4.6 (28/09/2026) -->
+<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.1 — produção (01/10/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#2C5F7C">
-<title>Clínica VMC — Sistema TCC</title>
+<title>COGNIATIVO</title>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
@@ -323,7 +323,7 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .topbar-acao:active{border-color:var(--c-action);background:var(--c-action-tint);color:var(--c-action-ink);}
 .topbar.com-acao .topbar-acao{display:inline-flex;align-items:center;}
 .topbar.com-acao .user-badge,.topbar.com-acao .pac-hamburger-wrap{display:none;}
-@media (max-width:540px){ .topbar.tela #userBadgeText{display:none;} .topbar.tela .user-badge{padding:0 8px;} }
+@media (max-width:540px){ .topbar.tela #userBadgeText,.topbar.marca #userBadgeText{display:none;} .topbar.tela .user-badge,.topbar.marca .user-badge{padding:0 8px;} }
 .topbar-marca{flex:1;display:none;align-items:center;gap:var(--s-2);}
 .topbar.marca .topbar-marca{display:flex;}
 .marca-ico{width:32px;height:32px;border-radius:9px;background:var(--c-action-tint);color:var(--c-action-ink);
@@ -337,6 +337,11 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .btn-logout:hover{opacity:1;}
 /* marca reduzida: só no login (o menu usa a barra em modo .marca) */
 .login-marca{display:flex;align-items:center;justify-content:center;gap:var(--s-2);padding:var(--s-7) 0 var(--s-5);}
+/* Pacote 18.1: marca COGNIATIVO com a frase de destaque logo abaixo do nome (login e barra do Início) */
+.marca-txt{display:flex;flex-direction:column;min-width:0;}
+.marca-frase{font:var(--t-body-sm);font-weight:500;color:var(--c-action-ink);}
+.topbar-marca .marca-nome{line-height:1.1;}
+.topbar-marca .marca-frase{line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
 /* ===== Cards de menu ===== */
 .card-grid{display:grid;gap:14px;margin-top:16px;}
@@ -685,7 +690,6 @@ body.vmc-largo .topbar-in{max-width:1360px;}
   box-sizing:border-box;transition:border-color .2s;
 }
 .prof-cad-field input:focus{border-color:var(--c-action);}
-.prof-cad-field .prof-cad-hint{font:var(--t-body-sm);color:var(--c-ink-3);margin-top:3px;}
 .prof-cad-erro{
   display:none;background:var(--c-risk-tint);color:var(--c-risk-ink);
   padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px;
@@ -941,6 +945,21 @@ body.vmc-largo .topbar-in{max-width:1360px;}
   font:var(--t-body-sm);text-align:center;margin-top:24px;
   color:var(--c-ink-3);
 }
+/* Pacote 18.1: subtítulo oficial em letra miúda (piso de 13 px) acima da linha de contato */
+.login-subtitulo{font:var(--t-body-sm);color:var(--c-ink-3);margin:0 0 var(--s-2);}
+/* Pacote 18.1: telas de acesso no cartão do login (entrar, crie sua senha, esqueci a senha, link inválido) */
+.login-link{background:none;border:none;padding:0 var(--s-2);min-height:var(--hit-min);font:var(--t-body-sm);font-weight:600;
+  color:var(--c-action);cursor:pointer;text-decoration:underline;font-family:var(--f-text);}
+.login-links{display:flex;justify-content:center;margin-top:var(--s-2);}
+.login-texto{font:var(--t-body-sm);color:var(--c-ink-2);margin:0 0 var(--s-4);text-align:center;}
+/* Pacote 18.1: convite do paciente (cadastro e editor do profissional) */
+.prof-convite{margin:var(--s-3) 0 var(--s-2);}
+.prof-convite-acoes{display:flex;gap:var(--s-2);flex-wrap:wrap;}
+.prof-convite-acoes .p5-btn{flex:1 1 0;min-width:0;min-height:var(--hit-min);text-decoration:none;display:inline-flex;align-items:center;justify-content:center;}
+.prof-convite-acoes .prof-btn-whats{border:1px solid var(--c-line-strong);}
+.prof-btn-whats[aria-disabled="true"]{opacity:.5;cursor:not-allowed;}
+.prof-convite-msg{font:var(--t-body-sm);color:var(--c-pos-ink);margin-top:var(--s-2);}
+.prof-convite-msg.erro{color:var(--c-risk-ink);}
 
 /* ===== Placeholder ===== */
 
@@ -3986,7 +4005,7 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 <div class="topbar" id="topbar">
   <div class="topbar-in">
     <button class="topbar-voltar" id="topbarVoltar" type="button" aria-label="Voltar">‹</button>
-    <div class="topbar-marca"><span class="marca-ico">V</span><span class="marca-nome">Clínica VMC</span></div>
+    <div class="topbar-marca"><span class="marca-ico">C</span><span class="marca-txt"><span class="marca-nome">COGNIATIVO</span><span class="marca-frase">pensar, registrar, transformar</span></span></div>
     <div class="topbar-texto"><span class="topbar-sobre" id="topbarSobre"></span><span class="topbar-titulo" id="topbarTitulo"></span></div>
     <div class="topbar-acoes">
       <!-- Pacote 16.5c: botão de ação da tela (ex.: "Salvar e sair"), lido de data-barra-acao / data-barra-acao-onclick -->
@@ -4022,14 +4041,15 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 
   <!-- LOGIN -->
   <div class="section active" id="sec-login">
-    <div class="login-marca"><span class="marca-ico">V</span><span class="marca-nome">Clínica VMC</span></div>
+    <div class="login-marca"><span class="marca-ico">C</span><span class="marca-txt"><span class="marca-nome">COGNIATIVO</span><span class="marca-frase">pensar, registrar, transformar</span></span></div>
     <div class="login-card">
       <div class="login-icon"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg></div>
-      <div class="login-title">Acesso ao Sistema</div>
-      <div class="login-sub">Selecione seu perfil e faça login</div>
+      <!-- Pacote 18.1: o cartão alterna entre as telas de acesso (loginMostrar): entrar, esqueci, verifique, ativar, invalido -->
+      <div class="login-title" id="loginTitulo">Acesso ao Sistema</div>
+      <div class="login-sub" id="loginSub">Selecione seu perfil e faça login</div>
 
       <!-- Pacote 13.2.1: Seletor de tipo -->
-      <div class="login-tipo-grid">
+      <div class="login-tipo-grid" id="loginTipoGrid">
         <div class="login-tipo-card" id="loginTipoPaciente" onclick="selecionarTipoLogin('paciente')">
           <span class="login-tipo-icon"><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg></span>
           <span class="login-tipo-label">Sou Paciente</span>
@@ -4043,8 +4063,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <!-- Formulário aparece após seleção de tipo -->
       <div class="login-form-fields" id="loginFormFields">
         <div class="field">
-          <label for="inputSigla">Sigla</label>
-          <input type="text" id="inputSigla" placeholder="Ex: TST" autocomplete="off" autocapitalize="characters" maxlength="10">
+          <label for="inputEmail">E-mail</label>
+          <input type="email" id="inputEmail" autocomplete="username" inputmode="email" autocapitalize="off">
         </div>
         <div class="field">
           <label for="inputSenha">Senha</label>
@@ -4052,11 +4072,44 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         </div>
 
         <button class="btn-primary" id="btnLogin" onclick="fazerLogin()">Entrar</button>
+        <div class="login-links"><button class="login-link" type="button" onclick="loginMostrar('esqueci')">Esqueci a senha</button></div>
       </div>
 
-      <div class="alert alert-error hidden" id="loginError"></div>
+      <!-- Pacote 18.1: Esqueci a senha (perfil escolhido nos cartões acima) -->
+      <div class="hidden" id="loginEsqueci">
+        <div class="field">
+          <label for="inputEmailEsqueci">E-mail</label>
+          <input type="email" id="inputEmailEsqueci" autocomplete="username" inputmode="email" autocapitalize="off">
+        </div>
+        <button class="btn-primary" id="btnEsqueci" onclick="loginPedirRedefinicao()">Enviar link</button>
+        <div class="login-links"><button class="login-link" type="button" onclick="loginMostrar('entrar')">Voltar</button></div>
+      </div>
+
+      <!-- Pacote 18.1: Crie sua senha (?ativar=) -->
+      <div class="hidden" id="loginAtivar">
+        <p class="login-texto" id="loginAtivarTexto"></p>
+        <div class="field">
+          <label for="inputNovaSenha">Nova senha</label>
+          <input type="password" id="inputNovaSenha" autocomplete="new-password">
+        </div>
+        <div class="field">
+          <label for="inputNovaSenha2">Repita a senha</label>
+          <input type="password" id="inputNovaSenha2" autocomplete="new-password">
+        </div>
+        <button class="btn-primary" id="btnSalvarSenha" onclick="loginSalvarSenha()">Salvar senha</button>
+      </div>
+
+      <!-- Pacote 18.1: Verifique seu e-mail e Link inválido (só texto e um link) -->
+      <div class="hidden" id="loginAviso">
+        <p class="login-texto" id="loginAvisoTexto"></p>
+        <div class="login-links"><button class="login-link" type="button" id="loginAvisoLink" onclick="loginMostrar('entrar')"></button></div>
+      </div>
+
+      <div class="alert alert-error hidden" id="loginError" role="alert"></div>
+      <div class="alert alert-success hidden" id="loginOk" role="status"></div>
 
       <div class="login-footer">
+        <p class="login-subtitulo">Psicoterapia para além das sessões, com intervenções cognitivo-comportamentais no dia a dia.</p>
         Em caso de problemas, entre em contato com seu terapeuta.
       </div>
     </div>
@@ -4182,27 +4235,34 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       </div>
       <div class="p5-modal-body" id="profCadBody">
         <div class="prof-cad-erro" id="profCadErro"></div>
-        <div class="prof-cad-field">
-          <label>Sigla <span class="req">*</span></label>
-          <input type="text" id="profCadSigla" maxlength="10" placeholder="Ex: ABC"
-                 oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9_]/g,'')">
-          <div class="prof-cad-hint">2-10 caracteres, letras maiúsculas, números ou _</div>
+        <!-- Pacote 18.1: nome, e-mail e telefone; a sigla é gerada pelo servidor e o acesso nasce no convite -->
+        <div id="profCadCampos">
+          <div class="prof-cad-field">
+            <label for="profCadNome">Nome completo <span class="req">*</span></label>
+            <input type="text" id="profCadNome" placeholder="Nome completo do paciente">
+          </div>
+          <div class="prof-cad-field">
+            <label for="profCadEmail">E-mail do paciente <span class="req">*</span></label>
+            <input type="email" id="profCadEmail" inputmode="email" autocapitalize="off">
+          </div>
+          <div class="prof-cad-field">
+            <label for="profCadTel">Telefone (WhatsApp)</label>
+            <input type="tel" id="profCadTel" inputmode="numeric" maxlength="13" oninput="profContatoMascara_(this)">
+          </div>
         </div>
-        <div class="prof-cad-field">
-          <label>Nome completo <span class="req">*</span></label>
-          <input type="text" id="profCadNome" placeholder="Nome completo do paciente">
-        </div>
-        <div class="prof-cad-field">
-          <label>Senha inicial <span class="req">*</span></label>
-          <input type="password" id="profCadSenha" placeholder="Mínimo 6 caracteres">
-        </div>
-        <div class="prof-cad-field">
-          <label>Confirmar senha <span class="req">*</span></label>
-          <input type="password" id="profCadSenha2" placeholder="Repita a senha">
+        <div class="hidden" id="profCadFeito">
+          <div class="alert alert-success" id="profCadOk" role="status"></div>
+          <div class="prof-convite">
+            <div class="prof-convite-acoes">
+              <button class="p5-btn p5-btn-primary" type="button" id="profCadBtnConvite" onclick="profEnviarConviteEmail_('cad')">Enviar convite</button>
+              <a class="p5-btn p5-btn-secondary prof-btn-whats" id="profCadBtnWhats" target="_blank" rel="noopener" aria-disabled="true" onclick="return profWhatsClicar_(this)">WhatsApp</a>
+            </div>
+            <div class="prof-convite-msg" id="profCadConviteMsg" role="status"></div>
+          </div>
         </div>
       </div>
       <div class="p5-modal-acoes">
-        <button class="p5-btn p5-btn-secondary" type="button" onclick="profFecharModalCadastro()">Cancelar</button>
+        <button class="p5-btn p5-btn-secondary" type="button" id="profCadBtnCancelar" onclick="profFecharModalCadastro()">Cancelar</button>
         <button class="p5-btn p5-btn-primary" type="button" id="profCadBtnEnviar" onclick="profCadastrarPaciente()">Cadastrar</button>
       </div>
     </div>
@@ -4222,7 +4282,7 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         </p>
         <div class="prof-cad-field">
           <label>Nova senha <span class="req">*</span></label>
-          <input type="password" id="p137SenhaInput1" placeholder="Mínimo 6 caracteres">
+          <input type="password" id="p137SenhaInput1" placeholder="Mínimo 8 caracteres">
         </div>
         <div class="prof-cad-field">
           <label>Confirmar nova senha <span class="req">*</span></label>
@@ -4330,7 +4390,7 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         </div>
         <div class="prof-cad-field">
           <label>Nova senha <span class="req">*</span></label>
-          <input type="password" id="pacSenhaNova" placeholder="Mínimo 6 caracteres">
+          <input type="password" id="pacSenhaNova" placeholder="Mínimo 8 caracteres">
         </div>
         <div class="prof-cad-field">
           <label>Confirmar nova senha <span class="req">*</span></label>
@@ -4345,7 +4405,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
   </div>
 
   <!-- INÍCIO (Pacote 16.4c: era "Menu Principal") -->
-  <div class="section" id="sec-menu" data-barra-titulo="Início" data-barra-voltar="">
+  <!-- Pacote 18.1: sem data-barra-titulo — o Início usa a barra em modo marca (COGNIATIVO + frase de destaque) -->
+  <div class="section" id="sec-menu">
     <div class="ini-cab">
       <div class="ini-ola" id="iniOla">Olá</div>
       <div class="ini-data" id="iniData"></div>
@@ -7269,8 +7330,12 @@ var VMC_ACOES_GRAVACAO = [
   'profMarcarEditandoAuto', 'profLimparEditandoAuto', 'profEditarAutomonitoramento',
   'profDesativarPaciente', 'profReativarPaciente', 'profExcluirPaciente', 'profAlterarSenhaPaciente',
   'admCadastrarProfissional', 'admAtualizarProfissional', 'admTrocarSenhaProfissional',
-  'admDesativarProfissional', 'admReativarProfissional'
+  'admDesativarProfissional', 'admReativarProfissional',
+  // Pacote 18.1: convite e senha (e-mail enviado ou link de uso único consumido não se repetem sozinhos)
+  'definirSenha', 'profEnviarConvite', 'admEnviarConvite', 'pedirRedefinicao'
 ];
+// Pacote 18.1: as únicas ações sem crachá de sessão; todas as outras levam `token` (chamarServidor).
+var VMC_ACOES_PUBLICAS = ['ping', 'autenticar', 'pedirRedefinicao', 'definirSenha'];
 // Pacote 16.4.3: leituras pesadas do profissional. Medido no Playwright (Chrome, aba
 // visível) em 23/09/2026 — números no relatório do pacote. São as únicas leituras que
 // varrem mais de uma planilha, e as únicas que perdem a repetição automática.
@@ -7284,7 +7349,7 @@ var VMC_EM_ANDAMENTO = {};
 // da ação pedida — em 28/09 um POST redirecionado terminou no doGet, que responde {ok:true} sem dados —
 // e conta como erro, nunca como "0 registros" ou login feito.
 var VMC_CAMPO_DA_RESPOSTA = {
-  lerHistorico: ['automonitoramento'], lerEscalas: ['escalas'], autenticar: ['paciente', 'profissional', 'admin']
+  lerHistorico: ['automonitoramento'], lerEscalas: ['escalas'], autenticar: ['token']
 };
 
 function _chamarUmaVez_(payload) {
@@ -7360,8 +7425,25 @@ function _aguardarTentarDeNovo_() {
   });
 }
 
+// Pacote 18.1: crachá da sessão atual — profissional (memória) ou paciente (sessionStorage). Nunca senha.
+function vmcTokenSessao_() {
+  if (typeof PROF_SESSAO !== 'undefined' && PROF_SESSAO && PROF_SESSAO.token) return PROF_SESSAO.token;
+  const p = carregarSessao();
+  return (p && p.token) || '';
+}
+
+// Pacote 18.1: o servidor recusou o crachá (vencido, adulterado, conta inativa) — volta ao login com aviso na tela.
+function vmcSessaoExpirada_(msg) {
+  document.querySelectorAll('.p5-modal-overlay.show').forEach(function (m) { m.classList.remove('show'); });
+  if (typeof PROF_SESSAO !== 'undefined' && PROF_SESSAO) logoutProfissional(); else logout();
+  const box = document.getElementById('loginError');
+  box.textContent = msg || 'Sua sessão expirou. Entre de novo para continuar.';
+  box.classList.remove('hidden');
+}
+
 async function chamarServidor(acao, dados = {}) {
   const payload = { acao, ...dados };
+  if (VMC_ACOES_PUBLICAS.indexOf(acao) === -1) payload.token = vmcTokenSessao_();
   // Pacote 16.4.6: limite único (VMC_TIMEOUT_MS); o que muda por classe é a repetição automática.
   const ehGravacao = VMC_ACOES_GRAVACAO.indexOf(acao) !== -1;
   const ehPesada = VMC_ACOES_PESADAS.indexOf(acao) !== -1;
@@ -7371,9 +7453,11 @@ async function chamarServidor(acao, dados = {}) {
     // Aviso na marca dos 20 s: sem ele o usuário veria um overlay parado por até um minuto.
     const aviso = setTimeout(() => loadingMensagem('O servidor está demorando; aguarde até 1 minuto…'), VMC_AVISO_MS);
     try {
-      return repeteSozinho
+      const r = repeteSozinho
         ? await _chamarComRepeticao_(payload, () => loadingMensagem('O servidor demorou; tentando de novo…'))
         : await _chamarUmaVez_(payload);
+      if (r && r.ok === false && r.codigo === 'sessao_expirada') vmcSessaoExpirada_(r.erro);
+      return r;
     } catch (erro) {
       console.error('Erro ao chamar servidor' + (repeteSozinho ? '' : ' (' + (ehGravacao ? 'gravação' : 'leitura pesada') +
         ', sem repetição automática)') + ':', erro.message);
@@ -7840,7 +7924,10 @@ function iniRenderContinuidade(d) {
 // leitura curta (erro que não é estouro de tempo repete uma vez) e o pedido em andamento compartilhado.
 async function iniLerQuieto(acao, dados) {
   try {
-    return await _chamarComRepeticao_(Object.assign({ acao: acao }, dados));
+    // Pacote 18.1: leitura silenciosa também leva o crachá e respeita a sessão expirada
+    const r = await _chamarComRepeticao_(Object.assign({ acao: acao, token: vmcTokenSessao_() }, dados));
+    if (r && r.ok === false && r.codigo === 'sessao_expirada') vmcSessaoExpirada_(r.erro);
+    return r;
   } catch (e) {
     console.warn('[Início] ' + acao + ' não respondeu: ' + e.message);
     return null;
@@ -7938,18 +8025,17 @@ function selecionarTipoLogin(tipo) {
   document.getElementById('loginTipoPaciente').classList.toggle('selected', tipo === 'paciente');
   document.getElementById('loginTipoProfissional').classList.toggle('selected', tipo === 'profissional');
 
-  // Mostrar campos de login
-  document.getElementById('loginFormFields').classList.add('visible');
-
   // Limpar erro anterior
   document.getElementById('loginError').classList.add('hidden');
 
-  // Foco no campo sigla
-  document.getElementById('inputSigla').focus();
+  // Foco no campo e-mail (Pacote 18.1)
+  if (LOGIN_TELA === 'esqueci') { document.getElementById('inputEmailEsqueci').focus(); return; }
+  document.getElementById('loginFormFields').classList.add('visible');
+  document.getElementById('inputEmail').focus();
 }
 
 async function fazerLogin() {
-  const sigla = document.getElementById('inputSigla').value.trim().toUpperCase();
+  const email = document.getElementById('inputEmail').value.trim().toLowerCase();
   const senha = document.getElementById('inputSenha').value;
   const erroBox = document.getElementById('loginError');
   const btn = document.getElementById('btnLogin');
@@ -7963,8 +8049,8 @@ async function fazerLogin() {
     return;
   }
 
-  if (!sigla || !senha) {
-    erroBox.textContent = 'Por favor, preencha sigla e senha.';
+  if (!email || !senha) {
+    erroBox.textContent = 'Por favor, preencha e-mail e senha.';
     erroBox.classList.remove('hidden');
     return;
   }
@@ -7972,7 +8058,7 @@ async function fazerLogin() {
   btn.disabled = true;
   btn.textContent = 'Entrando...';
 
-  const resposta = await chamarServidor('autenticar', { sigla, senha, tipo });
+  const resposta = await chamarServidor('autenticar', { tipo, email, senha });
 
   btn.disabled = false;
   btn.textContent = 'Entrar';
@@ -7985,26 +8071,25 @@ async function fazerLogin() {
   }
 
   // Limpar campos
-  document.getElementById('inputSigla').value = '';
+  document.getElementById('inputEmail').value = '';
   document.getElementById('inputSenha').value = '';
 
-  // Pacote 13.2.1: fluxo diferenciado por tipo
-  if (tipo === 'profissional' && resposta.profissional) {
-    // Sessão do profissional (credenciais ficam só em memória JS — lição 23)
+  // Pacote 18.1: o servidor devolve o crachá (token) e o perfil; a senha não fica em lugar nenhum
+  const perfil = resposta.perfil || {};
+  if (tipo === 'profissional') {
+    // Sessão do profissional só em memória JS (lição 23): crachá, nunca senha
     PROF_SESSAO = {
-      profissional_id: resposta.profissional.profissional_id,
-      sigla: resposta.profissional.sigla,
-      nome_completo: resposta.profissional.nome_completo,
-      email: resposta.profissional.email,
-      // Credenciais para chamadas subsequentes (memória apenas, não sessionStorage)
-      _sigla: sigla,
-      _senha: senha
+      profissional_id: perfil.profissional_id,
+      sigla: perfil.sigla,
+      nome_completo: perfil.nome_completo || perfil.nome,
+      email: perfil.email,
+      token: resposta.token
     };
     // Atualizar header do dashboard
-    document.getElementById('profNomeHeader').textContent = 'Olá, ' + (resposta.profissional.nome_completo || resposta.profissional.sigla);
-    document.getElementById('profSiglaHeader').textContent = 'Área do Psicólogo · ' + resposta.profissional.sigla;
+    document.getElementById('profNomeHeader').textContent = 'Olá, ' + (PROF_SESSAO.nome_completo || perfil.sigla);
+    document.getElementById('profSiglaHeader').textContent = 'Área do Psicólogo · ' + perfil.sigla;
     // Badge mostra sigla do profissional
-    document.getElementById('userBadgeText').textContent = resposta.profissional.sigla;
+    document.getElementById('userBadgeText').textContent = perfil.sigla;
     document.getElementById('userBadge').classList.add('visible');
 
     resetarTelaLogin_();
@@ -8013,8 +8098,9 @@ async function fazerLogin() {
     return;
   }
 
-  // Fluxo paciente (inalterado)
-  salvarSessao(resposta.paciente);
+  // Fluxo paciente: sigla, e-mail, nome e crachá na aba (sessionStorage), nunca a senha
+  salvarSessao({ sigla: perfil.sigla, email: perfil.email, nome: perfil.nome, token: resposta.token,
+    anamnese_preenchida: perfil.anamnese_preenchida, data_anamnese: perfil.data_anamnese });
   atualizarBadgeUsuario();
   atualizarMenuConformeSessao();
   resetarTelaLogin_();
@@ -8040,8 +8126,188 @@ function resetarTelaLogin_() {
   document.getElementById('loginTipoProfissional').classList.remove('selected');
   document.getElementById('loginFormFields').classList.remove('visible');
   document.getElementById('loginError').classList.add('hidden');
-  document.getElementById('inputSigla').value = '';
+  document.getElementById('inputEmail').value = '';
   document.getElementById('inputSenha').value = '';
+  loginMostrar('entrar');
+}
+
+/* ============================================================
+   Pacote 18.1: telas de acesso no cartão do login
+   entrar · esqueci (Esqueci a senha) · verifique (Verifique seu e-mail) · ativar (Crie sua senha) · invalido (Link inválido)
+   Textos aprovados pelo usuário (PROMPT_18_1.md, 30/09/2026).
+   ============================================================ */
+var LOGIN_TELA = 'entrar';
+var LOGIN_ATIVAR = ''; // token do link ?ativar= (só em memória; a URL é limpa ao abrir)
+
+function loginMostrar(tela) {
+  LOGIN_TELA = tela;
+  var t = {
+    entrar:    ['Acesso ao Sistema', 'Selecione seu perfil e faça login'],
+    esqueci:   ['Esqueci a senha', 'Informe o perfil e o e-mail cadastrado. Se ele estiver no sistema, você receberá um link para criar uma senha nova.'],
+    verifique: ['Verifique seu e-mail', ''],
+    ativar:    ['Crie sua senha', ''],
+    invalido:  ['Link inválido', '']
+  }[tela];
+  document.getElementById('loginTitulo').textContent = t[0];
+  var sub = document.getElementById('loginSub');
+  sub.textContent = t[1];
+  sub.classList.toggle('hidden', !t[1]);
+  document.getElementById('loginTipoGrid').classList.toggle('hidden', tela !== 'entrar' && tela !== 'esqueci');
+  document.getElementById('loginFormFields').classList.toggle('visible', tela === 'entrar' && !!LOGIN_TIPO_SELECIONADO);
+  document.getElementById('loginEsqueci').classList.toggle('hidden', tela !== 'esqueci');
+  document.getElementById('loginAtivar').classList.toggle('hidden', tela !== 'ativar');
+  document.getElementById('loginAviso').classList.toggle('hidden', tela !== 'verifique' && tela !== 'invalido');
+  document.getElementById('loginError').classList.add('hidden');
+  if (tela !== 'entrar') document.getElementById('loginOk').classList.add('hidden');
+  var link = document.getElementById('loginAvisoLink');
+  if (tela === 'verifique') {
+    document.getElementById('loginAvisoTexto').textContent = 'Se o e-mail estiver cadastrado, o link chegará em alguns minutos. Confira também a caixa de spam.';
+    link.textContent = 'Voltar';
+    link.onclick = function () { loginMostrar('entrar'); };
+  } else if (tela === 'invalido') {
+    document.getElementById('loginAvisoTexto').textContent = 'Este link não é mais válido. Peça um novo em "Esqueci a senha" ou fale com seu terapeuta.';
+    link.textContent = 'Esqueci a senha';
+    link.onclick = function () { loginMostrar('esqueci'); };
+  }
+  if (tela === 'esqueci') document.getElementById('inputEmailEsqueci').value = document.getElementById('inputEmail').value;
+}
+
+async function loginPedirRedefinicao() {
+  var erroBox = document.getElementById('loginError');
+  var email = document.getElementById('inputEmailEsqueci').value.trim().toLowerCase();
+  erroBox.classList.add('hidden');
+  if (!LOGIN_TIPO_SELECIONADO) {
+    erroBox.textContent = 'Por favor, selecione se você é Paciente ou Psicólogo.';
+    erroBox.classList.remove('hidden');
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    erroBox.textContent = 'E-mail inválido';
+    erroBox.classList.remove('hidden');
+    return;
+  }
+  var btn = document.getElementById('btnEsqueci');
+  btn.disabled = true;
+  await chamarServidor('pedirRedefinicao', { tipo: LOGIN_TIPO_SELECIONADO, email: email });
+  btn.disabled = false;
+  loginMostrar('verifique'); // resposta idêntica exista ou não o e-mail
+}
+
+// ?ativar=<token>: confere o link (sem consumir) e abre "Crie sua senha" ou "Link inválido".
+async function loginAbrirAtivacao(token) {
+  LOGIN_ATIVAR = token;
+  abrirSecao('sec-login');
+  var resp = await chamarServidor('definirSenha', { ativar: token });
+  if (!resp || !resp.ok) { LOGIN_ATIVAR = ''; loginMostrar('invalido'); return; }
+  LOGIN_ATIVAR_TIPO = resp.tipo;
+  document.getElementById('loginAtivarTexto').textContent =
+    'Escolha uma senha com pelo menos 8 caracteres. Você vai usá-la com o e-mail ' + resp.email + '.';
+  document.getElementById('inputNovaSenha').value = '';
+  document.getElementById('inputNovaSenha2').value = '';
+  loginMostrar('ativar');
+  LOGIN_ATIVAR_EMAIL = resp.email;
+}
+var LOGIN_ATIVAR_TIPO = '';
+var LOGIN_ATIVAR_EMAIL = '';
+
+async function loginSalvarSenha() {
+  var erroBox = document.getElementById('loginError');
+  var s1 = document.getElementById('inputNovaSenha').value;
+  var s2 = document.getElementById('inputNovaSenha2').value;
+  erroBox.classList.add('hidden');
+  if (s1.length < 8) { erroBox.textContent = 'Escolha uma senha com pelo menos 8 caracteres.'; erroBox.classList.remove('hidden'); return; }
+  if (s1 !== s2) { erroBox.textContent = 'As senhas não conferem.'; erroBox.classList.remove('hidden'); return; }
+  var btn = document.getElementById('btnSalvarSenha');
+  btn.disabled = true;
+  var resp = await chamarServidor('definirSenha', { ativar: LOGIN_ATIVAR, senha: s1 });
+  btn.disabled = false;
+  document.getElementById('inputNovaSenha').value = '';
+  document.getElementById('inputNovaSenha2').value = '';
+  if (!resp || !resp.ok) {
+    if (resp && resp.codigo === 'link_invalido') { LOGIN_ATIVAR = ''; loginMostrar('invalido'); return; }
+    erroBox.textContent = (resp && resp.erro) || 'Erro ao salvar a senha.';
+    erroBox.classList.remove('hidden');
+    return;
+  }
+  LOGIN_ATIVAR = '';
+  loginMostrar('entrar');
+  if (resp.tipo === 'paciente' || resp.tipo === 'profissional') selecionarTipoLogin(resp.tipo);
+  document.getElementById('inputEmail').value = resp.email || LOGIN_ATIVAR_EMAIL;
+  var ok = document.getElementById('loginOk');
+  ok.textContent = 'Senha criada. Entre com o seu e-mail e a senha nova.';
+  ok.classList.remove('hidden');
+  document.getElementById('inputSenha').focus();
+}
+
+/* ============================================================
+   Pacote 18.1: contato do paciente (telefone) e convite (e-mail ou WhatsApp)
+   ============================================================ */
+// Telefone: exibição "DD XXXXX-XXXX" (ou "DD XXXX-XXXX"); gravação só dígitos (10 ou 11).
+function vmcFormatarTelefone(valor) {
+  var d = String(valor || '').replace(/\D/g, '').slice(0, 11);
+  if (d.length <= 2) return d;
+  var corpo = d.slice(2);
+  var corte = d.length === 11 ? 5 : 4;
+  return d.slice(0, 2) + ' ' + (corpo.length > corte ? corpo.slice(0, corte) + '-' + corpo.slice(corte) : corpo);
+}
+function profContatoMascara_(el) {
+  el.value = vmcFormatarTelefone(el.value);
+  if (el.id === 'profEdContatoTel') { PROF_CONVITE.ed.telefone = el.value.replace(/\D/g, ''); profConviteAtualizar_('ed'); }
+}
+// Link do WhatsApp com a mensagem aprovada e o link do último convite gerado nesta tela (nenhum envio automático).
+function vmcLinkWhatsApp(telefone, link) {
+  var msg = 'Olá! Aqui é o Vinícius. Seu acesso ao COGNIATIVO está pronto. Toque no link para criar sua senha: ' + link + '. Ele vale por 48 horas.';
+  return 'https://wa.me/55' + String(telefone || '').replace(/\D/g, '') + '?text=' + encodeURIComponent(msg);
+}
+
+// Estado do convite por tela: 'cad' (modal de cadastro) e 'ed' (editor de anamnese). Zera ao abrir cada tela.
+var PROF_CONVITE = { cad: { sigla: '', telefone: '', link: '' }, ed: { sigla: '', telefone: '', link: '' } };
+
+function profConviteAtualizar_(pref) {
+  var c = PROF_CONVITE[pref];
+  var btn = document.getElementById(pref === 'cad' ? 'profCadBtnWhats' : 'profEdBtnWhats');
+  if (!btn) return;
+  var tel = String(c.telefone || '').replace(/\D/g, '');
+  var pronto = !!c.link && (tel.length === 10 || tel.length === 11);
+  btn.setAttribute('aria-disabled', pronto ? 'false' : 'true');
+  if (pronto) btn.setAttribute('href', vmcLinkWhatsApp(tel, c.link)); else btn.removeAttribute('href');
+  if (tel.length === 10 || tel.length === 11) btn.removeAttribute('title');
+  else btn.title = 'Cadastre o telefone para enviar pelo WhatsApp';
+}
+function profWhatsClicar_(el) {
+  return el.getAttribute('aria-disabled') !== 'true';
+}
+function profConviteMsg_(pref, txt, erro) {
+  var el = document.getElementById(pref === 'cad' ? 'profCadConviteMsg' : 'profEdConviteMsg');
+  if (!el) return;
+  el.textContent = txt || '';
+  el.classList.toggle('erro', !!erro);
+}
+// "Enviar convite": no editor grava antes o contato dos campos (sem precisar de "Salvar"); envia o e-mail e guarda o link.
+async function profEnviarConviteEmail_(pref) {
+  var c = PROF_CONVITE[pref];
+  var dados = { siglaPaciente: c.sigla, canal: 'email' };
+  if (pref === 'ed') {
+    dados.contato = {
+      email: document.getElementById('profEdContatoEmail').value.trim().toLowerCase(),
+      telefone: document.getElementById('profEdContatoTel').value.replace(/\D/g, '')
+    };
+  }
+  var btn = document.getElementById(pref === 'cad' ? 'profCadBtnConvite' : 'profEdBtnConvite');
+  btn.disabled = true;
+  profConviteMsg_(pref, '');
+  var resp = await chamarServidor('profEnviarConvite', dados);
+  btn.disabled = false;
+  if (!resp || !resp.ok) {
+    if (resp && resp.link) { c.link = resp.link; profConviteAtualizar_(pref); }
+    profConviteMsg_(pref, (resp && resp.erro) || 'Erro ao enviar o convite.', true);
+    return;
+  }
+  c.link = resp.link;
+  c.telefone = resp.telefone;
+  if (pref === 'ed' && PROF_PACIENTE_SEL) PROF_PACIENTE_SEL.contato = { email: resp.email, telefone: resp.telefone };
+  profConviteAtualizar_(pref);
+  profConviteMsg_(pref, 'Convite enviado para ' + resp.email + '.');
 }
 
 /* ============================================================
@@ -8059,8 +8325,6 @@ async function profCarregarDashboard() {
     '</div>';
 
   var resp = await chamarServidor('profListarPacientes', {
-    profSigla: PROF_SESSAO._sigla,
-    profSenha: PROF_SESSAO._senha
   });
 
   if (!resp.ok) {
@@ -8240,8 +8504,6 @@ async function profAbrirPaciente(sigla) {
   abrirSecao('sec-prof-paciente');
 
   var resp = await chamarServidor('profLerDadosPaciente', {
-    profSigla: PROF_SESSAO._sigla,
-    profSenha: PROF_SESSAO._senha,
     siglaPaciente: sigla
   });
 
@@ -8255,13 +8517,14 @@ async function profAbrirPaciente(sigla) {
   }
 
   // Nome real do paciente
-  var nome = sigla;
+  var nome = resp.nome_cadastro || sigla;
   if (resp.anamnese && resp.anamnese.nome_completo) {
     nome = resp.anamnese.nome_completo;
   }
   PROF_PACIENTE_SEL.nome = nome;
   PROF_PACIENTE_SEL.anamnese = resp.anamnese || null; // Pacote 13.4: guardar para edição
   PROF_PACIENTE_SEL.ativo = String(resp.ativo || 'Sim').trim(); // Pacote 13.5
+  PROF_PACIENTE_SEL.contato = resp.contato || { email: '', telefone: '' }; // Pacote 18.1: cadastro (Controle)
 
   var iniciaisNome = nome.split(' ').filter(function(w){ return w.length > 0; })
     .map(function(w){ return w[0].toUpperCase(); }).slice(0,2).join('');
@@ -8600,14 +8863,12 @@ async function p137TrocarSenha() {
   var erroEl = document.getElementById('p137SenhaErro');
   var btn = document.getElementById('p137SenhaBtnEnviar');
   erroEl.textContent = '';
-  if (!s1 || s1.length < 6) { erroEl.textContent = 'A senha deve ter no mínimo 6 caracteres.'; return; }
+  if (!s1 || s1.length < 8) { erroEl.textContent = 'A senha deve ter no mínimo 8 caracteres.'; return; }
   if (s1 !== s2) { erroEl.textContent = 'As senhas não coincidem.'; return; }
   btn.disabled = true;
   btn.textContent = 'Salvando…';
   try {
     var resp = await chamarServidor('profAlterarSenhaPaciente', {
-      profSigla: PROF_SESSAO._sigla,
-      profSenha: PROF_SESSAO._senha,
       sigla_paciente: PROF_PACIENTE_SEL.sigla,
       nova_senha: s1
     });
@@ -8643,8 +8904,6 @@ async function p135ConfirmarDesativar() {
   var btn = document.getElementById('p135DesativarBtn');
   btn.disabled = true; btn.textContent = 'Aguarde…';
   var resp = await chamarServidor('profDesativarPaciente', {
-    profSigla: PROF_SESSAO._sigla,
-    profSenha: PROF_SESSAO._senha,
     siglaPaciente: sigla
   });
   btn.disabled = false; btn.textContent = 'Desativar';
@@ -8689,8 +8948,6 @@ async function p135ConfirmarReativar() {
   var btn = document.getElementById('p135ReativarBtn');
   btn.disabled = true; btn.textContent = 'Aguarde…';
   var resp = await chamarServidor('profReativarPaciente', {
-    profSigla: PROF_SESSAO._sigla,
-    profSenha: PROF_SESSAO._senha,
     siglaPaciente: sigla
   });
   btn.disabled = false; btn.textContent = 'Reativar';
@@ -8749,8 +9006,6 @@ async function p135ConfirmarExcluir() {
   var btn = document.getElementById('p135ExcluirBtn');
   btn.disabled = true; btn.textContent = 'Excluindo…';
   var resp = await chamarServidor('profExcluirPaciente', {
-    profSigla: PROF_SESSAO._sigla,
-    profSenha: PROF_SESSAO._senha,
     siglaPaciente: sigla,
     confirmacaoSigla: document.getElementById('p135ExcluirInput').value.trim().toUpperCase()
   });
@@ -8787,55 +9042,51 @@ function profVoltarDashboard() {
 
 function profAbrirModalCadastro() {
   // Limpar campos
-  document.getElementById('profCadSigla').value = '';
   document.getElementById('profCadNome').value = '';
-  document.getElementById('profCadSenha').value = '';
-  document.getElementById('profCadSenha2').value = '';
+  document.getElementById('profCadEmail').value = '';
+  document.getElementById('profCadTel').value = '';
   var erroEl = document.getElementById('profCadErro');
   erroEl.textContent = '';
   erroEl.classList.remove('visivel');
+  document.getElementById('profCadCampos').classList.remove('hidden');
+  document.getElementById('profCadFeito').classList.add('hidden');
+  document.getElementById('profCadBtnEnviar').classList.remove('hidden');
+  document.getElementById('profCadBtnCancelar').textContent = 'Cancelar';
   document.getElementById('profCadBtnEnviar').disabled = false;
   document.getElementById('profCadBtnEnviar').textContent = 'Cadastrar';
+  PROF_CONVITE.cad = { sigla: '', telefone: '', link: '' };
+  profConviteAtualizar_('cad');
+  profConviteMsg_('cad', '');
   // Abrir modal
   document.getElementById('profCadModal').classList.add('show');
 }
 
 function profFecharModalCadastro() {
   document.getElementById('profCadModal').classList.remove('show');
+  if (PROF_CONVITE.cad.sigla) { PROF_CONVITE.cad = { sigla: '', telefone: '', link: '' }; profCarregarDashboard(); }
 }
 
 async function profCadastrarPaciente() {
   var erroEl = document.getElementById('profCadErro');
   erroEl.classList.remove('visivel');
 
-  var sigla  = document.getElementById('profCadSigla').value.trim().toUpperCase();
   var nome   = document.getElementById('profCadNome').value.trim();
-  var senha  = document.getElementById('profCadSenha').value;
-  var senha2 = document.getElementById('profCadSenha2').value;
+  var email  = document.getElementById('profCadEmail').value.trim().toLowerCase();
+  var tel    = document.getElementById('profCadTel').value.replace(/\D/g, '');
 
   // Validações no frontend
-  if (!sigla) {
-    erroEl.textContent = 'Preencha a sigla do paciente.';
-    erroEl.classList.add('visivel');
-    return;
-  }
-  if (!/^[A-Z0-9_]{2,10}$/.test(sigla)) {
-    erroEl.textContent = 'Sigla deve ter 2-10 caracteres (letras maiúsculas, números ou _).';
-    erroEl.classList.add('visivel');
-    return;
-  }
   if (!nome) {
     erroEl.textContent = 'Preencha o nome completo do paciente.';
     erroEl.classList.add('visivel');
     return;
   }
-  if (!senha || senha.length < 6) {
-    erroEl.textContent = 'A senha deve ter no mínimo 6 caracteres.';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    erroEl.textContent = 'E-mail inválido';
     erroEl.classList.add('visivel');
     return;
   }
-  if (senha !== senha2) {
-    erroEl.textContent = 'As senhas não conferem.';
+  if (tel && tel.length !== 10 && tel.length !== 11) {
+    erroEl.textContent = 'Telefone inválido';
     erroEl.classList.add('visivel');
     return;
   }
@@ -8854,12 +9105,10 @@ async function profCadastrarPaciente() {
   }
 
   var resp = await chamarServidor('profCadastrarPaciente', {
-    profSigla: PROF_SESSAO._sigla,
-    profSenha: PROF_SESSAO._senha,
     dados: {
-      sigla: sigla,
       nomeCompleto: nome,
-      senhaInicial: senha
+      email: email,
+      telefone: tel
     }
   });
 
@@ -8871,10 +9120,15 @@ async function profCadastrarPaciente() {
     return;
   }
 
-  // Sucesso: fechar modal e recarregar dashboard
-  profFecharModalCadastro();
-  alert('Paciente ' + sigla + ' cadastrado com sucesso!\n\nSigla: ' + sigla + '\nSenha: (a que você definiu)');
-  profCarregarDashboard();
+  // Sucesso (Pacote 18.1): o modal passa a mostrar o convite — "Enviar convite" (e-mail) e WhatsApp com o link
+  // gerado no cadastro. O painel recarrega ao fechar.
+  PROF_CONVITE.cad = { sigla: resp.sigla, telefone: resp.telefone || '', link: resp.link || '' };
+  document.getElementById('profCadOk').textContent = 'Paciente ' + resp.sigla + ' cadastrado com sucesso!';
+  document.getElementById('profCadCampos').classList.add('hidden');
+  document.getElementById('profCadFeito').classList.remove('hidden');
+  document.getElementById('profCadBtnEnviar').classList.add('hidden');
+  document.getElementById('profCadBtnCancelar').textContent = 'Fechar';
+  profConviteAtualizar_('cad');
 }
 
 // Fechar modal de cadastro com ESC
@@ -8897,6 +9151,14 @@ function profIniciarEdicaoAnamnese_() {
   var container = document.getElementById('profModAnamBody');
   if (!container) return;
   container.innerHTML = profRenderizarAnamneseEditavel_(dados);
+  // Pacote 18.1: e-mail e telefone do cadastro (Controle); com a Controle vazia, nascem com os valores da anamnese
+  var c = PROF_PACIENTE_SEL.contato || {};
+  var emailIni = c.email || String(dados.email || '').trim().toLowerCase();
+  var telIni = c.telefone || String(dados.telefone || '').replace(/\D/g, '');
+  document.getElementById('profEdContatoEmail').value = emailIni;
+  document.getElementById('profEdContatoTel').value = vmcFormatarTelefone(telIni);
+  PROF_CONVITE.ed = { sigla: PROF_PACIENTE_SEL.sigla, telefone: telIni, link: '' };
+  profConviteAtualizar_('ed');
 }
 
 function profCancelarEdicaoAnamnese_() {
@@ -8939,8 +9201,17 @@ function profRenderizarAnamneseEditavel_(d) {
   html += inp('Nome completo', 'nome_completo');
   html += '<div class="prof-edit-field"><label>Data de nascimento</label>' +
     '<input type="date" id="profEd_data_nascimento" value="' + esc(v('data_nascimento')) + '"></div>';
-  html += inp('RG', 'rg') + inp('CPF', 'cpf') + inp('Telefone', 'telefone');
-  html += inp('E-mail', 'email') + inp('Escolaridade', 'escolaridade');
+  html += inp('RG', 'rg') + inp('CPF', 'cpf');
+  // Pacote 18.1: campos de cadastro (valores postos por .value em profIniciarEdicaoAnamnese_) + convite
+  html += '<div class="prof-edit-field"><label for="profEdContatoEmail">E-mail do paciente</label>' +
+    '<input type="email" id="profEdContatoEmail" inputmode="email" autocapitalize="off"></div>';
+  html += '<div class="prof-edit-field"><label for="profEdContatoTel">Telefone (WhatsApp)</label>' +
+    '<input type="tel" id="profEdContatoTel" inputmode="numeric" maxlength="13" oninput="profContatoMascara_(this)"></div>';
+  html += '<div class="prof-convite"><div class="prof-convite-acoes">' +
+    '<button class="p5-btn p5-btn-primary" type="button" id="profEdBtnConvite" onclick="profEnviarConviteEmail_(\'ed\')">Enviar convite</button>' +
+    '<a class="p5-btn p5-btn-secondary prof-btn-whats" id="profEdBtnWhats" target="_blank" rel="noopener" aria-disabled="true" onclick="return profWhatsClicar_(this)">WhatsApp</a>' +
+    '</div><div class="prof-convite-msg" id="profEdConviteMsg" role="status"></div></div>';
+  html += inp('Escolaridade', 'escolaridade');
   html += inp('Profissão', 'profissao') + inp('Estado civil', 'estado_civil');
   html += sel('Reside fora do Brasil?', 'reside_fora_brasil');
   html += inp('País', 'pais') + inp('ZIP Code / CEP exterior', 'zip_code');
@@ -9015,11 +9286,15 @@ async function profSalvarAnamnesePaciente_() {
     if (el) dados[campos[i]] = el.value;
   }
 
+  // Pacote 18.1: contato vai para o cadastro (Controle); o servidor espelha na anamnese
+  var contato = {
+    email: document.getElementById('profEdContatoEmail').value.trim().toLowerCase(),
+    telefone: document.getElementById('profEdContatoTel').value.replace(/\D/g, '')
+  };
   var resp = await chamarServidor('profSalvarAnamnese', {
-    profSigla: PROF_SESSAO._sigla,
-    profSenha: PROF_SESSAO._senha,
     siglaPaciente: PROF_PACIENTE_SEL.sigla,
-    dados: dados
+    dados: dados,
+    contato: contato
   });
 
   if (!resp.ok) {
@@ -9029,6 +9304,8 @@ async function profSalvarAnamnesePaciente_() {
   }
 
   // Atualizar dados em memória e voltar para read-only
+  PROF_PACIENTE_SEL.contato = contato;
+  dados.email = contato.email; dados.telefone = contato.telefone;
   PROF_PACIENTE_SEL.anamnese = dados;
   profCancelarEdicaoAnamnese_();
   alert('Anamnese salva com sucesso!');
@@ -9116,7 +9393,7 @@ async function pacAlterarSenha() {
   var nova2 = document.getElementById('pacSenhaNova2').value;
 
   if (!atual) { erroEl.textContent = 'Digite sua senha atual.'; erroEl.classList.add('visivel'); return; }
-  if (!nova || nova.length < 6) { erroEl.textContent = 'Nova senha deve ter no mínimo 6 caracteres.'; erroEl.classList.add('visivel'); return; }
+  if (!nova || nova.length < 8) { erroEl.textContent = 'Nova senha deve ter no mínimo 8 caracteres.'; erroEl.classList.add('visivel'); return; }
   if (nova !== nova2) { erroEl.textContent = 'As senhas não conferem.'; erroEl.classList.add('visivel'); return; }
 
   var btn = document.getElementById('pacSenhaBtnEnviar');
@@ -9382,18 +9659,11 @@ function renderPasso1() {
       <div class="field-error">Campo obrigatório</div>
     </div>
 
-    <div class="field-row-2">
-      <div class="field">
-        <label>Data de nascimento <span class="req">*</span></label>
-        <input type="date" id="f_data_nascimento">
-        <div class="age-display" id="ageDisplay"></div>
-        <div class="field-error">Campo obrigatório</div>
-      </div>
-      <div class="field">
-        <label>Telefone com DDD <span class="req">*</span></label>
-        <input type="tel" id="f_telefone" placeholder="(00) 00000-0000" maxlength="15" inputmode="numeric">
-        <div class="field-error">Telefone inválido</div>
-      </div>
+    <div class="field">
+      <label>Data de nascimento <span class="req">*</span></label>
+      <input type="date" id="f_data_nascimento">
+      <div class="age-display" id="ageDisplay"></div>
+      <div class="field-error">Campo obrigatório</div>
     </div>
 
     <div class="field-row-2">
@@ -9407,12 +9677,6 @@ function renderPasso1() {
         <input type="text" id="f_cpf" placeholder="000.000.000-00" maxlength="14" inputmode="numeric">
         <div class="field-error">CPF inválido</div>
       </div>
-    </div>
-
-    <div class="field">
-      <label>E-mail <span class="req">*</span></label>
-      <input type="email" id="f_email" autocomplete="email">
-      <div class="field-error">E-mail inválido</div>
     </div>
 
     <div class="field-row-2">
@@ -9946,8 +10210,6 @@ function removerPessoaConfianca(n) {
    ============================================================ */
 function configurarListenersDoPasso(numero) {
   if (numero === 1) {
-    const tel = document.getElementById('f_telefone');
-    if (tel) tel.addEventListener('input', mascaraTelefone);
     const cpf = document.getElementById('f_cpf');
     if (cpf) cpf.addEventListener('input', mascaraCPF);
     const rg = document.getElementById('f_rg');
@@ -10271,10 +10533,6 @@ function coletarDadosFormulario(validar = true) {
     if (rg !== null) dados.rg = rg;
     const cpf = lerInput('f_cpf');
     if (cpf !== null) dados.cpf = cpf;
-    const tel = lerInput('f_telefone');
-    if (tel !== null) dados.telefone = tel;
-    const email = lerInput('f_email');
-    if (email !== null) dados.email = email;
     const escol = lerInput('f_escolaridade');
     if (escol !== null) dados.escolaridade = escol;
     const prof = lerInput('f_profissao');
@@ -10317,8 +10575,6 @@ function coletarDadosFormulario(validar = true) {
       }
       if (!dados.rg) marcarErro('f_rg');
       if (!dados.cpf || !validarCPF(dados.cpf)) marcarErro('f_cpf', 'CPF inválido');
-      if (!dados.telefone || dados.telefone.replace(/\D/g, '').length < 10) marcarErro('f_telefone', 'Telefone inválido');
-      if (!dados.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dados.email)) marcarErro('f_email', 'E-mail inválido');
       if (!dados.escolaridade) marcarErro('f_escolaridade');
       if (!dados.estado_civil) marcarErro('f_estado_civil');
 
@@ -10602,8 +10858,6 @@ function restaurarValoresDoRascunho() {
     setInput('f_data_nascimento', d.data_nascimento);
     setInput('f_rg', d.rg);
     setInput('f_cpf', d.cpf);
-    setInput('f_telefone', d.telefone);
-    setInput('f_email', d.email);
     setInput('f_escolaridade', d.escolaridade);
     setInput('f_profissao', d.profissao);
     setInput('f_estado_civil', d.estado_civil);
@@ -10843,8 +11097,6 @@ function renderRevisao(dados) {
   html += linha('Data de nascimento', dataFmt);
   html += linha('RG', dados.rg);
   html += linha('CPF', dados.cpf);
-  html += linha('Telefone', dados.telefone);
-  html += linha('E-mail', dados.email);
   html += linha('Escolaridade', dados.escolaridade);
   html += linha('Profissão', dados.profissao);
   html += linha('Estado civil', dados.estado_civil);
@@ -11170,8 +11422,17 @@ function escapeAttr(s) {
    INICIALIZAÇÃO
    ============================================================ */
 window.addEventListener('DOMContentLoaded', () => {
+  // Pacote 18.1: link de convite/redefinição — o token sai da URL na hora (history.replaceState)
+  const ativar = new URLSearchParams(location.search).get('ativar');
+  if (ativar) {
+    history.replaceState(null, '', location.pathname);
+    limparSessao();
+    loginAbrirAtivacao(ativar);
+  }
   const paciente = carregarSessao();
-  if (paciente) {
+  if (ativar) {
+    // a tela "Crie sua senha" já foi aberta
+  } else if (paciente && paciente.token) {
     atualizarBadgeUsuario();
     atualizarMenuConformeSessao();
     abrirSecao('sec-menu');
@@ -11182,7 +11443,7 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('inputSenha').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') fazerLogin();
   });
-  document.getElementById('inputSigla').addEventListener('keypress', (e) => {
+  document.getElementById('inputEmail').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') document.getElementById('inputSenha').focus();
   });
 });
@@ -13115,7 +13376,7 @@ async function histAbrirModal(idx) {
       chamarServidor('lerEditandoAuto', { sigla: siglaParaConsulta, timestamp: ts }).then(function(lockResp) {
         var editandoQuem = (lockResp && lockResp.ok) ? String(lockResp.editando_quem || '').trim() : String(r.editando_quem || '').trim();
         var _pacSess2 = (typeof carregarSessao === 'function') ? carregarSessao() : null;
-        var euSigla = PROF_SESSAO ? PROF_SESSAO._sigla : (_pacSess2 ? _pacSess2.sigla : '');
+        var euSigla = PROF_SESSAO ? PROF_SESSAO.sigla : (_pacSess2 ? _pacSess2.sigla : '');
         var euTipo  = PROF_SESSAO ? 'profissional' : 'paciente';
         var euChave = euTipo + ':' + euSigla;
         r.editando_quem = editandoQuem;
@@ -13174,7 +13435,7 @@ function histFecharModal() {
 var P136_ESTADO = { idx: null, tipo: null, sigla: null, timestamp: null };
 
 function p136_quemSou_() {
-  if (PROF_SESSAO) return { tipo: 'profissional', sigla: PROF_SESSAO._sigla };
+  if (PROF_SESSAO) return { tipo: 'profissional', sigla: PROF_SESSAO.sigla };
   // Paciente usa sessionStorage, não objeto SESSAO global
   var pac = (typeof carregarSessao === 'function') ? carregarSessao() : null;
   if (pac && pac.sigla) return { tipo: 'paciente', sigla: pac.sigla };
@@ -13199,7 +13460,6 @@ async function p136IniciarEdicao() {
   // Não bloqueamos a abertura do form aguardando o servidor
   if (eu.tipo === 'profissional') {
     chamarServidor('profMarcarEditandoAuto', {
-      profSigla: PROF_SESSAO._sigla, profSenha: PROF_SESSAO._senha,
       siglaPaciente: (PROF_PACIENTE_SEL ? PROF_PACIENTE_SEL.sigla : eu.sigla),
       timestamp: ts
     });
@@ -13249,7 +13509,6 @@ async function p136SalvarEdicao() {
   var resp;
   if (eu.tipo === 'profissional') {
     resp = await chamarServidor('profEditarAutomonitoramento', {
-      profSigla: PROF_SESSAO._sigla, profSenha: PROF_SESSAO._senha,
       siglaPaciente: (PROF_PACIENTE_SEL ? PROF_PACIENTE_SEL.sigla : eu.sigla),
       timestamp: eu.timestamp, dados: dados
     });
@@ -13298,8 +13557,7 @@ async function p136LimparLock_(aguardar) {
   var acao;
   if (eu.tipo === 'profissional') {
     acao = 'profLimparEditandoAuto';
-    payload = { profSigla: PROF_SESSAO._sigla, profSenha: PROF_SESSAO._senha,
-      siglaPaciente: (PROF_PACIENTE_SEL ? PROF_PACIENTE_SEL.sigla : eu.sigla),
+    payload = { siglaPaciente: (PROF_PACIENTE_SEL ? PROF_PACIENTE_SEL.sigla : eu.sigla),
       timestamp: eu.timestamp };
   } else {
     acao = 'pacienteLimparEditandoAuto';
@@ -16709,8 +16967,6 @@ async function graCarregar() {
   document.getElementById('graOk').style.display = 'none';
 
   var resp = await chamarServidor('profLerGrade', {
-    profSigla: PROF_SESSAO._sigla,
-    profSenha: PROF_SESSAO._senha
   });
   graCarregando = false;
 
@@ -16874,8 +17130,6 @@ async function graSalvar() {
 
   btn.disabled = true;
   var resp = await chamarServidor('profSalvarGrade', {
-    profSigla: PROF_SESSAO._sigla,
-    profSenha: PROF_SESSAO._senha,
     config: {
       duracao_slot_min: 60,
       antecedencia_min_horas: Number(document.getElementById('graCfgAntecedencia').value)
@@ -16927,8 +17181,6 @@ async function calAbrirTela() {
 
   // Carrega a grade real (tintura de disponibilidade)
   var resp = await chamarServidor('profLerGrade', {
-    profSigla: PROF_SESSAO._sigla,
-    profSenha: PROF_SESSAO._senha
   });
 
   CAL_GRADE_JANELAS = {};
