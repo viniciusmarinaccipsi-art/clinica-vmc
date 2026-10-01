@@ -84,7 +84,7 @@ const contar = (lista, desde) => lista.slice(desde).reduce((a, x) => (a[x] = (a[
 async function medirLogin(S, E) {
   const { page } = S; const n0 = E.pedidos.length;
   await page.click('#loginTipoPaciente'); await S.sleep(200);
-  await page.fill('#inputSigla', 'ZZZ'); await page.fill('#inputSenha', 'senha-invalida-de-teste');
+  await page.fill('#inputEmail', 'teste-inexistente@exemplo.com'); await page.fill('#inputSenha', 'senha-invalida-de-teste'); // 18.1: login por e-mail
   const msgs = []; const t0 = Date.now(); await page.click('#btnLogin');
   let f = {};
   for (let i = 0; i < 90 * 4; i++) {
@@ -159,7 +159,7 @@ function linha(C) {
   const n = C.novoRegistro; const p = C.pagina.final;
   return [
     '== ' + C.cenario + ' @ ' + C.viewport + ' (' + C.marcador + ')',
-    C.login ? '  login ZZZ: ' + C.login.segundos + ' s → ' + JSON.stringify(C.login.mensagem || (C.login.faixa ? 'FAIXA' : '(nada)')) + ' · overlay: ' + JSON.stringify(C.login.mensagensOverlay) + ' · pedidos ' + JSON.stringify(C.login.pedidos) + (C.login.sessaoGravada ? ' · SESSÃO GRAVADA: ' + C.login.sessaoGravada : '') + (C.login.depoisDoClique ? ' · após clique: ' + JSON.stringify(C.login.depoisDoClique) : '') : '  (sem login)',
+    C.login ? '  login (e-mail inexistente): ' + C.login.segundos + ' s → ' + JSON.stringify(C.login.mensagem || (C.login.faixa ? 'FAIXA' : '(nada)')) + ' · overlay: ' + JSON.stringify(C.login.mensagensOverlay) + ' · pedidos ' + JSON.stringify(C.login.pedidos) + (C.login.sessaoGravada ? ' · SESSÃO GRAVADA: ' + C.login.sessaoGravada : '') + (C.login.depoisDoClique ? ' · após clique: ' + JSON.stringify(C.login.depoisDoClique) : '') : '  (sem login)',
     '  continuidade: ' + C.continuidade.final + ' em ' + C.continuidade.segundos + ' s',
     '  "Novo registro": ' + n.final.secao + (n.final.faixa ? ' + FAIXA' : '') + ' em ' + n.segundos + ' s · pedidos ' + JSON.stringify(n.pedidos) +
       (n.naFalha ? ' · na falha: aviso1ªvez=' + n.naFalha.avisoPrimeiraVez + ' avisoFalha=' + n.naFalha.avisoFalha + ' trancado=' + n.naFalha.negTrancado : '') +

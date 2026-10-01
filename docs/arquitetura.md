@@ -413,13 +413,18 @@ Sugeridos já reservados: `p11b*` (cabeçalho no Positivo), `form*`
 
 ```
 Sistema_VMC (planilha global)
-├── Profissionais   (dados dos profissionais; nunca retorna senha_hash)
-├── Admins
-└── Indice_Siglas   (sigla → tipo → profissional dono; resolução server-side)
+├── Profissionais   (dados dos profissionais, com email e telefone; nunca retorna senha_hash)
+├── Admins          (email desde o 18.1)
+├── Indice_Siglas   (sigla → tipo → profissional dono + email do login; gravado por
+│                    nome de cabeçalho desde o 18.1; resolução server-side)
+├── Tokens          (18.1: links de convite/redefinição — só o SHA-256 do token,
+│                    tipo, sigla, profissional_id, finalidade, expira, usado, criado_em)
+├── Itens_Instrumentos (17.0) · Backups (E3)
 
 Profissional_<sigla>/ (uma pasta por profissional)
-├── Clinica VMC - Controle   (pacientes; + abas Config_Agenda e
-│                             Grade_Horarios a partir do 14.1)
+├── Clinica VMC - Controle   (pacientes, com email, telefone e nome desde o
+│                             18.1 — única fonte do contato; + abas
+│                             Config_Agenda e Grade_Horarios a partir do 14.1)
 ├── Pacientes/<sigla>        (uma planilha por paciente)
 └── Pacientes_Desativados/   (planilhas movidas ao desativar)
 
@@ -440,17 +445,25 @@ Planilha individual do paciente — abas:
 
 ## Backend (Apps Script)
 
-- `doPost` roteia por `acao`. Famílias de funções:
-  - **Paciente:** `autenticar` (com `tipo` opcional, default paciente),
-    `salvarAnamnese`, `salvarAutomonitoramento`, `lerHistorico`,
-    `salvarEscala`, `lerEscalas`, `alterarSenhaPaciente`,
-    `pacienteAtualizarAnamnese`, lock de edição.
-  - **Profissional:** `profListarPacientes`, `lerDadosPaciente`,
-    cadastro/anamnese/senha do paciente, desativar/reativar/excluir,
-    locks de edição, `profLerGrade`/`profSalvarGrade`.
-  - **Admin:** listar/cadastrar/atualizar/trocar senha/desativar/
-    reativar profissionais — todas revalidam credenciais por chamada.
-  - A lista completa e atual está no próprio `Code.gs` (repo/pasta).
+- `doPost` roteia por `acao` (37 ações no 18.1). Um **portão único** antes do
+  `switch` exige o crachá (`payload.token`) em toda ação fora de
+  `ACOES_PUBLICAS`; cada `case` cabe numa linha e recebe a sessão `s`
+  (`_exigir_(s, 'paciente')`, `_authProfissional_(s)`, `_admDaSessao_(s)`).
+  Famílias de funções:
+  - **Públicas:** `ping`, `autenticar(tipo, email, senha)`,
+    `pedirRedefinicao(tipo, email)`, `definirSenha(ativar, senha?)`.
+  - **Paciente (sigla do crachá):** `salvarAnamnese`,
+    `salvarAutomonitoramento`, `lerHistorico`, `salvarEscala`, `lerEscalas`,
+    `alterarSenhaPaciente`, `pacienteAtualizarAnamnese`, lock de edição.
+  - **Profissional (profissional do crachá; `siglaPaciente` conferido contra o
+    dono):** `profListarPacientes`, `lerDadosPaciente` (devolve também o
+    `contato` do cadastro), cadastro (sigla gerada), anamnese (com
+    `contato` opcional), convite, senha do paciente, desativar/reativar/
+    excluir, locks de edição, `profLerGrade`/`profSalvarGrade`.
+  - **Paciente ou profissional:** `lerItensInstrumento`, `lerEditandoAuto`.
+  - **Admin:** listar/cadastrar (sem senha)/atualizar/trocar senha/
+    desativar/reativar profissionais e `admEnviarConvite`.
+  - A lista completa e atual está no próprio `Código.js`.
 - Resolução multi-tenant: `resolverProfissionalIdPorSigla` →
   `buscarProfissional` → `abrirControleDoProfissional`;
   `buscarPaciente` descobre o dono via Indice_Siglas — o payload nunca
@@ -466,15 +479,21 @@ Planilha individual do paciente — abas:
   comparação: `_tsNormalizar_()`.
 - Compatibilidade retroativa: assinaturas mudam por parâmetros opcionais
   com default no comportamento antigo; o frontend migra em pacote
-  separado.
+  separado — exceção decidida em 29/09: a autenticação virou de uma vez no
+  18.1 (sem senha antiga, sem hash v1).
 
 ## Frontend — regras estruturais
 
 - Estado global de script usa `var` (const/let não são içados e não
   viram `window.X`).
-- Sessão do paciente: `carregarSessao()` (sessionStorage). Credenciais
-  admin: apenas variável `ADM_STATE` em memória.
-- Toda chamada `chamarServidor` passa `sigla` explícita.
+- Sessão do paciente: `carregarSessao()` (sessionStorage: sigla, e-mail,
+  nome e crachá — nunca a senha). Profissional (`PROF_SESSAO`) e admin
+  (`ADM_STATE`) só em memória, com o crachá.
+- `chamarServidor` acrescenta `token` a todo payload (menos as ações
+  públicas) e trata `{codigo:'sessao_expirada'}` voltando ao login com aviso
+  na tela; caminho que fala com o servidor fora dele (`iniLerQuieto`) faz o
+  mesmo. `payload.sigla` ainda viaja em algumas chamadas e é ignorado pelo
+  servidor.
 - Rascunhos locais: sessionStorage.
 
 ## Sistema visual (Pacote 16.x — só `index-dev.html`)
@@ -706,6 +725,13 @@ Quatro peças versionadas em `scripts/` substituem o que cada pacote reescrevia
   interceptadas, nada gravado) e `real`; `S.bloquearEnvio = n` simula n falhas
   de rede. O roteiro de cada pacote (`..\PACOTE_<N>_fluxo.js`, 60–100 linhas)
   só descreve o fluxo; exemplo completo: `..\PACOTE_16_5e_fluxo_base.js`.
+  **Desde o 18.1:** `S.login` usa e-mail; a sessão simulada leva um crachá
+  fictício e, em modo `fingir`, `lerHistorico`/`lerEscalas`/`lerItensInstrumento`
+  respondem localmente (o servidor real recusaria); `S.servidor = (acao, corpo)
+  => resposta` simula qualquer ação do servidor (exemplo completo, com
+  conferência de `token` em toda ação: `..\PACOTE_18_1_fluxo.js`);
+  `S.R.chavesPorAcao` guarda as chaves de cada payload (prova de que nenhuma
+  senha viaja).
 - **`scripts/vmc_fumaca.js`** — fumaça no publicado (uma janela, um viewport):
   espera o Pages servir o marcador (`--marcador`), login inválido até a
   mensagem do servidor, envio fingido até "Registro enviado", chaves do
@@ -728,7 +754,16 @@ do commit) e fumaça no publicado. Envio real só quando o contrato, `Código.js
 ou a planilha mudarem, ou no fechamento de fase. Modelo de prompt com as
 regras: `docs/prompts/MODELO_PROMPT.md`.
 
-## Acesso por e-mail e crachá de sessão (Pacote 18.1 — desenho aprovado em 30/09/2026)
+## Acesso por e-mail e crachá de sessão (Pacote 18.1 — implementado e publicado em 01/10/2026, @27)
+
+Detalhes da implementação que o desenho abaixo não fixava: o token do link
+de convite vai no campo `ativar` (o `token` do payload é o crachá);
+`definirSenha` sem senha só confere o link (a tela "Crie sua senha" mostra o
+e-mail antes); o cadastro do paciente já devolve um link (canal `link`) e o
+botão WhatsApp usa o último link gerado na tela; o e-mail cumprimenta pelo
+primeiro nome; a Anamnese espelha o cadastro mas mantém o valor que já tinha
+quando o cadastro está vazio; o Início usa a barra em modo marca
+(COGNIATIVO + frase); `ITER_SENHA` = 5000, a calibrar com `medirHashSenha`.
 
 Decisão do usuário (29/09): virada única, sem compatibilidade com a senha
 antiga e sem migração de hash; pacientes reconvidados aos poucos. A sigla
