@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.1.2 — produção (02/10/2026) -->
+<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.1.1 — produção (02/10/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -764,16 +764,16 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .pac-hamburger-item:hover{background:var(--c-action-tint);}
 .pac-hamburger-item span{font-size:16px;}
 
-/* Botão de senha destacado (primeiro acesso) */
-.pac-senha-destaque{
-  display:none;width:calc(100% - 32px);max-width:360px;margin:0 auto 16px;
-  padding:14px 16px;background:var(--c-action);
-  border:none;border-radius:10px;font-family:var(--f-text);font-size:14px;
-  font-weight:700;color:var(--c-ink-inv);cursor:pointer;text-align:center;
-  transition:opacity .2s;box-shadow:var(--sh-2);
+/* Pacote 18.1.1: faixa clicável da anamnese pendente no Início (some quando enviada) */
+.ini-faixa-anamnese{
+  display:block;width:100%;min-height:44px;margin-bottom:16px;
+  font-family:var(--f-text);text-align:left;cursor:pointer;
+  transition:opacity .2s;
 }
-.pac-senha-destaque:hover{opacity:.9;}
-.pac-senha-destaque.visivel{display:block;}
+.ini-faixa-anamnese:hover{opacity:.85;}
+.ini-faixa-anamnese:focus-visible{outline:2px solid var(--c-action);outline-offset:2px;}
+.ini-faixa-anamnese .ico{vertical-align:-.15em;}
+.ini-faixa-anamnese.hidden{display:none;}
 
 /* ===== Pacote 13.5 — Botões de gestão de paciente ===== */
 .p135-acoes-wrap{
@@ -934,7 +934,7 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .alert-error{background:var(--c-reg-neg-tint);color:var(--c-reg-neg-ink);border:1px solid var(--c-reg-neg-line);}
 .alert-info{background:var(--c-action-tint);color:var(--c-action);border:1px solid var(--c-action-ring);}
 .alert-success{background:var(--c-pos-tint);color:var(--c-pos-ink);border:1px solid var(--c-reg-pos-line);}
-.alert-warn{background:var(--c-warn-tint);color:var(--c-warn-ink);border:1px solid var(--c-warn-line);}
+/* .alert-warn saiu no 18.1.1 junto com o último aviso que a usava (revisão da anamnese) */
 .alert.hidden{display:none;}
 /* Pacote 9: regra geral .hidden — antes era restrita só a .alert,
    o que fazia o badge "Preenchida" da anamnese aparecer mesmo
@@ -3986,16 +3986,14 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 <div class="modal-overlay" id="modalConfirma">
   <div class="modal-card">
     <div class="modal-icon"><svg class="ico" aria-hidden="true"><use href="#i-alert"/></svg></div>
-    <div class="modal-title">Confirmar envio definitivo</div>
+    <div class="modal-title">Enviar anamnese</div>
     <div class="modal-text">
-      Após enviar, sua anamnese <strong>não poderá ser editada</strong>.
-      Caso precise de alguma alteração no futuro, fale diretamente com seu terapeuta.
-      <br><br>
       Você revisou todos os dados e quer enviar agora?
+      Se precisar, você poderá corrigir a anamnese depois, pelo cartão Anamnese do Início.
     </div>
     <div class="modal-actions">
       <button class="btn-modal-cancel" onclick="fecharModalConfirma()">Voltar e revisar</button>
-      <button class="btn-modal-confirm" onclick="enviarAnamneseDefinitivo()">Sim, enviar</button>
+      <button class="btn-modal-confirm" onclick="enviarAnamneseDefinitivo()">Enviar</button>
     </div>
   </div>
 </div>
@@ -4412,15 +4410,10 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <div class="ini-data" id="iniData"></div>
     </div>
 
-    <!-- Pacote 13.4.2: Botão destaque senha (só no primeiro acesso) -->
-    <button class="pac-senha-destaque" id="pacSenhaDestaque" onclick="pacAbrirModalSenha()">
-      <svg class="ico" aria-hidden="true"><use href="#i-key"/></svg> Recomendamos que você altere sua senha no primeiro acesso
+    <!-- Pacote 18.1.1: a anamnese pendente vira uma faixa clicável; some quando enviada -->
+    <button class="alert alert-info ini-faixa-anamnese hidden" id="avisoAnamnesePendente" type="button" onclick="abrirModulo('anamnese')">
+      <svg class="ico" aria-hidden="true"><use href="#i-file"/></svg> <strong>Anamnese pendente</strong> — toque para preencher quando puder.
     </button>
-
-    <div class="alert alert-info hidden" id="avisoAnamnesePendente" style="margin-bottom:16px;">
-      <svg class="ico" aria-hidden="true"><use href="#i-file"/></svg> <strong>Antes de começar</strong>, precisamos que você preencha sua anamnese.
-      Os outros módulos serão liberados em seguida.
-    </div>
 
     <!-- Ação primária: mesmo caminho do card "Iniciar Novo Registro" do hub -->
     <button class="ini-novo" id="iniBtnNovo" type="button" onclick="iniNovoRegistro()">
@@ -4521,23 +4514,6 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <span class="hub-faixa-chev" aria-hidden="true">›</span>
     </button>
   </div>
-  <!-- Pacote 9: Modal ao clicar no card travado de Automonitoramento (anamnese pendente) -->
-  <div class="p5-modal-overlay" id="p9Modal" onclick="if(event.target===this)p9FecharModal()">
-    <div class="p5-modal-card" role="dialog" aria-modal="true" aria-labelledby="p9ModalTitulo">
-      <div class="p5-modal-head">
-        <span class="p5-modal-icone"><svg class="ico" aria-hidden="true"><use href="#i-file"/></svg></span>
-        <div class="p5-modal-titulo" id="p9ModalTitulo">Anamnese pendente</div>
-      </div>
-      <div class="p5-modal-body">
-        Antes de começar a usar o Registro de Automonitoramento, precisamos que você preencha sua anamnese. É um passo único e importante para que possamos adaptar o acompanhamento ao seu perfil.
-      </div>
-      <div class="p5-modal-acoes">
-        <button class="p5-btn p5-btn-secondary" type="button" onclick="p9FecharModal()">Fechar</button>
-        <button class="p5-btn p5-btn-primary" type="button" onclick="p9IrParaAnamnese()">Ir para Anamnese →</button>
-      </div>
-    </div>
-  </div>
-
   <!-- INSTRUÇÕES -->
   <div class="section" id="sec-auto-instrucoes" data-barra-titulo="Instruções" data-barra-voltar="abrirSecao('sec-automonitoramento')" data-barra-voltar-rotulo="Voltar">
     <div class="instr-box">
@@ -7757,20 +7733,9 @@ function abrirModulo(modulo) {
     abrirSecao('sec-anamnese');
     iniciarAnamnese();
   } else if (modulo === 'automonitoramento') {
-    const paciente = carregarSessao();
-    // Pacote 9: em vez do alert() nativo, abre o modal bonito p9Modal
-    if (paciente && !paciente.anamnese_preenchida) {
-      p9AbrirModal();
-      return;
-    }
+    // Pacote 18.1.1: sem cadeado da anamnese — tudo liberado desde o primeiro acesso
     abrirSecao('sec-automonitoramento');
   } else if (modulo === 'escalas') {
-    // Pacote 12.2: mesma regra do Automonitoramento — exige anamnese
-    const paciente = carregarSessao();
-    if (paciente && !paciente.anamnese_preenchida) {
-      p9AbrirModal();
-      return;
-    }
     abrirSecao('sec-escalas');
     escAbrirMenu();
   }
@@ -7824,17 +7789,13 @@ function atualizarBadgeUsuario() {
 
 // Pacote 16.4c: o Início mostra a Anamnese só enquanto ela estiver pendente.
 // Depois de preenchida o card sai da tela e vira "Minha anamnese" no hambúrguer.
-// Os cadeados (Pacotes 9 e 12.2) continuam valendo para os dois cards de módulo.
+// Pacote 18.1.1: os cadeados da anamnese saíram — a pendência é só a faixa clicável.
 function atualizarMenuConformeSessao() {
   const paciente = carregarSessao();
   if (!paciente) return;
   const aviso = document.getElementById('avisoAnamnesePendente');
   const cardAnamnese = document.getElementById('cardAnamnese');
   const itemAnamnese = document.getElementById('pacHamburgerAnamnese');
-  const cardAutoHub = document.getElementById('cardAutoHub');
-  const cardEscalas = document.getElementById('cardEscalas');
-  // Pacote 13.4.2: botão destaque da senha (só no primeiro acesso)
-  const senhaDestaque = document.getElementById('pacSenhaDestaque');
   // Pacote 13.4.2: hamburger visível quando paciente está logado
   const hamburgerWrap = document.getElementById('pacHamburgerWrap');
   if (hamburgerWrap) hamburgerWrap.classList.add('visivel');
@@ -7842,9 +7803,6 @@ function atualizarMenuConformeSessao() {
   if (cardAnamnese) cardAnamnese.classList.toggle('hidden', feita);
   if (itemAnamnese) itemAnamnese.classList.toggle('hidden', !feita);
   if (aviso) aviso.classList.toggle('hidden', feita);
-  if (cardAutoHub) cardAutoHub.classList.toggle('locked', !feita);
-  if (cardEscalas) cardEscalas.classList.toggle('locked', !feita);
-  if (senhaDestaque) senhaDestaque.classList.toggle('visivel', !feita);
   // O bloco de continuidade precisa ser relido (nome do paciente, contagens)
   if (typeof iniInvalidar === 'function') iniInvalidar();
   if (typeof iniAtualizarSaudacao === 'function') iniAtualizarSaudacao();
@@ -8063,12 +8021,12 @@ function iniAbrir() {
 }
 
 // "Novo registro" = o mesmo caminho do card "Iniciar Novo Registro" do hub:
-// abrirModulo('automonitoramento') decide sobre a anamnese pendente (p9Modal) e,
-// se entrou no hub, p5ClicarCardBloquevel('iniciar') respeita o cadeado do Como Usar.
+// abrirModulo('automonitoramento') abre direto (18.1.1: sem cadeado da anamnese);
+// dentro do hub, p5ClicarCardBloquevel('iniciar') respeita o cadeado do Como Usar.
 function iniNovoRegistro() {
   abrirModulo('automonitoramento');
   var ativa = document.querySelector('.section.active');
-  if (!ativa || ativa.id !== 'sec-automonitoramento') return; // anamnese pendente: o modal já abriu
+  if (!ativa || ativa.id !== 'sec-automonitoramento') return;
   autoIniciarNovoRegistro(); // 16.5c (D11): a checagem breve está sempre liberada; rascunho ou checagem pendente ficam na página
 }
 
@@ -11232,8 +11190,6 @@ function renderRevisao(dados) {
   progressoDefinir({ total: 5, atual: 5, nome: ANAM_PASSOS_NOMES[5], nomes: ANAM_PASSOS_NOMES, feitos: [1, 2, 3, 4], irPara: anamIrParaPasso });
   html += '<div class="anam-step-sub">Confira atentamente todos os dados abaixo</div>';
 
-  html += '<div class="alert alert-warn" style="margin-bottom:14px;"><svg class=ico aria-hidden=true><use href=#i-alert></use></svg> Após o envio, a anamnese <strong>não poderá ser editada</strong>. Se identificar algum erro, use o botão "Voltar e corrigir".</div>';
-
   // Seção 1
   html += '<div class="review-section"><h4>1. Dados Pessoais</h4>';
   html += linha('Nome completo', dados.nome_completo);
@@ -12070,31 +12026,7 @@ function cabEditar(tipo) { autoAbrirMenuTipo(tipo); } // "editar" → menu "Suas
      (via atualizarMenuConformeSessao)
    ============================================================ */
 
-function p9AbrirModal() {
-  const m = document.getElementById('p9Modal');
-  if (m) m.classList.add('show');
-}
-
-function p9FecharModal() {
-  const m = document.getElementById('p9Modal');
-  if (m) m.classList.remove('show');
-}
-
-function p9IrParaAnamnese() {
-  p9FecharModal();
-  abrirSecao('sec-anamnese');
-  iniciarAnamnese();
-}
-
-// Fechar modal do Pacote 9 com ESC (mesmo padrão do Pacote 5)
-document.addEventListener('keydown', function(e){
-  if (e.key === 'Escape') {
-    const m = document.getElementById('p9Modal');
-    if (m && m.classList.contains('show')) p9FecharModal();
-  }
-});
-
-/* Fim do Pacote 9 */
+/* Fim do Pacote 9 (o modal da anamnese pendente saiu no 18.1.1 — Início sem cadeado) */
 
 function autoPreencherDataHoraAgora() {
   const agora = new Date();
