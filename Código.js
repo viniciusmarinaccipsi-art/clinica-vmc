@@ -46,7 +46,8 @@
 // Pacote 17.0 — Escalas de Beck: acao lerItensInstrumento (23/09/2026)
 // Pacote E3 — backup diário e monitor do ping (só clasp push, sem deploy)
 // Pacote 18.1 — acesso por e-mail, cracha de sessao, convite e redefinicao (01/10/2026)
-var VERSAO_PACOTE = '18.1';
+// Pacote 18.1.2 — correcoes de seguranca do acesso: links, cracha, acoes publicas, ativo (02/10/2026)
+var VERSAO_PACOTE = '18.1.2';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -550,8 +551,18 @@ var ITER_SENHA = 5000;
 var SENHA_MINIMA = 8;
 var FALHAS_MAX = 5;            // 5 falhas por (perfil, e-mail) ...
 var BLOQUEIO_SEG = 15 * 60;    // ... bloqueiam por 15 minutos
-var EMAILS_DIA_MAX = 20;
-var COLUNAS_TOKENS = ['token_hash', 'tipo', 'sigla', 'profissional_id', 'finalidade', 'expira', 'usado', 'criado_em'];
+var EMAILS_DIA_MAX = 20;       // convites (profissional e admin) por dia
+var REDEFINICOES_DIA_MAX = 10; // pedidos anonimos de "Esqueci a senha" por dia (cota separada, 18.1.2)
+var SENHA_MAXIMA = 128;        // recusada antes de qualquer hash (18.1.2)
+var LINKS_PENDENTES_MAX = 3;   // por conta; o 4o substitui o mais antigo (18.1.2)
+var LINKS_GUARDA_DIAS = 7;     // linhas vencidas ha mais que isso saem da aba Tokens
+var REDEF_INTERVALO_SEG = 15 * 60; // 1 "Esqueci a senha" por (perfil, e-mail) a cada 15 min
+// Piso de tempo das acoes publicas (18.1.2): toda falha de login e toda resposta de
+// pedirRedefinicao levam pelo menos isto, para o tempo nao revelar se o e-mail existe.
+// Ajustar acima do caminho mais lento medido na pagina Execucoes.
+var PISO_LOGIN_MS = 2500;
+var PISO_REDEF_MS = 2500;
+var COLUNAS_TOKENS = ['token_hash', 'tipo', 'sigla', 'profissional_id', 'finalidade', 'expira', 'usado', 'criado_em', 'email_destino'];
 
 // Textos aprovados pelo usuario (PROMPT_18_1.md, 30/09/2026)
 var MSG_SESSAO = 'Sua sessão expirou. Entre de novo para continuar.';
@@ -559,6 +570,7 @@ var MSG_LOGIN = 'E-mail ou senha incorretos.';
 var MSG_BLOQUEIO = 'Muitas tentativas. Aguarde 15 minutos e tente de novo.';
 var MSG_LINK = 'Este link não é mais válido. Peça um novo em "Esqueci a senha" ou fale com seu terapeuta.';
 var MSG_REDEFINICAO = 'Se o e-mail estiver cadastrado, o link chegará em alguns minutos. Confira também a caixa de spam.';
+var MSG_COTA_EMAIL = 'Limite diário de e-mails atingido. Use o botão WhatsApp ou tente amanhã.'; // texto do 18.1 (8.66)
 var EMAIL_DESTAQUE = 'COGNIATIVO — Psicoterapia para além das sessões, com intervenções cognitivo-comportamentais no dia a dia.';
 var EMAIL_ASSINATURA = ['Vinícius Marinacci Cardim', 'Psicólogo — CRP 06/165128'];
 var EMAIL_FORMACAO = [
@@ -662,20 +674,31 @@ function gerarHashSenhaV2(senha) {
 /** Confere a senha contra o hash guardado. So aceita v2 (o v1 morreu na virada). */
 function conferirSenha(senha, guardado) {
   var partes = String(guardado || '').split('$');
-  if (partes.length !== 4 || partes[0] !== 'v2') return false;
   var iter = parseInt(partes[2], 10);
-  if (!(iter > 0) || !senha) return false;
+  if (partes.length !== 4 || partes[0] !== 'v2' || !(iter > 0) || !senha) {
+    // conta sem senha (convidada) ou hash invalido: mesmo custo de uma conferencia real
+    _hashSenha_(String(senha || ''), '0', ITER_SENHA);
+    return false;
+  }
   return _iguaisTempoConstante_(_hashSenha_(String(senha), partes[1], iter), String(guardado));
 }
 
-/** Cracha de sessao: dados = {tipo, sigla, profissional_id}; agoraMs = Date.now(). */
+/**
+ * Impressao da credencial no cracha (18.1.2): muda quando a senha muda e e
+ * diferente numa conta recriada com a mesma sigla, derrubando crachas antigos.
+ */
+function impressaoCracha(senhaHash) {
+  return _sha256Hex_('cracha|' + String(senhaHash || '')).slice(0, 16);
+}
+
+/** Cracha de sessao: dados = {tipo, sigla, profissional_id, impressao}; agoraMs = Date.now(). */
 function emitirToken(dados, segredo, agoraMs) {
   var expira = agoraMs + SESSAO_HORAS * 3600 * 1000;
-  var corpo = _b64url_([dados.tipo, dados.sigla, dados.profissional_id, expira].join('|'));
+  var corpo = _b64url_([dados.tipo, dados.sigla, dados.profissional_id, expira, dados.impressao].join('|'));
   return corpo + '.' + _hmacHex_(corpo, segredo);
 }
 
-/** Le e confere a assinatura e a validade; devolve {tipo, sigla, profissional_id, expira} ou null. */
+/** Le e confere a assinatura e a validade; devolve {tipo, sigla, profissional_id, expira, impressao} ou null. */
 function lerToken(token, segredo, agoraMs) {
   if (!token || !segredo) return null;
   var partes = String(token).split('.');
@@ -683,11 +706,11 @@ function lerToken(token, segredo, agoraMs) {
   if (!_iguaisTempoConstante_(_hmacHex_(partes[0], segredo), partes[1])) return null;
   var campos;
   try { campos = _deB64url_(partes[0]).split('|'); } catch (e) { return null; }
-  if (campos.length !== 4) return null;
+  if (campos.length !== 5) return null;
   var expira = parseInt(campos[3], 10);
   if (!(expira > agoraMs)) return null;
-  if (PERFIS.indexOf(campos[0]) === -1 || !campos[1] || !campos[2]) return null;
-  return { tipo: campos[0], sigla: campos[1], profissional_id: campos[2], expira: expira };
+  if (PERFIS.indexOf(campos[0]) === -1 || !campos[1] || !campos[2] || !campos[4]) return null;
+  return { tipo: campos[0], sigla: campos[1], profissional_id: campos[2], expira: expira, impressao: campos[4] };
 }
 
 /** Link de uso unico: 32 bytes aleatorios em base64url (o servidor guarda so o SHA-256). */
@@ -827,7 +850,7 @@ function _gravarEmailIndice_(sigla, tipo, email) {
   }
   if (!alvo) return { ok: false, erro: 'Conta não encontrada no índice.' };
   idx.aba.getRange(alvo.linha, idx.header.indexOf('email') + 1).setValue(email);
-  return { ok: true };
+  return { ok: true, mudou: alvo.email !== normalizarEmail(email) };
 }
 
 /** Atualiza colunas de uma linha localizada por `chave` = valor (comparacao sem caixa). */
@@ -854,29 +877,73 @@ function _abaTokens_() {
   return aba;
 }
 
-/** Gera um link de uso unico (48 h) para (tipo, sigla); invalida o anterior ainda nao usado. */
-function _criarLinkAtivacao_(tipo, sigla, profissionalId, finalidade) {
+function _expiraMs_(valor) {
+  return valor instanceof Date ? valor.getTime() : Date.parse(String(valor));
+}
+
+/**
+ * Gera um link de uso unico (48 h) para (tipo, sigla), preso ao e-mail de destino.
+ * 18.1.2: os links pendentes da conta coexistem (e-mail e WhatsApp); o uso de um
+ * invalida os outros (_invalidarLinks_). Teto de LINKS_PENDENTES_MAX: o mais antigo
+ * vira 'substituido'. Linhas vencidas ha mais de LINKS_GUARDA_DIAS saem da aba.
+ */
+function _criarLinkAtivacao_(tipo, sigla, profissionalId, finalidade, emailDestino) {
   var aba = _abaTokens_();
   var dados = aba.getDataRange().getValues();
   var h = dados[0];
-  var iT = h.indexOf('tipo'), iS = h.indexOf('sigla'), iU = h.indexOf('usado');
+  var iT = h.indexOf('tipo'), iS = h.indexOf('sigla'), iU = h.indexOf('usado'), iE = h.indexOf('expira');
+  var agora = new Date();
+  var siglaU = String(sigla).toUpperCase();
+  var limite = agora.getTime() - LINKS_GUARDA_DIAS * 24 * 3600 * 1000;
+  var pendentes = [], velhas = [];
   for (var i = 1; i < dados.length; i++) {
-    if (String(dados[i][iT]) === tipo && String(dados[i][iS]).toUpperCase() === String(sigla).toUpperCase() && !String(dados[i][iU])) {
-      aba.getRange(i + 1, iU + 1).setValue('substituido');
+    var expira = _expiraMs_(dados[i][iE]);
+    if (expira < limite) velhas.push(i + 1);
+    else if (String(dados[i][iT]) === tipo && String(dados[i][iS]).toUpperCase() === siglaU && !String(dados[i][iU]) && expira > agora.getTime()) {
+      pendentes.push({ linha: i + 1, expira: expira });
     }
   }
+  // Primeiro marca (linhas ainda nas posicoes lidas), depois apaga de baixo para cima.
+  pendentes.sort(function (a, b) { return a.expira - b.expira; });
+  var aDerrubar = pendentes.length - (LINKS_PENDENTES_MAX - 1);
+  for (var k = 0; k < aDerrubar; k++) aba.getRange(pendentes[k].linha, iU + 1).setValue('substituido');
+  for (var v = velhas.length - 1; v >= 0; v--) aba.deleteRow(velhas[v]);
   var bruto = gerarTokenLink();
-  var agora = new Date();
   _anexarPorCabecalho_(aba, h, {
-    token_hash: _sha256Hex_(bruto), tipo: tipo, sigla: String(sigla).toUpperCase(),
+    token_hash: _sha256Hex_(bruto), tipo: tipo, sigla: siglaU,
     profissional_id: profissionalId, finalidade: finalidade,
     expira: new Date(agora.getTime() + LINK_HORAS * 3600 * 1000).toISOString(),
-    usado: '', criado_em: agora.toISOString()
+    usado: '', criado_em: agora.toISOString(), email_destino: normalizarEmail(emailDestino)
   });
   return SITE_URL + '?ativar=' + bruto;
 }
 
-/** Localiza o link pelo token bruto; devolve {linha, tipo, sigla, profissional_id} se valido. */
+/** Marca como 'substituido' todo link ainda nao usado de (tipo, sigla). */
+function _invalidarLinks_(tipo, sigla) {
+  var aba = _abaTokens_();
+  var dados = aba.getDataRange().getValues();
+  var h = dados[0];
+  var iT = h.indexOf('tipo'), iS = h.indexOf('sigla'), iU = h.indexOf('usado');
+  var siglaU = String(sigla || '').toUpperCase();
+  for (var i = 1; i < dados.length; i++) {
+    if (String(dados[i][iT]) === tipo && String(dados[i][iS]).toUpperCase() === siglaU && !String(dados[i][iU])) {
+      aba.getRange(i + 1, iU + 1).setValue('substituido');
+    }
+  }
+}
+
+/** Anula um link recem-criado cujo e-mail nao saiu (nao fica pendente a toa). */
+function _anularLink_(url) {
+  var link = _linkValido_(_brutoDoLink_(url));
+  if (link) link.aba.getRange(link.linha, link.colUsado).setValue('substituido');
+}
+
+function _brutoDoLink_(url) {
+  var m = String(url || '').match(/[?&]ativar=([A-Za-z0-9_-]+)/);
+  return m ? m[1] : '';
+}
+
+/** Localiza o link pelo token bruto; devolve {linha, tipo, sigla, profissional_id, email_destino} se valido. */
 function _linkValido_(bruto) {
   if (!bruto) return null;
   var aba = _abaTokens_();
@@ -886,13 +953,14 @@ function _linkValido_(bruto) {
   var iH = h.indexOf('token_hash'), iE = h.indexOf('expira'), iU = h.indexOf('usado');
   for (var i = 1; i < dados.length; i++) {
     if (String(dados[i][iH]) !== alvo) continue;
-    var expira = dados[i][iE] instanceof Date ? dados[i][iE].getTime() : Date.parse(String(dados[i][iE]));
+    var expira = _expiraMs_(dados[i][iE]);
     if (String(dados[i][iU]) || !(expira > Date.now())) return null;
     return {
       aba: aba, linha: i + 1, colUsado: iU + 1,
       tipo: String(dados[i][h.indexOf('tipo')]),
       sigla: String(dados[i][h.indexOf('sigla')]),
-      profissional_id: String(dados[i][h.indexOf('profissional_id')])
+      profissional_id: String(dados[i][h.indexOf('profissional_id')]),
+      email_destino: normalizarEmail(dados[i][h.indexOf('email_destino')])
     };
   }
   return null;
@@ -900,13 +968,27 @@ function _linkValido_(bruto) {
 
 // ---------- contas: leitura do registro de cada perfil ----------
 
+/**
+ * Criterio unico de `ativo` (18.1.2): true, 'sim', 's', 'true' (sem caixa e sem
+ * espacos) = ativo; todo o resto, inclusive vazio, false, 'nao', 'não' = inativo.
+ */
+function _estaAtivo_(v) {
+  if (v === true) return true;
+  return ['sim', 's', 'true'].indexOf(String(v === undefined || v === null ? '' : v).trim().toLowerCase()) !== -1;
+}
+
+/** `ativo` como o cliente sempre recebe: 'Sim' ou 'Nao'. */
+function _ativoParaCliente_(v) {
+  return _estaAtivo_(v) ? 'Sim' : 'Nao';
+}
+
 /** Registro da conta (tipo, sigla, profissional_id): {ativo, senha_hash, nome, email, extra} ou null. */
 function _registroDaConta_(tipo, sigla, profissionalId) {
   if (tipo === 'paciente') {
     var pac = buscarPaciente(sigla);
     if (!pac || pac.__profissional_id !== profissionalId) return null;
     var dono = buscarProfissional(profissionalId);
-    var ativoPac = String(pac.ativo || '').trim().toLowerCase() === 'sim' && !!dono && String(dono.ativo).trim().toLowerCase() === 'sim';
+    var ativoPac = _estaAtivo_(pac.ativo) && !!dono && _estaAtivo_(dono.ativo);
     return {
       ativo: ativoPac, senha_hash: pac.senha_hash, nome: pac.nome || '', email: normalizarEmail(pac.email),
       extra: { anamnese_preenchida: pac.data_anamnese !== '' && pac.data_anamnese !== null, data_anamnese: pac.data_anamnese }
@@ -916,7 +998,7 @@ function _registroDaConta_(tipo, sigla, profissionalId) {
     var prof = buscarProfissional(profissionalId);
     if (!prof || String(prof.sigla).trim().toUpperCase() !== String(sigla).toUpperCase()) return null;
     return {
-      ativo: String(prof.ativo).trim().toLowerCase() === 'sim', senha_hash: prof.senha_hash,
+      ativo: _estaAtivo_(prof.ativo), senha_hash: prof.senha_hash,
       nome: prof.nome_completo || '', email: normalizarEmail(prof.email),
       extra: { profissional_id: prof.profissional_id, nome_completo: prof.nome_completo }
     };
@@ -925,7 +1007,7 @@ function _registroDaConta_(tipo, sigla, profissionalId) {
     var adm = buscarAdmin(profissionalId);
     if (!adm || String(adm.sigla).trim().toUpperCase() !== String(sigla).toUpperCase()) return null;
     return {
-      ativo: String(adm.ativo).trim().toLowerCase() === 'sim', senha_hash: adm.senha_hash,
+      ativo: _estaAtivo_(adm.ativo), senha_hash: adm.senha_hash,
       nome: adm.nome_completo || '', email: normalizarEmail(adm.email),
       extra: { admin_id: adm.admin_id, nome_completo: adm.nome_completo }
     };
@@ -933,18 +1015,24 @@ function _registroDaConta_(tipo, sigla, profissionalId) {
   return null;
 }
 
-/** Grava o hash v2 da senha na linha da conta. */
+/**
+ * Grava o hash v2 da senha na linha da conta e invalida os links pendentes dela.
+ * Devolve o hash gravado (para o cracha novo) ou false.
+ */
 function _gravarSenhaDaConta_(tipo, sigla, profissionalId, senha) {
   var hash = gerarHashSenhaV2(senha);
+  var gravou = false;
   if (tipo === 'paciente') {
     var controle = abrirControleDoProfissional(profissionalId);
-    if (!controle) return false;
-    return _atualizarLinhaPorChave_(controle.getSheetByName(ABA_PACIENTES), 'sigla', sigla, { senha_hash: hash });
+    gravou = !!controle && _atualizarLinhaPorChave_(controle.getSheetByName(ABA_PACIENTES), 'sigla', sigla, { senha_hash: hash });
+  } else {
+    var global = SpreadsheetApp.openById(SISTEMA_VMC_ID);
+    if (tipo === 'profissional') gravou = _atualizarLinhaPorChave_(global.getSheetByName(ABA_PROFISSIONAIS), 'profissional_id', profissionalId, { senha_hash: hash });
+    if (tipo === 'admin') gravou = _atualizarLinhaPorChave_(global.getSheetByName(ABA_ADMINS), 'admin_id', profissionalId, { senha_hash: hash });
   }
-  var global = SpreadsheetApp.openById(SISTEMA_VMC_ID);
-  if (tipo === 'profissional') return _atualizarLinhaPorChave_(global.getSheetByName(ABA_PROFISSIONAIS), 'profissional_id', profissionalId, { senha_hash: hash });
-  if (tipo === 'admin') return _atualizarLinhaPorChave_(global.getSheetByName(ABA_ADMINS), 'admin_id', profissionalId, { senha_hash: hash });
-  return false;
+  if (!gravou) return false;
+  _invalidarLinks_(tipo, sigla);
+  return hash;
 }
 
 // ---------- cracha ----------
@@ -963,6 +1051,7 @@ function _validarToken_(token) {
   if (!dados) return null;
   var reg = _registroDaConta_(dados.tipo, dados.sigla, dados.profissional_id);
   if (!reg || !reg.ativo) return null;
+  if (!_iguaisTempoConstante_(impressaoCracha(reg.senha_hash), dados.impressao)) return null;
   dados.nome = reg.nome;
   dados.email = reg.email;
   return dados;
@@ -1000,23 +1089,34 @@ function _siglaAlvoLeitura_(s, siglaPayload) {
  * Saida: { ok:true, token, perfil:{tipo, sigla, nome, email, ...} } ou
  *        { ok:false, erro } (mensagem unica, tambem para conta inativa).
  */
+/** Completa a resposta ate `pisoMs` desde t0 (o tempo nao revela qual caminho rodou). */
+function _completarPiso_(t0, pisoMs, resposta) {
+  var falta = pisoMs - (Date.now() - t0);
+  if (falta > 0) Utilities.sleep(falta);
+  return resposta;
+}
+
 function autenticar(tipo, email, senha) {
+  var t0 = Date.now();
+  var falha = function (r) { return _completarPiso_(t0, PISO_LOGIN_MS, r || { ok: false, erro: MSG_LOGIN }); };
   var t = String(tipo || '').trim().toLowerCase();
   var e = normalizarEmail(email);
-  if (PERFIS.indexOf(t) === -1 || !e || !senha) return { ok: false, erro: MSG_LOGIN };
+  if (PERFIS.indexOf(t) === -1 || !e || !senha) return falha();
+  if (String(senha).length > SENHA_MAXIMA) return falha();
 
+  // A tranca 5 falhas -> 15 min fica (decisao do usuario, 02/10: risco aceito de um
+  // terceiro trancar a conta alheia). falhas + 1 e gravado ANTES de conferir a senha,
+  // para tentativas em paralelo nao lerem todas o mesmo valor; o acerto remove a chave.
   var cache = CacheService.getScriptCache();
   var chave = 'falha:' + t + ':' + e;
   var falhas = parseInt(cache.get(chave) || '0', 10);
-  if (falhas >= FALHAS_MAX) return { ok: false, codigo: 'bloqueado', erro: MSG_BLOQUEIO };
+  if (falhas >= FALHAS_MAX) return falha({ ok: false, codigo: 'bloqueado', erro: MSG_BLOQUEIO });
+  cache.put(chave, String(falhas + 1), BLOQUEIO_SEG);
 
   var conta = _contaPorEmail_(t, e);
   var reg = conta ? _registroDaConta_(t, conta.sigla, conta.profissional_id) : null;
   var confere = reg ? conferirSenha(senha, reg.senha_hash) : (_hashSenha_(String(senha), '0', ITER_SENHA) && false);
-  if (!reg || !reg.ativo || !confere) {
-    cache.put(chave, String(falhas + 1), BLOQUEIO_SEG);
-    return { ok: false, erro: MSG_LOGIN };
-  }
+  if (!reg || !reg.ativo || !confere) return falha();
   cache.remove(chave);
 
   var segredo = _segredoSessao_();
@@ -1025,24 +1125,39 @@ function autenticar(tipo, email, senha) {
   for (var k in reg.extra) perfil[k] = reg.extra[k];
   return {
     ok: true,
-    token: emitirToken({ tipo: t, sigla: conta.sigla, profissional_id: conta.profissional_id }, segredo, Date.now()),
+    token: emitirToken({ tipo: t, sigla: conta.sigla, profissional_id: conta.profissional_id, impressao: impressaoCracha(reg.senha_hash) }, segredo, Date.now()),
     perfil: perfil
   };
 }
 
-/** Pede um link de redefinicao. Resposta identica exista ou nao o e-mail. */
+/**
+ * Pede um link de redefinicao. Resposta identica (e com o mesmo piso de tempo)
+ * exista ou nao o e-mail, com ou sem cota, com ou sem falha do envio.
+ * 18.1.2: 1 pedido por (perfil, e-mail) a cada 15 min, conferido antes de qualquer
+ * leitura de planilha; cota propria (REDEFINICOES_DIA_MAX) conferida antes de criar
+ * o link; link anulado se o e-mail nao sair; links pendentes (convite) continuam.
+ */
 function pedirRedefinicao(tipo, email) {
+  var t0 = Date.now();
   var resposta = { ok: true, mensagem: MSG_REDEFINICAO };
-  var t = String(tipo || '').trim().toLowerCase();
-  var e = normalizarEmail(email);
-  if (PERFIS.indexOf(t) === -1 || !emailValido(e)) return resposta;
-  var conta = _contaPorEmail_(t, e);
-  if (!conta) return resposta;
-  var reg = _registroDaConta_(t, conta.sigla, conta.profissional_id);
-  if (!reg || !reg.ativo) return resposta;
-  var link = _criarLinkAtivacao_(t, conta.sigla, conta.profissional_id, 'redefinicao');
-  _enviarEmail_(e, montarEmail('redefinicao', '', link));
-  return resposta;
+  try {
+    var t = String(tipo || '').trim().toLowerCase();
+    var e = normalizarEmail(email);
+    if (PERFIS.indexOf(t) === -1 || !emailValido(e)) return _completarPiso_(t0, PISO_REDEF_MS, resposta);
+    var cache = CacheService.getScriptCache();
+    var chave = 'redef:' + t + ':' + e;
+    if (cache.get(chave)) return _completarPiso_(t0, PISO_REDEF_MS, resposta);
+    cache.put(chave, '1', REDEF_INTERVALO_SEG);
+    var conta = _contaPorEmail_(t, e);
+    var reg = conta ? _registroDaConta_(t, conta.sigla, conta.profissional_id) : null;
+    if (reg && reg.ativo && _reservarEmail_('redefinicoes')) {
+      var link = _criarLinkAtivacao_(t, conta.sigla, conta.profissional_id, 'redefinicao', e);
+      if (!_enviarEmail_(e, montarEmail('redefinicao', '', link))) _anularLink_(link);
+    }
+  } catch (erro) {
+    console.error('pedirRedefinicao: ' + String(erro && erro.message || erro).slice(0, 200));
+  }
+  return _completarPiso_(t0, PISO_REDEF_MS, resposta);
 }
 
 /**
@@ -1054,9 +1169,15 @@ function definirSenha(ativar, senha) {
   var link = _linkValido_(ativar);
   if (!link) return { ok: false, codigo: 'link_invalido', erro: MSG_LINK };
   var reg = _registroDaConta_(link.tipo, link.sigla, link.profissional_id);
-  if (!reg || !reg.ativo || !reg.email) return { ok: false, codigo: 'link_invalido', erro: MSG_LINK };
+  // 18.1.2: o link vale so para o e-mail a que foi enviado (troca de e-mail o derruba;
+  // link sem email_destino, emitido antes do 18.1.2, nao vale)
+  if (!reg || !reg.ativo || !reg.email || !link.email_destino || link.email_destino !== reg.email) {
+    return { ok: false, codigo: 'link_invalido', erro: MSG_LINK };
+  }
   if (senha === undefined || senha === null || senha === '') return { ok: true, tipo: link.tipo, email: reg.email };
   if (String(senha).length < SENHA_MINIMA) return { ok: false, erro: 'Escolha uma senha com pelo menos 8 caracteres.' };
+  if (String(senha).length > SENHA_MAXIMA) return { ok: false, erro: 'Não foi possível gravar a senha. Tente de novo.' };
+  // grava a senha e invalida os links pendentes da conta (inclusive os dos outros canais)
   if (!_gravarSenhaDaConta_(link.tipo, link.sigla, link.profissional_id, String(senha))) {
     return { ok: false, erro: 'Não foi possível gravar a senha. Tente de novo.' };
   }
@@ -1067,15 +1188,37 @@ function definirSenha(ativar, senha) {
 
 // ---------- convites ----------
 
-/** Envia um e-mail do COGNIATIVO respeitando o limite diario. Devolve true se enviou. */
+/**
+ * Reserva um envio na cota do dia: 'convites' (EMAILS_DIA_MAX, profissional e admin)
+ * ou 'redefinicoes' (REDEFINICOES_DIA_MAX, pedidos anonimos). O contador sobe antes do
+ * envio e sob o lock do script, para rajadas em paralelo nao furarem o teto.
+ */
+function _reservarEmail_(cota) {
+  var max = cota === 'redefinicoes' ? REDEFINICOES_DIA_MAX : EMAILS_DIA_MAX;
+  var prefixo = cota === 'redefinicoes' ? 'redefinicoes:' : 'emails:';
+  var lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    var props = PropertiesService.getScriptProperties();
+    var chave = prefixo + Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd');
+    var enviados = parseInt(props.getProperty(chave) || '0', 10);
+    if (enviados >= max) return false;
+    props.setProperty(chave, String(enviados + 1));
+    return true;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** Envia um e-mail do COGNIATIVO (a cota ja reservada). Devolve true se enviou. */
 function _enviarEmail_(para, email) {
-  var props = PropertiesService.getScriptProperties();
-  var chave = 'emails:' + Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd');
-  var enviados = parseInt(props.getProperty(chave) || '0', 10);
-  if (enviados >= EMAILS_DIA_MAX) return false;
-  MailApp.sendEmail({ to: para, subject: email.assunto, body: email.texto, htmlBody: email.html, name: 'COGNIATIVO' });
-  props.setProperty(chave, String(enviados + 1));
-  return true;
+  try {
+    MailApp.sendEmail({ to: para, subject: email.assunto, body: email.texto, htmlBody: email.html, name: 'COGNIATIVO' });
+    return true;
+  } catch (e) {
+    console.error('_enviarEmail_: ' + String(e && e.message || e).slice(0, 200));
+    return false;
+  }
 }
 
 /** Grava e-mail e telefone do paciente na Controle (e o e-mail no Indice), normalizados. */
@@ -1090,6 +1233,7 @@ function _atualizarContatoPaciente_(sigla, contato) {
   if (!_atualizarLinhaPorChave_(controle.getSheetByName(ABA_PACIENTES), 'sigla', sigla, { email: c.email, telefone: c.telefone })) {
     return { ok: false, erro: 'Paciente não encontrado na Controle.' };
   }
+  if (idx.mudou) _invalidarLinks_('paciente', sigla); // 18.1.2: link antigo nao vale para o e-mail novo
   return { ok: true, email: c.email, telefone: c.telefone };
 }
 
@@ -1119,14 +1263,16 @@ function profEnviarConvite(s, siglaPaciente, canal, contato) {
   }
   var pac = buscarPaciente(siglaPaciente);
   if (!pac) return { ok: false, erro: 'Paciente nao encontrado' };
-  if (String(pac.ativo || '').trim().toLowerCase() !== 'sim') return { ok: false, erro: 'Paciente desativado.' };
+  if (!_estaAtivo_(pac.ativo)) return { ok: false, erro: 'Paciente desativado.' };
   var email = normalizarEmail(pac.email);
   if (!email) return { ok: false, erro: 'Cadastre o e-mail do paciente antes do convite.' };
-  var link = _criarLinkAtivacao_('paciente', pac.sigla, s.profissional_id, 'convite');
+  // 18.1.2: cota conferida antes de criar o link; e-mail que nao sai anula o proprio link
+  if (canal === 'email' && !_reservarEmail_('convites')) return { ok: false, erro: MSG_COTA_EMAIL };
+  var link = _criarLinkAtivacao_('paciente', pac.sigla, s.profissional_id, 'convite', email);
   var enviado = false;
   if (canal === 'email') {
     enviado = _enviarEmail_(email, montarEmail('convite', primeiroNome(_nomeDoPaciente_(pac)), link));
-    if (!enviado) return { ok: false, erro: 'Limite diário de e-mails atingido. Use o botão WhatsApp ou tente amanhã.', link: link };
+    if (!enviado) { _anularLink_(link); return { ok: false, erro: MSG_COTA_EMAIL }; }
   }
   return { ok: true, link: link, email: email, telefone: normalizarTelefone(pac.telefone), enviado: enviado };
 }
@@ -1137,16 +1283,17 @@ function admEnviarConvite(s, profissionalId, canal) {
   if (!adm) return _respostaSessaoExpirada_();
   var prof = buscarProfissional(profissionalId);
   if (!prof) return { ok: false, erro: 'Profissional nao encontrado: ' + profissionalId };
-  if (String(prof.ativo).trim().toLowerCase() !== 'sim') return { ok: false, erro: 'Profissional desativado.' };
+  if (!_estaAtivo_(prof.ativo)) return { ok: false, erro: 'Profissional desativado.' };
   var email = normalizarEmail(prof.email);
   if (!emailValido(email)) return { ok: false, erro: 'Cadastre o e-mail do profissional antes do convite.' };
   var idx = _gravarEmailIndice_(prof.sigla, 'profissional', email);
   if (!idx.ok) return idx;
-  var link = _criarLinkAtivacao_('profissional', String(prof.sigla).toUpperCase(), prof.profissional_id, 'convite');
+  if (canal === 'email' && !_reservarEmail_('convites')) return { ok: false, erro: MSG_COTA_EMAIL };
+  var link = _criarLinkAtivacao_('profissional', String(prof.sigla).toUpperCase(), prof.profissional_id, 'convite', email);
   var enviado = false;
   if (canal === 'email') {
     enviado = _enviarEmail_(email, montarEmail('convite', primeiroNome(prof.nome_completo), link));
-    if (!enviado) return { ok: false, erro: 'Limite diário de e-mails atingido. Use o botão WhatsApp ou tente amanhã.', link: link };
+    if (!enviado) { _anularLink_(link); return { ok: false, erro: MSG_COTA_EMAIL }; }
   }
   return { ok: true, link: link, enviado: enviado };
 }
@@ -1173,8 +1320,8 @@ function bootstrapAcesso18_1(emailAdmin, emailProf) {
   var r1 = _gravarEmailIndice_('ADM_VMC', 'admin', ea);
   var r2 = _gravarEmailIndice_('VMC', 'profissional', ep);
   if (!r1.ok || !r2.ok) throw new Error('Indice_Siglas: ' + (r1.erro || r2.erro));
-  Logger.log('Link do admin (48 h, uso unico): ' + _criarLinkAtivacao_('admin', 'ADM_VMC', 'ADM_VMC', 'convite'));
-  Logger.log('Link do profissional (48 h, uso unico): ' + _criarLinkAtivacao_('profissional', 'VMC', 'PROF_VMC', 'convite'));
+  Logger.log('Link do admin (48 h, uso unico): ' + _criarLinkAtivacao_('admin', 'ADM_VMC', 'ADM_VMC', 'convite', ea));
+  Logger.log('Link do profissional (48 h, uso unico): ' + _criarLinkAtivacao_('profissional', 'VMC', 'PROF_VMC', 'convite', ep));
 }
 
 /** Calibracao do ITER_SENHA (alvo 200-400 ms): rodar no editor e ler o Logger. */
@@ -1246,7 +1393,7 @@ function listarPacientesDoProfissional(s) {
       nome_completo: idxNomeCad >= 0 ? String(row[idxNomeCad] || '').trim() : '',
       data_cadastro: idxDataCad >= 0 ? formatarDataParaExibicao_(row[idxDataCad]) : '',
       data_anamnese: idxDataAnam >= 0 ? formatarDataParaExibicao_(row[idxDataAnam]) : '',
-      ativo: idxAtivo >= 0 ? String(row[idxAtivo] || '').trim() : 'Sim',
+      ativo: idxAtivo >= 0 ? _ativoParaCliente_(row[idxAtivo]) : 'Sim',
       // Pacote 13.2.3: indicadores clinicos (defaults seguros)
       ind_total_auto: 0,
       ind_ultimo_auto_data: '',
@@ -1412,7 +1559,7 @@ function lerDadosPaciente(s, siglaPaciente) {
 
   return {
     ok: true,
-    ativo: String(paciente.ativo || 'Sim').trim(), // Pacote 13.5
+    ativo: _ativoParaCliente_(paciente.ativo), // Pacote 13.5; 18.1.2: sempre 'Sim' ou 'Nao'
     anamnese_preenchida: anamnese.length > 0,
     anamnese: anamnese.length > 0 ? anamnese[0] : null,
     automonitoramento: automonitoramento,
@@ -1905,13 +2052,16 @@ function alterarSenhaPaciente(sigla, senhaAtual, novaSenha) {
   if (!novaSenha || String(novaSenha).length < SENHA_MINIMA) {
     return { ok: false, erro: 'Escolha uma senha com pelo menos 8 caracteres.' };
   }
+  if (String(novaSenha).length > SENHA_MAXIMA) return { ok: false, erro: 'Não foi possível gravar a senha. Tente de novo.' };
+  if (String(senhaAtual).length > SENHA_MAXIMA) return { ok: false, erro: 'Senha atual incorreta' };
   var paciente = buscarPaciente(sigla);
   if (!paciente) return { ok: false, erro: 'Paciente nao encontrado' };
   if (!conferirSenha(senhaAtual, paciente.senha_hash)) return { ok: false, erro: 'Senha atual incorreta' };
-  if (!_gravarSenhaDaConta_('paciente', paciente.sigla, paciente.__profissional_id, String(novaSenha))) {
-    return { ok: false, erro: 'Paciente nao encontrado na Controle' };
-  }
-  return { ok: true, mensagem: 'Senha alterada com sucesso' };
+  var hash = _gravarSenhaDaConta_('paciente', paciente.sigla, paciente.__profissional_id, String(novaSenha));
+  if (!hash) return { ok: false, erro: 'Paciente nao encontrado na Controle' };
+  // 18.1.2: a senha nova derruba os crachas antigos; esta sessao segue com um cracha novo
+  var token = emitirToken({ tipo: 'paciente', sigla: String(paciente.sigla).toUpperCase(), profissional_id: paciente.__profissional_id, impressao: impressaoCracha(hash) }, _segredoSessao_(), Date.now());
+  return { ok: true, mensagem: 'Senha alterada com sucesso', token: token };
 }
 
 
@@ -2093,7 +2243,7 @@ function cadastrarPaciente(s, dados) {
     _anexarIndice_(sigla, 'paciente', profissionalId, contato.email);
 
     // 9. Link de convite (canal 'link'): o profissional envia por e-mail ou WhatsApp
-    var link = _criarLinkAtivacao_('paciente', sigla, profissionalId, 'convite');
+    var link = _criarLinkAtivacao_('paciente', sigla, profissionalId, 'convite', contato.email);
 
     return {
       ok: true,
@@ -2413,7 +2563,7 @@ function profDesativarPaciente(s, siglaPaciente) {
 
   var paciente = buscarPaciente(siglaPaciente);
   if (!paciente) return { ok: false, erro: 'Dados do paciente nao encontrados' };
-  if (String(paciente.ativo || '').trim().toLowerCase() === 'nao') {
+  if (!_estaAtivo_(paciente.ativo)) {
     return { ok: false, erro: 'Paciente ja esta desativado' };
   }
 
@@ -2440,6 +2590,7 @@ function profDesativarPaciente(s, siglaPaciente) {
 
     // Marcar ativo = Nao na Controle
     _alterarStatusPacienteControle_(profissionalId, siglaPaciente, 'Nao');
+    _invalidarLinks_('paciente', siglaPaciente);
 
     return { ok: true, mensagem: 'Paciente desativado com sucesso' };
   } catch (e) {
@@ -2464,7 +2615,7 @@ function profReativarPaciente(s, siglaPaciente) {
 
   var paciente = buscarPaciente(siglaPaciente);
   if (!paciente) return { ok: false, erro: 'Dados do paciente nao encontrados' };
-  if (String(paciente.ativo || '').trim().toLowerCase() !== 'nao') {
+  if (_estaAtivo_(paciente.ativo)) {
     return { ok: false, erro: 'Paciente ja esta ativo' };
   }
 
@@ -2519,7 +2670,7 @@ function profExcluirPaciente(s, siglaPaciente, confirmacaoSigla) {
   if (!paciente) return { ok: false, erro: 'Dados do paciente nao encontrados' };
 
   // So permite excluir pacientes desativados
-  if (String(paciente.ativo || '').trim().toLowerCase() !== 'nao') {
+  if (_estaAtivo_(paciente.ativo)) {
     return { ok: false, erro: 'So e possivel excluir pacientes desativados. Desative primeiro.' };
   }
 
@@ -2564,6 +2715,7 @@ function profExcluirPaciente(s, siglaPaciente, confirmacaoSigla) {
       }
     }
 
+    _invalidarLinks_('paciente', siglaPaciente);
     return { ok: true, mensagem: 'Paciente excluido permanentemente' };
   } catch (e) {
     return { ok: false, erro: 'Erro ao excluir paciente: ' + String(e) };
@@ -2584,6 +2736,7 @@ function profAlterarSenhaPaciente(s, siglaPaciente, novaSenha) {
   if (!novaSenha || String(novaSenha).length < SENHA_MINIMA) {
     return { ok: false, erro: 'Escolha uma senha com pelo menos 8 caracteres.' };
   }
+  if (String(novaSenha).length > SENHA_MAXIMA) return { ok: false, erro: 'Não foi possível gravar a senha. Tente de novo.' };
 
   // 3. Abrir Controle do profissional e atualizar hash
   var controle = abrirControleDoProfissional(profissionalId);
@@ -2606,6 +2759,7 @@ function profAlterarSenhaPaciente(s, siglaPaciente, novaSenha) {
   for (var i = 1; i < dados.length; i++) {
     if (String(dados[i][idxSigla]).trim().toUpperCase() === String(siglaPaciente).trim().toUpperCase()) {
       aba.getRange(i + 1, idxHash + 1).setValue(novoHash);
+      _invalidarLinks_('paciente', siglaPaciente);
       return { ok: true };
     }
   }
@@ -2660,7 +2814,7 @@ function listarProfissionais(s) {
     var obj = {};
     for (var j = 0; j < cabecalhos.length; j++) {
       if (cabecalhos[j] === 'senha_hash') continue;  // nunca volta pro cliente
-      obj[cabecalhos[j]] = dados[i][j];
+      obj[cabecalhos[j]] = cabecalhos[j] === 'ativo' ? _ativoParaCliente_(dados[i][j]) : dados[i][j];
     }
     lista.push(obj);
   }
@@ -2828,6 +2982,7 @@ function atualizarProfissional(s, profissionalId, mudancas) {
     if (profAtual) {
       var ri = _gravarEmailIndice_(profAtual.sigla, 'profissional', mudancas.email);
       if (!ri.ok) return ri;
+      if (ri.mudou || normalizarEmail(profAtual.email) !== mudancas.email) _invalidarLinks_('profissional', profAtual.sigla);
     }
   }
 
@@ -2865,6 +3020,7 @@ function trocarSenhaProfissional(s, profissionalId, novaSenha) {
   if (!novaSenha || String(novaSenha).length < SENHA_MINIMA) {
     return { ok: false, erro: 'Escolha uma senha com pelo menos 8 caracteres.' };
   }
+  if (String(novaSenha).length > SENHA_MAXIMA) return { ok: false, erro: 'Não foi possível gravar a senha. Tente de novo.' };
 
   var planilha = SpreadsheetApp.openById(SISTEMA_VMC_ID);
   var aba = planilha.getSheetByName(ABA_PROFISSIONAIS);
@@ -2876,6 +3032,7 @@ function trocarSenhaProfissional(s, profissionalId, novaSenha) {
   for (var i = 1; i < dados.length; i++) {
     if (String(dados[i][idxId]).trim() === String(profissionalId).trim()) {
       aba.getRange(i + 1, idxSenha + 1).setValue(gerarHashSenhaV2(String(novaSenha)));
+      _invalidarLinks_('profissional', dados[i][cabecalhos.indexOf('sigla')]);
       return { ok: true, mensagem: 'Senha trocada com sucesso' };
     }
   }
@@ -2912,6 +3069,7 @@ function _alterarStatusProfissional(s, profissionalId, novoStatus) {
   for (var i = 1; i < dados.length; i++) {
     if (String(dados[i][idxId]).trim() === String(profissionalId).trim()) {
       aba.getRange(i + 1, idxAtivo + 1).setValue(novoStatus);
+      if (!_estaAtivo_(novoStatus)) _invalidarLinks_('profissional', dados[i][cabecalhos.indexOf('sigla')]);
       return {
         ok: true,
         mensagem: novoStatus === 'sim' ? 'Profissional reativado' : 'Profissional desativado'
