@@ -545,9 +545,11 @@ var PERFIS = ['paciente', 'profissional', 'admin'];
 var SESSAO_HORAS = 6;
 var LINK_HORAS = 48;
 // Iteracoes do hash v2. Calibracao: alvo de 200-400 ms por conferencia no
-// Apps Script. Comecou em 5000 (18.1); medir com medirHashSenha() no editor
-// depois da virada e ajustar aqui (hashes antigos guardam o proprio iter).
-var ITER_SENHA = 5000;
+// Apps Script. Comecou em 5000 (18.1); medido com medirHashSenha() em 02/10/2026:
+// 5000 iteracoes = 7398 / 5174 / 2631 ms (0,5-1,5 ms cada) -> 300 (18.1.2),
+// conferido: 300 iteracoes = 96 / 175 / 297 ms (mediana das seis ~0,8 ms -> ~240 ms).
+// Hashes antigos guardam o proprio iter (senhas do 18.1 seguem com 5000 ate a troca).
+var ITER_SENHA = 300;
 var SENHA_MINIMA = 8;
 var FALHAS_MAX = 5;            // 5 falhas por (perfil, e-mail) ...
 var BLOQUEIO_SEG = 15 * 60;    // ... bloqueiam por 15 minutos
