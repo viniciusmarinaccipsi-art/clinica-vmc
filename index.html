@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.1 — produção (01/10/2026) -->
+<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.1.2 — produção (02/10/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -4068,7 +4068,7 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         </div>
         <div class="field">
           <label for="inputSenha">Senha</label>
-          <input type="password" id="inputSenha" placeholder="Sua senha" autocomplete="current-password">
+          <input type="password" id="inputSenha" maxlength="128" placeholder="Sua senha" autocomplete="current-password">
         </div>
 
         <button class="btn-primary" id="btnLogin" onclick="fazerLogin()">Entrar</button>
@@ -4090,11 +4090,11 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <p class="login-texto" id="loginAtivarTexto"></p>
         <div class="field">
           <label for="inputNovaSenha">Nova senha</label>
-          <input type="password" id="inputNovaSenha" autocomplete="new-password">
+          <input type="password" id="inputNovaSenha" maxlength="128" autocomplete="new-password">
         </div>
         <div class="field">
           <label for="inputNovaSenha2">Repita a senha</label>
-          <input type="password" id="inputNovaSenha2" autocomplete="new-password">
+          <input type="password" id="inputNovaSenha2" maxlength="128" autocomplete="new-password">
         </div>
         <button class="btn-primary" id="btnSalvarSenha" onclick="loginSalvarSenha()">Salvar senha</button>
       </div>
@@ -4282,11 +4282,11 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         </p>
         <div class="prof-cad-field">
           <label>Nova senha <span class="req">*</span></label>
-          <input type="password" id="p137SenhaInput1" placeholder="Mínimo 8 caracteres">
+          <input type="password" id="p137SenhaInput1" maxlength="128" placeholder="Mínimo 8 caracteres">
         </div>
         <div class="prof-cad-field">
           <label>Confirmar nova senha <span class="req">*</span></label>
-          <input type="password" id="p137SenhaInput2" placeholder="Digite a mesma senha de novo">
+          <input type="password" id="p137SenhaInput2" maxlength="128" placeholder="Digite a mesma senha de novo">
         </div>
       </div>
       <div class="p5-modal-acoes">
@@ -4386,15 +4386,15 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <div class="prof-cad-erro" id="pacSenhaErro"></div>
         <div class="prof-cad-field">
           <label>Senha atual <span class="req">*</span></label>
-          <input type="password" id="pacSenhaAtual" placeholder="Digite sua senha atual">
+          <input type="password" id="pacSenhaAtual" maxlength="128" placeholder="Digite sua senha atual">
         </div>
         <div class="prof-cad-field">
           <label>Nova senha <span class="req">*</span></label>
-          <input type="password" id="pacSenhaNova" placeholder="Mínimo 8 caracteres">
+          <input type="password" id="pacSenhaNova" maxlength="128" placeholder="Mínimo 8 caracteres">
         </div>
         <div class="prof-cad-field">
           <label>Confirmar nova senha <span class="req">*</span></label>
-          <input type="password" id="pacSenhaNova2" placeholder="Repita a nova senha">
+          <input type="password" id="pacSenhaNova2" maxlength="128" placeholder="Repita a nova senha">
         </div>
       </div>
       <div class="p5-modal-acoes">
@@ -7352,8 +7352,16 @@ var VMC_CAMPO_DA_RESPOSTA = {
   lerHistorico: ['automonitoramento'], lerEscalas: ['escalas'], autenticar: ['token']
 };
 
+// Pacote 18.1.2 (8.72): a chave do pedido compartilhado não depende da ordem das chaves do payload
+// (o crachá entrava em posições diferentes no Início e no chamarServidor, e as leituras saíam em dobro).
+function _chaveDoPedido_(payload) {
+  const ordenado = {};
+  Object.keys(payload).sort().forEach(function (k) { ordenado[k] = payload[k]; });
+  return JSON.stringify(ordenado);
+}
+
 function _chamarUmaVez_(payload) {
-  const chave = VMC_ACOES_COMPARTILHADAS.indexOf(payload.acao) !== -1 ? JSON.stringify(payload) : '';
+  const chave = VMC_ACOES_COMPARTILHADAS.indexOf(payload.acao) !== -1 ? _chaveDoPedido_(payload) : '';
   if (chave && VMC_EM_ANDAMENTO[chave]) return VMC_EM_ANDAMENTO[chave];
   const pedido = (async () => {
     const ctrl = new AbortController();
@@ -7432,18 +7440,41 @@ function vmcTokenSessao_() {
   return (p && p.token) || '';
 }
 
+// Pacote 18.1.2 (8.69): geração da sessão — sobe no login feito, nos dois logouts e na sessão expirada.
+// A resposta de um pedido feito numa geração anterior é descartada: quem a esperava não continua (a
+// promessa nunca resolve), então nada da sessão anterior grava sessão, cache ou tela da sessão atual,
+// nem uma "sessão expirada" atrasada derruba quem entrou depois.
+var VMC_GERACAO_SESSAO = 0;
+function _respostaDescartada_() { return new Promise(function () {}); }
+
 // Pacote 18.1: o servidor recusou o crachá (vencido, adulterado, conta inativa) — volta ao login com aviso na tela.
+// 18.1.2: os rascunhos ficam (presos à sigla; a mesma sigla os reencontra ao entrar de novo) e nenhuma
+// sobreposição fica aberta, nem com conteúdo, por cima do login (8.71, achado 29).
 function vmcSessaoExpirada_(msg) {
-  document.querySelectorAll('.p5-modal-overlay.show').forEach(function (m) { m.classList.remove('show'); });
-  if (typeof PROF_SESSAO !== 'undefined' && PROF_SESSAO) logoutProfissional(); else logout();
+  VMC_GERACAO_SESSAO++;
+  vmcFecharSobreposicoes_();
+  if (typeof PROF_SESSAO !== 'undefined' && PROF_SESSAO) logoutProfissional(); else logout({ manterRascunhos: true });
   const box = document.getElementById('loginError');
   box.textContent = msg || 'Sua sessão expirou. Entre de novo para continuar.';
   box.classList.remove('hidden');
 }
 
+function vmcFecharSobreposicoes_() {
+  ['.p5-modal-overlay', '.hist-modal-overlay', '.pev-modal-overlay', '.p11-mov', '.rr-submodal-overlay', '#sairFolha'].forEach(function (sel) {
+    document.querySelectorAll(sel).forEach(function (m) { m.classList.remove('show'); });
+  });
+  const hist = document.getElementById('histModalOverlay');
+  if (hist) hist._p136Editando = false; // o lock de presença não é limpo: o crachá já não vale
+  ['histModalConteudo', 'eschModalConteudo', 'rrSubmodalBody', 'pevModalLista'].forEach(function (id) {
+    const el = document.getElementById(id); if (el) el.innerHTML = '';
+  });
+  if (typeof SAIR_ACAO !== 'undefined') SAIR_ACAO = null;
+}
+
 async function chamarServidor(acao, dados = {}) {
   const payload = { acao, ...dados };
   if (VMC_ACOES_PUBLICAS.indexOf(acao) === -1) payload.token = vmcTokenSessao_();
+  const geracao = VMC_GERACAO_SESSAO; // 18.1.2 (8.69)
   // Pacote 16.4.6: limite único (VMC_TIMEOUT_MS); o que muda por classe é a repetição automática.
   const ehGravacao = VMC_ACOES_GRAVACAO.indexOf(acao) !== -1;
   const ehPesada = VMC_ACOES_PESADAS.indexOf(acao) !== -1;
@@ -7456,6 +7487,7 @@ async function chamarServidor(acao, dados = {}) {
       const r = repeteSozinho
         ? await _chamarComRepeticao_(payload, () => loadingMensagem('O servidor demorou; tentando de novo…'))
         : await _chamarUmaVez_(payload);
+      if (geracao !== VMC_GERACAO_SESSAO) return _respostaDescartada_();
       if (r && r.ok === false && r.codigo === 'sessao_expirada') vmcSessaoExpirada_(r.erro);
       return r;
     } catch (erro) {
@@ -7465,7 +7497,9 @@ async function chamarServidor(acao, dados = {}) {
       clearTimeout(aviso);
       mostrarLoading(false);
     }
+    if (geracao !== VMC_GERACAO_SESSAO) return _respostaDescartada_();
     await _aguardarTentarDeNovo_();
+    if (geracao !== VMC_GERACAO_SESSAO) return _respostaDescartada_();
   }
 }
 
@@ -7536,7 +7570,7 @@ function topbarAtualizar(idSecao) {
 function fluxoRegistroTelas() { return Object.keys(PROG_REGISTRO_TELAS); }
 function fluxoEmAndamento() {
   const id = secaoAtivaId(); if (!id) return false;
-  if (id === 'sec-anamnese') return !!(typeof ANAM_STATE !== 'undefined' && !ANAM_STATE.modoConsulta && sessionStorage.getItem('anamnese_rascunho'));
+  if (id === 'sec-anamnese') return !!(typeof ANAM_STATE !== 'undefined' && !ANAM_STATE.modoConsulta && carregarRascunho());
   if (fluxoRegistroTelas().indexOf(id) !== -1) return Object.keys(AUTO_STATE.dados || {}).length > 0 || Object.values(AUTO_STATE.preenchido || {}).some(Boolean);
   if (id === 'sec-escalas-aplicar') return Object.keys(ESC_STATE.respostas || {}).length > 0;
   return false;
@@ -7756,7 +7790,25 @@ function carregarSessao() {
 
 function limparSessao() {
   sessionStorage.removeItem('paciente');
-  sessionStorage.removeItem('anamnese_rascunho');
+}
+
+// Pacote 18.1.2 (8.70): os rascunhos da aba (anamnese, registro, escala) gravam a sigla da sessão; ao
+// carregar, rascunho sem sigla ou de outra sigla é apagado. Sem sessão aberta nada é apagado nem devolvido.
+function vmcSiglaSessao_() {
+  const p = carregarSessao();
+  return (p && p.sigla) || '';
+}
+function vmcRascunhoDaSessao_(chave) {
+  const sigla = vmcSiglaSessao_();
+  if (!sigla) return null;
+  let r = null;
+  try { r = JSON.parse(sessionStorage.getItem(chave) || 'null'); } catch (e) { r = null; }
+  if (!r) return null;
+  if (r.sigla !== sigla) { try { sessionStorage.removeItem(chave); } catch (e) {} return null; }
+  return r;
+}
+function vmcLimparRascunhos_() {
+  ['anamnese_rascunho', AUTO_RASCUNHO_KEY, ESC_RASCUNHO_KEY].forEach(function (k) { try { sessionStorage.removeItem(k); } catch (e) {} });
 }
 
 function atualizarBadgeUsuario() {
@@ -7923,12 +7975,16 @@ function iniRenderContinuidade(d) {
 // Leitura silenciosa: sem overlay e sem faixa de erro global. 16.4.6: com a regra de repetição da
 // leitura curta (erro que não é estouro de tempo repete uma vez) e o pedido em andamento compartilhado.
 async function iniLerQuieto(acao, dados) {
+  const geracao = VMC_GERACAO_SESSAO; // 18.1.2 (8.69)
   try {
-    // Pacote 18.1: leitura silenciosa também leva o crachá e respeita a sessão expirada
-    const r = await _chamarComRepeticao_(Object.assign({ acao: acao, token: vmcTokenSessao_() }, dados));
+    // Pacote 18.1: leitura silenciosa também leva o crachá e respeita a sessão expirada.
+    // 18.1.2 (8.72): payload na mesma ordem do chamarServidor ({acao, ...dados, token})
+    const r = await _chamarComRepeticao_(Object.assign({ acao: acao }, dados, { token: vmcTokenSessao_() }));
+    if (geracao !== VMC_GERACAO_SESSAO) return _respostaDescartada_();
     if (r && r.ok === false && r.codigo === 'sessao_expirada') vmcSessaoExpirada_(r.erro);
     return r;
   } catch (e) {
+    if (geracao !== VMC_GERACAO_SESSAO) return _respostaDescartada_();
     console.warn('[Início] ' + acao + ' não respondeu: ' + e.message);
     return null;
   }
@@ -7938,6 +7994,7 @@ async function iniCarregarContinuidade() {
   if (INI_STATE.carregando) return;
   var pac = carregarSessao();
   if (!pac) return;
+  var geracao = VMC_GERACAO_SESSAO; // 18.1.2 (8.69): resposta de outra sessão não toca nesta
   INI_STATE.carregando = true;
   iniEsqueleto();
   try {
@@ -7952,6 +8009,7 @@ async function iniCarregarContinuidade() {
       temHist ? null : iniLerQuieto('lerHistorico', { sigla: pac.sigla }),
       temEsc  ? null : iniLerQuieto('lerEscalas',  { sigla: pac.sigla })
     ]);
+    if (geracao !== VMC_GERACAO_SESSAO) return;
 
     var registros = null, escalas = null;
 
@@ -7963,9 +8021,12 @@ async function iniCarregarContinuidade() {
       PEV_STATE.carregadoEm = agora;
       PEV_STATE.invalidado = false;
       var an = par[0].anamnese;
-      if (an && an.nome_completo) {
-        pac.nome_completo = String(an.nome_completo).trim();
-        salvarSessao(pac);
+      // 18.1.2 (8.69): nunca regravar a sessão com o objeto lido antes do await — relê e só mescla o nome
+      // se o crachá ainda for o mesmo
+      var atual = carregarSessao();
+      if (an && an.nome_completo && atual && atual.token === pac.token) {
+        atual.nome_completo = String(an.nome_completo).trim();
+        salvarSessao(atual);
         iniAtualizarSaudacao();
       }
     }
@@ -7987,7 +8048,7 @@ async function iniCarregarContinuidade() {
     INI_STATE.invalido = false;
     iniRenderContinuidade(INI_STATE.dados);
   } finally {
-    INI_STATE.carregando = false;
+    if (geracao === VMC_GERACAO_SESSAO) INI_STATE.carregando = false;
   }
 }
 
@@ -8074,6 +8135,8 @@ async function fazerLogin() {
   document.getElementById('inputEmail').value = '';
   document.getElementById('inputSenha').value = '';
 
+  VMC_GERACAO_SESSAO++; // 18.1.2 (8.69): sessão nova; respostas pendentes da anterior são descartadas
+
   // Pacote 18.1: o servidor devolve o crachá (token) e o perfil; a senha não fica em lugar nenhum
   const perfil = resposta.perfil || {};
   if (tipo === 'profissional') {
@@ -8098,6 +8161,12 @@ async function fazerLogin() {
     return;
   }
 
+  // 18.1.2 (8.70): outro paciente nesta aba — o registro e a escala em memória não são dele
+  if (perfil.sigla !== VMC_ULTIMA_SIGLA_PACIENTE) {
+    autoResetState();
+    if (typeof ESC_STATE !== 'undefined') { ESC_STATE.escalaAtual = null; ESC_STATE.respostas = {}; }
+  }
+  VMC_ULTIMA_SIGLA_PACIENTE = perfil.sigla;
   // Fluxo paciente: sigla, e-mail, nome e crachá na aba (sessionStorage), nunca a senha
   salvarSessao({ sigla: perfil.sigla, email: perfil.email, nome: perfil.nome, token: resposta.token,
     anamnese_preenchida: perfil.anamnese_preenchida, data_anamnese: perfil.data_anamnese });
@@ -8109,9 +8178,13 @@ async function fazerLogin() {
 
 /* Pacote 13.2.1: Sessão do profissional em memória (não sessionStorage — lição 23) */
 var PROF_SESSAO = null;
+// 18.1.2 (8.70): sigla do último paciente que entrou nesta página (os estados em memória são dele)
+var VMC_ULTIMA_SIGLA_PACIENTE = '';
 
 function logoutProfissional() {
+  VMC_GERACAO_SESSAO++; // 18.1.2 (8.69)
   PROF_SESSAO = null;
+  PROF_LINK_POR_SIGLA = {}; // 18.1.2: links de convite são da sessão que os gerou
   PROF_PACIENTE_SEL = null;
   descartarCachesPaciente_(); // 16.5d-3.2: a visão do profissional também preenche ESC_HIST_STATE e _HIST_REGS
   document.getElementById('userBadge').classList.remove('visible');
@@ -8262,20 +8335,71 @@ function vmcLinkWhatsApp(telefone, link) {
 
 // Estado do convite por tela: 'cad' (modal de cadastro) e 'ed' (editor de anamnese). Zera ao abrir cada tela.
 var PROF_CONVITE = { cad: { sigla: '', telefone: '', link: '' }, ed: { sigla: '', telefone: '', link: '' } };
+// 18.1.2 (8.64): o último link gerado fica guardado por sigla enquanto a página viver (reabrir o editor
+// reaproveita o mesmo link, sem novo pedido). E-mail e WhatsApp coexistem no servidor (até 3 por conta).
+var PROF_LINK_POR_SIGLA = {};
+var PROF_LINK_VALIDADE_MS = 47 * 3600 * 1000; // o link vale 48 h no servidor
+function profLinkGuardado_(sigla) {
+  var g = PROF_LINK_POR_SIGLA[sigla];
+  return (g && Date.now() - g.em < PROF_LINK_VALIDADE_MS) ? g.link : '';
+}
+function profGuardarLink_(sigla, link) {
+  if (sigla && link) PROF_LINK_POR_SIGLA[sigla] = { link: link, em: Date.now() };
+}
 
+// 18.1.2 (8.64): o WhatsApp acende com telefone válido, com ou sem convite por e-mail
 function profConviteAtualizar_(pref) {
   var c = PROF_CONVITE[pref];
   var btn = document.getElementById(pref === 'cad' ? 'profCadBtnWhats' : 'profEdBtnWhats');
   if (!btn) return;
   var tel = String(c.telefone || '').replace(/\D/g, '');
-  var pronto = !!c.link && (tel.length === 10 || tel.length === 11);
-  btn.setAttribute('aria-disabled', pronto ? 'false' : 'true');
-  if (pronto) btn.setAttribute('href', vmcLinkWhatsApp(tel, c.link)); else btn.removeAttribute('href');
-  if (tel.length === 10 || tel.length === 11) btn.removeAttribute('title');
+  var telOk = tel.length === 10 || tel.length === 11;
+  btn.setAttribute('aria-disabled', telOk ? 'false' : 'true');
+  if (telOk && c.link) btn.setAttribute('href', vmcLinkWhatsApp(tel, c.link)); else btn.removeAttribute('href');
+  if (telOk) btn.removeAttribute('title');
   else btn.title = 'Cadastre o telefone para enviar pelo WhatsApp';
 }
+// Com link em memória o próprio <a> abre o wa.me; sem link, gera um (canal 'link') e só então abre.
 function profWhatsClicar_(el) {
-  return el.getAttribute('aria-disabled') !== 'true';
+  if (el.getAttribute('aria-disabled') === 'true') return false;
+  if (el.getAttribute('href')) return true;
+  profWhatsGerarLink_(el.id === 'profCadBtnWhats' ? 'cad' : 'ed');
+  return false;
+}
+async function profWhatsGerarLink_(pref) {
+  var c = PROF_CONVITE[pref];
+  // a aba abre no próprio clique (síncrono), senão o bloqueador de pop-up a barraria depois do await
+  var aba = window.open('about:blank', '_blank');
+  var dados = { siglaPaciente: c.sigla, canal: 'link' };
+  if (pref === 'ed') dados.contato = profContatoDoEditor_();
+  profConviteMsg_(pref, '');
+  var resp = await chamarServidor('profEnviarConvite', dados);
+  if (!resp || !resp.ok || !resp.link) {
+    if (aba) aba.close();
+    profConviteMsg_(pref, (resp && resp.erro) || 'Erro ao enviar o convite.', true);
+    return;
+  }
+  c.link = resp.link;
+  c.telefone = resp.telefone || c.telefone;
+  profGuardarLink_(c.sigla, resp.link);
+  if (pref === 'ed' && PROF_PACIENTE_SEL) PROF_PACIENTE_SEL.contato = { email: resp.email, telefone: resp.telefone };
+  profConviteAtualizar_(pref);
+  var url = vmcLinkWhatsApp(c.telefone, resp.link);
+  if (aba) { aba.opener = null; aba.location.href = url; } else window.open(url, '_blank', 'noopener');
+}
+// E-mail do paciente aberto mudou? O servidor invalidou os links pendentes; esquece o guardado.
+function profEsquecerLinkSeEmailMudou_(emailNovo) {
+  if (!PROF_PACIENTE_SEL) return false;
+  var antes = (PROF_PACIENTE_SEL.contato && PROF_PACIENTE_SEL.contato.email) || '';
+  if (antes === emailNovo) return false;
+  delete PROF_LINK_POR_SIGLA[PROF_PACIENTE_SEL.sigla];
+  return true;
+}
+function profContatoDoEditor_() {
+  return {
+    email: document.getElementById('profEdContatoEmail').value.trim().toLowerCase(),
+    telefone: document.getElementById('profEdContatoTel').value.replace(/\D/g, '')
+  };
 }
 function profConviteMsg_(pref, txt, erro) {
   var el = document.getElementById(pref === 'cad' ? 'profCadConviteMsg' : 'profEdConviteMsg');
@@ -8287,23 +8411,20 @@ function profConviteMsg_(pref, txt, erro) {
 async function profEnviarConviteEmail_(pref) {
   var c = PROF_CONVITE[pref];
   var dados = { siglaPaciente: c.sigla, canal: 'email' };
-  if (pref === 'ed') {
-    dados.contato = {
-      email: document.getElementById('profEdContatoEmail').value.trim().toLowerCase(),
-      telefone: document.getElementById('profEdContatoTel').value.replace(/\D/g, '')
-    };
-  }
+  if (pref === 'ed') dados.contato = profContatoDoEditor_();
   var btn = document.getElementById(pref === 'cad' ? 'profCadBtnConvite' : 'profEdBtnConvite');
   btn.disabled = true;
   profConviteMsg_(pref, '');
   var resp = await chamarServidor('profEnviarConvite', dados);
   btn.disabled = false;
   if (!resp || !resp.ok) {
-    if (resp && resp.link) { c.link = resp.link; profConviteAtualizar_(pref); }
     profConviteMsg_(pref, (resp && resp.erro) || 'Erro ao enviar o convite.', true);
     return;
   }
-  c.link = resp.link;
+  // 18.1.2: o link do e-mail vale junto com o do WhatsApp; o WhatsApp continua com o link que já tinha
+  // (a menos que o e-mail tenha mudado: aí o servidor invalidou os links anteriores)
+  if (pref === 'ed' && profEsquecerLinkSeEmailMudou_(dados.contato.email)) c.link = '';
+  if (!c.link) { c.link = resp.link; profGuardarLink_(c.sigla, resp.link); }
   c.telefone = resp.telefone;
   if (pref === 'ed' && PROF_PACIENTE_SEL) PROF_PACIENTE_SEL.contato = { email: resp.email, telefone: resp.telefone };
   profConviteAtualizar_(pref);
@@ -8873,6 +8994,7 @@ async function p137TrocarSenha() {
       nova_senha: s1
     });
     if (resp && resp.ok) {
+      delete PROF_LINK_POR_SIGLA[PROF_PACIENTE_SEL.sigla]; // 18.1.2: senha gravada invalida os links pendentes
       p137FecharSenha();
       mostrarToast('Senha alterada com sucesso!');
     } else {
@@ -8912,6 +9034,7 @@ async function p135ConfirmarDesativar() {
     return;
   }
   p135FecharDesativar();
+  delete PROF_LINK_POR_SIGLA[sigla]; // 18.1.2: desativar invalida os links pendentes
   // Atualizar estado local e recarregar header
   if (PROF_PACIENTE_SEL) PROF_PACIENTE_SEL.ativo = 'Nao';
   // Re-renderizar header com novos botões
@@ -9016,6 +9139,7 @@ async function p135ConfirmarExcluir() {
     return;
   }
   p135FecharExcluir();
+  delete PROF_LINK_POR_SIGLA[sigla]; // 18.1.2
   PROF_PACIENTE_SEL = null;
   profCarregarDashboard();
   abrirSecao('sec-prof-dashboard');
@@ -9123,6 +9247,7 @@ async function profCadastrarPaciente() {
   // Sucesso (Pacote 18.1): o modal passa a mostrar o convite — "Enviar convite" (e-mail) e WhatsApp com o link
   // gerado no cadastro. O painel recarrega ao fechar.
   PROF_CONVITE.cad = { sigla: resp.sigla, telefone: resp.telefone || '', link: resp.link || '' };
+  profGuardarLink_(resp.sigla, resp.link); // 18.1.2: o editor reaproveita este link
   document.getElementById('profCadOk').textContent = 'Paciente ' + resp.sigla + ' cadastrado com sucesso!';
   document.getElementById('profCadCampos').classList.add('hidden');
   document.getElementById('profCadFeito').classList.remove('hidden');
@@ -9157,7 +9282,8 @@ function profIniciarEdicaoAnamnese_() {
   var telIni = c.telefone || String(dados.telefone || '').replace(/\D/g, '');
   document.getElementById('profEdContatoEmail').value = emailIni;
   document.getElementById('profEdContatoTel').value = vmcFormatarTelefone(telIni);
-  PROF_CONVITE.ed = { sigla: PROF_PACIENTE_SEL.sigla, telefone: telIni, link: '' };
+  // 18.1.2 (8.64): o link já gerado para esta sigla continua (não zera ao reabrir o editor)
+  PROF_CONVITE.ed = { sigla: PROF_PACIENTE_SEL.sigla, telefone: telIni, link: profLinkGuardado_(PROF_PACIENTE_SEL.sigla) };
   profConviteAtualizar_('ed');
 }
 
@@ -9304,6 +9430,7 @@ async function profSalvarAnamnesePaciente_() {
   }
 
   // Atualizar dados em memória e voltar para read-only
+  profEsquecerLinkSeEmailMudou_(contato.email);
   PROF_PACIENTE_SEL.contato = contato;
   dados.email = contato.email; dados.telefone = contato.telefone;
   PROF_PACIENTE_SEL.anamnese = dados;
@@ -9417,6 +9544,12 @@ async function pacAlterarSenha() {
     return;
   }
 
+  // 18.1.2 (8.74): a senha nova derruba os crachás antigos; esta aba segue com o crachá novo
+  var atualSessao = carregarSessao();
+  if (resp.token && atualSessao && atualSessao.token === paciente.token) {
+    atualSessao.token = resp.token;
+    salvarSessao(atualSessao);
+  }
   pacFecharModalSenha();
   alert('Senha alterada com sucesso!');
 }
@@ -9460,11 +9593,11 @@ function pacIniciarEdicaoAnamnese() {
   if (rascunhoDados.pessoa_confianca_3_nome) numPessoas = 3;
 
   // Salvar como rascunho para que restaurarValoresDoRascunho() preencha os campos
-  sessionStorage.setItem('anamnese_rascunho', JSON.stringify({
+  gravarRascunhoAnamnese_({
     passo: 1,
     numPessoasConfianca: numPessoas,
     dados: rascunhoDados
-  }));
+  });
 
   // Ativar modo edição
   ANAM_STATE.editando = true;
@@ -9500,8 +9633,15 @@ function descartarCachesPaciente_() {
   window._HIST_REGS = null; // Meus Registros (sem TTL; refeito a cada abertura, mas não fica em memória entre sessões)
 }
 
-function logout() {
+// 18.1.2: o logout manual (⏻) apaga os três rascunhos da aba e o registro em memória (8.70); a sessão
+// expirada passa { manterRascunhos: true } — eles ficam, presos à sigla, para a mesma sigla reencontrar (8.71).
+function logout(opcoes) {
+  VMC_GERACAO_SESSAO++; // 18.1.2 (8.69)
   limparSessao();
+  if (!(opcoes && opcoes.manterRascunhos)) {
+    vmcLimparRascunhos_();
+    if (typeof autoResetState === 'function') autoResetState();
+  }
   descartarCachesPaciente_(); // 16.5d-3.2
   // Pacote 5: reseta estado de primeira vez ao deslogar
   if (typeof P5_STATE !== 'undefined') {
@@ -9579,17 +9719,22 @@ function voltarMenuAnamnese() {
 function salvarRascunho() {
   const dados = coletarDadosFormulario(false);
   if (dados) {
-    sessionStorage.setItem('anamnese_rascunho', JSON.stringify({
+    gravarRascunhoAnamnese_({
       passo: ANAM_STATE.passoAtual,
       numPessoasConfianca: ANAM_STATE.numPessoasConfianca,
       dados: dados,
-    }));
+    });
   }
 }
 
+// 18.1.2 (8.70): rascunho da anamnese preso à sigla da sessão
+function gravarRascunhoAnamnese_(rascunho) {
+  rascunho.sigla = vmcSiglaSessao_();
+  sessionStorage.setItem('anamnese_rascunho', JSON.stringify(rascunho));
+}
+
 function carregarRascunho() {
-  const raw = sessionStorage.getItem('anamnese_rascunho');
-  return raw ? JSON.parse(raw) : null;
+  return vmcRascunhoDaSessao_('anamnese_rascunho');
 }
 
 function limparRascunho() {
@@ -9626,7 +9771,7 @@ function anamIrParaPasso(k) {
   if (ANAM_STATE.passoAtual === 'revisao') { renderPasso(k); return; }
   const dados = coletarDadosFormulario(false);
   if (dados) {
-    sessionStorage.setItem('anamnese_rascunho', JSON.stringify({ passo: k, numPessoasConfianca: ANAM_STATE.numPessoasConfianca, dados: dados }));
+    gravarRascunhoAnamnese_({ passo: k, numPessoasConfianca: ANAM_STATE.numPessoasConfianca, dados: dados });
   }
   renderPasso(k);
 }
@@ -10196,11 +10341,11 @@ function removerPessoaConfianca(n) {
   delete d[`pessoa_confianca_${n}_relacao`];
   delete d[`pessoa_confianca_${n}_telefone`];
   delete d[`pessoa_confianca_${n}_email`];
-  sessionStorage.setItem('anamnese_rascunho', JSON.stringify({
+  gravarRascunhoAnamnese_({
     passo: 4,
     numPessoasConfianca: Math.max(1, ANAM_STATE.numPessoasConfianca - 1),
     dados: d,
-  }));
+  });
   ANAM_STATE.numPessoasConfianca = Math.max(1, ANAM_STATE.numPessoasConfianca - 1);
   renderPasso(4);
 }
@@ -11038,22 +11183,22 @@ function restaurarValoresDoRascunho() {
 function irParaProximoPasso() {
   const dados = coletarDadosFormulario(true);
   if (dados === null) return;
-  sessionStorage.setItem('anamnese_rascunho', JSON.stringify({
+  gravarRascunhoAnamnese_({
     passo: ANAM_STATE.passoAtual + 1,
     numPessoasConfianca: ANAM_STATE.numPessoasConfianca,
     dados: dados,
-  }));
+  });
   renderPasso(ANAM_STATE.passoAtual + 1);
 }
 
 function irParaPassoAnterior() {
   const dados = coletarDadosFormulario(false);
   if (dados) {
-    sessionStorage.setItem('anamnese_rascunho', JSON.stringify({
+    gravarRascunhoAnamnese_({
       passo: ANAM_STATE.passoAtual - 1,
       numPessoasConfianca: ANAM_STATE.numPessoasConfianca,
       dados: dados,
-    }));
+    });
   }
   renderPasso(ANAM_STATE.passoAtual - 1);
 }
@@ -11061,11 +11206,11 @@ function irParaPassoAnterior() {
 function irParaRevisao() {
   const dados = coletarDadosFormulario(true);
   if (dados === null) return;
-  sessionStorage.setItem('anamnese_rascunho', JSON.stringify({
+  gravarRascunhoAnamnese_({
     passo: 'revisao',
     numPessoasConfianca: ANAM_STATE.numPessoasConfianca,
     dados: dados,
-  }));
+  });
   renderRevisao(dados);
 }
 
@@ -11216,6 +11361,8 @@ async function enviarAnamneseDefinitivo() {
   });
 
   if (!resposta.ok) {
+    // 18.1.2 (8.71): sessão expirada já levou ao login com o aviso; o rascunho fica para a mesma sigla
+    if (resposta.codigo === 'sessao_expirada') return;
     alert('Erro ao salvar a anamnese: ' + (resposta.erro || 'erro desconhecido') + '\n\nTente novamente. Se o problema persistir, entre em contato com seu terapeuta.');
     return;
   }
@@ -11556,7 +11703,9 @@ async function lerHistoricoComCache(sigla) {
   if (!PEV_STATE.invalidado && PEV_STATE.registros.length > 0 && (agora - PEV_STATE.carregadoEm < PEV_STATE.cacheTtlMs)) {
     return { ok: true, automonitoramento: PEV_STATE.registros };
   }
+  const geracao = VMC_GERACAO_SESSAO; // 18.1.2 (8.69): o cache só recebe resposta desta sessão
   const resp = await chamarServidor('lerHistorico', { sigla: sigla });
+  if (geracao !== VMC_GERACAO_SESSAO) return _respostaDescartada_();
   if (resp && resp.ok && Array.isArray(resp.automonitoramento)) {
     PEV_STATE.registros = resp.automonitoramento; PEV_STATE.carregadoEm = agora; PEV_STATE.invalidado = false;
   }
@@ -13896,6 +14045,7 @@ function autoFormatarHora(raw) {
 function autoSalvarRascunho() {
   try {
     sessionStorage.setItem(AUTO_RASCUNHO_KEY, JSON.stringify({
+      sigla: vmcSiglaSessao_(), // 18.1.2 (8.70)
       dados: AUTO_STATE.dados,
       tipo: AUTO_STATE.tipoAtual || null, // 16.5c: tipo escolhido na página Automonitoramento (rascunho "em andamento")
       etapa: AUTO_STATE.etapaAtual || null, // 16.5d-2: etapa aberta ao salvar ("Continuar registro" volta a ela; null = menu)
@@ -13910,10 +14060,7 @@ function autoSalvarRascunho() {
 }
 
 function autoCarregarRascunho() {
-  try {
-    const raw = sessionStorage.getItem(AUTO_RASCUNHO_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch(e) { return null; }
+  return vmcRascunhoDaSessao_(AUTO_RASCUNHO_KEY); // 18.1.2 (8.70): só o rascunho desta sigla
 }
 
 function autoLimparRascunho() {
@@ -15522,10 +15669,11 @@ function escBtnEnviarClicado(event) {
 // Pacote 16.3: rascunho da escala (sessionStorage), restaurado ao reabrir a mesma escala
 var ESC_RASCUNHO_KEY = 'esc_rascunho_v1';
 function escSalvarRascunho() {
-  try { sessionStorage.setItem(ESC_RASCUNHO_KEY, JSON.stringify({ codigo: ESC_STATE.escalaAtual, respostas: ESC_STATE.respostas, inicio: ESC_STATE.inicioPreenchimento })); } catch (e) {}
+  try { sessionStorage.setItem(ESC_RASCUNHO_KEY, JSON.stringify({ sigla: vmcSiglaSessao_(), codigo: ESC_STATE.escalaAtual, respostas: ESC_STATE.respostas, inicio: ESC_STATE.inicioPreenchimento })); } catch (e) {}
 }
 function escCarregarRascunho(codigo) {
-  try { const r = JSON.parse(sessionStorage.getItem(ESC_RASCUNHO_KEY) || 'null'); return (r && r.codigo === codigo) ? r : null; } catch (e) { return null; }
+  const r = vmcRascunhoDaSessao_(ESC_RASCUNHO_KEY); // 18.1.2 (8.70): só o rascunho desta sigla
+  return (r && r.codigo === codigo) ? r : null;
 }
 function escLimparRascunho() { try { sessionStorage.removeItem(ESC_RASCUNHO_KEY); } catch (e) {} }
 

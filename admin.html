@@ -567,7 +567,7 @@ a.btn-icon[aria-disabled="true"] { opacity:.5; cursor:not-allowed; }
         </div>
         <div class="field">
           <label for="admSenha">Senha</label>
-          <input type="password" id="admSenha" autocomplete="current-password" placeholder="Sua senha">
+          <input type="password" id="admSenha" maxlength="128" autocomplete="current-password" placeholder="Sua senha">
         </div>
 
         <button class="btn-primary" id="admBtnLogin" onclick="admFazerLogin()">Entrar</button>
@@ -754,11 +754,11 @@ a.btn-icon[aria-disabled="true"] { opacity:.5; cursor:not-allowed; }
         Não é possível recuperar a senha antiga depois.</p>
         <div class="field">
           <label for="senhaNova">Nova senha</label>
-          <input type="password" id="senhaNova" placeholder="Mínimo 8 caracteres">
+          <input type="password" id="senhaNova" maxlength="128" placeholder="Mínimo 8 caracteres">
         </div>
         <div class="field">
           <label for="senhaConfirma">Confirmar nova senha</label>
-          <input type="password" id="senhaConfirma" placeholder="Digite a mesma senha de novo">
+          <input type="password" id="senhaConfirma" maxlength="128" placeholder="Digite a mesma senha de novo">
         </div>
         <input type="hidden" id="senhaProfId">
         <div class="alert alert-error hidden" id="senhaError"></div>
@@ -1000,13 +1000,16 @@ function admRenderizarTabela() {
     const nome = escapeHtml(p.nome_completo || '—');
     const email = escapeHtml(p.email || '—');
     const crp = escapeHtml(p.crp || '—');
-    // Pacote 18.1: WhatsApp só com telefone e depois de um convite gerado nesta tela
+    // Pacote 18.1.2 (8.64): WhatsApp com telefone válido, com ou sem convite por e-mail; sem link
+    // guardado, o clique gera um (canal 'link') antes de abrir
     const tel = String(p.telefone || '').replace(/\D/g, '');
     const telOk = tel.length === 10 || tel.length === 11;
-    const link = ADM_STATE.convites[p.profissional_id] || '';
-    const whats = (telOk && link)
-      ? `<a class="btn-icon" target="_blank" rel="noopener" aria-disabled="false" href="${escapeHtml(admLinkWhatsApp(tel, link))}">WhatsApp</a>`
-      : `<a class="btn-icon" target="_blank" rel="noopener" aria-disabled="true" onclick="return false"${telOk ? '' : ' title="Cadastre o telefone para enviar pelo WhatsApp"'}>WhatsApp</a>`;
+    const link = admLinkGuardado(p.profissional_id);
+    const whats = !telOk
+      ? `<a class="btn-icon" target="_blank" rel="noopener" aria-disabled="true" onclick="return false" title="Cadastre o telefone para enviar pelo WhatsApp">WhatsApp</a>`
+      : link
+        ? `<a class="btn-icon" target="_blank" rel="noopener" aria-disabled="false" href="${escapeHtml(admLinkWhatsApp(tel, link))}">WhatsApp</a>`
+        : `<a class="btn-icon" target="_blank" rel="noopener" aria-disabled="false" onclick="admWhatsGerarLink('${profId}'); return false">WhatsApp</a>`;
     const convite = ativo ? `<button class="btn-icon" onclick="admEnviarConvite('${profId}')">Enviar convite</button>${whats}` : '';
 
     const btnStatus = ativo
@@ -1043,12 +1046,42 @@ function admLinkWhatsApp(telefone, link) {
   return 'https://wa.me/55' + String(telefone || '').replace(/\D/g, '') + '?text=' + encodeURIComponent(msg);
 }
 
+// 18.1.2 (8.64): link guardado por profissional enquanto a página viver (vale 48 h no servidor)
+function admLinkGuardado(profId) {
+  const g = ADM_STATE.convites[profId];
+  return (g && Date.now() - g.em < 47 * 3600 * 1000) ? g.link : '';
+}
+function admGuardarLink(profId, link) {
+  ADM_STATE.convites[profId] = { link: link, em: Date.now() };
+}
+
+// Sem link guardado: a aba abre no próprio clique (síncrono, para o bloqueador de pop-up não barrar),
+// o link é gerado (canal 'link') e só então a aba vai para o wa.me
+async function admWhatsGerarLink(profId) {
+  const p = (ADM_STATE.profissionais || []).find(x => x.profissional_id === profId);
+  const tel = String((p && p.telefone) || '').replace(/\D/g, '');
+  const aba = window.open('about:blank', '_blank');
+  const erro = document.getElementById('dashErro');
+  document.getElementById('dashMsg').classList.add('hidden'); erro.classList.add('hidden');
+  const resp = await admChamarServidor('admEnviarConvite', { profissionalId: profId, canal: 'link' });
+  if (!resp || !resp.ok || !resp.link) {
+    if (aba) aba.close();
+    if (resp && resp.codigo === 'sessao_expirada') return;
+    return mostrarErro(erro, (resp && resp.erro) || 'Erro ao enviar o convite.');
+  }
+  admGuardarLink(profId, resp.link);
+  admRenderizarTabela();
+  const url = admLinkWhatsApp(tel, resp.link);
+  if (aba) { aba.opener = null; aba.location.href = url; } else window.open(url, '_blank', 'noopener');
+}
+
 async function admEnviarConvite(profId) {
   const msg = document.getElementById('dashMsg');
   const erro = document.getElementById('dashErro');
   msg.classList.add('hidden'); erro.classList.add('hidden');
   const resp = await admChamarServidor('admEnviarConvite', { profissionalId: profId, canal: 'email' });
-  if (resp && resp.link) ADM_STATE.convites[profId] = resp.link;
+  // 18.1.2: o link do e-mail vale junto com o do WhatsApp; o WhatsApp continua com o link que já tinha
+  if (resp && resp.ok && resp.link && !admLinkGuardado(profId)) admGuardarLink(profId, resp.link);
   admRenderizarTabela();
   if (!resp || !resp.ok) {
     if (resp && resp.codigo === 'sessao_expirada') return;
@@ -1186,6 +1219,7 @@ async function admSalvarEdicao() {
     return mostrarErro(erroBox, resp.erro || 'Erro ao salvar.');
   }
 
+  delete ADM_STATE.convites[profId]; // 18.1.2: e-mail trocado invalida os links pendentes no servidor
   sucBox.textContent = '✓ Alterações salvas!';
   sucBox.classList.remove('hidden');
 
@@ -1243,6 +1277,7 @@ async function admSalvarNovaSenha() {
     return mostrarErro(erroBox, resp.erro || 'Erro ao trocar senha.');
   }
 
+  delete ADM_STATE.convites[profId]; // 18.1.2: senha gravada invalida os links pendentes no servidor
   sucBox.textContent = '✓ Senha trocada com sucesso!';
   sucBox.classList.remove('hidden');
 
@@ -1305,6 +1340,7 @@ async function admConfirmarStatus() {
     return mostrarErro(erroBox, resp.erro || 'Erro ao alterar status.');
   }
 
+  delete ADM_STATE.convites[pendente.profId]; // 18.1.2: desativar invalida os links pendentes no servidor
   ADM_STATE.statusPendente = null;
   admFecharModal('modalStatus');
   await admCarregarProfissionais();
