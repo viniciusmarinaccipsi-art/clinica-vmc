@@ -418,7 +418,8 @@ Sistema_VMC (planilha global)
 ├── Indice_Siglas   (sigla → tipo → profissional dono + email do login; gravado por
 │                    nome de cabeçalho desde o 18.1; resolução server-side)
 ├── Tokens          (18.1: links de convite/redefinição — só o SHA-256 do token,
-│                    tipo, sigla, profissional_id, finalidade, expira, usado, criado_em)
+│                    tipo, sigla, profissional_id, finalidade, expira, usado, criado_em;
+│                    18.1.2: + email_destino)
 ├── Itens_Instrumentos (17.0) · Backups (E3)
 
 Profissional_<sigla>/ (uma pasta por profissional)
@@ -494,7 +495,7 @@ Planilha individual do paciente — abas:
   na tela; caminho que fala com o servidor fora dele (`iniLerQuieto`) faz o
   mesmo. `payload.sigla` ainda viaja em algumas chamadas e é ignorado pelo
   servidor.
-- Rascunhos locais: sessionStorage.
+- Rascunhos locais: sessionStorage, presos à sigla da sessão desde o 18.1.2 (`vmcRascunhoDaSessao_`).
 
 ## Sistema visual (Pacote 16.x — só `index-dev.html`)
 
@@ -583,7 +584,11 @@ Planilha individual do paciente — abas:
   `ESC_RASCUNHO_KEY` (`esc_rascunho_v1`: código, respostas, início;
   `escSalvarRascunho` a cada resposta, `escCarregarRascunho` em
   `escIniciarAplicacao` da mesma escala, `escLimparRascunho` ao mostrar o
-  resultado).
+  resultado). **Desde o 18.1.2 os três gravam a `sigla` da sessão** e são lidos por
+  `vmcRascunhoDaSessao_` (rascunho sem sigla ou de outra sigla é apagado ao carregar;
+  sem sessão nada é devolvido); a anamnese grava sempre por `gravarRascunhoAnamnese_`.
+  O logout manual apaga os três (`vmcLimparRascunhos_`) e zera o registro em memória;
+  a sessão expirada os mantém para a mesma sigla.
 - **Ícones (Pacote 16.2):** sprite SVG inline no início do `<body>`, 55
   `<symbol id="i-…">` de desenho próprio (grade 24, traço 1,75,
   `currentColor`); uso `<svg class="ico" aria-hidden="true"><use
@@ -760,10 +765,66 @@ Detalhes da implementação que o desenho abaixo não fixava: o token do link
 de convite vai no campo `ativar` (o `token` do payload é o crachá);
 `definirSenha` sem senha só confere o link (a tela "Crie sua senha" mostra o
 e-mail antes); o cadastro do paciente já devolve um link (canal `link`) e o
-botão WhatsApp usa o último link gerado na tela; o e-mail cumprimenta pelo
+botão WhatsApp usa o último link gerado na tela (no 18.1.2 passou a gerar o link sob
+demanda — ver "Endurecimento"); o e-mail cumprimenta pelo
 primeiro nome; a Anamnese espelha o cadastro mas mantém o valor que já tinha
 quando o cadastro está vazio; o Início usa a barra em modo marca
-(COGNIATIVO + frase); `ITER_SENHA` = 5000, a calibrar com `medirHashSenha`.
+(COGNIATIVO + frase); `ITER_SENHA` = 5000 no 18.1, calibrado em 300 no 18.1.2.
+
+### Endurecimento (Pacote 18.1.2 — publicado em 02/10/2026, @28)
+
+Correções da revisão de segurança pós-publicação do 18.1 (detalhes e cenários
+só fora do repositório). O que muda no desenho abaixo:
+
+- **Links presos ao e-mail de destino:** a aba `Tokens` ganhou `email_destino`
+  (normalizado); `definirSenha` só aceita o link quando ele é igual ao e-mail
+  atual da conta (link sem `email_destino` não vale). `_invalidarLinks_(tipo,
+  sigla)` marca como `substituido` os links pendentes da conta quando a senha é
+  gravada por qualquer caminho, quando o e-mail muda de fato e quando a conta é
+  desativada ou excluída.
+- **Links coexistem:** criar um link não derruba os anteriores (e-mail e
+  WhatsApp valem juntos); usar um invalida os outros. Teto de 3 pendentes por
+  conta (o 4º substitui o mais antigo); ao criar, saem da aba as linhas vencidas
+  há mais de 7 dias.
+- **Crachá preso à credencial:** 5 campos (`tipo|sigla|profissional_id|expira|impressao`),
+  `impressao` = 16 hex de `SHA-256('cracha|' + senha_hash)`; `_validarToken_`
+  recalcula com o registro que já lê. Senha trocada ou conta recriada com a
+  mesma sigla derruba os crachás antigos; `alterarSenhaPaciente` devolve um
+  crachá novo, que o cliente grava na sessão.
+- **Ações públicas:** senha acima de `SENHA_MAXIMA` (128) recusada antes de
+  qualquer hash (e `maxlength="128"` nas telas); "Esqueci a senha" com limite
+  por (perfil, e-mail) antes de ler planilha, cota própria
+  (`REDEFINICOES_DIA_MAX`) separada da dos convites (`EMAILS_DIA_MAX`), cota
+  reservada sob `LockService` antes de criar o link, link anulado se o e-mail
+  não sai, resposta neutra sempre; piso de tempo nas falhas de login e nas
+  respostas da redefinição (`PISO_LOGIN_MS`, `PISO_REDEF_MS`; calibração no
+  débito 8.77); a tranca de 5
+  falhas grava a tentativa antes de conferir a senha.
+- **`ativo`:** critério único `_estaAtivo_` (o booleano `true` ou os textos
+  `sim`, `s` e `true`, sem diferença de caixa e de espaços = ativo; o resto,
+  inclusive vazio = inativo); o cliente recebe sempre `Sim`/`Nao`.
+- **Cliente — geração da sessão:** `VMC_GERACAO_SESSAO` sobe no login feito,
+  nos logouts e na sessão expirada; `chamarServidor` e `iniLerQuieto` descartam
+  a resposta de um pedido feito numa geração anterior (a promessa não
+  resolve), e o Início só mescla o nome na sessão se o crachá for o mesmo.
+- **Cliente — sessão expirada:** remove só a sessão (rascunhos ficam, presos à
+  sigla), fecha todas as sobreposições e esvazia as quatro que mostram conteúdo
+  já renderizado — histórico, detalhe de escala, respostas, lista do Painel
+  (`vmcFecharSobreposicoes_`); os modais de formulário limpam os campos ao
+  abrir; o envio da anamnese não mostra `alert()` nesse caso.
+- **Cliente — pedido compartilhado:** a chave de `_chamarUmaVez_` ordena as
+  chaves do payload (`_chaveDoPedido_`), e `iniLerQuieto` monta o payload na
+  mesma ordem do `chamarServidor`.
+- **Cliente — WhatsApp:** habilitado com telefone válido, sem depender do
+  envio por e-mail (o e-mail da conta continua obrigatório: o link é preso a
+  ele); sem link em memória, o clique abre a aba na hora, pede
+  `profEnviarConvite`/`admEnviarConvite` com `canal: 'link'` e navega a aba
+  para o `wa.me`; com o link do cadastro ou do último convite na tela,
+  reaproveita esse. O link fica guardado por sigla (`PROF_LINK_POR_SIGLA`, até
+  47 h; no admin, `ADM_STATE.convites` por profissional) até o logout ou a
+  sessão expirada, e é esquecido quando a própria página troca a senha, o
+  e-mail ou desativa/exclui a conta — mudança feita em outra página não chega
+  a ele (o servidor recusa o link velho com "Link inválido").
 
 Decisão do usuário (29/09): virada única, sem compatibilidade com a senha
 antiga e sem migração de hash; pacientes reconvidados aos poucos. A sigla
@@ -778,7 +839,8 @@ contratos de dados); o e-mail é só o identificador de login.
   índice passa a ser gravado por nome de cabeçalho.
 - **Crachá de sessão (`token`):** emitido por `autenticar(tipo, email, senha)`;
   assinado por HMAC-SHA256 com segredo em `PropertiesService` (script), carrega
-  `tipo|sigla|profissional_id|expira` (6 h); validar = recomputar a assinatura
+  `tipo|sigla|profissional_id|expira` (6 h; desde o 18.1.2 com o 5º campo
+  `impressao`); validar = recomputar a assinatura
   e conferir a validade; `ativo` conferido a cada chamada. Sem armazenamento
   de sessão (o `CacheService` pode expirar antes das 6 h). Toda ação exige o
   crachá, menos `ping`, `autenticar`, `pedirRedefinicao` e `definirSenha`;
@@ -788,7 +850,8 @@ contratos de dados); o e-mail é só o identificador de login.
   `admEnviarConvite(profissional_id, canal)` e `pedirRedefinicao(tipo, email)`
   (resposta idêntica exista ou não o e-mail) geram um token aleatório de uso
   único, válido por 48 h, guardado só como SHA-256 na aba `Tokens` da
-  `Sistema_VMC` (colunas `token_hash`, `tipo`, `sigla`, `expira`, `usado`);
+  `Sistema_VMC` (colunas `token_hash`, `tipo`, `sigla`, `expira`, `usado`; no
+  18.1.2 também `email_destino` — ver "Endurecimento", que muda o que segue);
   `canal` = `email` (envia) ou `link` (só gera); ambos devolvem o link, que o
   botão WhatsApp da área do profissional abre em `wa.me/55<dígitos>` com a
   mensagem aprovada (nenhum envio automático). O e-mail sai por `MailApp` com
