@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.1.1 — produção (02/10/2026) -->
+<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.1.3 — produção (02/10/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -489,6 +489,17 @@ body.vmc-largo .topbar-in{max-width:1360px;}
   font-weight:700;color:var(--c-ink);
 }
 .login-tipo-card.selected .login-tipo-label{color:var(--c-action);}
+
+/* Pacote 18.1.3: escolha do profissional quando o mesmo e-mail tem mais de uma conta */
+.login-escolha-btn{
+  display:block;width:100%;min-height:44px;margin-bottom:10px;padding:12px 16px;
+  font-family:var(--f-text);font-size:14px;font-weight:600;color:var(--c-ink);
+  text-align:left;cursor:pointer;
+  background:var(--c-surface);border:2px solid var(--c-line);border-radius:var(--r-field);
+  transition:border-color .15s, background .15s;
+}
+.login-escolha-btn:hover{border-color:var(--c-action);background:var(--c-action-tint);}
+.login-escolha-btn:focus-visible{outline:2px solid var(--c-action);outline-offset:2px;}
 
 /* Pacote 13.2.1: Formulário de login (escondido até selecionar tipo) */
 .login-form-fields{
@@ -4081,6 +4092,12 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         </div>
         <button class="btn-primary" id="btnEsqueci" onclick="loginPedirRedefinicao()">Enviar link</button>
         <div class="login-links"><button class="login-link" type="button" onclick="loginMostrar('entrar')">Voltar</button></div>
+      </div>
+
+      <!-- Pacote 18.1.3: o mesmo e-mail tem conta com mais de um profissional — a senha conferiu; falta a escolha -->
+      <div class="hidden" id="loginEscolher">
+        <div id="loginEscolherLista"></div>
+        <div class="login-links"><button class="login-link" type="button" onclick="loginEscolherVoltar()">Voltar</button></div>
       </div>
 
       <!-- Pacote 18.1: Crie sua senha (?ativar=) -->
@@ -8082,6 +8099,15 @@ async function fazerLogin() {
   btn.disabled = false;
   btn.textContent = 'Entrar';
 
+  // 18.1.3: o mesmo e-mail tem conta com mais de um profissional — a senha conferiu
+  // nas duas; o paciente escolhe. A senha fica SÓ em memória até a segunda chamada.
+  if (!resposta.ok && resposta.codigo === 'escolher') {
+    LOGIN_ESCOLHA = { tipo: tipo, email: email, senha: senha, opcoes: resposta.opcoes || [] };
+    document.getElementById('inputSenha').value = '';
+    loginMostrarEscolha_();
+    return;
+  }
+
   if (!resposta.ok) {
     erroBox.textContent = resposta.erro || 'Erro ao autenticar.';
     erroBox.classList.remove('hidden');
@@ -8089,6 +8115,12 @@ async function fazerLogin() {
     return;
   }
 
+  loginConcluir_(tipo, resposta);
+}
+
+/* Pacote 18.1.3: conclusão do login (resposta ok do autenticar), comum ao caminho
+   direto e ao da escolha de profissional. */
+function loginConcluir_(tipo, resposta) {
   // Limpar campos
   document.getElementById('inputEmail').value = '';
   document.getElementById('inputSenha').value = '';
@@ -8134,6 +8166,47 @@ async function fazerLogin() {
   abrirSecao('sec-menu');
 }
 
+/* Pacote 18.1.3: estado da escolha de profissional ({tipo, email, senha, opcoes}),
+   só em memória e apagado ao entrar, voltar ou falhar — a senha não fica em lugar nenhum. */
+var LOGIN_ESCOLHA = null;
+
+function loginMostrarEscolha_() {
+  var lista = document.getElementById('loginEscolherLista');
+  lista.textContent = '';
+  (LOGIN_ESCOLHA && LOGIN_ESCOLHA.opcoes || []).forEach(function (op) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'login-escolha-btn';
+    b.textContent = op.profissional; // textContent: nenhum HTML do servidor é interpretado
+    b.onclick = function () { loginEscolherEntrar_(op.id); };
+    lista.appendChild(b);
+  });
+  loginMostrar('escolher');
+}
+
+function loginEscolherVoltar() {
+  LOGIN_ESCOLHA = null; // a senha sai da memória
+  loginMostrar('entrar');
+}
+
+async function loginEscolherEntrar_(id) {
+  if (!LOGIN_ESCOLHA) { loginMostrar('entrar'); return; }
+  var dados = LOGIN_ESCOLHA;
+  var botoes = document.querySelectorAll('#loginEscolherLista .login-escolha-btn');
+  botoes.forEach(function (b) { b.disabled = true; });
+  var resposta = await chamarServidor('autenticar', { tipo: dados.tipo, email: dados.email, senha: dados.senha, escolha: id });
+  LOGIN_ESCOLHA = null; // entrou, falhou ou expirou: a senha sai da memória
+  botoes.forEach(function (b) { b.disabled = false; });
+  if (!resposta.ok) {
+    loginMostrar('entrar');
+    var erroBox = document.getElementById('loginError');
+    erroBox.textContent = resposta.erro || 'Erro ao autenticar.';
+    erroBox.classList.remove('hidden');
+    return;
+  }
+  loginConcluir_(dados.tipo, resposta);
+}
+
 /* Pacote 13.2.1: Sessão do profissional em memória (não sessionStorage — lição 23) */
 var PROF_SESSAO = null;
 // 18.1.2 (8.70): sigla do último paciente que entrou nesta página (os estados em memória são dele)
@@ -8153,6 +8226,7 @@ function logoutProfissional() {
 /* Pacote 13.2.1: Reseta a tela de login ao estado inicial */
 function resetarTelaLogin_() {
   LOGIN_TIPO_SELECIONADO = '';
+  LOGIN_ESCOLHA = null; // 18.1.3: a senha guardada para a escolha sai da memória
   document.getElementById('loginTipoPaciente').classList.remove('selected');
   document.getElementById('loginTipoProfissional').classList.remove('selected');
   document.getElementById('loginFormFields').classList.remove('visible');
@@ -8164,7 +8238,7 @@ function resetarTelaLogin_() {
 
 /* ============================================================
    Pacote 18.1: telas de acesso no cartão do login
-   entrar · esqueci (Esqueci a senha) · verifique (Verifique seu e-mail) · ativar (Crie sua senha) · invalido (Link inválido)
+   entrar · esqueci (Esqueci a senha) · escolher (18.1.3: com qual profissional) · verifique (Verifique seu e-mail) · ativar (Crie sua senha) · invalido (Link inválido)
    Textos aprovados pelo usuário (PROMPT_18_1.md, 30/09/2026).
    ============================================================ */
 var LOGIN_TELA = 'entrar';
@@ -8175,6 +8249,7 @@ function loginMostrar(tela) {
   var t = {
     entrar:    ['Acesso ao Sistema', 'Selecione seu perfil e faça login'],
     esqueci:   ['Esqueci a senha', 'Informe o perfil e o e-mail cadastrado. Se ele estiver no sistema, você receberá um link para criar uma senha nova.'],
+    escolher:  ['Com qual profissional deseja entrar?', ''],
     verifique: ['Verifique seu e-mail', ''],
     ativar:    ['Crie sua senha', ''],
     invalido:  ['Link inválido', '']
@@ -8186,6 +8261,7 @@ function loginMostrar(tela) {
   document.getElementById('loginTipoGrid').classList.toggle('hidden', tela !== 'entrar' && tela !== 'esqueci');
   document.getElementById('loginFormFields').classList.toggle('visible', tela === 'entrar' && !!LOGIN_TIPO_SELECIONADO);
   document.getElementById('loginEsqueci').classList.toggle('hidden', tela !== 'esqueci');
+  document.getElementById('loginEscolher').classList.toggle('hidden', tela !== 'escolher');
   document.getElementById('loginAtivar').classList.toggle('hidden', tela !== 'ativar');
   document.getElementById('loginAviso').classList.toggle('hidden', tela !== 'verifique' && tela !== 'invalido');
   document.getElementById('loginError').classList.add('hidden');

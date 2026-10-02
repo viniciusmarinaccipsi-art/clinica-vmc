@@ -47,7 +47,7 @@
 // Pacote E3 — backup diário e monitor do ping (só clasp push, sem deploy)
 // Pacote 18.1 — acesso por e-mail, cracha de sessao, convite e redefinicao (01/10/2026)
 // Pacote 18.1.2 — correcoes de seguranca do acesso: links, cracha, acoes publicas, ativo (02/10/2026)
-var VERSAO_PACOTE = '18.1.2';
+var VERSAO_PACOTE = '18.1.3';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -173,7 +173,7 @@ function doPost(e) {
 
       // Pacote 18.1 - acoes publicas (sem cracha)
       case 'autenticar':
-        resposta = autenticar(payload.tipo, payload.email, payload.senha);
+        resposta = autenticar(payload.tipo, payload.email, payload.senha, payload.escolha);
         break;
 
       case 'pedirRedefinicao':
@@ -746,8 +746,12 @@ function gerarSiglaPaciente(nome, existentes, aleatorio) {
   return null;
 }
 
-/** Corpo dos e-mails (texto puro e HTML simples), com os textos aprovados. */
-function montarEmail(tipoEmail, nome, link) {
+/**
+ * Corpo dos e-mails (texto puro e HTML simples), com os textos aprovados.
+ * 18.1.3: `profissionalNome` (opcional) acrescenta a linha "Acompanhamento com: <nome>"
+ * — usada na redefinicao quando o mesmo e-mail tem conta com mais de um profissional.
+ */
+function montarEmail(tipoEmail, nome, link, profissionalNome) {
   var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
   var convite = tipoEmail === 'convite';
   var assunto = convite ? 'Seu acesso ao COGNIATIVO' : 'Redefinir a sua senha no COGNIATIVO';
@@ -758,11 +762,15 @@ function montarEmail(tipoEmail, nome, link) {
   var aviso = convite
     ? 'Se você não esperava este e-mail, ignore-o. Nada será alterado.'
     : 'Se você não pediu isso, ignore este e-mail. Sua senha atual continua a mesma.';
-  var texto = [EMAIL_DESTAQUE, '', ola, '', paragrafo, '', link, '', aviso, '']
+  var acompanhamento = profissionalNome ? 'Acompanhamento com: ' + profissionalNome : '';
+  var texto = [EMAIL_DESTAQUE, '', ola, '', paragrafo]
+    .concat(acompanhamento ? ['', acompanhamento] : [])
+    .concat(['', link, '', aviso, ''])
     .concat(EMAIL_ASSINATURA).concat(EMAIL_FORMACAO).join('\n');
   var html = '<p><strong>' + esc(EMAIL_DESTAQUE) + '</strong></p>' +
     '<p>' + esc(ola) + '</p>' +
     '<p>' + esc(paragrafo) + '</p>' +
+    (acompanhamento ? '<p>' + esc(acompanhamento) + '</p>' : '') +
     '<p><a href="' + esc(link) + '">' + esc(link) + '</a></p>' +
     '<p>' + esc(aviso) + '</p>' +
     '<p>' + EMAIL_ASSINATURA.map(esc).join('<br>') + '<br>' +
@@ -831,26 +839,43 @@ function _lerIndice_() {
   return { aba: aba, header: h, linhas: out };
 }
 
-function _contaPorEmail_(tipo, email) {
+/** Todas as contas do perfil com aquele e-mail. 18.1.3: um e-mail de paciente pode ter uma conta por profissional. */
+function _contasPorEmail_(tipo, email) {
   var idx = _lerIndice_();
+  var out = [];
   for (var i = 0; i < idx.linhas.length; i++) {
     var l = idx.linhas[i];
-    if (l.tipo === tipo && l.email && l.email === email) return l;
+    if (l.tipo === tipo && l.email && l.email === email) out.push(l);
   }
-  return null;
+  return out;
 }
 
-/** Grava o e-mail de (sigla, tipo) no Indice. Recusa e-mail ja usado por outra conta do mesmo perfil. */
+/** Primeira conta do perfil com aquele e-mail (profissional e admin: no máximo uma). */
+function _contaPorEmail_(tipo, email) {
+  var contas = _contasPorEmail_(tipo, email);
+  return contas.length ? contas[0] : null;
+}
+
+/**
+ * Grava o e-mail de (sigla, tipo) no Indice. Recusa e-mail ja usado por outra conta
+ * do mesmo perfil — para paciente (18.1.3), so entre os pacientes do MESMO
+ * profissional (a recusa global revelava a um profissional que a pessoa ja era
+ * paciente de outro); para profissional e admin a unicidade segue global.
+ */
 function _gravarEmailIndice_(sigla, tipo, email) {
   var idx = _lerIndice_();
+  var siglaU = String(sigla).toUpperCase();
   var alvo = null;
   for (var i = 0; i < idx.linhas.length; i++) {
-    var l = idx.linhas[i];
-    if (l.tipo !== tipo) continue;
-    if (l.sigla === String(sigla).toUpperCase()) alvo = l;
-    else if (email && l.email === email) return { ok: false, erro: 'Este e-mail já está em uso por outra conta.' };
+    if (idx.linhas[i].tipo === tipo && idx.linhas[i].sigla === siglaU) { alvo = idx.linhas[i]; break; }
   }
   if (!alvo) return { ok: false, erro: 'Conta não encontrada no índice.' };
+  for (var j = 0; j < idx.linhas.length; j++) {
+    var o = idx.linhas[j];
+    if (o.tipo !== tipo || o.sigla === siglaU || !email || o.email !== email) continue;
+    if (tipo === 'paciente' && o.profissional_id !== alvo.profissional_id) continue;
+    return { ok: false, erro: 'Este e-mail já está em uso por outra conta.' };
+  }
   idx.aba.getRange(alvo.linha, idx.header.indexOf('email') + 1).setValue(email);
   return { ok: true, mudou: alvo.email !== normalizarEmail(email) };
 }
@@ -1098,7 +1123,12 @@ function _completarPiso_(t0, pisoMs, resposta) {
   return resposta;
 }
 
-function autenticar(tipo, email, senha) {
+/** Identificador opaco de uma conta na escolha do login (18.1.3): nao expoe sigla nem profissional_id. */
+function _idEscolha_(tipo, email, conta, segredo) {
+  return _hmacHex_(['escolha', tipo, email, conta.sigla, conta.profissional_id].join('|'), segredo).slice(0, 16);
+}
+
+function autenticar(tipo, email, senha, escolha) {
   var t0 = Date.now();
   var falha = function (r) { return _completarPiso_(t0, PISO_LOGIN_MS, r || { ok: false, erro: MSG_LOGIN }); };
   var t = String(tipo || '').trim().toLowerCase();
@@ -1115,14 +1145,46 @@ function autenticar(tipo, email, senha) {
   if (falhas >= FALHAS_MAX) return falha({ ok: false, codigo: 'bloqueado', erro: MSG_BLOQUEIO });
   cache.put(chave, String(falhas + 1), BLOQUEIO_SEG);
 
-  var conta = _contaPorEmail_(t, e);
-  var reg = conta ? _registroDaConta_(t, conta.sigla, conta.profissional_id) : null;
-  var confere = reg ? conferirSenha(senha, reg.senha_hash) : (_hashSenha_(String(senha), '0', ITER_SENHA) && false);
-  if (!reg || !reg.ativo || !confere) return falha();
-  cache.remove(chave);
+  // 18.1.3: o e-mail de paciente pode ter uma conta por profissional — a senha decide.
+  // A senha e conferida em TODAS as contas ativas; a resposta de falha e a mesma de
+  // sempre (mensagem e piso de tempo), sem revelar quantas contas existem.
+  var contas = _contasPorEmail_(t, e);
+  var acertos = [];
+  for (var i = 0; i < contas.length; i++) {
+    var r = _registroDaConta_(t, contas[i].sigla, contas[i].profissional_id);
+    if (r && r.ativo && conferirSenha(senha, r.senha_hash)) acertos.push({ conta: contas[i], reg: r });
+  }
+  if (!contas.length) _hashSenha_(String(senha), '0', ITER_SENHA); // sem conta: custo de uma conferencia real
+  if (!acertos.length) return falha();
 
   var segredo = _segredoSessao_();
   if (!segredo) return { ok: false, erro: 'Servidor sem segredo de sessão: rode bootstrapAcesso18_1 no editor.' };
+
+  var alvo = null;
+  if (escolha !== undefined && escolha !== null && escolha !== '') {
+    // 2a chamada: a senha foi conferida de novo acima; a escolha aponta a conta.
+    for (var j = 0; j < acertos.length; j++) {
+      if (_iguaisTempoConstante_(_idEscolha_(t, e, acertos[j].conta, segredo), String(escolha))) { alvo = acertos[j]; break; }
+    }
+    if (!alvo) return falha(); // escolha invalida conta como falha (o falhas+1 la de cima fica)
+  } else if (acertos.length === 1) {
+    alvo = acertos[0];
+  } else {
+    // mais de uma conta confere: NENHUM cracha sai; o cliente pergunta o profissional.
+    cache.remove(chave); // a senha esta certa — nao e falha
+    var opcoes = [];
+    for (var m = 0; m < acertos.length; m++) {
+      var dono = buscarProfissional(acertos[m].conta.profissional_id);
+      opcoes.push({
+        id: _idEscolha_(t, e, acertos[m].conta, segredo),
+        profissional: dono && dono.nome_completo ? String(dono.nome_completo) : 'Profissional'
+      });
+    }
+    return { ok: false, codigo: 'escolher', opcoes: opcoes };
+  }
+  cache.remove(chave);
+
+  var conta = alvo.conta, reg = alvo.reg;
   var perfil = { tipo: t, sigla: conta.sigla, nome: reg.nome, email: e };
   for (var k in reg.extra) perfil[k] = reg.extra[k];
   return {
@@ -1150,11 +1212,26 @@ function pedirRedefinicao(tipo, email) {
     var chave = 'redef:' + t + ':' + e;
     if (cache.get(chave)) return _completarPiso_(t0, PISO_REDEF_MS, resposta);
     cache.put(chave, '1', REDEF_INTERVALO_SEG);
-    var conta = _contaPorEmail_(t, e);
-    var reg = conta ? _registroDaConta_(t, conta.sigla, conta.profissional_id) : null;
-    if (reg && reg.ativo && _reservarEmail_('redefinicoes')) {
-      var link = _criarLinkAtivacao_(t, conta.sigla, conta.profissional_id, 'redefinicao', e);
-      if (!_enviarEmail_(e, montarEmail('redefinicao', '', link))) _anularLink_(link);
+    // 18.1.3: um link e um e-mail por conta ativa (o e-mail de paciente pode ter uma
+    // conta por profissional). A cota e reservada de uma vez: se nao couberem todos,
+    // nenhum e-mail sai e nenhum link fica.
+    var contas = _contasPorEmail_(t, e);
+    var ativas = [];
+    for (var i = 0; i < contas.length; i++) {
+      var reg = _registroDaConta_(t, contas[i].sigla, contas[i].profissional_id);
+      if (reg && reg.ativo) ativas.push(contas[i]);
+    }
+    if (ativas.length && _reservarEmail_('redefinicoes', ativas.length)) {
+      for (var j = 0; j < ativas.length; j++) {
+        // Com mais de uma conta, cada e-mail diz o profissional ("Acompanhamento com: …")
+        var profNome = '';
+        if (ativas.length > 1) {
+          var dono = buscarProfissional(ativas[j].profissional_id);
+          profNome = dono ? String(dono.nome_completo || '') : '';
+        }
+        var link = _criarLinkAtivacao_(t, ativas[j].sigla, ativas[j].profissional_id, 'redefinicao', e);
+        if (!_enviarEmail_(e, montarEmail('redefinicao', '', link, profNome))) _anularLink_(link);
+      }
     }
   } catch (erro) {
     console.error('pedirRedefinicao: ' + String(erro && erro.message || erro).slice(0, 200));
@@ -1191,11 +1268,13 @@ function definirSenha(ativar, senha) {
 // ---------- convites ----------
 
 /**
- * Reserva um envio na cota do dia: 'convites' (EMAILS_DIA_MAX, profissional e admin)
+ * Reserva envios na cota do dia: 'convites' (EMAILS_DIA_MAX, profissional e admin)
  * ou 'redefinicoes' (REDEFINICOES_DIA_MAX, pedidos anonimos). O contador sobe antes do
  * envio e sob o lock do script, para rajadas em paralelo nao furarem o teto.
+ * 18.1.3: `quantos` (opcional, 1) reserva varios de uma vez — ou todos, ou nenhum.
  */
-function _reservarEmail_(cota) {
+function _reservarEmail_(cota, quantos) {
+  var n = quantos || 1;
   var max = cota === 'redefinicoes' ? REDEFINICOES_DIA_MAX : EMAILS_DIA_MAX;
   var prefixo = cota === 'redefinicoes' ? 'redefinicoes:' : 'emails:';
   var lock = LockService.getScriptLock();
@@ -1204,8 +1283,8 @@ function _reservarEmail_(cota) {
     var props = PropertiesService.getScriptProperties();
     var chave = prefixo + Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd');
     var enviados = parseInt(props.getProperty(chave) || '0', 10);
-    if (enviados >= max) return false;
-    props.setProperty(chave, String(enviados + 1));
+    if (enviados + n > max) return false;
+    props.setProperty(chave, String(enviados + n));
     return true;
   } finally {
     lock.releaseLock();
@@ -2141,7 +2220,7 @@ function pacienteAtualizarAnamnese(sigla, dados) {
  *   - Profissional do cracha de sessao
  *   - profissional_id derivado server-side (nunca do payload)
  *   - Sigla gerada pelo servidor (gerarSiglaPaciente), unica no Indice_Siglas
- *   - E-mail unico entre os pacientes (conta = perfil + e-mail)
+ *   - E-mail unico entre os pacientes do mesmo profissional (18.1.3)
  *
  * Entrada: dados = { nomeCompleto, email, telefone }
  * Saida:   { ok, sigla, link, email, telefone }
@@ -2163,12 +2242,16 @@ function cadastrarPaciente(s, dados) {
   if (contato.erro) return { ok: false, erro: contato.erro };
   if (!contato.email) return { ok: false, erro: 'E-mail do paciente obrigatório.' };
 
-  // 3. Unicidade do e-mail e sigla gerada (Indice_Siglas)
+  // 3. Unicidade do e-mail (18.1.3: so entre os pacientes DESTE profissional —
+  //    a recusa global revelava vinculo com outro consultorio) e sigla gerada
+  //    (unica global, Indice_Siglas)
   var indice = _lerIndice_().linhas;
   var siglasPac = [];
   for (var n = 0; n < indice.length; n++) {
     if (indice[n].tipo !== 'paciente') continue;
-    if (indice[n].email === contato.email) return { ok: false, erro: 'Este e-mail já está em uso por outra conta.' };
+    if (indice[n].email === contato.email && indice[n].profissional_id === profissionalId) {
+      return { ok: false, erro: 'Este e-mail já está em uso por outra conta.' };
+    }
     siglasPac.push(indice[n].sigla);
   }
   var sigla = gerarSiglaPaciente(nome, siglasPac);
