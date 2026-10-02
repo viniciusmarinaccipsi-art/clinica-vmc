@@ -899,6 +899,34 @@ contratos de dados); o e-mail é só o identificador de login.
   acrescenta `token` a todo payload; `{ok:false, codigo:"sessao_expirada"}`
   leva ao login com aviso na tela (nunca `alert()`).
 
+### E-mail único por profissional (Pacote 18.1.3 — publicado em 02/10/2026, @29)
+
+A unicidade do e-mail de **paciente** vale dentro de cada `profissional_id`
+(a recusa global "já está em uso" revelava a um profissional que a pessoa já
+era paciente de outro consultório — sigilo); e-mail de **profissional** e de
+**admin** segue único global. A sigla continua única global.
+
+- **Cadastro e troca de e-mail:** `cadastrarPaciente` e `_gravarEmailIndice_`
+  comparam o e-mail só entre pacientes do mesmo profissional.
+- **Login (a senha decide):** `autenticar` confere a senha em todas as contas
+  ativas do e-mail (`_contasPorEmail_`). Nenhuma confere → falha de sempre
+  (mesma mensagem e piso; hash de descarte com zero contas). Uma confere →
+  entra como antes. Mais de uma → `{ok:false, codigo:'escolher', opcoes:[{id,
+  profissional}]}` **sem crachá**; o `id` é opaco (HMAC com o segredo de
+  sessão, `_idEscolha_`), sem sigla nem `profissional_id`. A 2ª chamada
+  (`escolha` no payload) reconfere a senha e só então emite o crachá; escolha
+  inválida conta na tranca 5 falhas → 15 min.
+- **Redefinição:** um link e um e-mail por conta ativa; com mais de uma, cada
+  e-mail leva "Acompanhamento com: <profissional>" (`montarEmail` com 4º
+  parâmetro). Cota reservada tudo-ou-nada (`_reservarEmail_(cota, quantos)`).
+  Os links já são por conta (tipo + sigla) desde o 18.1.2: usar um derruba só
+  os da mesma conta.
+- **Cliente:** resposta `escolher` abre a tela "Com qual profissional deseja
+  entrar?" (`#loginEscolher`, botões `.login-escolha-btn` via `textContent`);
+  e-mail e senha ficam só em memória (`LOGIN_ESCOLHA`) até a 2ª chamada e são
+  apagados ao entrar, voltar ou falhar; a conclusão do login é única
+  (`loginConcluir_`), comum aos dois caminhos.
+
 ## Backup e monitoramento (Pacote E3 — ativado em 30/09/2026, ajustado em 01/10)
 
 `backupSobDemanda_()` (invólucro público `rodarBackupAgora`) copia a
