@@ -68,7 +68,12 @@ clique no backdrop.
 
 ### Cadeado de card `.card.locked`
 Opacidade + cursor proibido + badge "🔒 Bloqueado". Usado para gating de
-módulos (anamnese pendente, primeira vez).
+primeira vez ("Como Usar", `autoComoUsarLido`) e para a janela lenta (16.4.6).
+**Desde o 18.1.1 (02/10/2026) a anamnese pendente não tranca mais nada:** o
+Início mostra a faixa clicável `.ini-faixa-anamnese` ("Anamnese pendente —
+toque para preencher quando puder.", `abrirModulo('anamnese')`), escondida por
+`atualizarMenuConformeSessao` quando `anamnese_preenchida`; o modal `p9Modal`
+e a faixa da senha (`.pac-senha-destaque`) saíram.
 
 ### Cache 30s (padrão `pev*`)
 Para dados do servidor que mudam pouco na sessão (`lerHistorico`,
@@ -170,6 +175,9 @@ do seu tipo. O conteúdo clínico continua no HTML, no bloco do seu tipo
   renderizado para os dois tipos pelo hook de `abrirSecao` (ver "Registro: interior das 5 etapas").
 
 ## Registro: fluxo do paciente a partir do Pacote 16.5c
+
+Desde o 18.1.1 o Início não exige anamnese: "Novo registro" e as escalas abrem
+sempre, e a anamnese pendente é só a faixa clicável (ver "Cadeado de card").
 
 **Início → checagem breve (`#sec-auto-passo1`) → página Automonitoramento
 (`#sec-automonitoramento`, escolha do tipo, D3) → menu "Suas 5 etapas"
@@ -575,7 +583,8 @@ Planilha individual do paciente — abas:
   e menu → página não pedem), sair (⏻ → `confirmarSaida(logout)`), "Salvar e sair"
   da etapa e do menu (`etapaSalvarESair`/`menuSalvarESair` → `confirmarSaida(→ página)`,
   16.5e), Cancelar da escala (`confirmarSaida(escCancelarAplicacao)`, sem `confirm()`
-  nativo). O modal `.p5-modal-*` continua para os demais diálogos (p9, escalas). O
+  nativo). O modal `.p5-modal-*` continua para os demais diálogos (escalas; o p9
+  saiu no 18.1.1). O
   botão "voltar" do sistema (histórico do navegador) não é interceptado — o app não
   usa `pushState`; candidato 16.5e.1.
 - **Rascunhos no `sessionStorage`:** registro `AUTO_RASCUNHO_KEY`
