@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.1.6 — produção (02/10/2026) -->
+<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.3 — produção (03/10/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#2C5F7C">
 <title>COGNIATIVO</title>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4" crossorigin="anonymous"></script>
 <style>
 /* Pacote 16.0 — tokens do redesenho (docs/design/tokens.css) substituem o :root antigo de 31 variáveis */
 /* ==========================================================================
@@ -996,14 +996,14 @@ body.vmc-largo .topbar-in{max-width:1360px;}
   position:fixed;inset:0;
   background:rgba(255,255,255,.85);
   display:none;align-items:center;justify-content:center;
-  z-index:1000;
+  z-index:10200; /* 18.3 (8.49): acima de qualquer modal/folha (o maior é o submodal de respostas, 10100) */
   backdrop-filter:blur(2px);
 }
 .loading-overlay.visible{display:flex;flex-direction:column;gap:var(--s-4);}
 .loading-msg{font:var(--t-body);font-weight:600;color:var(--c-ink-2);text-align:center;max-width:280px;padding:0 var(--s-4);}
 .loading-msg:empty{display:none;}
 /* Pacote 16.2.1 — faixa de erro de rede com nova tentativa */
-.erro-rede{position:fixed;left:50%;bottom:var(--s-4);transform:translateX(-50%);width:min(calc(100% - 32px),768px);z-index:1001;
+.erro-rede{position:fixed;left:50%;bottom:var(--s-4);transform:translateX(-50%);width:min(calc(100% - 32px),768px);z-index:10300; /* 18.3: acima do loading e de qualquer modal */
   display:none;align-items:center;gap:var(--s-3);flex-wrap:wrap;padding:var(--s-3) var(--s-4);
   background:var(--c-surface);border:1px solid var(--c-risk-line);border-left:4px solid var(--c-risk);border-radius:var(--r-card);box-shadow:var(--sh-3);color:var(--c-risk-ink);}
 .erro-rede.visivel{display:flex;}
@@ -1820,6 +1820,8 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 /* Aviso de obrigatório na tela (D9, §6 estado erro, §7 erro) */
 .auto-aviso{display:flex;align-items:flex-start;gap:8px;margin:8px 0 0;font:600 14px/1.4 var(--f-text);color:var(--c-risk-ink);}
 .auto-aviso .ico{width:20px;height:20px;flex-shrink:0;}
+/* 18.3 (8.31): o mesmo aviso para confirmação (troca de senha), na cor de sucesso; some ao trocar de tela */
+.auto-aviso-ok{color:var(--c-pos-ink);margin:0 0 var(--s-3);}
 
 /* GrupoRecolhível (§4) */
 .auto-group{background:var(--c-surface);border:1px solid var(--c-line);border-radius:var(--r-card);margin:10px 0;}
@@ -4038,7 +4040,7 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <button class="topbar-acao" id="topbarAcao" type="button"></button>
       <div class="user-badge" id="userBadge">
         <span id="userBadgeText">TST</span>
-        <button class="btn-logout" onclick="confirmarSaida(logout)" title="Sair"><svg class="ico" aria-hidden="true"><use href="#i-power"/></svg></button>
+        <button class="btn-logout" onclick="confirmarSaida(sairDoSistema)" title="Sair"><svg class="ico" aria-hidden="true"><use href="#i-power"/></svg></button>
       </div>
       <!-- Pacote 13.4.2: Hamburger menu do paciente (16.1: dentro da barra) -->
       <div class="pac-hamburger-wrap" id="pacHamburgerWrap">
@@ -4169,7 +4171,7 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <h2 id="profNomeHeader">Olá, Profissional</h2>
         <p id="profSiglaHeader">Área do Psicólogo</p>
       </div>
-      <button class="prof-btn-logout" onclick="logoutProfissional()">Sair</button>
+      <button class="prof-btn-logout" onclick="sairDoSistema()">Sair</button>
     </div>
     <div class="prof-placeholder" id="profDashboardConteudo">
       <p style="font-size:32px;margin-bottom:12px;"><svg class="ico" aria-hidden="true"><use href="#i-wrench"/></svg></p>
@@ -7477,9 +7479,7 @@ function _respostaDescartada_() { return new Promise(function () {}); }
 // 18.1.2: os rascunhos ficam (presos à sigla; a mesma sigla os reencontra ao entrar de novo) e nenhuma
 // sobreposição fica aberta, nem com conteúdo, por cima do login (8.71, achado 29).
 function vmcSessaoExpirada_(msg) {
-  VMC_GERACAO_SESSAO++;
-  vmcFecharSobreposicoes_();
-  if (typeof PROF_SESSAO !== 'undefined' && PROF_SESSAO) logoutProfissional(); else logout({ manterRascunhos: true });
+  sairDoSistema({ manterRascunhos: true }); // 18.3: a saída única; os rascunhos da sigla ficam
   const box = document.getElementById('loginError');
   box.textContent = msg || 'Sua sessão expirou. Entre de novo para continuar.';
   box.classList.remove('hidden');
@@ -7669,7 +7669,7 @@ function progressoDefinir(cfg) {
     const cls = 'prog-seg' + (feito ? ' feito' : '') + (i === atual ? ' atual' : '');
     const nome = (cfg.nomes && cfg.nomes[i]) ? cfg.nomes[i] : ((cfg.rotulo || 'Etapa') + ' ' + i);
     h += feito
-      ? '<button type="button" class="' + cls + '" onclick="progressoIr(' + i + ')" aria-label="Voltar a ' + nome.replace(/"/g, '&quot;') + '"></button>'
+      ? '<button type="button" class="' + cls + '" onclick="progressoIr(' + i + ')" aria-label="Voltar a ' + esc(nome) + '"></button>'
       : '<span class="' + cls + '" aria-hidden="true"></span>';
   }
   document.getElementById('progTrilho').innerHTML = h;
@@ -7731,6 +7731,7 @@ function abrirSecao(idSecao) {
   var bloco = (alvo && alvo.classList.contains('auto-tipo')) ? alvo : null;
   var secFisica = bloco ? bloco.closest('.section') : alvo;
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.auto-aviso-ok').forEach(a => a.remove()); // 18.3: a confirmação na tela não segue para a próxima
   secFisica.classList.add('active');
   if (bloco) autoMostrarTipo(secFisica, bloco);
   topbarAtualizar(secFisica.id);
@@ -7822,9 +7823,6 @@ function vmcRascunhoDaSessao_(chave) {
   if (!r) return null;
   if (r.sigla !== sigla) { try { sessionStorage.removeItem(chave); } catch (e) {} return null; }
   return r;
-}
-function vmcLimparRascunhos_() {
-  ['anamnese_rascunho', AUTO_RASCUNHO_KEY, ESC_RASCUNHO_KEY].forEach(function (k) { try { sessionStorage.removeItem(k); } catch (e) {} });
 }
 
 function atualizarBadgeUsuario() {
@@ -8258,17 +8256,6 @@ var PROF_SESSAO = null;
 // 18.1.2 (8.70): sigla do último paciente que entrou nesta página (os estados em memória são dele)
 var VMC_ULTIMA_SIGLA_PACIENTE = '';
 
-function logoutProfissional() {
-  VMC_GERACAO_SESSAO++; // 18.1.2 (8.69)
-  PROF_SESSAO = null;
-  PROF_LINK_POR_SIGLA = {}; // 18.1.2: links de convite são da sessão que os gerou
-  PROF_PACIENTE_SEL = null;
-  descartarCachesPaciente_(); // 16.5d-3.2: a visão do profissional também preenche ESC_HIST_STATE e _HIST_REGS
-  document.getElementById('userBadge').classList.remove('visible');
-  resetarTelaLogin_();
-  abrirSecao('sec-login');
-}
-
 /* Pacote 13.2.1: Reseta a tela de login ao estado inicial */
 function resetarTelaLogin_() {
   LOGIN_TIPO_SELECIONADO = '';
@@ -8592,7 +8579,7 @@ async function profCarregarDashboard() {
       '<div class="prof-pac-empty">' +
         '<span><svg class=ico aria-hidden=true><use href=#i-alert></use></svg></span>' +
         '<p style="font-weight:700;color:var(--c-ink);margin-bottom:6px;">Erro ao carregar pacientes</p>' +
-        '<p>' + (resp.erro || 'Tente novamente.') + '</p>' +
+        '<p>' + esc(resp.erro || 'Tente novamente.') + '</p>' +
         '<button onclick="profCarregarDashboard()" style="margin-top:12px;padding:8px 20px;' +
           'border:1.5px solid var(--c-action);border-radius:8px;background:var(--c-surface);color:var(--c-action);' +
           'font-weight:700;font-size:13px;cursor:pointer;font-family:var(--f-text);">Tentar novamente</button>' +
@@ -8641,8 +8628,8 @@ async function profCarregarDashboard() {
     if (p.data_anamnese) metaParts.push('Anamnese: ' + p.data_anamnese);
     if (p.data_cadastro)  metaParts.push('Cadastro: '  + p.data_cadastro);
     var metaStr = metaParts.join(' · ');
-    var r = '<div class="prof-pac-card" onclick="profAbrirPaciente(\'' + profEscHtml_(sigla) + '\')">';
-    r +=   '<div class="prof-pac-avatar">' + iniciais + '</div>';
+    var r = '<div class="prof-pac-card" data-sigla="' + esc(sigla) + '" onclick="profAbrirPaciente(this.dataset.sigla)">'; // 18.3: dado fora do JS do onclick
+    r +=   '<div class="prof-pac-avatar">' + esc(iniciais) + '</div>';
     r +=   '<div class="prof-pac-info">';
     r +=     '<div class="prof-pac-nome">' + profEscHtml_(nome) + ' <span style="font-weight:400;color:var(--c-ink-3);font-size:13px;">(' + profEscHtml_(sigla) + ')</span></div>';
     r +=     '<div class="prof-pac-meta">';
@@ -8678,12 +8665,8 @@ async function profCarregarDashboard() {
   container.innerHTML = html;
 }
 
-/* Pacote 13.2.2: escape HTML para dados do servidor */
-function profEscHtml_(str) {
-  var d = document.createElement('div');
-  d.textContent = str;
-  return d.innerHTML;
-}
+/* Pacote 13.2.2: escape HTML para dados do servidor — 18.3: atalho do escapador único (o antigo não escapava aspas) */
+function profEscHtml_(str) { return esc(str); }
 
 /* Pacote 13.2.3: renderiza chips de indicadores clínicos para um paciente */
 function profRenderizarIndicadores_(p) {
@@ -8698,17 +8681,17 @@ function profRenderizarIndicadores_(p) {
     else if (dias <= 7) { txt = 'Último registro: ' + dias + ' dias'; cls = 'chip-adesao-ok'; }
     else if (dias <= 14) { txt = 'Último registro: ' + dias + ' dias'; cls = 'chip-adesao-alerta'; }
     else { txt = 'Último registro: ' + dias + ' dias'; cls = 'chip-adesao-critico'; }
-    chips.push('<span class="prof-ind-chip ' + cls + '"><svg class=ico aria-hidden=true><use href=#i-calendar></use></svg> ' + txt + '</span>');
+    chips.push('<span class="prof-ind-chip ' + cls + '"><svg class=ico aria-hidden=true><use href=#i-calendar></use></svg> ' + esc(txt) + '</span>');
   }
 
   // 2. Último humor (rostinho + número) — 16.5b: rostinho do sprite
   if (p.ind_ultimo_humor) {
-    chips.push('<span class="prof-ind-chip chip-humor">' + vmcHumorIcone(p.ind_ultimo_humor) + ' Humor: ' + p.ind_ultimo_humor + '/5</span>');
+    chips.push('<span class="prof-ind-chip chip-humor">' + vmcHumorIcone(p.ind_ultimo_humor) + ' Humor: ' + esc(p.ind_ultimo_humor) + '/5</span>');
   }
 
   // 3. Total de registros de automonitoramento
   if (p.ind_total_auto > 0) {
-    chips.push('<span class="prof-ind-chip"><svg class=ico aria-hidden=true><use href=#i-chart></use></svg> ' + p.ind_total_auto + ' registro' + (p.ind_total_auto > 1 ? 's' : '') + '</span>');
+    chips.push('<span class="prof-ind-chip"><svg class=ico aria-hidden=true><use href=#i-chart></use></svg> ' + esc(p.ind_total_auto) + ' registro' + (p.ind_total_auto > 1 ? 's' : '') + '</span>');
   }
 
   // 4. Escala mais recente
@@ -8879,11 +8862,11 @@ function profBuildHeader_(iniciais, nome, sub) {
     var ativoAtual = String(PROF_PACIENTE_SEL.ativo || 'Sim').trim().toLowerCase();
     acoesHtml = '<div class="p135-acoes-wrap">';
     if (ativoAtual === 'nao') {
-      acoesHtml += '<button class="p135-btn p135-btn-reativar" onclick="p135AbrirReativar(\'' + profEscHtml_(PROF_PACIENTE_SEL.sigla) + '\')"><svg class=ico aria-hidden=true><use href=#i-refresh></use></svg> Reativar</button>';
-      acoesHtml += '<button class="p135-btn p135-btn-excluir" onclick="p135AbrirExcluir(\'' + profEscHtml_(PROF_PACIENTE_SEL.sigla) + '\')"><svg class=ico aria-hidden=true><use href=#i-trash></use></svg> Excluir</button>';
+      acoesHtml += '<button class="p135-btn p135-btn-reativar" data-sigla="' + esc(PROF_PACIENTE_SEL.sigla) + '" onclick="p135AbrirReativar(this.dataset.sigla)"><svg class=ico aria-hidden=true><use href=#i-refresh></use></svg> Reativar</button>';
+      acoesHtml += '<button class="p135-btn p135-btn-excluir" data-sigla="' + esc(PROF_PACIENTE_SEL.sigla) + '" onclick="p135AbrirExcluir(this.dataset.sigla)"><svg class=ico aria-hidden=true><use href=#i-trash></use></svg> Excluir</button>';
     } else {
-      acoesHtml += '<button class="p135-btn p135-btn-desativar" onclick="p135AbrirDesativar(\'' + profEscHtml_(PROF_PACIENTE_SEL.sigla) + '\')"><svg class=ico aria-hidden=true><use href=#i-pause></use></svg> Desativar</button>';
-      acoesHtml += '<button class="p135-btn p135-btn-senha" onclick="p137AbrirSenha(\'' + profEscHtml_(PROF_PACIENTE_SEL.sigla) + '\')"><svg class=ico aria-hidden=true><use href=#i-key></use></svg> Senha</button>';
+      acoesHtml += '<button class="p135-btn p135-btn-desativar" data-sigla="' + esc(PROF_PACIENTE_SEL.sigla) + '" onclick="p135AbrirDesativar(this.dataset.sigla)"><svg class=ico aria-hidden=true><use href=#i-pause></use></svg> Desativar</button>';
+      acoesHtml += '<button class="p135-btn p135-btn-senha" data-sigla="' + esc(PROF_PACIENTE_SEL.sigla) + '" onclick="p137AbrirSenha(this.dataset.sigla)"><svg class=ico aria-hidden=true><use href=#i-key></use></svg> Senha</button>';
     }
     acoesHtml += '</div>';
   }
@@ -9031,7 +9014,7 @@ function profRenderizarAutomonitoramento_(registros) {
     html += '<div class="histc-head">';
     html += '<div class="histc-mood m' + humor + '">' + vmcHumorIcone(humor) + '</div>';
     html += '<div class="histc-info">';
-    html += '<div class="histc-date">' + dataFmt + ' · ' + hora + '</div>';
+    html += '<div class="histc-date">' + esc(dataFmt) + ' · ' + esc(hora) + '</div>';
     html += '<div class="histc-meta">Humor: <span class="humor-pill">' + humor + '/5 ' + (HUMOR_NOMES[humor] || '') + '</span></div>';
     html += '</div>';
     html += '<button class="hist-btn-lupa" type="button" title="Ver registro completo" onclick="histAbrirModal(' + i + ')"><svg class=ico aria-hidden=true><use href=#i-search></use></svg></button>';
@@ -9439,7 +9422,6 @@ function profCancelarEdicaoAnamnese_() {
 
 function profRenderizarAnamneseEditavel_(d) {
   var v = function(k) { return (d[k] !== undefined && d[k] !== null) ? String(d[k]) : ''; };
-  var esc = function(s) { return profEscHtml_(s); };
 
   var inp = function(label, key) {
     return '<div class="prof-edit-field"><label>' + label + '</label>' +
@@ -9690,7 +9672,18 @@ async function pacAlterarSenha() {
     salvarSessao(atualSessao);
   }
   pacFecharModalSenha();
-  alert('Senha alterada com sucesso!');
+  vmcAvisoOkNaTela('Senha alterada com sucesso!'); // 18.3 (8.31): era alert()
+}
+
+// Pacote 18.3 (8.31): confirmação na própria tela, no padrão autoAvisoEl (texto por textContent, role=status), no topo
+// da tela ativa, na cor de sucesso; sai na próxima troca de tela (abrirSecao).
+function vmcAvisoOkNaTela(msg) {
+  const sec = document.querySelector('.section.active'); if (!sec) return;
+  sec.querySelectorAll(':scope > .auto-aviso-ok').forEach(a => a.remove());
+  const av = autoAvisoEl(msg);
+  av.classList.add('auto-aviso-ok'); av.setAttribute('role', 'status');
+  av.querySelector('use').setAttribute('href', '#i-check');
+  sec.insertAdjacentElement('afterbegin', av);
 }
 
 // ESC fecha modal de senha
@@ -9772,42 +9765,60 @@ function descartarCachesPaciente_() {
   window._HIST_REGS = null; // Meus Registros (sem TTL; refeito a cada abertura, mas não fica em memória entre sessões)
 }
 
-// 18.1.2: o logout manual (⏻) apaga os três rascunhos da aba e o registro em memória (8.70); a sessão
-// expirada passa { manterRascunhos: true } — eles ficam, presos à sigla, para a mesma sigla reencontrar (8.71).
-function logout(opcoes) {
+// Pacote 18.3 (8.42, A6): SAÍDA ÚNICA de paciente e profissional — ⏻ da barra (pela folha "Sair sem enviar?"),
+// "Sair" do painel do profissional, sessão sem crachá e sessão expirada. Sobe a geração da sessão (resposta pendente da
+// sessão anterior é descartada), fecha sobreposições, esvazia o sessionStorage INTEIRO, devolve todo estado global ao
+// valor inicial, apaga das telas o conteúdo lido do servidor e volta ao login limpo. Substitui as duas saídas antigas
+// (paciente e profissional). A sessão expirada não é saída manual: passa { manterRascunhos: true } e os rascunhos (presos à
+// sigla, 18.1.2) e o registro em memória ficam para a mesma sigla reencontrar (8.71).
+function sairDoSistema(opcoes) {
+  const manter = !!(opcoes && opcoes.manterRascunhos);
   VMC_GERACAO_SESSAO++; // 18.1.2 (8.69)
-  limparSessao();
-  if (!(opcoes && opcoes.manterRascunhos)) {
-    vmcLimparRascunhos_();
-    if (typeof autoResetState === 'function') autoResetState();
-  }
-  descartarCachesPaciente_(); // 16.5d-3.2
-  // Pacote 5: reseta estado de primeira vez ao deslogar
-  if (typeof P5_STATE !== 'undefined') {
-    P5_STATE.verificado = false;
-    P5_STATE.primeiraVez = false;
-    P5_STATE.carregando = false;
-  }
-  // Pacote 12.2: reseta estado do Módulo 4 (Escalas)
-  if (typeof ESC_STATE !== 'undefined') {
-    ESC_STATE.verificado = false;
-    ESC_STATE.temEscalas = false;
-    ESC_STATE.carregando = false;
-    ESC_STATE.escalaAtual = null;
-    ESC_STATE.respostas = {};
-  }
-  // Pacote 16.4c: zera o Início (nome, contagens e caches lidos para ele)
-  if (typeof INI_STATE !== 'undefined') {
-    INI_STATE.carregado = false;
-    INI_STATE.carregando = false;
-    INI_STATE.invalido = true;
-    INI_STATE.dados = null;
-  }
-  try { sessionStorage.removeItem('escComoUsarLido'); } catch(e){}
-  // Pacote 13.4.2: esconder hamburger ao deslogar
-  var hWrap = document.getElementById('pacHamburgerWrap');
-  if (hWrap) hWrap.classList.remove('visivel');
-  atualizarBadgeUsuario();
+  vmcFecharSobreposicoes_();
+  // sessionStorage: tudo sai (sessão do paciente, rascunhos, "Como Usar" lido); na sessão expirada os rascunhos voltam
+  const guardados = {};
+  if (manter) ['anamnese_rascunho', AUTO_RASCUNHO_KEY, ESC_RASCUNHO_KEY].forEach(function (k) {
+    try { const v = sessionStorage.getItem(k); if (v !== null) guardados[k] = v; } catch (e) {}
+  });
+  try { sessionStorage.clear(); } catch (e) {}
+  Object.keys(guardados).forEach(function (k) { try { sessionStorage.setItem(k, guardados[k]); } catch (e) {} });
+  // pedidos: o compartilhado e os que esperam "Tentar de novo" morrem com a geração; loading e faixa saem da tela
+  VMC_EM_ANDAMENTO = {};
+  document.getElementById('vmcErroRede').classList.remove('visivel');
+  VMC_ESPERANDO_FAIXA.splice(0).forEach(function (r) { r(); });
+  mostrarLoading(false);
+  progressoOcultar();
+  // profissional (só em memória — lição 23)
+  PROF_SESSAO = null;
+  PROF_PACIENTE_SEL = null;
+  PROF_LINK_POR_SIGLA = {}; // 18.1.2: links de convite são da sessão que os gerou
+  PROF_CONVITE = { cad: { sigla: '', telefone: '', link: '' }, ed: { sigla: '', telefone: '', link: '' } };
+  graEstado = null; graCarregando = false; CAL_GRADE_JANELAS = {}; CAL_SESSOES = [];
+  document.getElementById('profNomeHeader').textContent = 'Olá, Profissional';
+  document.getElementById('profSiglaHeader').textContent = 'Área do Psicólogo';
+  // paciente: registro em memória (fica só na sessão expirada), escalas, anamnese, Início, caches e gráficos
+  if (!manter) { autoResetState(); VMC_ULTIMA_SIGLA_PACIENTE = ''; }
+  descartarCachesPaciente_(); // 16.5d-3.2: Painel, histórico de escalas, gráficos, Meus Registros
+  P5_STATE.verificado = false; P5_STATE.primeiraVez = false; P5_STATE.carregando = false; P5_STATE.falhou = false;
+  P8_STATE.eduLidas.clear();
+  ESC_STATE.verificado = false; ESC_STATE.temEscalas = false; ESC_STATE.carregando = false;
+  ESC_STATE.escalaAtual = null; ESC_STATE.respostas = {}; ESC_STATE.inicioPreenchimento = null;
+  ESC_TEXTOS = {}; ESC_LIBERADOS = null; window.RR_RESPOSTAS_CACHE = null;
+  ANAM_STATE.passoAtual = 1; ANAM_STATE.modoConsulta = false; ANAM_STATE.editando = false;
+  ANAM_STATE.dadosConsulta = null; ANAM_STATE.numPessoasConfianca = 1;
+  INI_STATE.carregado = false; INI_STATE.carregando = false; INI_STATE.invalido = true; INI_STATE.dados = null;
+  P136_ESTADO = { idx: null, tipo: null, sigla: null, timestamp: null };
+  HIST_FILTRO = 'todos'; HIST_MESES_ABERTOS = {}; CHK_ENV.periodo = null;
+  ['profDashboardConteudo', 'profPacienteConteudo', 'autoHistLista', 'pevConteudo', 'eschConteudo', 'anamConteudo', 'iniContinuidade', 'graDias'].forEach(function (id) {
+    const el = document.getElementById(id); if (el) el.innerHTML = '';
+  });
+  // barra: crachá, menu do paciente
+  document.getElementById('userBadgeText').textContent = '';
+  document.getElementById('userBadge').classList.remove('visible');
+  document.getElementById('pacHamburgerWrap').classList.remove('visivel');
+  document.getElementById('pacHamburgerMenu').classList.remove('aberto');
+  // login: perfil, campos, escolha de profissional (18.1.3), aceite pendente (18.1.6) e link de ativação
+  LOGIN_ATIVAR = ''; LOGIN_ATIVAR_TIPO = ''; LOGIN_ATIVAR_EMAIL = ''; LOGIN_ATIVAR_EXIGE_ACEITE = false; LOGIN_POLITICA_VERSAO = '';
   resetarTelaLogin_();
   abrirSecao('sec-login');
 }
@@ -11485,7 +11496,7 @@ async function enviarAnamneseDefinitivo() {
   const paciente = carregarSessao();
   if (!paciente) {
     alert('Sessão expirada. Faça login novamente.');
-    logout();
+    sairDoSistema();
     return;
   }
 
@@ -11581,7 +11592,7 @@ function renderConsulta(dados, recemEnviado) {
 
   html += `
     <div class="consulta-banner">
-      <strong>Anamnese preenchida${dataEnvio ? ' em ' + dataEnvio : ''}</strong>
+      <strong>Anamnese preenchida${dataEnvio ? ' em ' + esc(dataEnvio) : ''}</strong>
       Para qualquer alteração, por favor fale diretamente com seu terapeuta.
     </div>
   `;
@@ -11686,21 +11697,20 @@ function formatarDataBR(dataISO) {
   return `${partes[2]}/${partes[1]}/${partes[0]}`;
 }
 
-function escapeHtml(s) {
-  return String(s)
+// Pacote 18.3 (8.39, A3): escapador ÚNICO de saída. Todo dado do usuário ou do servidor que entra em innerHTML,
+// template string ou atributo (value="…", aria-label="…", data-*) passa por aqui. Converte & < > " ' (o & primeiro);
+// null/undefined → '' e número → texto. HTML interno do sistema (sprite, ícones, catálogo das escalas) não passa.
+function esc(s) {
+  return (s === null || s === undefined ? '' : String(s))
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
-
-function escapeAttr(s) {
-  return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
+// Atalhos antigos (18.3): chamam o escapador único
+function escapeHtml(s) { return esc(s); }
+function escapeAttr(s) { return esc(s); }
 
 /* ============================================================
    INICIALIZAÇÃO
@@ -12112,7 +12122,7 @@ function cabTrilhaHtml(etapaAtual, tipo) {
     const estado = i === idx ? 'atual' : (cabEtapaFeita(et, tipo) ? 'feita' : 'futura');
     const bloco = document.getElementById(cabBlocoId(et, tipo));
     const nome = (bloco && bloco.getAttribute('data-barra-titulo')) || CAB_ROTULOS[et];
-    const rotulo = ('Etapa ' + (i + 1) + ' de 5 · ' + nome + (estado === 'futura' ? '' : ' · ' + estado)).replace(/"/g, '&quot;');
+    const rotulo = esc('Etapa ' + (i + 1) + ' de 5 · ' + nome + (estado === 'futura' ? '' : ' · ' + estado));
     const no = '<span class="cab-no">' + cabIco(CAB_ICONES[tipo][et]) + '</span>';
     if (i > 0) h += '<span class="cab-traco' + (estado === 'futura' ? '' : ' cheio') + '" aria-hidden="true"></span>';
     h += estado === 'feita'
@@ -12154,7 +12164,7 @@ function cabEtapasHtml(etapaAtual, tipo) {
     const use = m.querySelector('.metapa-ico use'); const icone = use ? String(use.getAttribute('href') || '').replace('#', '') : CAB_ICONES[tipo][et];
     const corpo = '<span class="cab-etapa-circ" aria-hidden="true">' + (estado === 'feita' ? cabIco('i-check') : (i + 1)) + '</span>' +
       '<span class="cab-lat-nome">' + escapeHtmlAuto(nome) + '</span><span class="cab-etapa-ico" aria-hidden="true">' + cabIco(icone) + '</span>';
-    const rotulo = ('Etapa ' + (i + 1) + ' de 5 · ' + nome + (estado === 'futura' ? '' : ' · ' + estado)).replace(/"/g, '&quot;');
+    const rotulo = esc('Etapa ' + (i + 1) + ' de 5 · ' + nome + (estado === 'futura' ? '' : ' · ' + estado));
     h += estado === 'feita'
       ? '<button type="button" class="cab-etapa feita" onclick="cabIrEtapa(' + i + ',\'' + tipo + '\')" aria-label="' + rotulo + '">' + corpo + '</button>'
       : '<span class="cab-etapa ' + estado + '" role="img"' + (estado === 'atual' ? ' aria-current="step"' : '') + ' aria-label="' + rotulo + '">' + corpo + '</span>';
@@ -12382,7 +12392,7 @@ function chkRenderGrafico(regs) {
   const rodape = carregando
     ? '<div class="chk-env-media"><span class="chk-env-media-num">—</span></div>'
     : '<div class="chk-env-media"><span class="chk-env-media-lbl">' + (CHK_ENV.periodo === 'tudo' ? 'Humor médio em todos os registros' : 'Humor médio nos ' + CHK_ENV.periodo + ' dias') + '</span>' +
-      '<span class="chk-env-media-num">' + media + '</span>' + (nivel ? '<span class="chk-env-media-chip">' + HUMOR_NOMES[nivel] + '</span>' : '') + '</div>';
+      '<span class="chk-env-media-num">' + esc(media) + '</span>' + (nivel ? '<span class="chk-env-media-chip">' + HUMOR_NOMES[nivel] + '</span>' : '') + '</div>';
   cont.innerHTML = pevMontarBlocoHumor('chkEnvCanvas', { meio: carregando ? '' : pevMontarSeletor(CHK_ENV.periodo), corpo: corpo, fim: rodape, classe: 'chk-env-bloco' });
   if (carregando) return;
   pevBindSeletor(cont, function (p) { CHK_ENV.periodo = p; chkRenderGrafico(regs); });
@@ -13234,16 +13244,14 @@ function enviadoFazerTambem() {
   autoEntrarSecao(outro === 'pos' ? 'sec-auto-sit-b' : 'sec-auto-sit-a', 0, outro);
 }
 
-function escapeHtmlAuto(s) {
-  if (!s) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+// 18.3: atalho do escapador único (o antigo não escapava ' e devolvia '' para 0)
+function escapeHtmlAuto(s) { return esc(s); }
 
 async function autoEnviarRegistro(opcoes) {
   const paciente = carregarSessao();
   if (!paciente) {
     alert('Sessão expirada. Faça login novamente.');
-    logout();
+    sairDoSistema();
     return;
   }
   // 16.5c: "Concluir só com a checagem de humor" envia a MESMA ação só com os campos da checagem
@@ -13304,7 +13312,7 @@ async function autoEnviarRegistro(opcoes) {
 // ============================================================
 async function autoAbrirHistorico() {
   const paciente = carregarSessao();
-  if (!paciente) { alert('Sessão expirada.'); logout(); return; }
+  if (!paciente) { alert('Sessão expirada.'); sairDoSistema(); return; }
   const box = document.getElementById('autoHistLista');
   box.innerHTML = '<div style="text-align:center;padding:30px;color:var(--c-ink-3);">Carregando seus registros...</div>';
   abrirSecao('sec-auto-historico');
@@ -13426,7 +13434,7 @@ function histMontarCartao(r, idx) {
                vmcHumorIcone(humor) +
              '</div>' +
              '<div class="histc-info">' +
-               '<div class="histc-date">' + dataFmt + ' · ' + hora + '</div>' +
+               '<div class="histc-date">' + esc(dataFmt) + ' · ' + esc(hora) + '</div>' +
                '<div class="histc-meta">Humor: <span class="humor-pill">' + humor + '/5 ' +
                  (HUMOR_NOMES[humor] || '') + '</span>' + tipos + '</div>' +
              '</div>' +
@@ -13468,10 +13476,10 @@ function histRenderizarLista() {
   ordem.forEach(function (chave) {
     const itens = grupos[chave];
     const aberto = HIST_MESES_ABERTOS[chave] === true;
-    html += '<div class="histm' + (aberto ? ' aberto' : '') + '" data-mes="' + chave + '">' +
+    html += '<div class="histm' + (aberto ? ' aberto' : '') + '" data-mes="' + esc(chave) + '">' +
               '<button type="button" class="histm-head" onclick="histToggleMes(this)"' +
                 ' aria-expanded="' + (aberto ? 'true' : 'false') + '">' +
-                '<span class="histm-mes">' + histRotuloMes(chave) + '</span>' +
+                '<span class="histm-mes">' + esc(histRotuloMes(chave)) + '</span>' +
                 '<span class="histm-cont">· ' + itens.length +
                   (itens.length === 1 ? ' registro' : ' registros') + '</span>' +
                 '<span class="esch-bloco-chevron">›</span>' +
@@ -13613,7 +13621,7 @@ async function histAbrirModal(idx) {
     if (r.editado === 'Sim' && r.editado_em) {
       var quemLabel = r.editado_por === 'profissional' ? 'pelo profissional' : 'pelo paciente';
       var carimboBanner = '<div style="padding:6px 18px 0;font-size:13px;color:var(--c-ink-3);font-style:italic;">' +
-        '<svg class=ico aria-hidden=true><use href=#i-pencil></use></svg> Editado ' + quemLabel + ' em ' + r.editado_em.replace('T',' ').slice(0,16) + '</div>';
+        '<svg class=ico aria-hidden=true><use href=#i-pencil></use></svg> Editado ' + quemLabel + ' em ' + esc(String(r.editado_em).replace('T',' ').slice(0,16)) + '</div>';
       document.getElementById('histModalConteudo').innerHTML = carimboBanner + html;
     }
 
@@ -13983,7 +13991,7 @@ function p136RenderGrupo_(r, chave, comLikert) {
     var item = el.getAttribute('data-item');
     if (!item) return;
     var checked = !!marcados[item];
-    var itemEsc = item.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    var itemEsc = esc(item);
     h += '<div class="auto-option' + (checked ? ' marked' : '') + '">';
     h += '<label class="auto-option-lbl"><input type="checkbox" data-item="' + itemEsc + '"' + (checked ? ' checked' : '') + ' onchange="p136ToggleLikert(this)">';
     h += '<span class="auto-check" aria-hidden="true"><svg class=ico aria-hidden=true><use href=#i-check></use></svg></span>';
@@ -15640,7 +15648,7 @@ function escRenderItens(def) {
     opcoes.forEach(o => {
       html += '<button type="button" class="esc-opcao' + classeBotaoExtra + '" ' +
               'data-item="' + item.id + '" data-valor="' + escapeHtmlAuto(o.codigo) + '" ' +
-              'onclick="escSelecionarOpcao(' + item.id + ', &quot;' + escapeHtmlAuto(o.codigo) + '&quot;, ' + (item.critico ? 'true' : 'false') + ')">';
+              'onclick="escSelecionarOpcao(' + item.id + ', this.dataset.valor, ' + (item.critico ? 'true' : 'false') + ')">'; // 18.3: valor lido do data-valor (escapado)
       // Escalas Likert mostram o número pequeno em cima do rótulo; dicotômicas só o rótulo.
       // No BDI-II o código é o número como está no papel (0, 1a, 1b, 2a...).
       if (!isDicotomica) {
@@ -17007,8 +17015,8 @@ function escHistRenderAplicacao(cod, def, reg, idxGlobal) {
 
   return '<div class="esch-aplic">' +
     '<div class="esch-aplic-data">' +
-      '<div class="esch-aplic-data-principal">' + marcadorRiscoLinha + dataHoraHtml.data + '</div>' +
-      '<div class="esch-aplic-data-hora">' + dataHoraHtml.hora + '</div>' +
+      '<div class="esch-aplic-data-principal">' + marcadorRiscoLinha + esc(dataHoraHtml.data) + '</div>' +
+      '<div class="esch-aplic-data-hora">' + esc(dataHoraHtml.hora) + '</div>' +
     '</div>' +
     escoreHtml +
     // Sem escore para o paciente também não há detalhe a abrir: a lupa levaria ao
@@ -17234,7 +17242,7 @@ async function graCarregar() {
   if (!resp.ok) {
     cont.innerHTML = '';
     var el = document.getElementById('graErro');
-    el.innerHTML = '<svg class=ico aria-hidden=true><use href=#i-alert></use></svg> Erro ao carregar a grade: ' + (resp.erro || 'tente novamente.');
+    el.innerHTML = '<svg class=ico aria-hidden=true><use href=#i-alert></use></svg> Erro ao carregar a grade: ' + esc(resp.erro || 'tente novamente.');
     el.style.display = 'block';
     return;
   }
@@ -17278,9 +17286,9 @@ function graRender() {
       }).join('');
       htmlJanelas +=
         '<div class="gra-janela">' +
-          '<input type="time" value="' + j.inicio + '" onchange="graEditarJanela(' + dia.num + ',' + idx + ',\'inicio\',this.value)">' +
+          '<input type="time" value="' + esc(j.inicio) + '" onchange="graEditarJanela(' + dia.num + ',' + idx + ',\'inicio\',this.value)">' +
           '<span class="gra-ate">até</span>' +
-          '<input type="time" value="' + j.fim + '" onchange="graEditarJanela(' + dia.num + ',' + idx + ',\'fim\',this.value)">' +
+          '<input type="time" value="' + esc(j.fim) + '" onchange="graEditarJanela(' + dia.num + ',' + idx + ',\'fim\',this.value)">' +
           '<select onchange="graEditarJanela(' + dia.num + ',' + idx + ',\'modalidade\',this.value)">' + opts + '</select>' +
           '<button class="gra-jan-remover" type="button" title="Remover janela" onclick="graRemoverJanela(' + dia.num + ',' + idx + ')"><svg class=ico aria-hidden=true><use href=#i-x></use></svg></button>' +
         '</div>';
@@ -17289,7 +17297,7 @@ function graRender() {
     div.innerHTML =
       '<div class="gra-dia-topo">' +
         '<span class="gra-dia-nome">' + dia.nome + '</span>' +
-        '<span class="gra-resumo-dia">' + graResumoDia_(st) + '</span>' +
+        '<span class="gra-resumo-dia">' + esc(graResumoDia_(st)) + '</span>' +
         '<label class="gra-switch">' +
           '<input type="checkbox" ' + (st.ativo ? 'checked' : '') + ' onchange="graToggleDia(' + dia.num + ',this.checked)">' +
           '<span class="gra-slider"></span>' +
@@ -17370,7 +17378,7 @@ async function graSalvar() {
 
   var erros = graValidar_();
   if (erros.length > 0) {
-    elErro.innerHTML = '<svg class=ico aria-hidden=true><use href=#i-alert></use></svg> Corrija antes de salvar:<br>• ' + erros.join('<br>• ');
+    elErro.innerHTML = '<svg class=ico aria-hidden=true><use href=#i-alert></use></svg> Corrija antes de salvar:<br>• ' + erros.map(esc).join('<br>• ');
     elErro.style.display = 'block';
     return;
   }
@@ -17400,7 +17408,7 @@ async function graSalvar() {
   btn.disabled = false;
 
   if (!resp.ok) {
-    elErro.innerHTML = '<svg class=ico aria-hidden=true><use href=#i-alert></use></svg> Erro ao salvar: ' + (resp.erro || 'tente novamente.');
+    elErro.innerHTML = '<svg class=ico aria-hidden=true><use href=#i-alert></use></svg> Erro ao salvar: ' + esc(resp.erro || 'tente novamente.');
     elErro.style.display = 'block';
     return;
   }
@@ -17557,9 +17565,9 @@ function calRender() {
       bloco.style.top = topo + 'px';
       bloco.style.height = (CAL_ALT_HORA - 4) + 'px';
       bloco.innerHTML =
-        '<div class="cal-ev-hora"><span>' + ev.inicio + ' – ' + fimTxt + '</span>' +
+        '<div class="cal-ev-hora"><span>' + esc(ev.inicio) + ' – ' + fimTxt + '</span>' +
         '<span>' + (ev.confirmada ? '<svg class=ico aria-hidden=true><use href=#i-check></use></svg>' : '<svg class=ico aria-hidden=true><use href=#i-hourglass></use></svg>') + '</span></div>' +
-        '<div class="cal-ev-nome">' + ev.nome + '</div>';
+        '<div class="cal-ev-nome">' + esc(ev.nome) + '</div>';
       col.appendChild(bloco);
     });
 

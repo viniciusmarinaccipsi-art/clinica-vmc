@@ -669,7 +669,7 @@ a.btn-icon[aria-disabled="true"] { opacity:.5; cursor:not-allowed; }
         <div class="field">
           <label for="cadEmail">Email <span style="color:var(--red);">*</span></label>
           <input type="email" id="cadEmail" placeholder="joao@exemplo.com">
-          <div class="hint">Será usado como login. O acesso nasce no convite (botão "Enviar convite" na lista).</div>
+          <div class="hint">Será o login do profissional. O acesso é criado depois, pelo botão "Enviar convite" na lista.</div>
         </div>
         <div class="field">
           <label for="cadTelefone">Telefone</label>
@@ -1359,14 +1359,16 @@ function mostrarErro(box, msg) {
   box.classList.remove('hidden');
 }
 
-function escapeHtml(s) {
-  return String(s == null ? '' : s)
+// Pacote 18.3: escapador ÚNICO de saída (o mesmo do index.html): & < > " ' (o & primeiro); null/undefined → ''.
+function esc(s) {
+  return (s === null || s === undefined ? '' : String(s))
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+    .replace(/'/g, '&#39;');
 }
+function escapeHtml(s) { return esc(s); } // atalho (18.3)
 
 // ESC fecha qualquer modal aberto
 document.addEventListener('keydown', (e) => {

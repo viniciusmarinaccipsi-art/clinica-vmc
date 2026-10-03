@@ -355,7 +355,8 @@ def main():
     texto_atual = ler_trabalho(caminho).decode('utf-8')
     for nome, A in refs:
         removidas = set(A['funcoes']['nomes']) - set(D['funcoes']['nomes'])
-        D['_contagem_removidas'] = {n: len(re.findall(r'(?<![\w$])' + re.escape(n) + r'(?![\w$])', texto_atual)) for n in removidas}
+        # 18.3: hífen fora do nome — a classe CSS "btn-logout" não é chamada da função removida logout
+        D['_contagem_removidas'] = {n: len(re.findall(r'(?<![\w$-])' + re.escape(n) + r'(?![\w$-])', texto_atual)) for n in removidas}
         f2, a2, tabela, extra = comparar(A, D)
         D['comparacoes'][nome] = {'falhas': f2, 'avisos': a2, 'tabela': tabela, **extra}
         falhas += [f'[{nome}] ' + x for x in f2]
