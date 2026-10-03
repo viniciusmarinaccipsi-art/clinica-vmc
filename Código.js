@@ -51,7 +51,7 @@
 // id_envio, autoria; 18.10b: rascunho no servidor) (03/10/2026)
 // Pacote 18.5 — registro e edicao pelo profissional: edicao por campo com carimbo (autoria_campos), criacao pelo
 // profissional (criado_por), escore de escala no servidor, leituras do paciente paginadas e por colunas (03/10/2026)
-var VERSAO_PACOTE = '18.5';
+var VERSAO_PACOTE = '18.6';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -274,7 +274,7 @@ function _despachar_(acao, payload, s) {
         break;
 
       case 'pacienteAtualizarAnamnese':
-        resposta = _exigir_(s, 'paciente') || pacienteAtualizarAnamnese(s.sigla, payload.dados, payload.campos, payload.id_envio);
+        resposta = _exigir_(s, 'paciente') || pacienteAtualizarAnamnese(s.sigla, payload.campos, payload.id_envio);
         break;
 
       case 'pacienteMarcarEditandoAuto':
@@ -308,7 +308,7 @@ function _despachar_(acao, payload, s) {
         break;
 
       case 'profSalvarAnamnese':
-        resposta = profSalvarAnamnese(s, payload.siglaPaciente, payload.dados, payload.contato, payload.campos, payload.id_envio);
+        resposta = profSalvarAnamnese(s, payload.siglaPaciente, payload.contato, payload.campos, payload.id_envio);
         break;
 
       case 'profEnviarConvite':
@@ -1077,7 +1077,8 @@ function _celulaSegura_(v) {
  * instrumento, alertas, lock e auditoria).
  */
 var COLUNAS_TEXTO_LIVRE_FORA_ANAMNESE = ['timestamp', 'versao_formulario', 'data_nascimento'];
-var COLUNAS_TEXTO_LIVRE_AVULSAS = ['nome', 'observacoes', 'crp', 'humor_observacoes', 'item_funcional_texto', 'ind_nome'];
+var COLUNAS_TEXTO_LIVRE_AVULSAS = ['nome', 'observacoes', 'crp', 'humor_observacoes', 'item_funcional_texto', 'ind_nome',
+  'valor_anterior']; // 18.6: Anamnese_Historico
 
 function _colunaTextoLivre_(col) {
   var c = String(col);
@@ -2197,7 +2198,13 @@ function _espelharContatoAnamnese_(aba, dados, paciente) {
   return copia;
 }
 
+/**
+ * Primeiro envio da anamnese. E o UNICO ponto que monta a linha da ficha (18.6, 8.44):
+ * com a ficha ja existente (linha 2), o envio vira edicao por campo — nunca uma segunda
+ * linha, nunca a linha inteira regravada.
+ */
 function salvarAnamnese(sigla, dados) {
+  if (!dados || typeof dados !== 'object') return { ok: false, erro: 'Dados da anamnese ausentes' };
   var paciente = buscarPaciente(sigla);
   if (!paciente) return { ok: false, erro: 'Paciente nao encontrado' };
 
@@ -2210,6 +2217,12 @@ function salvarAnamnese(sigla, dados) {
   if (repetido) {
     _rascunhoEnviado_(planilha, ['anamnese']);
     return _respostaDuplicado_(planilha, ABA_ANAMNESE, repetido, 'Anamnese salva com sucesso');
+  }
+
+  if (aba.getLastRow() >= 2) {
+    var edicao = _editarAnamnesePorCampos_(planilha, aba, dados, 'paciente', dados.id_envio, paciente.__profissional_id, sigla, 'Anamnese salva com sucesso');
+    if (edicao.ok) _rascunhoEnviado_(planilha, ['anamnese']);
+    return edicao;
   }
 
   dados = _espelharContatoAnamnese_(aba, dados, paciente);
@@ -2933,16 +2946,13 @@ function alterarSenhaPaciente(sigla, senhaAtual, novaSenha) {
 
 
 /**
- * Paciente atualiza sua propria anamnese.
- *
- * Sobrescreve row 2 da aba Anamnese.
- * Segue o mesmo padrao de salvarAnamnese/salvarAutomonitoramento:
- * recebe apenas sigla (autenticacao ja foi feita no login).
+ * Paciente atualiza sua propria anamnese (linha 2), sempre por campo: so as colunas
+ * de `campos` que mudaram sao gravadas, com carimbo e historico. Sem `campos`, recusa
+ * (18.6: o caminho que regravava a linha inteira saiu).
  */
-function pacienteAtualizarAnamnese(sigla, dados, campos, idEnvio) {
+function pacienteAtualizarAnamnese(sigla, campos, idEnvio) {
   if (!sigla) return { ok: false, erro: 'Sigla obrigatoria' };
-  var porCampos = !!campos && typeof campos === 'object';
-  if (!dados && !porCampos) return { ok: false, erro: 'Dados da anamnese ausentes' };
+  if (!campos || typeof campos !== 'object') return { ok: false, erro: 'Dados da anamnese ausentes' };
 
   // 1. Abrir planilha individual
   var paciente = buscarPaciente(sigla);
@@ -2956,33 +2966,8 @@ function pacienteAtualizarAnamnese(sigla, dados, campos, idEnvio) {
   var aba = planilha.getSheetByName(ABA_ANAMNESE);
   if (!aba) return { ok: false, erro: 'Aba Anamnese nao encontrada' };
 
-  // 18.5: edicao por campo — so as colunas alteradas sao gravadas, com carimbo
-  if (porCampos) {
-    return _editarAnamnesePorCampos_(planilha, aba, campos, 'paciente', idEnvio, paciente.__profissional_id, sigla, 'Anamnese atualizada com sucesso');
-  }
-
-  // 2. Montar linha e sobrescrever (e-mail e telefone espelham o cadastro)
-  // 18.10: campos do servidor descartados; reenvio com o mesmo id_envio nao regrava
-  dados = _dadosDoCliente_(dados);
-  if (_linhaDoEnvio_(aba, dados.id_envio) === 2) {
-    _rascunhoEnviado_(planilha, ['anamnese']);
-    return _respostaDuplicado_(planilha, ABA_ANAMNESE, 2, 'Anamnese atualizada com sucesso');
-  }
-  dados = _espelharContatoAnamnese_(aba, dados, paciente);
-  var linha = montarLinha(aba, dados);
-
-  if (aba.getLastRow() >= 2) {
-    aba.getRange(2, 1, 1, linha.length).setValues([linha]);
-  } else {
-    aba.appendRow(linha);
-  }
-
-  // 3. Atualizar data_anamnese e indicadores na Controle
-  registrarDataAnamnese(sigla, paciente.__profissional_id);
-  _indicadoresAposGravar_(paciente.__profissional_id, sigla, planilha);
-  _rascunhoEnviado_(planilha, ['anamnese']); // 18.10b
-
-  return { ok: true, mensagem: 'Anamnese atualizada com sucesso' };
+  // 2. Edicao por campo (18.5)
+  return _editarAnamnesePorCampos_(planilha, aba, campos, 'paciente', idEnvio, paciente.__profissional_id, sigla, 'Anamnese atualizada com sucesso');
 }
 
 
@@ -3139,17 +3124,16 @@ function cadastrarPaciente(s, dados) {
 
 
 /**
- * Pacote 13.4: Profissional salva/atualiza a anamnese de um paciente.
- *
- * Se ja existe anamnese (row 2), SOBRESCREVE.
- * Se nao existe, INSERE nova linha.
+ * Profissional edita a anamnese de um paciente (linha 2), sempre por campo: so as
+ * colunas de `campos` que mudaram sao gravadas, com carimbo e historico. Sem `campos`,
+ * recusa (18.6: o caminho que regravava a linha inteira saiu).
  *
  * Seguranca: profissional do cracha + verifica ownership multi-tenant.
  * Pacote 18.1: contato (opcional) = {email, telefone} grava o cadastro
  * (Controle) antes; sem ele, a Controle nao muda. E-mail e telefone da
  * Anamnese espelham o cadastro.
  */
-function profSalvarAnamnese(s, siglaPaciente, dados, contato, campos, idEnvio) {
+function profSalvarAnamnese(s, siglaPaciente, contato, campos, idEnvio) {
   // 1. Revalidar credenciais
   var authResult = _authProfissional_(s);
   if (!authResult.ok) return authResult;
@@ -3161,8 +3145,7 @@ function profSalvarAnamnese(s, siglaPaciente, dados, contato, campos, idEnvio) {
   if (!profIdDono) return { ok: false, erro: 'Paciente nao encontrado' };
   if (profIdDono !== profissionalId) return { ok: false, erro: 'Este paciente nao pertence a voce' };
 
-  var porCampos = !!campos && typeof campos === 'object';
-  if (!dados && !porCampos) return { ok: false, erro: 'Dados da anamnese ausentes' };
+  if (!campos || typeof campos !== 'object') return { ok: false, erro: 'Dados da anamnese ausentes' };
 
   if (contato) {
     var rc = _atualizarContatoPaciente_(siglaPaciente, contato);
@@ -3181,35 +3164,13 @@ function profSalvarAnamnese(s, siglaPaciente, dados, contato, campos, idEnvio) {
   var aba = planilha.getSheetByName(ABA_ANAMNESE);
   if (!aba) return { ok: false, erro: 'Aba Anamnese nao encontrada' };
 
-  // 18.5: edicao por campo — so as colunas alteradas sao gravadas, com carimbo; e-mail e
-  // telefone continuam espelhando o cadastro (sem carimbo: nao sao campos da anamnese)
-  if (porCampos) {
-    if (contato && aba.getLastRow() >= 2) {
-      var espelho = _espelharContatoAnamnese_(aba, {}, paciente);
-      _atualizarCamposLinha_(aba, 2, aba.getRange(1, 1, 1, aba.getLastColumn()).getValues()[0], { email: espelho.email, telefone: espelho.telefone });
-    }
-    return _editarAnamnesePorCampos_(planilha, aba, campos, 'profissional', idEnvio, profissionalId, siglaPaciente, 'Anamnese salva com sucesso');
+  // 4. Edicao por campo (18.5); e-mail e telefone continuam espelhando o cadastro
+  // (sem carimbo: nao sao campos da anamnese)
+  if (contato && aba.getLastRow() >= 2) {
+    var espelho = _espelharContatoAnamnese_(aba, {}, paciente);
+    _atualizarCamposLinha_(aba, 2, aba.getRange(1, 1, 1, aba.getLastColumn()).getValues()[0], { email: espelho.email, telefone: espelho.telefone });
   }
-
-  // 4. Montar linha usando headers existentes (e-mail e telefone espelham o cadastro)
-  // 18.10: campos do servidor descartados; o profissional nao reusa id_envio
-  dados = _dadosDoCliente_(dados);
-  delete dados.id_envio;
-  dados = _espelharContatoAnamnese_(aba, dados, paciente);
-  var linha = montarLinha(aba, dados);
-
-  // 5. Sobrescrever row 2 se existe, senao append
-  if (aba.getLastRow() >= 2) {
-    aba.getRange(2, 1, 1, linha.length).setValues([linha]);
-  } else {
-    aba.appendRow(linha);
-  }
-
-  // 6. Atualizar data_anamnese e indicadores na Controle
-  registrarDataAnamnese(siglaPaciente, profissionalId);
-  _indicadoresAposGravar_(profissionalId, siglaPaciente, planilha);
-
-  return { ok: true, mensagem: 'Anamnese salva com sucesso' };
+  return _editarAnamnesePorCampos_(planilha, aba, campos, 'profissional', idEnvio, profissionalId, siglaPaciente, 'Anamnese salva com sucesso');
 }
 
 
@@ -3460,7 +3421,8 @@ function _carimbar_(textoAtual, colunas, por, em) {
  * editado_por/editado_em. opcoes: { fora: [colunas ignoradas], so: funcao(coluna) que diz se
  * a coluna pode ser editada, derivados: funcao(cabecalho, linhaAtual, mudancas) que devolve
  * colunas calculadas pelo servidor (gravadas sem carimbo) ou { __erro } para nao gravar }.
- * Saida: { alterados, autoria_campos, editado_em } ou { erro }.
+ * Saida: { alterados, autoria_campos, editado_em, anteriores, em } ou { erro } — `anteriores`
+ * e o valor de cada celula alterada, lido antes de gravar; `em` e a hora do carimbo.
  */
 function _editarCampos_(aba, linha, campos, por, opcoes) {
   var o = opcoes || {};
@@ -3468,12 +3430,13 @@ function _editarCampos_(aba, linha, campos, por, opcoes) {
   var atual = aba.getRange(linha, 1, 1, header.length).getValues()[0];
   var limpos = _dadosDoCliente_(campos);
   delete limpos.id_envio;
-  var mudar = {}, alterados = [];
+  var mudar = {}, alterados = [], anteriores = {};
   for (var k in limpos) {
     var idx = header.indexOf(k);
     if (idx === -1 || (o.fora && o.fora.indexOf(k) !== -1) || (o.so && !o.so(k))) continue;
     if (_mesmoValor_(k, atual[idx], limpos[k])) continue;
     mudar[k] = limpos[k];
+    anteriores[k] = atual[idx];
     alterados.push(k);
   }
   var textoAutoria = atual[header.indexOf('autoria_campos')];
@@ -3484,14 +3447,15 @@ function _editarCampos_(aba, linha, campos, por, opcoes) {
     for (var kd in derivados) mudar[kd] = derivados[kd];
   }
   var agora = new Date();
-  var carimbo = _carimbar_(textoAutoria, alterados, por, Utilities.formatDate(agora, 'America/Sao_Paulo', 'yyyy-MM-dd HH:mm:ss'));
+  var em = Utilities.formatDate(agora, 'America/Sao_Paulo', 'yyyy-MM-dd HH:mm:ss');
+  var carimbo = _carimbar_(textoAutoria, alterados, por, em);
   var editadoEm = Utilities.formatDate(agora, 'America/Sao_Paulo', "yyyy-MM-dd'T'HH:mm:ss");
   mudar.editado_por = por;
   mudar.editado_em = editadoEm;
   mudar.autoria_campos = carimbo.json;
   if (header.indexOf('editado') !== -1) mudar.editado = 'Sim';
   _atualizarCamposLinha_(aba, linha, header, mudar);
-  return { alterados: alterados, autoria_campos: carimbo.mapa, editado_em: editadoEm };
+  return { alterados: alterados, autoria_campos: carimbo.mapa, editado_em: editadoEm, anteriores: anteriores, em: em };
 }
 
 /** Edicao de um registro de automonitoramento (paciente ou profissional), por campo. */
@@ -3516,11 +3480,38 @@ function _editarAnamnesePorCampos_(planilha, aba, campos, por, idEnvio, profissi
   if (aba.getLastRow() < 2) return { ok: false, erro: 'Dados da anamnese ausentes' };
   var r = _editarCampos_(aba, 2, campos, por, { fora: ['email', 'telefone'] });
   if (r.alterados.length) {
+    _historicoDaAnamnese_(planilha, r.alterados, r.anteriores, por, r.em);
     registrarDataAnamnese(sigla, profissionalId);
     _indicadoresAposGravar_(profissionalId, sigla, planilha);
   }
   _edicaoFeita_(id);
   return { ok: true, mensagem: mensagem, editado_em: r.editado_em, campos_alterados: r.alterados, autoria_campos: r.autoria_campos };
+}
+
+// 18.6 — historico da anamnese: aba `Anamnese_Historico` na planilha do paciente, criada no
+// primeiro uso. Uma linha por campo efetivamente alterado, com o valor que estava na celula
+// antes da gravacao, quem alterou (do cracha) e quando. So o servidor escreve aqui, dentro da
+// trava da acao; nenhuma acao le esta aba (sem tela). Entra no backup por ser aba da planilha.
+var ABA_ANAMNESE_HISTORICO = 'Anamnese_Historico';
+var HEADERS_ANAMNESE_HISTORICO = ['campo', 'valor_anterior', 'por', 'em'];
+
+function _historicoDaAnamnese_(planilha, alterados, anteriores, por, em) {
+  var aba = planilha.getSheetByName(ABA_ANAMNESE_HISTORICO);
+  if (!aba) aba = planilha.insertSheet(ABA_ANAMNESE_HISTORICO);
+  var header = _garantirColunas_(aba, HEADERS_ANAMNESE_HISTORICO);
+  var linhas = alterados.map(function (campo) {
+    var antes = anteriores[campo];
+    if (antes instanceof Date) { // celula retipada pelo Sheets: guarda o que a leitura mostra (data em aaaa-mm-dd)
+      var lido = _valorDeLeitura_(campo, antes);
+      antes = lido instanceof Date ? antes.toISOString().slice(0, 10) : lido;
+    }
+    var v = { campo: campo, valor_anterior: String(antes === undefined || antes === null ? '' : antes), por: por, em: em };
+    return header.map(function (col) {
+      if (col === 'em') return "'" + em; // texto literal, igual ao `em` de autoria_campos (o Sheets retiparia para data — licao 105)
+      return v[col] !== undefined ? _celulaTexto_(col, v[col]) : '';
+    });
+  });
+  aba.getRange(aba.getLastRow() + 1, 1, linhas.length, header.length).setValues(linhas);
 }
 
 /** Profissional do cracha + paciente dele: { ok, profissionalId, planilha } ou a recusa. */

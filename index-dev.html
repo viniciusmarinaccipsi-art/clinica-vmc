@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.5 — produção (03/10/2026) -->
+<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.6 — produção (03/10/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -7573,12 +7573,13 @@ function vmcCamposAlterados_(antes, depois) {
   Object.keys(depois).forEach(function (k) { if (txt(antes[k]) !== txt(depois[k])) campos[k] = depois[k]; });
   return campos;
 }
-// Texto aprovado: só na tela do paciente, em registro ou escala criados pelo profissional
+// Textos aprovados, em registro ou escala criados pelo profissional: "registrado pelo seu psicólogo em dd/mm" na tela
+// do paciente e, desde o 18.6, "registrado por você em dd/mm" na tela do profissional
 function vmcFaixaCriadoHtml_(reg) {
-  if (PROF_SESSAO || !reg || reg.criado_por !== 'profissional') return '';
+  if (!reg || reg.criado_por !== 'profissional') return '';
   const d = new Date(String(reg.timestamp || ''));
   if (isNaN(d.getTime())) return '';
-  return '<span class="vmc-carimbo">registrado pelo seu psicólogo em ' + ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2) + '</span>';
+  return '<span class="vmc-carimbo">' + (PROF_SESSAO ? 'registrado por você em ' : 'registrado pelo seu psicólogo em ') + ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2) + '</span>';
 }
 
 // "Novo registro", "Nova escala" e a edição de escala do profissional abrem as MESMAS telas do paciente. Enquanto
@@ -9252,7 +9253,7 @@ function profRenderizarAnamnese_(dados) {
   html += linha('Reside fora do Brasil?', dados.reside_fora_brasil, 'reside_fora_brasil');
   if (dados.reside_fora_brasil === 'Sim') {
     html += linha('País', dados.pais, 'pais');
-    html += linha('ZIP Code', dados.cep_exterior, 'cep_exterior');
+    html += linha('ZIP Code', dados.zip_code, 'zip_code');
     html += linha('Endereço', dados.endereco_exterior, 'endereco_exterior');
   } else {
     html += linha('CEP', dados.cep, 'cep');
@@ -9344,6 +9345,7 @@ function profRenderizarAutomonitoramento_(registros) {
     html += '<div class="histc-info">';
     html += '<div class="histc-date">' + esc(dataFmt) + ' · ' + esc(hora) + '</div>';
     html += '<div class="histc-meta">' + vmcHumorPill_(humor) + '</div>';
+    html += vmcFaixaCriadoHtml_(r); // 18.6: "registrado por você em dd/mm"
     html += '</div>';
     html += '<button class="hist-btn-lupa" type="button" title="Ver registro completo" onclick="histAbrirModal(' + i + ')"><svg class=ico aria-hidden=true><use href=#i-search></use></svg></button>';
     html += '</div>';
@@ -10157,7 +10159,7 @@ function sairDoSistema(opcoes) {
   ESC_STATE.escalaAtual = null; ESC_STATE.respostas = {}; ESC_STATE.inicioPreenchimento = null;
   ESC_TEXTOS = {}; ESC_LIBERADOS = null; window.RR_RESPOSTAS_CACHE = null;
   ANAM_STATE.passoAtual = 1; ANAM_STATE.modoConsulta = false; ANAM_STATE.editando = false;
-  ANAM_STATE.dadosConsulta = null; ANAM_STATE.numPessoasConfianca = 1;
+  ANAM_STATE.dadosConsulta = null; ANAM_STATE.numPessoasConfianca = 1; ANAM_STATE.cepBuscado = ''; ANAM_STATE.cepAbertos = [];
   INI_STATE.carregado = false; INI_STATE.carregando = false; INI_STATE.invalido = true; INI_STATE.dados = null;
   RASC_SERVIDOR = { carregado: false, carregando: false, lista: [] }; iniRascunhoRender(); // 18.10b
   P136_ESTADO = { idx: null, tipo: null, sigla: null, timestamp: null };
@@ -10187,6 +10189,9 @@ const ANAM_STATE = {
   dadosConsulta: null,
   // Quantas pessoas de confiança estão visíveis no formulário (1 a 3)
   numPessoasConfianca: 1,
+  // 18.6 (8.51): CEP da última busca e campos do endereço que ficaram abertos para o paciente digitar
+  cepBuscado: '',
+  cepAbertos: [],
 };
 
 /* ============================================================
@@ -10392,6 +10397,7 @@ function renderPasso1() {
         <label>Logradouro (rua, avenida, etc.)</label>
         <input type="text" id="f_endereco_logradouro" disabled>
         <div class="field-hint">Preenchido automaticamente pelo CEP</div>
+        <div class="field-error">Campo obrigatório</div>
       </div>
       <div class="field">
         <label>Bairro</label>
@@ -10866,6 +10872,7 @@ function configurarListenersDoPasso(numero) {
     const cep = document.getElementById('f_cep');
     if (cep) {
       cep.addEventListener('input', mascaraCEP);
+      cep.addEventListener('input', onCepInput); // 18.6 (8.51): CEP alterado reabre o endereço
       cep.addEventListener('blur', onCepBlur);
     }
     const data = document.getElementById('f_data_nascimento');
@@ -11089,6 +11096,32 @@ async function onCepBlur() {
   await buscarCep(cepLimpo);
 }
 
+// 18.6 (8.51): depois da busca só fica travado o campo que o ViaCEP preencheu — o que veio vazio (CEP único de
+// município) fica aberto para digitação; `abertos` guarda os que o paciente digita, para seguirem abertos ao voltar ao
+// passo. Alterar o CEP reabre os quatro e limpa o que tinha vindo da busca anterior (travado = veio da busca).
+var ANAM_CEP_CAMPOS = ['f_estado', 'f_cidade', 'f_endereco_logradouro', 'f_endereco_bairro'];
+function anamCepTravar_(cepLimpo, abertos) {
+  ANAM_CEP_CAMPOS.forEach(function (id) {
+    const el = document.getElementById(id);
+    if (el) el.disabled = !!el.value && abertos.indexOf(id) === -1;
+  });
+  ANAM_STATE.cepBuscado = cepLimpo;
+  ANAM_STATE.cepAbertos = abertos;
+}
+function onCepInput(e) {
+  if (!ANAM_STATE.cepBuscado || e.target.value.replace(/\D/g, '') === ANAM_STATE.cepBuscado) return;
+  ANAM_CEP_CAMPOS.forEach(function (id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.disabled) el.value = '';
+    el.disabled = false;
+  });
+  ANAM_STATE.cepBuscado = '';
+  ANAM_STATE.cepAbertos = [];
+  const statusEl = document.getElementById('cepStatus');
+  if (statusEl) { statusEl.textContent = ''; statusEl.className = 'cep-status'; }
+}
+
 async function buscarCep(cepLimpo) {
   const statusEl = document.getElementById('cepStatus');
   const estadoEl = document.getElementById('f_estado');
@@ -11115,17 +11148,20 @@ async function buscarCep(cepLimpo) {
     if (data.logradouro) logradouroEl.value = data.logradouro;
     if (data.bairro) bairroEl.value = data.bairro;
 
-    // Campos bloqueados (vêm do CEP)
-    estadoEl.disabled = true;
-    cidadeEl.disabled = true;
-    logradouroEl.disabled = true;
-    bairroEl.disabled = true;
+    // 18.6 (8.51): travado só o que o ViaCEP preencheu; o que veio vazio fica aberto para o paciente digitar
+    const abertos = [];
+    if (!data.uf) abertos.push('f_estado');
+    if (!data.localidade) abertos.push('f_cidade');
+    if (!data.logradouro) abertos.push('f_endereco_logradouro');
+    if (!data.bairro) abertos.push('f_endereco_bairro');
+    anamCepTravar_(cepLimpo, abertos);
 
     statusEl.textContent = 'Endereço encontrado. Agora preencha o número.';
     statusEl.className = 'cep-status visible success';
 
-    // Foca no campo de número automaticamente
-    if (numeroEl) numeroEl.focus();
+    // Foca no primeiro campo que falta: a rua, quando veio vazia; senão o número
+    const foco = logradouroEl.value ? numeroEl : logradouroEl;
+    if (foco) foco.focus();
   } catch (err) {
     console.warn('Erro ao buscar CEP:', err);
     statusEl.textContent = 'Erro ao buscar CEP. Verifique sua conexão e tente novamente.';
@@ -11168,6 +11204,7 @@ function coletarDadosFormulario(validar = true) {
   };
   const limparErros = () => {
     document.querySelectorAll('.field.has-error').forEach(f => f.classList.remove('has-error'));
+    document.querySelectorAll('.section.active [data-aviso-tela]').forEach(a => a.remove()); // 18.6: aviso da tentativa anterior
   };
 
   if (validar) limparErros();
@@ -11193,7 +11230,7 @@ function coletarDadosFormulario(validar = true) {
 
     if (rfb === 'Sim') {
       dados.pais = lerInput('f_pais') || '';
-      dados.cep_exterior = lerInput('f_cep_exterior') || '';
+      dados.zip_code = lerInput('f_cep_exterior') || ''; // 18.6 (8.51): a chave é a do cabeçalho da planilha
       dados.endereco_exterior = lerInput('f_endereco_ext') || '';
       dados.estado = '';
       dados.cidade = '';
@@ -11211,7 +11248,7 @@ function coletarDadosFormulario(validar = true) {
       dados.endereco_complemento = lerInput('f_endereco_complemento') || '';
       dados.endereco_bairro = lerInput('f_endereco_bairro') || '';
       dados.pais = '';
-      dados.cep_exterior = '';
+      dados.zip_code = '';
       dados.endereco_exterior = '';
     }
 
@@ -11233,16 +11270,17 @@ function coletarDadosFormulario(validar = true) {
         temErro = true;
       } else if (dados.reside_fora_brasil === 'Sim') {
         if (!dados.pais) marcarErro('f_pais');
-        if (!dados.cep_exterior) marcarErro('f_cep_exterior');
+        if (!dados.zip_code) marcarErro('f_cep_exterior');
         if (!dados.endereco_exterior) marcarErro('f_endereco_ext');
       } else {
         if (!dados.cep || dados.cep.replace(/\D/g, '').length !== 8) marcarErro('f_cep', 'CEP inválido');
         if (!dados.endereco_numero) marcarErro('f_endereco_numero');
-        // estado/cidade/logradouro/bairro vêm do ViaCEP — se o paciente avançou com
-        // CEP válido mas esses campos vazios, significa que o ViaCEP falhou.
-        // Nesse caso, alertamos genericamente.
+        // 18.6 (8.51): a rua continua obrigatória. Campo aberto e vazio (CEP único de município) = aviso de
+        // obrigatório no próprio campo; campo ainda travado e vazio = a busca falhou de verdade.
         if (dados.cep && dados.cep.replace(/\D/g, '').length === 8 && !dados.endereco_logradouro) {
-          marcarErro('f_cep', 'Não foi possível buscar o endereço. Tente outro CEP.');
+          const ruaEl = document.getElementById('f_endereco_logradouro');
+          if (ruaEl && !ruaEl.disabled) marcarErro('f_endereco_logradouro');
+          else marcarErro('f_cep', 'Não foi possível buscar o endereço. Tente outro CEP.');
         }
       }
     }
@@ -11326,7 +11364,7 @@ function coletarDadosFormulario(validar = true) {
         // Valida que pelo menos um medicamento foi marcado e tem status
         const marcados = document.querySelectorAll('input[data-med-classe]:checked');
         if (marcados.length === 0) {
-          alert('Você indicou uso de medicação psicotrópica, mas não marcou nenhum item da lista. Por favor, marque pelo menos um medicamento ou, se não for nenhum da lista, marque "Outro" na classe apropriada e descreva no campo de observações.');
+          vmcAvisoNaTela('Você indicou uso de medicação psicotrópica, mas não marcou nenhum item da lista. Por favor, marque pelo menos um medicamento ou, se não for nenhum da lista, marque "Outro" na classe apropriada e descreva no campo de observações.', document.getElementById('accMedicamentos')); // 18.6 (8.31): era alert()
           temErro = true;
         } else {
           // Valida que todos os marcados têm status
@@ -11337,7 +11375,7 @@ function coletarDadosFormulario(validar = true) {
             if (!statusRadio) faltaStatus = true;
           });
           if (faltaStatus) {
-            alert('Você marcou um ou mais medicamentos mas não indicou a situação de uso. Por favor, escolha "Usei no passado" ou "Faço uso atualmente" para cada item marcado.');
+            vmcAvisoNaTela('Você marcou um ou mais medicamentos mas não indicou a situação de uso. Por favor, escolha "Usei no passado" ou "Faço uso atualmente" para cada item marcado.', document.getElementById('accMedicamentos')); // 18.6 (8.31): era alert()
             temErro = true;
           }
         }
@@ -11434,7 +11472,7 @@ function coletarDadosFormulario(validar = true) {
         if (!statusRadio) faltaStatus = true;
       });
       if (faltaStatus) {
-        alert('Você marcou um ou mais transtornos mas não indicou a situação. Por favor, escolha a situação para cada item marcado.');
+        vmcAvisoNaTela('Você marcou um ou mais transtornos mas não indicou a situação. Por favor, escolha a situação para cada item marcado.', document.getElementById('accTranstornos')); // 18.6 (8.31): era alert()
         temErro = true;
       }
     }
@@ -11514,7 +11552,7 @@ function restaurarValoresDoRascunho() {
     if (d.reside_fora_brasil === 'Sim') {
       toggleEnderecoExterior(true);
       setInput('f_pais', d.pais);
-      setInput('f_cep_exterior', d.cep_exterior);
+      setInput('f_cep_exterior', d.zip_code);
       setInput('f_endereco_ext', d.endereco_exterior);
     } else if (d.reside_fora_brasil === 'Não') {
       toggleEnderecoExterior(false);
@@ -11538,6 +11576,9 @@ function restaurarValoresDoRascunho() {
       }
       setInput('f_endereco_numero', d.endereco_numero);
       setInput('f_endereco_complemento', d.endereco_complemento);
+      // 18.6 (8.51): CEP já buscado — travado só o que está preenchido; o que o paciente digitou segue aberto
+      const cepRest = String(d.cep || '').replace(/\D/g, '');
+      if (cepRest.length === 8) anamCepTravar_(cepRest, ANAM_STATE.cepBuscado === cepRest ? ANAM_STATE.cepAbertos : []);
     }
     if (d.data_nascimento) atualizarIdade();
   }
@@ -11750,7 +11791,7 @@ function renderRevisao(dados) {
   html += linha('Reside fora do Brasil?', dados.reside_fora_brasil);
   if (dados.reside_fora_brasil === 'Sim') {
     html += linha('País', dados.pais);
-    html += linha('ZIP Code', dados.cep_exterior);
+    html += linha('ZIP Code', dados.zip_code);
     html += linha('Endereço', dados.endereco_exterior);
   } else {
     html += linha('CEP', dados.cep);
@@ -11839,18 +11880,19 @@ function fecharModalConfirma() {
    ============================================================ */
 async function enviarAnamneseDefinitivo() {
   fecharModalConfirma();
+  document.querySelectorAll('.section.active [data-aviso-tela]').forEach(a => a.remove()); // 18.6: aviso da tentativa anterior
 
   const rascunho = carregarRascunho();
   if (!rascunho || !rascunho.dados) {
-    alert('Não há dados para enviar. Por favor, preencha o formulário novamente.');
     renderPasso(1);
+    vmcAvisoNaTela('Não há dados para enviar. Por favor, preencha o formulário novamente.'); // 18.6 (8.31): era alert()
     return;
   }
 
   const paciente = carregarSessao();
   if (!paciente) {
-    alert('Sessão expirada. Faça login novamente.');
     sairDoSistema();
+    vmcAvisoNoLogin_('Sessão expirada. Faça login novamente.'); // 18.6 (8.31): era alert()
     return;
   }
 
@@ -11870,7 +11912,7 @@ async function enviarAnamneseDefinitivo() {
   if (!resposta.ok) {
     // 18.1.2 (8.71): sessão expirada já levou ao login com o aviso; o rascunho fica para a mesma sigla
     if (resposta.codigo === 'sessao_expirada') return;
-    alert('Erro ao salvar a anamnese: ' + (resposta.erro || 'erro desconhecido') + '\n\nTente novamente. Se o problema persistir, entre em contato com seu terapeuta.');
+    vmcAvisoNaTela('Erro ao salvar a anamnese: ' + (resposta.erro || 'erro desconhecido') + '\n\nTente novamente. Se o problema persistir, entre em contato com seu terapeuta.'); // 18.6 (8.31): era alert()
     return;
   }
 
@@ -11899,13 +11941,25 @@ function anamCamposAlterados_(base, novos) {
   });
   return campos;
 }
-// Carimbo junto dos campos do formulário de edição (campos com id f_<coluna>)
+// Carimbo junto dos campos do formulário de edição: campos com id f_<coluna> (pessoas de confiança: f_pc_<n>_<campo>),
+// perguntas de sim/não e, desde o 18.6, os campos compostos — medicação, categorias de transtornos, sinais de risco e
+// condições clínicas —, cada bloco com o carimbo mais recente das colunas que ele grava (como na leitura)
 function anamCarimbosAplicar_() {
   const dados = ANAM_STATE.dadosConsulta; if (!dados) return;
+  const depois = function (el, colunas) { if (el) el.insertAdjacentHTML('afterend', vmcCarimboHtml_(dados, colunas)); };
+  const ID = { zip_code: 'f_cep_exterior', endereco_exterior: 'f_endereco_ext' };
   Object.keys(vmcAutoria_(dados)).forEach(function (k) {
-    const el = document.getElementById('f_' + k);
-    if (el) el.insertAdjacentHTML('afterend', vmcCarimboHtml_(dados, k));
+    const pc = /^pessoa_confianca_(\d)_([a-z]+)$/.exec(k);
+    const el = document.getElementById(pc ? 'f_pc_' + pc[1] + '_' + pc[2] : (ID[k] || 'f_' + k));
+    if (el) { depois(el, k); return; }
+    const radio = document.querySelector('input[type="radio"][name="' + CSS.escape(k) + '"]');
+    if (radio) depois(radio.closest('.yesno'), k);
   });
+  depois(document.getElementById('accMedicamentos'), ['medicacao_psico_atual', 'medicacao_psico_passado']);
+  depois(document.getElementById('accTranstornos'), ['transtornos_em_tratamento', 'transtornos_tratamento_passado', 'transtornos_sem_tratamento', 'transtornos_suspeitados']);
+  const risco = document.querySelector('input[data-risco]'), compl = document.querySelector('input[data-complicacao]');
+  depois(risco && risco.closest('.checklist'), 'sinais_risco_marcados');
+  depois(compl && compl.closest('.checklist'), 'complicacoes_clinicas');
 }
 
 /* ============================================================
@@ -11997,7 +12051,7 @@ function renderConsulta(dados, recemEnviado) {
   html += linha('Reside fora do Brasil?', dados.reside_fora_brasil, 'reside_fora_brasil');
   if (dados.reside_fora_brasil === 'Sim') {
     html += linha('País', dados.pais, 'pais');
-    html += linha('ZIP Code', dados.cep_exterior, 'cep_exterior');
+    html += linha('ZIP Code', dados.zip_code, 'zip_code');
     html += linha('Endereço', dados.endereco_exterior, 'endereco_exterior');
   } else {
     html += linha('CEP', dados.cep, 'cep');
