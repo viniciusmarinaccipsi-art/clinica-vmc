@@ -350,8 +350,8 @@ Em `index-dev.html` cada etapa (os dois tipos) segue `03_componentes.md` da roda
   `alert()`. **Avisos na tela no lugar de `alert()` (16.5e):** o mesmo `autoAvisoEl(msg)` serve ao erro
   do servidor no envio (`#rvsAviso` na revisão, `#chkAviso` na checagem) e a Meus Registros
   (`histAvisoNaTela`, no topo de `#autoHistLista`); o sucesso do envio é a tela "Registro enviado".
-  Nenhum diálogo nativo resta no fluxo do registro (só "Sessão expirada" antes de `sairDoSistema()`; os
-  `alert()` de anamnese e escalas ficam como candidatos).
+  Nenhum diálogo nativo resta no fluxo do registro nem nas escalas desde o 18.4 (regra dos avisos na
+  seção "Regressões visuais"; os `alert()` da anamnese e do profissional ficam para 18.6 e 18.5).
 - **Revisar e Enviar (AUT-09, §13 BlocoRevisão, Pacote 16.5e):** seção `#sec-auto-revisar`
   (substituiu `#sec-auto-resumo`/`autoAbrirResumo`), aberta por `autoFinalizarTipo(tipo)` → coleta as
   10 seções lógicas (as mesmas 56 chaves de sempre no payload; o outro tipo vai vazio), grava
@@ -1112,7 +1112,31 @@ deploy @31).
 - **Zoom:** viewport `width=device-width, initial-scale=1.0` (sem `maximum-scale` nem `user-scalable=no`).
 - **Confirmação na tela:** `vmcAvisoOkNaTela(msg)` — o `autoAvisoEl` com `.auto-aviso-ok` (cor
   `--c-pos-ink`, ícone `i-check`, `role="status"`) no topo da tela ativa; `abrirSecao` remove. Usado na
-  troca de senha do paciente (era `alert()`).
+  troca de senha do paciente (era `alert()`) e, desde o 18.4, na troca feita pelo profissional.
+
+### Regressões visuais (Pacote 18.4 — publicado em 03/10/2026, só frontend)
+
+- **Ícone fora do escape (8.48):** HTML do sprite nunca passa por `esc()`; só o dado passa. Chip de alerta
+  da lista do profissional = `<svg #i-alert>` + `Alerta: <instrumento> · item <N> · <dd/mm/aaaa>`, em que só
+  `a.instrumento`, o número do item e `a.data` passam por `esc()`. O número sai de `a.item` por uma regra
+  única, `vmcNumeroDoItem_` (`PHQ9_item9` → 9, `DASS21_item21` → 21, `9` → 9; sem número, o trecho
+  " · item N" some; sem data, " · data" some). DASS-21: o ícone de cada subescala (`subescalasMeta.icone`,
+  constante do catálogo) entra cru em `.rr-sub-icone`.
+- **Humor ausente (8.50):** `vmcHumorNivel_(v)` devolve 1–5 ou 0 — nunca 3. Com 0: cartão (Meus Registros e
+  ficha do profissional) sem rosto e com a pílula "Sem registro de humor" (`vmcHumorPill_`); modal de leitura
+  sem rosto, "Sem registro de humor"; edição sem rosto marcado, rótulo `.p136-humor-vazio` e
+  `#p136HumorNivel` vazio — salvar sem escolher **não envia** `humor_nivel` (o servidor só grava as chaves
+  recebidas). O gráfico do Painel ainda desenha humor ausente como 3 (fora do escopo; candidato).
+  `humor_observacoes` aparece escapada abaixo do humor no modal de leitura (`.hist-modal-head-obs`), no
+  cartão da checagem sem lupa (`.histc-obs`) e no campo "Observações" da edição.
+- **Regra dos avisos (8.31):** erro vai para a própria tela com `vmcAvisoNaTela(msg, ancora?)` — o
+  `autoAvisoEl` (`role=alert`) com `data-aviso-tela`, no topo da tela ativa ou logo antes de `ancora`
+  (nas escalas, a barra `.esc-nav`); um por tela; `abrirSecao` remove; "Responda todas as questões" sai
+  quando o botão destrava. "Sessão expirada" que já saía continua saindo: `sairDoSistema()` e depois
+  `vmcAvisoNoLogin_(msg)` no `#loginError` (o envio da escala sem sessão, que não saía, mostra o aviso na
+  tela). Mesmo texto do `alert()` antigo. Restam 10 `alert()`: anamnese 6 (18.6) e profissional 4 (18.5).
+- **Seletor com valor do servidor (8.83):** valor interpolado em `querySelector` passa por `CSS.escape`
+  (restauração da anamnese, antecedência da grade).
 
 ## Backup e monitoramento (Pacote E3 — ativado em 30/09/2026, ajustado em 01/10)
 
