@@ -7,7 +7,7 @@ Projeto e no próprio código — em caso de dúvida, conferir a fonte real.
 ## Stack
 
 - **Frontend:** single-page app `index.html`, vanilla JavaScript sem
-  framework, Chart.js via CDN, `sessionStorage` apenas (localStorage não
+  framework, Chart.js 4.4.1 via jsDelivr com SRI (18.3), `sessionStorage` apenas (localStorage não
   é usado). Sem service worker (removido no Pacote 15.0).
   `admin.html` é arquivo separado e independente.
 - **Backend:** Google Apps Script publicado como Web App (`doPost` com
@@ -79,8 +79,8 @@ e a faixa da senha (`.pac-senha-destaque`) saíram.
 Para dados do servidor que mudam pouco na sessão (`lerHistorico`,
 `lerEscalas`). SEMPRE invalidar após operação de escrita correspondente.
 **Todo cache por paciente é descartado no logout** (Pacote 16.5d-3.2, débito
-8.28): `descartarCachesPaciente_()`, chamada por `logout()` e
-`logoutProfissional()`, zera `PEV_STATE` (registros, `carregadoEm`, `invalidado`,
+8.28): `descartarCachesPaciente_()`, chamada pela saída única `sairDoSistema()`
+(18.3), zera `PEV_STATE` (registros, `carregadoEm`, `invalidado`,
 `charts` destruídos), `ESC_HIST_STATE` (inclusive `visaoProfissional`),
 `CHK_ENV.chart` e `window._HIST_REGS`. Cache novo por paciente = entrar nessa
 função.
@@ -350,7 +350,7 @@ Em `index-dev.html` cada etapa (os dois tipos) segue `03_componentes.md` da roda
   `alert()`. **Avisos na tela no lugar de `alert()` (16.5e):** o mesmo `autoAvisoEl(msg)` serve ao erro
   do servidor no envio (`#rvsAviso` na revisão, `#chkAviso` na checagem) e a Meus Registros
   (`histAvisoNaTela`, no topo de `#autoHistLista`); o sucesso do envio é a tela "Registro enviado".
-  Nenhum diálogo nativo resta no fluxo do registro (só "Sessão expirada" antes do `logout()`; os
+  Nenhum diálogo nativo resta no fluxo do registro (só "Sessão expirada" antes de `sairDoSistema()`; os
   `alert()` de anamnese e escalas ficam como candidatos).
 - **Revisar e Enviar (AUT-09, §13 BlocoRevisão, Pacote 16.5e):** seção `#sec-auto-revisar`
   (substituiu `#sec-auto-resumo`/`autoAbrirResumo`), aberta por `autoFinalizarTipo(tipo)` → coleta as
@@ -504,6 +504,8 @@ Planilha individual do paciente — abas:
   mesmo. `payload.sigla` ainda viaja em algumas chamadas e é ignorado pelo
   servidor.
 - Rascunhos locais: sessionStorage, presos à sigla da sessão desde o 18.1.2 (`vmcRascunhoDaSessao_`).
+- Saída de dados: escapador único `esc` e saída única `sairDoSistema` (18.3, seção "Escape único, saída
+  única e camadas").
 
 ## Sistema visual (Pacote 16.x — só `index-dev.html`)
 
@@ -580,7 +582,7 @@ Planilha individual do paciente — abas:
   consulta, registro com dados ou etapa preenchida, escala com resposta — depois de
   `fluxoGuardarRascunho()`. **É o padrão de confirmação de saída** e o único ponto de
   decisão: voltar da barra quando `destinoForaDoFluxo(codigo, idAtual)` (etapa → menu
-  e menu → página não pedem), sair (⏻ → `confirmarSaida(logout)`), "Salvar e sair"
+  e menu → página não pedem), sair (⏻ → `confirmarSaida(sairDoSistema)`), "Salvar e sair"
   da etapa e do menu (`etapaSalvarESair`/`menuSalvarESair` → `confirmarSaida(→ página)`,
   16.5e), Cancelar da escala (`confirmarSaida(escCancelarAplicacao)`, sem `confirm()`
   nativo). O modal `.p5-modal-*` continua para os demais diálogos (escalas; o p9
@@ -596,7 +598,7 @@ Planilha individual do paciente — abas:
   resultado). **Desde o 18.1.2 os três gravam a `sigla` da sessão** e são lidos por
   `vmcRascunhoDaSessao_` (rascunho sem sigla ou de outra sigla é apagado ao carregar;
   sem sessão nada é devolvido); a anamnese grava sempre por `gravarRascunhoAnamnese_`.
-  O logout manual apaga os três (`vmcLimparRascunhos_`) e zera o registro em memória;
+  A saída manual (`sairDoSistema()`, 18.3) esvazia o `sessionStorage` inteiro e zera o registro em memória;
   a sessão expirada os mantém para a mesma sigla.
 - **Ícones (Pacote 16.2):** sprite SVG inline no início do `<body>`, 55
   `<symbol id="i-…">` de desenho próprio (grade 24, traço 1,75,
@@ -1062,6 +1064,55 @@ deploy @31).
   junto com a do mesmo dia. Nenhuma pasta de backup é apagada à mão.
 - `medirHashSenha` mede o caminho v3 e devolve só números
   (`clasp --user run run-function medirHashSenha`).
+
+### Escape único, saída única e camadas (Pacote 18.3 — publicado em 03/10/2026, só frontend)
+
+- **Escapador único `esc(s)`** (`index.html` e `admin.html`): converte `& < > " '` (o `&`
+  primeiro); `null`/`undefined` → `''`; número → texto. `escapeHtml`, `escapeAttr`, `profEscHtml_` e
+  `escapeHtmlAuto` são atalhos que chamam `esc`; não existe outro `.replace(/&/g…)`. Regra: todo dado do
+  usuário ou do servidor que entra em `innerHTML`, template string ou atributo (`value="…"`,
+  `aria-label`, `data-*`) passa por `esc`. Dado que vai para JS de `onclick` não é interpolado: vai
+  num `data-*` escapado e o `onclick` lê `this.dataset.*` (sigla do paciente no painel do
+  profissional, código da opção da escala). **Exceções (HTML interno, não escapado):** sprite e ícones
+  (`vmcHumorIcone`, `cabIco`, `<svg><use href=#i-…>`), catálogo `ESC_ESCALAS` (`emoji`, `subtitulo`,
+  textos educativos com `<strong>`), constantes de formulário (`ESCOLARIDADES`, `ESTADOS_BR`…) e HTML
+  montado por funções que já escapam por dentro. Seletor CSS montado com dado (`querySelector('[value="…"]')`)
+  não é HTML: fica para o 18.3.1 (`CSS.escape`).
+- **Saída única `sairDoSistema(opcoes)`:** ⏻ da barra (`confirmarSaida(sairDoSistema)`, nos dois
+  perfis), "Sair" do painel do profissional, sessão sem crachá e sessão expirada
+  (`vmcSessaoExpirada_` → `sairDoSistema({ manterRascunhos: true })`). Sobe `VMC_GERACAO_SESSAO`, fecha
+  as sobreposições, `sessionStorage.clear()` (na sessão expirada só os três rascunhos voltam, presos à
+  sigla), zera `VMC_EM_ANDAMENTO`, solta `VMC_ESPERANDO_FAIXA` e esconde faixa e loading, e devolve ao
+  valor inicial: `PROF_SESSAO`, `PROF_PACIENTE_SEL`, `PROF_LINK_POR_SIGLA`, `PROF_CONVITE`, `graEstado`,
+  `CAL_*`, `AUTO_STATE` (fica na sessão expirada) e `VMC_ULTIMA_SIGLA_PACIENTE`, caches
+  (`descartarCachesPaciente_`), `P5_STATE`, `P8_STATE`, `ESC_STATE`, `ESC_TEXTOS`, `ESC_LIBERADOS`,
+  `RR_RESPOSTAS_CACHE`, `ANAM_STATE`, `INI_STATE`, `P136_ESTADO`, `HIST_*`, `CHK_ENV.periodo`, `LOGIN_*`
+  (`resetarTelaLogin_`), crachá e menu da barra; esvazia os contêineres com dado lido do servidor
+  (`profDashboardConteudo`, `profPacienteConteudo`, `autoHistLista`, `pevConteudo`, `eschConteudo`,
+  `anamConteudo`, `iniContinuidade`, `graDias`). Estado global novo por sessão = entrar nessa função.
+  O paciente não tem variável `SESSAO`: a sessão dele é a chave `paciente` do `sessionStorage`.
+- **Escala de camadas (`z-index`):**
+
+| Camada | z-index |
+|---|---|
+| `.cal-col-head` (cabeçalho fixo da agenda) · `.p11-mhead` | 5 · 10 |
+| `.pac-hamburger-dropdown` · `.barra-acao` (celular) · `.topbar` · `.p11-mov` | 90 · 95 · 100 · 100 |
+| `.modal-overlay` (genérico) | 2000 |
+| `.pev-modal-overlay` · aviso flutuante do profissional (inline) | 9999 |
+| `.p5-modal-overlay` · `.folha-scrim` ("Sair sem enviar?") | 10000 |
+| `.hist-modal-overlay` | 10001 |
+| `.rr-submodal-overlay` ("Minhas respostas") | 10100 |
+| **`.loading-overlay`** (18.3: era 1000) | **10200** |
+| **`.erro-rede`** — faixa "Tentar de novo" (18.3: era 1001) | **10300** |
+
+  Regra: loading e faixa de erro ficam acima de qualquer modal ou folha; modal novo usa até 10199.
+- **SRI:** `chart.js@4.4.1/dist/chart.umd.min.js` (jsDelivr) com `integrity="sha384-…"` calculado do
+  arquivo baixado (`openssl dgst -sha384 -binary | openssl base64 -A`, conferido em dois downloads) e
+  `crossorigin="anonymous"`. Trocar a versão = recalcular o hash. CSP fica no 18.8.
+- **Zoom:** viewport `width=device-width, initial-scale=1.0` (sem `maximum-scale` nem `user-scalable=no`).
+- **Confirmação na tela:** `vmcAvisoOkNaTela(msg)` — o `autoAvisoEl` com `.auto-aviso-ok` (cor
+  `--c-pos-ink`, ícone `i-check`, `role="status"`) no topo da tela ativa; `abrirSecao` remove. Usado na
+  troca de senha do paciente (era `alert()`).
 
 ## Backup e monitoramento (Pacote E3 — ativado em 30/09/2026, ajustado em 01/10)
 
