@@ -881,7 +881,7 @@ contratos de dados); o e-mail é só o identificador de login.
   subtítulo oficial "Psicoterapia para além das sessões, com intervenções cognitivo-comportamentais no dia a dia." em letra miúda (piso de 13 px) no rodapé do login e nos
   e-mails; admin e documentos só com o subtítulo. Títulos internos mudam no
   pacote de renomeação.
-- **Senha:** hash `v2$<sal_hex>$<iter>$<hmac_sha256_hex>` com sal por usuário
+- **Senha:** (desde o 18.2.1 o formato é o v3 com pimenta — ver a subseção própria abaixo; o v2 só é conferido) hash `v2$<sal_hex>$<iter>$<hmac_sha256_hex>` com sal por usuário
   e iterações calibradas para 200–400 ms no Apps Script; mínimo de 8
   caracteres; comparação em tempo constante; 5 falhas por (perfil, e-mail)
   → 15 min de bloqueio (`CacheService`, chave `falha:<tipo>:<email>`);
@@ -1006,6 +1006,62 @@ deploy @31).
   o apóstrofo. O formato segura `setValue` nas linhas que já existiam.
 - **Gravação nova se prova lendo a célula de volta no servidor real** (lições 105 e
   106): o mock do Node só imita o que já foi medido.
+
+### Pimenta no hash de senha (Pacote 18.2.1 — publicado em 03/10/2026, @33)
+
+- **Formato v3:** `v3$<sal_hex>$<iter>$<hmac_sha256_hex>`. É o mesmo HMAC-SHA256 iterado
+  do v2, mas a chave deixa de ser a senha crua e passa a ser
+  `HMAC-SHA256(PIMENTA_SENHA, senha)`. Sal por usuário e `ITER_SENHA` (300) como antes.
+- **Pimenta:** propriedade do script `PIMENTA_SENHA` (32 bytes aleatórios em hex),
+  criada uma única vez em 03/10/2026 por função temporária. Mora **só** nas
+  propriedades do script: não está nas planilhas, nos backups, no código, no
+  repositório nem em log, e nenhuma função a devolve. É separada de `SEGREDO_SESSAO`
+  (trocar o segredo de sessão derruba as sessões, não as senhas). Efeito: uma cópia
+  das planilhas ou de um backup, sozinha, não serve para testar senhas.
+- **Sem pimenta o servidor recusa** gravar e conferir senha (inclusive v2), com a
+  resposta genérica de sempre para quem chama e `console.error` no servidor — nunca
+  cai para v2 em silêncio.
+- **Toda gravação emite v3** (`gerarHashSenha`): ativação e redefinição
+  (`definirSenha`), `alterarSenhaPaciente`, `profAlterarSenhaPaciente`,
+  `trocarSenhaProfissional`. `conferirSenha` aceita v3 e v2. O hash de descarte
+  (conta inexistente, sem senha ou com hash inválido) passa pelo caminho v3.
+- **Regravação no login:** quando `autenticar` confere uma senha ainda guardada em v2
+  (300 ou 5000 iterações), regrava **só aquela conta** em v3 na mesma chamada
+  (`_gravarHashDaConta_`). Não é troca de senha: não chama `_invalidarLinks_`. O
+  crachá sai depois, com a impressão do hash que ficou gravado; as sessões abertas
+  dessa conta em outros aparelhos caem uma vez (a impressão mudou). No login com
+  escolha de profissional (18.1.3) a primeira chamada não regrava nada; a segunda
+  regrava só a conta escolhida.
+- **Se a propriedade `PIMENTA_SENHA` for perdida ou trocada:** nenhuma senha v3
+  confere mais e não há como recuperar. Criar uma pimenta nova (Configurações do
+  projeto → Propriedades do script, valor longo e aleatório) e **todas as contas
+  voltam por "Esqueci a senha"** (admin e profissional) e por convite ou "Esqueci a
+  senha" (pacientes). O mesmo vale para o rollback: a @32 não confere v3 — voltar
+  para ela obriga "Esqueci a senha" nas contas já regravadas.
+- **Pisos de tempo (8.77), medidos em 03/10/2026 no servidor real**, 20 execuções por
+  caminho com o piso zerado, conta de paciente descartável. Regra: piso = maior p95
+  medido, arredondado para cima em 250 ms.
+
+  | Caminho | p50 | p95 | máx. |
+  |---|---|---|---|
+  | `autenticar` — sucesso v3 | 1359 ms | 2007 ms | 3081 ms |
+  | `autenticar` — falha de senha | 1295 | **3328** | 4515 |
+  | `autenticar` — conta inexistente | 456 | 1015 | 1484 |
+  | `autenticar` — sucesso com regravação v2→v3 (uma vez por conta) | 2578 | 3083 | 3810 |
+  | `pedirRedefinicao` — conta existente, sem o envio | 2374 | 3330 | 3406 |
+  | envio real de um e-mail (3 medições) | — | — | 219 |
+  | `pedirRedefinicao` — conta inexistente | 318 | 490 | 1447 |
+  | `pedirRedefinicao` — pedido repetido em 15 min | 33 | 42 | 44 |
+
+  `PISO_LOGIN_MS` = **3500** (3328 → 3500; a regravação não passou dos demais e
+  entrou na conta) e `PISO_REDEF_MS` = **3750** (3330 + 219 = 3549 → 3750). Eram 2500
+  sem calibração. O hash v3 isolado custa ~180–250 ms; o resto do tempo é leitura de
+  planilha — refazer a medição quando o 18.10 reduzir as leituras por login.
+- **Retenção:** `pastasExcedentes` reconhece `AAAA-MM-DD` e `AAAA-MM-DD_<sufixo>`
+  (cópia extra feita antes de um pacote); conta **datas**, e as pastas com sufixo saem
+  junto com a do mesmo dia. Nenhuma pasta de backup é apagada à mão.
+- `medirHashSenha` mede o caminho v3 e devolve só números
+  (`clasp --user run run-function medirHashSenha`).
 
 ## Backup e monitoramento (Pacote E3 — ativado em 30/09/2026, ajustado em 01/10)
 

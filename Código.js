@@ -47,7 +47,7 @@
 // Pacote E3 — backup diário e monitor do ping (só clasp push, sem deploy)
 // Pacote 18.1 — acesso por e-mail, cracha de sessao, convite e redefinicao (01/10/2026)
 // Pacote 18.1.2 — correcoes de seguranca do acesso: links, cracha, acoes publicas, ativo (02/10/2026)
-var VERSAO_PACOTE = '18.2';
+var VERSAO_PACOTE = '18.2.1';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -557,7 +557,8 @@ var LINK_HORAS = 48;
 // Apps Script. Comecou em 5000 (18.1); medido com medirHashSenha() em 02/10/2026:
 // 5000 iteracoes = 7398 / 5174 / 2631 ms (0,5-1,5 ms cada) -> 300 (18.1.2),
 // conferido: 300 iteracoes = 96 / 175 / 297 ms (mediana das seis ~0,8 ms -> ~240 ms).
-// Hashes antigos guardam o proprio iter (senhas do 18.1 seguem com 5000 ate a troca).
+// Hashes antigos guardam o proprio iter. 18.2.1: o formato corrente e o v3 (pimenta);
+// conta ainda em v2 (300 ou 5000 iteracoes) e regravada em v3 no proximo login.
 var ITER_SENHA = 300;
 var SENHA_MINIMA = 8;
 var FALHAS_MAX = 5;            // 5 falhas por (perfil, e-mail) ...
@@ -570,9 +571,15 @@ var LINKS_GUARDA_DIAS = 7;     // linhas vencidas ha mais que isso saem da aba T
 var REDEF_INTERVALO_SEG = 15 * 60; // 1 "Esqueci a senha" por (perfil, e-mail) a cada 15 min
 // Piso de tempo das acoes publicas (18.1.2): toda falha de login e toda resposta de
 // pedirRedefinicao levam pelo menos isto, para o tempo nao revelar se o e-mail existe.
-// Ajustar acima do caminho mais lento medido na pagina Execucoes.
-var PISO_LOGIN_MS = 2500;
-var PISO_REDEF_MS = 2500;
+// Calibrados no 18.2.1 (03/10/2026), no servidor real, 20 execucoes por caminho com o
+// piso zerado: piso = maior p95 medido, arredondado para cima em 250 ms.
+//   autenticar: sucesso v3 2007 ms · falha de senha 3328 · conta inexistente 1015 ·
+//               sucesso com regravacao v2->v3 3083 (uma vez por conta)        -> 3500
+//   pedirRedefinicao: conta existente 3330 + envio do e-mail 219 = 3549 ·
+//               conta inexistente 490 · pedido repetido 42                     -> 3750
+// Refazer a medicao se o numero de leituras por login mudar (Pacote 18.10).
+var PISO_LOGIN_MS = 3500;
+var PISO_REDEF_MS = 3750;
 var COLUNAS_TOKENS = ['token_hash', 'tipo', 'sigla', 'profissional_id', 'finalidade', 'expira', 'usado', 'criado_em', 'email_destino'];
 
 // Textos aprovados pelo usuario (PROMPT_18_1.md, 30/09/2026)
@@ -671,27 +678,65 @@ function _deB64url_(texto) {
   return Utilities.newBlob(Utilities.base64DecodeWebSafe(s)).getDataAsString('UTF-8');
 }
 
-/** Hash v2: HMAC-SHA256 iterado, com a senha como chave e o sal como semente. */
+/**
+ * Hash v2 (18.1): HMAC-SHA256 iterado, com a senha como chave e o sal como semente.
+ * Desde o 18.2.1 so serve para CONFERIR senha ainda guardada em v2; nada mais grava v2.
+ */
 function _hashSenha_(senha, salHex, iter) {
   var bloco = String(salHex);
   for (var i = 0; i < iter; i++) bloco = _hmacHex_(bloco, senha);
   return 'v2$' + salHex + '$' + iter + '$' + bloco;
 }
 
-function gerarHashSenhaV2(senha) {
-  return _hashSenha_(senha, _aleatorioHex_(), ITER_SENHA);
+/**
+ * Pimenta do hash de senha (18.2.1): segredo que mora so nas propriedades do script,
+ * nunca nas planilhas, nos backups, no codigo ou em log. Separada de SEGREDO_SESSAO
+ * (trocar o segredo de sessao nao invalida senhas). Sem ela nenhuma senha e gravada
+ * nem conferida — o servidor nunca cai para v2 em silencio.
+ */
+function _pimentaSenha_() {
+  return PropertiesService.getScriptProperties().getProperty('PIMENTA_SENHA');
 }
 
-/** Confere a senha contra o hash guardado. So aceita v2 (o v1 morreu na virada). */
+/**
+ * Hash v3: o mesmo HMAC-SHA256 iterado do v2, mas a chave e HMAC-SHA256(pimenta, senha)
+ * em vez da senha crua. Quem tiver so a copia da planilha nao consegue testar senhas.
+ */
+function _hashSenhaV3_(senha, salHex, iter, pimenta) {
+  var chave = _hmacHex_(String(senha), pimenta);
+  var bloco = String(salHex);
+  for (var i = 0; i < iter; i++) bloco = _hmacHex_(bloco, chave);
+  return 'v3$' + salHex + '$' + iter + '$' + bloco;
+}
+
+/** Hash v3 de uma senha nova; '' (e log no servidor) se a pimenta nao estiver configurada. */
+function gerarHashSenha(senha) {
+  var pimenta = _pimentaSenha_();
+  if (!pimenta) { console.error('gerarHashSenha: PIMENTA_SENHA ausente nas propriedades do script; senha nao gravada.'); return ''; }
+  return _hashSenhaV3_(senha, _aleatorioHex_(), ITER_SENHA, pimenta);
+}
+
+/** Custo de uma conferencia real, para conta inexistente, sem senha ou com hash invalido. */
+function _hashDeDescarte_(senha, pimenta) {
+  _hashSenhaV3_(String(senha || ''), '0', ITER_SENHA, pimenta || '0');
+}
+
+/**
+ * Confere a senha contra o hash guardado. Aceita v3 e v2 (o v1 morreu na virada do 18.1).
+ * Sem pimenta configurada recusa tudo, inclusive v2, e registra no log do servidor.
+ */
 function conferirSenha(senha, guardado) {
+  var pimenta = _pimentaSenha_();
+  if (!pimenta) { console.error('conferirSenha: PIMENTA_SENHA ausente nas propriedades do script; senha nao conferida.'); return false; }
   var partes = String(guardado || '').split('$');
   var iter = parseInt(partes[2], 10);
-  if (partes.length !== 4 || partes[0] !== 'v2' || !(iter > 0) || !senha) {
+  if (partes.length !== 4 || (partes[0] !== 'v3' && partes[0] !== 'v2') || !(iter > 0) || !senha) {
     // conta sem senha (convidada) ou hash invalido: mesmo custo de uma conferencia real
-    _hashSenha_(String(senha || ''), '0', ITER_SENHA);
+    _hashDeDescarte_(senha, pimenta);
     return false;
   }
-  return _iguaisTempoConstante_(_hashSenha_(String(senha), partes[1], iter), String(guardado));
+  var calculado = partes[0] === 'v3' ? _hashSenhaV3_(String(senha), partes[1], iter, pimenta) : _hashSenha_(String(senha), partes[1], iter);
+  return _iguaisTempoConstante_(calculado, String(guardado));
 }
 
 /**
@@ -1138,22 +1183,25 @@ function _registroDaConta_(tipo, sigla, profissionalId) {
   return null;
 }
 
-/**
- * Grava o hash v2 da senha na linha da conta e invalida os links pendentes dela.
- * Devolve o hash gravado (para o cracha novo) ou false.
- */
-function _gravarSenhaDaConta_(tipo, sigla, profissionalId, senha) {
-  var hash = gerarHashSenhaV2(senha);
-  var gravou = false;
+/** Grava `hash` na linha da conta (so a celula senha_hash). Devolve true se gravou. */
+function _gravarHashDaConta_(tipo, sigla, profissionalId, hash) {
   if (tipo === 'paciente') {
     var controle = abrirControleDoProfissional(profissionalId);
-    gravou = !!controle && _atualizarLinhaPorChave_(controle.getSheetByName(ABA_PACIENTES), 'sigla', sigla, { senha_hash: hash });
-  } else {
-    var global = SpreadsheetApp.openById(SISTEMA_VMC_ID);
-    if (tipo === 'profissional') gravou = _atualizarLinhaPorChave_(global.getSheetByName(ABA_PROFISSIONAIS), 'profissional_id', profissionalId, { senha_hash: hash });
-    if (tipo === 'admin') gravou = _atualizarLinhaPorChave_(global.getSheetByName(ABA_ADMINS), 'admin_id', profissionalId, { senha_hash: hash });
+    return !!controle && _atualizarLinhaPorChave_(controle.getSheetByName(ABA_PACIENTES), 'sigla', sigla, { senha_hash: hash });
   }
-  if (!gravou) return false;
+  var global = SpreadsheetApp.openById(SISTEMA_VMC_ID);
+  if (tipo === 'profissional') return _atualizarLinhaPorChave_(global.getSheetByName(ABA_PROFISSIONAIS), 'profissional_id', profissionalId, { senha_hash: hash });
+  if (tipo === 'admin') return _atualizarLinhaPorChave_(global.getSheetByName(ABA_ADMINS), 'admin_id', profissionalId, { senha_hash: hash });
+  return false;
+}
+
+/**
+ * Troca de senha: grava o hash v3 da senha na linha da conta e invalida os links
+ * pendentes dela. Devolve o hash gravado (para o cracha novo) ou false.
+ */
+function _gravarSenhaDaConta_(tipo, sigla, profissionalId, senha) {
+  var hash = gerarHashSenha(senha);
+  if (!hash || !_gravarHashDaConta_(tipo, sigla, profissionalId, hash)) return false;
   _invalidarLinks_(tipo, sigla);
   return hash;
 }
@@ -1235,6 +1283,10 @@ function autenticar(tipo, email, senha, escolha) {
   // A tranca 5 falhas -> 15 min fica (decisao do usuario, 02/10: risco aceito de um
   // terceiro trancar a conta alheia). falhas + 1 e gravado ANTES de conferir a senha,
   // para tentativas em paralelo nao lerem todas o mesmo valor; o acerto remove a chave.
+  // 18.2.1: sem a pimenta nenhuma senha e conferida (erro generico; o motivo vai para o log)
+  var pimenta = _pimentaSenha_();
+  if (!pimenta) { console.error('autenticar: PIMENTA_SENHA ausente nas propriedades do script.'); return falha(); }
+
   var cache = CacheService.getScriptCache();
   var chave = 'falha:' + t + ':' + e;
   var falhas = parseInt(cache.get(chave) || '0', 10);
@@ -1250,7 +1302,7 @@ function autenticar(tipo, email, senha, escolha) {
     var r = _registroDaConta_(t, contas[i].sigla, contas[i].profissional_id);
     if (r && r.ativo && conferirSenha(senha, r.senha_hash)) acertos.push({ conta: contas[i], reg: r });
   }
-  if (!contas.length) _hashSenha_(String(senha), '0', ITER_SENHA); // sem conta: custo de uma conferencia real
+  if (!contas.length) _hashDeDescarte_(senha, pimenta); // sem conta: custo de uma conferencia real (caminho v3)
   if (!acertos.length) return falha();
 
   var segredo = _segredoSessao_();
@@ -1281,11 +1333,20 @@ function autenticar(tipo, email, senha, escolha) {
   cache.remove(chave);
 
   var conta = alvo.conta, reg = alvo.reg;
+  // 18.2.1: senha que conferiu em formato antigo (v2, com qualquer numero de iteracoes)
+  // e regravada em v3 aqui, so nesta conta. Nao e troca de senha: nao invalida links.
+  // O cracha sai DEPOIS, com a impressao do hash que ficou gravado (se a gravacao
+  // falhar, o hash antigo segue valendo e o cracha e emitido sobre ele).
+  var hashDaConta = reg.senha_hash;
+  if (String(hashDaConta).indexOf('v3$') !== 0) {
+    var hashNovo = gerarHashSenha(String(senha));
+    if (hashNovo && _gravarHashDaConta_(t, conta.sigla, conta.profissional_id, hashNovo)) hashDaConta = hashNovo;
+  }
   var perfil = { tipo: t, sigla: conta.sigla, nome: reg.nome, email: e };
   for (var k in reg.extra) perfil[k] = reg.extra[k];
   return {
     ok: true,
-    token: emitirToken({ tipo: t, sigla: conta.sigla, profissional_id: conta.profissional_id, impressao: impressaoCracha(reg.senha_hash) }, segredo, Date.now()),
+    token: emitirToken({ tipo: t, sigla: conta.sigla, profissional_id: conta.profissional_id, impressao: impressaoCracha(hashDaConta) }, segredo, Date.now()),
     perfil: perfil
   };
 }
@@ -1525,11 +1586,18 @@ function admEnviarConvite(s, profissionalId, canal) {
 
 // ---------- editor do Apps Script (uso do usuario) ----------
 
-/** Calibracao do ITER_SENHA (alvo 200-400 ms): rodar no editor e ler o Logger. */
+/**
+ * Calibracao do ITER_SENHA (alvo 200-400 ms) pelo caminho v3:
+ * clasp --user run run-function medirHashSenha. So devolve numeros.
+ */
 function medirHashSenha() {
+  var pimenta = _pimentaSenha_();
+  if (!pimenta) return { ok: false, erro: 'PIMENTA_SENHA ausente' };
   var t0 = Date.now();
-  _hashSenha_('medicao-sem-uso', _aleatorioHex_(), ITER_SENHA);
-  Logger.log('ITER_SENHA=' + ITER_SENHA + ': ' + (Date.now() - t0) + ' ms');
+  _hashSenhaV3_('medicao-sem-uso', _aleatorioHex_(), ITER_SENHA, pimenta);
+  var ms = Date.now() - t0;
+  Logger.log('ITER_SENHA=' + ITER_SENHA + ' (v3): ' + ms + ' ms');
+  return { ok: true, formato: 'v3', iter: ITER_SENHA, ms: ms };
 }
 
 
@@ -2960,7 +3028,8 @@ function profAlterarSenhaPaciente(s, siglaPaciente, novaSenha) {
     return { ok: false, erro: 'Estrutura da Controle invalida.' };
   }
 
-  var novoHash = gerarHashSenhaV2(String(novaSenha));
+  var novoHash = gerarHashSenha(String(novaSenha));
+  if (!novoHash) return { ok: false, erro: 'Não foi possível gravar a senha. Tente de novo.' };
 
   for (var i = 1; i < dados.length; i++) {
     if (String(dados[i][idxSigla]).trim().toUpperCase() === String(siglaPaciente).trim().toUpperCase()) {
@@ -3236,9 +3305,12 @@ function trocarSenhaProfissional(s, profissionalId, novaSenha) {
   var idxId = cabecalhos.indexOf('profissional_id');
   var idxSenha = cabecalhos.indexOf('senha_hash');
 
+  var hashProf = gerarHashSenha(String(novaSenha));
+  if (!hashProf) return { ok: false, erro: 'Não foi possível gravar a senha. Tente de novo.' };
+
   for (var i = 1; i < dados.length; i++) {
     if (String(dados[i][idxId]).trim() === String(profissionalId).trim()) {
-      aba.getRange(i + 1, idxSenha + 1).setValue(gerarHashSenhaV2(String(novaSenha)));
+      aba.getRange(i + 1, idxSenha + 1).setValue(hashProf);
       _invalidarLinks_('profissional', dados[i][cabecalhos.indexOf('sigla')]);
       return { ok: true, mensagem: 'Senha trocada com sucesso' };
     }
@@ -3555,25 +3627,30 @@ function nomeDaPastaDoDia(data) {
 
 /**
  * Dada a lista de nomes de subpasta de Backups/, devolve as que EXCEDEM as
- * `manter` copias mais recentes. Nomes AAAA-MM-DD ordenam cronologicamente
- * como texto, entao basta ordenar e cortar.
+ * `manter` DATAS mais recentes. Vale `AAAA-MM-DD` e, desde o 18.2.1,
+ * `AAAA-MM-DD_<sufixo>` (copia extra daquele dia, feita antes de um pacote):
+ * a ordem e pela data, e as pastas com sufixo saem junto com a do mesmo dia.
  *
- * Nome que nao seja exatamente AAAA-MM-DD e ignorado: pasta que nao foi
- * criada pelo backup nunca vai para a lixeira. Uma pasta com nome de data
- * criada a mao pelo usuario conta como copia — nao ha como distinguir pelo
- * nome, e isso esta registrado no relatorio do pacote.
+ * Nome que nao comece exatamente por AAAA-MM-DD (sozinho ou seguido de `_`)
+ * e ignorado: pasta que nao foi criada pelo backup nunca vai para a lixeira.
+ * Uma pasta com nome de data criada a mao pelo usuario conta como copia — nao
+ * ha como distinguir pelo nome, e isso esta registrado no relatorio do pacote.
  */
 function pastasExcedentes(lista, manter) {
   var n = Number(manter);
   if (!isFinite(n) || n < 1) return [];
-  var validas = [];
+  var porData = {};
   for (var i = 0; i < lista.length; i++) {
     var nome = String(lista[i]);
-    if (/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(nome)) validas.push(nome);
+    var m = /^([0-9]{4}-[0-9]{2}-[0-9]{2})(_.+)?$/.exec(nome);
+    if (!m) continue;
+    (porData[m[1]] = porData[m[1]] || []).push(nome);
   }
-  validas.sort(); // crescente: mais antigas primeiro
-  if (validas.length <= n) return [];
-  return validas.slice(0, validas.length - n);
+  var datas = Object.keys(porData).sort(); // crescente: mais antigas primeiro
+  if (datas.length <= n) return [];
+  var saem = [];
+  datas.slice(0, datas.length - n).forEach(function (d) { saem = saem.concat(porData[d].sort()); });
+  return saem;
 }
 
 /**
