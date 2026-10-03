@@ -442,7 +442,9 @@ Profissional_<sigla>/ (uma pasta por profissional)
 └── Pacientes_Desativados/   (planilhas movidas ao desativar)
 
 Planilha individual do paciente — abas:
-├── Anamnese          (registro único na row 2 — sobrescrever, nunca append)
+├── Anamnese          (registro único na row 2 — criada uma vez por `salvarAnamnese`; depois, só edição por campo)
+├── Anamnese_Historico (18.6: campo, valor_anterior, por, em — 1 linha por campo alterado;
+│                      nasce na primeira edição; só o servidor grava; nenhuma ação lê)
 ├── Automonitoramento (1 linha por registro; versao_formulario)
 ├── Escalas           (1 linha por aplicação; escores e alertas)
 └── Rascunho          (18.10b: 1 linha por tipo — tipo, atualizado_em, dados_json;
@@ -1003,8 +1005,8 @@ deploy @31).
     estruturadas): `data_*`, `hora_registro`, `timestamp`, `humor_nivel`, subgrupos
     do registro, `*_preenchido`, itens e escores das escalas, `faixa`, `instrumento`,
     alertas, lock e auditoria, `expira`/`criado_em`/`usado` dos tokens, `senha_hash`.
-- **Onde:** `montarLinha` (anamnese, registro, escala), as duas montagens de linha da
-  anamnese (paciente e profissional), `_atualizarCamposLinha_`, `_anexarPorCabecalho_`,
+- **Onde:** `montarLinha` (anamnese, registro, escala — desde o 18.6 a ficha da anamnese
+  só é montada em `salvarAnamnese`), `_atualizarCamposLinha_`, `_historicoDaAnamnese_`, `_anexarPorCabecalho_`,
   `_atualizarLinhaPorChave_`, `_gravarEmailIndice_`, `cadastrarProfissional`,
   `atualizarProfissional`; `salvarGradeAtendimento` e o log do backup usam a
   `_celulaSegura_`. Valor só do servidor (cabeçalho, hash, status, carimbo de hora)
@@ -1323,3 +1325,45 @@ profissional (`profLerDadosPaciente`) continua trazendo tudo.
 não há) aparece no cartão do paciente como "Aceite: …".
 
 Conceituação cognitiva fica para o Módulo 3.
+
+## Anamnese (Pacote 18.6 — publicado em 03/10/2026, @37)
+
+**Montador único.** A linha da ficha (linha 2 da aba `Anamnese`) é montada num lugar só:
+`salvarAnamnese`, no primeiro envio. Com a ficha já existente, o mesmo `salvarAnamnese`
+vira edição por campo (`_editarAnamnesePorCampos_`: compara com a célula, grava só o que
+mudou, carimba) — nunca cria segunda linha, e campo ausente do envio não apaga célula.
+`id_envio` continua valendo para o reenvio (o do primeiro envio pela coluna; o dos
+seguintes pelo `CacheService`). `pacienteAtualizarAnamnese(sigla, campos, idEnvio)` e
+`profSalvarAnamnese(s, siglaPaciente, contato, campos, idEnvio)` só aceitam `campos`:
+o caminho que regravava a linha inteira a partir de `dados` saiu, e payload sem `campos`
+recebe "Dados da anamnese ausentes". Edição sem ficha enviada continua recusada.
+
+**Histórico.** Aba `Anamnese_Historico` na planilha do paciente (`campo`, `valor_anterior`,
+`por`, `em`), criada no primeiro uso por `_historicoDaAnamnese_`, chamada só por
+`_editarAnamnesePorCampos_`, dentro da trava da ação. Uma linha por campo efetivamente
+alterado; o valor anterior é o da célula lido antes de gravar (`_editarCampos_` devolve
+`anteriores` e `em`), passa por `_celulaTexto_` (coluna `valor_anterior` é texto livre:
+`0123`, `10/10` e `=1+1` ficam como estavam; data retipada pelo Sheets vira `aaaa-mm-dd`);
+`por` sai do crachá e `em` é o mesmo instante do carimbo de `autoria_campos`, gravado como
+texto. Nada mudou → nenhuma linha. Sem tela e sem ação de leitura; entra no backup por ser
+aba da planilha do paciente.
+
+**CEP.** Depois da busca no ViaCEP só fica travado o campo que a busca preencheu
+(`anamCepTravar_`); o que veio vazio (CEP único de município: rua e bairro) fica aberto para
+digitação, e a validação cobra a rua com o "Campo obrigatório" do próprio campo. A frase
+"Não foi possível buscar o endereço. Tente outro CEP." ficou só para a falha real da busca
+(campo ainda travado e vazio). Alterar o CEP (`onCepInput`) reabre os quatro campos e limpa
+o que tinha vindo da busca anterior (travado = veio da busca); `ANAM_STATE.cepBuscado` e
+`cepAbertos` guardam o CEP buscado e os campos que o paciente digita, para seguirem abertos
+ao voltar ao passo. **Exterior:** a tela do paciente lê e envia na chave do cabeçalho,
+`zip_code` (o id do campo no DOM continua `f_cep_exterior`); `cep_exterior` não existe em
+nenhuma planilha (conferido nas 20 em 03/10) e deixou de existir no código.
+
+**Avisos e carimbos.** Os 6 `alert()` da anamnese viraram aviso na tela
+(`vmcAvisoNaTela` junto do bloco que falta; "Sessão expirada" no login, por
+`vmcAvisoNoLogin_`) — não resta `alert()` real no `index.html`. Na edição pelo paciente o
+carimbo aparece também nos campos compostos (medicação, categorias de transtornos, sinais
+de risco, condições clínicas), nas pessoas de confiança e nas perguntas de sim/não
+(`anamCarimbosAplicar_`). `vmcFaixaCriadoHtml_` mostra "registrado por você em dd/mm" na
+tela do profissional (lista de registros e histórico de escalas) e "registrado pelo seu
+psicólogo em dd/mm" na do paciente.
