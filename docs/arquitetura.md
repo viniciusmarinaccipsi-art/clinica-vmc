@@ -927,6 +927,26 @@ era paciente de outro consultório — sigilo); e-mail de **profissional** e de
   apagados ao entrar, voltar ou falhar; a conclusão do login é única
   (`loginConcluir_`), comum aos dois caminhos.
 
+### Política de Privacidade e aceite (Pacotes 18.1.5 e 18.1.6 — publicados em 03/10/2026, @30)
+
+- **Página:** `privacidade.html` na raiz — pública, sem login e sem JavaScript de
+  sistema; tokens de `docs/design/tokens.css`; versão no topo = `POLITICA_VERSAO`
+  do `Código.js` (**mudou o texto → sobe a versão nos dois**). Link discreto no
+  rodapé do login.
+- **Aceite na ativação:** o probe do `definirSenha` devolve `exige_aceite` (paciente
+  sem aceite da versão atual) e `politica_versao`; a tela "Crie sua senha" mostra a
+  caixa obrigatória e o cliente devolve `{aceite:true, versao_politica}`; o servidor
+  recusa sem eles (`aceite_obrigatorio`) e, ao gravar a senha, grava
+  `aceite_politica_em` (America/Sao_Paulo) e `aceite_politica_versao` na linha do
+  paciente na **Controle** (onde vivem `senha_hash` e `ativo`; colunas por cabeçalho).
+- **Aceite de quem já tinha senha:** `autenticar` devolve o booleano
+  `aceite_pendente` no perfil (só do próprio paciente); o cliente mostra a tela única
+  "Política de Privacidade" com "Continuar" e só entra depois de `aceitarPolitica`
+  (ação autenticada pelo crachá — `chamarServidor` aceita token do chamador antes
+  da sessão existir). Na escolha de profissional (18.1.3), o aceite é da conta
+  escolhida. Redefinição de conta que já aceitou não pede de novo; profissional e
+  admin não têm aceite.
+
 ## Backup e monitoramento (Pacote E3 — ativado em 30/09/2026, ajustado em 01/10)
 
 `backupSobDemanda_()` (invólucro público `rodarBackupAgora`) copia a
