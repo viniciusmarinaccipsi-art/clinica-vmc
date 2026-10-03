@@ -47,7 +47,8 @@ const ACOES_PUBLICAS = ['ping', 'autenticar', 'pedirRedefinicao', 'definirSenha'
 const RESPOSTAS_FINGIDAS = {
   lerHistorico: { ok: true, fingido: true, anamnese_preenchida: true, anamnese: { nome_completo: 'Paciente de teste' }, automonitoramento: [], total_registros: 0 },
   lerEscalas: { ok: true, fingido: true, total: 0, escalas: [] },
-  lerItensInstrumento: { ok: true, fingido: true, liberados: [] }
+  lerItensInstrumento: { ok: true, fingido: true, liberados: [] },
+  lerRascunhos: { ok: true, fingido: true, rascunhos: [] } // Pacote 18.10b: o Início lê os rascunhos do servidor
 };
 
 /* "390" | "390,1280" | "390x844,1000x700" | undefined → lista de {w,h}. Sem argumento: celular + computador. */

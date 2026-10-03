@@ -47,8 +47,9 @@
 // Pacote E3 — backup diário e monitor do ping (só clasp push, sem deploy)
 // Pacote 18.1 — acesso por e-mail, cracha de sessao, convite e redefinicao (01/10/2026)
 // Pacote 18.1.2 — correcoes de seguranca do acesso: links, cracha, acoes publicas, ativo (02/10/2026)
-// Pacote 18.10a — desempenho e integridade: indicadores na Controle, controle_id, trava de gravacao, id_envio, autoria (03/10/2026)
-var VERSAO_PACOTE = '18.10a';
+// Pacote 18.10 — desempenho e integridade (18.10a: indicadores na Controle, controle_id, trava de gravacao,
+// id_envio, autoria; 18.10b: rascunho no servidor) (03/10/2026)
+var VERSAO_PACOTE = '18.10';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -239,6 +240,19 @@ function _despachar_(acao, payload, s) {
 
       case 'lerEscalas':
         resposta = _exigir_(s, 'paciente') || lerEscalas(s.sigla);
+        break;
+
+      // Pacote 18.10b - rascunho no servidor (G2): so o proprio paciente, pelo cracha
+      case 'salvarRascunho':
+        resposta = _exigir_(s, 'paciente') || salvarRascunho(s.sigla, payload.tipo, payload.dados);
+        break;
+
+      case 'lerRascunhos':
+        resposta = _exigir_(s, 'paciente') || lerRascunhos(s.sigla);
+        break;
+
+      case 'apagarRascunho':
+        resposta = _exigir_(s, 'paciente') || apagarRascunho(s.sigla, payload.tipo);
         break;
 
       // Pacote 17.0 - textos dos inventarios (BDI-II, BAI). Paciente ou
@@ -448,6 +462,7 @@ function _comTravaSeDer_(fn) {
 var ACOES_COM_TRAVA = [
   'definirSenha', 'aceitarPolitica',
   'salvarAnamnese', 'salvarAutomonitoramento', 'salvarEscala',
+  'salvarRascunho', 'apagarRascunho', // 18.10b
   'alterarSenhaPaciente', 'pacienteAtualizarAnamnese',
   'pacienteMarcarEditandoAuto', 'pacienteLimparEditandoAuto', 'pacienteEditarAutomonitoramento',
   'profCadastrarPaciente', 'profSalvarAnamnese', 'profEnviarConvite',
@@ -712,9 +727,15 @@ var REDEF_INTERVALO_SEG = 15 * 60; // 1 "Esqueci a senha" por (perfil, e-mail) a
 //               sucesso com regravacao v2->v3 3083 (uma vez por conta)        -> 3500
 //   pedirRedefinicao: conta existente 3330 + envio do e-mail 219 = 3549 ·
 //               conta inexistente 490 · pedido repetido 42                     -> 3750
-// Refazer a medicao se o numero de leituras por login mudar (Pacote 18.10).
-var PISO_LOGIN_MS = 3500;
-var PISO_REDEF_MS = 3750;
+// Remedidos no 18.10 (03/10/2026), mesmo metodo, depois da memoria por chamada e do
+// controle_id (menos leituras por login):
+//   autenticar: sucesso v3 1393 ms · falha de senha 1363 · conta inexistente 834 ·
+//               sucesso com regravacao v2->v3 2749 (uma vez por conta)        -> 2750
+//   pedirRedefinicao: conta existente 3000 + envio do e-mail 219 = 3219 ·
+//               conta inexistente 350 · pedido repetido 40                     -> 3250
+// Refazer a medicao se o numero de leituras por login mudar.
+var PISO_LOGIN_MS = 2750;
+var PISO_REDEF_MS = 3250;
 var COLUNAS_TOKENS = ['token_hash', 'tipo', 'sigla', 'profissional_id', 'finalidade', 'expira', 'usado', 'criado_em', 'email_destino'];
 
 // Textos aprovados pelo usuario (PROMPT_18_1.md, 30/09/2026)
@@ -1058,7 +1079,7 @@ function _celulaTexto_(col, v) {
  */
 var COLUNAS_TEXTO = ['sigla', 'profissional_id', 'email', 'telefone', 'cep', 'zip_code', 'cpf', 'rg',
   'email_destino', 'aceite_politica_em', 'aceite_politica_versao',
-  'controle_id', 'id_envio', 'ind_atualizado_em']; // 18.10
+  'controle_id', 'id_envio', 'ind_atualizado_em', 'atualizado_em']; // 18.10
 
 function _colunaTexto_(col) {
   var c = String(col);
@@ -2148,7 +2169,10 @@ function salvarAnamnese(sigla, dados) {
 
   dados = _dadosDoCliente_(dados);
   var repetido = _linhaDoEnvio_(aba, dados.id_envio);
-  if (repetido) return _respostaDuplicado_(planilha, ABA_ANAMNESE, repetido, 'Anamnese salva com sucesso');
+  if (repetido) {
+    _rascunhoEnviado_(planilha, ['anamnese']);
+    return _respostaDuplicado_(planilha, ABA_ANAMNESE, repetido, 'Anamnese salva com sucesso');
+  }
 
   dados = _espelharContatoAnamnese_(aba, dados, paciente);
   var linha = montarLinha(aba, dados);
@@ -2157,6 +2181,7 @@ function salvarAnamnese(sigla, dados) {
   // Registra data de anamnese na Controle do profissional dono
   registrarDataAnamnese(sigla, paciente.__profissional_id);
   _indicadoresAposGravar_(paciente.__profissional_id, sigla, planilha);
+  _rascunhoEnviado_(planilha, ['anamnese']); // 18.10b: enviado, o rascunho do tipo sai
 
   return { ok: true, mensagem: 'Anamnese salva com sucesso' };
 }
@@ -2199,6 +2224,123 @@ function _respostaDuplicado_(planilha, nomeAba, linha, mensagem) {
   return { ok: true, duplicado: true, mensagem: mensagem, registro: registros[linha - 2] || null };
 }
 
+// ---------- 18.10b: rascunho no servidor (G2) ----------
+
+// Aba `Rascunho` na planilha do paciente: uma linha por tipo (auto_negativo,
+// auto_positivo, escala_<codigo> — o codigo da escala como o cliente o usa, ex. PHQ-9 —,
+// anamnese), com o que o cliente guardava so no
+// aparelho. Nasce no primeiro "Salvar e sair". Fica FORA de indicadores, historico,
+// varreduras e comparacao de restauracao: nenhum deles le esta aba.
+var ABA_RASCUNHO = 'Rascunho';
+var HEADERS_RASCUNHO = ['tipo', 'atualizado_em', 'dados_json'];
+var RASCUNHO_MAX = 45000; // caracteres do JSON (a celula do Sheets guarda 50 mil)
+
+function _tipoDeRascunho_(tipo) {
+  var t = String(tipo === undefined || tipo === null ? '' : tipo);
+  return /^(auto_negativo|auto_positivo|anamnese|escala_[A-Za-z0-9_-]{1,30})$/.test(t) ? t : '';
+}
+
+/** Planilha do paciente (pela Controle do dono) ou null. */
+function _planilhaDoPaciente_(sigla) {
+  var id = _obterPlanilhaIdPaciente_(sigla);
+  return id ? _abrirPlanilha_(id) : null;
+}
+
+/** Linhas da aba Rascunho como [{linha, tipo, atualizado_em, dados_json}] (aba ausente = lista vazia). */
+function _linhasDeRascunho_(planilha) {
+  var aba = planilha.getSheetByName(ABA_RASCUNHO);
+  if (!aba || aba.getLastRow() < 2) return [];
+  var valores = aba.getDataRange().getValues();
+  var h = valores[0], iT = h.indexOf('tipo'), iA = h.indexOf('atualizado_em'), iD = h.indexOf('dados_json');
+  var out = [];
+  for (var i = 1; i < valores.length; i++) {
+    var em = valores[i][iA];
+    out.push({
+      linha: i + 1, tipo: String(valores[i][iT] || ''),
+      atualizado_em: em instanceof Date ? Utilities.formatDate(em, 'America/Sao_Paulo', 'yyyy-MM-dd HH:mm:ss') : String(em || ''),
+      dados_json: String(valores[i][iD] || '')
+    });
+  }
+  return out;
+}
+
+/** Apaga o rascunho do tipo (todas as linhas dele). Devolve quantas apagou. */
+function _apagarRascunhoDoTipo_(planilha, tipo) {
+  var linhas = _linhasDeRascunho_(planilha), apagadas = 0;
+  for (var i = linhas.length - 1; i >= 0; i--) {
+    if (linhas[i].tipo === tipo) { planilha.getSheetByName(ABA_RASCUNHO).deleteRow(linhas[i].linha); apagadas++; }
+  }
+  return apagadas;
+}
+
+/** "Enviar" apaga o rascunho do tipo: chamado por cada gravacao definitiva, na mesma chamada. */
+function _rascunhoEnviado_(planilha, tipos) {
+  try {
+    for (var i = 0; i < tipos.length; i++) {
+      if (_tipoDeRascunho_(tipos[i])) _apagarRascunhoDoTipo_(planilha, tipos[i]);
+    }
+  } catch (e) {
+    console.error('rascunho: nao apagado depois do envio: ' + String(e && e.message || e).slice(0, 160));
+  }
+}
+
+/** Grava (ou regrava) o rascunho do tipo. Saida: { ok, tipo, atualizado_em }. */
+function salvarRascunho(sigla, tipo, dados) {
+  var t = _tipoDeRascunho_(tipo);
+  if (!t || !dados || typeof dados !== 'object' || Array.isArray(dados)) return { ok: false, erro: MSG_OCUPADO };
+  var json = JSON.stringify(dados);
+  if (json.length > RASCUNHO_MAX) {
+    console.error('salvarRascunho: rascunho com ' + json.length + ' caracteres recusado (tipo ' + t + ')');
+    return { ok: false, erro: MSG_OCUPADO };
+  }
+  var planilha = _planilhaDoPaciente_(sigla);
+  if (!planilha) return { ok: false, erro: 'Paciente nao encontrado' };
+  var aba = planilha.getSheetByName(ABA_RASCUNHO);
+  if (!aba) aba = planilha.insertSheet(ABA_RASCUNHO);
+  var header = _garantirColunas_(aba, HEADERS_RASCUNHO);
+  var agora = Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd HH:mm:ss');
+  var valores = { tipo: t, atualizado_em: agora, dados_json: json };
+  var existentes = _linhasDeRascunho_(planilha), alvo = 0;
+  for (var i = 0; i < existentes.length; i++) if (existentes[i].tipo === t) { alvo = existentes[i].linha; break; }
+  if (alvo) {
+    for (var col in valores) aba.getRange(alvo, header.indexOf(col) + 1).setValue(_celulaTexto_(col, valores[col]));
+  } else {
+    _anexarPorCabecalho_(aba, header, valores);
+  }
+  return { ok: true, tipo: t, atualizado_em: agora };
+}
+
+/** Rascunhos do paciente: { ok, rascunhos: [{tipo, atualizado_em, dados}] } (linha ilegivel e pulada). */
+function lerRascunhos(sigla) {
+  var planilha = _planilhaDoPaciente_(sigla);
+  if (!planilha) return { ok: false, erro: 'Paciente nao encontrado' };
+  var linhas = _linhasDeRascunho_(planilha), out = [];
+  for (var i = 0; i < linhas.length; i++) {
+    if (!_tipoDeRascunho_(linhas[i].tipo)) continue;
+    try {
+      var dados = JSON.parse(linhas[i].dados_json);
+      if (dados && typeof dados === 'object') out.push({ tipo: linhas[i].tipo, atualizado_em: linhas[i].atualizado_em, dados: dados });
+    } catch (e) { /* linha ilegivel: fica de fora */ }
+  }
+  return { ok: true, rascunhos: out };
+}
+
+function apagarRascunho(sigla, tipo) {
+  var t = _tipoDeRascunho_(tipo);
+  if (!t) return { ok: false, erro: MSG_OCUPADO };
+  var planilha = _planilhaDoPaciente_(sigla);
+  if (!planilha) return { ok: false, erro: 'Paciente nao encontrado' };
+  return { ok: true, tipo: t, apagados: _apagarRascunhoDoTipo_(planilha, t) };
+}
+
+/** Tipos de rascunho que um registro enviado encerra (negativo, positivo ou os dois). */
+function _tiposDoRegistro_(dados) {
+  var tipos = [];
+  if (dados && dados.neg_preenchido === 'sim') tipos.push('auto_negativo');
+  if (dados && dados.pos_preenchido === 'sim') tipos.push('auto_positivo');
+  return tipos;
+}
+
 /** Versao do formulario pela aba em que a linha e gravada. */
 function _versaoDoFormulario_(nomeAba) {
   if (nomeAba === ABA_ANAMNESE) return VERSAO_FORM_ANAMNESE;
@@ -2216,11 +2358,15 @@ function salvarAutomonitoramento(sigla, dados) {
 
   dados = _dadosDoCliente_(dados);
   var repetido = _linhaDoEnvio_(aba, dados.id_envio);
-  if (repetido) return _respostaDuplicado_(planilha, ABA_AUTOMONITORAMENTO, repetido, 'Registro salvo com sucesso');
+  if (repetido) {
+    _rascunhoEnviado_(planilha, _tiposDoRegistro_(dados));
+    return _respostaDuplicado_(planilha, ABA_AUTOMONITORAMENTO, repetido, 'Registro salvo com sucesso');
+  }
 
   var linha = montarLinha(aba, dados);
   aba.appendRow(linha);
   _indicadoresAposGravar_(paciente.__profissional_id, sigla, planilha);
+  _rascunhoEnviado_(planilha, _tiposDoRegistro_(dados)); // 18.10b
 
   return { ok: true, mensagem: 'Registro salvo com sucesso' };
 }
@@ -2390,11 +2536,17 @@ function salvarEscala(sigla, dados) {
 
   dados = _dadosDoCliente_(dados);
   var repetido = _linhaDoEnvio_(aba, dados.id_envio);
-  if (repetido) return _respostaDuplicado_(planilha, ABA_ESCALAS, repetido, 'Escala salva com sucesso');
+  // 18.10b: o rascunho da escala e `escala_<codigo>`; o codigo e o `instrumento` gravado
+  var tipoRascunho = 'escala_' + String(dados.instrumento || '');
+  if (repetido) {
+    _rascunhoEnviado_(planilha, [tipoRascunho]);
+    return _respostaDuplicado_(planilha, ABA_ESCALAS, repetido, 'Escala salva com sucesso');
+  }
 
   var linha = montarLinha(aba, dados);
   aba.appendRow(linha);
   _indicadoresAposGravar_(paciente.__profissional_id, sigla, planilha);
+  _rascunhoEnviado_(planilha, [tipoRascunho]);
 
   return { ok: true, mensagem: 'Escala salva com sucesso' };
 }
@@ -2676,7 +2828,10 @@ function pacienteAtualizarAnamnese(sigla, dados) {
   // 2. Montar linha e sobrescrever (e-mail e telefone espelham o cadastro)
   // 18.10: campos do servidor descartados; reenvio com o mesmo id_envio nao regrava
   dados = _dadosDoCliente_(dados);
-  if (_linhaDoEnvio_(aba, dados.id_envio) === 2) return _respostaDuplicado_(planilha, ABA_ANAMNESE, 2, 'Anamnese atualizada com sucesso');
+  if (_linhaDoEnvio_(aba, dados.id_envio) === 2) {
+    _rascunhoEnviado_(planilha, ['anamnese']);
+    return _respostaDuplicado_(planilha, ABA_ANAMNESE, 2, 'Anamnese atualizada com sucesso');
+  }
   dados = _espelharContatoAnamnese_(aba, dados, paciente);
   var linha = montarLinha(aba, dados);
 
@@ -2689,6 +2844,7 @@ function pacienteAtualizarAnamnese(sigla, dados) {
   // 3. Atualizar data_anamnese e indicadores na Controle
   registrarDataAnamnese(sigla, paciente.__profissional_id);
   _indicadoresAposGravar_(paciente.__profissional_id, sigla, planilha);
+  _rascunhoEnviado_(planilha, ['anamnese']); // 18.10b
 
   return { ok: true, mensagem: 'Anamnese atualizada com sucesso' };
 }

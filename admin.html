@@ -1042,7 +1042,9 @@ function admRenderizarTabela() {
    Pacote 18.1: CONVITE DO PROFISSIONAL (e-mail) E WHATSAPP
    ============================================================ */
 function admLinkWhatsApp(telefone, link) {
-  const msg = 'Olá! Aqui é o Vinícius. Seu acesso ao COGNIATIVO está pronto. Toque no link para criar sua senha: ' + link + '. Ele vale por 48 horas.';
+  // 18.10: quem assina é o admin da sessão (primeiro nome do cadastro); o resto do texto não mudou
+  const quem = String(ADM_STATE.nomeCompleto || '').trim().split(/\s+/)[0] || '';
+  const msg = 'Olá! ' + (quem ? 'Aqui é o ' + quem + '. ' : '') + 'Seu acesso ao COGNIATIVO está pronto. Toque no link para criar sua senha: ' + link + '. Ele vale por 48 horas.';
   return 'https://wa.me/55' + String(telefone || '').replace(/\D/g, '') + '?text=' + encodeURIComponent(msg);
 }
 

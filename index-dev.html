@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.4 — produção (03/10/2026) -->
+<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.10 — produção (03/10/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -4469,6 +4469,13 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <svg class="ico" aria-hidden="true"><use href="#i-file"/></svg> <strong>Anamnese pendente</strong> — toque para preencher quando puder.
     </button>
 
+    <!-- Pacote 18.10b (G2): rascunho guardado no servidor — texto aprovado pelo usuário em 03/10 -->
+    <div class="hub-rascunho" id="iniRascunho" role="status" hidden>
+      <div class="hub-rascunho-titulo"><svg class="ico" aria-hidden="true"><use href="#i-pencil"/></svg><span id="iniRascunhoTexto"></span></div>
+      <button type="button" class="b56" onclick="iniRascunhoContinuar()">Continuar</button>
+      <button type="button" class="b56 b56-sec" onclick="iniRascunhoDescartar()">Descartar</button>
+    </div>
+
     <!-- Ação primária: mesmo caminho do card "Iniciar Novo Registro" do hub -->
     <button class="ini-novo" id="iniBtnNovo" type="button" onclick="iniNovoRegistro()">
       <svg class="ico ico-lg" aria-hidden="true"><use href="#i-plus"/></svg> Novo registro
@@ -7363,6 +7370,7 @@ var VMC_RETRY_MS = 2000;
 var VMC_ACOES_GRAVACAO = [
   'salvarAnamnese', 'salvarAutomonitoramento', 'salvarEscala',
   'aceitarPolitica', // 18.1.6
+  'salvarRascunho', 'apagarRascunho', // 18.10b
   'alterarSenhaPaciente', 'pacienteAtualizarAnamnese',
   'pacienteMarcarEditandoAuto', 'pacienteLimparEditandoAuto', 'pacienteEditarAutomonitoramento',
   'profCadastrarPaciente', 'profSalvarAnamnese', 'profSalvarGrade',
@@ -7388,7 +7396,7 @@ var VMC_EM_ANDAMENTO = {};
 // da ação pedida — em 28/09 um POST redirecionado terminou no doGet, que responde {ok:true} sem dados —
 // e conta como erro, nunca como "0 registros" ou login feito.
 var VMC_CAMPO_DA_RESPOSTA = {
-  lerHistorico: ['automonitoramento'], lerEscalas: ['escalas'], autenticar: ['token']
+  lerHistorico: ['automonitoramento'], lerEscalas: ['escalas'], autenticar: ['token'], lerRascunhos: ['rascunhos']
 };
 
 // Pacote 18.1.2 (8.72): a chave do pedido compartilhado não depende da ordem das chaves do payload
@@ -7513,6 +7521,17 @@ function vmcFecharSobreposicoes_() {
   if (typeof SAIR_ACAO !== 'undefined') SAIR_ACAO = null;
 }
 
+// Pacote 18.10 (8.14): identificador único de cada envio (registro, escala, anamnese). Nasce no clique em "Enviar"
+// e vai dentro de `dados`; o "Tentar de novo" da faixa repete a MESMA chamada, com o mesmo identificador, e o
+// servidor responde `duplicado: true` (tratado como sucesso) em vez de gravar a segunda linha.
+function vmcNovoIdEnvio_() {
+  if (window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
+  const b = new Uint8Array(16);
+  window.crypto.getRandomValues(b);
+  const h = Array.prototype.map.call(b, function (x) { return ('0' + x.toString(16)).slice(-2); }).join('');
+  return h.slice(0, 8) + '-' + h.slice(8, 12) + '-' + h.slice(12, 16) + '-' + h.slice(16, 20) + '-' + h.slice(20);
+}
+
 async function chamarServidor(acao, dados = {}) {
   const payload = { acao, ...dados };
   // 18.1.6: um token vindo do chamador (aceite antes de entrar) tem prioridade sobre o da sessão
@@ -7634,7 +7653,8 @@ function confirmarSaida(acao) {
   const noRegistro = fluxoRegistroTelas().indexOf(secaoAtivaId()) !== -1;
   const continuar = document.getElementById('sairFolhaContinuar');
   continuar.textContent = noRegistro ? 'Continuar registro' : 'Continuar aqui'; // anamnese e escala mantêm o rótulo de sempre
-  document.getElementById('sairModalConfirmar').onclick = function () { const a = SAIR_ACAO; sairModalFechar(); if (a) a(); }; // a ação é lida antes de fechar (fechar zera SAIR_ACAO)
+  // 18.10b (G2): "Sair" guarda o rascunho também no servidor (a cópia do aparelho continua) e só então executa a ação
+  document.getElementById('sairModalConfirmar').onclick = async function () { const a = SAIR_ACAO; sairModalFechar(); await rascSalvarNoServidor_(); if (a) a(); }; // a ação é lida antes de fechar (fechar zera SAIR_ACAO)
   document.getElementById('sairFolha').classList.add('show');
   continuar.focus();
 }
@@ -8078,11 +8098,122 @@ async function iniCarregarContinuidade() {
 function iniAbrir() {
   if (!carregarSessao()) return;
   iniAtualizarSaudacao();
+  iniRascunhoRender(); // 18.10b: o que já se sabe aparece na hora; a leitura do servidor completa em segundo plano
+  rascCarregarDoServidor_();
   if (INI_STATE.carregado && !INI_STATE.invalido) {
     iniRenderContinuidade(INI_STATE.dados);
     return;
   }
   iniCarregarContinuidade();
+}
+
+/* ============================================================
+   Pacote 18.10b (G2) — RASCUNHO NO SERVIDOR
+   "Salvar e sair" (e todo "Sair" da folha "Sair sem enviar?") grava o rascunho na aba Rascunho da planilha do
+   paciente, uma linha por tipo: auto_negativo, auto_positivo, escala_<codigo>, anamnese. A cópia do aparelho
+   (sessionStorage) continua como antes. O Início oferece o rascunho do servidor — em qualquer aparelho — com
+   "Continuar" e "Descartar"; "Enviar" apaga o rascunho do tipo (o servidor apaga na mesma chamada do envio).
+   ============================================================ */
+var RASC_SERVIDOR = { carregado: false, carregando: false, lista: [] }; // lista: [{ tipo, atualizado_em, dados }]
+
+// Rascunho do fluxo aberto, como está no aparelho: { tipo, dados } ou null (registro sem tipo escolhido e
+// anamnese em edição de uma já enviada ficam só no aparelho, como antes)
+function rascDoFluxoAtivo_() {
+  const id = secaoAtivaId(); if (!id) return null;
+  if (fluxoRegistroTelas().indexOf(id) !== -1) {
+    const r = autoCarregarRascunho();
+    return (r && r.dados && r.dados.humor_nivel && r.tipo) ? { tipo: r.tipo === 'pos' ? 'auto_positivo' : 'auto_negativo', dados: r } : null;
+  }
+  if (id === 'sec-escalas-aplicar') {
+    const e = vmcRascunhoDaSessao_(ESC_RASCUNHO_KEY);
+    return (e && e.codigo) ? { tipo: 'escala_' + e.codigo, dados: e } : null;
+  }
+  if (id === 'sec-anamnese' && !ANAM_STATE.editando) {
+    const a = carregarRascunho();
+    return a ? { tipo: 'anamnese', dados: a } : null;
+  }
+  return null;
+}
+function rascAnotar_(tipo, atualizadoEm, dados) {
+  rascEsquecer_(tipo);
+  RASC_SERVIDOR.lista.push({ tipo: tipo, atualizado_em: atualizadoEm, dados: dados });
+}
+function rascEsquecer_(tipo) {
+  RASC_SERVIDOR.lista = RASC_SERVIDOR.lista.filter(function (x) { return x.tipo !== tipo; });
+}
+// Só o paciente tem rascunho no servidor. Recusa do servidor não prende a saída: a cópia do aparelho continua.
+async function rascSalvarNoServidor_() {
+  if (PROF_SESSAO || !carregarSessao()) return;
+  const r = rascDoFluxoAtivo_(); if (!r) return;
+  const resp = await chamarServidor('salvarRascunho', { tipo: r.tipo, dados: r.dados });
+  if (resp && resp.ok) rascAnotar_(r.tipo, resp.atualizado_em, r.dados);
+  else console.warn('Rascunho não guardado no servidor (fica no aparelho).');
+}
+async function rascCarregarDoServidor_() {
+  if (RASC_SERVIDOR.carregado || RASC_SERVIDOR.carregando || PROF_SESSAO || !carregarSessao()) return;
+  const geracao = VMC_GERACAO_SESSAO;
+  RASC_SERVIDOR.carregando = true;
+  const r = await iniLerQuieto('lerRascunhos', {});
+  if (geracao !== VMC_GERACAO_SESSAO) return; // outra sessão: o estado já foi zerado na saída
+  RASC_SERVIDOR.carregando = false;
+  if (!r || !r.ok || !Array.isArray(r.rascunhos)) return; // sem resposta: tenta de novo na próxima vez que o Início abrir
+  RASC_SERVIDOR.lista = r.rascunhos;
+  RASC_SERVIDOR.carregado = true;
+  iniRascunhoRender();
+}
+function rascMaisRecente_() {
+  let m = null;
+  RASC_SERVIDOR.lista.forEach(function (x) { if (!m || String(x.atualizado_em) > String(m.atualizado_em)) m = x; });
+  return m;
+}
+// Aviso do Início: um rascunho por vez, o mais recente (texto aprovado pelo usuário)
+function iniRascunhoRender() {
+  const box = document.getElementById('iniRascunho'); if (!box) return;
+  const r = rascMaisRecente_();
+  const m = r ? /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/.exec(String(r.atualizado_em || '')) : null;
+  box.hidden = !m;
+  if (m) document.getElementById('iniRascunhoTexto').textContent =
+    'Você tem um registro começado em ' + m[3] + '/' + m[2] + ' às ' + m[4] + ':' + m[5] + '. Continuar ou descartar?';
+}
+// "Continuar": o rascunho do servidor vira a cópia do aparelho (se o aparelho já tem o mesmo, vale o do aparelho,
+// que é o mais novo) e o fluxo reabre pelo caminho de sempre de cada módulo.
+function iniRascunhoContinuar() {
+  const r = rascMaisRecente_(); if (!r) return;
+  const sigla = vmcSiglaSessao_();
+  if (r.tipo === 'auto_negativo' || r.tipo === 'auto_positivo') {
+    const local = autoCarregarRascunho();
+    const mesmo = local && local.dados && local.dados.humor_nivel && (local.tipo === 'pos' ? 'auto_positivo' : 'auto_negativo') === r.tipo;
+    if (!mesmo && r.dados) sessionStorage.setItem(AUTO_RASCUNHO_KEY, JSON.stringify(Object.assign({}, r.dados, { sigla: sigla })));
+    abrirModulo('automonitoramento');
+    hubContinuarRascunho();
+  } else if (r.tipo.indexOf('escala_') === 0) {
+    const codigo = r.tipo.slice(7);
+    if (!escCarregarRascunho(codigo) && r.dados) sessionStorage.setItem(ESC_RASCUNHO_KEY, JSON.stringify(Object.assign({}, r.dados, { sigla: sigla, codigo: codigo })));
+    abrirModulo('escalas');
+    escIniciarAplicacao(codigo);
+  } else if (r.tipo === 'anamnese') {
+    if (!carregarRascunho() && r.dados) gravarRascunhoAnamnese_(Object.assign({}, r.dados));
+    abrirModulo('anamnese');
+    const a = carregarRascunho();
+    if (!ANAM_STATE.modoConsulta && a && [2, 3, 4].indexOf(a.passo) !== -1) { ANAM_STATE.passoAtual = a.passo; renderPasso(a.passo); }
+  }
+}
+// "Descartar": apaga no servidor e, se for o mesmo, a cópia do aparelho
+async function iniRascunhoDescartar() {
+  const r = rascMaisRecente_(); if (!r) return;
+  const resp = await chamarServidor('apagarRascunho', { tipo: r.tipo });
+  if (!resp || !resp.ok) {
+    if (resp && resp.codigo !== 'sessao_expirada' && resp.erro) vmcAvisoNaTela(resp.erro, document.getElementById('iniRascunho'));
+    return;
+  }
+  rascEsquecer_(r.tipo);
+  if (r.tipo === 'anamnese') limparRascunho();
+  else if (r.tipo.indexOf('escala_') === 0) { if (escCarregarRascunho(r.tipo.slice(7))) escLimparRascunho(); }
+  else {
+    const local = autoCarregarRascunho();
+    if (local && (local.tipo === 'pos' ? 'auto_positivo' : 'auto_negativo') === r.tipo) { autoLimparRascunho(); autoResetState(); }
+  }
+  iniRascunhoRender();
 }
 
 // "Novo registro" = o mesmo caminho do card "Iniciar Novo Registro" do hub:
@@ -8471,7 +8602,9 @@ function profContatoMascara_(el) {
 }
 // Link do WhatsApp com a mensagem aprovada e o link do último convite gerado nesta tela (nenhum envio automático).
 function vmcLinkWhatsApp(telefone, link) {
-  var msg = 'Olá! Aqui é o Vinícius. Seu acesso ao COGNIATIVO está pronto. Toque no link para criar sua senha: ' + link + '. Ele vale por 48 horas.';
+  // 18.10: quem assina é o profissional da sessão (primeiro nome do cadastro); o resto do texto não mudou
+  var quem = iniPrimeiroNome(PROF_SESSAO && PROF_SESSAO.nome_completo);
+  var msg = 'Olá! ' + (quem ? 'Aqui é o ' + quem + '. ' : '') + 'Seu acesso ao COGNIATIVO está pronto. Toque no link para criar sua senha: ' + link + '. Ele vale por 48 horas.';
   return 'https://wa.me/55' + String(telefone || '').replace(/\D/g, '') + '?text=' + encodeURIComponent(msg);
 }
 
@@ -9840,6 +9973,7 @@ function sairDoSistema(opcoes) {
   ANAM_STATE.passoAtual = 1; ANAM_STATE.modoConsulta = false; ANAM_STATE.editando = false;
   ANAM_STATE.dadosConsulta = null; ANAM_STATE.numPessoasConfianca = 1;
   INI_STATE.carregado = false; INI_STATE.carregando = false; INI_STATE.invalido = true; INI_STATE.dados = null;
+  RASC_SERVIDOR = { carregado: false, carregando: false, lista: [] }; iniRascunhoRender(); // 18.10b
   P136_ESTADO = { idx: null, tipo: null, sigla: null, timestamp: null };
   HIST_FILTRO = 'todos'; HIST_MESES_ABERTOS = {}; CHK_ENV.periodo = null;
   ['profDashboardConteudo', 'profPacienteConteudo', 'autoHistLista', 'pevConteudo', 'eschConteudo', 'anamConteudo', 'iniContinuidade', 'graDias'].forEach(function (id) {
@@ -11538,7 +11672,7 @@ async function enviarAnamneseDefinitivo() {
 
   const resposta = await chamarServidor(acao, {
     sigla: paciente.sigla,
-    dados: rascunho.dados,
+    dados: Object.assign({}, rascunho.dados, { id_envio: vmcNovoIdEnvio_() }), // 18.10 (8.14)
   });
 
   if (!resposta.ok) {
@@ -11552,6 +11686,7 @@ async function enviarAnamneseDefinitivo() {
   paciente.data_anamnese = new Date().toISOString().slice(0, 10);
   salvarSessao(paciente);
   limparRascunho();
+  rascEsquecer_('anamnese'); // 18.10b: enviada, o servidor já apagou o rascunho
   atualizarMenuConformeSessao();
 
   ANAM_STATE.editando = false; // Pacote 13.4.1: resetar flag
@@ -13294,6 +13429,7 @@ async function autoEnviarRegistro(opcoes) {
     ? { data_registro: AUTO_STATE.dados.data_registro, hora_registro: AUTO_STATE.dados.hora_registro,
         humor_nivel: AUTO_STATE.dados.humor_nivel, humor_observacoes: AUTO_STATE.dados.humor_observacoes || '' }
     : Object.assign({}, AUTO_STATE.dados);
+  dadosEnvio.id_envio = vmcNovoIdEnvio_(); // 18.10 (8.14): o "Tentar de novo" da faixa reenvia este mesmo payload
 
   // 16.5e: estado "enviando" (botão desabilitado com spinner, rótulo mantido); erro do servidor vira aviso na tela
   const btn = document.getElementById(soChecagem ? 'chkBtnConcluir' : 'autoBtnEnviar');
@@ -13328,6 +13464,9 @@ async function autoEnviarRegistro(opcoes) {
   }
 
   autoLimparRascunho();
+  // 18.10b: enviado, o servidor já apagou o rascunho do tipo
+  if (dadosEnvio.neg_preenchido === 'sim') rascEsquecer_('auto_negativo');
+  if (dadosEnvio.pos_preenchido === 'sim') rascEsquecer_('auto_positivo');
   autoResetState();
   // Painel de Evolução: força recarregamento na próxima visita
   if (typeof pevInvalidarCache === 'function') pevInvalidarCache();
@@ -15943,6 +16082,7 @@ async function escEnviarEscala(event) {
 
     // Monta payload — nomes de coluna iguais aos da aba "Escalas"
     const dados = {
+      id_envio: vmcNovoIdEnvio_(), // 18.10 (8.14)
       instrumento: codigo,
       versao_instrumento: ESC_VERSAO_INSTRUMENTO,
       data_aplicacao: escDataHojeISO(),
@@ -16030,6 +16170,7 @@ async function escEnviarEscala(event) {
 
 function escMostrarResultado(codigo, calc, respostas) {
   escLimparRascunho(); // Pacote 16.3: escala gravada, rascunho não faz mais sentido
+  rascEsquecer_('escala_' + codigo); // 18.10b: o servidor já apagou o dele
   const def = ESC_ESCALAS[codigo];
   if (!def) return;
 

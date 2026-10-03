@@ -1138,6 +1138,74 @@ deploy @31).
 - **Seletor com valor do servidor (8.83):** valor interpolado em `querySelector` passa por `CSS.escape`
   (restauração da anamnese, antecedência da grade).
 
+### Desempenho e integridade do backend (Pacote 18.10 — publicado em 03/10/2026, @34 = 18.10a e @35 = 18.10)
+
+- **Memória por chamada (8.34).** `_MEMO_` (variável do módulo, zerada no início do `doPost` por
+  `_memoZerar_(true)`): toda planilha é aberta por `_abrirPlanilha_(id)` — uma vez por chamada
+  (Sistema_VMC, Controle, planilha do paciente); a Controle fica em `_MEMO_.controles`; o
+  `Indice_Siglas` é lido uma vez (`_indiceValores_`, só dentro do `doPost`) e quem grava no índice
+  chama `_memoEsquecerIndice_()`. Não existe mais `SpreadsheetApp.openById` fora de `_abrirPlanilha_`.
+- **`controle_id` (8.34).** Coluna `controle_id` na aba `Profissionais` (criada pelo cabeçalho, texto).
+  `abrirControleDoProfissional` abre por id; a busca por nome na pasta do Drive só roda com a coluna
+  vazia ou com id que não abre, e grava o id encontrado (`_gravarControleId_`). Profissional novo já
+  nasce com o id.
+- **Indicadores do paciente na Controle (8.62).** Colunas na aba `Pacientes` da Controle, pelo
+  cabeçalho (`COLUNAS_INDICADORES`): `ind_total_auto`, `ind_ultimo_auto` (JSON `{data, humor}`),
+  `ind_total_escalas`, `ind_ultima_escala` (JSON `{nome, faixa, data}`), `ind_alertas_json` (JSON do
+  alerta crítico mais recente; vazio = nenhum), `ind_nome` (nome da Anamnese, que a lista mostrava;
+  vazio = nome do cadastro) e `ind_atualizado_em` (texto `aaaa-MM-dd HH:mm:ss`). Datas dentro do JSON
+  já em `DD/MM/AAAA`. `_calcularIndicadores_(planilha)` usa as mesmas regras da lista do 13.2.3;
+  `_indicadoresAposGravar_` roda em toda gravação do paciente (`salvarAnamnese`,
+  `salvarAutomonitoramento`, `salvarEscala`, `pacienteAtualizarAnamnese`,
+  `pacienteEditarAutomonitoramento`) e em toda edição pelo profissional (`profSalvarAnamnese`,
+  `profEditarAutomonitoramento`), na mesma chamada e na mesma trava; se a atualização falhar,
+  `ind_atualizado_em` é esvaziado. `listarPacientesDoProfissional` lê **só a Controle**; abre a
+  planilha de um paciente apenas quando `ind_atualizado_em` está vazio (recálculo preguiçoso, uma vez).
+  O contrato da resposta não mudou (ganhou `ind_total_escalas`). **Edição direta na planilha do
+  paciente (fora do sistema) não atualiza os indicadores:** esvaziar `ind_atualizado_em` da linha
+  força o recálculo na próxima lista. O mesmo vale depois de um rollback para versão anterior à @34.
+- **Trava de gravação (8.45).** `_comTrava_(fn)`: `LockService.getScriptLock()` com `waitLock(10000)`,
+  reentrante na mesma execução. O `doPost` roda dentro dela toda ação de `ACOES_COM_TRAVA` (todas as
+  que gravam); `autenticar` (regravação v2 → v3) e `pedirRedefinicao` (cota e links) pegam a trava só
+  no trecho que grava, por causa do piso de tempo; gravação acessória dentro de leitura
+  (`controle_id`, recálculo preguiçoso) usa `_comTravaSeDer_` (sem a trava, só registra e segue).
+  Sem a trava em 10 s: nada é gravado, resposta `{ok: false, codigo: 'ocupado', erro: MSG_OCUPADO}`
+  ("Não foi possível gravar agora. Tente de novo.") e `console.error` no servidor. A trava de presença
+  do registro (`editando_quem`/`editando_desde`) **não mudou** — será substituída no 18.5.
+- **Identificador único do envio (8.14).** O cliente gera `id_envio` (UUID, `vmcNovoIdEnvio_`) a cada
+  clique em "Enviar" (registro, escala, anamnese) e o manda dentro de `dados`; o "Tentar de novo" da
+  faixa repete a mesma chamada, com o mesmo id. O servidor guarda `id_envio` na linha (coluna pelo
+  cabeçalho, texto) e, se o id já existe na aba (`_linhaDoEnvio_`, lê só a coluna), responde
+  `{ok: true, duplicado: true, registro}` sem gravar. Id fora do formato (letras, números e hífen, 8 a
+  64) é descartado; cliente sem `id_envio` grava como antes.
+- **Autoria pelo servidor (8.46).** `CAMPOS_DO_SERVIDOR` (`timestamp`, `versao_formulario`, `sigla`,
+  `profissional_id`, `editado`, `editado_por`, `editado_em`, `editando_quem`, `editando_desde`): o
+  que vier do cliente com esses nomes é descartado em todo caminho que grava (`_dadosDoCliente_` +
+  `montarLinha`); `editado_por` sai do crachá. `versao_formulario` vem de uma constante por formulário:
+  `VERSAO_FORM_ANAMNESE`, `VERSAO_FORM_AUTO`, `VERSAO_FORM_ESCALAS` (as três em `v1` em 03/10/2026;
+  sobe a do formulário que mudar).
+- **Assinatura dos e-mails.** `EMAIL_ASSINATURA` fixa saiu. Convite e redefinição do **paciente**:
+  nome e CRP do profissional dono (`_assinaturaDoProfissional_`, colunas `nome_completo` e `crp` da aba
+  `Profissionais`; sem CRP, só o nome). Convite de profissional: o admin que enviou. Redefinição de
+  profissional e de admin: o primeiro admin ativo (`_assinaturaDoSistema_`). As linhas de formação
+  (`EMAIL_FORMACAO`) continuam fixas. No WhatsApp, "Aqui é o <primeiro nome>" de quem está logado.
+- **Rascunho no servidor (G2, 8.57 — 18.10b).** Aba `Rascunho` na planilha do paciente (cabeçalhos
+  `tipo`, `atualizado_em`, `dados_json`), uma linha por tipo: `auto_negativo`, `auto_positivo`,
+  `escala_<codigo>` (o código como o cliente usa, ex. `escala_PHQ-9`) e `anamnese`. Nasce no primeiro
+  uso. Ações pelo crachá do paciente: `salvarRascunho {tipo, dados}` (regrava a linha do tipo; limite
+  de 45 mil caracteres), `lerRascunhos` e `apagarRascunho {tipo}`. Toda gravação definitiva apaga o
+  rascunho do tipo na mesma chamada (`_rascunhoEnviado_`). A aba fica **fora** de indicadores,
+  histórico, varreduras e comparação de restauração (nenhum deles a lê); a cópia de backup leva o
+  arquivo inteiro. **Rollback para a @33 não lê a aba: o dado fica nela, sem perda.**
+  Cliente: `RASC_SERVIDOR`; todo "Sair" da folha "Sair sem enviar?" chama `rascSalvarNoServidor_`
+  (a cópia do `sessionStorage` continua); o Início lê `lerRascunhos` em segundo plano e mostra
+  `#iniRascunho` ("Você tem um registro começado em <dd/mm> às <hh:mm>. Continuar ou descartar?",
+  botões "Continuar" e "Descartar") para o rascunho mais recente; "Continuar" grava o rascunho no
+  aparelho e reabre o fluxo pelo caminho de cada módulo. Registro sem tipo escolhido e anamnese em
+  edição de uma já enviada continuam só no aparelho.
+- **Pisos de tempo remedidos** (mesmo método do 18.2.1, 20 execuções por caminho): `PISO_LOGIN_MS`
+  3500 → **2750** e `PISO_REDEF_MS` 3750 → **3250** (tabela no comentário do código).
+
 ## Backup e monitoramento (Pacote E3 — ativado em 30/09/2026, ajustado em 01/10)
 
 `backupSobDemanda_()` (invólucro público `rodarBackupAgora`) copia a
