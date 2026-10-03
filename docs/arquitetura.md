@@ -459,7 +459,7 @@ Planilha individual do paciente — abas:
 
 ## Backend (Apps Script)
 
-- `doPost` roteia por `acao` (40 ações desde o 18.10; o `switch` mora em `_despachar_`, e as
+- `doPost` roteia por `acao` (41 ações desde o 18.10; o `switch` mora em `_despachar_`, e as
   ações de `ACOES_COM_TRAVA` rodam dentro da trava de gravação — seção do 18.10). Um **portão
   único** antes do despacho exige o crachá (`payload.token`) em toda ação fora de
   `ACOES_PUBLICAS`; cada `case` cabe numa linha e recebe a sessão `s`
