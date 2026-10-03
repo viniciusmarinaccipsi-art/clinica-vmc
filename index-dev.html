@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.10 — produção (03/10/2026) -->
+<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.5 — produção (03/10/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -2089,6 +2089,13 @@ button.cab-no-item{cursor:pointer;}
 .histc-meta{font:var(--t-body-sm);color:var(--c-ink-3);margin-top:3px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
 .histc-meta .humor-pill{background:var(--c-action-tint);color:var(--c-action);font-weight:800;padding:1px 8px;border-radius:8px;}
 .histc-obs{font:var(--t-body-sm);color:var(--c-ink-2);margin-top:3px;white-space:pre-wrap;overflow-wrap:anywhere;} /* 18.4 (8.50): observação da checagem */
+/* 18.5: carimbo por campo ("alterado por … em dd/mm às hh:mm"), faixa "registrado pelo seu psicólogo", "Carregar mais" e ações do profissional */
+.vmc-carimbo{display:block;font:var(--t-body-sm);color:var(--c-ink-3);margin-top:3px;}
+.vmc-mais{display:block;width:100%;min-height:var(--hit-min);margin-top:var(--s-3);border:1.5px solid var(--c-action);border-radius:var(--r-field);background:var(--c-surface);color:var(--c-action);font:var(--t-body);font-weight:600;cursor:pointer;}
+.prof-acoes-mod{display:flex;gap:var(--s-2);flex-wrap:wrap;justify-content:flex-end;margin-bottom:var(--s-3);}
+.prof-btn-acao{display:inline-flex;align-items:center;gap:6px;min-height:var(--hit-min);padding:0 var(--s-4);border:none;border-radius:var(--r-field);background:var(--c-action);color:var(--c-ink-inv);font:var(--t-body);font-weight:600;cursor:pointer;}
+.prof-btn-acao:hover{background:var(--c-action-hover);}
+.prof-btn-acao:focus-visible{outline:2px solid var(--c-action);outline-offset:2px;}
 
 .histc-empty{text-align:center;padding:40px 20px;background:var(--c-surface);border-radius:var(--r-card);border:2px dashed var(--c-line);}
 .histc-empty-icon{font-size:42px;display:block;margin-bottom:10px;opacity:.5;}
@@ -7375,6 +7382,7 @@ var VMC_ACOES_GRAVACAO = [
   'pacienteMarcarEditandoAuto', 'pacienteLimparEditandoAuto', 'pacienteEditarAutomonitoramento',
   'profCadastrarPaciente', 'profSalvarAnamnese', 'profSalvarGrade',
   'profMarcarEditandoAuto', 'profLimparEditandoAuto', 'profEditarAutomonitoramento',
+  'profCriarAutomonitoramento', 'profCriarEscala', 'profEditarEscala', // 18.5
   'profDesativarPaciente', 'profReativarPaciente', 'profExcluirPaciente', 'profAlterarSenhaPaciente',
   'admCadastrarProfissional', 'admAtualizarProfissional', 'admTrocarSenhaProfissional',
   'admDesativarProfissional', 'admReativarProfissional',
@@ -7532,7 +7540,82 @@ function vmcNovoIdEnvio_() {
   return h.slice(0, 8) + '-' + h.slice(8, 12) + '-' + h.slice(12, 16) + '-' + h.slice(16, 20) + '-' + h.slice(20);
 }
 
+/* ============================================================
+   Pacote 18.5 — EDIÇÃO POR CAMPO, CARIMBO E FLUXOS DO PROFISSIONAL
+   Toda edição (registro, escala, anamnese; paciente ou profissional) manda ao servidor só os campos alterados
+   (campos + id_envio). O servidor grava só essas colunas e guarda em autoria_campos quem alterou cada uma e quando;
+   a tela mostra o carimbo junto do campo. A presença (editando_quem) virou aviso: ninguém é bloqueado.
+   ============================================================ */
+function vmcAutoria_(reg) {
+  const a = reg && reg.autoria_campos;
+  if (a && typeof a === 'object') return a;
+  try { const o = JSON.parse(String(a || '')); return (o && typeof o === 'object') ? o : {}; } catch (e) { return {}; }
+}
+// Textos aprovados (03/10): dependem de quem lê — o paciente ou o profissional
+function vmcCarimboTexto_(c) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/.exec(String((c && c.em) || ''));
+  if (!m || !c.por) return '';
+  const quando = ' em ' + m[3] + '/' + m[2] + ' às ' + m[4] + ':' + m[5];
+  if (c.por === (PROF_SESSAO ? 'profissional' : 'paciente')) return 'alterado por você' + quando;
+  return (PROF_SESSAO ? 'alterado pelo paciente' : 'alterado pelo seu psicólogo') + quando;
+}
+// Carimbo de um campo (ou o mais recente entre vários, quando a tela junta colunas num bloco só); '' sem carimbo
+function vmcCarimboHtml_(reg, colunas) {
+  const a = vmcAutoria_(reg); let c = null;
+  [].concat(colunas).forEach(function (k) { if (a[k] && (!c || String(a[k].em) > String(c.em))) c = a[k]; });
+  const t = c ? vmcCarimboTexto_(c) : '';
+  return t ? '<span class="vmc-carimbo">' + esc(t) + '</span>' : '';
+}
+// Só o que mudou entre o que foi carregado e o que está na tela
+function vmcCamposAlterados_(antes, depois) {
+  const campos = {};
+  const txt = function (v) { return v === undefined || v === null ? '' : String(v); };
+  Object.keys(depois).forEach(function (k) { if (txt(antes[k]) !== txt(depois[k])) campos[k] = depois[k]; });
+  return campos;
+}
+// Texto aprovado: só na tela do paciente, em registro ou escala criados pelo profissional
+function vmcFaixaCriadoHtml_(reg) {
+  if (PROF_SESSAO || !reg || reg.criado_por !== 'profissional') return '';
+  const d = new Date(String(reg.timestamp || ''));
+  if (isNaN(d.getTime())) return '';
+  return '<span class="vmc-carimbo">registrado pelo seu psicólogo em ' + ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2) + '</span>';
+}
+
+// "Novo registro", "Nova escala" e a edição de escala do profissional abrem as MESMAS telas do paciente. Enquanto
+// PROF_FLUXO existe: a sessão do fluxo é a do paciente selecionado (carregarSessao), o envio vira a ação do
+// profissional, as leituras do paciente saem do que o profissional já carregou, os cadeados de primeira vez não
+// valem e qualquer destino fora do fluxo devolve à tela do paciente (abrirSecao).
+var PROF_FLUXO = null; // { sigla, edicaoEscala: { timestamp, reg, original } }
+function profFluxoTelas_() { return fluxoRegistroTelas().concat(['sec-automonitoramento', 'sec-auto-instrucoes', 'sec-escalas-aplicar']); }
+function profFluxoAdaptar_(acao, dados) {
+  if (!PROF_FLUXO) return null;
+  const sel = PROF_PACIENTE_SEL || {};
+  if (acao === 'salvarAutomonitoramento') return { acao: 'profCriarAutomonitoramento', dados: Object.assign({}, dados, { siglaPaciente: PROF_FLUXO.sigla }) };
+  if (acao === 'salvarEscala') return { acao: 'profCriarEscala', dados: Object.assign({}, dados, { siglaPaciente: PROF_FLUXO.sigla }) };
+  if (acao === 'lerHistorico') {
+    const regs = sel.automonitoramento || [];
+    return { resposta: { ok: true, automonitoramento: regs, total_registros: regs.length, tem_mais: false, tem_negativo: true,
+      anamnese: sel.anamnese || null, anamnese_preenchida: !!sel.anamnese } };
+  }
+  if (acao === 'lerEscalas') { const escs = sel.escalas || []; return { resposta: { ok: true, escalas: escs, total: escs.length, tem_mais: false } }; }
+  if (acao === 'lerRascunhos') return { resposta: { ok: true, rascunhos: [] } }; // o rascunho no servidor é só do paciente
+  return null;
+}
+function profFluxoEncerrar_(msgOk) {
+  const sigla = PROF_FLUXO ? PROF_FLUXO.sigla : '';
+  PROF_FLUXO = null;
+  autoResetState();
+  ESC_STATE.escalaAtual = null; ESC_STATE.respostas = {}; ESC_STATE.inicioPreenchimento = null;
+  P5_STATE.verificado = false; P5_STATE.primeiraVez = false;
+  descartarCachesPaciente_();
+  if (!sigla || !PROF_SESSAO) return;
+  profAbrirPaciente(sigla).then(function () { if (msgOk) vmcAvisoOkNaTela(msgOk); });
+}
+
 async function chamarServidor(acao, dados = {}) {
+  const prof = profFluxoAdaptar_(acao, dados); // 18.5: fluxo do paciente aberto pelo profissional
+  if (prof && prof.resposta) return prof.resposta;
+  if (prof) { acao = prof.acao; dados = prof.dados; }
   const payload = { acao, ...dados };
   // 18.1.6: um token vindo do chamador (aceite antes de entrar) tem prioridade sobre o da sessão
   if (VMC_ACOES_PUBLICAS.indexOf(acao) === -1 && !payload.token) payload.token = vmcTokenSessao_();
@@ -7763,6 +7846,8 @@ function secaoAtivaId() {
 }
 
 function abrirSecao(idSecao) {
+  // 18.5: fluxo do paciente aberto pelo profissional — destino fora do fluxo devolve à tela do paciente
+  if (PROF_FLUXO && profFluxoTelas_().indexOf(idSecao) === -1) { profFluxoEncerrar_(); return; }
   var alvo = document.getElementById(idSecao);
   var bloco = (alvo && alvo.classList.contains('auto-tipo')) ? alvo : null;
   var secFisica = bloco ? bloco.closest('.section') : alvo;
@@ -7833,10 +7918,12 @@ function abrirModulo(modulo) {
    SESSÃO DO PACIENTE
    ============================================================ */
 function salvarSessao(paciente) {
+  if (PROF_FLUXO) return; // 18.5: no fluxo aberto pelo profissional não existe sessão de paciente para gravar
   sessionStorage.setItem('paciente', JSON.stringify(paciente));
 }
 
 function carregarSessao() {
+  if (PROF_FLUXO) return { sigla: PROF_FLUXO.sigla }; // 18.5: o paciente selecionado; o crachá continua o do profissional
   const dado = sessionStorage.getItem('paciente');
   return dado ? JSON.parse(dado) : null;
 }
@@ -8001,7 +8088,7 @@ function iniRenderContinuidade(d) {
       html += iniLinha('Último registro',
         formatarDataBR(ultimo.data_registro) + (txtDias ? ' · ' + txtDias : ''));
     }
-    html += iniLinha('Registros no total', regs.length);
+    html += iniLinha('Registros no total', Math.max(regs.length, PEV_STATE.total || 0)); // 18.5 (8.87): o total vem do servidor; a lista é só a página mais recente
   }
 
   if (escs.length > 0) {
@@ -8018,6 +8105,8 @@ function iniRenderContinuidade(d) {
 // Leitura silenciosa: sem overlay e sem faixa de erro global. 16.4.6: com a regra de repetição da
 // leitura curta (erro que não é estouro de tempo repete uma vez) e o pedido em andamento compartilhado.
 async function iniLerQuieto(acao, dados) {
+  const prof = profFluxoAdaptar_(acao, dados); // 18.5 (lição 100: todo caminho que fala com o servidor)
+  if (prof && prof.resposta) return prof.resposta;
   const geracao = VMC_GERACAO_SESSAO; // 18.1.2 (8.69)
   try {
     // Pacote 18.1: leitura silenciosa também leva o crachá e respeita a sessão expirada.
@@ -8060,9 +8149,7 @@ async function iniCarregarContinuidade() {
       registros = PEV_STATE.registros;
     } else if (par[0] && par[0].ok) {
       registros = par[0].automonitoramento || [];
-      PEV_STATE.registros = registros;
-      PEV_STATE.carregadoEm = agora;
-      PEV_STATE.invalidado = false;
+      pevGuardar_(par[0], agora);
       var an = par[0].anamnese;
       // 18.1.2 (8.69): nunca regravar a sessão com o objeto lido antes do await — relê e só mescla o nome
       // se o crachá ainda for o mesmo
@@ -8077,11 +8164,7 @@ async function iniCarregarContinuidade() {
     if (temEsc) {
       escalas = ESC_HIST_STATE.registros;
     } else if (par[1] && par[1].ok) {
-      escalas = (Array.isArray(par[1].escalas) ? par[1].escalas : []).slice();
-      escalas.sort(function (a, b) { return escHistChaveTemporal(b) - escHistChaveTemporal(a); });
-      ESC_HIST_STATE.registros = escalas;
-      ESC_HIST_STATE.carregadoEm = agora;
-      ESC_HIST_STATE.invalidado = false;
+      escalas = escHistGuardar_(par[1], agora); // 18.5: ordena e guarda (lista, se há anteriores)
     }
 
     if (registros === null || escalas === null) { iniRenderErro(); return; }
@@ -8776,6 +8859,7 @@ async function profCarregarDashboard() {
     var metaParts = [];
     if (p.data_anamnese) metaParts.push('Anamnese: ' + p.data_anamnese);
     if (p.data_cadastro)  metaParts.push('Cadastro: '  + p.data_cadastro);
+    if (p.aceite_em)      metaParts.push('Aceite: '    + p.aceite_em); // 18.5: data do aceite da Política de Privacidade
     var metaStr = metaParts.join(' · ');
     var r = '<div class="prof-pac-card" data-sigla="' + esc(sigla) + '" onclick="profAbrirPaciente(this.dataset.sigla)">'; // 18.3: dado fora do JS do onclick
     r +=   '<div class="prof-pac-avatar">' + esc(iniciais) + '</div>';
@@ -8925,6 +9009,9 @@ async function profAbrirPaciente(sigla) {
   PROF_PACIENTE_SEL.anamnese = resp.anamnese || null; // Pacote 13.4: guardar para edição
   PROF_PACIENTE_SEL.ativo = String(resp.ativo || 'Sim').trim(); // Pacote 13.5
   PROF_PACIENTE_SEL.contato = resp.contato || { email: '', telefone: '' }; // Pacote 18.1: cadastro (Controle)
+  // 18.5: o que os fluxos abertos pelo profissional leem no lugar de lerHistorico/lerEscalas
+  PROF_PACIENTE_SEL.automonitoramento = resp.automonitoramento || [];
+  PROF_PACIENTE_SEL.escalas = resp.escalas || [];
 
   var iniciaisNome = nome.split(' ').filter(function(w){ return w.length > 0; })
     .map(function(w){ return w[0].toUpperCase(); }).slice(0,2).join('');
@@ -8989,6 +9076,7 @@ async function profAbrirPaciente(sigla) {
   html += '<span class="prof-pv-mod-chevron">›</span>';
   html += '</div>';
   html += '<div class="prof-pv-mod-body">';
+  html += '<div class="prof-acoes-mod"><button class="prof-btn-acao" type="button" onclick="profNovoRegistro()"><svg class=ico aria-hidden=true><use href=#i-plus-circle></use></svg> Novo registro</button></div>'; // 18.5
   html += profRenderizarAutomonitoramento_(resp.automonitoramento || []);
   html += '</div></div>';
 
@@ -9002,6 +9090,8 @@ async function profAbrirPaciente(sigla) {
   html += '<span class="prof-pv-mod-chevron">›</span>';
   html += '</div>';
   html += '<div class="prof-pv-mod-body" id="profModEscBody">';
+  html += '<div class="prof-acoes-mod"><button class="prof-btn-acao" type="button" onclick="profNovaEscala()"><svg class=ico aria-hidden=true><use href=#i-plus-circle></use></svg> Nova escala</button></div>'; // 18.5
+  html += '<div class="prof-acoes-mod" id="profNovaEscalaLista" hidden></div>';
   html += profRenderizarEscalas_(resp.escalas || []);
   html += '</div></div>';
 
@@ -9009,6 +9099,87 @@ async function profAbrirPaciente(sigla) {
 
   container.innerHTML = html;
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ---- 18.5: o profissional cria registro e escala e edita escala pelos mesmos fluxos do paciente ---- */
+function profNovoRegistro() {
+  if (!PROF_SESSAO || !PROF_PACIENTE_SEL) return;
+  PROF_FLUXO = { sigla: PROF_PACIENTE_SEL.sigla };
+  autoResetState();
+  P5_STATE.verificado = false;
+  PEV_STATE.registros = []; PEV_STATE.invalidado = true; // nada do paciente anterior serve a este
+  iniNovoRegistro();
+}
+// "Nova escala": lista dos instrumentos (os de texto protegido só quando liberados pelo servidor)
+async function profNovaEscala() {
+  const box = document.getElementById('profNovaEscalaLista');
+  if (!box || !PROF_SESSAO || !PROF_PACIENTE_SEL) return;
+  if (!box.hidden) { box.hidden = true; return; }
+  if (ESC_LIBERADOS === null) {
+    PROF_FLUXO = { sigla: PROF_PACIENTE_SEL.sigla }; // a pergunta ao servidor usa a sessão do fluxo
+    await escCarregarLiberados();
+    PROF_FLUXO = null;
+  }
+  const liberados = ESC_LIBERADOS || [];
+  box.innerHTML = ESC_HIST_ORDEM.filter(function (cod) {
+    const d = ESC_ESCALAS[cod];
+    return d && (!d.textoDaAba || liberados.indexOf(d.instrumentoId) !== -1);
+  }).map(function (cod) {
+    return '<button class="prof-btn-acao" type="button" data-esc="' + esc(cod) + '" onclick="profEscalaIniciar_(this.dataset.esc)">' + esc(cod) + '</button>';
+  }).join('');
+  box.hidden = false;
+}
+// Abre a tela de aplicação no fluxo do profissional; com edicao = { timestamp, reg }, já com as respostas gravadas
+async function profEscalaIniciar_(cod, edicao) {
+  if (!PROF_SESSAO || !PROF_PACIENTE_SEL) return;
+  const def = ESC_ESCALAS[cod];
+  PROF_FLUXO = { sigla: PROF_PACIENTE_SEL.sigla };
+  if (edicao) PROF_FLUXO.edicaoEscala = edicao;
+  await escIniciarAplicacao(cod);
+  if (!PROF_FLUXO) return;
+  if (secaoAtivaId() !== 'sec-escalas-aplicar') { PROF_FLUXO = null; return; } // a escala não abriu (aviso na tela)
+  if (!edicao || !def) return;
+  const reg = edicao.reg, respostas = {}, letras = {};
+  String(reg.observacoes || '').split(';').forEach(function (p) { const m = /i(\d+)=(\w+)/.exec(p); if (m) letras[m[1]] = m[2]; });
+  def.itens.forEach(function (item) {
+    const v = reg['item_' + String(item.id).padStart(2, '0')];
+    if (v !== '' && v !== null && v !== undefined) respostas[item.id] = letras[item.id] || String(v);
+  });
+  if (def.itemFuncional && reg.item_funcional !== '' && reg.item_funcional !== null && reg.item_funcional !== undefined) respostas.funcional = Number(reg.item_funcional);
+  ESC_STATE.respostas = respostas;
+  edicao.original = escColunasDasRespostas_(def, respostas);
+  document.querySelectorAll('#escItens .esc-opcao').forEach(function (b) {
+    b.classList.toggle('selecionada', respostas[b.dataset.item] !== undefined && String(b.dataset.valor) === String(respostas[b.dataset.item]));
+  });
+  // carimbo junto de cada item já alterado
+  def.itens.forEach(function (item) {
+    const caixa = document.getElementById('escItemBox-' + item.id);
+    if (caixa) caixa.insertAdjacentHTML('beforeend', vmcCarimboHtml_(reg, 'item_' + String(item.id).padStart(2, '0')));
+  });
+  const funcional = document.querySelector('#escItens .esc-item-funcional');
+  if (funcional) funcional.insertAdjacentHTML('beforeend', vmcCarimboHtml_(reg, ['item_funcional', 'item_funcional_texto']));
+  escAtualizarProgresso();
+}
+function profEditarEscalaAbrir(idxGlobal) {
+  const reg = ESC_HIST_STATE.registros[idxGlobal];
+  if (!reg || !PROF_SESSAO) return;
+  escHistFecharDetalhe();
+  profEscalaIniciar_(String(reg.instrumento || '').trim(), { timestamp: String(reg.timestamp || ''), reg: reg });
+}
+async function profEditarEscalaEnviar_(def) {
+  const ed = PROF_FLUXO.edicaoEscala;
+  const campos = vmcCamposAlterados_(ed.original || {}, escColunasDasRespostas_(def, ESC_STATE.respostas));
+  if (!Object.keys(campos).length) { profFluxoEncerrar_(); return; } // nada mudou: nada a gravar
+  const btn = document.getElementById('escBtnEnviar');
+  btn.disabled = true;
+  const resp = await chamarServidor('profEditarEscala', { siglaPaciente: PROF_FLUXO.sigla, timestamp: ed.timestamp, campos: campos, id_envio: vmcNovoIdEnvio_() });
+  if (!resp || !resp.ok) {
+    btn.disabled = false;
+    if (resp && resp.codigo === 'sessao_expirada') return;
+    vmcAvisoNaTela('Não foi possível salvar a escala: ' + ((resp && resp.erro) || 'Erro ao salvar escala'), document.querySelector('#sec-escalas-aplicar .esc-nav'));
+    return;
+  }
+  profFluxoEncerrar_(resp.mensagem);
 }
 
 /* Monta o header da tela do paciente (DRY) */
@@ -9048,7 +9219,7 @@ function profToggleModulo_(id) {
  * Renderiza a anamnese em modo read-only (conteúdo do card colapsável).
  */
 function profRenderizarAnamnese_(dados) {
-  var linha = function(label, valor) {
+  var linha = function(label, valor, chave) {
     var v;
     if (valor === undefined || valor === null || valor === '') {
       v = '<span class="empty">— não informado —</span>';
@@ -9057,7 +9228,7 @@ function profRenderizarAnamnese_(dados) {
     } else {
       v = profEscHtml_(String(valor));
     }
-    return '<div class="review-row"><strong>' + label + '</strong><span>' + v + '</span></div>';
+    return '<div class="review-row"><strong>' + label + '</strong><span>' + v + (chave ? vmcCarimboHtml_(dados, chave) : '') + '</span></div>'; // 18.5: carimbo do campo
   };
 
   var dnasc = dados.data_nascimento;
@@ -9069,61 +9240,61 @@ function profRenderizarAnamnese_(dados) {
 
   // Seção 1
   html += '<div class="review-section"><h4>1. Dados Pessoais</h4>';
-  html += linha('Nome completo', dados.nome_completo);
-  html += linha('Data de nascimento', dataFmt);
-  html += linha('RG', dados.rg);
-  html += linha('CPF', dados.cpf);
-  html += linha('Telefone', dados.telefone);
-  html += linha('E-mail', dados.email);
-  html += linha('Escolaridade', dados.escolaridade);
-  html += linha('Profissão', dados.profissao);
-  html += linha('Estado civil', dados.estado_civil);
-  html += linha('Reside fora do Brasil?', dados.reside_fora_brasil);
+  html += linha('Nome completo', dados.nome_completo, 'nome_completo');
+  html += linha('Data de nascimento', dataFmt, 'data_nascimento');
+  html += linha('RG', dados.rg, 'rg');
+  html += linha('CPF', dados.cpf, 'cpf');
+  html += linha('Telefone', dados.telefone, 'telefone');
+  html += linha('E-mail', dados.email, 'email');
+  html += linha('Escolaridade', dados.escolaridade, 'escolaridade');
+  html += linha('Profissão', dados.profissao, 'profissao');
+  html += linha('Estado civil', dados.estado_civil, 'estado_civil');
+  html += linha('Reside fora do Brasil?', dados.reside_fora_brasil, 'reside_fora_brasil');
   if (dados.reside_fora_brasil === 'Sim') {
-    html += linha('País', dados.pais);
-    html += linha('ZIP Code', dados.cep_exterior);
-    html += linha('Endereço', dados.endereco_exterior);
+    html += linha('País', dados.pais, 'pais');
+    html += linha('ZIP Code', dados.cep_exterior, 'cep_exterior');
+    html += linha('Endereço', dados.endereco_exterior, 'endereco_exterior');
   } else {
-    html += linha('CEP', dados.cep);
-    html += linha('Estado', dados.estado);
-    html += linha('Cidade', dados.cidade);
-    html += linha('Logradouro', dados.endereco_logradouro);
-    html += linha('Número', dados.endereco_numero);
-    html += linha('Complemento', dados.endereco_complemento);
-    html += linha('Bairro', dados.endereco_bairro);
+    html += linha('CEP', dados.cep, 'cep');
+    html += linha('Estado', dados.estado, 'estado');
+    html += linha('Cidade', dados.cidade, 'cidade');
+    html += linha('Logradouro', dados.endereco_logradouro, 'endereco_logradouro');
+    html += linha('Número', dados.endereco_numero, 'endereco_numero');
+    html += linha('Complemento', dados.endereco_complemento, 'endereco_complemento');
+    html += linha('Bairro', dados.endereco_bairro, 'endereco_bairro');
   }
   html += '</div>';
 
   // Seção 2
   html += '<div class="review-section"><h4>2. Histórico de Tratamentos</h4>';
-  html += linha('Psicoterapia / psiquiatria anterior?', dados.psicoterapia_anterior);
-  if (dados.psicoterapia_anterior === 'Sim') html += linha('Detalhes', dados.tratamentos_anteriores);
-  html += linha('Procedimento médico (12m)', dados.procedimento_medico_12m);
-  if (dados.procedimento_medico_12m === 'Sim') html += linha('Detalhes do procedimento', dados.procedimento_medico_detalhes);
-  html += linha('Medicação não psicotrópica', dados.medicacao_nao_psico_continua);
-  if (dados.medicacao_nao_psico_continua === 'Sim') html += linha('Detalhes (não psico)', dados.medicacao_nao_psico_detalhes);
-  html += linha('Medicação psicotrópica', dados.medicacao_psico);
+  html += linha('Psicoterapia / psiquiatria anterior?', dados.psicoterapia_anterior, 'psicoterapia_anterior');
+  if (dados.psicoterapia_anterior === 'Sim') html += linha('Detalhes', dados.tratamentos_anteriores, 'tratamentos_anteriores');
+  html += linha('Procedimento médico (12m)', dados.procedimento_medico_12m, 'procedimento_medico_12m');
+  if (dados.procedimento_medico_12m === 'Sim') html += linha('Detalhes do procedimento', dados.procedimento_medico_detalhes, 'procedimento_medico_detalhes');
+  html += linha('Medicação não psicotrópica', dados.medicacao_nao_psico_continua, 'medicacao_nao_psico_continua');
+  if (dados.medicacao_nao_psico_continua === 'Sim') html += linha('Detalhes (não psico)', dados.medicacao_nao_psico_detalhes, 'medicacao_nao_psico_detalhes');
+  html += linha('Medicação psicotrópica', dados.medicacao_psico, 'medicacao_psico');
   if (dados.medicacao_psico === 'Sim') {
-    html += linha('Em uso atual', dados.medicacao_psico_atual);
-    html += linha('Uso no passado', dados.medicacao_psico_passado);
-    html += linha('Observações', dados.medicacao_psico_detalhes);
+    html += linha('Em uso atual', dados.medicacao_psico_atual, 'medicacao_psico_atual');
+    html += linha('Uso no passado', dados.medicacao_psico_passado, 'medicacao_psico_passado');
+    html += linha('Observações', dados.medicacao_psico_detalhes, 'medicacao_psico_detalhes');
   }
   html += '</div>';
 
   // Seção 3
   html += '<div class="review-section"><h4>3. Histórico de Saúde</h4>';
-  html += linha('Em tratamento atual', dados.transtornos_em_tratamento);
-  html += linha('Tratamento no passado', dados.transtornos_tratamento_passado);
-  html += linha('Diagnosticados sem tratamento', dados.transtornos_sem_tratamento);
-  html += linha('Suspeitas (sem diagnóstico formal)', dados.transtornos_suspeitados);
-  html += linha('Outros', dados.transtornos_outros_texto);
-  html += linha('Familiar com transtorno?', dados.familiar_transtorno);
-  if (dados.familiar_transtorno === 'Sim') html += linha('Detalhes', dados.familiar_transtorno_detalhes);
-  html += linha('Sinais de risco', dados.sinais_risco_marcados);
-  html += linha('Condições clínicas', dados.complicacoes_clinicas);
-  html += linha('Outras condições', dados.complicacoes_outros_texto);
-  html += linha('Familiar com condição clínica?', dados.familiar_complicacao);
-  if (dados.familiar_complicacao === 'Sim') html += linha('Detalhes', dados.familiar_complicacao_detalhes);
+  html += linha('Em tratamento atual', dados.transtornos_em_tratamento, 'transtornos_em_tratamento');
+  html += linha('Tratamento no passado', dados.transtornos_tratamento_passado, 'transtornos_tratamento_passado');
+  html += linha('Diagnosticados sem tratamento', dados.transtornos_sem_tratamento, 'transtornos_sem_tratamento');
+  html += linha('Suspeitas (sem diagnóstico formal)', dados.transtornos_suspeitados, 'transtornos_suspeitados');
+  html += linha('Outros', dados.transtornos_outros_texto, 'transtornos_outros_texto');
+  html += linha('Familiar com transtorno?', dados.familiar_transtorno, 'familiar_transtorno');
+  if (dados.familiar_transtorno === 'Sim') html += linha('Detalhes', dados.familiar_transtorno_detalhes, 'familiar_transtorno_detalhes');
+  html += linha('Sinais de risco', dados.sinais_risco_marcados, 'sinais_risco_marcados');
+  html += linha('Condições clínicas', dados.complicacoes_clinicas, 'complicacoes_clinicas');
+  html += linha('Outras condições', dados.complicacoes_outros_texto, 'complicacoes_outros_texto');
+  html += linha('Familiar com condição clínica?', dados.familiar_complicacao, 'familiar_complicacao');
+  if (dados.familiar_complicacao === 'Sim') html += linha('Detalhes', dados.familiar_complicacao_detalhes, 'familiar_complicacao_detalhes');
   html += '</div>';
 
   // Seção 4
@@ -9132,10 +9303,10 @@ function profRenderizarAnamnese_(dados) {
     var nomePessoa = dados['pessoa_confianca_' + i + '_nome'];
     if (!nomePessoa && i > 1) continue;
     html += '<div style="margin-top:' + (i > 1 ? '10px' : '0') + ';font-weight:700;color:var(--c-action);font-size:13px;">Pessoa ' + i + '</div>';
-    html += linha('Nome', dados['pessoa_confianca_' + i + '_nome']);
-    html += linha('Relação', dados['pessoa_confianca_' + i + '_relacao']);
-    html += linha('Telefone', dados['pessoa_confianca_' + i + '_telefone']);
-    html += linha('E-mail', dados['pessoa_confianca_' + i + '_email']);
+    html += linha('Nome', dados['pessoa_confianca_' + i + '_nome'], 'pessoa_confianca_' + i + '_nome');
+    html += linha('Relação', dados['pessoa_confianca_' + i + '_relacao'], 'pessoa_confianca_' + i + '_relacao');
+    html += linha('Telefone', dados['pessoa_confianca_' + i + '_telefone'], 'pessoa_confianca_' + i + '_telefone');
+    html += linha('E-mail', dados['pessoa_confianca_' + i + '_email'], 'pessoa_confianca_' + i + '_email');
   }
   html += '</div>';
 
@@ -9551,10 +9722,11 @@ document.addEventListener('keydown', function(evt) {
 
 function profIniciarEdicaoAnamnese_() {
   var dados = PROF_PACIENTE_SEL ? PROF_PACIENTE_SEL.anamnese : null;
-  if (!dados) { alert('Sem dados de anamnese para editar.'); return; }
+  if (!dados) { vmcAvisoNaTela('Sem dados de anamnese para editar.'); return; } // 18.5 (8.31): era alert()
   var container = document.getElementById('profModAnamBody');
   if (!container) return;
   container.innerHTML = profRenderizarAnamneseEditavel_(dados);
+  PROF_ANAM_ORIGINAL = profColetarAnamnese_(); // 18.5: base do envio só dos campos alterados
   // Pacote 18.1: e-mail e telefone do cadastro (Controle); com a Controle vazia, nascem com os valores da anamnese
   var c = PROF_PACIENTE_SEL.contato || {};
   var emailIni = c.email || String(dados.email || '').trim().toLowerCase();
@@ -9582,11 +9754,11 @@ function profRenderizarAnamneseEditavel_(d) {
 
   var inp = function(label, key) {
     return '<div class="prof-edit-field"><label>' + label + '</label>' +
-      '<input type="text" id="profEd_' + key + '" value="' + esc(v(key)) + '"></div>';
+      '<input type="text" id="profEd_' + key + '" value="' + esc(v(key)) + '">' + vmcCarimboHtml_(d, key) + '</div>';
   };
   var ta = function(label, key) {
     return '<div class="prof-edit-field"><label>' + label + '</label>' +
-      '<textarea id="profEd_' + key + '">' + esc(v(key)) + '</textarea></div>';
+      '<textarea id="profEd_' + key + '">' + esc(v(key)) + '</textarea>' + vmcCarimboHtml_(d, key) + '</div>';
   };
   var sel = function(label, key) {
     var val = v(key);
@@ -9595,7 +9767,7 @@ function profRenderizarAnamneseEditavel_(d) {
       '<option value=""' + (!val ? ' selected' : '') + '>—</option>' +
       '<option value="Sim"' + (val === 'Sim' ? ' selected' : '') + '>Sim</option>' +
       '<option value="Não"' + (val === 'Não' ? ' selected' : '') + '>Não</option>' +
-      '</select></div>';
+      '</select>' + vmcCarimboHtml_(d, key) + '</div>';
   };
 
   var html = '<div class="anam-card">';
@@ -9604,7 +9776,7 @@ function profRenderizarAnamneseEditavel_(d) {
   html += '<div class="review-section"><h4>1. Dados Pessoais</h4>';
   html += inp('Nome completo', 'nome_completo');
   html += '<div class="prof-edit-field"><label>Data de nascimento</label>' +
-    '<input type="date" id="profEd_data_nascimento" value="' + esc(v('data_nascimento')) + '"></div>';
+    '<input type="date" id="profEd_data_nascimento" value="' + esc(v('data_nascimento').slice(0, 10)) + '">' + vmcCarimboHtml_(d, 'data_nascimento') + '</div>';
   html += inp('RG', 'rg') + inp('CPF', 'cpf');
   // Pacote 18.1: campos de cadastro (valores postos por .value em profIniciarEdicaoAnamnese_) + convite
   html += '<div class="prof-edit-field"><label for="profEdContatoEmail">E-mail do paciente</label>' +
@@ -9676,19 +9848,25 @@ function profRenderizarAnamneseEditavel_(d) {
   return html;
 }
 
+// 18.5: valores do formulário de edição da anamnese (a base é coletada ao abrir; o envio leva só a diferença)
+var PROF_ANAM_ORIGINAL = null;
+function profColetarAnamnese_() {
+  var dados = {};
+  for (var i = 0; i < HEADERS_ANAMNESE_FRONT.length; i++) {
+    var el = document.getElementById('profEd_' + HEADERS_ANAMNESE_FRONT[i]);
+    if (el) dados[HEADERS_ANAMNESE_FRONT[i]] = el.value;
+  }
+  return dados;
+}
+
 async function profSalvarAnamnesePaciente_() {
   if (!PROF_SESSAO || !PROF_PACIENTE_SEL) return;
 
   var btn = document.getElementById('profEditSalvarBtn');
   if (btn) { btn.disabled = true; btn.textContent = 'Salvando…'; }
 
-  // Coletar todos os campos
-  var dados = {};
-  var campos = HEADERS_ANAMNESE_FRONT;
-  for (var i = 0; i < campos.length; i++) {
-    var el = document.getElementById('profEd_' + campos[i]);
-    if (el) dados[campos[i]] = el.value;
-  }
+  // 18.5: só os campos alterados seguem para o servidor
+  var campos = vmcCamposAlterados_(PROF_ANAM_ORIGINAL || {}, profColetarAnamnese_());
 
   // Pacote 18.1: contato vai para o cadastro (Controle); o servidor espelha na anamnese
   var contato = {
@@ -9697,23 +9875,26 @@ async function profSalvarAnamnesePaciente_() {
   };
   var resp = await chamarServidor('profSalvarAnamnese', {
     siglaPaciente: PROF_PACIENTE_SEL.sigla,
-    dados: dados,
-    contato: contato
+    campos: campos,
+    contato: contato,
+    id_envio: vmcNovoIdEnvio_()
   });
 
   if (!resp.ok) {
-    alert('Erro ao salvar: ' + (resp.erro || 'Erro desconhecido'));
     if (btn) { btn.disabled = false; btn.textContent = 'Salvar Alterações'; }
+    if (resp.codigo !== 'sessao_expirada') vmcAvisoNaTela('Erro ao salvar: ' + (resp.erro || 'Erro desconhecido'), btn && btn.parentNode); // 18.5 (8.31): era alert()
     return;
   }
 
-  // Atualizar dados em memória e voltar para read-only
+  // Atualizar dados em memória (só o que mudou, mais o carimbo devolvido pelo servidor) e voltar para read-only
   profEsquecerLinkSeEmailMudou_(contato.email);
   PROF_PACIENTE_SEL.contato = contato;
-  dados.email = contato.email; dados.telefone = contato.telefone;
-  PROF_PACIENTE_SEL.anamnese = dados;
+  var anam = PROF_PACIENTE_SEL.anamnese;
+  for (var k in campos) anam[k] = campos[k];
+  anam.email = contato.email; anam.telefone = contato.telefone;
+  if (resp.autoria_campos) anam.autoria_campos = resp.autoria_campos;
   profCancelarEdicaoAnamnese_();
-  alert('Anamnese salva com sucesso!');
+  vmcAvisoOkNaTela('Anamnese salva com sucesso!'); // 18.5 (8.31): era alert()
 }
 
 // Lista de campos da anamnese para coleta (espelha HEADERS_ANAMNESE do backend, sem timestamp e versao_formulario)
@@ -9870,7 +10051,7 @@ document.addEventListener('keydown', function(ev) {
  */
 function pacIniciarEdicaoAnamnese() {
   var dados = ANAM_STATE.dadosConsulta;
-  if (!dados) { alert('Sem dados para editar.'); return; }
+  if (!dados) { vmcAvisoNaTela('Sem dados para editar.'); return; } // 18.5 (8.31): era alert()
 
   // Converter dados do servidor para formato de rascunho
   var rascunhoDados = {};
@@ -9890,6 +10071,7 @@ function pacIniciarEdicaoAnamnese() {
   if (rascunhoDados.pessoa_confianca_2_nome) numPessoas = 2;
   if (rascunhoDados.pessoa_confianca_3_nome) numPessoas = 3;
 
+  ANAM_STATE.baseEdicao = Object.assign({}, rascunhoDados); // 18.5: base do envio só dos campos alterados
   // Salvar como rascunho para que restaurarValoresDoRascunho() preencha os campos
   gravarRascunhoAnamnese_({
     passo: 1,
@@ -9916,12 +10098,14 @@ function descartarCachesPaciente_() {
     Object.keys(PEV_STATE.charts || {}).forEach(function (k) { try { PEV_STATE.charts[k] && PEV_STATE.charts[k].destroy(); } catch (e) {} });
     PEV_STATE.charts = {};
     PEV_STATE.registros = [];
+    PEV_STATE.total = 0; PEV_STATE.temMais = false; PEV_STATE.temNegativo = false; PEV_STATE.completando = false; // 18.5
     PEV_STATE.carregadoEm = 0;
     PEV_STATE.invalidado = true;
     PEV_STATE.periodoAuto = true;
   }
   if (typeof ESC_HIST_STATE !== 'undefined') {
     ESC_HIST_STATE.registros = [];
+    ESC_HIST_STATE.temMais = false; // 18.5
     ESC_HIST_STATE.carregadoEm = 0;
     ESC_HIST_STATE.invalidado = true;
     ESC_HIST_STATE.abertos = {};
@@ -9929,6 +10113,7 @@ function descartarCachesPaciente_() {
   }
   if (typeof CHK_ENV !== 'undefined' && CHK_ENV.chart) { try { CHK_ENV.chart.destroy(); } catch (e) {} CHK_ENV.chart = null; }
   window._HIST_REGS = null; // Meus Registros (sem TTL; refeito a cada abertura, mas não fica em memória entre sessões)
+  if (typeof HIST_TEM_MAIS !== 'undefined') HIST_TEM_MAIS = false; // 18.5
 }
 
 // Pacote 18.3 (8.42, A6): SAÍDA ÚNICA de paciente e profissional — ⏻ da barra (pela folha "Sair sem enviar?"),
@@ -9956,6 +10141,7 @@ function sairDoSistema(opcoes) {
   progressoOcultar();
   // profissional (só em memória — lição 23)
   PROF_SESSAO = null;
+  PROF_FLUXO = null; // 18.5
   PROF_PACIENTE_SEL = null;
   PROF_LINK_POR_SIGLA = {}; // 18.1.2: links de convite são da sessão que os gerou
   PROF_CONVITE = { cad: { sigla: '', telefone: '', link: '' }, ed: { sigla: '', telefone: '', link: '' } };
@@ -10078,6 +10264,7 @@ function renderPasso(numero) {
 
   container.innerHTML = html;
   restaurarValoresDoRascunho();
+  if (ANAM_STATE.editando) anamCarimbosAplicar_(); // 18.5
   configurarListenersDoPasso(numero);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -11614,10 +11801,10 @@ function renderRevisao(dados) {
     const nome = dados[`pessoa_confianca_${i}_nome`];
     if (!nome && i > 1) continue; // só mostra blocos preenchidos (exceto o 1)
     html += `<div style="margin-top:${i>1?'10px':'0'};font-weight:700;color:var(--c-action);font-size:13px;">Pessoa ${i}</div>`;
-    html += linha('Nome', dados[`pessoa_confianca_${i}_nome`]);
-    html += linha('Relação', dados[`pessoa_confianca_${i}_relacao`]);
-    html += linha('Telefone', dados[`pessoa_confianca_${i}_telefone`]);
-    html += linha('E-mail', dados[`pessoa_confianca_${i}_email`]);
+    html += linha('Nome', dados[`pessoa_confianca_${i}_nome`], `pessoa_confianca_${i}_nome`);
+    html += linha('Relação', dados[`pessoa_confianca_${i}_relacao`], `pessoa_confianca_${i}_relacao`);
+    html += linha('Telefone', dados[`pessoa_confianca_${i}_telefone`], `pessoa_confianca_${i}_telefone`);
+    html += linha('E-mail', dados[`pessoa_confianca_${i}_email`], `pessoa_confianca_${i}_email`);
   }
   html += '</div>';
 
@@ -11670,10 +11857,15 @@ async function enviarAnamneseDefinitivo() {
   // Pacote 13.4.1: se editando, atualizar em vez de inserir
   var acao = ANAM_STATE.editando ? 'pacienteAtualizarAnamnese' : 'salvarAnamnese';
 
-  const resposta = await chamarServidor(acao, {
-    sigla: paciente.sigla,
-    dados: Object.assign({}, rascunho.dados, { id_envio: vmcNovoIdEnvio_() }), // 18.10 (8.14)
-  });
+  // 18.5: a edição manda só os campos alterados (campos + id_envio); o primeiro envio segue com a linha inteira
+  const corpo = { sigla: paciente.sigla };
+  if (ANAM_STATE.editando && ANAM_STATE.baseEdicao) {
+    corpo.campos = anamCamposAlterados_(ANAM_STATE.baseEdicao, rascunho.dados);
+    corpo.id_envio = vmcNovoIdEnvio_();
+  } else {
+    corpo.dados = Object.assign({}, rascunho.dados, { id_envio: vmcNovoIdEnvio_() }); // 18.10 (8.14)
+  }
+  const resposta = await chamarServidor(acao, corpo);
 
   if (!resposta.ok) {
     // 18.1.2 (8.71): sessão expirada já levou ao login com o aviso; o rascunho fica para a mesma sigla
@@ -11692,6 +11884,28 @@ async function enviarAnamneseDefinitivo() {
   ANAM_STATE.editando = false; // Pacote 13.4.1: resetar flag
   ANAM_STATE.modoConsulta = true;
   await abrirModoConsulta(true);
+}
+
+// 18.5: diferença entre a anamnese carregada e o formulário, campo a campo (e-mail e telefone são do cadastro;
+// campo que saiu do formulário — por exemplo o endereço do exterior ao desmarcar "reside fora" — vai vazio)
+function anamCamposAlterados_(base, novos) {
+  const campos = {};
+  HEADERS_ANAMNESE_FRONT.forEach(function (k) {
+    if (k === 'email' || k === 'telefone') return;
+    let antes = base[k] === undefined || base[k] === null ? '' : String(base[k]);
+    if (k === 'data_nascimento') antes = antes.slice(0, 10);
+    const depois = novos[k] === undefined || novos[k] === null ? '' : String(novos[k]);
+    if (antes !== depois) campos[k] = depois;
+  });
+  return campos;
+}
+// Carimbo junto dos campos do formulário de edição (campos com id f_<coluna>)
+function anamCarimbosAplicar_() {
+  const dados = ANAM_STATE.dadosConsulta; if (!dados) return;
+  Object.keys(vmcAutoria_(dados)).forEach(function (k) {
+    const el = document.getElementById('f_' + k);
+    if (el) el.insertAdjacentHTML('afterend', vmcCarimboHtml_(dados, k));
+  });
 }
 
 /* ============================================================
@@ -11726,7 +11940,7 @@ async function abrirModoConsulta(recemEnviado = false) {
 function renderConsulta(dados, recemEnviado) {
   const container = document.getElementById('anamConteudo');
 
-  const linha = (label, valor) => {
+  const linha = (label, valor, chave) => {
     let v;
     if (valor === undefined || valor === null || valor === '') {
       v = '<span class="empty">— não informado —</span>';
@@ -11735,7 +11949,7 @@ function renderConsulta(dados, recemEnviado) {
     } else {
       v = escapeHtml(String(valor));
     }
-    return `<div class="review-row"><strong>${label}</strong><span>${v}</span></div>`;
+    return `<div class="review-row"><strong>${label}</strong><span>${v}${chave ? vmcCarimboHtml_(dados, chave) : ''}</span></div>`; // 18.5: carimbo do campo
   };
 
   let dnasc = dados.data_nascimento;
@@ -11771,61 +11985,61 @@ function renderConsulta(dados, recemEnviado) {
 
   // Seção 1
   html += '<div class="review-section"><h4>1. Dados Pessoais</h4>';
-  html += linha('Nome completo', dados.nome_completo);
-  html += linha('Data de nascimento', dataFmt);
-  html += linha('RG', dados.rg);
-  html += linha('CPF', dados.cpf);
-  html += linha('Telefone', dados.telefone);
-  html += linha('E-mail', dados.email);
-  html += linha('Escolaridade', dados.escolaridade);
-  html += linha('Profissão', dados.profissao);
-  html += linha('Estado civil', dados.estado_civil);
-  html += linha('Reside fora do Brasil?', dados.reside_fora_brasil);
+  html += linha('Nome completo', dados.nome_completo, 'nome_completo');
+  html += linha('Data de nascimento', dataFmt, 'data_nascimento');
+  html += linha('RG', dados.rg, 'rg');
+  html += linha('CPF', dados.cpf, 'cpf');
+  html += linha('Telefone', dados.telefone, 'telefone');
+  html += linha('E-mail', dados.email, 'email');
+  html += linha('Escolaridade', dados.escolaridade, 'escolaridade');
+  html += linha('Profissão', dados.profissao, 'profissao');
+  html += linha('Estado civil', dados.estado_civil, 'estado_civil');
+  html += linha('Reside fora do Brasil?', dados.reside_fora_brasil, 'reside_fora_brasil');
   if (dados.reside_fora_brasil === 'Sim') {
-    html += linha('País', dados.pais);
-    html += linha('ZIP Code', dados.cep_exterior);
-    html += linha('Endereço', dados.endereco_exterior);
+    html += linha('País', dados.pais, 'pais');
+    html += linha('ZIP Code', dados.cep_exterior, 'cep_exterior');
+    html += linha('Endereço', dados.endereco_exterior, 'endereco_exterior');
   } else {
-    html += linha('CEP', dados.cep);
-    html += linha('Estado', dados.estado);
-    html += linha('Cidade', dados.cidade);
-    html += linha('Logradouro', dados.endereco_logradouro);
-    html += linha('Número', dados.endereco_numero);
-    html += linha('Complemento', dados.endereco_complemento);
-    html += linha('Bairro', dados.endereco_bairro);
+    html += linha('CEP', dados.cep, 'cep');
+    html += linha('Estado', dados.estado, 'estado');
+    html += linha('Cidade', dados.cidade, 'cidade');
+    html += linha('Logradouro', dados.endereco_logradouro, 'endereco_logradouro');
+    html += linha('Número', dados.endereco_numero, 'endereco_numero');
+    html += linha('Complemento', dados.endereco_complemento, 'endereco_complemento');
+    html += linha('Bairro', dados.endereco_bairro, 'endereco_bairro');
   }
   html += '</div>';
 
   // Seção 2
   html += '<div class="review-section"><h4>2. Histórico de Tratamentos</h4>';
-  html += linha('Psicoterapia / psiquiatria anterior?', dados.psicoterapia_anterior);
-  if (dados.psicoterapia_anterior === 'Sim') html += linha('Detalhes', dados.tratamentos_anteriores);
-  html += linha('Procedimento médico (12m)', dados.procedimento_medico_12m);
-  if (dados.procedimento_medico_12m === 'Sim') html += linha('Detalhes do procedimento', dados.procedimento_medico_detalhes);
-  html += linha('Medicação não psicotrópica', dados.medicacao_nao_psico_continua);
-  if (dados.medicacao_nao_psico_continua === 'Sim') html += linha('Detalhes (não psico)', dados.medicacao_nao_psico_detalhes);
-  html += linha('Medicação psicotrópica', dados.medicacao_psico);
+  html += linha('Psicoterapia / psiquiatria anterior?', dados.psicoterapia_anterior, 'psicoterapia_anterior');
+  if (dados.psicoterapia_anterior === 'Sim') html += linha('Detalhes', dados.tratamentos_anteriores, 'tratamentos_anteriores');
+  html += linha('Procedimento médico (12m)', dados.procedimento_medico_12m, 'procedimento_medico_12m');
+  if (dados.procedimento_medico_12m === 'Sim') html += linha('Detalhes do procedimento', dados.procedimento_medico_detalhes, 'procedimento_medico_detalhes');
+  html += linha('Medicação não psicotrópica', dados.medicacao_nao_psico_continua, 'medicacao_nao_psico_continua');
+  if (dados.medicacao_nao_psico_continua === 'Sim') html += linha('Detalhes (não psico)', dados.medicacao_nao_psico_detalhes, 'medicacao_nao_psico_detalhes');
+  html += linha('Medicação psicotrópica', dados.medicacao_psico, 'medicacao_psico');
   if (dados.medicacao_psico === 'Sim') {
-    html += linha('Em uso atual', dados.medicacao_psico_atual);
-    html += linha('Uso no passado', dados.medicacao_psico_passado);
-    html += linha('Observações', dados.medicacao_psico_detalhes);
+    html += linha('Em uso atual', dados.medicacao_psico_atual, 'medicacao_psico_atual');
+    html += linha('Uso no passado', dados.medicacao_psico_passado, 'medicacao_psico_passado');
+    html += linha('Observações', dados.medicacao_psico_detalhes, 'medicacao_psico_detalhes');
   }
   html += '</div>';
 
   // Seção 3
   html += '<div class="review-section"><h4>3. Histórico de Saúde</h4>';
-  html += linha('Em tratamento atual', dados.transtornos_em_tratamento);
-  html += linha('Tratamento no passado', dados.transtornos_tratamento_passado);
-  html += linha('Diagnosticados sem tratamento', dados.transtornos_sem_tratamento);
-  html += linha('Suspeitas (sem diagnóstico formal)', dados.transtornos_suspeitados);
-  html += linha('Outros', dados.transtornos_outros_texto);
-  html += linha('Familiar com transtorno?', dados.familiar_transtorno);
-  if (dados.familiar_transtorno === 'Sim') html += linha('Detalhes', dados.familiar_transtorno_detalhes);
-  html += linha('Sinais de risco', dados.sinais_risco_marcados);
-  html += linha('Condições clínicas', dados.complicacoes_clinicas);
-  html += linha('Outras condições', dados.complicacoes_outros_texto);
-  html += linha('Familiar com condição clínica?', dados.familiar_complicacao);
-  if (dados.familiar_complicacao === 'Sim') html += linha('Detalhes', dados.familiar_complicacao_detalhes);
+  html += linha('Em tratamento atual', dados.transtornos_em_tratamento, 'transtornos_em_tratamento');
+  html += linha('Tratamento no passado', dados.transtornos_tratamento_passado, 'transtornos_tratamento_passado');
+  html += linha('Diagnosticados sem tratamento', dados.transtornos_sem_tratamento, 'transtornos_sem_tratamento');
+  html += linha('Suspeitas (sem diagnóstico formal)', dados.transtornos_suspeitados, 'transtornos_suspeitados');
+  html += linha('Outros', dados.transtornos_outros_texto, 'transtornos_outros_texto');
+  html += linha('Familiar com transtorno?', dados.familiar_transtorno, 'familiar_transtorno');
+  if (dados.familiar_transtorno === 'Sim') html += linha('Detalhes', dados.familiar_transtorno_detalhes, 'familiar_transtorno_detalhes');
+  html += linha('Sinais de risco', dados.sinais_risco_marcados, 'sinais_risco_marcados');
+  html += linha('Condições clínicas', dados.complicacoes_clinicas, 'complicacoes_clinicas');
+  html += linha('Outras condições', dados.complicacoes_outros_texto, 'complicacoes_outros_texto');
+  html += linha('Familiar com condição clínica?', dados.familiar_complicacao, 'familiar_complicacao');
+  if (dados.familiar_complicacao === 'Sim') html += linha('Detalhes', dados.familiar_complicacao_detalhes, 'familiar_complicacao_detalhes');
   html += '</div>';
 
   // Seção 4
@@ -11834,10 +12048,10 @@ function renderConsulta(dados, recemEnviado) {
     const nome = dados[`pessoa_confianca_${i}_nome`];
     if (!nome && i > 1) continue;
     html += `<div style="margin-top:${i>1?'10px':'0'};font-weight:700;color:var(--c-action);font-size:13px;">Pessoa ${i}</div>`;
-    html += linha('Nome', dados[`pessoa_confianca_${i}_nome`]);
-    html += linha('Relação', dados[`pessoa_confianca_${i}_relacao`]);
-    html += linha('Telefone', dados[`pessoa_confianca_${i}_telefone`]);
-    html += linha('E-mail', dados[`pessoa_confianca_${i}_email`]);
+    html += linha('Nome', dados[`pessoa_confianca_${i}_nome`], `pessoa_confianca_${i}_nome`);
+    html += linha('Relação', dados[`pessoa_confianca_${i}_relacao`], `pessoa_confianca_${i}_relacao`);
+    html += linha('Telefone', dados[`pessoa_confianca_${i}_telefone`], `pessoa_confianca_${i}_telefone`);
+    html += linha('E-mail', dados[`pessoa_confianca_${i}_email`], `pessoa_confianca_${i}_email`);
   }
   html += '</div>';
 
@@ -12016,13 +12230,13 @@ async function autoIniciarNovoRegistro() {
 async function lerHistoricoComCache(sigla) {
   const agora = Date.now();
   if (!PEV_STATE.invalidado && PEV_STATE.registros.length > 0 && (agora - PEV_STATE.carregadoEm < PEV_STATE.cacheTtlMs)) {
-    return { ok: true, automonitoramento: PEV_STATE.registros };
+    return { ok: true, automonitoramento: PEV_STATE.registros, total_registros: PEV_STATE.total, tem_negativo: PEV_STATE.temNegativo };
   }
   const geracao = VMC_GERACAO_SESSAO; // 18.1.2 (8.69): o cache só recebe resposta desta sessão
   const resp = await chamarServidor('lerHistorico', { sigla: sigla });
   if (geracao !== VMC_GERACAO_SESSAO) return _respostaDescartada_();
   if (resp && resp.ok && Array.isArray(resp.automonitoramento)) {
-    PEV_STATE.registros = resp.automonitoramento; PEV_STATE.carregadoEm = agora; PEV_STATE.invalidado = false;
+    pevGuardar_(resp, agora);
   }
   return resp;
 }
@@ -12036,7 +12250,7 @@ async function autoVerificarPrimeiroNeg() {
     const resp = await lerHistoricoComCache(paciente.sigla); // 16.4.6: cache de 30 s ou o pedido em andamento
     if (resp && resp.ok) {
       const regs = resp.automonitoramento || [];
-      const algumNeg = regs.some(r => r.neg_preenchido === 'sim');
+      const algumNeg = resp.tem_negativo === true || regs.some(r => r.neg_preenchido === 'sim'); // 18.5: o servidor olha a aba inteira (a leitura é paginada)
       AUTO_STATE.primeiroNegFeitoGlobal = algumNeg;
       // Se já fez negativo antes, libera navegação livre (primeiraVez = false)
       if (algumNeg) {
@@ -12084,7 +12298,7 @@ async function p5VerificarPrimeiraVez() {
       P5_STATE.primeiraVez = regs.length === 0;
       P5_STATE.verificado = true;
       // 16.5c: a página Automonitoramento também precisa saber se já houve um Negativo (Positivo trancado na primeira vez)
-      if (regs.some(r => r.neg_preenchido === 'sim')) { AUTO_STATE.primeiroNegFeitoGlobal = true; AUTO_STATE.primeiraVezNeg = false; AUTO_STATE.primeiraVezPos = false; }
+      if (resp.tem_negativo === true || regs.some(r => r.neg_preenchido === 'sim')) { AUTO_STATE.primeiroNegFeitoGlobal = true; AUTO_STATE.primeiraVezNeg = false; AUTO_STATE.primeiraVezPos = false; }
     } else {
       P5_STATE.falhou = true;
     }
@@ -12106,6 +12320,7 @@ function p5ComoUsarLido() {
 // Se ainda não verificou no servidor, assume bloqueio (default seguro).
 // Se já verificou: bloqueia se primeiraVez é true.
 function p5DeveBloquear() {
+  if (PROF_FLUXO) return false; // 18.5: os cadeados de primeira vez são do paciente
   if (p5ComoUsarLido()) return false;
   if (!P5_STATE.verificado) return true; // default seguro até confirmar
   return P5_STATE.primeiraVez === true;
@@ -12540,12 +12755,13 @@ async function chkCarregarGrafico() {
     if (seq !== CHK_ENV.seq) return; // outra checagem começou enquanto esta resposta viajava
     if (resp && resp.ok) {
       regs = resp.automonitoramento || [];
-      PEV_STATE.registros = regs; PEV_STATE.carregadoEm = agora; PEV_STATE.invalidado = false; // o mesmo preenchimento do cache que o Início faz (periodoAuto fica com o Painel)
+      pevGuardar_(resp, agora); // o mesmo preenchimento do cache que o Início faz (periodoAuto fica com o Painel)
     }
   }
   if (!regs) { chkRenderGraficoErro(); return; }
   CHK_ENV.periodo = pevPeriodoInicial(regs); // menor recorte com ≥ 3 registros, como no Painel
   chkRenderGrafico(regs);
+  pevCompletar_(CHK_ENV.periodo).then(function (mudou) { if (mudou && seq === CHK_ENV.seq) chkRenderGrafico(PEV_STATE.registros); }); // 18.5 (8.87)
 }
 function chkRenderGrafico(regs) {
   const cont = document.getElementById('chkEnvGrafico'); if (!cont) return;
@@ -12563,7 +12779,10 @@ function chkRenderGrafico(regs) {
       '<span class="chk-env-media-num">' + esc(media) + '</span>' + (nivel ? '<span class="chk-env-media-chip">' + HUMOR_NOMES[nivel] + '</span>' : '') + '</div>';
   cont.innerHTML = pevMontarBlocoHumor('chkEnvCanvas', { meio: carregando ? '' : pevMontarSeletor(CHK_ENV.periodo), corpo: corpo, fim: rodape, classe: 'chk-env-bloco' });
   if (carregando) return;
-  pevBindSeletor(cont, function (p) { CHK_ENV.periodo = p; chkRenderGrafico(regs); });
+  pevBindSeletor(cont, function (p) {
+    CHK_ENV.periodo = p; chkRenderGrafico(regs);
+    pevCompletar_(p).then(function (mudou) { if (mudou) chkRenderGrafico(PEV_STATE.registros); }); // 18.5 (8.87)
+  });
   if (recorte.length) { try { CHK_ENV.chart = pevDesenharHumor(recorte, document.getElementById('chkEnvCanvas')); } catch (e) { console.warn('[Checagem enviada] gráfico: ' + e.message); } }
 }
 function chkRenderGraficoErro() {
@@ -12590,6 +12809,7 @@ function hubRascunhoEmAndamento() {
 }
 // Regra dos Pacotes 5/10, preservada: na primeira vez, o Positivo só abre depois do primeiro Negativo
 function hubPositivoTrancado() {
+  if (PROF_FLUXO) return false; // 18.5
   return !AUTO_STATE.primeiroNegFeitoGlobal && AUTO_STATE.primeiraVezNeg && AUTO_STATE.dados.neg_preenchido !== 'sim';
 }
 // Decide tudo o que a página mostra: aviso D11 + cartões bloqueados, linha HUMOR da checagem, aviso de rascunho
@@ -13449,6 +13669,8 @@ async function autoEnviarRegistro(opcoes) {
     if (aviso) { aviso.appendChild(av); av.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
     return;
   }
+  // 18.5: registro criado pelo profissional — volta à tela do paciente com a confirmação do servidor
+  if (PROF_FLUXO) { autoLimparRascunho(); profFluxoEncerrar_(resp.mensagem); return; }
   // 16.5e: o que a tela "Registro enviado" e "Fazer também…" precisam (o estado é zerado logo abaixo)
   const tipoEnviado = AUTO_STATE.ultimoTipoFinalizado || (dadosEnvio.pos_preenchido === 'sim' && dadosEnvio.neg_preenchido !== 'sim' ? 'pos' : 'neg');
   AUTO_STATE.ultimoEnvio = { tipo: tipoEnviado, data_registro: dadosEnvio.data_registro, hora_registro: dadosEnvio.hora_registro,
@@ -13516,6 +13738,7 @@ async function autoAbrirHistorico() {
   // Pacote 16.4b: _HIST_REGS continua sendo a lista COMPLETA — o filtro só decide
   // o que é desenhado; histAbrirModal(idx) recebe sempre o índice deste array.
   window._HIST_REGS = regs;
+  HIST_TEM_MAIS = resp.tem_mais === true; // 18.5 (8.87): a leitura traz os 60 mais recentes
   HIST_FILTRO = 'todos';
   HIST_MESES_ABERTOS = {}; // Pacote 16.4.2: ao entrar na tela, todo mês nasce fechado
 
@@ -13536,6 +13759,22 @@ async function autoAbrirHistorico() {
    Um mesmo registro pode ser negativo, positivo ou os dois.
    ============================================================ */
 var HIST_FILTRO = 'todos';           // 'todos' | 'neg' | 'pos'
+var HIST_TEM_MAIS = false;           // 18.5 (8.87): há registros anteriores aos carregados
+// "Carregar mais": busca a página anterior e junta ao fim da lista (que vai do mais recente ao mais antigo)
+async function histCarregarMais() {
+  const paciente = carregarSessao(); if (!paciente) return;
+  const resp = await chamarServidor('lerHistorico', { sigla: paciente.sigla, antes: (window._HIST_REGS || []).length });
+  if (!resp || !resp.ok || !Array.isArray(resp.automonitoramento)) {
+    if (!resp || resp.codigo !== 'sessao_expirada') histAvisoNaTela('Não foi possível carregar o histórico.');
+    return;
+  }
+  window._HIST_REGS = (window._HIST_REGS || []).concat(resp.automonitoramento.slice().reverse());
+  HIST_TEM_MAIS = resp.tem_mais === true && resp.automonitoramento.length > 0;
+  histRenderizarLista();
+}
+function histBotaoMais_() {
+  return HIST_TEM_MAIS ? '<button type="button" class="vmc-mais" onclick="histCarregarMais()">Carregar mais</button>' : '';
+}
 var HIST_MESES_ABERTOS = {};         // Pacote 16.4.2: { '2026-09': true } — sobrevive à troca de filtro
 var HIST_MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
                   'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -13610,6 +13849,7 @@ function histMontarCartao(r, idx) {
                '<div class="histc-date">' + esc(dataFmt) + ' · ' + esc(hora) + '</div>' +
                '<div class="histc-meta">' + vmcHumorPill_(humor) + tipos + '</div>' +
                (soChecagem && obsHumor ? '<div class="histc-obs">' + esc(obsHumor) + '</div>' : '') + // 18.4: a checagem não tem lupa
+               vmcFaixaCriadoHtml_(r) + // 18.5: "registrado pelo seu psicólogo em dd/mm"
              '</div>' +
              (soChecagem ? '' :
              '<button class="hist-btn-lupa" type="button" title="Ver registro completo"' +
@@ -13642,7 +13882,7 @@ function histRenderizarLista() {
               '<span class="histc-empty-icon"><svg class=ico aria-hidden=true><use href=#i-inbox></use></svg></span>' +
               '<div class="histc-empty-text">Nenhum registro deste tipo ainda.<br>Toque em "Todos" para ver o histórico completo.</div>' +
             '</div>';
-    box.innerHTML = html;
+    box.innerHTML = html + histBotaoMais_();
     return;
   }
 
@@ -13663,7 +13903,7 @@ function histRenderizarLista() {
             '</div>';
   });
 
-  box.innerHTML = html;
+  box.innerHTML = html + histBotaoMais_();
 }
 
 /* ============================================================
@@ -13780,7 +14020,8 @@ async function histAbrirModal(idx) {
     const obsHumor = String(r.humor_observacoes || '').trim(); // 18.4 (8.50): observação da checagem, abaixo do humor
     document.getElementById('histModalHumor').innerHTML =
       (humor ? 'Humor: <strong>' + humor + '/5 ' + (HUMOR_NOMES[humor] || '') + '</strong>' : '<strong>Sem registro de humor</strong>') +
-      (obsHumor ? '<div class="hist-modal-head-obs">' + esc(obsHumor) + '</div>' : '');
+      (obsHumor ? '<div class="hist-modal-head-obs">' + esc(obsHumor) + '</div>' : '') +
+      vmcCarimboHtml_(r, ['humor_nivel', 'humor_observacoes']); // 18.5
 
     // Montar conteúdo completo
     let html = '';
@@ -13812,7 +14053,7 @@ async function histAbrirModal(idx) {
     if (_banner) _banner.style.display = 'none';
     if (_btnEd)  _btnEd.style.display  = '';  // mostra imediatamente
 
-    // Consulta lock em segundo plano — esconde botão só se outro estiver editando
+    // 18.5: a presença virou aviso — se outra pessoa está com este registro em edição, a tela avisa e o Editar continua
     var siglaParaConsulta = '';
     if (PROF_SESSAO && PROF_PACIENTE_SEL) siglaParaConsulta = PROF_PACIENTE_SEL.sigla;
     else { var _pac = (typeof carregarSessao === 'function') ? carregarSessao() : null; if (_pac) siglaParaConsulta = _pac.sigla || ''; }
@@ -13832,9 +14073,8 @@ async function histAbrirModal(idx) {
         if (editandoQuem && editandoQuem !== euChave) {
           var nomeQuem = editandoQuem.startsWith('profissional:') ? 'Profissional' : 'Paciente';
           var siglaQuem = editandoQuem.split(':')[1] || '';
-          if (textoEl)  textoEl.textContent = nomeQuem + (siglaQuem ? ' (' + siglaQuem + ')' : '') + ' está editando este registro';
+          if (textoEl)  textoEl.textContent = nomeQuem + (siglaQuem ? ' (' + siglaQuem + ')' : '') + ' também está editando este registro';
           if (bannerEl) bannerEl.style.display = 'flex';
-          if (btnEditar) btnEditar.style.display = 'none';
         }
       });
     }
@@ -13921,7 +14161,7 @@ async function p136IniciarEdicao() {
   document.getElementById('histModalConteudo').innerHTML = p136RenderFormEdicao_(r);
   p136InicializarBarras_(); // 16.5d-2
   autoLegendaAjustarVisiveis();
-  document.getElementById('p136PresencaBanner').style.display = 'none';
+  P136_ESTADO.original = p136ColetarDados_(); // 18.5: base do envio só dos campos alterados
   document.getElementById('p136EditErro').textContent = '';
 
   // Trocar rodapé
@@ -13949,6 +14189,11 @@ async function p136SalvarEdicao() {
   var eu = P136_ESTADO;
   if (!eu.timestamp) { document.getElementById('p136EditErro').textContent = 'Erro: timestamp não encontrado.'; return; }
 
+  // 18.5: só os campos alterados seguem para o servidor (nada mudou → nada a gravar)
+  var campos = vmcCamposAlterados_(eu.original || {}, dados);
+  if (!Object.keys(campos).length) { p136CancelarEdicao(); return; }
+  var idEnvio = vmcNovoIdEnvio_();
+
   var btn = document.querySelector('#histModalRodape .p136-btn-salvar');
   if (btn) { btn.disabled = true; btn.textContent = 'Salvando…'; }
 
@@ -13956,11 +14201,11 @@ async function p136SalvarEdicao() {
   if (eu.tipo === 'profissional') {
     resp = await chamarServidor('profEditarAutomonitoramento', {
       siglaPaciente: (PROF_PACIENTE_SEL ? PROF_PACIENTE_SEL.sigla : eu.sigla),
-      timestamp: eu.timestamp, dados: dados
+      timestamp: eu.timestamp, campos: campos, id_envio: idEnvio
     });
   } else {
     resp = await chamarServidor('pacienteEditarAutomonitoramento', {
-      sigla: eu.sigla, timestamp: eu.timestamp, dados: dados
+      sigla: eu.sigla, timestamp: eu.timestamp, campos: campos, id_envio: idEnvio
     });
   }
 
@@ -13975,7 +14220,8 @@ async function p136SalvarEdicao() {
   var idx = eu.idx;
   if (window._HIST_REGS && window._HIST_REGS[idx]) {
     var r = window._HIST_REGS[idx];
-    for (var k in dados) r[k] = dados[k];
+    for (var k in campos) r[k] = campos[k];
+    if (resp.autoria_campos) r.autoria_campos = resp.autoria_campos; // 18.5: carimbo de cada campo, do servidor
     r.editado = 'Sim';
     r.editado_por = eu.tipo;
     r.editado_em = resp.editado_em || '';
@@ -14078,10 +14324,11 @@ function p136RenderHumor_(r) {
     h += '<button type="button" class="p136-humor-btn' + (i === nivel ? ' ativo' : '') + '" onclick="p136ToggleHumor(this,' + i + ')">' + vmcHumorIcone(i) + ' ' + i + '</button>';
   }
   h += '</div>';
+  h += vmcCarimboHtml_(r, 'humor_nivel'); // 18.5
   if (!nivel) h += '<div class="p136-humor-vazio" id="p136HumorVazio">Sem registro de humor</div>';
   h += '<input type="hidden" id="p136HumorNivel" value="' + (nivel || '') + '">';
   h += '<div class="prof-edit-field"><label>Observações</label>';
-  h += '<textarea data-campo="humor_observacoes" rows="2">' + escapeHtmlAuto(String(r.humor_observacoes || '')) + '</textarea></div>';
+  h += '<textarea data-campo="humor_observacoes" rows="2">' + escapeHtmlAuto(String(r.humor_observacoes || '')) + '</textarea>' + vmcCarimboHtml_(r, 'humor_observacoes') + '</div>';
   h += '</div>';
   return h;
 }
@@ -14107,7 +14354,7 @@ function p136RenderSecao_(r, tipo) {
   h += '<input type="checkbox" data-campo="' + tipo + '_preenchido"' + (preenchido ? ' checked' : '') + ' onchange="p136ToggleSide(this)" style="width:17px;height:17px;cursor:pointer;"> Ativar este lado do registro</label>';
   h += '<div id="p136Side_' + tipo + '" data-tipo="' + tipo + '"' + (preenchido ? '' : ' style="display:none;"') + '>'; // 16.5d-2: cor do tipo para lista e barra
   h += '<div class="prof-edit-field"><label>Situação (texto livre)</label>';
-  h += '<textarea data-campo="' + tipo + '_sit_o_que" rows="2">' + escapeHtmlAuto(String(r[tipo + '_sit_o_que'] || '')) + '</textarea></div>';
+  h += '<textarea data-campo="' + tipo + '_sit_o_que" rows="2">' + escapeHtmlAuto(String(r[tipo + '_sit_o_que'] || '')) + '</textarea>' + vmcCarimboHtml_(r, tipo + '_sit_o_que') + '</div>';
   var sitGrupos = ['interpessoais','desempenho','solidao','perda','internas'];
   sitGrupos.forEach(function(g) { h += p136RenderGrupo_(r, tipo + '_sit_tipo_' + g, false); });
   var catsDef = tipo === 'neg' ? [
@@ -14124,7 +14371,7 @@ function p136RenderSecao_(r, tipo) {
   catsDef.forEach(function(cat) {
     if (cat.textoKey) {
       h += '<div class="prof-edit-field" style="margin-top:10px;"><label>Texto livre</label>';
-      h += '<textarea data-campo="' + tipo + cat.textoKey + '" rows="2">' + escapeHtmlAuto(String(r[tipo + cat.textoKey] || '')) + '</textarea></div>';
+      h += '<textarea data-campo="' + tipo + cat.textoKey + '" rows="2">' + escapeHtmlAuto(String(r[tipo + cat.textoKey] || '')) + '</textarea>' + vmcCarimboHtml_(r, tipo + cat.textoKey) + '</div>';
     }
     cat.prefixos.forEach(function(s) { h += p136RenderGrupo_(r, tipo + s, cat.likert); });
   });
@@ -14157,6 +14404,7 @@ function p136RenderGrupo_(r, chave, comLikert) {
   var rotulo = rotuloEl ? rotuloEl.textContent.trim() : '';
   var h = '<div class="auto-group open" data-grupo-edit="' + chave + '"' + (comLikert ? ' data-tem-likert="1"' : '') + '>';
   h += '<div class="auto-group-head"><div class="auto-group-title">' + escapeHtmlAuto(titulo) + '</div></div>';
+  h += vmcCarimboHtml_(r, chave); // 18.5
   h += '<div class="auto-group-body"><div class="auto-lista" role="group" aria-label="' + escapeHtmlAuto(titulo) + '">';
   optEls.forEach(function(el) {
     var item = el.getAttribute('data-item');
@@ -14211,7 +14459,7 @@ function histModalSecaoCompleta(r, tipo, cor, titulo) {
     html += '<div class="rev-cat">';
     html += '<div class="rev-cat-head"><div class="rev-cat-icon ' + cor + '"><svg class=ico aria-hidden=true><use href=#i-pin></use></svg></div><div class="rev-cat-label">Situação</div></div>';
     if (textoLivre) {
-      html += '<div class="rev-sit-texto ' + cor + '" style="margin-bottom:8px;">' + escapeHtmlAuto(textoLivre) + '</div>';
+      html += '<div class="rev-sit-texto ' + cor + '" style="margin-bottom:8px;">' + escapeHtmlAuto(textoLivre) + '</div>' + vmcCarimboHtml_(r, tipo + '_sit_o_que');
     }
     sitPreenchidos.forEach(k => {
       const tit = histTituloGrupo(k);
@@ -14219,7 +14467,7 @@ function histModalSecaoCompleta(r, tipo, cor, titulo) {
       html += '<div class="rev-grupo ' + cor + '"><div class="rev-grupo-nome">' + escapeHtmlAuto(tit) + '</div>';
       html += '<div class="rev-grupo-itens">';
       partes.forEach(p => { html += '<span class="rev-pill ' + cor + '">' + escapeHtmlAuto(p) + '</span>'; });
-      html += '</div></div>';
+      html += '</div>' + vmcCarimboHtml_(r, k) + '</div>';
     });
     html += '</div><div class="rev-sep"></div>';
   }
@@ -14255,6 +14503,7 @@ function histModalSecaoCompleta(r, tipo, cor, titulo) {
       partesTxt.forEach(p => {
         html += '<div class="rev-sit-texto ' + cat.cor + '" style="margin-bottom:6px;">' + escapeHtmlAuto(p) + '</div>';
       });
+      html += vmcCarimboHtml_(r, tipo + cat.textoChave); // 18.5
     }
 
     preenchidos.forEach(k => {
@@ -14274,7 +14523,7 @@ function histModalSecaoCompleta(r, tipo, cor, titulo) {
           html += '<span class="rev-pill ' + cat.cor + '">' + escapeHtmlAuto(p) + '</span>';
         }
       });
-      html += '</div></div>';
+      html += '</div>' + vmcCarimboHtml_(r, k) + '</div>';
     });
 
     html += '</div><div class="rev-sep"></div>';
@@ -14538,6 +14787,43 @@ function pevInvalidarCache() {
   PEV_STATE.periodoAuto = true;
 }
 
+// 18.5 (8.87): lerHistorico devolve os 60 registros mais recentes, o total da aba, se há anteriores e se existe
+// Registro Negativo em qualquer página. Todo ponto que guarda a resposta no cache passa por aqui.
+function pevGuardar_(resp, agora) {
+  PEV_STATE.registros = resp.automonitoramento || [];
+  PEV_STATE.total = typeof resp.total_registros === 'number' ? resp.total_registros : PEV_STATE.registros.length;
+  PEV_STATE.temMais = resp.tem_mais === true;
+  PEV_STATE.temNegativo = resp.tem_negativo === true;
+  PEV_STATE.carregadoEm = agora;
+  PEV_STATE.invalidado = false;
+}
+// Falta carregar para cobrir o período? "Tudo" pede tudo; nos demais, se todo registro carregado cabe no período,
+// pode haver registro anterior ainda dentro dele.
+function pevFaltaParaPeriodo_(periodo) {
+  if (!PEV_STATE.temMais || !PEV_STATE.registros.length) return false;
+  if (periodo === 'tudo') return true;
+  return pevFiltrarPorPeriodo(PEV_STATE.registros, periodo).length === PEV_STATE.registros.length;
+}
+// Busca as páginas anteriores (sem overlay) até cobrir o período. Devolve true se o cache cresceu.
+async function pevCompletar_(periodo) {
+  if (PEV_STATE.completando || !pevFaltaParaPeriodo_(periodo)) return false;
+  const pac = carregarSessao(); if (!pac) return false;
+  let mudou = false;
+  PEV_STATE.completando = true;
+  try {
+    while (pevFaltaParaPeriodo_(periodo)) {
+      const r = await iniLerQuieto('lerHistorico', { sigla: pac.sigla, antes: PEV_STATE.registros.length });
+      if (!r || !r.ok || !Array.isArray(r.automonitoramento) || !r.automonitoramento.length) break;
+      PEV_STATE.registros = r.automonitoramento.concat(PEV_STATE.registros);
+      PEV_STATE.temMais = r.tem_mais === true;
+      mudou = true;
+    }
+  } finally {
+    PEV_STATE.completando = false;
+  }
+  return mudou;
+}
+
 // Pacote 16.4a: o painel abre no MENOR período (7, 30, 90) que já tenha pelo
 // menos 3 registros. Se nenhum chegar a 3, abre em "Tudo" — assim o paciente
 // novo não cai num gráfico vazio. Reusa pevFiltrarPorPeriodo (mesma regra de
@@ -14592,9 +14878,7 @@ async function pevAbrir() {
         </div>`;
       return;
     }
-    PEV_STATE.registros = resp.automonitoramento || [];
-    PEV_STATE.carregadoEm = agora;
-    PEV_STATE.invalidado = false;
+    pevGuardar_(resp, agora);
     pevRenderizar();
   } catch (e) {
     console.error('[Painel Evolução] Erro ao carregar:', e);
@@ -14723,6 +15007,8 @@ function pevRenderizar() {
   pevBindSeletor();
   PEV_STATE.charts.humor = pevDesenharHumor(regs);
   PEV_SECOES.forEach(s => pevDesenharBarras(s, regs));
+  // 18.5 (8.87): o período escolhido pode ir além da página carregada — busca as anteriores e redesenha
+  pevCompletar_(PEV_STATE.periodoAtual).then(function (mudou) { if (mudou && secaoAtivaId() === 'sec-auto-painel') pevRenderizar(); });
 }
 
 // ----- 8. SELETOR DE PERÍODO -----
@@ -14799,7 +15085,9 @@ function pevDesenharHumor(regs, canvas) {
     const dt = new Date(parseInt(m[1]), parseInt(m[2])-1, parseInt(m[3]),
                         mh ? parseInt(mh[1]) : 0,
                         mh ? parseInt(mh[2]) : 0);
-    return { dt, humor: parseInt(r.humor_nivel, 10) || 3 };
+    const humor = vmcHumorNivel_(r.humor_nivel); // 18.5 (8.84): registro sem humor não vira ponto (antes era desenhado como 3)
+    if (!humor) return null;
+    return { dt, humor };
   }).filter(Boolean).sort((a, b) => a.dt - b.dt);
 
   if (pontos.length === 0) return null;
@@ -15962,6 +16250,7 @@ function escBtnEnviarClicado(event) {
 // Pacote 16.3: rascunho da escala (sessionStorage), restaurado ao reabrir a mesma escala
 var ESC_RASCUNHO_KEY = 'esc_rascunho_v1';
 function escSalvarRascunho() {
+  if (PROF_FLUXO && PROF_FLUXO.edicaoEscala) return; // 18.5: edição de escala já aplicada não vira rascunho de escala nova
   try { sessionStorage.setItem(ESC_RASCUNHO_KEY, JSON.stringify({ sigla: vmcSiglaSessao_(), codigo: ESC_STATE.escalaAtual, respostas: ESC_STATE.respostas, inicio: ESC_STATE.inicioPreenchimento })); } catch (e) {}
 }
 function escCarregarRascunho(codigo) {
@@ -16054,6 +16343,23 @@ function escCalcularEscoreEAlerta(codigoEscala, respostas) {
   };
 }
 
+// 18.5: colunas da aba Escalas que saem das respostas — item_01…item_21 (sempre o número: escValorNumerico devolve o
+// próprio valor nas escalas do 12.x e o dígito de '2b' no BDI-II), o item funcional e as letras de direção
+function escColunasDasRespostas_(def, respostas) {
+  const cols = {};
+  def.itens.forEach(item => {
+    const bruto = respostas[item.id];
+    cols['item_' + String(item.id).padStart(2, '0')] = (bruto !== undefined) ? escValorNumerico(bruto) : '';
+  });
+  if (def.itemFuncional) {
+    const vF = respostas['funcional'];
+    cols.item_funcional = (vF !== undefined) ? vF : '';
+    cols.item_funcional_texto = (vF !== undefined) ? (def.itemFuncional.opcoes[vF] || '') : '';
+  }
+  cols.observacoes = escLetrasDeDirecao(def, respostas);
+  return cols;
+}
+
 /**
  * Envia a escala para o servidor e, se der tudo certo, mostra resultado.
  */
@@ -16072,6 +16378,9 @@ async function escEnviarEscala(event) {
     vmcAvisoNaTela('Sessão expirada. Faça login novamente.', document.querySelector('#sec-escalas-aplicar .esc-nav')); // 18.4 (8.31): era alert(); continua sem sair, como antes
     return;
   }
+
+  // 18.5: edição de uma escala já aplicada (profissional) — só os itens alterados; o servidor recalcula o escore
+  if (PROF_FLUXO && PROF_FLUXO.edicaoEscala) { profEditarEscalaEnviar_(def); return; }
 
   const btn = document.getElementById('escBtnEnviar');
   // Pacote 12.7.2.1: apenas desabilita (sem spinner, sem trocar texto).
@@ -16112,26 +16421,8 @@ async function escEnviarEscala(event) {
         : ''
     };
 
-    // Respostas numeradas (item_01 a item_21, preenche só os que a escala usa).
-    // Pacote 17.0: sempre o número — escValorNumerico devolve o próprio valor nas
-    // escalas do 12.x e o dígito de '2b' no BDI-II.
-    def.itens.forEach(item => {
-      const col = 'item_' + String(item.id).padStart(2, '0');
-      const bruto = ESC_STATE.respostas[item.id];
-      dados[col] = (bruto !== undefined) ? escValorNumerico(bruto) : '';
-    });
-
-    // Item funcional
-    if (def.itemFuncional) {
-      const vF = ESC_STATE.respostas['funcional'];
-      if (vF !== undefined) {
-        dados.item_funcional = vF;
-        dados.item_funcional_texto = def.itemFuncional.opcoes[vF] || '';
-      } else {
-        dados.item_funcional = '';
-        dados.item_funcional_texto = '';
-      }
-    }
+    // Respostas numeradas, item funcional e letras de direção: as mesmas colunas na criação e na edição (18.5)
+    Object.assign(dados, escColunasDasRespostas_(def, ESC_STATE.respostas));
 
     // Envia (inclui sigla explicitamente — padrão do salvarAutomonitoramento)
     const resp = await chamarServidor('salvarEscala', {
@@ -16141,6 +16432,8 @@ async function escEnviarEscala(event) {
     if (!resp || !resp.ok) {
       throw new Error((resp && resp.erro) ? resp.erro : 'Erro ao salvar escala');
     }
+    // 18.5: escala aplicada pelo profissional — volta à tela do paciente com a confirmação do servidor
+    if (PROF_FLUXO) { escLimparRascunho(); profFluxoEncerrar_(resp.mensagem); return; }
 
     // Atualiza flag de veterano localmente (destrava cards)
     ESC_STATE.temEscalas = true;
@@ -16266,6 +16559,8 @@ async function escGarantirContextoLongitudinal(codigo, reg, def) {
                        ESC_HIST_STATE.registros.length === 0 ||
                        ESC_HIST_STATE.carregadoEm === 0;
 
+    // 18.5 (8.87): "esta é sua Nª aplicação" conta todas as aplicações, não só a página mais recente
+    if (!cacheVazio && ESC_HIST_STATE.temMais) await escHistCarregarTudo_();
     if (!cacheVazio) {
       const contexto = escCalcularContextoLongitudinal(codigo, reg);
       if (contexto && contexto.ordinalTexto) {
@@ -16285,13 +16580,9 @@ async function escGarantirContextoLongitudinal(codigo, reg, def) {
       return;
     }
 
-    const lista = Array.isArray(resp.escalas) ? resp.escalas
-                : (Array.isArray(resp.registros) ? resp.registros : []);
-
     // Popula o cache (direto no const, sem passar por window)
-    ESC_HIST_STATE.registros = lista;
-    ESC_HIST_STATE.carregadoEm = Date.now();
-    ESC_HIST_STATE.invalidado = false;
+    escHistGuardar_(resp, Date.now());
+    await escHistCarregarTudo_(); // 18.5 (8.87)
 
     // Re-renderiza com contexto
     const contexto = escCalcularContextoLongitudinal(codigo, reg);
@@ -16885,6 +17176,7 @@ function rrRenderRespostasItens(cod, def, reg) {
     html +=   '<span class="rr-item-num">' + item.id + '</span>';
     html +=   '<div class="rr-item-texto">' + escapeHtmlAuto(item.texto || '');
     html +=     '<div class="rr-item-resposta">Resposta: <strong>' + escapeHtmlAuto(rotulo) + '</strong>' + escapeHtmlAuto(complemento) + '</div>';
+    html +=     vmcCarimboHtml_(reg, col); // 18.5: carimbo do item alterado
     html +=     notaHtml;
     html +=   '</div>';
     html += '</div>';
@@ -16901,6 +17193,7 @@ function rrRenderRespostasItens(cod, def, reg) {
     } else {
       html += '<div class="rr-item-resposta"><em>Não respondido</em></div>';
     }
+    html += vmcCarimboHtml_(reg, ['item_funcional', 'item_funcional_texto']); // 18.5
     html +=   '</div>';
     html += '</div>';
   }
@@ -16953,6 +17246,36 @@ function escHistInvalidarCache() {
   ESC_HIST_STATE.invalidado = true;
 }
 
+// 18.5 (8.87): guarda a resposta de lerEscalas no cache, do mais recente para o mais antigo (timestamp; na falta,
+// data_aplicacao). Defensivo: aceita resp.registros se algum dia o backend renomear.
+function escHistGuardar_(resp, agora) {
+  const lista = (Array.isArray(resp.escalas) ? resp.escalas : (Array.isArray(resp.registros) ? resp.registros : [])).slice();
+  lista.sort(function (a, b) { return escHistChaveTemporal(b) - escHistChaveTemporal(a); });
+  ESC_HIST_STATE.registros = lista;
+  ESC_HIST_STATE.temMais = resp.tem_mais === true;
+  ESC_HIST_STATE.carregadoEm = agora;
+  ESC_HIST_STATE.invalidado = false;
+  return lista;
+}
+// Página anterior das escalas (quieto = sem overlay). Devolve true se a lista cresceu.
+async function escHistCarregarAnteriores_(quieto) {
+  const pac = carregarSessao();
+  if (!pac || !ESC_HIST_STATE.temMais) return false;
+  const dados = { sigla: pac.sigla, antes: ESC_HIST_STATE.registros.length };
+  const r = quieto ? await iniLerQuieto('lerEscalas', dados) : await chamarServidor('lerEscalas', dados);
+  if (!r || !r.ok || !Array.isArray(r.escalas) || !r.escalas.length) { if (r && r.ok) ESC_HIST_STATE.temMais = false; return false; }
+  ESC_HIST_STATE.registros = ESC_HIST_STATE.registros.concat(r.escalas).sort(function (a, b) { return escHistChaveTemporal(b) - escHistChaveTemporal(a); });
+  ESC_HIST_STATE.temMais = r.tem_mais === true;
+  return true;
+}
+async function escHistCarregarTudo_() {
+  while (ESC_HIST_STATE.temMais) { if (!(await escHistCarregarAnteriores_(true))) break; }
+}
+// "Carregar mais" do histórico de escalas
+async function escHistCarregarMais() {
+  if (await escHistCarregarAnteriores_(false)) escHistRenderBlocos(document.getElementById('eschConteudo'), ESC_HIST_STATE.registros);
+}
+
 // ============================================================
 // ENTRY POINT: abrir a tela de histórico
 // ============================================================
@@ -17003,22 +17326,8 @@ async function escRenderHistorico() {
       return;
     }
 
-    // Shape esperado: { ok: true, total: N, escalas: [...] }.
-    // Defensivo: aceita tambem resp.registros se algum dia o backend renomear.
-    const lista = Array.isArray(resp.escalas) ? resp.escalas
-                : (Array.isArray(resp.registros) ? resp.registros : []);
-
-    // Ordena do mais recente para o mais antigo
-    // Critério: timestamp (fallback: data_aplicacao)
-    lista.sort(function(a, b){
-      const ta = escHistChaveTemporal(a);
-      const tb = escHistChaveTemporal(b);
-      return tb - ta;
-    });
-
-    ESC_HIST_STATE.registros = lista;
-    ESC_HIST_STATE.carregadoEm = agora;
-    ESC_HIST_STATE.invalidado = false;
+    // Shape esperado: { ok: true, total: N, tem_mais, escalas: [...] } (18.5: os 60 mais recentes).
+    const lista = escHistGuardar_(resp, agora);
 
     escHistRenderBlocos(cont, lista);
 
@@ -17105,6 +17414,7 @@ function escHistRenderBlocos(cont, registros) {
     html += '</div>';
   });
 
+  if (ESC_HIST_STATE.temMais) html += '<button type="button" class="vmc-mais" onclick="escHistCarregarMais()">Carregar mais</button>'; // 18.5 (8.87)
   cont.innerHTML = html;
 }
 
@@ -17191,6 +17501,7 @@ function escHistRenderAplicacao(cod, def, reg, idxGlobal) {
     '<div class="esch-aplic-data">' +
       '<div class="esch-aplic-data-principal">' + marcadorRiscoLinha + esc(dataHoraHtml.data) + '</div>' +
       '<div class="esch-aplic-data-hora">' + esc(dataHoraHtml.hora) + '</div>' +
+      vmcFaixaCriadoHtml_(reg) + // 18.5: "registrado pelo seu psicólogo em dd/mm"
     '</div>' +
     escoreHtml +
     // Sem escore para o paciente também não há detalhe a abrir: a lupa levaria ao
@@ -17308,6 +17619,10 @@ function escHistAbrirDetalhe(idxGlobal) {
   }
 
   conteudo.innerHTML = escHistMontarHtmlDetalhe(cod, def, reg);
+  // 18.5: o profissional edita as respostas pela mesma tela de aplicação (o servidor recalcula o escore)
+  if (PROF_SESSAO && ESC_HIST_STATE.visaoProfissional && def) {
+    conteudo.insertAdjacentHTML('beforeend', '<div class="prof-acoes-mod"><button class="prof-btn-acao" type="button" onclick="profEditarEscalaAbrir(' + idxGlobal + ')"><svg class=ico aria-hidden=true><use href=#i-pencil></use></svg> Editar</button></div>');
+  }
   modal.classList.add('show');
 }
 

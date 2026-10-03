@@ -49,7 +49,9 @@
 // Pacote 18.1.2 — correcoes de seguranca do acesso: links, cracha, acoes publicas, ativo (02/10/2026)
 // Pacote 18.10 — desempenho e integridade (18.10a: indicadores na Controle, controle_id, trava de gravacao,
 // id_envio, autoria; 18.10b: rascunho no servidor) (03/10/2026)
-var VERSAO_PACOTE = '18.10';
+// Pacote 18.5 — registro e edicao pelo profissional: edicao por campo com carimbo (autoria_campos), criacao pelo
+// profissional (criado_por), escore de escala no servidor, leituras do paciente paginadas e por colunas (03/10/2026)
+var VERSAO_PACOTE = '18.5';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -109,7 +111,8 @@ var HEADERS_ANAMNESE = [
   'pessoa_confianca_2_email', 'pessoa_confianca_3_nome',
   'pessoa_confianca_3_relacao', 'pessoa_confianca_3_telefone',
   'pessoa_confianca_3_email',
-  'id_envio' // 18.10 (8.14): identificador do envio, gerado pelo cliente
+  'id_envio', // 18.10 (8.14): identificador do envio, gerado pelo cliente
+  'editado_por', 'editado_em', 'autoria_campos' // 18.5: ultimo editor da linha e carimbo por campo
 ];
 
 var HEADERS_AUTOMONITORAMENTO = [
@@ -136,7 +139,8 @@ var HEADERS_AUTOMONITORAMENTO = [
   // Pacote 13.6: lock de edição + auditoria
   'editando_quem', 'editando_desde',
   'editado', 'editado_por', 'editado_em',
-  'id_envio' // 18.10 (8.14)
+  'id_envio', // 18.10 (8.14)
+  'criado_por', 'autoria_campos' // 18.5: quem criou a linha (so o profissional e marcado) e carimbo por campo
 ];
 
 var HEADERS_ESCALAS = [
@@ -151,7 +155,8 @@ var HEADERS_ESCALAS = [
   'faixa',
   'alerta_risco_flag', 'alerta_risco_item', 'alerta_risco_valor',
   'observacoes', 'tempo_preenchimento_seg',
-  'id_envio' // 18.10 (8.14)
+  'id_envio', // 18.10 (8.14)
+  'editado_por', 'editado_em', 'criado_por', 'autoria_campos' // 18.5
 ];
 
 
@@ -164,6 +169,9 @@ function doPost(e) {
     _memoZerar_(true); // 18.10: Sistema_VMC, indice e Controle abertos uma vez por chamada
     var payload = JSON.parse(e.postData.contents);
     var acao = payload.acao;
+    // 18.5 (8.87): nas duas leituras do paciente a linha dele na Controle e a do profissional dono
+    // sao lidas uma vez (o portao do cracha e a acao pediam a mesma linha, cada um a sua leitura)
+    if (acao === 'lerHistorico' || acao === 'lerEscalas') _MEMO_.linhas = {};
 
     // Pacote 18.1: toda acao fora de ACOES_PUBLICAS exige o cracha de sessao.
     // Sigla e profissional saem do cracha (payload.sigla e ignorado);
@@ -231,7 +239,7 @@ function _despachar_(acao, payload, s) {
         break;
 
       case 'lerHistorico':
-        resposta = _exigir_(s, 'paciente') || lerHistorico(s.sigla);
+        resposta = _exigir_(s, 'paciente') || lerHistorico(s.sigla, payload.antes, payload.limite);
         break;
 
       case 'salvarEscala':
@@ -239,7 +247,7 @@ function _despachar_(acao, payload, s) {
         break;
 
       case 'lerEscalas':
-        resposta = _exigir_(s, 'paciente') || lerEscalas(s.sigla);
+        resposta = _exigir_(s, 'paciente') || lerEscalas(s.sigla, payload.antes, payload.limite);
         break;
 
       // Pacote 18.10b - rascunho no servidor (G2): so o proprio paciente, pelo cracha
@@ -266,7 +274,7 @@ function _despachar_(acao, payload, s) {
         break;
 
       case 'pacienteAtualizarAnamnese':
-        resposta = _exigir_(s, 'paciente') || pacienteAtualizarAnamnese(s.sigla, payload.dados);
+        resposta = _exigir_(s, 'paciente') || pacienteAtualizarAnamnese(s.sigla, payload.dados, payload.campos, payload.id_envio);
         break;
 
       case 'pacienteMarcarEditandoAuto':
@@ -278,7 +286,7 @@ function _despachar_(acao, payload, s) {
         break;
 
       case 'pacienteEditarAutomonitoramento':
-        resposta = _exigir_(s, 'paciente') || pacienteEditarAutomonitoramento(s.sigla, payload.timestamp, payload.dados);
+        resposta = _exigir_(s, 'paciente') || pacienteEditarAutomonitoramento(s.sigla, payload.timestamp, payload.dados, payload.campos, payload.id_envio);
         break;
 
       // Lock de presenca (13.6.2): paciente le o proprio; profissional, o de um paciente seu.
@@ -300,7 +308,7 @@ function _despachar_(acao, payload, s) {
         break;
 
       case 'profSalvarAnamnese':
-        resposta = profSalvarAnamnese(s, payload.siglaPaciente, payload.dados, payload.contato);
+        resposta = profSalvarAnamnese(s, payload.siglaPaciente, payload.dados, payload.contato, payload.campos, payload.id_envio);
         break;
 
       case 'profEnviarConvite':
@@ -316,7 +324,20 @@ function _despachar_(acao, payload, s) {
         break;
 
       case 'profEditarAutomonitoramento':
-        resposta = profEditarAutomonitoramento(s, payload.siglaPaciente, payload.timestamp, payload.dados);
+        resposta = profEditarAutomonitoramento(s, payload.siglaPaciente, payload.timestamp, payload.dados, payload.campos, payload.id_envio);
+        break;
+
+      // Pacote 18.5 - o profissional cria registro e escala em nome do paciente e edita escala
+      case 'profCriarAutomonitoramento':
+        resposta = profCriarAutomonitoramento(s, payload.siglaPaciente, payload.dados);
+        break;
+
+      case 'profCriarEscala':
+        resposta = profCriarEscala(s, payload.siglaPaciente, payload.dados);
+        break;
+
+      case 'profEditarEscala':
+        resposta = profEditarEscala(s, payload.siglaPaciente, payload.timestamp, payload.campos, payload.id_envio);
         break;
 
       case 'profDesativarPaciente':
@@ -395,7 +416,8 @@ function _respostaJson_(obj) {
 
 /**
  * Memoria da chamada (8.34): cada planilha e aberta uma vez (Sistema_VMC, Controle,
- * planilha do paciente) e o Indice_Siglas e lido uma vez. Variavel do modulo, zerada
+ * planilha do paciente) e o Indice_Siglas e lido uma vez. 18.5: em lerHistorico e lerEscalas
+ * (que nao gravam) _MEMO_.linhas guarda tambem a linha do paciente e a do profissional. Variavel do modulo, zerada
  * no inicio de cada doPost. O cache dos DADOS do indice so vale dentro do doPost
  * (`ativo`); funcao chamada direto (clasp run, testes) sempre le a planilha. Quem
  * grava no indice chama _memoEsquecerIndice_().
@@ -467,6 +489,7 @@ var ACOES_COM_TRAVA = [
   'pacienteMarcarEditandoAuto', 'pacienteLimparEditandoAuto', 'pacienteEditarAutomonitoramento',
   'profCadastrarPaciente', 'profSalvarAnamnese', 'profEnviarConvite',
   'profMarcarEditandoAuto', 'profLimparEditandoAuto', 'profEditarAutomonitoramento',
+  'profCriarAutomonitoramento', 'profCriarEscala', 'profEditarEscala', // 18.5
   'profDesativarPaciente', 'profReativarPaciente', 'profExcluirPaciente', 'profAlterarSenhaPaciente',
   'profSalvarGrade',
   'admCadastrarProfissional', 'admAtualizarProfissional', 'admTrocarSenhaProfissional',
@@ -529,6 +552,8 @@ function resolverProfissionalIdPorSigla(sigla, tipo) {
  */
 function buscarProfissional(profissionalId) {
   if (!profissionalId) return null;
+  var chaveMemo = 'prof:' + String(profissionalId).trim();
+  if (_MEMO_.linhas && _MEMO_.linhas[chaveMemo]) return _MEMO_.linhas[chaveMemo];
 
   var planilha = _abrirPlanilha_(SISTEMA_VMC_ID);
   var aba = planilha.getSheetByName(ABA_PROFISSIONAIS);
@@ -547,6 +572,7 @@ function buscarProfissional(profissionalId) {
       for (var j = 0; j < cabecalhos.length; j++) {
         obj[cabecalhos[j]] = dados[i][j];
       }
+      if (_MEMO_.linhas) _MEMO_.linhas[chaveMemo] = obj;
       return obj;
     }
   }
@@ -645,6 +671,8 @@ function _gravarControleId_(profissionalId, controleId) {
  */
 function buscarPaciente(sigla) {
   if (!sigla) return null;
+  var chaveMemo = 'pac:' + String(sigla).trim().toUpperCase();
+  if (_MEMO_.linhas && _MEMO_.linhas[chaveMemo]) return _MEMO_.linhas[chaveMemo];
 
   var profissionalId = resolverProfissionalIdPorSigla(sigla, 'paciente');
   if (!profissionalId) return null;
@@ -672,6 +700,7 @@ function buscarPaciente(sigla) {
       }
       // Anexa o profissional_id para uso interno (nao volta pro cliente)
       obj.__profissional_id = profissionalId;
+      if (_MEMO_.linhas) _MEMO_.linhas[chaveMemo] = obj;
       return obj;
     }
   }
@@ -1843,6 +1872,7 @@ function listarPacientesDoProfissional(s) {
   var idxDataAnam = col('data_anamnese');
   var idxAtivo = col('ativo');
   var idxNomeCad = col('nome'); // Pacote 18.1: nome do cadastro
+  var idxAceite = col('aceite_politica_em'); // 18.5: data do aceite da Politica (18.1.6), so para exibir
 
   var lista = [];
 
@@ -1877,6 +1907,7 @@ function listarPacientesDoProfissional(s) {
       data_cadastro: idxDataCad >= 0 ? formatarDataParaExibicao_(row[idxDataCad]) : '',
       data_anamnese: idxDataAnam >= 0 ? formatarDataParaExibicao_(row[idxDataAnam]) : '',
       ativo: idxAtivo >= 0 ? _ativoParaCliente_(row[idxAtivo]) : 'Sim',
+      aceite_em: idxAceite >= 0 ? _dataDoAceite_(row[idxAceite]) : '', // 18.5: 'DD/MM/AAAA' ou ''
       // Pacote 13.2.3: indicadores clinicos (mesmo contrato; a fonte passou a ser a Controle)
       ind_total_auto: parseInt(ind.ind_total_auto, 10) || 0,
       ind_ultimo_auto_data: String(ultimoAuto.data || ''),
@@ -1891,6 +1922,13 @@ function listarPacientesDoProfissional(s) {
   }
 
   return { ok: true, pacientes: lista };
+}
+
+/** 18.5: data do aceite ('aaaa-MM-dd HH:mm:ss' em texto, ou Date em linha antiga) como 'DD/MM/AAAA'; vazio quando nao ha. */
+function _dataDoAceite_(valor) {
+  if (valor instanceof Date) return formatarDataParaExibicao_(valor);
+  var m = String(valor || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? m[3] + '/' + m[2] + '/' + m[1] : '';
 }
 
 // ---------- 18.10: indicadores do paciente na Controle ----------
@@ -2192,7 +2230,8 @@ function salvarAnamnese(sigla, dados) {
 // descartado em todo caminho que grava. `id_envio` vem do cliente, mas so vale se
 // tiver cara de identificador (letras, numeros e hifen, 8 a 64).
 var CAMPOS_DO_SERVIDOR = ['timestamp', 'versao_formulario', 'sigla', 'profissional_id',
-  'editado', 'editado_por', 'editado_em', 'editando_quem', 'editando_desde'];
+  'editado', 'editado_por', 'editado_em', 'editando_quem', 'editando_desde',
+  'criado_por', 'autoria_campos']; // 18.5
 
 function _dadosDoCliente_(dados) {
   var limpo = {};
@@ -2376,7 +2415,7 @@ function salvarAutomonitoramento(sigla, dados) {
  * da aba. Continua aditiva: campos ausentes viram vazios, novos
  * cabecalhos sao preenchidos automaticamente.
  */
-function montarLinha(aba, dados) {
+function montarLinha(aba, dados, doServidor) {
   var cabecalhos = aba.getRange(1, 1, 1, aba.getLastColumn()).getValues()[0];
   var agora = new Date();
   var linha = [];
@@ -2389,7 +2428,9 @@ function montarLinha(aba, dados) {
     } else if (col === 'versao_formulario') {
       linha.push(versao);
     } else if (CAMPOS_DO_SERVIDOR.indexOf(col) !== -1) {
-      linha.push(''); // 18.10 (8.46): auditoria e trava de presenca nunca vem do cliente
+      // 18.10 (8.46): auditoria e trava de presenca nunca vem do cliente; 18.5: doServidor traz o que
+      // o proprio servidor decide gravar na linha nova (criado_por, editado_por, editado_em)
+      linha.push(doServidor && doServidor[col] !== undefined ? _celulaTexto_(col, doServidor[col]) : '');
     } else if (dados && dados[col] !== undefined && dados[col] !== null) {
       linha.push(_celulaTexto_(col, dados[col])); // 18.2: texto digitado nunca vira formula nem e retipado
     } else {
@@ -2446,23 +2487,137 @@ function lerEditandoAuto(sigla, timestamp) {
   return { ok: true, editando_quem: String(val || '').trim() };
 }
 
-function lerHistorico(sigla) {
+// ---------- 18.5 (8.87): leituras do paciente por colunas e paginadas ----------
+
+// Colunas que as telas do paciente leem de cada registro e de cada escala (cartao, lupa, edicao e
+// Painel), pelo nome do cabecalho. Ficam de fora as que so o servidor usa (versao_formulario,
+// id_envio, editando_desde). Coluna que a aba ainda nao tem simplesmente nao vem.
+var COLUNAS_LEITURA_AUTO = [
+  'timestamp', 'data_registro', 'hora_registro', 'humor_nivel', 'humor_observacoes', 'neg_preenchido', 'pos_preenchido',
+  'neg_sit_o_que', 'neg_sit_tipo_interpessoais', 'neg_sit_tipo_desempenho', 'neg_sit_tipo_solidao', 'neg_sit_tipo_perda',
+  'neg_sit_tipo_internas', 'neg_emo_tristeza', 'neg_emo_ansiedade', 'neg_emo_raiva', 'neg_emo_culpa', 'neg_emo_ciume',
+  'neg_fis_ativacao', 'neg_fis_desativacao', 'neg_fis_tensao', 'neg_fis_digestivas', 'neg_fis_sono', 'neg_pens_o_que',
+  'neg_pens_sobre_mim', 'neg_pens_sobre_futuro', 'neg_pens_sobre_outros', 'neg_pens_cobranca', 'neg_pens_culpa',
+  'neg_comp_o_que', 'neg_comp_evitacao', 'neg_comp_isolamento', 'neg_comp_reatividade', 'neg_comp_entorpecimento',
+  'neg_comp_controle', 'pos_sit_o_que', 'pos_emo_felicidade', 'pos_emo_orgulho', 'pos_emo_conexao',
+  'pos_emo_calma', 'pos_emo_esperanca', 'pos_fis_calma', 'pos_fis_energia', 'pos_fis_relaxamento', 'pos_fis_digestivo',
+  'pos_fis_atencao', 'pos_pens_o_que', 'pos_pens_autocompaixao', 'pos_pens_esperanca', 'pos_pens_confianca',
+  'pos_pens_flexibilidade', 'pos_pens_responsabilidade', 'pos_comp_o_que', 'pos_comp_enfrentamento', 'pos_comp_conexao',
+  'pos_comp_expressao', 'pos_comp_autocuidado', 'pos_comp_aceitacao',
+  'editando_quem', 'editado', 'editado_por', 'editado_em', 'criado_por', 'autoria_campos'
+];
+var COLUNAS_LEITURA_ESCALAS = [
+  'timestamp', 'data_aplicacao', 'instrumento', 'versao_instrumento',
+  'item_01', 'item_02', 'item_03', 'item_04', 'item_05', 'item_06', 'item_07', 'item_08', 'item_09', 'item_10',
+  'item_11', 'item_12', 'item_13', 'item_14', 'item_15', 'item_16', 'item_17', 'item_18', 'item_19', 'item_20', 'item_21',
+  'item_funcional', 'item_funcional_texto', 'escore_total', 'escore_depressao', 'escore_ansiedade', 'escore_estresse',
+  'faixa', 'alerta_risco_flag', 'alerta_risco_item', 'alerta_risco_valor', 'observacoes', 'tempo_preenchimento_seg',
+  'editado_por', 'editado_em', 'criado_por', 'autoria_campos'
+];
+var PAGINA_LEITURA = 60;      // registros por pagina (os mais recentes primeiro)
+var PAGINA_LEITURA_MAX = 200;
+
+/**
+ * Uma pagina da aba, do fim para o comeco: pula os antes registros mais recentes e devolve
+ * ate limite (em ordem cronologica, como sempre), so com as colunas pedidas. Uma leitura
+ * do cabecalho e uma do bloco de linhas — nunca a aba inteira.
+ * Saida: { registros, total, tem_mais }.
+ */
+function _lerPagina_(aba, colunas, antes, limite) {
+  var vazio = { registros: [], total: 0, tem_mais: false };
+  if (!aba) return vazio;
+  var total = aba.getLastRow() - 1;
+  if (total < 1) return vazio;
+  var pular = Math.max(0, parseInt(antes, 10) || 0);
+  var n = parseInt(limite, 10);
+  n = Math.min(PAGINA_LEITURA_MAX, n > 0 ? n : PAGINA_LEITURA);
+  var fim = total - pular;            // ultimo registro da pagina (1 = o mais antigo)
+  if (fim < 1) return { registros: [], total: total, tem_mais: false };
+  var inicio = Math.max(1, fim - n + 1);
+  var largura = aba.getLastColumn();
+  var cabecalhos = aba.getRange(1, 1, 1, largura).getValues()[0];
+  var linhas = aba.getRange(inicio + 1, 1, fim - inicio + 1, largura).getValues();
+  var indices = [];
+  for (var c = 0; c < colunas.length; c++) {
+    var ic = cabecalhos.indexOf(colunas[c]);
+    if (ic !== -1) indices.push(ic);
+  }
+  var registros = [];
+  for (var i = 0; i < linhas.length; i++) {
+    var obj = {};
+    for (var k = 0; k < indices.length; k++) obj[cabecalhos[indices[k]]] = _valorDeLeitura_(cabecalhos[indices[k]], linhas[i][indices[k]]);
+    registros.push(obj);
+  }
+  return { registros: registros, total: total, tem_mais: inicio > 1 };
+}
+
+/** Existe algum registro com a coluna = valor fora da pagina? (le so a coluna) */
+function _colunaTemValor_(aba, coluna, valor) {
+  if (!aba || aba.getLastRow() < 2) return false;
+  var cabecalhos = aba.getRange(1, 1, 1, aba.getLastColumn()).getValues()[0];
+  var idx = cabecalhos.indexOf(coluna);
+  if (idx === -1) return false;
+  var valores = aba.getRange(2, idx + 1, aba.getLastRow() - 1, 1).getValues();
+  for (var i = 0; i < valores.length; i++) if (String(valores[i][0]).trim() === valor) return true;
+  return false;
+}
+
+/**
+ * Historico do paciente (18.5, 8.87): os PAGINA_LEITURA registros mais recentes, so com as
+ * colunas de COLUNAS_LEITURA_AUTO; antes = quantos o cliente ja tem ("carregar mais" pede
+ * os anteriores). A anamnese vem so na primeira pagina. total_registros e o total da aba
+ * e tem_negativo diz se ha Registro Negativo em qualquer pagina (a primeira vez do
+ * paciente nao pode depender do que coube na pagina).
+ */
+function lerHistorico(sigla, antes, limite) {
   var paciente = buscarPaciente(sigla);
   if (!paciente) return { ok: false, erro: 'Paciente nao encontrado' };
 
   var planilhaIndividualId = extrairIdDaUrl(paciente.link_planilha_individual);
   var planilha = _abrirPlanilha_(planilhaIndividualId);
 
-  var registros = lerAbaComoObjetos(planilha, ABA_AUTOMONITORAMENTO);
-  var anamnese = lerAbaComoObjetos(planilha, ABA_ANAMNESE);
+  var abaAuto = planilha.getSheetByName(ABA_AUTOMONITORAMENTO);
+  var pagina = _lerPagina_(abaAuto, COLUNAS_LEITURA_AUTO, antes, limite);
+  var temNegativo = pagina.registros.some(function (r) { return r.neg_preenchido === 'sim'; });
+  if (!temNegativo && pagina.registros.length < pagina.total) temNegativo = _colunaTemValor_(abaAuto, 'neg_preenchido', 'sim');
 
-  return {
+  var resposta = {
     ok: true,
-    anamnese_preenchida: anamnese.length > 0,
-    anamnese: anamnese.length > 0 ? anamnese[0] : null,
-    automonitoramento: registros,
-    total_registros: registros.length
+    automonitoramento: pagina.registros,
+    total_registros: pagina.total,
+    tem_mais: pagina.tem_mais,
+    tem_negativo: temNegativo
   };
+  if (!(parseInt(antes, 10) > 0)) {
+    var anamnese = lerAbaComoObjetos(planilha, ABA_ANAMNESE);
+    resposta.anamnese_preenchida = anamnese.length > 0;
+    resposta.anamnese = anamnese.length > 0 ? anamnese[0] : null;
+  }
+  return resposta;
+}
+
+/**
+ * Valor de uma celula como as leituras o devolvem ao cliente.
+ * Pacote 13.7.6 — lição 22/62: Google Sheets serializa células TIME/DATE como Date
+ * objects. Para hora_registro, o Sheets converte "20:35" (local) para UTC internamente;
+ * Utilities.formatDate reconverte ao fuso correto. Para campos de data, toISOString
+ * dá o formato consistente YYYY-MM-DD.
+ */
+function _valorDeLeitura_(col, val) {
+  if (!(val instanceof Date)) return val;
+  if (col === 'hora_registro') {
+    // TIME: o Sheets armazena "20:35" como UTC 23:35 (offset São Paulo).
+    return Utilities.formatDate(val, 'America/Sao_Paulo', 'HH:mm');
+  }
+  if (col === 'data_registro' || col === 'data_aplicacao' || col === 'data_anamnese') {
+    // DATE: manter em YYYY-MM-DD usando UTC para evitar off-by-one
+    return val.toISOString().slice(0, 10);
+  }
+  if (col === 'timestamp' || col === 'editando_desde' || col === 'editado_em') {
+    // DATETIME: manter como ISO string completo
+    return val.toISOString();
+  }
+  return val; // outros campos Date: deixar o JSON.stringify serializar normalmente
 }
 
 function lerAbaComoObjetos(planilha, nomeAba) {
@@ -2475,29 +2630,7 @@ function lerAbaComoObjetos(planilha, nomeAba) {
   var resultado = [];
   for (var i = 1; i < dados.length; i++) {
     var obj = {};
-    for (var j = 0; j < cabecalhos.length; j++) {
-      var val = dados[i][j];
-      // Pacote 13.7.6 — lição 22/62: Google Sheets serializa células TIME/DATE
-      // como Date objects. Para hora_registro, o Sheets converte "20:35" (local)
-      // para UTC internamente. Utilities.formatDate reconverte ao fuso correto.
-      // Para campos de data, usamos toISOString para formato consistente YYYY-MM-DD.
-      if (val instanceof Date) {
-        var col = cabecalhos[j];
-        if (col === 'hora_registro') {
-          // TIME: o Sheets armazena "20:35" como UTC 23:35 (offset São Paulo).
-          // Utilities.formatDate reconverte de volta ao fuso correto.
-          val = Utilities.formatDate(val, 'America/Sao_Paulo', 'HH:mm');
-        } else if (col === 'data_registro' || col === 'data_aplicacao' || col === 'data_anamnese') {
-          // DATE: manter em YYYY-MM-DD usando UTC para evitar off-by-one
-          val = val.toISOString().slice(0, 10);
-        } else if (col === 'timestamp' || col === 'editando_desde' || col === 'editado_em') {
-          // DATETIME: manter como ISO string completo
-          val = val.toISOString();
-        }
-        // outros campos Date: deixar o JSON.stringify serializar normalmente
-      }
-      obj[cabecalhos[j]] = val;
-    }
+    for (var j = 0; j < cabecalhos.length; j++) obj[cabecalhos[j]] = _valorDeLeitura_(cabecalhos[j], dados[i][j]);
     resultado.push(obj);
   }
   return resultado;
@@ -2551,23 +2684,20 @@ function salvarEscala(sigla, dados) {
   return { ok: true, mensagem: 'Escala salva com sucesso' };
 }
 
-function lerEscalas(sigla) {
+/** Escalas do paciente (18.5, 8.87): paginadas e por colunas, como lerHistorico. */
+function lerEscalas(sigla, antes, limite) {
   var paciente = buscarPaciente(sigla);
   if (!paciente) return { ok: false, erro: 'Paciente nao encontrado' };
 
   var planilhaIndividualId = extrairIdDaUrl(paciente.link_planilha_individual);
   var planilha = _abrirPlanilha_(planilhaIndividualId);
 
-  var aba = planilha.getSheetByName(ABA_ESCALAS);
-  if (!aba) {
-    return { ok: true, total: 0, escalas: [] };
-  }
-
-  var registros = lerAbaComoObjetos(planilha, ABA_ESCALAS);
+  var pagina = _lerPagina_(planilha.getSheetByName(ABA_ESCALAS), COLUNAS_LEITURA_ESCALAS, antes, limite);
   return {
     ok: true,
-    total: registros.length,
-    escalas: registros
+    total: pagina.total,
+    tem_mais: pagina.tem_mais,
+    escalas: pagina.registros
   };
 }
 
@@ -2809,9 +2939,10 @@ function alterarSenhaPaciente(sigla, senhaAtual, novaSenha) {
  * Segue o mesmo padrao de salvarAnamnese/salvarAutomonitoramento:
  * recebe apenas sigla (autenticacao ja foi feita no login).
  */
-function pacienteAtualizarAnamnese(sigla, dados) {
+function pacienteAtualizarAnamnese(sigla, dados, campos, idEnvio) {
   if (!sigla) return { ok: false, erro: 'Sigla obrigatoria' };
-  if (!dados) return { ok: false, erro: 'Dados da anamnese ausentes' };
+  var porCampos = !!campos && typeof campos === 'object';
+  if (!dados && !porCampos) return { ok: false, erro: 'Dados da anamnese ausentes' };
 
   // 1. Abrir planilha individual
   var paciente = buscarPaciente(sigla);
@@ -2824,6 +2955,11 @@ function pacienteAtualizarAnamnese(sigla, dados) {
   var planilha = _abrirPlanilha_(planilhaId);
   var aba = planilha.getSheetByName(ABA_ANAMNESE);
   if (!aba) return { ok: false, erro: 'Aba Anamnese nao encontrada' };
+
+  // 18.5: edicao por campo — so as colunas alteradas sao gravadas, com carimbo
+  if (porCampos) {
+    return _editarAnamnesePorCampos_(planilha, aba, campos, 'paciente', idEnvio, paciente.__profissional_id, sigla, 'Anamnese atualizada com sucesso');
+  }
 
   // 2. Montar linha e sobrescrever (e-mail e telefone espelham o cadastro)
   // 18.10: campos do servidor descartados; reenvio com o mesmo id_envio nao regrava
@@ -3013,7 +3149,7 @@ function cadastrarPaciente(s, dados) {
  * (Controle) antes; sem ele, a Controle nao muda. E-mail e telefone da
  * Anamnese espelham o cadastro.
  */
-function profSalvarAnamnese(s, siglaPaciente, dados, contato) {
+function profSalvarAnamnese(s, siglaPaciente, dados, contato, campos, idEnvio) {
   // 1. Revalidar credenciais
   var authResult = _authProfissional_(s);
   if (!authResult.ok) return authResult;
@@ -3025,7 +3161,8 @@ function profSalvarAnamnese(s, siglaPaciente, dados, contato) {
   if (!profIdDono) return { ok: false, erro: 'Paciente nao encontrado' };
   if (profIdDono !== profissionalId) return { ok: false, erro: 'Este paciente nao pertence a voce' };
 
-  if (!dados) return { ok: false, erro: 'Dados da anamnese ausentes' };
+  var porCampos = !!campos && typeof campos === 'object';
+  if (!dados && !porCampos) return { ok: false, erro: 'Dados da anamnese ausentes' };
 
   if (contato) {
     var rc = _atualizarContatoPaciente_(siglaPaciente, contato);
@@ -3043,6 +3180,16 @@ function profSalvarAnamnese(s, siglaPaciente, dados, contato) {
   var planilha = _abrirPlanilha_(planilhaId);
   var aba = planilha.getSheetByName(ABA_ANAMNESE);
   if (!aba) return { ok: false, erro: 'Aba Anamnese nao encontrada' };
+
+  // 18.5: edicao por campo — so as colunas alteradas sao gravadas, com carimbo; e-mail e
+  // telefone continuam espelhando o cadastro (sem carimbo: nao sao campos da anamnese)
+  if (porCampos) {
+    if (contato && aba.getLastRow() >= 2) {
+      var espelho = _espelharContatoAnamnese_(aba, {}, paciente);
+      _atualizarCamposLinha_(aba, 2, aba.getRange(1, 1, 1, aba.getLastColumn()).getValues()[0], { email: espelho.email, telefone: espelho.telefone });
+    }
+    return _editarAnamnesePorCampos_(planilha, aba, campos, 'profissional', idEnvio, profissionalId, siglaPaciente, 'Anamnese salva com sucesso');
+  }
 
   // 4. Montar linha usando headers existentes (e-mail e telefone espelham o cadastro)
   // 18.10: campos do servidor descartados; o profissional nao reusa id_envio
@@ -3181,27 +3328,17 @@ function pacienteLimparEditandoAuto(sigla, timestamp) {
   return { ok: true };
 }
 
-function pacienteEditarAutomonitoramento(sigla, timestamp, dados) {
-  if (!sigla || !timestamp || !dados) return { ok: false, erro: 'Parametros incompletos' };
+// 18.5: a edicao manda so os campos alterados em 'campos' (cliente antigo ainda manda 'dados'
+// com a linha toda: o servidor compara com a planilha e grava so o que mudou de fato).
+function pacienteEditarAutomonitoramento(sigla, timestamp, dados, campos, idEnvio) {
+  var mudancas = (campos && typeof campos === 'object') ? campos : dados;
+  if (!sigla || !timestamp || !mudancas) return { ok: false, erro: 'Parametros incompletos' };
   var pac = buscarPaciente(sigla);
   if (!pac) return { ok: false, erro: 'Paciente nao encontrado' };
   var planilhaId = extrairIdDaUrl(String(pac.link_planilha_individual || ''));
   if (!planilhaId) return { ok: false, erro: 'Planilha nao encontrada' };
-  var linha = _encontrarLinhaAuto_(planilhaId, timestamp);
-  if (!linha) return { ok: false, erro: 'Registro nao encontrado' };
-  var agora = Utilities.formatDate(new Date(), 'America/Sao_Paulo', "yyyy-MM-dd'T'HH:mm:ss");
-  // Mescla dados editados com metadados de auditoria
-  // 18.10 (8.46): autoria sempre do servidor (cracha de paciente); o id do envio nao muda na edicao
-  var campos = _dadosDoCliente_(dados);
-  delete campos.id_envio;
-  campos.editando_quem  = '';
-  campos.editando_desde = '';
-  campos.editado        = 'Sim';
-  campos.editado_por    = 'paciente';
-  campos.editado_em     = agora;
-  _atualizarCamposLinha_(linha.aba, linha.rowIndex, linha.cabecalhos, campos);
-  _indicadoresAposGravar_(pac.__profissional_id, sigla, _abrirPlanilha_(planilhaId));
-  return { ok: true, mensagem: 'Registro atualizado com sucesso', editado_em: agora };
+  // 18.10 (8.46): autoria sempre do servidor (cracha de paciente)
+  return _editarRegistroAuto_(planilhaId, timestamp, mudancas, 'paciente', idEnvio, pac.__profissional_id, sigla);
 }
 
 // --- Profissional: marcar / limpar / salvar ---
@@ -3243,8 +3380,9 @@ function profLimparEditandoAuto(s, siglaPaciente, timestamp) {
   return { ok: true };
 }
 
-function profEditarAutomonitoramento(s, siglaPaciente, timestamp, dados) {
-  if (!siglaPaciente || !timestamp || !dados) return { ok: false, erro: 'Parametros incompletos' };
+function profEditarAutomonitoramento(s, siglaPaciente, timestamp, dados, campos, idEnvio) {
+  var mudancas = (campos && typeof campos === 'object') ? campos : dados;
+  if (!siglaPaciente || !timestamp || !mudancas) return { ok: false, erro: 'Parametros incompletos' };
   var auth = _authProfissional_(s);
   if (!auth.ok) return auth;
   var profId = auth.profissional.profissional_id;
@@ -3253,20 +3391,310 @@ function profEditarAutomonitoramento(s, siglaPaciente, timestamp, dados) {
   if (dono !== profId) return { ok: false, erro: 'Este paciente nao pertence a voce' };
   var planilhaId = _obterPlanilhaIdPaciente_(siglaPaciente);
   if (!planilhaId) return { ok: false, erro: 'Planilha nao encontrada' };
+  // 18.10 (8.46): autoria sempre do servidor (cracha de profissional)
+  return _editarRegistroAuto_(planilhaId, timestamp, mudancas, 'profissional', idEnvio, profId, siglaPaciente);
+}
+
+
+// ============================================================
+// PACOTE 18.5 — EDICAO CONJUNTA POR CAMPO, CARIMBO E CRIACAO PELO PROFISSIONAL
+// ============================================================
+// Toda edicao (paciente ou profissional; registro, escala, anamnese) grava SO as colunas
+// que mudaram — nunca a linha inteira. Dois editores ao mesmo tempo nao se bloqueiam: em
+// campos diferentes os dois valores ficam; no mesmo campo vale a ultima gravacao. A coluna
+// autoria_campos guarda, por campo alterado, quem alterou e quando:
+//   { "<coluna>": { "por": "paciente|profissional", "em": "aaaa-MM-dd HH:mm:ss" } }
+// "por" sai do cracha, nunca do cliente. editado_por/editado_em continuam dizendo quem foi
+// o ultimo a mexer na linha. A trava de presenca (editando_quem) virou so um aviso na tela.
+
+var AUTORIA_MAX = 40000;       // caracteres do JSON de autoria_campos
+var AUTORIA_MANTER = 200;      // acima do limite ficam so os campos alterados mais recentemente
+var EDICAO_GUARDA_SEG = 21600; // 6 h: o reenvio da mesma edicao (mesmo id_envio) nao grava de novo
+
+function _idEnvioValido_(id) {
+  var t = String(id === undefined || id === null ? '' : id).trim();
+  return /^[A-Za-z0-9-]{8,64}$/.test(t) ? t : '';
+}
+
+function _edicaoJaFeita_(idEnvio) {
+  return !!idEnvio && CacheService.getScriptCache().get('edicao:' + idEnvio) === '1';
+}
+
+function _edicaoFeita_(idEnvio) {
+  if (idEnvio) CacheService.getScriptCache().put('edicao:' + idEnvio, '1', EDICAO_GUARDA_SEG);
+}
+
+/** O valor que chegou e o que ja esta na celula? (a celula pode ter sido retipada pelo Sheets) */
+function _mesmoValor_(col, atual, novo) {
+  var n = String(novo === undefined || novo === null ? '' : novo).trim();
+  if (atual instanceof Date) {
+    var iso = atual.toISOString();
+    return n === String(_valorDeLeitura_(col, atual)) || n === iso || n === iso.slice(0, 10) ||
+      n === Utilities.formatDate(atual, 'America/Sao_Paulo', 'yyyy-MM-dd') ||
+      n === Utilities.formatDate(atual, 'America/Sao_Paulo', 'HH:mm');
+  }
+  return String(atual === undefined || atual === null ? '' : atual).trim() === n;
+}
+
+/** Carimba as colunas no JSON de autoria (so as chaves alteradas mudam). Devolve { json, mapa }. */
+function _carimbar_(textoAtual, colunas, por, em) {
+  var mapa = _jsonOuVazio_(textoAtual);
+  for (var i = 0; i < colunas.length; i++) mapa[colunas[i]] = { por: por, em: em };
+  var json = JSON.stringify(mapa);
+  if (json.length > AUTORIA_MAX) {
+    var recentes = Object.keys(mapa).sort(function (a, b) {
+      return String((mapa[b] || {}).em).localeCompare(String((mapa[a] || {}).em));
+    }).slice(0, AUTORIA_MANTER);
+    var menor = {};
+    recentes.forEach(function (k) { menor[k] = mapa[k]; });
+    console.error('autoria_campos: ' + json.length + ' caracteres; mantidos os ' + recentes.length + ' campos mais recentes');
+    mapa = menor;
+    json = JSON.stringify(mapa);
+  }
+  return { json: json, mapa: mapa };
+}
+
+/**
+ * Grava na linha so os campos de 'campos' que existem no cabecalho, nao sao do servidor e
+ * tem valor diferente do que esta na celula; carimba cada um em autoria_campos e atualiza
+ * editado_por/editado_em. opcoes: { fora: [colunas ignoradas], so: funcao(coluna) que diz se
+ * a coluna pode ser editada, derivados: funcao(cabecalho, linhaAtual, mudancas) que devolve
+ * colunas calculadas pelo servidor (gravadas sem carimbo) ou { __erro } para nao gravar }.
+ * Saida: { alterados, autoria_campos, editado_em } ou { erro }.
+ */
+function _editarCampos_(aba, linha, campos, por, opcoes) {
+  var o = opcoes || {};
+  var header = _garantirColunas_(aba, ['editado_por', 'editado_em', 'autoria_campos']);
+  var atual = aba.getRange(linha, 1, 1, header.length).getValues()[0];
+  var limpos = _dadosDoCliente_(campos);
+  delete limpos.id_envio;
+  var mudar = {}, alterados = [];
+  for (var k in limpos) {
+    var idx = header.indexOf(k);
+    if (idx === -1 || (o.fora && o.fora.indexOf(k) !== -1) || (o.so && !o.so(k))) continue;
+    if (_mesmoValor_(k, atual[idx], limpos[k])) continue;
+    mudar[k] = limpos[k];
+    alterados.push(k);
+  }
+  var textoAutoria = atual[header.indexOf('autoria_campos')];
+  if (!alterados.length) return { alterados: [], autoria_campos: _jsonOuVazio_(textoAutoria), editado_em: '' };
+  if (o.derivados) {
+    var derivados = o.derivados(header, atual, mudar);
+    if (derivados && derivados.__erro) return { erro: derivados.__erro, alterados: [] };
+    for (var kd in derivados) mudar[kd] = derivados[kd];
+  }
+  var agora = new Date();
+  var carimbo = _carimbar_(textoAutoria, alterados, por, Utilities.formatDate(agora, 'America/Sao_Paulo', 'yyyy-MM-dd HH:mm:ss'));
+  var editadoEm = Utilities.formatDate(agora, 'America/Sao_Paulo', "yyyy-MM-dd'T'HH:mm:ss");
+  mudar.editado_por = por;
+  mudar.editado_em = editadoEm;
+  mudar.autoria_campos = carimbo.json;
+  if (header.indexOf('editado') !== -1) mudar.editado = 'Sim';
+  _atualizarCamposLinha_(aba, linha, header, mudar);
+  return { alterados: alterados, autoria_campos: carimbo.mapa, editado_em: editadoEm };
+}
+
+/** Edicao de um registro de automonitoramento (paciente ou profissional), por campo. */
+function _editarRegistroAuto_(planilhaId, timestamp, campos, por, idEnvio, profissionalId, sigla) {
+  var id = _idEnvioValido_(idEnvio);
+  if (_edicaoJaFeita_(id)) return { ok: true, duplicado: true, mensagem: 'Registro atualizado com sucesso' };
   var linha = _encontrarLinhaAuto_(planilhaId, timestamp);
   if (!linha) return { ok: false, erro: 'Registro nao encontrado' };
-  var agora = Utilities.formatDate(new Date(), 'America/Sao_Paulo', "yyyy-MM-dd'T'HH:mm:ss");
-  // 18.10 (8.46): autoria sempre do servidor (cracha de profissional)
-  var campos = _dadosDoCliente_(dados);
-  delete campos.id_envio;
-  campos.editando_quem  = '';
-  campos.editando_desde = '';
-  campos.editado        = 'Sim';
-  campos.editado_por    = 'profissional';
-  campos.editado_em     = agora;
-  _atualizarCamposLinha_(linha.aba, linha.rowIndex, linha.cabecalhos, campos);
-  _indicadoresAposGravar_(profId, siglaPaciente, _abrirPlanilha_(planilhaId));
-  return { ok: true, mensagem: 'Registro atualizado com sucesso', editado_em: agora };
+  var r = _editarCampos_(linha.aba, linha.rowIndex, campos, por);
+  // quem salvou deixou de editar: o aviso de presenca sai junto
+  _atualizarCamposLinha_(linha.aba, linha.rowIndex, linha.cabecalhos, { editando_quem: '', editando_desde: '' });
+  if (r.alterados.length) _indicadoresAposGravar_(profissionalId, sigla, _abrirPlanilha_(planilhaId));
+  _edicaoFeita_(id);
+  return { ok: true, mensagem: 'Registro atualizado com sucesso', editado_em: r.editado_em,
+    campos_alterados: r.alterados, autoria_campos: r.autoria_campos };
+}
+
+/** Edicao da anamnese (linha 2) por campo. E-mail e telefone espelham o cadastro e ficam de fora. */
+function _editarAnamnesePorCampos_(planilha, aba, campos, por, idEnvio, profissionalId, sigla, mensagem) {
+  var id = _idEnvioValido_(idEnvio);
+  if (_edicaoJaFeita_(id)) return { ok: true, duplicado: true, mensagem: mensagem };
+  if (aba.getLastRow() < 2) return { ok: false, erro: 'Dados da anamnese ausentes' };
+  var r = _editarCampos_(aba, 2, campos, por, { fora: ['email', 'telefone'] });
+  if (r.alterados.length) {
+    registrarDataAnamnese(sigla, profissionalId);
+    _indicadoresAposGravar_(profissionalId, sigla, planilha);
+  }
+  _edicaoFeita_(id);
+  return { ok: true, mensagem: mensagem, editado_em: r.editado_em, campos_alterados: r.alterados, autoria_campos: r.autoria_campos };
+}
+
+/** Profissional do cracha + paciente dele: { ok, profissionalId, planilha } ou a recusa. */
+function _pacienteDoProfissional_(s, siglaPaciente) {
+  var auth = _authProfissional_(s);
+  if (!auth.ok) return auth;
+  var profId = auth.profissional.profissional_id;
+  if (!siglaPaciente) return { ok: false, erro: 'Sigla do paciente e obrigatoria' };
+  var dono = resolverProfissionalIdPorSigla(siglaPaciente, 'paciente');
+  if (!dono) return { ok: false, erro: 'Paciente nao encontrado' };
+  if (dono !== profId) return { ok: false, erro: 'Este paciente nao pertence a voce' };
+  var planilha = _planilhaDoPaciente_(siglaPaciente);
+  if (!planilha) return { ok: false, erro: 'Planilha do paciente nao encontrada' };
+  return { ok: true, profissionalId: profId, planilha: planilha };
+}
+
+/** O que o servidor grava na linha criada pelo profissional. */
+function _autoriaDeCriacao_() {
+  return { criado_por: 'profissional', editado_por: 'profissional',
+    editado_em: Utilities.formatDate(new Date(), 'America/Sao_Paulo', "yyyy-MM-dd'T'HH:mm:ss") };
+}
+
+/**
+ * O profissional cria um registro de automonitoramento em nome do paciente: o mesmo
+ * payload do paciente (id_envio obrigatorio), gravado com criado_por = profissional.
+ * O rascunho do paciente nao e tocado.
+ */
+function profCriarAutomonitoramento(s, siglaPaciente, dados) {
+  var alvo = _pacienteDoProfissional_(s, siglaPaciente);
+  if (!alvo.ok) return alvo;
+  dados = _dadosDoCliente_(dados);
+  if (!dados.id_envio) return { ok: false, erro: 'Parametros incompletos' };
+  var aba = alvo.planilha.getSheetByName(ABA_AUTOMONITORAMENTO);
+  if (!aba) return { ok: false, erro: 'Registro nao encontrado' };
+  var repetido = _linhaDoEnvio_(aba, dados.id_envio);
+  if (repetido) return _respostaDuplicado_(alvo.planilha, ABA_AUTOMONITORAMENTO, repetido, 'Registro salvo com sucesso');
+  _garantirColunasAutomonitoramento_(aba);
+  _garantirColunas_(aba, ['criado_por', 'autoria_campos']);
+  aba.appendRow(montarLinha(aba, dados, _autoriaDeCriacao_()));
+  _indicadoresAposGravar_(alvo.profissionalId, siglaPaciente, alvo.planilha);
+  return { ok: true, mensagem: 'Registro salvo com sucesso' };
+}
+
+// Regras de calculo de cada escala, geradas do catalogo do frontend (ESC_ESCALAS) e conferidas
+// contra ele em Node (mesmo escore, faixa e alerta para qualquer resposta): n = itens;
+// max = maior valor da resposta; rev = itens invertidos; crit = [item, limiar, chave do alerta];
+// sub = itens de cada subescala (soma x 2); faixas = [min, max, rotulo]; func = opcoes do item funcional.
+var ESCALAS_CALCULO = {
+  'PHQ-9':{n:9,max:3,crit:[[9,1,'PHQ9_item9']],faixas:[[20,27,'Depressão grave'],[15,19,'Depressão moderadamente grave'],[10,14,'Depressão moderada'],[5,9,'Depressão leve'],[0,4,'Sintomas mínimos ou ausentes']],func:4},
+  'GAD-7':{n:7,max:3,faixas:[[15,21,'Ansiedade grave'],[10,14,'Ansiedade moderada'],[5,9,'Ansiedade leve'],[0,4,'Ansiedade mínima']],func:4},
+  'PSS-10':{n:10,max:4,rev:[4,5,7,8],faixas:[[27,40,'Estresse alto'],[14,26,'Estresse moderado'],[0,13,'Estresse baixo']]},
+  'DASS-21':{n:21,max:3,crit:[[21,2,'DASS21_item21']],sub:{estresse:[1,6,8,11,12,14,18],ansiedade:[2,4,7,9,15,19,20],depressao:[3,5,10,13,16,17,21]},multi:true,faixasSub:{depressao:[[28,99,'Extremamente severo'],[21,27,'Severo'],[14,20,'Moderado'],[10,13,'Leve'],[0,9,'Normal']],ansiedade:[[20,99,'Extremamente severo'],[15,19,'Severo'],[10,14,'Moderado'],[8,9,'Leve'],[0,7,'Normal']],estresse:[[34,99,'Extremamente severo'],[26,33,'Severo'],[19,25,'Moderado'],[15,18,'Leve'],[0,14,'Normal']]}},
+  'SRQ-20':{n:20,max:1,crit:[[17,1,'SRQ20_item17']],faixas:[[7,20,'Suspeita de transtorno mental comum'],[0,6,'Baixa probabilidade de TMC']]},
+  'BDI-II':{n:21,max:3,crit:[[9,1,'BDI2_item9']],faixas:[[29,63,'Grave'],[20,28,'Moderado'],[14,19,'Leve'],[0,13,'Mínimo']],letra:[16,18]},
+  'BAI':{n:21,max:3,faixas:[[31,63,'Grave'],[20,30,'Moderado'],[11,19,'Leve'],[0,10,'Mínimo']]}
+};
+
+/**
+ * Escore, faixa e alerta de uma escala a partir das respostas (as mesmas contas do cliente,
+ * escCalcularEscoreEAlerta). 'lerColuna(coluna)' devolve o valor de item_NN. Todos os itens
+ * precisam estar respondidos e dentro da faixa. Saida: { ok, campos } ou { ok: false, erro }.
+ */
+function _escoresDaEscala_(instrumento, lerColuna) {
+  var codigo = String(instrumento || '').trim();
+  var t = ESCALAS_CALCULO[codigo];
+  if (!t) return { ok: false, erro: 'Escala não encontrada: ' + codigo };
+  var total = 0, somas = {}, flag = 'NAO', alertaItem = '', alertaValor = '';
+  for (var id = 1; id <= t.n; id++) {
+    var cru = lerColuna('item_' + (id < 10 ? '0' : '') + id);
+    var bruto = parseInt(String(cru === undefined || cru === null ? '' : cru), 10);
+    if (isNaN(bruto) || bruto < 0 || bruto > t.max) return { ok: false, erro: 'Responda todas as questões' };
+    var v = (t.rev && t.rev.indexOf(id) !== -1) ? (t.max - bruto) : bruto;
+    total += v;
+    if (t.sub) {
+      for (var sub in t.sub) if (t.sub[sub].indexOf(id) !== -1) somas[sub] = (somas[sub] || 0) + v;
+    }
+    for (var c = 0; t.crit && c < t.crit.length; c++) {
+      if (t.crit[c][0] === id && bruto >= t.crit[c][1]) { flag = 'SIM'; alertaItem = t.crit[c][2]; alertaValor = String(bruto); }
+    }
+  }
+  var achar = function (faixas, escore, padrao) {
+    for (var i = 0; i < faixas.length; i++) if (escore >= faixas[i][0] && escore <= faixas[i][1]) return faixas[i][2];
+    return faixas[padrao === 'ultima' ? faixas.length - 1 : 0][2];
+  };
+  var campos = { escore_total: total, escore_depressao: '', escore_ansiedade: '', escore_estresse: '', faixa: '',
+    alerta_risco_flag: flag, alerta_risco_item: alertaItem, alerta_risco_valor: alertaValor };
+  if (t.multi) {
+    var rotulos = {};
+    ['depressao', 'ansiedade', 'estresse'].forEach(function (sub) {
+      var escore = (somas[sub] || 0) * 2; // DASS-21 -> DASS-42
+      campos['escore_' + sub] = escore;
+      rotulos[sub] = achar(t.faixasSub[sub], escore, 'ultima');
+    });
+    campos.faixa = 'Dep:' + rotulos.depressao + ' | Ans:' + rotulos.ansiedade + ' | Est:' + rotulos.estresse;
+  } else if (t.faixas) {
+    campos.faixa = achar(t.faixas, total, 'primeira');
+  }
+  return { ok: true, campos: campos };
+}
+
+/**
+ * O profissional aplica uma escala em nome do paciente: o payload do paciente (id_envio
+ * obrigatorio); escore, faixa e alerta sao RECALCULADOS aqui, o que vier do cliente nessas
+ * colunas e descartado.
+ */
+function profCriarEscala(s, siglaPaciente, dados) {
+  var alvo = _pacienteDoProfissional_(s, siglaPaciente);
+  if (!alvo.ok) return alvo;
+  dados = _dadosDoCliente_(dados);
+  if (!dados.id_envio) return { ok: false, erro: 'Parametros incompletos' };
+  var aba = alvo.planilha.getSheetByName(ABA_ESCALAS);
+  if (!aba) return { ok: false, erro: 'Aba "Escalas" nao encontrada na planilha individual.' };
+  var repetido = _linhaDoEnvio_(aba, dados.id_envio);
+  if (repetido) return _respostaDuplicado_(alvo.planilha, ABA_ESCALAS, repetido, 'Escala salva com sucesso');
+  var calc = _escoresDaEscala_(dados.instrumento, function (col) { return dados[col]; });
+  if (!calc.ok) return calc;
+  for (var k in calc.campos) dados[k] = calc.campos[k];
+  _garantirColunas_(aba, ['editado_por', 'editado_em', 'criado_por', 'autoria_campos']);
+  aba.appendRow(montarLinha(aba, dados, _autoriaDeCriacao_()));
+  _indicadoresAposGravar_(alvo.profissionalId, siglaPaciente, alvo.planilha);
+  return { ok: true, mensagem: 'Escala salva com sucesso' };
+}
+
+/** Linha (numero da planilha) da escala com este timestamp, ou 0. Le so a coluna. */
+function _encontrarLinhaEscala_(aba, timestamp) {
+  if (!aba || aba.getLastRow() < 2) return 0;
+  var header = aba.getRange(1, 1, 1, aba.getLastColumn()).getValues()[0];
+  var idx = header.indexOf('timestamp');
+  if (idx === -1) return 0;
+  var coluna = aba.getRange(2, idx + 1, aba.getLastRow() - 1, 1).getValues();
+  var alvo = String(timestamp).trim();
+  for (var i = 0; i < coluna.length; i++) if (_tsNormalizar_(coluna[i][0]) === alvo) return i + 2;
+  return 0;
+}
+
+/**
+ * O profissional edita as respostas de uma escala ja aplicada: so os itens alterados sao
+ * gravados (com carimbo) e escore, faixa e alerta sao recalculados pelo servidor a partir
+ * da linha resultante. Devolve o registro como ficou.
+ */
+function profEditarEscala(s, siglaPaciente, timestamp, campos, idEnvio) {
+  if (!siglaPaciente || !timestamp || !campos || typeof campos !== 'object') return { ok: false, erro: 'Parametros incompletos' };
+  var alvo = _pacienteDoProfissional_(s, siglaPaciente);
+  if (!alvo.ok) return alvo;
+  var id = _idEnvioValido_(idEnvio);
+  if (_edicaoJaFeita_(id)) return { ok: true, duplicado: true, mensagem: 'Escala salva com sucesso' };
+  var aba = alvo.planilha.getSheetByName(ABA_ESCALAS);
+  var linha = _encontrarLinhaEscala_(aba, timestamp);
+  if (!linha) return { ok: false, erro: 'Registro nao encontrado' };
+  var cab = aba.getRange(1, 1, 1, aba.getLastColumn()).getValues()[0];
+  var instrumento = String(aba.getRange(linha, cab.indexOf('instrumento') + 1).getValue() || '').trim();
+  var t = ESCALAS_CALCULO[instrumento];
+  if (!t) return { ok: false, erro: 'Escala não encontrada: ' + instrumento };
+  var r = _editarCampos_(aba, linha, campos, 'profissional', {
+    so: function (k) {
+      if (/^item_\d{2}$/.test(k)) return parseInt(k.slice(5), 10) >= 1 && parseInt(k.slice(5), 10) <= t.n;
+      return k === 'item_funcional' || k === 'item_funcional_texto' || k === 'observacoes';
+    },
+    derivados: function (header, atual, mudar) {
+      var calc = _escoresDaEscala_(instrumento, function (col) {
+        return mudar[col] !== undefined ? mudar[col] : atual[header.indexOf(col)];
+      });
+      return calc.ok ? calc.campos : { __erro: calc.erro };
+    }
+  });
+  if (r.erro) return { ok: false, erro: r.erro };
+  if (r.alterados.length) _indicadoresAposGravar_(alvo.profissionalId, siglaPaciente, alvo.planilha);
+  _edicaoFeita_(id);
+  var header = aba.getRange(1, 1, 1, aba.getLastColumn()).getValues()[0];
+  var valores = aba.getRange(linha, 1, 1, header.length).getValues()[0];
+  var registro = {};
+  for (var i = 0; i < header.length; i++) registro[header[i]] = _valorDeLeitura_(header[i], valores[i]);
+  return { ok: true, mensagem: 'Escala salva com sucesso', editado_em: r.editado_em,
+    campos_alterados: r.alterados, autoria_campos: r.autoria_campos, registro: registro };
 }
 
 

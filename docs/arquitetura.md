@@ -124,11 +124,13 @@ Botões que gravam/enviam/excluem só habilitam com TODAS as pré-condições
 válidas; ao falhar, alerta amigável + navegação para a seção pendente.
 Exclusões permanentes: confirmação dupla digitando a sigla exata.
 
-### Lock de presença + carimbo de auditoria (Pacote 13.6)
+### Presença (aviso) + carimbo de auditoria (Pacote 13.6; presença sem trava desde o 18.5)
 Colunas `editando_quem/editando_desde/editado/editado_por/editado_em`.
-Gravação do lock é fire-and-forget (sem await); leitura do lock é em
-tempo real ao abrir o modal; limpar ao salvar/cancelar. Após salvar,
-exibir "✏️ Editado por X em DD/MM HH:MM".
+A marca de presença é gravada sem await ao abrir a edição e lida em tempo real ao
+abrir o modal; limpa ao salvar/cancelar. **Desde o 18.5 ela só avisa** ("<quem>
+também está editando este registro"): o botão Editar continua, ninguém é bloqueado,
+e a edição é por campo com carimbo (seção "Registro e edição pelo profissional").
+Após salvar, a linha mostra "Editado por X em DD/MM HH:MM".
 
 ### Telas read-only do profissional
 Cards colapsáveis por módulo (`.prof-pv-mod`, chevron rotativo,
@@ -459,7 +461,7 @@ Planilha individual do paciente — abas:
 
 ## Backend (Apps Script)
 
-- `doPost` roteia por `acao` (41 ações desde o 18.10; o `switch` mora em `_despachar_`, e as
+- `doPost` roteia por `acao` (44 ações desde o 18.5 — as três novas são `profCriarAutomonitoramento`, `profCriarEscala` e `profEditarEscala`; eram 41 desde o 18.10; o `switch` mora em `_despachar_`, e as
   ações de `ACOES_COM_TRAVA` rodam dentro da trava de gravação — seção do 18.10). Um **portão
   único** antes do despacho exige o crachá (`payload.token`) em toda ação fora de
   `ACOES_PUBLICAS`; cada `case` cabe numa linha e recebe a sessão `s`
@@ -1241,13 +1243,83 @@ senão falha em execução. `executionApi: { access: "MYSELF" }` limita a API
 de execução ao dono e **não** toca `webapp.access: ANYONE_ANONYMOUS`; é
 seguro carregar para a produção no deploy do 18.1.
 
-## Registro e edição pelo profissional (Pacote 18.5 — decisão de 30/09/2026)
+## Registro e edição pelo profissional (Pacote 18.5 — publicado em 03/10/2026, @36)
 
-O profissional passa a criar e editar registros de automonitoramento, escalas
-e anamnese de qualquer paciente seu (hoje só edita anamnese e automonitoramento).
-Toda criação ou edição pelo profissional grava autoria no servidor
-(`editado_por` = profissional, `editado_em`), e o paciente vê no item a marca
-"registrado/alterado pelo seu psicólogo em `<data>`", para que autorrelato e
-anotação do terapeuta nunca se confundam. Depende do B7 (colunas de autoria
-controladas pelo servidor, Pacote 18.10). Conceituação cognitiva fica para o
-Módulo 3.
+O profissional cria e edita registros de automonitoramento, escalas e anamnese de
+qualquer paciente seu; o paciente continua editando os seus. Autorrelato e anotação
+do terapeuta nunca se confundem: cada campo alterado carrega quem alterou e quando.
+
+**Edição conjunta por campo (substitui a trava de presença, débito 8.47).** Toda
+edição — paciente ou profissional; registro, escala, anamnese — manda ao servidor só
+os campos alterados (`campos: {coluna: valor}`) e um `id_envio`. O servidor grava só
+essas colunas (`_editarCampos_` → `_atualizarCamposLinha_`), nunca a linha inteira:
+dois editores ao mesmo tempo não se bloqueiam; em campos diferentes os dois valores
+ficam, no mesmo campo vale a última gravação. O servidor também compara cada valor
+com o que já está na célula (`_mesmoValor_`, que conhece data, hora e número retipados
+pelo Sheets): valor igual não é gravado nem carimbado — por isso um cliente antigo,
+que ainda manda a linha toda em `dados`, grava só o que mudou de fato. O reenvio da
+mesma edição ("Tentar de novo", mesmo `id_envio`) responde `duplicado: true` sem
+gravar (`CacheService`, chave `edicao:<id>`, 6 h). `editando_quem` virou aviso na tela;
+as funções `*MarcarEditandoAuto`, `*LimparEditandoAuto` e `lerEditandoAuto` não mudaram
+e as colunas `editando_*` ficam (contrato vivo).
+
+**Carimbo por campo.** Coluna `autoria_campos` nas abas Automonitoramento, Escalas e
+Anamnese (criada pelo cabeçalho no primeiro uso; planilha nova já nasce com ela):
+`{ "<coluna>": { "por": "paciente|profissional", "em": "aaaa-MM-dd HH:mm:ss" } }`,
+atualizada só nas chaves alteradas; `por` sai do crachá, nunca do cliente
+(`autoria_campos` e `criado_por` entraram em `CAMPOS_DO_SERVIDOR`). `editado_por` e
+`editado_em` continuam dizendo quem mexeu por último na linha (as duas colunas passaram
+a existir também em Escalas e Anamnese). Acima de 40.000 caracteres ficam os 200
+campos alterados mais recentemente, com registro no log. Na tela, `vmcCarimboHtml_`
+mostra o carimbo junto do campo, na leitura e na edição, só onde há carimbo — textos
+aprovados em 03/10: para o paciente, "alterado pelo seu psicólogo em dd/mm às hh:mm"
+e "alterado por você em …"; para o profissional, "alterado pelo paciente em …" e
+"alterado por você em …". Limite conhecido: no formulário de 4 passos da anamnese do
+paciente o carimbo aparece nos campos simples (`f_<coluna>`); nos grupos de marcação
+ele aparece só na leitura.
+
+**Criação pelo profissional.** `profCriarAutomonitoramento` e `profCriarEscala` recebem
+o mesmo payload do paciente (`id_envio` obrigatório; reenvio = `duplicado`) e gravam
+`criado_por = profissional` (coluna nova, pelo cabeçalho), `editado_por` e
+`editado_em`; o rascunho do paciente não é tocado e os indicadores da lista são
+atualizados na mesma chamada. Registro enviado pelo paciente fica com `criado_por`
+vazio. O paciente vê no cartão "registrado pelo seu psicólogo em dd/mm"
+(`vmcFaixaCriadoHtml_`); não há botão de apagar. No frontend não existe cópia de
+formulário: "Novo registro" e "Nova escala" abrem as telas do paciente com
+`PROF_FLUXO = { sigla }` — `carregarSessao()` devolve o paciente selecionado (o crachá
+continua o do profissional), `profFluxoAdaptar_` troca o envio pela ação do profissional
+e responde `lerHistorico`/`lerEscalas` com o que `profLerDadosPaciente` já trouxe, os
+cadeados de primeira vez não valem, e `abrirSecao` devolve à tela do paciente qualquer
+destino fora do fluxo (`profFluxoEncerrar_`). O rascunho no servidor continua só do
+paciente.
+
+**Escore das escalas no servidor.** `ESCALAS_CALCULO` (itens, valor máximo, itens
+invertidos, subescalas, itens críticos, faixas — sem nenhum texto de item) foi gerada
+do catálogo do frontend (`ESC_ESCALAS`) e `_escoresDaEscala_` repete as contas de
+`escCalcularEscoreEAlerta`; a paridade é provada em Node com 400 respostas por
+instrumento (os 7). Em `profCriarEscala` e `profEditarEscala` o escore, a faixa e o
+alerta são sempre os do servidor (o que o cliente mandar nessas colunas é descartado);
+na edição só os itens alterados levam carimbo e a linha resultante é validada antes de
+gravar (resposta faltando ou fora da faixa recusa sem gravar). **Mudou o catálogo de
+uma escala no frontend → regenerar a tabela e rodar o Node.** `salvarEscala` (paciente)
+continua gravando o escore calculado no cliente, como antes.
+
+**Leituras do paciente por colunas e paginadas (8.87).** `lerHistorico` e `lerEscalas`
+devolvem os 60 registros mais recentes (`PAGINA_LEITURA`; teto 200), em ordem
+cronológica, só com as colunas de `COLUNAS_LEITURA_AUTO` / `COLUNAS_LEITURA_ESCALAS`
+(o que o cartão, a lupa, a edição e o Painel leem; ficam de fora `versao_formulario`,
+`id_envio` e `editando_desde`). `antes` = quantos o cliente já tem: "Carregar mais"
+(Meus Registros e histórico de escalas) pede a página anterior. A resposta traz
+`total_registros`/`total`, `tem_mais` e, no histórico, `tem_negativo` (a regra de
+primeira vez não pode depender do que coube na página); a anamnese vem só na primeira
+página. O Painel e o gráfico da checagem buscam as páginas anteriores sozinhos quando
+o período pedido vai além do que está carregado (`pevCompletar_`), e a ordinal da
+escala ("esta é sua Nª aplicação") carrega todas antes de contar. Nessas duas ações o
+`doPost` guarda em `_MEMO_.linhas` a linha do paciente e a do profissional dono — o
+portão do crachá e a ação liam a mesma linha, cada um a sua leitura. A leitura do
+profissional (`profLerDadosPaciente`) continua trazendo tudo.
+
+**Lista do profissional.** `aceite_em` (DD/MM/AAAA, de `aceite_politica_em`; vazio quando
+não há) aparece no cartão do paciente como "Aceite: …".
+
+Conceituação cognitiva fica para o Módulo 3.
