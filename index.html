@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.3 — produção (03/10/2026) -->
+<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.4 — produção (03/10/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -877,6 +877,7 @@ body.vmc-largo .topbar-in{max-width:1360px;}
   transition:all .15s;
 }
 .p136-humor-btn.ativo{background:var(--c-action);color:var(--c-ink-inv);border-color:var(--c-action);}
+.p136-humor-vazio{font:var(--t-body-sm);color:var(--c-ink-3);margin:-4px 0 10px;} /* 18.4 (8.50) */
 /* Carimbo de edição no card histc */
 
 /* ===== Campos de formulário ===== */
@@ -2087,6 +2088,7 @@ button.cab-no-item{cursor:pointer;}
 .histc-date{font-family:var(--f-title);font-size:14.5px;font-weight:700;color:var(--c-ink);}
 .histc-meta{font:var(--t-body-sm);color:var(--c-ink-3);margin-top:3px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
 .histc-meta .humor-pill{background:var(--c-action-tint);color:var(--c-action);font-weight:800;padding:1px 8px;border-radius:8px;}
+.histc-obs{font:var(--t-body-sm);color:var(--c-ink-2);margin-top:3px;white-space:pre-wrap;overflow-wrap:anywhere;} /* 18.4 (8.50): observação da checagem */
 
 .histc-empty{text-align:center;padding:40px 20px;background:var(--c-surface);border-radius:var(--r-card);border:2px dashed var(--c-line);}
 .histc-empty-icon{font-size:42px;display:block;margin-bottom:10px;opacity:.5;}
@@ -2191,6 +2193,7 @@ button.cab-no-item{cursor:pointer;}
 .hist-modal-head-info{flex:1;}
 .hist-modal-head-data{font-family:var(--f-title);font-size:16px;font-weight:700;}
 .hist-modal-head-humor{font:var(--t-body-sm);color:var(--c-ink-3);margin-top:2px;}
+.hist-modal-head-obs{color:var(--c-ink-2);margin-top:2px;white-space:pre-wrap;overflow-wrap:anywhere;} /* 18.4 (8.50) */
 .hist-modal-head-humor strong{
   font:var(--t-body-sm);color:var(--c-action);background:var(--c-action-tint);
   padding:1px 8px;border-radius:10px;font-weight:700;
@@ -7099,6 +7102,14 @@ function vmcHumorIcone(nivel, classeExtra) {
   return '<svg class="ico ico-humor-' + n + (classeExtra ? ' ' + classeExtra : '') + '" aria-hidden="true"><use href="#i-humor-' + n + '"></use></svg>';
 }
 
+// 18.4 (8.50): nível de humor 1–5, ou 0 quando o registro não tem humor (nunca vira 3)
+function vmcHumorNivel_(v) { var n = parseInt(v, 10); return (n >= 1 && n <= 5) ? n : 0; }
+// 18.4 (8.50): "Humor: n/5 nome" ou "Sem registro de humor" (cartões de Meus Registros e do profissional)
+function vmcHumorPill_(humor) {
+  return humor ? 'Humor: <span class="humor-pill">' + humor + '/5 ' + (HUMOR_NOMES[humor] || '') + '</span>'
+               : '<span class="humor-pill">Sem registro de humor</span>';
+}
+
 function vmcTok(nome) {
   if (!(nome in VMC_TOK_CACHE)) VMC_TOK_CACHE[nome] = getComputedStyle(document.documentElement).getPropertyValue(nome).trim();
   return VMC_TOK_CACHE[nome];
@@ -7480,8 +7491,13 @@ function _respostaDescartada_() { return new Promise(function () {}); }
 // sobreposição fica aberta, nem com conteúdo, por cima do login (8.71, achado 29).
 function vmcSessaoExpirada_(msg) {
   sairDoSistema({ manterRascunhos: true }); // 18.3: a saída única; os rascunhos da sigla ficam
+  vmcAvisoNoLogin_(msg || 'Sua sessão expirou. Entre de novo para continuar.');
+}
+
+// 18.4 (8.31): mensagem no login, depois da saída (no lugar do alert() de "Sessão expirada")
+function vmcAvisoNoLogin_(msg) {
   const box = document.getElementById('loginError');
-  box.textContent = msg || 'Sua sessão expirou. Entre de novo para continuar.';
+  box.textContent = msg;
   box.classList.remove('hidden');
 }
 
@@ -7731,7 +7747,7 @@ function abrirSecao(idSecao) {
   var bloco = (alvo && alvo.classList.contains('auto-tipo')) ? alvo : null;
   var secFisica = bloco ? bloco.closest('.section') : alvo;
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.auto-aviso-ok').forEach(a => a.remove()); // 18.3: a confirmação na tela não segue para a próxima
+  document.querySelectorAll('.auto-aviso-ok, [data-aviso-tela]').forEach(a => a.remove()); // 18.3/18.4: o aviso na tela não segue para a próxima
   secFisica.classList.add('active');
   if (bloco) autoMostrarTipo(secFisica, bloco);
   topbarAtualizar(secFisica.id);
@@ -8669,6 +8685,12 @@ async function profCarregarDashboard() {
 function profEscHtml_(str) { return esc(str); }
 
 /* Pacote 13.2.3: renderiza chips de indicadores clínicos para um paciente */
+// 18.4 (8.48): número do item de risco por regra única — 'PHQ9_item9' → '9', 'DASS21_item21' → '21', '9' → '9'; sem número → ''
+function vmcNumeroDoItem_(item) {
+  var m = String(item == null ? '' : item).trim().match(/(?:^|item_?)0*(\d+)$/i);
+  return m ? m[1] : '';
+}
+
 function profRenderizarIndicadores_(p) {
   var chips = [];
 
@@ -8705,10 +8727,12 @@ function profRenderizarIndicadores_(p) {
   // 5. Alerta crítico mais recente
   if (p.ind_alertas && p.ind_alertas.length > 0) {
     var a = p.ind_alertas[0];
-    var alertaTxt = '<svg class=ico aria-hidden=true><use href=#i-alert></use></svg> Alerta: ' + a.instrumento;
-    if (a.item) alertaTxt += ' ' + a.item;
-    if (a.data) alertaTxt += ' (' + a.data + ')';
-    chips.push('<span class="prof-ind-chip chip-alerta">' + profEscHtml_(alertaTxt) + '</span>');
+    // 18.4 (8.48): o ícone fica fora do escape; só instrumento, número do item e data passam por esc()
+    var alertaItem = vmcNumeroDoItem_(a.item);
+    var alertaTxt = 'Alerta: ' + esc(a.instrumento);
+    if (alertaItem) alertaTxt += ' · item ' + esc(alertaItem);
+    if (a.data) alertaTxt += ' · ' + esc(a.data);
+    chips.push('<span class="prof-ind-chip chip-alerta"><svg class=ico aria-hidden=true><use href=#i-alert></use></svg> ' + alertaTxt + '</span>');
   }
 
   if (chips.length === 0) {
@@ -9008,14 +9032,14 @@ function profRenderizarAutomonitoramento_(registros) {
     if (m) dataFmt = m[3] + '/' + m[2] + '/' + m[1];
     else if (data) dataFmt = data;
     var hora = autoFormatarHora(r.hora_registro);
-    var humor = parseInt(r.humor_nivel, 10) || 3;
+    var humor = vmcHumorNivel_(r.humor_nivel); // 18.4 (8.50): sem humor, sem rosto e sem número
 
     html += '<div class="histc">';
     html += '<div class="histc-head">';
-    html += '<div class="histc-mood m' + humor + '">' + vmcHumorIcone(humor) + '</div>';
+    html += '<div class="histc-mood' + (humor ? ' m' + humor : '') + '">' + (humor ? vmcHumorIcone(humor) : '') + '</div>';
     html += '<div class="histc-info">';
     html += '<div class="histc-date">' + esc(dataFmt) + ' · ' + esc(hora) + '</div>';
-    html += '<div class="histc-meta">Humor: <span class="humor-pill">' + humor + '/5 ' + (HUMOR_NOMES[humor] || '') + '</span></div>';
+    html += '<div class="histc-meta">' + vmcHumorPill_(humor) + '</div>';
     html += '</div>';
     html += '<button class="hist-btn-lupa" type="button" title="Ver registro completo" onclick="histAbrirModal(' + i + ')"><svg class=ico aria-hidden=true><use href=#i-search></use></svg></button>';
     html += '</div>';
@@ -9118,7 +9142,7 @@ async function p137TrocarSenha() {
     if (resp && resp.ok) {
       delete PROF_LINK_POR_SIGLA[PROF_PACIENTE_SEL.sigla]; // 18.1.2: senha gravada invalida os links pendentes
       p137FecharSenha();
-      mostrarToast('Senha alterada com sucesso!');
+      vmcAvisoOkNaTela('Senha alterada com sucesso!'); // 18.4 (8.82): a função de toast chamada aqui não existia (ReferenceError e "Erro de conexão" no modal já fechado)
     } else {
       erroEl.textContent = (resp && resp.erro) ? resp.erro : 'Erro ao alterar senha.';
       btn.disabled = false;
@@ -9684,6 +9708,15 @@ function vmcAvisoOkNaTela(msg) {
   av.classList.add('auto-aviso-ok'); av.setAttribute('role', 'status');
   av.querySelector('use').setAttribute('href', '#i-check');
   sec.insertAdjacentElement('afterbegin', av);
+}
+
+// 18.4 (8.31): erro na própria tela, no lugar do alert() — no topo da tela ativa ou logo antes de `ancora`; sai na troca de tela
+function vmcAvisoNaTela(msg, ancora) {
+  const sec = document.querySelector('.section.active'); if (!sec) return;
+  sec.querySelectorAll('[data-aviso-tela]').forEach(a => a.remove());
+  const av = autoAvisoEl(msg); av.setAttribute('data-aviso-tela', '');
+  if (ancora) ancora.insertAdjacentElement('beforebegin', av); else sec.insertAdjacentElement('afterbegin', av);
+  av.scrollIntoView({ block: 'center', behavior: 'smooth' });
 }
 
 // ESC fecha modal de senha
@@ -11144,7 +11177,7 @@ function restaurarValoresDoRascunho() {
   };
   const setRadio = (name, val) => {
     if (!val) return;
-    const el = document.querySelector(`input[name="${name}"][value="${val}"]`);
+    const el = document.querySelector(`input[name="${CSS.escape(name)}"][value="${CSS.escape(String(val))}"]`); // 18.4 (8.83)
     if (el) el.checked = true;
   };
 
@@ -11228,7 +11261,7 @@ function restaurarValoresDoRascunho() {
               const medId = chk.id.replace('chk_med_', '');
               const optDiv = document.getElementById(`medopt_${medId}`);
               if (optDiv) optDiv.classList.add('selected');
-              const statusRadio = document.querySelector(`input[name="med_status_${medId}"][value="${statusValor}"]`);
+              const statusRadio = document.querySelector(`input[name="${CSS.escape('med_status_' + medId)}"][value="${CSS.escape(statusValor)}"]`); // 18.4 (8.83)
               if (statusRadio) statusRadio.checked = true;
               if (outroTexto) {
                 const outroInput = document.getElementById(`outro_med_${medId}`);
@@ -11270,7 +11303,7 @@ function restaurarValoresDoRascunho() {
             const itemId = chk.id.replace('chk_', '');
             const optDiv = document.getElementById(`opt_${itemId}`);
             if (optDiv) optDiv.classList.add('selected');
-            const statusRadio = document.querySelector(`input[name="status_${itemId}"][value="${statusValor}"]`);
+            const statusRadio = document.querySelector(`input[name="${CSS.escape('status_' + itemId)}"][value="${CSS.escape(statusValor)}"]`); // 18.4 (8.83)
             if (statusRadio) statusRadio.checked = true;
             // Restaura texto livre do "Outro" se houver
             if (outroTexto) {
@@ -13250,8 +13283,8 @@ function escapeHtmlAuto(s) { return esc(s); }
 async function autoEnviarRegistro(opcoes) {
   const paciente = carregarSessao();
   if (!paciente) {
-    alert('Sessão expirada. Faça login novamente.');
     sairDoSistema();
+    vmcAvisoNoLogin_('Sessão expirada. Faça login novamente.'); // 18.4 (8.31): era alert()
     return;
   }
   // 16.5c: "Concluir só com a checagem de humor" envia a MESMA ação só com os campos da checagem
@@ -13312,7 +13345,7 @@ async function autoEnviarRegistro(opcoes) {
 // ============================================================
 async function autoAbrirHistorico() {
   const paciente = carregarSessao();
-  if (!paciente) { alert('Sessão expirada.'); sairDoSistema(); return; }
+  if (!paciente) { sairDoSistema(); vmcAvisoNoLogin_('Sessão expirada.'); return; } // 18.4 (8.31): era alert()
   const box = document.getElementById('autoHistLista');
   box.innerHTML = '<div style="text-align:center;padding:30px;color:var(--c-ink-3);">Carregando seus registros...</div>';
   abrirSecao('sec-auto-historico');
@@ -13419,24 +13452,25 @@ function histMontarCartao(r, idx) {
   if (m) dataFmt = m[3] + '/' + m[2] + '/' + m[1];
   else if (data) dataFmt = data;
   const hora = autoFormatarHora(r.hora_registro);
-  const humor = parseInt(r.humor_nivel, 10) || 3;
+  const humor = vmcHumorNivel_(r.humor_nivel); // 18.4 (8.50)
   let tipos = '';
   if (histEhNeg(r)) tipos += '<span class="histc-tipo neg">Registro Negativo</span>';
   if (histEhPos(r)) tipos += '<span class="histc-tipo pos">Registro Positivo</span>';
   // 16.5c: linha só de checagem (neg_preenchido e pos_preenchido vazios) — chip próprio e sem detalhe das etapas
   const soChecagem = !histEhNeg(r) && !histEhPos(r);
   if (soChecagem) tipos += '<span class="histc-tipo chk">Checagem de humor</span>';
+  const obsHumor = String(r.humor_observacoes || '').trim(); // 18.4 (8.50)
   // Lista compacta (10 v4): cabeçalho com data/humor/tipo/lupa; o conteúdo
   // completo continua no modal da lupa (histAbrirModal).
   return '<div class="histc">' +
            '<div class="histc-head">' +
-             '<div class="histc-mood m' + humor + '">' +
-               vmcHumorIcone(humor) +
+             '<div class="histc-mood' + (humor ? ' m' + humor : '') + '">' +
+               (humor ? vmcHumorIcone(humor) : '') +
              '</div>' +
              '<div class="histc-info">' +
                '<div class="histc-date">' + esc(dataFmt) + ' · ' + esc(hora) + '</div>' +
-               '<div class="histc-meta">Humor: <span class="humor-pill">' + humor + '/5 ' +
-                 (HUMOR_NOMES[humor] || '') + '</span>' + tipos + '</div>' +
+               '<div class="histc-meta">' + vmcHumorPill_(humor) + tipos + '</div>' +
+               (soChecagem && obsHumor ? '<div class="histc-obs">' + esc(obsHumor) + '</div>' : '') + // 18.4: a checagem não tem lupa
              '</div>' +
              (soChecagem ? '' :
              '<button class="hist-btn-lupa" type="button" title="Ver registro completo"' +
@@ -13594,7 +13628,7 @@ async function histAbrirModal(idx) {
     }
     const r = regs[idx];
 
-    const humor = parseInt(r.humor_nivel, 10) || 3;
+    const humor = vmcHumorNivel_(r.humor_nivel); // 18.4 (8.50)
 
     const data = String(r.data_registro || '');
     let dataFmt = '—';
@@ -13602,9 +13636,12 @@ async function histAbrirModal(idx) {
     if (dm) dataFmt = dm[3] + '/' + dm[2] + '/' + dm[1];
     const hora = autoFormatarHora(r.hora_registro);
 
-    document.getElementById('histModalEmoji').innerHTML = vmcHumorIcone(humor); // 16.5b: rostinho do sprite (HTML literal, nunca entrada do usuário)
+    document.getElementById('histModalEmoji').innerHTML = humor ? vmcHumorIcone(humor) : ''; // 16.5b: rostinho do sprite (HTML literal, nunca entrada do usuário); 18.4: sem humor, sem rosto
     document.getElementById('histModalData').textContent = dataFmt + ' · ' + hora;
-    document.getElementById('histModalHumor').innerHTML = 'Humor: <strong>' + humor + '/5 ' + (HUMOR_NOMES[humor]||'') + '</strong>';
+    const obsHumor = String(r.humor_observacoes || '').trim(); // 18.4 (8.50): observação da checagem, abaixo do humor
+    document.getElementById('histModalHumor').innerHTML =
+      (humor ? 'Humor: <strong>' + humor + '/5 ' + (HUMOR_NOMES[humor] || '') + '</strong>' : '<strong>Sem registro de humor</strong>') +
+      (obsHumor ? '<div class="hist-modal-head-obs">' + esc(obsHumor) + '</div>' : '');
 
     // Montar conteúdo completo
     let html = '';
@@ -13842,7 +13879,7 @@ function p136ColetarDados_() {
   var dados = {};
   // Humor nivel
   var hInput = document.getElementById('p136HumorNivel');
-  if (hInput) dados['humor_nivel'] = hInput.value;
+  if (hInput && hInput.value) dados['humor_nivel'] = hInput.value; // 18.4 (8.50): sem humor e sem escolha, o campo não vai
   // Todos os [data-campo] (textareas, checkboxes de side toggle)
   var campos = document.querySelectorAll('#histModalConteudo [data-campo]');
   campos.forEach(function(el) {
@@ -13891,7 +13928,7 @@ function p136RenderFormEdicao_(r) {
 }
 
 function p136RenderHumor_(r) {
-  var nivel = parseInt(r.humor_nivel, 10) || 3;
+  var nivel = vmcHumorNivel_(r.humor_nivel); // 18.4 (8.50): sem humor, nenhum rosto marcado
   var h = '<div style="margin-bottom:18px;">';
   h += '<div class="auto-sec-header" style="border-color:var(--c-action);margin-bottom:12px;">';
   h += '<div class="auto-sec-icon" style="background:var(--c-action-tint);color:var(--c-action);"><svg class=ico aria-hidden=true><use href=#i-humor-3></use></svg></div>';
@@ -13902,7 +13939,8 @@ function p136RenderHumor_(r) {
     h += '<button type="button" class="p136-humor-btn' + (i === nivel ? ' ativo' : '') + '" onclick="p136ToggleHumor(this,' + i + ')">' + vmcHumorIcone(i) + ' ' + i + '</button>';
   }
   h += '</div>';
-  h += '<input type="hidden" id="p136HumorNivel" value="' + nivel + '">';
+  if (!nivel) h += '<div class="p136-humor-vazio" id="p136HumorVazio">Sem registro de humor</div>';
+  h += '<input type="hidden" id="p136HumorNivel" value="' + (nivel || '') + '">';
   h += '<div class="prof-edit-field"><label>Observações</label>';
   h += '<textarea data-campo="humor_observacoes" rows="2">' + escapeHtmlAuto(String(r.humor_observacoes || '')) + '</textarea></div>';
   h += '</div>';
@@ -13915,6 +13953,7 @@ function p136ToggleHumor(btn, val) {
   btn.classList.add('ativo');
   var inp = document.getElementById('p136HumorNivel');
   if (inp) inp.value = val;
+  var vazio = document.getElementById('p136HumorVazio'); if (vazio) vazio.remove(); // 18.4
 }
 
 function p136RenderSecao_(r, tipo) {
@@ -13958,13 +13997,6 @@ function p136ToggleSide(cb) {
   var tipo = cb.getAttribute('data-campo').replace('_preenchido','');
   var el = document.getElementById('p136Side_' + tipo);
   if (el) el.style.display = cb.checked ? '' : 'none';
-}
-
-function p136CorDoGrupo_(chave) {
-  if (chave.indexOf('neg_pens') === 0) return 'amber';
-  if (chave.indexOf('neg_') === 0) return 'coral';
-  if (chave.indexOf('pos_') === 0) return 'green';
-  return 'gray';
 }
 
 function p136RenderGrupo_(r, chave, comLikert) {
@@ -15558,7 +15590,7 @@ function escClicarEntendi() {
 async function escIniciarAplicacao(codigoEscala) {
   const def = ESC_ESCALAS[codigoEscala];
   if (!def) {
-    alert('Escala não encontrada: ' + codigoEscala);
+    vmcAvisoNaTela('Escala não encontrada: ' + codigoEscala); // 18.4 (8.31): era alert()
     return;
   }
 
@@ -15568,7 +15600,7 @@ async function escIniciarAplicacao(codigoEscala) {
   if (def.textoDaAba) {
     const textosOk = await escCarregarTextos(codigoEscala);
     if (!textosOk) {
-      alert('Esta escala não está disponível no momento. Fale com seu terapeuta.');
+      vmcAvisoNaTela('Esta escala não está disponível no momento. Fale com seu terapeuta.'); // 18.4 (8.31): era alert()
       ESC_LIBERADOS = null;
       await escCarregarLiberados();
       escAplicarCartoesLiberados();
@@ -15761,6 +15793,7 @@ function escAtualizarProgresso() {
   const funcionalOk = !def.itemFuncional || (ESC_STATE.respostas['funcional'] !== undefined);
   const itensOk = respondidosObrig >= totalItensObrig;
   document.getElementById('escBtnEnviar').disabled = !(itensOk && funcionalOk);
+  if (itensOk && funcionalOk) document.querySelectorAll('#sec-escalas-aplicar [data-aviso-tela]').forEach(a => a.remove()); // 18.4: "Responda todas" sai quando destrava
 }
 
 /**
@@ -15780,7 +15813,7 @@ function escBtnEnviarClicado(event) {
   // Só alerta se o botão REALMENTE está desabilitado no momento do clique.
   // Quando habilitado, o onclick do próprio button já disparou; ignoramos aqui.
   if (btn && btn.disabled) {
-    alert('Responda todas as questões');
+    vmcAvisoNaTela('Responda todas as questões', document.querySelector('#sec-escalas-aplicar .esc-nav')); // 18.4 (8.31): era alert()
   }
 }
 
@@ -15897,7 +15930,7 @@ async function escEnviarEscala(event) {
 
   const paciente = carregarSessao();
   if (!paciente || !paciente.sigla) {
-    alert('Sessão expirada. Faça login novamente.');
+    vmcAvisoNaTela('Sessão expirada. Faça login novamente.', document.querySelector('#sec-escalas-aplicar .esc-nav')); // 18.4 (8.31): era alert(); continua sem sair, como antes
     return;
   }
 
@@ -15984,7 +16017,7 @@ async function escEnviarEscala(event) {
     escMostrarResultado(codigo, calc, ESC_STATE.respostas);
 
   } catch (erro) {
-    alert('Não foi possível salvar a escala: ' + String(erro));
+    vmcAvisoNaTela('Não foi possível salvar a escala: ' + String(erro), document.querySelector('#sec-escalas-aplicar .esc-nav')); // 18.4 (8.31): era alert()
     btn.disabled = false;
   }
 }
@@ -16354,7 +16387,7 @@ function escRrBlocoSubescalasDass(reg, def) {
     const faixaRot = escHistRotuloSubFaixa(k, escore);
 
     html += '<div class="rr-sub-box ' + m.corPrefix + '">';
-    html +=   '<span class="rr-sub-icone">' + escapeHtmlAuto(m.icone || '') + '</span>';
+    html +=   '<span class="rr-sub-icone">' + (m.icone || '') + '</span>'; // 18.4 (8.48): ícone do sprite (constante do catálogo), fora do escape
     html +=   '<div class="rr-sub-nome">' + escapeHtmlAuto(m.nome || k) + '</div>';
     html +=   '<div class="rr-sub-escore">' + escapeHtmlAuto(String(escoreDisp)) + '</div>';
     if (faixaRot) {
@@ -17250,7 +17283,7 @@ async function graCarregar() {
   // Config -> select de antecedência
   var cfg = resp.config || {};
   var sel = document.getElementById('graCfgAntecedencia');
-  if (cfg.antecedencia_min_horas && sel.querySelector('option[value="' + cfg.antecedencia_min_horas + '"]')) {
+  if (cfg.antecedencia_min_horas && sel.querySelector('option[value="' + CSS.escape(String(cfg.antecedencia_min_horas)) + '"]')) { // 18.4 (8.83)
     sel.value = String(cfg.antecedencia_min_horas);
   }
 
