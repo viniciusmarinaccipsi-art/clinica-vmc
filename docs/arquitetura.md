@@ -421,7 +421,8 @@ Sugeridos já reservados: `p11b*` (cabeçalho no Positivo), `form*`
 
 ```
 Sistema_VMC (planilha global)
-├── Profissionais   (dados dos profissionais, com email e telefone; nunca retorna senha_hash)
+├── Profissionais   (dados dos profissionais, com email, telefone e crp; controle_id desde o
+│                    18.10 — id da Controle; nunca retorna senha_hash)
 ├── Admins          (email desde o 18.1)
 ├── Indice_Siglas   (sigla → tipo → profissional dono + email do login; gravado por
 │                    nome de cabeçalho desde o 18.1; resolução server-side)
@@ -432,15 +433,19 @@ Sistema_VMC (planilha global)
 
 Profissional_<sigla>/ (uma pasta por profissional)
 ├── Clinica VMC - Controle   (pacientes, com email, telefone e nome desde o
-│                             18.1 — única fonte do contato; + abas
-│                             Config_Agenda e Grade_Horarios a partir do 14.1)
+│                             18.1 — única fonte do contato; indicadores ind_* de
+│                             cada paciente desde o 18.10; + abas Config_Agenda e
+│                             Grade_Horarios a partir do 14.1)
 ├── Pacientes/<sigla>        (uma planilha por paciente)
 └── Pacientes_Desativados/   (planilhas movidas ao desativar)
 
 Planilha individual do paciente — abas:
 ├── Anamnese          (registro único na row 2 — sobrescrever, nunca append)
 ├── Automonitoramento (1 linha por registro; versao_formulario)
-└── Escalas           (1 linha por aplicação; escores e alertas)
+├── Escalas           (1 linha por aplicação; escores e alertas)
+└── Rascunho          (18.10b: 1 linha por tipo — tipo, atualizado_em, dados_json;
+                       nasce no primeiro "Salvar e sair"; nenhuma leitura clínica a usa)
+(as três primeiras têm a coluna id_envio desde o 18.10 — identificador do envio)
 ```
 
 - Contagens de colunas evoluem — a fonte é o cabeçalho real da aba
@@ -454,8 +459,9 @@ Planilha individual do paciente — abas:
 
 ## Backend (Apps Script)
 
-- `doPost` roteia por `acao` (37 ações no 18.1). Um **portão único** antes do
-  `switch` exige o crachá (`payload.token`) em toda ação fora de
+- `doPost` roteia por `acao` (40 ações desde o 18.10; o `switch` mora em `_despachar_`, e as
+  ações de `ACOES_COM_TRAVA` rodam dentro da trava de gravação — seção do 18.10). Um **portão
+  único** antes do despacho exige o crachá (`payload.token`) em toda ação fora de
   `ACOES_PUBLICAS`; cada `case` cabe numa linha e recebe a sessão `s`
   (`_exigir_(s, 'paciente')`, `_authProfissional_(s)`, `_admDaSessao_(s)`).
   Famílias de funções:
@@ -463,7 +469,8 @@ Planilha individual do paciente — abas:
     `pedirRedefinicao(tipo, email)`, `definirSenha(ativar, senha?)`.
   - **Paciente (sigla do crachá):** `salvarAnamnese`,
     `salvarAutomonitoramento`, `lerHistorico`, `salvarEscala`, `lerEscalas`,
-    `alterarSenhaPaciente`, `pacienteAtualizarAnamnese`, lock de edição.
+    `alterarSenhaPaciente`, `pacienteAtualizarAnamnese`, lock de edição,
+    `salvarRascunho`/`lerRascunhos`/`apagarRascunho` (18.10b).
   - **Profissional (profissional do crachá; `siglaPaciente` conferido contra o
     dono):** `profListarPacientes`, `lerDadosPaciente` (devolve também o
     `contato` do cadastro), cadastro (sigla gerada), anamnese (com
@@ -476,8 +483,10 @@ Planilha individual do paciente — abas:
 - Resolução multi-tenant: `resolverProfissionalIdPorSigla` →
   `buscarProfissional` → `abrirControleDoProfissional`;
   `buscarPaciente` descobre o dono via Indice_Siglas — o payload nunca
-  carrega `profissional_id`.
-- `montarLinha` é aditiva por nome de coluna; campos desconhecidos são
+  carrega `profissional_id`. Desde o 18.10 a Controle abre pelo `controle_id`
+  (sem busca no Drive) e cada planilha é aberta uma vez por chamada.
+- `montarLinha` é aditiva por nome de coluna (desde o 18.10 as colunas de
+  `CAMPOS_DO_SERVIDOR` nunca recebem valor do cliente); campos desconhecidos são
   ignorados — o frontend pode evoluir antes do backend.
 - `HEADERS_ANAMNESE/AUTOMONITORAMENTO/ESCALAS`: arrays constantes
   usados ao criar planilha de paciente nova; coluna nova = atualizar o
@@ -1055,7 +1064,7 @@ deploy @31).
   | `pedirRedefinicao` — conta inexistente | 318 | 490 | 1447 |
   | `pedirRedefinicao` — pedido repetido em 15 min | 33 | 42 | 44 |
 
-  `PISO_LOGIN_MS` = **3500** (3328 → 3500; a regravação não passou dos demais e
+  (**remedidos no 18.10: 2750 e 3250 — seção do 18.10**) `PISO_LOGIN_MS` = **3500** (3328 → 3500; a regravação não passou dos demais e
   entrou na conta) e `PISO_REDEF_MS` = **3750** (3330 + 219 = 3549 → 3750). Eram 2500
   sem calibração. O hash v3 isolado custa ~180–250 ms; o resto do tempo é leitura de
   planilha — refazer a medição quando o 18.10 reduzir as leituras por login.
