@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.1.5 — produção (02/10/2026) -->
+<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.1.6 — produção (02/10/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -489,6 +489,19 @@ body.vmc-largo .topbar-in{max-width:1360px;}
   font-weight:700;color:var(--c-ink);
 }
 .login-tipo-card.selected .login-tipo-label{color:var(--c-action);}
+
+/* Pacote 18.1.6: caixa de aceite da Política de Privacidade (ativação e primeiro login sem aceite) */
+.login-aceite{
+  display:flex;align-items:flex-start;gap:10px;min-height:var(--hit-min);
+  margin:0 0 var(--s-3);padding:10px 2px;cursor:pointer;text-align:left;
+  font:var(--t-body-sm);color:var(--c-ink-2);
+}
+.login-aceite input[type="checkbox"]{
+  width:20px;height:20px;margin:1px 0 0;flex:none;cursor:pointer;accent-color:var(--c-action);
+}
+.login-aceite input[type="checkbox"]:focus-visible{outline:2px solid var(--c-action);outline-offset:2px;}
+.login-aceite a{color:var(--c-action);font-weight:600;}
+.login-aceite.hidden{display:none;}
 
 /* Pacote 18.1.3: escolha do profissional quando o mesmo e-mail tem mais de uma conta */
 .login-escolha-btn{
@@ -4115,7 +4128,21 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
           <label for="inputNovaSenha2">Repita a senha</label>
           <input type="password" id="inputNovaSenha2" maxlength="128" autocomplete="new-password">
         </div>
+        <!-- Pacote 18.1.6: aceite da Política (obrigatório para paciente sem aceite da versão atual) -->
+        <label class="login-aceite hidden" id="loginAceiteAtivar">
+          <input type="checkbox" id="chkAceiteAtivar" onchange="loginAceiteMudou_()">
+          <span>Li e concordo com a <a href="privacidade.html" target="_blank" rel="noopener">Política de Privacidade</a>.</span>
+        </label>
         <button class="btn-primary" id="btnSalvarSenha" onclick="loginSalvarSenha()">Salvar senha</button>
+      </div>
+
+      <!-- Pacote 18.1.6: paciente que já tem senha e ainda não aceitou a versão atual -->
+      <div class="hidden" id="loginAceite">
+        <label class="login-aceite" id="loginAceiteEntrar">
+          <input type="checkbox" id="chkAceiteEntrar" onchange="loginAceiteMudou_()">
+          <span>Li e concordo com a <a href="privacidade.html" target="_blank" rel="noopener">Política de Privacidade</a>.</span>
+        </label>
+        <button class="btn-primary" id="btnAceiteContinuar" onclick="loginAceiteContinuar_()" disabled>Continuar</button>
       </div>
 
       <!-- Pacote 18.1: Verifique seu e-mail e Link inválido (só texto e um link) -->
@@ -7322,6 +7349,7 @@ var VMC_RETRY_MS = 2000;
 // falha vai direto à faixa "O servidor não respondeu…", e só o usuário decide tentar de novo.
 var VMC_ACOES_GRAVACAO = [
   'salvarAnamnese', 'salvarAutomonitoramento', 'salvarEscala',
+  'aceitarPolitica', // 18.1.6
   'alterarSenhaPaciente', 'pacienteAtualizarAnamnese',
   'pacienteMarcarEditandoAuto', 'pacienteLimparEditandoAuto', 'pacienteEditarAutomonitoramento',
   'profCadastrarPaciente', 'profSalvarAnamnese', 'profSalvarGrade',
@@ -7471,7 +7499,8 @@ function vmcFecharSobreposicoes_() {
 
 async function chamarServidor(acao, dados = {}) {
   const payload = { acao, ...dados };
-  if (VMC_ACOES_PUBLICAS.indexOf(acao) === -1) payload.token = vmcTokenSessao_();
+  // 18.1.6: um token vindo do chamador (aceite antes de entrar) tem prioridade sobre o da sessão
+  if (VMC_ACOES_PUBLICAS.indexOf(acao) === -1 && !payload.token) payload.token = vmcTokenSessao_();
   const geracao = VMC_GERACAO_SESSAO; // 18.1.2 (8.69)
   // Pacote 16.4.6: limite único (VMC_TIMEOUT_MS); o que muda por classe é a repetição automática.
   const ehGravacao = VMC_ACOES_GRAVACAO.indexOf(acao) !== -1;
@@ -8120,6 +8149,13 @@ async function fazerLogin() {
     return;
   }
 
+  // 18.1.6: conta de paciente sem aceite da versão atual — uma única tela antes de entrar
+  if (tipo === 'paciente' && resposta.perfil && resposta.perfil.aceite_pendente) {
+    document.getElementById('inputSenha').value = '';
+    loginMostrarAceite_(tipo, resposta);
+    return;
+  }
+
   loginConcluir_(tipo, resposta);
 }
 
@@ -8209,6 +8245,11 @@ async function loginEscolherEntrar_(id) {
     erroBox.classList.remove('hidden');
     return;
   }
+  // 18.1.6: o aceite é da conta escolhida
+  if (dados.tipo === 'paciente' && resposta.perfil && resposta.perfil.aceite_pendente) {
+    loginMostrarAceite_(dados.tipo, resposta);
+    return;
+  }
   loginConcluir_(dados.tipo, resposta);
 }
 
@@ -8232,6 +8273,7 @@ function logoutProfissional() {
 function resetarTelaLogin_() {
   LOGIN_TIPO_SELECIONADO = '';
   LOGIN_ESCOLHA = null; // 18.1.3: a senha guardada para a escolha sai da memória
+  LOGIN_ACEITE = null;  // 18.1.6: login pendente de aceite descartado
   document.getElementById('loginTipoPaciente').classList.remove('selected');
   document.getElementById('loginTipoProfissional').classList.remove('selected');
   document.getElementById('loginFormFields').classList.remove('visible');
@@ -8255,6 +8297,7 @@ function loginMostrar(tela) {
     entrar:    ['Acesso ao Sistema', 'Selecione seu perfil e faça login'],
     esqueci:   ['Esqueci a senha', 'Informe o perfil e o e-mail cadastrado. Se ele estiver no sistema, você receberá um link para criar uma senha nova.'],
     escolher:  ['Com qual profissional deseja entrar?', ''],
+    aceite:    ['Política de Privacidade', ''],
     verifique: ['Verifique seu e-mail', ''],
     ativar:    ['Crie sua senha', ''],
     invalido:  ['Link inválido', '']
@@ -8267,6 +8310,7 @@ function loginMostrar(tela) {
   document.getElementById('loginFormFields').classList.toggle('visible', tela === 'entrar' && !!LOGIN_TIPO_SELECIONADO);
   document.getElementById('loginEsqueci').classList.toggle('hidden', tela !== 'esqueci');
   document.getElementById('loginEscolher').classList.toggle('hidden', tela !== 'escolher');
+  document.getElementById('loginAceite').classList.toggle('hidden', tela !== 'aceite');
   document.getElementById('loginAtivar').classList.toggle('hidden', tela !== 'ativar');
   document.getElementById('loginAviso').classList.toggle('hidden', tela !== 'verifique' && tela !== 'invalido');
   document.getElementById('loginError').classList.add('hidden');
@@ -8312,12 +8356,59 @@ async function loginAbrirAtivacao(token) {
   var resp = await chamarServidor('definirSenha', { ativar: token });
   if (!resp || !resp.ok) { LOGIN_ATIVAR = ''; loginMostrar('invalido'); return; }
   LOGIN_ATIVAR_TIPO = resp.tipo;
+  // 18.1.6: aceite da Política na ativação (o servidor diz se é exigido e qual a versão)
+  LOGIN_ATIVAR_EXIGE_ACEITE = !!resp.exige_aceite;
+  LOGIN_POLITICA_VERSAO = resp.politica_versao || '';
+  document.getElementById('chkAceiteAtivar').checked = false;
+  document.getElementById('loginAceiteAtivar').classList.toggle('hidden', !LOGIN_ATIVAR_EXIGE_ACEITE);
   document.getElementById('loginAtivarTexto').textContent =
     'Escolha uma senha com pelo menos 8 caracteres. Você vai usá-la com o e-mail ' + resp.email + '.';
   document.getElementById('inputNovaSenha').value = '';
   document.getElementById('inputNovaSenha2').value = '';
+  loginAceiteMudou_();
   loginMostrar('ativar');
   LOGIN_ATIVAR_EMAIL = resp.email;
+}
+
+/* ============================================================
+   Pacote 18.1.6 — aceite da Política de Privacidade
+   Ativação: caixa obrigatória quando o servidor manda exige_aceite.
+   Login de conta sem aceite: tela única com "Continuar"; a ação
+   aceitarPolitica grava com o crachá; sem aceite, não entra.
+   ============================================================ */
+var LOGIN_ATIVAR_EXIGE_ACEITE = false;
+var LOGIN_POLITICA_VERSAO = '';
+var LOGIN_ACEITE = null; // {tipo, resposta} do login pendente de aceite (só em memória)
+
+function loginAceiteMudou_() {
+  var btnSalvar = document.getElementById('btnSalvarSenha');
+  if (btnSalvar) btnSalvar.disabled = LOGIN_ATIVAR_EXIGE_ACEITE && !document.getElementById('chkAceiteAtivar').checked;
+  var btnCont = document.getElementById('btnAceiteContinuar');
+  if (btnCont) btnCont.disabled = !document.getElementById('chkAceiteEntrar').checked;
+}
+
+function loginMostrarAceite_(tipo, resposta) {
+  LOGIN_ACEITE = { tipo: tipo, resposta: resposta };
+  document.getElementById('chkAceiteEntrar').checked = false;
+  loginAceiteMudou_();
+  loginMostrar('aceite');
+}
+
+async function loginAceiteContinuar_() {
+  if (!LOGIN_ACEITE) { loginMostrar('entrar'); return; }
+  var dados = LOGIN_ACEITE;
+  var btn = document.getElementById('btnAceiteContinuar');
+  btn.disabled = true;
+  var r = await chamarServidor('aceitarPolitica', { token: dados.resposta.token });
+  btn.disabled = false;
+  if (!r || !r.ok) {
+    var erroBox = document.getElementById('loginError');
+    erroBox.textContent = (r && r.erro) || 'Não foi possível registrar o aceite. Tente de novo.';
+    erroBox.classList.remove('hidden');
+    return;
+  }
+  LOGIN_ACEITE = null;
+  loginConcluir_(dados.tipo, dados.resposta);
 }
 var LOGIN_ATIVAR_TIPO = '';
 var LOGIN_ATIVAR_EMAIL = '';
@@ -8331,7 +8422,16 @@ async function loginSalvarSenha() {
   if (s1 !== s2) { erroBox.textContent = 'As senhas não conferem.'; erroBox.classList.remove('hidden'); return; }
   var btn = document.getElementById('btnSalvarSenha');
   btn.disabled = true;
-  var resp = await chamarServidor('definirSenha', { ativar: LOGIN_ATIVAR, senha: s1 });
+  // 18.1.6: aceite obrigatório quando exigido (o botão já fica travado sem a caixa)
+  if (LOGIN_ATIVAR_EXIGE_ACEITE && !document.getElementById('chkAceiteAtivar').checked) {
+    erroBox.textContent = 'Para criar a senha, marque o aceite da Política de Privacidade.';
+    erroBox.classList.remove('hidden');
+    btn.disabled = false;
+    return;
+  }
+  var resp = await chamarServidor('definirSenha', LOGIN_ATIVAR_EXIGE_ACEITE
+    ? { ativar: LOGIN_ATIVAR, senha: s1, aceite: true, versao_politica: LOGIN_POLITICA_VERSAO }
+    : { ativar: LOGIN_ATIVAR, senha: s1 });
   btn.disabled = false;
   document.getElementById('inputNovaSenha').value = '';
   document.getElementById('inputNovaSenha2').value = '';

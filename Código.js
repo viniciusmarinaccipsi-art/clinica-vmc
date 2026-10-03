@@ -47,7 +47,7 @@
 // Pacote E3 — backup diário e monitor do ping (só clasp push, sem deploy)
 // Pacote 18.1 — acesso por e-mail, cracha de sessao, convite e redefinicao (01/10/2026)
 // Pacote 18.1.2 — correcoes de seguranca do acesso: links, cracha, acoes publicas, ativo (02/10/2026)
-var VERSAO_PACOTE = '18.1.3';
+var VERSAO_PACOTE = '18.1.6';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -181,10 +181,15 @@ function doPost(e) {
         break;
 
       case 'definirSenha':
-        resposta = definirSenha(payload.ativar, payload.senha);
+        resposta = definirSenha(payload.ativar, payload.senha, payload.aceite, payload.versao_politica);
         break;
 
       // Acoes do paciente (sigla do cracha)
+      // 18.1.6: aceite da Politica de Privacidade por quem ja tinha senha (cracha)
+      case 'aceitarPolitica':
+        resposta = aceitarPolitica(s);
+        break;
+
       case 'salvarAnamnese':
         resposta = _exigir_(s, 'paciente') || salvarAnamnese(s.sigla, payload.dados);
         break;
@@ -540,6 +545,10 @@ function buscarPaciente(sigla) {
 // ============================================================
 
 var SITE_URL = 'https://viniciusmarinaccipsi-art.github.io/clinica-vmc/index.html';
+// 18.1.6: versao da Politica de Privacidade (a mesma exibida em privacidade.html).
+// Mudou o texto da politica -> sobe a versao aqui e na pagina; paciente com aceite
+// de versao anterior ve o aceite de novo no proximo login.
+var POLITICA_VERSAO = '2026-10';
 var ACOES_PUBLICAS = ['ping', 'autenticar', 'pedirRedefinicao', 'definirSenha'];
 var PERFIS = ['paciente', 'profissional', 'admin'];
 var SESSAO_HORAS = 6;
@@ -1018,7 +1027,11 @@ function _registroDaConta_(tipo, sigla, profissionalId) {
     var ativoPac = _estaAtivo_(pac.ativo) && !!dono && _estaAtivo_(dono.ativo);
     return {
       ativo: ativoPac, senha_hash: pac.senha_hash, nome: pac.nome || '', email: normalizarEmail(pac.email),
-      extra: { anamnese_preenchida: pac.data_anamnese !== '' && pac.data_anamnese !== null, data_anamnese: pac.data_anamnese }
+      extra: {
+        anamnese_preenchida: pac.data_anamnese !== '' && pac.data_anamnese !== null, data_anamnese: pac.data_anamnese,
+        // 18.1.6: so o proprio paciente ve, e so como verdadeiro/falso
+        aceite_pendente: String(pac.aceite_politica_versao || '') !== POLITICA_VERSAO
+      }
     };
   }
   if (tipo === 'profissional') {
@@ -1240,11 +1253,35 @@ function pedirRedefinicao(tipo, email) {
 }
 
 /**
- * Cria a senha a partir do link (?ativar=<token>).
- * Sem `senha`: so confere o link e devolve {ok, tipo, email} (tela "Crie sua senha").
- * Com `senha`: grava o hash v2, marca o link como usado e devolve {ok, tipo, email}.
+ * Grava o aceite da Politica de Privacidade na linha do paciente (Controle do
+ * profissional, aba Pacientes — e onde vive o registro do paciente: senha_hash e
+ * ativo ja moram la). Colunas criadas pelo cabecalho (_atualizarLinhaPorChave_ ->
+ * _garantirColunas_), nunca por posicao.
  */
-function definirSenha(ativar, senha) {
+function _gravarAceitePolitica_(sigla, profissionalId) {
+  var controle = abrirControleDoProfissional(profissionalId);
+  if (!controle) return false;
+  return _atualizarLinhaPorChave_(controle.getSheetByName(ABA_PACIENTES), 'sigla', sigla, {
+    aceite_politica_em: Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd HH:mm:ss'),
+    aceite_politica_versao: POLITICA_VERSAO
+  });
+}
+
+/** O paciente (sigla do profissional dado) ja aceitou a versao atual da politica? */
+function _aceitouPoliticaAtual_(sigla, profissionalId) {
+  var pac = buscarPaciente(sigla);
+  return !!pac && pac.__profissional_id === profissionalId && String(pac.aceite_politica_versao || '') === POLITICA_VERSAO;
+}
+
+/**
+ * Cria a senha a partir do link (?ativar=<token>).
+ * Sem `senha`: so confere o link e devolve {ok, tipo, email, exige_aceite, politica_versao}
+ * (tela "Crie sua senha"; exige_aceite so para paciente sem aceite da versao atual).
+ * Com `senha`: grava o hash v2, marca o link como usado e devolve {ok, tipo, email}.
+ * 18.1.6: ativacao de paciente sem aceite da versao atual EXIGE aceite + versao;
+ * redefinicao de conta que ja aceitou nao pede de novo. Profissional e admin: nada muda.
+ */
+function definirSenha(ativar, senha, aceite, versaoPolitica) {
   var link = _linkValido_(ativar);
   if (!link) return { ok: false, codigo: 'link_invalido', erro: MSG_LINK };
   var reg = _registroDaConta_(link.tipo, link.sigla, link.profissional_id);
@@ -1253,16 +1290,37 @@ function definirSenha(ativar, senha) {
   if (!reg || !reg.ativo || !reg.email || !link.email_destino || link.email_destino !== reg.email) {
     return { ok: false, codigo: 'link_invalido', erro: MSG_LINK };
   }
-  if (senha === undefined || senha === null || senha === '') return { ok: true, tipo: link.tipo, email: reg.email };
+  var exigeAceite = link.tipo === 'paciente' && !_aceitouPoliticaAtual_(link.sigla, link.profissional_id);
+  if (senha === undefined || senha === null || senha === '') {
+    return { ok: true, tipo: link.tipo, email: reg.email, exige_aceite: exigeAceite, politica_versao: POLITICA_VERSAO };
+  }
+  if (exigeAceite && (aceite !== true || String(versaoPolitica || '') !== POLITICA_VERSAO)) {
+    return { ok: false, codigo: 'aceite_obrigatorio', erro: 'Para criar a senha, marque o aceite da Política de Privacidade.' };
+  }
   if (String(senha).length < SENHA_MINIMA) return { ok: false, erro: 'Escolha uma senha com pelo menos 8 caracteres.' };
   if (String(senha).length > SENHA_MAXIMA) return { ok: false, erro: 'Não foi possível gravar a senha. Tente de novo.' };
   // grava a senha e invalida os links pendentes da conta (inclusive os dos outros canais)
   if (!_gravarSenhaDaConta_(link.tipo, link.sigla, link.profissional_id, String(senha))) {
     return { ok: false, erro: 'Não foi possível gravar a senha. Tente de novo.' };
   }
+  if (exigeAceite) _gravarAceitePolitica_(link.sigla, link.profissional_id); // 18.1.6: data/hora + versao na linha do paciente
   link.aba.getRange(link.linha, link.colUsado).setValue(new Date().toISOString());
   CacheService.getScriptCache().remove('falha:' + link.tipo + ':' + reg.email);
   return { ok: true, tipo: link.tipo, email: reg.email };
+}
+
+/**
+ * 18.1.6: paciente que ja tinha senha e ainda nao aceitou a versao atual grava o
+ * aceite aqui, autenticado pelo cracha (o login devolve `aceite_pendente` e o
+ * cliente mostra a caixa antes de entrar). Resposta so com verdadeiro/falso.
+ */
+function aceitarPolitica(s) {
+  var erro = _exigir_(s, 'paciente');
+  if (erro) return erro;
+  if (!_gravarAceitePolitica_(s.sigla, s.profissional_id)) {
+    return { ok: false, erro: 'Não foi possível registrar o aceite. Tente de novo.' };
+  }
+  return { ok: true, aceite: true };
 }
 
 // ---------- convites ----------
