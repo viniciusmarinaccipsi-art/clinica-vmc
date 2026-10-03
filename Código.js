@@ -47,7 +47,8 @@
 // Pacote E3 — backup diário e monitor do ping (só clasp push, sem deploy)
 // Pacote 18.1 — acesso por e-mail, cracha de sessao, convite e redefinicao (01/10/2026)
 // Pacote 18.1.2 — correcoes de seguranca do acesso: links, cracha, acoes publicas, ativo (02/10/2026)
-var VERSAO_PACOTE = '18.2.1';
+// Pacote 18.10a — desempenho e integridade: indicadores na Controle, controle_id, trava de gravacao, id_envio, autoria (03/10/2026)
+var VERSAO_PACOTE = '18.10a';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -75,8 +76,12 @@ var ABA_ANAMNESE          = 'Anamnese';
 var ABA_AUTOMONITORAMENTO = 'Automonitoramento';
 var ABA_ESCALAS           = 'Escalas';
 
-// Versao atual do formulario
-var VERSAO_FORMULARIO = 'v1';
+// Versao de cada formulario (18.10, debito 8.46): gravada pelo SERVIDOR em toda linha
+// nova ou regravada; o que o cliente mandar em `versao_formulario` e ignorado. Mudou o
+// formulario (campos, itens, sentido de uma resposta) -> sobe a constante dele.
+var VERSAO_FORM_ANAMNESE = 'v1';
+var VERSAO_FORM_AUTO     = 'v1';
+var VERSAO_FORM_ESCALAS  = 'v1';
 
 // Pacote 13.4: Headers das 3 abas da planilha individual do paciente (Painel removida no 15.0).
 // Usados por cadastrarPaciente() ao criar planilha nova.
@@ -102,7 +107,8 @@ var HEADERS_ANAMNESE = [
   'pessoa_confianca_2_relacao', 'pessoa_confianca_2_telefone',
   'pessoa_confianca_2_email', 'pessoa_confianca_3_nome',
   'pessoa_confianca_3_relacao', 'pessoa_confianca_3_telefone',
-  'pessoa_confianca_3_email'
+  'pessoa_confianca_3_email',
+  'id_envio' // 18.10 (8.14): identificador do envio, gerado pelo cliente
 ];
 
 var HEADERS_AUTOMONITORAMENTO = [
@@ -128,7 +134,8 @@ var HEADERS_AUTOMONITORAMENTO = [
   'pos_comp_expressao', 'pos_comp_autocuidado', 'pos_comp_aceitacao',
   // Pacote 13.6: lock de edição + auditoria
   'editando_quem', 'editando_desde',
-  'editado', 'editado_por', 'editado_em'
+  'editado', 'editado_por', 'editado_em',
+  'id_envio' // 18.10 (8.14)
 ];
 
 var HEADERS_ESCALAS = [
@@ -142,7 +149,8 @@ var HEADERS_ESCALAS = [
   'escore_total', 'escore_depressao', 'escore_ansiedade', 'escore_estresse',
   'faixa',
   'alerta_risco_flag', 'alerta_risco_item', 'alerta_risco_valor',
-  'observacoes', 'tempo_preenchimento_seg'
+  'observacoes', 'tempo_preenchimento_seg',
+  'id_envio' // 18.10 (8.14)
 ];
 
 
@@ -152,6 +160,7 @@ var HEADERS_ESCALAS = [
 
 function doPost(e) {
   try {
+    _memoZerar_(true); // 18.10: Sistema_VMC, indice e Controle abertos uma vez por chamada
     var payload = JSON.parse(e.postData.contents);
     var acao = payload.acao;
 
@@ -165,10 +174,32 @@ function doPost(e) {
       if (!s) return _respostaJson_(_respostaSessaoExpirada_());
     }
 
+    // 18.10 (8.45): acao que grava roda inteira dentro da trava do script. Sem a trava em
+    // 10 s nada e gravado: erro generico para o cliente, motivo no log.
+    var resposta;
+    if (ACOES_COM_TRAVA.indexOf(acao) !== -1) {
+      try {
+        resposta = _comTrava_(function () { return _despachar_(acao, payload, s); });
+      } catch (erroTrava) {
+        if (!erroTrava || erroTrava.message !== ERRO_TRAVA) throw erroTrava;
+        resposta = { ok: false, codigo: 'ocupado', erro: MSG_OCUPADO };
+      }
+    } else {
+      resposta = _despachar_(acao, payload, s);
+    }
+    return _respostaJson_(resposta);
+
+  } catch (erro) {
+    return _respostaJson_({ ok: false, erro: String(erro) });
+  }
+}
+
+/** Roteador das acoes (o doPost ja conferiu o cracha e, se a acao grava, pegou a trava). */
+function _despachar_(acao, payload, s) {
     var resposta;
     switch (acao) {
       case 'ping':
-        resposta = { ok: true, versao_pacote: VERSAO_PACOTE, versao_formulario: VERSAO_FORMULARIO, versao: VERSAO_FORMULARIO, url: _e3UrlDoServico_(), hora_servidor: _e3HoraServidor_(), mensagem: 'Servidor respondendo (Pacote ' + VERSAO_PACOTE + ')' };
+        resposta = { ok: true, versao_pacote: VERSAO_PACOTE, versao_formulario: VERSAO_FORM_AUTO, versao: VERSAO_FORM_AUTO, url: _e3UrlDoServico_(), hora_servidor: _e3HoraServidor_(), mensagem: 'Servidor respondendo (Pacote ' + VERSAO_PACOTE + ')' };
         break;
 
       // Pacote 18.1 - acoes publicas (sem cracha)
@@ -330,12 +361,7 @@ function doPost(e) {
       default:
         resposta = { ok: false, erro: 'Acao desconhecida: ' + acao };
     }
-
-    return _respostaJson_(resposta);
-
-  } catch (erro) {
-    return _respostaJson_({ ok: false, erro: String(erro) });
-  }
+    return resposta;
 }
 
 function doGet(e) {
@@ -347,6 +373,90 @@ function _respostaJson_(obj) {
     .createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
 }
+
+
+// ============================================================
+// PACOTE 18.10 - MEMORIA POR REQUISICAO E TRAVA DE GRAVACAO
+// ============================================================
+
+/**
+ * Memoria da chamada (8.34): cada planilha e aberta uma vez (Sistema_VMC, Controle,
+ * planilha do paciente) e o Indice_Siglas e lido uma vez. Variavel do modulo, zerada
+ * no inicio de cada doPost. O cache dos DADOS do indice so vale dentro do doPost
+ * (`ativo`); funcao chamada direto (clasp run, testes) sempre le a planilha. Quem
+ * grava no indice chama _memoEsquecerIndice_().
+ */
+var _MEMO_ = { ativo: false, planilhas: {}, controles: {}, indice: null };
+
+function _memoZerar_(ativo) {
+  _MEMO_ = { ativo: ativo === true, planilhas: {}, controles: {}, indice: null };
+}
+
+function _memoEsquecerIndice_() { _MEMO_.indice = null; }
+
+function _abrirPlanilha_(id) {
+  var chave = String(id);
+  if (!_MEMO_.planilhas[chave]) _MEMO_.planilhas[chave] = SpreadsheetApp.openById(chave);
+  return _MEMO_.planilhas[chave];
+}
+
+/** Valores da aba Indice_Siglas (com o cabecalho na linha 0) ou null. */
+function _indiceValores_() {
+  if (_MEMO_.ativo && _MEMO_.indice) return _MEMO_.indice;
+  var aba = _abrirPlanilha_(SISTEMA_VMC_ID).getSheetByName(ABA_INDICE_SIGLAS);
+  var valores = aba ? aba.getDataRange().getValues() : null;
+  if (_MEMO_.ativo) _MEMO_.indice = valores;
+  return valores;
+}
+
+/**
+ * Trava de gravacao (8.45): toda escrita em planilha roda dentro do lock do script,
+ * com espera de 10 s. Reentrante na mesma execucao (a acao inteira ja esta na trava
+ * e as funcoes internas a pedem de novo sem soltar a de fora). Sem a trava, lanca
+ * ERRO_TRAVA antes de qualquer escrita — nunca ha gravacao pela metade por causa dela.
+ */
+var ERRO_TRAVA = 'TRAVA_OCUPADA';
+var MSG_OCUPADO = 'Não foi possível gravar agora. Tente de novo.';
+var _TRAVA_ATIVA_ = false;
+
+function _comTrava_(fn) {
+  if (_TRAVA_ATIVA_) return fn();
+  var lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(10000);
+  } catch (e) {
+    console.error('trava de gravacao: nao obtida em 10 s (' + String(e && e.message || e).slice(0, 120) + ')');
+    throw new Error(ERRO_TRAVA);
+  }
+  _TRAVA_ATIVA_ = true;
+  try {
+    return fn();
+  } finally {
+    _TRAVA_ATIVA_ = false;
+    lock.releaseLock();
+  }
+}
+
+/** Gravacao acessoria dentro de uma leitura (controle_id, indicadores): sem a trava, so registra e segue. */
+function _comTravaSeDer_(fn) {
+  try { return _comTrava_(fn); }
+  catch (e) { console.error('gravacao acessoria nao feita: ' + String(e && e.message || e).slice(0, 160)); return null; }
+}
+
+// Acoes do doPost que gravam em planilha (as de leitura ficam fora; autenticar e
+// pedirRedefinicao pegam a trava so no trecho que grava, por causa do piso de tempo).
+var ACOES_COM_TRAVA = [
+  'definirSenha', 'aceitarPolitica',
+  'salvarAnamnese', 'salvarAutomonitoramento', 'salvarEscala',
+  'alterarSenhaPaciente', 'pacienteAtualizarAnamnese',
+  'pacienteMarcarEditandoAuto', 'pacienteLimparEditandoAuto', 'pacienteEditarAutomonitoramento',
+  'profCadastrarPaciente', 'profSalvarAnamnese', 'profEnviarConvite',
+  'profMarcarEditandoAuto', 'profLimparEditandoAuto', 'profEditarAutomonitoramento',
+  'profDesativarPaciente', 'profReativarPaciente', 'profExcluirPaciente', 'profAlterarSenhaPaciente',
+  'profSalvarGrade',
+  'admCadastrarProfissional', 'admAtualizarProfissional', 'admTrocarSenhaProfissional',
+  'admDesativarProfissional', 'admReativarProfissional', 'admEnviarConvite'
+];
 
 
 // ============================================================
@@ -375,12 +485,8 @@ function _respostaJson_(obj) {
 function resolverProfissionalIdPorSigla(sigla, tipo) {
   if (!sigla || !tipo) return null;
 
-  var planilha = SpreadsheetApp.openById(SISTEMA_VMC_ID);
-  var aba = planilha.getSheetByName(ABA_INDICE_SIGLAS);
-  if (!aba) return null;
-
-  var dados = aba.getDataRange().getValues();
-  if (dados.length < 2) return null;
+  var dados = _indiceValores_(); // 18.10: lido uma vez por chamada
+  if (!dados || dados.length < 2) return null;
 
   var cabecalhos = dados[0];
   var idxSigla = cabecalhos.indexOf('sigla');
@@ -409,7 +515,7 @@ function resolverProfissionalIdPorSigla(sigla, tipo) {
 function buscarProfissional(profissionalId) {
   if (!profissionalId) return null;
 
-  var planilha = SpreadsheetApp.openById(SISTEMA_VMC_ID);
+  var planilha = _abrirPlanilha_(SISTEMA_VMC_ID);
   var aba = planilha.getSheetByName(ABA_PROFISSIONAIS);
   if (!aba) return null;
 
@@ -438,7 +544,7 @@ function buscarProfissional(profissionalId) {
 function buscarAdmin(adminId) {
   if (!adminId) return null;
 
-  var planilha = SpreadsheetApp.openById(SISTEMA_VMC_ID);
+  var planilha = _abrirPlanilha_(SISTEMA_VMC_ID);
   var aba = planilha.getSheetByName(ABA_ADMINS);
   if (!aba) return null;
 
@@ -471,18 +577,47 @@ function buscarAdmin(adminId) {
  * Retorna o objeto Spreadsheet, ou null se nao encontrar.
  */
 function abrirControleDoProfissional(profissionalId) {
-  var prof = buscarProfissional(profissionalId);
-  if (!prof || !prof.pasta_drive_id) return null;
+  var chave = String(profissionalId || '').trim();
+  if (_MEMO_.controles[chave]) return _MEMO_.controles[chave];
 
-  try {
-    var pasta = DriveApp.getFolderById(prof.pasta_drive_id);
-    var arquivos = pasta.getFilesByName(NOME_CONTROLE);
-    if (!arquivos.hasNext()) return null;
-    var arquivo = arquivos.next();
-    return SpreadsheetApp.openById(arquivo.getId());
-  } catch (e) {
-    return null;
+  var prof = buscarProfissional(profissionalId);
+  if (!prof) return null;
+
+  // 18.10 (8.34): `controle_id` na aba Profissionais -> abre direto pelo id. A busca
+  // por nome na pasta do Drive so roda com a coluna vazia (ou id que nao abre), e o
+  // id encontrado e gravado para as proximas chamadas.
+  var controle = null;
+  var idGuardado = String(prof.controle_id || '').trim();
+  if (idGuardado) {
+    try {
+      var aberta = _abrirPlanilha_(idGuardado);
+      if (aberta.getSheetByName(ABA_PACIENTES)) controle = aberta;
+    } catch (e) {
+      controle = null;
+    }
   }
+  if (!controle) {
+    if (!prof.pasta_drive_id) return null;
+    try {
+      var arquivos = DriveApp.getFolderById(prof.pasta_drive_id).getFilesByName(NOME_CONTROLE);
+      if (!arquivos.hasNext()) return null;
+      var idAchado = arquivos.next().getId();
+      controle = _abrirPlanilha_(idAchado);
+      _gravarControleId_(prof.profissional_id, idAchado);
+    } catch (e) {
+      return null;
+    }
+  }
+  _MEMO_.controles[chave] = controle;
+  return controle;
+}
+
+/** Grava o id da Controle na linha do profissional (coluna criada pelo cabecalho). */
+function _gravarControleId_(profissionalId, controleId) {
+  _comTravaSeDer_(function () {
+    _atualizarLinhaPorChave_(_abrirPlanilha_(SISTEMA_VMC_ID).getSheetByName(ABA_PROFISSIONAIS),
+      'profissional_id', profissionalId, { controle_id: controleId });
+  });
 }
 
 /**
@@ -590,7 +725,8 @@ var MSG_LINK = 'Este link não é mais válido. Peça um novo em "Esqueci a senh
 var MSG_REDEFINICAO = 'Se o e-mail estiver cadastrado, o link chegará em alguns minutos. Confira também a caixa de spam.';
 var MSG_COTA_EMAIL = 'Limite diário de e-mails atingido. Use o botão WhatsApp ou tente amanhã.'; // texto do 18.1 (8.66)
 var EMAIL_DESTAQUE = 'COGNIATIVO — Psicoterapia para além das sessões, com intervenções cognitivo-comportamentais no dia a dia.';
-var EMAIL_ASSINATURA = ['Vinícius Marinacci Cardim', 'Psicólogo — CRP 06/165128'];
+// 18.10: a assinatura deixou de ser fixa — e o nome (e o CRP, se houver) de quem assina,
+// lido da planilha (_assinaturaDe_). As linhas de formacao abaixo nao mudaram.
 var EMAIL_FORMACAO = [
   'Mestrando em Saúde Mental e Psiquiatria — Faculdade de Ciências Médicas, UNICAMP',
   'Especialização em Terapia Cognitivo-Comportamental — PUC-RS',
@@ -804,8 +940,11 @@ function gerarSiglaPaciente(nome, existentes, aleatorio) {
  * Corpo dos e-mails (texto puro e HTML simples), com os textos aprovados.
  * 18.1.3: `profissionalNome` (opcional) acrescenta a linha "Acompanhamento com: <nome>"
  * — usada na redefinicao quando o mesmo e-mail tem conta com mais de um profissional.
+ * 18.10: `assinatura` = linhas de quem assina (_assinaturaDe_): o profissional dono
+ * do paciente; nos e-mails de profissional e de admin, o admin do sistema.
  */
-function montarEmail(tipoEmail, nome, link, profissionalNome) {
+function montarEmail(tipoEmail, nome, link, profissionalNome, assinatura) {
+  var linhasAssinatura = assinatura || [];
   var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
   var convite = tipoEmail === 'convite';
   var assunto = convite ? 'Seu acesso ao COGNIATIVO' : 'Redefinir a sua senha no COGNIATIVO';
@@ -820,16 +959,39 @@ function montarEmail(tipoEmail, nome, link, profissionalNome) {
   var texto = [EMAIL_DESTAQUE, '', ola, '', paragrafo]
     .concat(acompanhamento ? ['', acompanhamento] : [])
     .concat(['', link, '', aviso, ''])
-    .concat(EMAIL_ASSINATURA).concat(EMAIL_FORMACAO).join('\n');
+    .concat(linhasAssinatura).concat(EMAIL_FORMACAO).join('\n');
   var html = '<p><strong>' + esc(EMAIL_DESTAQUE) + '</strong></p>' +
     '<p>' + esc(ola) + '</p>' +
     '<p>' + esc(paragrafo) + '</p>' +
     (acompanhamento ? '<p>' + esc(acompanhamento) + '</p>' : '') +
     '<p><a href="' + esc(link) + '">' + esc(link) + '</a></p>' +
     '<p>' + esc(aviso) + '</p>' +
-    '<p>' + EMAIL_ASSINATURA.map(esc).join('<br>') + '<br>' +
+    '<p>' + linhasAssinatura.map(esc).join('<br>') + (linhasAssinatura.length ? '<br>' : '') +
     '<span style="font-size:12px">' + EMAIL_FORMACAO.map(esc).join('<br>') + '</span></p>';
   return { assunto: assunto, texto: texto, html: html };
+}
+
+/** Linhas da assinatura: nome e, se houver CRP, "Psicólogo — CRP <numero>". */
+function _assinaturaDe_(nome, crp) {
+  var n = String(nome || '').trim();
+  if (!n) return [];
+  var c = String(crp || '').trim().replace(/^crp\s*/i, '');
+  return c ? [n, 'Psicólogo — CRP ' + c] : [n];
+}
+
+/** Assinatura do profissional (aba Profissionais: nome_completo e crp, se a coluna existir). */
+function _assinaturaDoProfissional_(profissionalId) {
+  var prof = buscarProfissional(profissionalId);
+  return prof ? _assinaturaDe_(prof.nome_completo, prof.crp) : [];
+}
+
+/** Assinatura dos e-mails de profissional e de admin: o primeiro admin ativo (aba Admins). */
+function _assinaturaDoSistema_() {
+  var admins = lerAbaComoObjetos(_abrirPlanilha_(SISTEMA_VMC_ID), ABA_ADMINS);
+  for (var i = 0; i < admins.length; i++) {
+    if (_estaAtivo_(admins[i].ativo)) return _assinaturaDe_(admins[i].nome_completo, admins[i].crp);
+  }
+  return [];
 }
 
 function primeiroNome(nome) {
@@ -865,7 +1027,7 @@ function _celulaSegura_(v) {
  * instrumento, alertas, lock e auditoria).
  */
 var COLUNAS_TEXTO_LIVRE_FORA_ANAMNESE = ['timestamp', 'versao_formulario', 'data_nascimento'];
-var COLUNAS_TEXTO_LIVRE_AVULSAS = ['nome', 'observacoes', 'crp', 'humor_observacoes', 'item_funcional_texto'];
+var COLUNAS_TEXTO_LIVRE_AVULSAS = ['nome', 'observacoes', 'crp', 'humor_observacoes', 'item_funcional_texto', 'ind_nome'];
 
 function _colunaTextoLivre_(col) {
   var c = String(col);
@@ -895,7 +1057,8 @@ function _celulaTexto_(col, v) {
  * de _celulaTexto_, que cobre estas mesmas colunas.
  */
 var COLUNAS_TEXTO = ['sigla', 'profissional_id', 'email', 'telefone', 'cep', 'zip_code', 'cpf', 'rg',
-  'email_destino', 'aceite_politica_em', 'aceite_politica_versao'];
+  'email_destino', 'aceite_politica_em', 'aceite_politica_versao',
+  'controle_id', 'id_envio', 'ind_atualizado_em']; // 18.10
 
 function _colunaTexto_(col) {
   var c = String(col);
@@ -934,7 +1097,7 @@ function _anexarPorCabecalho_(aba, header, valores) {
 }
 
 function _abaIndice_() {
-  var aba = SpreadsheetApp.openById(SISTEMA_VMC_ID).getSheetByName(ABA_INDICE_SIGLAS);
+  var aba = _abrirPlanilha_(SISTEMA_VMC_ID).getSheetByName(ABA_INDICE_SIGLAS);
   _garantirColunas_(aba, ['sigla_global', 'sigla', 'tipo', 'profissional_id', 'data_cadastro', 'email']);
   return aba;
 }
@@ -948,6 +1111,7 @@ function _anexarIndice_(sigla, tipo, profissionalId, email) {
     data_cadastro: Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd'),
     email: normalizarEmail(email)
   });
+  _memoEsquecerIndice_();
 }
 
 /** Linhas do Indice como objetos {linha, sigla, tipo, profissional_id, email}. */
@@ -1007,6 +1171,7 @@ function _gravarEmailIndice_(sigla, tipo, email) {
     return { ok: false, erro: 'Este e-mail já está em uso por outra conta.' };
   }
   idx.aba.getRange(alvo.linha, idx.header.indexOf('email') + 1).setValue(_celulaTexto_('email', email));
+  _memoEsquecerIndice_();
   return { ok: true, mudou: alvo.email !== normalizarEmail(email) };
 }
 
@@ -1034,7 +1199,7 @@ function _atualizarLinhaPorChave_(aba, colChave, valorChave, campos, camposServi
 }
 
 function _abaTokens_() {
-  var planilha = SpreadsheetApp.openById(SISTEMA_VMC_ID);
+  var planilha = _abrirPlanilha_(SISTEMA_VMC_ID);
   var aba = planilha.getSheetByName(ABA_TOKENS);
   if (!aba) aba = planilha.insertSheet(ABA_TOKENS);
   _garantirColunas_(aba, COLUNAS_TOKENS);
@@ -1189,7 +1354,7 @@ function _gravarHashDaConta_(tipo, sigla, profissionalId, hash) {
     var controle = abrirControleDoProfissional(profissionalId);
     return !!controle && _atualizarLinhaPorChave_(controle.getSheetByName(ABA_PACIENTES), 'sigla', sigla, { senha_hash: hash });
   }
-  var global = SpreadsheetApp.openById(SISTEMA_VMC_ID);
+  var global = _abrirPlanilha_(SISTEMA_VMC_ID);
   if (tipo === 'profissional') return _atualizarLinhaPorChave_(global.getSheetByName(ABA_PROFISSIONAIS), 'profissional_id', profissionalId, { senha_hash: hash });
   if (tipo === 'admin') return _atualizarLinhaPorChave_(global.getSheetByName(ABA_ADMINS), 'admin_id', profissionalId, { senha_hash: hash });
   return false;
@@ -1340,7 +1505,8 @@ function autenticar(tipo, email, senha, escolha) {
   var hashDaConta = reg.senha_hash;
   if (String(hashDaConta).indexOf('v3$') !== 0) {
     var hashNovo = gerarHashSenha(String(senha));
-    if (hashNovo && _gravarHashDaConta_(t, conta.sigla, conta.profissional_id, hashNovo)) hashDaConta = hashNovo;
+    // 18.10: a regravacao pega a trava; sem ela, fica para o proximo login
+    if (hashNovo && _comTravaSeDer_(function () { return _gravarHashDaConta_(t, conta.sigla, conta.profissional_id, hashNovo); })) hashDaConta = hashNovo;
   }
   var perfil = { tipo: t, sigla: conta.sigla, nome: reg.nome, email: e };
   for (var k in reg.extra) perfil[k] = reg.extra[k];
@@ -1378,7 +1544,9 @@ function pedirRedefinicao(tipo, email) {
       var reg = _registroDaConta_(t, contas[i].sigla, contas[i].profissional_id);
       if (reg && reg.ativo) ativas.push(contas[i]);
     }
-    if (ativas.length && _reservarEmail_('redefinicoes', ativas.length)) {
+    // 18.10: o trecho que grava (cota, links) roda na trava; o piso de tempo fica fora dela
+    if (ativas.length) _comTrava_(function () {
+      if (!_reservarEmail_('redefinicoes', ativas.length)) return;
       for (var j = 0; j < ativas.length; j++) {
         // Com mais de uma conta, cada e-mail diz o profissional ("Acompanhamento com: …")
         var profNome = '';
@@ -1386,10 +1554,12 @@ function pedirRedefinicao(tipo, email) {
           var dono = buscarProfissional(ativas[j].profissional_id);
           profNome = dono ? String(dono.nome_completo || '') : '';
         }
+        // 18.10: paciente -> assina o profissional dono; profissional e admin -> o admin do sistema
+        var assina = t === 'paciente' ? _assinaturaDoProfissional_(ativas[j].profissional_id) : _assinaturaDoSistema_();
         var link = _criarLinkAtivacao_(t, ativas[j].sigla, ativas[j].profissional_id, 'redefinicao', e);
-        if (!_enviarEmail_(e, montarEmail('redefinicao', '', link, profNome))) _anularLink_(link);
+        if (!_enviarEmail_(e, montarEmail('redefinicao', '', link, profNome, assina))) _anularLink_(link);
       }
-    }
+    });
   } catch (erro) {
     console.error('pedirRedefinicao: ' + String(erro && erro.message || erro).slice(0, 200));
   }
@@ -1482,18 +1652,15 @@ function _reservarEmail_(cota, quantos) {
   var n = quantos || 1;
   var max = cota === 'redefinicoes' ? REDEFINICOES_DIA_MAX : EMAILS_DIA_MAX;
   var prefixo = cota === 'redefinicoes' ? 'redefinicoes:' : 'emails:';
-  var lock = LockService.getScriptLock();
-  lock.waitLock(10000);
-  try {
+  // 18.10: a mesma trava das gravacoes (reentrante — nao solta a da acao que chamou)
+  return _comTrava_(function () {
     var props = PropertiesService.getScriptProperties();
     var chave = prefixo + Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd');
     var enviados = parseInt(props.getProperty(chave) || '0', 10);
     if (enviados + n > max) return false;
     props.setProperty(chave, String(enviados + n));
     return true;
-  } finally {
-    lock.releaseLock();
-  }
+  });
 }
 
 /** Envia um e-mail do COGNIATIVO (a cota ja reservada). Devolve true se enviou. */
@@ -1526,7 +1693,7 @@ function _atualizarContatoPaciente_(sigla, contato) {
 /** Nome do paciente para o convite: anamnese, senao o nome do cadastro. */
 function _nomeDoPaciente_(paciente) {
   try {
-    var anam = lerAbaComoObjetos(SpreadsheetApp.openById(extrairIdDaUrl(paciente.link_planilha_individual)), ABA_ANAMNESE);
+    var anam = lerAbaComoObjetos(_abrirPlanilha_(extrairIdDaUrl(paciente.link_planilha_individual)), ABA_ANAMNESE);
     if (anam.length && anam[0].nome_completo) return String(anam[0].nome_completo);
   } catch (e) { /* sem anamnese: usa o cadastro */ }
   return String(paciente.nome || '');
@@ -1557,7 +1724,8 @@ function profEnviarConvite(s, siglaPaciente, canal, contato) {
   var link = _criarLinkAtivacao_('paciente', pac.sigla, s.profissional_id, 'convite', email);
   var enviado = false;
   if (canal === 'email') {
-    enviado = _enviarEmail_(email, montarEmail('convite', primeiroNome(_nomeDoPaciente_(pac)), link));
+    // 18.10: o convite e assinado pelo profissional dono (nome e CRP da aba Profissionais)
+    enviado = _enviarEmail_(email, montarEmail('convite', primeiroNome(_nomeDoPaciente_(pac)), link, '', _assinaturaDoProfissional_(s.profissional_id)));
     if (!enviado) { _anularLink_(link); return { ok: false, erro: MSG_COTA_EMAIL }; }
   }
   return { ok: true, link: link, email: email, telefone: normalizarTelefone(pac.telefone), enviado: enviado };
@@ -1578,7 +1746,8 @@ function admEnviarConvite(s, profissionalId, canal) {
   var link = _criarLinkAtivacao_('profissional', String(prof.sigla).toUpperCase(), prof.profissional_id, 'convite', email);
   var enviado = false;
   if (canal === 'email') {
-    enviado = _enviarEmail_(email, montarEmail('convite', primeiroNome(prof.nome_completo), link));
+    // 18.10: convite de profissional assinado pelo admin que o enviou
+    enviado = _enviarEmail_(email, montarEmail('convite', primeiroNome(prof.nome_completo), link, '', _assinaturaDe_(adm.nome_completo, adm.crp)));
     if (!enviado) { _anularLink_(link); return { ok: false, erro: MSG_COTA_EMAIL }; }
   }
   return { ok: true, link: link, enviado: enviado };
@@ -1642,13 +1811,17 @@ function listarPacientesDoProfissional(s) {
     return { ok: true, pacientes: [] }; // So cabecalho, sem pacientes
   }
 
+  // 18.10 (8.62): a lista sai SO da Controle — os indicadores de cada paciente moram na
+  // linha dele (colunas ind_*), atualizados em toda gravacao. A planilha do paciente so
+  // e aberta quando `ind_atualizado_em` esta vazio (recalculo preguicoso, uma vez).
   var cabecalhos = dados[0];
-  var idxSigla = cabecalhos.indexOf('sigla');
-  var idxLink = cabecalhos.indexOf('link_planilha_individual');
-  var idxDataCad = cabecalhos.indexOf('data_cadastro');
-  var idxDataAnam = cabecalhos.indexOf('data_anamnese');
-  var idxAtivo = cabecalhos.indexOf('ativo');
-  var idxNomeCad = cabecalhos.indexOf('nome'); // Pacote 18.1: nome do cadastro
+  var col = function (nome) { return cabecalhos.indexOf(nome); };
+  var idxSigla = col('sigla');
+  var idxLink = col('link_planilha_individual');
+  var idxDataCad = col('data_cadastro');
+  var idxDataAnam = col('data_anamnese');
+  var idxAtivo = col('ativo');
+  var idxNomeCad = col('nome'); // Pacote 18.1: nome do cadastro
 
   var lista = [];
 
@@ -1657,117 +1830,197 @@ function listarPacientesDoProfissional(s) {
     var siglaPac = String(row[idxSigla] || '').trim();
     if (!siglaPac) continue; // Linha vazia
 
-    var pacObj = {
-      sigla: siglaPac,
-      nome_completo: idxNomeCad >= 0 ? String(row[idxNomeCad] || '').trim() : '',
-      data_cadastro: idxDataCad >= 0 ? formatarDataParaExibicao_(row[idxDataCad]) : '',
-      data_anamnese: idxDataAnam >= 0 ? formatarDataParaExibicao_(row[idxDataAnam]) : '',
-      ativo: idxAtivo >= 0 ? _ativoParaCliente_(row[idxAtivo]) : 'Sim',
-      // Pacote 13.2.3: indicadores clinicos (defaults seguros)
-      ind_total_auto: 0,
-      ind_ultimo_auto_data: '',
-      ind_dias_desde_auto: null,
-      ind_ultimo_humor: null,
-      ind_ultima_escala_nome: '',
-      ind_ultima_escala_faixa: '',
-      ind_ultima_escala_data: '',
-      ind_alertas: []
-    };
-
-    // 3. Tentar ler dados da planilha individual
-    if (idxLink >= 0 && row[idxLink]) {
+    var ind = {};
+    for (var c = 0; c < COLUNAS_INDICADORES.length; c++) {
+      var ic = col(COLUNAS_INDICADORES[c]);
+      ind[COLUNAS_INDICADORES[c]] = ic >= 0 ? row[ic] : '';
+    }
+    if (!String(ind.ind_atualizado_em || '').trim() && idxLink >= 0 && row[idxLink]) {
       try {
-        var planilhaId = extrairIdDaUrl(String(row[idxLink]));
-        if (planilhaId) {
-          var planilha = SpreadsheetApp.openById(planilhaId);
-
-          // 3a. Nome da Anamnese
-          var abaAnam = planilha.getSheetByName(ABA_ANAMNESE);
-          if (abaAnam && abaAnam.getLastRow() >= 2) {
-            var cabAnam = abaAnam.getRange(1, 1, 1, abaAnam.getLastColumn()).getValues()[0];
-            var idxNome = cabAnam.indexOf('nome_completo');
-            if (idxNome >= 0) {
-              var ultimaLinha = abaAnam.getLastRow();
-              var nome = abaAnam.getRange(ultimaLinha, idxNome + 1).getValue();
-              if (String(nome || '').trim()) pacObj.nome_completo = String(nome).trim();
-            }
-          }
-
-          // 3b. Pacote 13.2.3: Indicadores do Automonitoramento
-          var abaAuto = planilha.getSheetByName(ABA_AUTOMONITORAMENTO);
-          if (abaAuto && abaAuto.getLastRow() >= 2) {
-            var totalAuto = abaAuto.getLastRow() - 1; // descontar cabecalho
-            pacObj.ind_total_auto = totalAuto;
-            var cabAuto = abaAuto.getRange(1, 1, 1, abaAuto.getLastColumn()).getValues()[0];
-            var idxDataReg = cabAuto.indexOf('data_registro');
-            var idxHumor = cabAuto.indexOf('humor_nivel');
-            if (idxDataReg >= 0 || idxHumor >= 0) {
-              var ultLinha = abaAuto.getRange(abaAuto.getLastRow(), 1, 1, abaAuto.getLastColumn()).getValues()[0];
-              if (idxDataReg >= 0 && ultLinha[idxDataReg]) {
-                var dataStr = formatarDataParaExibicao_(ultLinha[idxDataReg]);
-                pacObj.ind_ultimo_auto_data = dataStr;
-                // Calcular dias desde ultimo registro (datas civis)
-                try {
-                  var dUlt = (ultLinha[idxDataReg] instanceof Date) ? ultLinha[idxDataReg] : new Date(ultLinha[idxDataReg]);
-                  if (!isNaN(dUlt.getTime())) {
-                    var hoje = new Date();
-                    var hojeCivil = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
-                    var ultCivil = new Date(dUlt.getFullYear(), dUlt.getMonth(), dUlt.getDate());
-                    pacObj.ind_dias_desde_auto = Math.round((hojeCivil - ultCivil) / 86400000);
-                  }
-                } catch(ed) {}
-              }
-              if (idxHumor >= 0 && ultLinha[idxHumor]) {
-                pacObj.ind_ultimo_humor = parseInt(ultLinha[idxHumor], 10) || null;
-              }
-            }
-          }
-
-          // 3c. Pacote 13.2.3: Indicadores das Escalas
-          var abaEsc = planilha.getSheetByName(ABA_ESCALAS);
-          if (abaEsc && abaEsc.getLastRow() >= 2) {
-            var cabEsc = abaEsc.getRange(1, 1, 1, abaEsc.getLastColumn()).getValues()[0];
-            var idxInstr = cabEsc.indexOf('instrumento');
-            var idxFaixa = cabEsc.indexOf('faixa');
-            var idxDataApl = cabEsc.indexOf('data_aplicacao');
-            var idxAlertaFlag = cabEsc.indexOf('alerta_risco_flag');
-            var idxAlertaItem = cabEsc.indexOf('alerta_risco_item');
-            var idxAlertaValor = cabEsc.indexOf('alerta_risco_valor');
-
-            // Ultima escala aplicada
-            var ultEsc = abaEsc.getRange(abaEsc.getLastRow(), 1, 1, abaEsc.getLastColumn()).getValues()[0];
-            if (idxInstr >= 0) pacObj.ind_ultima_escala_nome = String(ultEsc[idxInstr] || '');
-            if (idxFaixa >= 0) pacObj.ind_ultima_escala_faixa = String(ultEsc[idxFaixa] || '');
-            if (idxDataApl >= 0) pacObj.ind_ultima_escala_data = formatarDataParaExibicao_(ultEsc[idxDataApl]);
-
-            // Alertas criticos: varrer TODAS as escalas para encontrar o mais recente com flag
-            if (idxAlertaFlag >= 0) {
-              var dadosEsc = abaEsc.getDataRange().getValues();
-              for (var e = dadosEsc.length - 1; e >= 1; e--) {
-                var flagVal = String(dadosEsc[e][idxAlertaFlag] || '').trim().toLowerCase();
-                if (flagVal === 'sim' || flagVal === 'true' || flagVal === '1') {
-                  pacObj.ind_alertas.push({
-                    instrumento: idxInstr >= 0 ? String(dadosEsc[e][idxInstr] || '') : '',
-                    item: idxAlertaItem >= 0 ? String(dadosEsc[e][idxAlertaItem] || '') : '',
-                    valor: idxAlertaValor >= 0 ? String(dadosEsc[e][idxAlertaValor] || '') : '',
-                    data: idxDataApl >= 0 ? formatarDataParaExibicao_(dadosEsc[e][idxDataApl]) : ''
-                  });
-                  break; // Apenas o alerta mais recente
-                }
-              }
-            }
-          }
-        }
+        var calculado = _atualizarIndicadores_(profissionalId, siglaPac, _abrirPlanilha_(extrairIdDaUrl(String(row[idxLink]))), true);
+        if (calculado) ind = calculado;
       } catch (e) {
         // Se nao conseguir abrir a planilha individual, segue sem indicadores
         Logger.log('listarPacientes: erro ao ler dados de ' + siglaPac + ': ' + e.message);
       }
     }
 
-    lista.push(pacObj);
+    var ultimoAuto = _jsonOuVazio_(ind.ind_ultimo_auto);
+    var ultimaEscala = _jsonOuVazio_(ind.ind_ultima_escala);
+    var alerta = _jsonOuVazio_(ind.ind_alertas_json);
+    var nomeAnamnese = String(ind.ind_nome || '').trim();
+
+    lista.push({
+      sigla: siglaPac,
+      nome_completo: nomeAnamnese || (idxNomeCad >= 0 ? String(row[idxNomeCad] || '').trim() : ''),
+      data_cadastro: idxDataCad >= 0 ? formatarDataParaExibicao_(row[idxDataCad]) : '',
+      data_anamnese: idxDataAnam >= 0 ? formatarDataParaExibicao_(row[idxDataAnam]) : '',
+      ativo: idxAtivo >= 0 ? _ativoParaCliente_(row[idxAtivo]) : 'Sim',
+      // Pacote 13.2.3: indicadores clinicos (mesmo contrato; a fonte passou a ser a Controle)
+      ind_total_auto: parseInt(ind.ind_total_auto, 10) || 0,
+      ind_ultimo_auto_data: String(ultimoAuto.data || ''),
+      ind_dias_desde_auto: _diasDesdeDataBR_(ultimoAuto.data),
+      ind_ultimo_humor: parseInt(ultimoAuto.humor, 10) || null,
+      ind_total_escalas: parseInt(ind.ind_total_escalas, 10) || 0,
+      ind_ultima_escala_nome: String(ultimaEscala.nome || ''),
+      ind_ultima_escala_faixa: String(ultimaEscala.faixa || ''),
+      ind_ultima_escala_data: String(ultimaEscala.data || ''),
+      ind_alertas: alerta.instrumento !== undefined ? [alerta] : []
+    });
   }
 
   return { ok: true, pacientes: lista };
+}
+
+// ---------- 18.10: indicadores do paciente na Controle ----------
+
+// Colunas da aba Pacientes da Controle, criadas pelo cabecalho (_garantirColunas_):
+//   ind_total_auto / ind_total_escalas  numero de linhas de cada aba
+//   ind_ultimo_auto     JSON {data: 'DD/MM/AAAA', humor: 1..5 | null} da ultima linha
+//   ind_ultima_escala   JSON {nome, faixa, data} da ultima linha
+//   ind_alertas_json    JSON {instrumento, item, valor, data} do alerta critico mais recente ('' = nenhum)
+//   ind_nome            nome_completo da Anamnese (a lista mostrava este nome; '' = usa o do cadastro)
+//   ind_atualizado_em   'aaaa-MM-dd HH:mm:ss' do ultimo calculo; vazio = recalcular na proxima lista
+var COLUNAS_INDICADORES = ['ind_total_auto', 'ind_ultimo_auto', 'ind_total_escalas', 'ind_ultima_escala',
+  'ind_alertas_json', 'ind_nome', 'ind_atualizado_em'];
+
+function _jsonOuVazio_(texto) {
+  try {
+    var o = JSON.parse(String(texto || ''));
+    return (o && typeof o === 'object') ? o : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+/** Dias civis entre hoje e uma data 'DD/MM/AAAA' (null se nao for data). */
+function _diasDesdeDataBR_(texto) {
+  var m = String(texto || '').match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return null;
+  var hoje = new Date();
+  var hojeCivil = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+  var dia = new Date(parseInt(m[3], 10), parseInt(m[2], 10) - 1, parseInt(m[1], 10));
+  return Math.round((hojeCivil - dia) / 86400000);
+}
+
+/**
+ * Calcula os indicadores a partir da planilha do paciente, com as mesmas regras que a
+ * lista usava (13.2.3): total = linhas da aba; "ultimo" = ultima linha; alerta = a
+ * linha mais recente das Escalas com alerta_risco_flag ligado.
+ */
+function _calcularIndicadores_(planilha) {
+  var ind = { ind_total_auto: 0, ind_ultimo_auto: '', ind_total_escalas: 0, ind_ultima_escala: '', ind_alertas_json: '', ind_nome: '' };
+
+  var abaAnam = planilha.getSheetByName(ABA_ANAMNESE);
+  if (abaAnam && abaAnam.getLastRow() >= 2) {
+    var cabAnam = abaAnam.getRange(1, 1, 1, abaAnam.getLastColumn()).getValues()[0];
+    var idxNome = cabAnam.indexOf('nome_completo');
+    if (idxNome >= 0) ind.ind_nome = String(abaAnam.getRange(abaAnam.getLastRow(), idxNome + 1).getValue() || '').trim();
+  }
+
+  var abaAuto = planilha.getSheetByName(ABA_AUTOMONITORAMENTO);
+  if (abaAuto && abaAuto.getLastRow() >= 2) {
+    ind.ind_total_auto = abaAuto.getLastRow() - 1; // descontar cabecalho
+    var cabAuto = abaAuto.getRange(1, 1, 1, abaAuto.getLastColumn()).getValues()[0];
+    var ultLinha = abaAuto.getRange(abaAuto.getLastRow(), 1, 1, abaAuto.getLastColumn()).getValues()[0];
+    var idxDataReg = cabAuto.indexOf('data_registro');
+    var idxHumor = cabAuto.indexOf('humor_nivel');
+    ind.ind_ultimo_auto = JSON.stringify({
+      data: (idxDataReg >= 0 && ultLinha[idxDataReg]) ? formatarDataParaExibicao_(ultLinha[idxDataReg]) : '',
+      humor: (idxHumor >= 0 && ultLinha[idxHumor]) ? (parseInt(ultLinha[idxHumor], 10) || null) : null
+    });
+  }
+
+  var abaEsc = planilha.getSheetByName(ABA_ESCALAS);
+  if (abaEsc && abaEsc.getLastRow() >= 2) {
+    var dadosEsc = abaEsc.getDataRange().getValues();
+    var cabEsc = dadosEsc[0];
+    var idxInstr = cabEsc.indexOf('instrumento');
+    var idxFaixa = cabEsc.indexOf('faixa');
+    var idxDataApl = cabEsc.indexOf('data_aplicacao');
+    var idxAlertaFlag = cabEsc.indexOf('alerta_risco_flag');
+    var idxAlertaItem = cabEsc.indexOf('alerta_risco_item');
+    var idxAlertaValor = cabEsc.indexOf('alerta_risco_valor');
+    ind.ind_total_escalas = dadosEsc.length - 1;
+    var ultEsc = dadosEsc[dadosEsc.length - 1];
+    ind.ind_ultima_escala = JSON.stringify({
+      nome: idxInstr >= 0 ? String(ultEsc[idxInstr] || '') : '',
+      faixa: idxFaixa >= 0 ? String(ultEsc[idxFaixa] || '') : '',
+      data: idxDataApl >= 0 ? formatarDataParaExibicao_(ultEsc[idxDataApl]) : ''
+    });
+    if (idxAlertaFlag >= 0) {
+      for (var e = dadosEsc.length - 1; e >= 1; e--) {
+        var flagVal = String(dadosEsc[e][idxAlertaFlag] || '').trim().toLowerCase();
+        if (flagVal === 'sim' || flagVal === 'true' || flagVal === '1') {
+          ind.ind_alertas_json = JSON.stringify({
+            instrumento: idxInstr >= 0 ? String(dadosEsc[e][idxInstr] || '') : '',
+            item: idxAlertaItem >= 0 ? String(dadosEsc[e][idxAlertaItem] || '') : '',
+            valor: idxAlertaValor >= 0 ? String(dadosEsc[e][idxAlertaValor] || '') : '',
+            data: idxDataApl >= 0 ? formatarDataParaExibicao_(dadosEsc[e][idxDataApl]) : ''
+          });
+          break; // Apenas o alerta mais recente
+        }
+      }
+    }
+  }
+  return ind;
+}
+
+/**
+ * Recalcula os indicadores do paciente e grava na linha dele na Controle (uma escrita
+ * em lote quando as colunas sao vizinhas). Chamada por toda gravacao do paciente e
+ * toda edicao pelo profissional, na mesma chamada e dentro da mesma trava.
+ * `tolerante` (lista do profissional): sem a trava, devolve o calculo sem gravar.
+ * Devolve os indicadores calculados, ou null se a linha do paciente nao foi achada.
+ */
+function _atualizarIndicadores_(profissionalId, sigla, planilha, tolerante) {
+  var controle = abrirControleDoProfissional(profissionalId);
+  if (!controle) return null;
+  var aba = controle.getSheetByName(ABA_PACIENTES);
+  if (!aba) return null;
+  var ind = _calcularIndicadores_(planilha);
+  ind.ind_atualizado_em = Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd HH:mm:ss');
+  var gravar = function () {
+    var header = _garantirColunas_(aba, COLUNAS_INDICADORES);
+    var iSigla = header.indexOf('sigla');
+    if (iSigla === -1 || aba.getLastRow() < 2) return false;
+    var siglas = aba.getRange(2, iSigla + 1, aba.getLastRow() - 1, 1).getValues();
+    var alvo = String(sigla).trim().toUpperCase();
+    for (var i = 0; i < siglas.length; i++) {
+      if (String(siglas[i][0]).trim().toUpperCase() !== alvo) continue;
+      var primeira = header.indexOf(COLUNAS_INDICADORES[0]);
+      var vizinhas = COLUNAS_INDICADORES.every(function (c, k) { return header.indexOf(c) === primeira + k; });
+      var valores = COLUNAS_INDICADORES.map(function (c) { return _celulaTexto_(c, ind[c]); });
+      if (vizinhas) {
+        aba.getRange(i + 2, primeira + 1, 1, valores.length).setValues([valores]);
+      } else {
+        for (var k = 0; k < valores.length; k++) aba.getRange(i + 2, header.indexOf(COLUNAS_INDICADORES[k]) + 1).setValue(valores[k]);
+      }
+      return true;
+    }
+    return false;
+  };
+  var gravou = tolerante ? _comTravaSeDer_(gravar) : _comTrava_(gravar);
+  return (gravou || tolerante) ? ind : null;
+}
+
+/**
+ * Indicadores depois de uma gravacao: o registro do paciente ja esta na planilha dele;
+ * se a atualizacao da Controle falhar, `ind_atualizado_em` e esvaziado para a proxima
+ * lista recalcular (a lista nunca fica com numero velho sem saber).
+ */
+function _indicadoresAposGravar_(profissionalId, sigla, planilha) {
+  try {
+    if (_atualizarIndicadores_(profissionalId, sigla, planilha)) return;
+  } catch (e) {
+    console.error('indicadores: ' + String(e && e.message || e).slice(0, 160));
+  }
+  try {
+    var controle = abrirControleDoProfissional(profissionalId);
+    if (controle) _atualizarLinhaPorChave_(controle.getSheetByName(ABA_PACIENTES), 'sigla', sigla, { ind_atualizado_em: '' });
+  } catch (e2) {
+    console.error('indicadores: nao consegui marcar para recalculo: ' + String(e2 && e2.message || e2).slice(0, 160));
+  }
 }
 
 /**
@@ -1815,7 +2068,7 @@ function lerDadosPaciente(s, siglaPaciente) {
     return { ok: false, erro: 'Link da planilha invalido' };
   }
 
-  var planilha = SpreadsheetApp.openById(planilhaId);
+  var planilha = _abrirPlanilha_(planilhaId);
 
   // 4. Ler anamnese (reuso de lerAbaComoObjetos)
   var anamnese = lerAbaComoObjetos(planilha, ABA_ANAMNESE);
@@ -1890,8 +2143,12 @@ function salvarAnamnese(sigla, dados) {
   if (!paciente) return { ok: false, erro: 'Paciente nao encontrado' };
 
   var planilhaIndividualId = extrairIdDaUrl(paciente.link_planilha_individual);
-  var planilha = SpreadsheetApp.openById(planilhaIndividualId);
+  var planilha = _abrirPlanilha_(planilhaIndividualId);
   var aba = planilha.getSheetByName(ABA_ANAMNESE);
+
+  dados = _dadosDoCliente_(dados);
+  var repetido = _linhaDoEnvio_(aba, dados.id_envio);
+  if (repetido) return _respostaDuplicado_(planilha, ABA_ANAMNESE, repetido, 'Anamnese salva com sucesso');
 
   dados = _espelharContatoAnamnese_(aba, dados, paciente);
   var linha = montarLinha(aba, dados);
@@ -1899,8 +2156,54 @@ function salvarAnamnese(sigla, dados) {
 
   // Registra data de anamnese na Controle do profissional dono
   registrarDataAnamnese(sigla, paciente.__profissional_id);
+  _indicadoresAposGravar_(paciente.__profissional_id, sigla, planilha);
 
   return { ok: true, mensagem: 'Anamnese salva com sucesso' };
+}
+
+// ---------- 18.10: autoria pelo servidor e identificador unico do envio ----------
+
+// Campos que so o SERVIDOR escreve (8.46): o que vier do cliente com estes nomes e
+// descartado em todo caminho que grava. `id_envio` vem do cliente, mas so vale se
+// tiver cara de identificador (letras, numeros e hifen, 8 a 64).
+var CAMPOS_DO_SERVIDOR = ['timestamp', 'versao_formulario', 'sigla', 'profissional_id',
+  'editado', 'editado_por', 'editado_em', 'editando_quem', 'editando_desde'];
+
+function _dadosDoCliente_(dados) {
+  var limpo = {};
+  for (var k in (dados || {})) {
+    if (CAMPOS_DO_SERVIDOR.indexOf(k) === -1) limpo[k] = dados[k];
+  }
+  var id = String(limpo.id_envio === undefined || limpo.id_envio === null ? '' : limpo.id_envio).trim();
+  if (/^[A-Za-z0-9-]{8,64}$/.test(id)) limpo.id_envio = id; else delete limpo.id_envio;
+  return limpo;
+}
+
+/**
+ * Linha (numero da planilha) que ja guarda este id_envio na aba, ou 0 (8.14). Garante
+ * a coluna `id_envio` pelo cabecalho. Le so a coluna, nao a aba inteira.
+ */
+function _linhaDoEnvio_(aba, idEnvio) {
+  var header = _garantirColunas_(aba, ['id_envio']);
+  if (!idEnvio || aba.getLastRow() < 2) return 0;
+  var coluna = aba.getRange(2, header.indexOf('id_envio') + 1, aba.getLastRow() - 1, 1).getValues();
+  for (var i = 0; i < coluna.length; i++) {
+    if (String(coluna[i][0]).trim() === idEnvio) return i + 2;
+  }
+  return 0;
+}
+
+/** Resposta do reenvio: nada e gravado; volta o registro que ja estava na linha. */
+function _respostaDuplicado_(planilha, nomeAba, linha, mensagem) {
+  var registros = lerAbaComoObjetos(planilha, nomeAba);
+  return { ok: true, duplicado: true, mensagem: mensagem, registro: registros[linha - 2] || null };
+}
+
+/** Versao do formulario pela aba em que a linha e gravada. */
+function _versaoDoFormulario_(nomeAba) {
+  if (nomeAba === ABA_ANAMNESE) return VERSAO_FORM_ANAMNESE;
+  if (nomeAba === ABA_ESCALAS) return VERSAO_FORM_ESCALAS;
+  return VERSAO_FORM_AUTO;
 }
 
 function salvarAutomonitoramento(sigla, dados) {
@@ -1908,11 +2211,16 @@ function salvarAutomonitoramento(sigla, dados) {
   if (!paciente) return { ok: false, erro: 'Paciente nao encontrado' };
 
   var planilhaIndividualId = extrairIdDaUrl(paciente.link_planilha_individual);
-  var planilha = SpreadsheetApp.openById(planilhaIndividualId);
+  var planilha = _abrirPlanilha_(planilhaIndividualId);
   var aba = planilha.getSheetByName(ABA_AUTOMONITORAMENTO);
+
+  dados = _dadosDoCliente_(dados);
+  var repetido = _linhaDoEnvio_(aba, dados.id_envio);
+  if (repetido) return _respostaDuplicado_(planilha, ABA_AUTOMONITORAMENTO, repetido, 'Registro salvo com sucesso');
 
   var linha = montarLinha(aba, dados);
   aba.appendRow(linha);
+  _indicadoresAposGravar_(paciente.__profissional_id, sigla, planilha);
 
   return { ok: true, mensagem: 'Registro salvo com sucesso' };
 }
@@ -1926,13 +2234,16 @@ function montarLinha(aba, dados) {
   var cabecalhos = aba.getRange(1, 1, 1, aba.getLastColumn()).getValues()[0];
   var agora = new Date();
   var linha = [];
+  var versao = _versaoDoFormulario_(aba.getName());
 
   for (var i = 0; i < cabecalhos.length; i++) {
     var col = cabecalhos[i];
     if (col === 'timestamp') {
       linha.push(Utilities.formatDate(agora, 'America/Sao_Paulo', 'yyyy-MM-dd HH:mm:ss'));
     } else if (col === 'versao_formulario') {
-      linha.push(VERSAO_FORMULARIO);
+      linha.push(versao);
+    } else if (CAMPOS_DO_SERVIDOR.indexOf(col) !== -1) {
+      linha.push(''); // 18.10 (8.46): auditoria e trava de presenca nunca vem do cliente
     } else if (dados && dados[col] !== undefined && dados[col] !== null) {
       linha.push(_celulaTexto_(col, dados[col])); // 18.2: texto digitado nunca vira formula nem e retipado
     } else {
@@ -1994,7 +2305,7 @@ function lerHistorico(sigla) {
   if (!paciente) return { ok: false, erro: 'Paciente nao encontrado' };
 
   var planilhaIndividualId = extrairIdDaUrl(paciente.link_planilha_individual);
-  var planilha = SpreadsheetApp.openById(planilhaIndividualId);
+  var planilha = _abrirPlanilha_(planilhaIndividualId);
 
   var registros = lerAbaComoObjetos(planilha, ABA_AUTOMONITORAMENTO);
   var anamnese = lerAbaComoObjetos(planilha, ABA_ANAMNESE);
@@ -2067,7 +2378,7 @@ function salvarEscala(sigla, dados) {
   if (!paciente) return { ok: false, erro: 'Paciente nao encontrado' };
 
   var planilhaIndividualId = extrairIdDaUrl(paciente.link_planilha_individual);
-  var planilha = SpreadsheetApp.openById(planilhaIndividualId);
+  var planilha = _abrirPlanilha_(planilhaIndividualId);
   var aba = planilha.getSheetByName(ABA_ESCALAS);
 
   if (!aba) {
@@ -2077,8 +2388,13 @@ function salvarEscala(sigla, dados) {
     };
   }
 
+  dados = _dadosDoCliente_(dados);
+  var repetido = _linhaDoEnvio_(aba, dados.id_envio);
+  if (repetido) return _respostaDuplicado_(planilha, ABA_ESCALAS, repetido, 'Escala salva com sucesso');
+
   var linha = montarLinha(aba, dados);
   aba.appendRow(linha);
+  _indicadoresAposGravar_(paciente.__profissional_id, sigla, planilha);
 
   return { ok: true, mensagem: 'Escala salva com sucesso' };
 }
@@ -2088,7 +2404,7 @@ function lerEscalas(sigla) {
   if (!paciente) return { ok: false, erro: 'Paciente nao encontrado' };
 
   var planilhaIndividualId = extrairIdDaUrl(paciente.link_planilha_individual);
-  var planilha = SpreadsheetApp.openById(planilhaIndividualId);
+  var planilha = _abrirPlanilha_(planilhaIndividualId);
 
   var aba = planilha.getSheetByName(ABA_ESCALAS);
   if (!aba) {
@@ -2267,7 +2583,7 @@ function lerItensInstrumento(payload, s) {
 
   var sistema;
   try {
-    sistema = SpreadsheetApp.openById(SISTEMA_VMC_ID);
+    sistema = _abrirPlanilha_(SISTEMA_VMC_ID);
   } catch (e) {
     return { ok: false, erro: 'Planilha do sistema indisponivel' };
   }
@@ -2353,27 +2669,16 @@ function pacienteAtualizarAnamnese(sigla, dados) {
   var planilhaId = extrairIdDaUrl(paciente.link_planilha_individual);
   if (!planilhaId) return { ok: false, erro: 'Link da planilha invalido' };
 
-  var planilha = SpreadsheetApp.openById(planilhaId);
+  var planilha = _abrirPlanilha_(planilhaId);
   var aba = planilha.getSheetByName(ABA_ANAMNESE);
   if (!aba) return { ok: false, erro: 'Aba Anamnese nao encontrada' };
 
   // 2. Montar linha e sobrescrever (e-mail e telefone espelham o cadastro)
+  // 18.10: campos do servidor descartados; reenvio com o mesmo id_envio nao regrava
+  dados = _dadosDoCliente_(dados);
+  if (_linhaDoEnvio_(aba, dados.id_envio) === 2) return _respostaDuplicado_(planilha, ABA_ANAMNESE, 2, 'Anamnese atualizada com sucesso');
   dados = _espelharContatoAnamnese_(aba, dados, paciente);
-  var cabecalhos = aba.getRange(1, 1, 1, aba.getLastColumn()).getValues()[0];
-  var agora = new Date();
-  var linha = [];
-  for (var i = 0; i < cabecalhos.length; i++) {
-    var col = cabecalhos[i];
-    if (col === 'timestamp') {
-      linha.push(Utilities.formatDate(agora, 'America/Sao_Paulo', 'yyyy-MM-dd HH:mm:ss'));
-    } else if (col === 'versao_formulario') {
-      linha.push(VERSAO_FORMULARIO);
-    } else if (dados[col] !== undefined && dados[col] !== null) {
-      linha.push(_celulaTexto_(col, dados[col])); // 18.2
-    } else {
-      linha.push('');
-    }
-  }
+  var linha = montarLinha(aba, dados);
 
   if (aba.getLastRow() >= 2) {
     aba.getRange(2, 1, 1, linha.length).setValues([linha]);
@@ -2381,9 +2686,9 @@ function pacienteAtualizarAnamnese(sigla, dados) {
     aba.appendRow(linha);
   }
 
-  // 3. Atualizar data_anamnese na Controle
-  var profissionalId = resolverProfissionalIdPorSigla(sigla, 'paciente');
-  if (profissionalId) registrarDataAnamnese(sigla, profissionalId);
+  // 3. Atualizar data_anamnese e indicadores na Controle
+  registrarDataAnamnese(sigla, paciente.__profissional_id);
+  _indicadoresAposGravar_(paciente.__profissional_id, sigla, planilha);
 
   return { ok: true, mensagem: 'Anamnese atualizada com sucesso' };
 }
@@ -2506,11 +2811,14 @@ function cadastrarPaciente(s, dados) {
     }
 
     // Linha gravada pelo nome do cabecalho; senha_hash vazio ate o convite
-    var cabCtrl = _garantirColunas_(abaCtrl, ['email', 'telefone', 'nome']);
+    // 18.10: paciente novo ja nasce com os indicadores zerados (a lista nao abre a planilha dele)
+    var cabCtrl = _garantirColunas_(abaCtrl, ['email', 'telefone', 'nome'].concat(COLUNAS_INDICADORES));
     _anexarPorCabecalho_(abaCtrl, cabCtrl, {
       sigla: sigla, senha_hash: '', link_planilha_individual: linkPlanilha,
       data_cadastro: hoje, data_anamnese: '', ativo: 'Sim', observacoes: '',
-      email: contato.email, telefone: contato.telefone, nome: nome
+      email: contato.email, telefone: contato.telefone, nome: nome,
+      ind_total_auto: 0, ind_total_escalas: 0,
+      ind_atualizado_em: Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd HH:mm:ss')
     });
 
     // 8. Adicionar linha no Indice_Siglas (por nome de cabecalho, com o e-mail)
@@ -2576,27 +2884,16 @@ function profSalvarAnamnese(s, siglaPaciente, dados, contato) {
   var planilhaId = extrairIdDaUrl(paciente.link_planilha_individual);
   if (!planilhaId) return { ok: false, erro: 'Link da planilha invalido' };
 
-  var planilha = SpreadsheetApp.openById(planilhaId);
+  var planilha = _abrirPlanilha_(planilhaId);
   var aba = planilha.getSheetByName(ABA_ANAMNESE);
   if (!aba) return { ok: false, erro: 'Aba Anamnese nao encontrada' };
 
   // 4. Montar linha usando headers existentes (e-mail e telefone espelham o cadastro)
+  // 18.10: campos do servidor descartados; o profissional nao reusa id_envio
+  dados = _dadosDoCliente_(dados);
+  delete dados.id_envio;
   dados = _espelharContatoAnamnese_(aba, dados, paciente);
-  var cabecalhos = aba.getRange(1, 1, 1, aba.getLastColumn()).getValues()[0];
-  var agora = new Date();
-  var linha = [];
-  for (var i = 0; i < cabecalhos.length; i++) {
-    var col = cabecalhos[i];
-    if (col === 'timestamp') {
-      linha.push(Utilities.formatDate(agora, 'America/Sao_Paulo', 'yyyy-MM-dd HH:mm:ss'));
-    } else if (col === 'versao_formulario') {
-      linha.push(VERSAO_FORMULARIO);
-    } else if (dados[col] !== undefined && dados[col] !== null) {
-      linha.push(_celulaTexto_(col, dados[col])); // 18.2
-    } else {
-      linha.push('');
-    }
-  }
+  var linha = montarLinha(aba, dados);
 
   // 5. Sobrescrever row 2 se existe, senao append
   if (aba.getLastRow() >= 2) {
@@ -2605,8 +2902,9 @@ function profSalvarAnamnese(s, siglaPaciente, dados, contato) {
     aba.appendRow(linha);
   }
 
-  // 6. Atualizar data_anamnese na Controle
+  // 6. Atualizar data_anamnese e indicadores na Controle
   registrarDataAnamnese(siglaPaciente, profissionalId);
+  _indicadoresAposGravar_(profissionalId, siglaPaciente, planilha);
 
   return { ok: true, mensagem: 'Anamnese salva com sucesso' };
 }
@@ -2657,7 +2955,7 @@ function _tsNormalizar_(val) {
  * Retorna { aba, rowIndex, cabecalhos } ou null.
  */
 function _encontrarLinhaAuto_(planilhaId, timestamp) {
-  var planilha = SpreadsheetApp.openById(planilhaId);
+  var planilha = _abrirPlanilha_(planilhaId);
   var aba = planilha.getSheetByName(ABA_AUTOMONITORAMENTO);
   if (!aba) return null;
   var cabecalhos = _garantirColunasAutomonitoramento_(aba);
@@ -2737,16 +3035,16 @@ function pacienteEditarAutomonitoramento(sigla, timestamp, dados) {
   if (!linha) return { ok: false, erro: 'Registro nao encontrado' };
   var agora = Utilities.formatDate(new Date(), 'America/Sao_Paulo', "yyyy-MM-dd'T'HH:mm:ss");
   // Mescla dados editados com metadados de auditoria
-  var campos = {};
-  for (var k in dados) {
-    if (k !== 'timestamp' && k !== 'versao_formulario') campos[k] = dados[k];
-  }
+  // 18.10 (8.46): autoria sempre do servidor (cracha de paciente); o id do envio nao muda na edicao
+  var campos = _dadosDoCliente_(dados);
+  delete campos.id_envio;
   campos.editando_quem  = '';
   campos.editando_desde = '';
   campos.editado        = 'Sim';
   campos.editado_por    = 'paciente';
   campos.editado_em     = agora;
   _atualizarCamposLinha_(linha.aba, linha.rowIndex, linha.cabecalhos, campos);
+  _indicadoresAposGravar_(pac.__profissional_id, sigla, _abrirPlanilha_(planilhaId));
   return { ok: true, mensagem: 'Registro atualizado com sucesso', editado_em: agora };
 }
 
@@ -2802,16 +3100,16 @@ function profEditarAutomonitoramento(s, siglaPaciente, timestamp, dados) {
   var linha = _encontrarLinhaAuto_(planilhaId, timestamp);
   if (!linha) return { ok: false, erro: 'Registro nao encontrado' };
   var agora = Utilities.formatDate(new Date(), 'America/Sao_Paulo', "yyyy-MM-dd'T'HH:mm:ss");
-  var campos = {};
-  for (var k in dados) {
-    if (k !== 'timestamp' && k !== 'versao_formulario') campos[k] = dados[k];
-  }
+  // 18.10 (8.46): autoria sempre do servidor (cracha de profissional)
+  var campos = _dadosDoCliente_(dados);
+  delete campos.id_envio;
   campos.editando_quem  = '';
   campos.editando_desde = '';
   campos.editado        = 'Sim';
   campos.editado_por    = 'profissional';
   campos.editado_em     = agora;
   _atualizarCamposLinha_(linha.aba, linha.rowIndex, linha.cabecalhos, campos);
+  _indicadoresAposGravar_(profId, siglaPaciente, _abrirPlanilha_(planilhaId));
   return { ok: true, mensagem: 'Registro atualizado com sucesso', editado_em: agora };
 }
 
@@ -2974,7 +3272,7 @@ function profExcluirPaciente(s, siglaPaciente, confirmacaoSigla) {
     }
 
     // 3. Remover linha do Indice_Siglas
-    var planilhaGlobal = SpreadsheetApp.openById(SISTEMA_VMC_ID);
+    var planilhaGlobal = _abrirPlanilha_(SISTEMA_VMC_ID);
     var abaIdx = planilhaGlobal.getSheetByName(ABA_INDICE_SIGLAS);
     if (abaIdx) {
       var dadosIdx = abaIdx.getDataRange().getValues();
@@ -2984,6 +3282,7 @@ function profExcluirPaciente(s, siglaPaciente, confirmacaoSigla) {
         var tipoCel  = String(dadosIdx[k][iTip] || '').trim().toLowerCase();
         if (siglaCel === String(siglaPaciente).trim().toUpperCase() && tipoCel === 'paciente') {
           abaIdx.deleteRow(k + 1);
+          _memoEsquecerIndice_();
           break;
         }
       }
@@ -3076,7 +3375,7 @@ function listarProfissionais(s) {
   var adm = _admDaSessao_(s);
   if (!adm) return { ok: false, erro: 'Credenciais de admin invalidas' };
 
-  var planilha = SpreadsheetApp.openById(SISTEMA_VMC_ID);
+  var planilha = _abrirPlanilha_(SISTEMA_VMC_ID);
   var aba = planilha.getSheetByName(ABA_PROFISSIONAIS);
   if (!aba) return { ok: false, erro: 'Aba Profissionais nao encontrada' };
 
@@ -3175,7 +3474,7 @@ function cadastrarProfissional(s, dados) {
 
     var hoje = Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd');
 
-    var planilhaGlobal = SpreadsheetApp.openById(SISTEMA_VMC_ID);
+    var planilhaGlobal = _abrirPlanilha_(SISTEMA_VMC_ID);
     var abaProf = planilhaGlobal.getSheetByName(ABA_PROFISSIONAIS);
     var cabProf = abaProf.getRange(1, 1, 1, abaProf.getLastColumn()).getValues()[0];
 
@@ -3193,6 +3492,7 @@ function cadastrarProfissional(s, dados) {
       else if (col === 'telefone')        linhaProf.push(tel);
       else if (col === 'crp')             linhaProf.push(crp);
       else if (col === 'data_inicio')     linhaProf.push(dataInicio);
+      else if (col === 'controle_id')     linhaProf.push(shControle.getId()); // 18.10
       else                                linhaProf.push('');
     }
     abaProf.appendRow(linhaProf.map(function (v, k) { return _celulaTexto_(cabProf[k], v); })); // 18.2
@@ -3240,7 +3540,7 @@ function atualizarProfissional(s, profissionalId, mudancas) {
     dataInicio:   'data_inicio'
   };
 
-  var planilha = SpreadsheetApp.openById(SISTEMA_VMC_ID);
+  var planilha = _abrirPlanilha_(SISTEMA_VMC_ID);
   var aba = planilha.getSheetByName(ABA_PROFISSIONAIS);
   if (!aba) return { ok: false, erro: 'Aba Profissionais nao encontrada' };
 
@@ -3298,7 +3598,7 @@ function trocarSenhaProfissional(s, profissionalId, novaSenha) {
   }
   if (String(novaSenha).length > SENHA_MAXIMA) return { ok: false, erro: 'Não foi possível gravar a senha. Tente de novo.' };
 
-  var planilha = SpreadsheetApp.openById(SISTEMA_VMC_ID);
+  var planilha = _abrirPlanilha_(SISTEMA_VMC_ID);
   var aba = planilha.getSheetByName(ABA_PROFISSIONAIS);
   var dados = aba.getDataRange().getValues();
   var cabecalhos = dados[0];
@@ -3338,7 +3638,7 @@ function _alterarStatusProfissional(s, profissionalId, novoStatus) {
 
   if (!profissionalId) return { ok: false, erro: 'profissionalId obrigatorio' };
 
-  var planilha = SpreadsheetApp.openById(SISTEMA_VMC_ID);
+  var planilha = _abrirPlanilha_(SISTEMA_VMC_ID);
   var aba = planilha.getSheetByName(ABA_PROFISSIONAIS);
   var dados = aba.getDataRange().getValues();
   var cabecalhos = dados[0];
@@ -3769,7 +4069,7 @@ function _e3GarantirAbaBackups_(planilha) {
  */
 function _e3RegistrarBackup_(inicio, arquivos, erros, detalhe) {
   try {
-    var planilha = SpreadsheetApp.openById(SISTEMA_VMC_ID);
+    var planilha = _abrirPlanilha_(SISTEMA_VMC_ID);
     var g = _e3GarantirAbaBackups_(planilha);
     var duracao = Math.round((new Date().getTime() - inicio.getTime()) / 1000);
 
@@ -3786,7 +4086,7 @@ function _e3RegistrarBackup_(inicio, arquivos, erros, detalhe) {
       var col = g.cabecalhos[i];
       linha.push(Object.prototype.hasOwnProperty.call(valores, col) ? valores[col] : '');
     }
-    g.aba.appendRow(linha);
+    _comTrava_(function () { g.aba.appendRow(linha); }); // 18.10: escrita em planilha na trava
   } catch (e) {
     console.error('E3 backup: nao consegui registrar na aba Backups: ' + String(e));
   }
@@ -3962,7 +4262,7 @@ function backupSobDemanda_() {
   // 2. Cada profissional: Controle + planilhas de pacientes
   var profs = [];
   try {
-    profs = lerAbaComoObjetos(SpreadsheetApp.openById(SISTEMA_VMC_ID), ABA_PROFISSIONAIS);
+    profs = lerAbaComoObjetos(_abrirPlanilha_(SISTEMA_VMC_ID), ABA_PROFISSIONAIS);
   } catch (e) {
     falhar('aba ' + ABA_PROFISSIONAIS + ': ' + String(e));
   }
@@ -4008,7 +4308,7 @@ function backupSobDemanda_() {
         contar(_e3CopiarSeFaltar_(arqCtrl, pastaDia,
                                   nomeDoBackup(prefixo, NOME_CONTROLE), usados));
         try {
-          controle = SpreadsheetApp.openById(arqCtrl.getId());
+          controle = _abrirPlanilha_(arqCtrl.getId());
         } catch (e) {
           falhar(idProf + ': Controle copiada mas ilegivel para conferencia: ' + String(e));
         }
