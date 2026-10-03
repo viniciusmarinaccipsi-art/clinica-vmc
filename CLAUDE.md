@@ -44,9 +44,9 @@ PowerShell → `cd "C:\Users\cardi\Meu Drive\clinica-vmc\repo-github"` → `clau
 Deploy manual (colar no editor do Apps Script, arrastar no GitHub) está descontinuado.
 
 **Prova do ping:**
-- PowerShell: `Invoke-RestMethod -Method Post -Uri "<APPS_SCRIPT_URL do index.html>" -ContentType "text/plain;charset=utf-8" -Body '{"acao":"ping"}'`
-- Bash: `curl -sL -H 'Content-Type: text/plain;charset=utf-8' -d '{"acao":"ping"}' "<APPS_SCRIPT_URL>"`
-- Nunca `curl.exe -X POST` no PowerShell (411 e JSON corrompido). Erro no ping pode ser do cliente ou da janela lenta do Google (lição 95): confirmar com um segundo cliente e pela página Execuções antes de concluir que a implantação quebrou.
+- PowerShell (cliente oficial): `Invoke-RestMethod -Method Post -Uri "<APPS_SCRIPT_URL do index.html>" -ContentType "text/plain;charset=utf-8" -Body '{"acao":"ping"}'`
+- Segundo cliente: `fetch` de uma aba do site publicado (console da página: `fetch(APPS_SCRIPT_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:'{"acao":"ping"}'}).then(r => r.json())`) ou `clasp --user run run-function versaoDoServidor` para a versão do HEAD.
+- **O PowerShell (`Invoke-RestMethod`) é o cliente oficial da prova de deploy.** O `curl` não serve de prova: o do Git Bash devolveu uma página de erro do Google em 03/10/2026 enquanto o PowerShell e o site respondiam 18.2 (18.2.2), e o `curl.exe -X POST` no PowerShell dá 411 e JSON corrompido (lição 68). Erro no ping pode ser do cliente ou da janela lenta do Google (lição 95): confirmar com o segundo cliente e pela página Execuções antes de concluir que a implantação quebrou.
 
 ## Medir com o instrumento certo
 
