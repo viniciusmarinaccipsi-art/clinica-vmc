@@ -947,6 +947,21 @@ era paciente de outro consultório — sigilo); e-mail de **profissional** e de
   escolhida. Redefinição de conta que já aceitou não pede de novo; profissional e
   admin não têm aceite.
 
+### Execução de funções pelo Code (Pacote 18.1.4 — 03/10/2026)
+
+`clasp --user run run-function <funcao>` executa qualquer função pública do
+`Código.js` no servidor real, direto do Code — prova de pacote, backup sob
+demanda (`rodarBackupAgora`), monitor (`rodarMonitorAgora`). Credencial nomeada
+`run` (projeto GCP `cogniativo-clasp`; configurações na seção 1 do status;
+`client_secret.json` fora do Drive e do repositório), separada da credencial
+padrão de `push`/`deploy`. Roda o HEAD; a implantação fixa do app web não muda.
+Limites: função com `_` final é interna (a API recusa); o projeto próprio só
+enxerga as APIs ativadas nele (Apps Script, Drive e Sheets ativadas em 03/10).
+`versaoDoServidor` é a função de verificação. O editor do Apps Script deixou de
+ser necessário para executar função. O aceite do 18.1.6 grava com apóstrofo
+(texto literal; o Sheets retipava `'2026-10'` para data — achado da prova real,
+deploy @31).
+
 ## Backup e monitoramento (Pacote E3 — ativado em 30/09/2026, ajustado em 01/10)
 
 `backupSobDemanda_()` (invólucro público `rodarBackupAgora`) copia a
