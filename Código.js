@@ -47,7 +47,7 @@
 // Pacote E3 — backup diário e monitor do ping (só clasp push, sem deploy)
 // Pacote 18.1 — acesso por e-mail, cracha de sessao, convite e redefinicao (01/10/2026)
 // Pacote 18.1.2 — correcoes de seguranca do acesso: links, cracha, acoes publicas, ativo (02/10/2026)
-var VERSAO_PACOTE = '18.1.6';
+var VERSAO_PACOTE = '18.1.4';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -1261,9 +1261,11 @@ function pedirRedefinicao(tipo, email) {
 function _gravarAceitePolitica_(sigla, profissionalId) {
   var controle = abrirControleDoProfissional(profissionalId);
   if (!controle) return false;
+  // Apostrofo: forca TEXTO na celula. Sem ele o Sheets retipa '2026-10' para data
+  // e a leitura de volta nunca bate com POLITICA_VERSAO (achado da prova real, 03/10).
   return _atualizarLinhaPorChave_(controle.getSheetByName(ABA_PACIENTES), 'sigla', sigla, {
-    aceite_politica_em: Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd HH:mm:ss'),
-    aceite_politica_versao: POLITICA_VERSAO
+    aceite_politica_em: "'" + Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd HH:mm:ss'),
+    aceite_politica_versao: "'" + POLITICA_VERSAO
   });
 }
 
@@ -4151,6 +4153,14 @@ function instalarGatilhos() {
 //
 // Nao sao acao do doPost: o web app so roteia pelo switch de doPost, logo
 // isto NAO amplia a superficie exposta na web.
+
+/**
+ * 18.1.4: funcao de verificacao do clasp run — so leitura, sem tocar em dado algum.
+ * Uso: clasp --user run run-function versaoDoServidor
+ */
+function versaoDoServidor() {
+  return { ok: true, versao_pacote: VERSAO_PACOTE, politica_versao: POLITICA_VERSAO, hora_servidor: _e3HoraServidor_() };
+}
 
 function rodarBackupAgora() {
   return backupSobDemanda_();

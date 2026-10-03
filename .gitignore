@@ -15,3 +15,4 @@ token*.json
 # e do BAI). O modelo VAZIO e versionado; o preenchido, nunca.
 itens_instrumentos_preenchido.xlsx
 docs/escalas/itens_instrumentos_preenchido.xlsx
+client_secret*.json
