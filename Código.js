@@ -47,7 +47,7 @@
 // Pacote E3 — backup diário e monitor do ping (só clasp push, sem deploy)
 // Pacote 18.1 — acesso por e-mail, cracha de sessao, convite e redefinicao (01/10/2026)
 // Pacote 18.1.2 — correcoes de seguranca do acesso: links, cracha, acoes publicas, ativo (02/10/2026)
-var VERSAO_PACOTE = '18.1.4';
+var VERSAO_PACOTE = '18.2';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -791,7 +791,81 @@ function primeiroNome(nome) {
   return String(nome || '').trim().split(/\s+/)[0] || '';
 }
 
-// ---------- planilhas: colunas, indice e tokens ----------
+// ---------- planilhas: celulas seguras, colunas, indice e tokens ----------
+
+/**
+ * 18.2 — trava unica de gravacao: todo valor vindo de quem digita passa por aqui
+ * antes de setValue/setValues/appendRow. So age em string: se comeca com = + - @,
+ * tab, retorno de carro ou apostrofo, ganha um apostrofo na frente — o Sheets guarda
+ * o texto como digitado (o apostrofo some na leitura) e nunca o trata como formula.
+ * Numero, booleano, Date, null e vazio passam intactos (notas e intensidades seguem
+ * numeros). Valor que o SERVIDOR ja montou com apostrofo nao passa por aqui (ganharia
+ * um segundo, que ficaria gravado): ver `camposServidor` em _atualizarLinhaPorChave_.
+ */
+function _celulaSegura_(v) {
+  if (typeof v !== 'string') return v;
+  return /^[=+\-@\t\r']/.test(v) ? "'" + v : v;
+}
+
+/**
+ * 18.2 (decisao 1b) — colunas de TEXTO LIVRE, pelo nome do cabecalho: o que a pessoa
+ * digita num campo aberto fica como digitado. Sem isto o Sheets retipa ("10/10" e
+ * "1-2" viram data, "13:00" vira hora, "0123" vira 123 — medido em 03/10). Sao: todas
+ * as colunas da Anamnese menos timestamp, versao_formulario e data_nascimento; os
+ * campos abertos do registro (humor_observacoes e os *_o_que); os dois campos abertos
+ * das escalas; nome, nome_completo, observacoes e crp dos cadastros. FORA (seguem so
+ * com a regra dos caracteres perigosos): toda coluna que alguma leitura trata como
+ * data, hora ou numero — data_*, hora_registro, humor_nivel, itens e escores das
+ * escalas — e as colunas estruturadas (subgrupos do registro, *_preenchido, faixa,
+ * instrumento, alertas, lock e auditoria).
+ */
+var COLUNAS_TEXTO_LIVRE_FORA_ANAMNESE = ['timestamp', 'versao_formulario', 'data_nascimento'];
+var COLUNAS_TEXTO_LIVRE_AVULSAS = ['nome', 'observacoes', 'crp', 'humor_observacoes', 'item_funcional_texto'];
+
+function _colunaTextoLivre_(col) {
+  var c = String(col);
+  if (COLUNAS_TEXTO_LIVRE_AVULSAS.indexOf(c) !== -1 || /_o_que$/.test(c)) return true;
+  return HEADERS_ANAMNESE.indexOf(c) !== -1 && COLUNAS_TEXTO_LIVRE_FORA_ANAMNESE.indexOf(c) === -1;
+}
+
+/**
+ * Valor pronto para a celula da coluna `col`: em coluna de texto livre ou de
+ * identificacao (_colunaTexto_), toda string nao vazia ganha o apostrofo (texto
+ * literal); nas demais vale so a _celulaSegura_. Numero, booleano, Date, null e vazio
+ * passam intactos. O apostrofo e a protecao de fato: appendRow IGNORA o formato @ da
+ * coluna e ainda o desfaz na linha nova (medido em 03/10) — o formato sozinho so
+ * segura setValue em linha que ja existia.
+ */
+function _celulaTexto_(col, v) {
+  if (typeof v === 'string' && v !== '' && (_colunaTextoLivre_(col) || _colunaTexto_(col))) return "'" + v;
+  return _celulaSegura_(v);
+}
+
+/**
+ * 18.2 — colunas de identificacao gravadas como TEXTO (formato @): o Sheets retipa
+ * texto literal (sigla "1E5" vira numero, CPF e CEP perdem o zero, "2026-10" vira
+ * data — licao 105). Vale pelo NOME do cabecalho. Fora: coluna de data, hora ou
+ * numero que alguma leitura trate como Date ou use em conta. O formato vale para as
+ * linhas que ja existem e para setValue; linha nova (appendRow) depende do apostrofo
+ * de _celulaTexto_, que cobre estas mesmas colunas.
+ */
+var COLUNAS_TEXTO = ['sigla', 'profissional_id', 'email', 'telefone', 'cep', 'zip_code', 'cpf', 'rg',
+  'email_destino', 'aceite_politica_em', 'aceite_politica_versao'];
+
+function _colunaTexto_(col) {
+  var c = String(col);
+  return COLUNAS_TEXTO.indexOf(c) !== -1 || /_(email|telefone)$/.test(c);
+}
+
+/**
+ * Aplica o formato @ nas colunas de identificacao da aba, pelo cabecalho. So nos
+ * caminhos que CRIAM aba ou coluna — nenhuma gravacao paga por isso.
+ */
+function _formatarColunasTexto_(aba, header) {
+  for (var i = 0; i < header.length; i++) {
+    if (_colunaTexto_(header[i])) aba.getRange(1, i + 1, aba.getMaxRows(), 1).setNumberFormat('@');
+  }
+}
 
 /** Garante as colunas em `lista` no cabecalho da aba (aditivo); devolve o cabecalho. */
 function _garantirColunas_(aba, lista) {
@@ -802,6 +876,8 @@ function _garantirColunas_(aba, lista) {
     if (header.indexOf(col) === -1) {
       header.push(col);
       aba.getRange(1, header.length).setValue(col).setFontWeight('bold');
+      // 18.2: coluna de identificacao ja nasce como texto
+      if (_colunaTexto_(col)) aba.getRange(1, header.length, aba.getMaxRows(), 1).setNumberFormat('@');
     }
   });
   return header;
@@ -809,7 +885,7 @@ function _garantirColunas_(aba, lista) {
 
 /** Grava uma linha nova pelo nome do cabecalho (campos ausentes ficam vazios). */
 function _anexarPorCabecalho_(aba, header, valores) {
-  aba.appendRow(header.map(function (col) { return valores[col] !== undefined ? valores[col] : ''; }));
+  aba.appendRow(header.map(function (col) { return valores[col] !== undefined ? _celulaTexto_(col, valores[col]) : ''; }));
 }
 
 function _abaIndice_() {
@@ -885,20 +961,27 @@ function _gravarEmailIndice_(sigla, tipo, email) {
     if (tipo === 'paciente' && o.profissional_id !== alvo.profissional_id) continue;
     return { ok: false, erro: 'Este e-mail já está em uso por outra conta.' };
   }
-  idx.aba.getRange(alvo.linha, idx.header.indexOf('email') + 1).setValue(email);
+  idx.aba.getRange(alvo.linha, idx.header.indexOf('email') + 1).setValue(_celulaTexto_('email', email));
   return { ok: true, mudou: alvo.email !== normalizarEmail(email) };
 }
 
-/** Atualiza colunas de uma linha localizada por `chave` = valor (comparacao sem caixa). */
-function _atualizarLinhaPorChave_(aba, colChave, valorChave, campos) {
-  var header = _garantirColunas_(aba, Object.keys(campos));
+/**
+ * Atualiza colunas de uma linha localizada por `chave` = valor (comparacao sem caixa).
+ * `campos` passa pela trava (_celulaTexto_). `camposServidor` (opcional, 18.2) e
+ * gravado como veio: so para valor montado pelo servidor que ja traz o proprio
+ * apostrofo (aceite da politica) — a trava lhe daria um segundo.
+ */
+function _atualizarLinhaPorChave_(aba, colChave, valorChave, campos, camposServidor) {
+  var doServidor = camposServidor || {};
+  var header = _garantirColunas_(aba, Object.keys(campos).concat(Object.keys(doServidor)));
   var dados = aba.getDataRange().getValues();
   var iChave = header.indexOf(colChave);
   if (iChave === -1) return false;
   var alvo = String(valorChave).trim().toUpperCase();
   for (var i = 1; i < dados.length; i++) {
     if (String(dados[i][iChave]).trim().toUpperCase() === alvo) {
-      for (var col in campos) aba.getRange(i + 1, header.indexOf(col) + 1).setValue(campos[col]);
+      for (var col in campos) aba.getRange(i + 1, header.indexOf(col) + 1).setValue(_celulaTexto_(col, campos[col]));
+      for (var colS in doServidor) aba.getRange(i + 1, header.indexOf(colS) + 1).setValue(doServidor[colS]);
       return true;
     }
   }
@@ -1171,7 +1254,7 @@ function autenticar(tipo, email, senha, escolha) {
   if (!acertos.length) return falha();
 
   var segredo = _segredoSessao_();
-  if (!segredo) return { ok: false, erro: 'Servidor sem segredo de sessão: rode bootstrapAcesso18_1 no editor.' };
+  if (!segredo) return { ok: false, erro: 'Servidor sem segredo de sessão.' };
 
   var alvo = null;
   if (escolha !== undefined && escolha !== null && escolha !== '') {
@@ -1263,7 +1346,8 @@ function _gravarAceitePolitica_(sigla, profissionalId) {
   if (!controle) return false;
   // Apostrofo: forca TEXTO na celula. Sem ele o Sheets retipa '2026-10' para data
   // e a leitura de volta nunca bate com POLITICA_VERSAO (achado da prova real, 03/10).
-  return _atualizarLinhaPorChave_(controle.getSheetByName(ABA_PACIENTES), 'sigla', sigla, {
+  // 18.2: valores do servidor, ja com apostrofo — vao como `camposServidor`, fora da trava.
+  return _atualizarLinhaPorChave_(controle.getSheetByName(ABA_PACIENTES), 'sigla', sigla, {}, {
     aceite_politica_em: "'" + Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd HH:mm:ss'),
     aceite_politica_versao: "'" + POLITICA_VERSAO
   });
@@ -1440,30 +1524,6 @@ function admEnviarConvite(s, profissionalId, canal) {
 }
 
 // ---------- editor do Apps Script (uso do usuario) ----------
-
-/**
- * Uso unico, no editor, logo depois do deploy do 18.1 (apagada no 18.2):
- * grava o segredo do cracha (se nao existir), os e-mails do admin ADM_VMC e
- * do profissional VMC (Admins, Profissionais e Indice_Siglas) e escreve no
- * Logger os dois links de ativacao. Nenhuma senha passa por aqui.
- */
-function bootstrapAcesso18_1(emailAdmin, emailProf) {
-  var ea = normalizarEmail(emailAdmin), ep = normalizarEmail(emailProf);
-  if (!emailValido(ea) || !emailValido(ep)) throw new Error('Informe os dois e-mails: bootstrapAcesso18_1("admin@...", "prof@...")');
-  var props = PropertiesService.getScriptProperties();
-  if (!props.getProperty('SEGREDO_SESSAO')) {
-    props.setProperty('SEGREDO_SESSAO', Utilities.getUuid() + Utilities.getUuid());
-    Logger.log('Segredo de sessao criado.');
-  }
-  var global = SpreadsheetApp.openById(SISTEMA_VMC_ID);
-  if (!_atualizarLinhaPorChave_(global.getSheetByName(ABA_ADMINS), 'admin_id', 'ADM_VMC', { email: ea })) throw new Error('ADM_VMC nao encontrado na aba Admins');
-  if (!_atualizarLinhaPorChave_(global.getSheetByName(ABA_PROFISSIONAIS), 'profissional_id', 'PROF_VMC', { email: ep })) throw new Error('PROF_VMC nao encontrado na aba Profissionais');
-  var r1 = _gravarEmailIndice_('ADM_VMC', 'admin', ea);
-  var r2 = _gravarEmailIndice_('VMC', 'profissional', ep);
-  if (!r1.ok || !r2.ok) throw new Error('Indice_Siglas: ' + (r1.erro || r2.erro));
-  Logger.log('Link do admin (48 h, uso unico): ' + _criarLinkAtivacao_('admin', 'ADM_VMC', 'ADM_VMC', 'convite', ea));
-  Logger.log('Link do profissional (48 h, uso unico): ' + _criarLinkAtivacao_('profissional', 'VMC', 'PROF_VMC', 'convite', ep));
-}
 
 /** Calibracao do ITER_SENHA (alvo 200-400 ms): rodar no editor e ler o Logger. */
 function medirHashSenha() {
@@ -1806,7 +1866,7 @@ function montarLinha(aba, dados) {
     } else if (col === 'versao_formulario') {
       linha.push(VERSAO_FORMULARIO);
     } else if (dados && dados[col] !== undefined && dados[col] !== null) {
-      linha.push(dados[col]);
+      linha.push(_celulaTexto_(col, dados[col])); // 18.2: texto digitado nunca vira formula nem e retipado
     } else {
       linha.push('');
     }
@@ -2241,7 +2301,7 @@ function pacienteAtualizarAnamnese(sigla, dados) {
     } else if (col === 'versao_formulario') {
       linha.push(VERSAO_FORMULARIO);
     } else if (dados[col] !== undefined && dados[col] !== null) {
-      linha.push(dados[col]);
+      linha.push(_celulaTexto_(col, dados[col])); // 18.2
     } else {
       linha.push('');
     }
@@ -2345,6 +2405,7 @@ function cadastrarPaciente(s, dados) {
     abaDefault.getRange(1, 1, 1, HEADERS_ANAMNESE.length).setValues([HEADERS_ANAMNESE]);
     abaDefault.setFrozenRows(1);
     abaDefault.getRange(1, 1, 1, HEADERS_ANAMNESE.length).setFontWeight('bold');
+    _formatarColunasTexto_(abaDefault, HEADERS_ANAMNESE); // 18.2: identificacao nasce como texto
 
     // 5b. Automonitoramento
     var abaAuto = planilha.insertSheet(ABA_AUTOMONITORAMENTO);
@@ -2463,7 +2524,7 @@ function profSalvarAnamnese(s, siglaPaciente, dados, contato) {
     } else if (col === 'versao_formulario') {
       linha.push(VERSAO_FORMULARIO);
     } else if (dados[col] !== undefined && dados[col] !== null) {
-      linha.push(dados[col]);
+      linha.push(_celulaTexto_(col, dados[col])); // 18.2
     } else {
       linha.push('');
     }
@@ -2551,7 +2612,7 @@ function _atualizarCamposLinha_(aba, rowIndex, cabecalhos, campos) {
   for (var col in campos) {
     var idx = cabecalhos.indexOf(col);
     if (idx >= 0) {
-      aba.getRange(rowIndex, idx + 1).setValue(campos[col]);
+      aba.getRange(rowIndex, idx + 1).setValue(_celulaTexto_(col, campos[col])); // 18.2
     }
   }
 }
@@ -3041,6 +3102,7 @@ function cadastrarProfissional(s, dados) {
     abaControle.getRange(1, 1, 1, cabecalhosControle.length).setValues([cabecalhosControle]);
     abaControle.setFrozenRows(1);
     abaControle.getRange(1, 1, 1, cabecalhosControle.length).setFontWeight('bold');
+    _formatarColunasTexto_(abaControle, cabecalhosControle); // 18.2: identificacao nasce como texto
 
     var hoje = Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd');
 
@@ -3064,7 +3126,7 @@ function cadastrarProfissional(s, dados) {
       else if (col === 'data_inicio')     linhaProf.push(dataInicio);
       else                                linhaProf.push('');
     }
-    abaProf.appendRow(linhaProf);
+    abaProf.appendRow(linhaProf.map(function (v, k) { return _celulaTexto_(cabProf[k], v); })); // 18.2
 
     _anexarIndice_(sigla, 'profissional', profissionalId, email);
 
@@ -3139,7 +3201,7 @@ function atualizarProfissional(s, profissionalId, mudancas) {
         var nomeColuna = mapaCampos[chaveCli];
         var idxCol = cabecalhos.indexOf(nomeColuna);
         if (idxCol === -1) continue;
-        aba.getRange(i + 1, idxCol + 1).setValue(String(mudancas[chaveCli]).trim());
+        aba.getRange(i + 1, idxCol + 1).setValue(_celulaTexto_(nomeColuna, String(mudancas[chaveCli]).trim())); // 18.2
         alteracoes.push(nomeColuna);
       }
       return {
@@ -3378,7 +3440,7 @@ function salvarGradeAtendimento(s, config, grade) {
     chavesExistentes[String(valsCfg[c][0]).trim()] = c + 1; // numero da linha na planilha
   }
   for (var chave in cfgGravar) {
-    var valorTxt = String(cfgGravar[chave]);
+    var valorTxt = _celulaSegura_(String(cfgGravar[chave])); // 18.2
     if (chavesExistentes[chave]) {
       abaCfg.getRange(chavesExistentes[chave], 2).setValue(valorTxt);
     } else {
@@ -3400,7 +3462,7 @@ function salvarGradeAtendimento(s, config, grade) {
         String(g.hora_inicio),
         String(g.hora_fim),
         String(g.modalidade),
-        String(g.ativo || 'sim')
+        _celulaSegura_(String(g.ativo || 'sim')) // 18.2: unico campo da grade sem validacao de formato
       ];
     });
     var destino = abaGrade.getRange(2, 1, linhas.length, 5);
@@ -3541,18 +3603,6 @@ function e3Truncar(texto, max) {
 }
 
 /**
- * Celula que comeca com = + - @ vira texto: o Sheets nunca interpreta o
- * detalhe do log como formula.
- *
- * Versao local do E3. O Pacote 18.2 cria o _celulaSegura_ global para
- * toda gravacao; quando criar, esta funcao sai e o E3 passa a usar aquele.
- */
-function e3TextoSeguro(valor) {
-  var t = String(valor == null ? '' : valor);
-  return /^[=+\-@]/.test(t) ? "'" + t : t;
-}
-
-/**
  * Monta o texto da coluna `detalhe`: o resumo da falta na frente, depois a
  * lista de erros. Chamada DEPOIS da retencao, para nao congelar um texto
  * que a retencao ainda pode contradizer.
@@ -3651,7 +3701,7 @@ function _e3RegistrarBackup_(inicio, arquivos, erros, detalhe) {
       arquivos: arquivos,
       erros: erros,
       duracao_s: duracao,
-      detalhe: e3TextoSeguro(e3Truncar(detalhe, 2000))
+      detalhe: _celulaSegura_(e3Truncar(detalhe, 2000)) // trava unica do 18.2 (o E3 tinha uma versao local)
     };
 
     var linha = [];

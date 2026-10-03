@@ -888,9 +888,16 @@ contratos de dados); o e-mail é só o identificador de login.
   mensagem única "E-mail ou senha incorretos", inclusive para conta inativa.
 - **Cadastro:** `profCadastrarPaciente` recebe nome, e-mail e telefone; o servidor gera a
   sigla (iniciais + desambiguação, dentro de `^[A-Z0-9_]{2,10}$`) e envia o
-  convite. `bootstrapAcesso18_1(emailAdmin, emailProf)` é função de uso único
-  rodada pelo usuário no editor após o deploy: grava os e-mails das contas
-  admin e profissional, gera tokens de ativação e registra os links no log.
+  convite. A função de arranque de uso único do 18.1 (gravava o segredo do crachá
+  e os e-mails das contas admin e profissional) foi usada em 01/10 e **removida no
+  18.2**. **Recuperação, se um dia for preciso** (não há função no código para isso):
+  (1) *segredo do crachá perdido* — o login responde "Servidor sem segredo de sessão.":
+  no editor do Apps Script, Configurações do projeto → Propriedades do script, criar
+  `SEGREDO_SESSAO` com um valor longo e aleatório (dois UUID colados servem); nunca em
+  código nem em documento; todas as sessões abertas caem e cada pessoa entra de novo;
+  (2) *conta de admin ou profissional sem e-mail ou sem senha* — conferir o e-mail na
+  aba `Admins`/`Profissionais` **e** na `Indice_Siglas` (mesma sigla e tipo) e usar
+  "Esqueci a senha" no perfil certo: o link de 48 h chega ao e-mail cadastrado.
 - **Fora do código:** as funções de teste (`testarSetup`,
   `testarAdmin13_1_1`) e os utilitários mortos (`criarAbaEscalas`,
   `atualizarSchemaSistemaVMC`) saem no 18.1; `doGet` devolve `ok:false`.
@@ -961,6 +968,44 @@ enxerga as APIs ativadas nele (Apps Script, Drive e Sheets ativadas em 03/10).
 ser necessário para executar função. O aceite do 18.1.6 grava com apóstrofo
 (texto literal; o Sheets retipava `'2026-10'` para data — achado da prova real,
 deploy @31).
+
+### Células seguras (Pacote 18.2 — publicado em 03/10/2026, @32)
+
+- **Trava única `_celulaSegura_(v)`** — só age em `string`: se começa com `=`, `+`,
+  `-`, `@`, tab, retorno de carro ou apóstrofo, grava `"'" + v`. O Sheets guarda o
+  texto como digitado (o apóstrofo some na leitura) e nunca o trata como fórmula.
+  Número, booleano, `Date`, `null` e vazio passam intactos.
+- **`_celulaTexto_(col, v)`** é o que as gravações chamam: em coluna de **texto livre**
+  (`_colunaTextoLivre_`) ou de **identificação** (`_colunaTexto_`), toda string não
+  vazia ganha o apóstrofo — o que foi digitado não é retipado (`10/10`, `1-2`, `13:00`,
+  `0123`, `2026-10`); nas demais colunas vale só a `_celulaSegura_`.
+  - Texto livre: todas as colunas da Anamnese menos `timestamp`, `versao_formulario`
+    e `data_nascimento`; `humor_observacoes` e os `*_o_que` do registro;
+    `observacoes` e `item_funcional_texto` das escalas; `nome`, `nome_completo`,
+    `observacoes` e `crp` dos cadastros.
+  - Identificação: `sigla`, `profissional_id`, `email`, `telefone`, `cep`, `zip_code`,
+    `cpf`, `rg`, `email_destino`, `aceite_politica_em`, `aceite_politica_versao` e
+    `*_email`/`*_telefone`.
+  - **Fora, de propósito** (alguma leitura trata como data, hora ou número, ou são
+    estruturadas): `data_*`, `hora_registro`, `timestamp`, `humor_nivel`, subgrupos
+    do registro, `*_preenchido`, itens e escores das escalas, `faixa`, `instrumento`,
+    alertas, lock e auditoria, `expira`/`criado_em`/`usado` dos tokens, `senha_hash`.
+- **Onde:** `montarLinha` (anamnese, registro, escala), as duas montagens de linha da
+  anamnese (paciente e profissional), `_atualizarCamposLinha_`, `_anexarPorCabecalho_`,
+  `_atualizarLinhaPorChave_`, `_gravarEmailIndice_`, `cadastrarProfissional`,
+  `atualizarProfissional`; `salvarGradeAtendimento` e o log do backup usam a
+  `_celulaSegura_`. Valor só do servidor (cabeçalho, hash, status, carimbo de hora)
+  não passa pela trava. Valor do servidor que **já traz o próprio apóstrofo** (aceite
+  da política) vai no 5º parâmetro `camposServidor` de `_atualizarLinhaPorChave_` —
+  pela trava ganharia um segundo, que ficaria gravado.
+- **Formato texto (`@`)** nas colunas de identificação: aplicado uma vez nas abas que
+  já existiam e, daí em diante, só onde aba ou coluna **nasce** (`_garantirColunas_`,
+  `_formatarColunasTexto_` em `cadastrarPaciente` e `cadastrarProfissional`) — nenhuma
+  gravação paga por isso. **O formato não basta sozinho:** `appendRow` ignora o `@` da
+  coluna e ainda o desfaz na linha nova (medido em 03/10); quem protege a linha nova é
+  o apóstrofo. O formato segura `setValue` nas linhas que já existiam.
+- **Gravação nova se prova lendo a célula de volta no servidor real** (lições 105 e
+  106): o mock do Node só imita o que já foi medido.
 
 ## Backup e monitoramento (Pacote E3 — ativado em 30/09/2026, ajustado em 01/10)
 
