@@ -1388,8 +1388,8 @@ function admConfirmarDesativar(profId, sigla) {
   document.getElementById('statusTitulo').textContent = 'Desativar Profissional';
   document.getElementById('statusTextoConfirma').innerHTML =
     `Tem certeza que deseja desativar o profissional <strong>${escapeHtml(sigla)}</strong>?<br><br>` +
-    `Ele <strong>não conseguirá mais fazer login</strong>, mas seus pacientes ` +
-    `continuarão acessando normalmente. Esta ação pode ser revertida.`;
+    `Ele <strong>não conseguirá mais fazer login</strong>, e os pacientes dele também ` +
+    `ficam sem acesso enquanto ele estiver desativado. Esta ação pode ser revertida.`;
   document.getElementById('statusBtnConfirma').textContent = 'Sim, desativar';
   document.getElementById('statusBtnConfirma').className = 'btn-danger';
   document.getElementById('statusError').classList.add('hidden');
