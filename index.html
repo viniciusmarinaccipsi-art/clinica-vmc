@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.6.2 — produção (03/10/2026) -->
+<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.11 — produção (04/10/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -7637,6 +7637,11 @@ async function chamarServidor(acao, dados = {}) {
   const ehGravacao = VMC_ACOES_GRAVACAO.indexOf(acao) !== -1;
   const ehPesada = VMC_ACOES_PESADAS.indexOf(acao) !== -1;
   const repeteSozinho = !ehGravacao && !ehPesada; // só leitura curta e login repetem (e nunca por estouro de tempo)
+  // 18.11: gravação do profissional — o que estava em memória (paciente aberto, grade) deixa de valer
+  if (ehGravacao && PROF_SESSAO) {
+    profMemEsquecer_(payload.siglaPaciente || payload.sigla_paciente || '');
+    if (acao === 'profSalvarGrade') PROF_GRADE_MEM = null;
+  }
   for (;;) {
     mostrarLoading(true);
     // Aviso na marca dos 20 s: sem ele o usuário veria um overlay parado por até um minuto.
@@ -8429,7 +8434,8 @@ function loginConcluir_(tipo, resposta) {
 
     resetarTelaLogin_();
     abrirSecao('sec-prof-dashboard');
-    profCarregarDashboard(); // Pacote 13.2.2: carregar lista de pacientes
+    // Pacote 13.2.2: lista de pacientes. 18.11: ela vem na resposta do login (uma ida ao servidor a menos)
+    profCarregarDashboard(Array.isArray(resposta.pacientes) ? resposta.pacientes : null);
     return;
   }
 
@@ -8805,19 +8811,24 @@ async function profEnviarConviteEmail_(pref) {
 /* ============================================================
    Pacote 13.2.2: Dashboard — lista de pacientes do profissional
    ============================================================ */
-async function profCarregarDashboard() {
+async function profCarregarDashboard(pacientesProntos) {
   var container = document.getElementById('profDashboardConteudo');
   if (!PROF_SESSAO) return;
 
-  // Loading
-  container.innerHTML =
-    '<div class="prof-pac-loading">' +
-      '<div class="prof-spinner"></div>' +
-      '<p>Carregando pacientes…</p>' +
-    '</div>';
+  var resp;
+  if (Array.isArray(pacientesProntos)) {
+    resp = { ok: true, pacientes: pacientesProntos }; // 18.11: lista que veio na resposta do login
+  } else {
+    // Loading
+    container.innerHTML =
+      '<div class="prof-pac-loading">' +
+        '<div class="prof-spinner"></div>' +
+        '<p>Carregando pacientes…</p>' +
+      '</div>';
 
-  var resp = await chamarServidor('profListarPacientes', {
-  });
+    resp = await chamarServidor('profListarPacientes', {
+    });
+  }
 
   if (!resp.ok) {
     container.innerHTML =
@@ -8991,6 +9002,14 @@ async function profAbrirPaciente(sigla) {
   var iniciais = sigla.charAt(0);
 
   var container = document.getElementById('profPacienteConteudo');
+  // 18.11: paciente já aberto nesta sessão — a tela sai da memória na hora e o servidor é conferido sem overlay
+  var guardado = PROF_PACIENTES_MEM[sigla];
+  if (guardado) {
+    abrirSecao('sec-prof-paciente');
+    profRenderPaciente_(sigla, guardado);
+    profConferirPaciente_(sigla, guardado);
+    return;
+  }
   container.innerHTML =
     profBuildHeader_(iniciais, 'Carregando…', sigla) +
     '<div class="prof-pv-loading">' +
@@ -9012,6 +9031,43 @@ async function profAbrirPaciente(sigla) {
       '</div>';
     return;
   }
+
+  PROF_PACIENTES_MEM[sigla] = resp;
+  if (!PROF_PACIENTE_SEL || PROF_PACIENTE_SEL.sigla !== sigla) return; // saiu desta tela enquanto carregava
+  profRenderPaciente_(sigla, resp);
+}
+
+/* 18.11: memória dos pacientes já abertos (só em memória, por sessão; toda gravação do profissional a esvazia —
+   chamarServidor — e a saída também). Ao reabrir, a tela sai daqui e o servidor é conferido em silêncio: se o
+   paciente gravou algo nesse meio-tempo, a tela é refeita com o que voltou. */
+var PROF_PACIENTES_MEM = {};
+function profMemEsquecer_(sigla) {
+  if (sigla) delete PROF_PACIENTES_MEM[String(sigla)]; else PROF_PACIENTES_MEM = {};
+}
+async function profConferirPaciente_(sigla, mostrado) {
+  var geracao = VMC_GERACAO_SESSAO, resp = null;
+  try {
+    resp = await _chamarComRepeticao_({ acao: 'profLerDadosPaciente', siglaPaciente: sigla, token: vmcTokenSessao_() });
+  } catch (e) { return; }
+  if (geracao !== VMC_GERACAO_SESSAO || !PROF_SESSAO) return;
+  if (resp && resp.ok === false && resp.codigo === 'sessao_expirada') { vmcSessaoExpirada_(resp.erro); return; }
+  if (!resp || !resp.ok) return;
+  if (PROF_PACIENTES_MEM[sigla] !== mostrado) return; // gravou ou recarregou no meio: vale o mais novo
+  if (JSON.stringify(resp) === JSON.stringify(mostrado)) return;
+  PROF_PACIENTES_MEM[sigla] = resp;
+  // refaz a tela só se o profissional continua nela, sem fluxo, modal ou editor abertos
+  if (!PROF_PACIENTE_SEL || PROF_PACIENTE_SEL.sigla !== sigla || PROF_FLUXO || secaoAtivaId() !== 'sec-prof-paciente') return;
+  if (document.querySelector('.p5-modal-overlay.show, .hist-modal-overlay.show, .pev-modal-overlay.show, .p11-mov.show, .rr-submodal-overlay.show')) return;
+  if (document.getElementById('profEdContatoEmail')) return;
+  var abertos = Array.prototype.map.call(document.querySelectorAll('#profPacienteConteudo .prof-pv-mod.aberto'), function (m) { return m.id; });
+  var y = window.scrollY;
+  profRenderPaciente_(sigla, resp);
+  abertos.forEach(function (id) { var m = document.getElementById(id); if (m) m.classList.add('aberto'); });
+  window.scrollTo(0, y);
+}
+
+function profRenderPaciente_(sigla, resp) {
+  var container = document.getElementById('profPacienteConteudo');
 
   // Nome real do paciente
   var nome = resp.nome_cadastro || sigla;
@@ -9111,7 +9167,7 @@ async function profAbrirPaciente(sigla) {
   html += '</div>'; // fecha .prof-pv-mods
 
   container.innerHTML = html;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo(0, 0);
 }
 
 /* ---- 18.5: o profissional cria registro e escala e edita escala pelos mesmos fluxos do paciente ---- */
@@ -10157,6 +10213,7 @@ function sairDoSistema(opcoes) {
   PROF_SESSAO = null;
   PROF_FLUXO = null; // 18.5
   PROF_PACIENTE_SEL = null;
+  PROF_PACIENTES_MEM = {}; PROF_GRADE_MEM = null; // 18.11
   PROF_LINK_POR_SIGLA = {}; // 18.1.2: links de convite são da sessão que os gerou
   PROF_CONVITE = { cad: { sigla: '', telefone: '', link: '' }, ed: { sigla: '', telefone: '', link: '' } };
   graEstado = null; graCarregando = false; CAL_GRADE_JANELAS = {}; CAL_SESSOES = [];
@@ -17780,6 +17837,19 @@ function graEstadoVazio_() {
   return e;
 }
 
+/* 18.11: a grade é pedida uma vez por sessão (Agenda e Grade de Atendimento leem a mesma resposta);
+   salvar a grade e sair esvaziam. Cada tela recebe a sua cópia. */
+var PROF_GRADE_MEM = null;
+async function profLerGrade_() {
+  if (!PROF_GRADE_MEM) {
+    var resp = await chamarServidor('profLerGrade', {
+    });
+    if (!resp || !resp.ok) return resp;
+    PROF_GRADE_MEM = resp;
+  }
+  return JSON.parse(JSON.stringify(PROF_GRADE_MEM));
+}
+
 /* Carrega grade + config do servidor e renderiza */
 async function graCarregar() {
   if (!PROF_SESSAO || graCarregando) return;
@@ -17790,8 +17860,7 @@ async function graCarregar() {
   document.getElementById('graErro').style.display = 'none';
   document.getElementById('graOk').style.display = 'none';
 
-  var resp = await chamarServidor('profLerGrade', {
-  });
+  var resp = await profLerGrade_();
   graCarregando = false;
 
   if (!resp.ok) {
@@ -18004,8 +18073,7 @@ async function calAbrirTela() {
   if (window.innerWidth < 760 && calVisao !== 'dia') calMudarVisao('dia', true);
 
   // Carrega a grade real (tintura de disponibilidade)
-  var resp = await chamarServidor('profLerGrade', {
-  });
+  var resp = await profLerGrade_();
 
   CAL_GRADE_JANELAS = {};
   var temJanela = false;

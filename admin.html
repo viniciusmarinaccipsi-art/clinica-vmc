@@ -526,6 +526,22 @@ a.btn-icon[aria-disabled="true"] { opacity:.5; cursor:not-allowed; }
   justify-content:center;
 }
 .loading-overlay.visible { display:flex; }
+
+/* 18.11 (8.18): faixa "O servidor não respondeu" — o mesmo padrão do index, acima do loading e dos modais */
+.erro-rede {
+  position:fixed; left:50%; bottom:16px; transform:translateX(-50%);
+  width:min(calc(100% - 32px), 768px); z-index:10300;
+  display:none; align-items:center; gap:12px; flex-wrap:wrap; padding:12px 16px;
+  background:#fff; border:1px solid var(--red); border-left:4px solid var(--red);
+  border-radius:12px; box-shadow:0 8px 28px rgba(0,0,0,.18);
+}
+.erro-rede.visivel { display:flex; }
+.erro-rede-txt { flex:1; min-width:180px; font-size:15px; }
+.erro-rede-btn {
+  min-height:44px; padding:0 20px; border:none; border-radius:10px;
+  background:var(--adm); color:#fff; font:inherit; font-weight:700; cursor:pointer;
+}
+.erro-rede-btn:hover { background:var(--adm-dk); }
 .loading-spinner {
   width:48px;
   height:48px;
@@ -796,6 +812,11 @@ a.btn-icon[aria-disabled="true"] { opacity:.5; cursor:not-allowed; }
   <!-- ============================================================
        LOADING
        ============================================================ -->
+  <div class="erro-rede" id="admErroRede" role="alert">
+    <span class="erro-rede-txt">O servidor não respondeu. Verifique a conexão e tente de novo.</span>
+    <button type="button" class="erro-rede-btn" id="admErroRedeBtn">Tentar de novo</button>
+  </div>
+
   <div class="loading-overlay" id="loadingOverlay">
     <div class="loading-spinner"></div>
   </div>
@@ -827,29 +848,59 @@ const ADM_STATE = {
 // Pacote 18.1: ações sem crachá; todas as outras levam ADM_STATE.token.
 const ADM_ACOES_PUBLICAS = ['ping', 'autenticar', 'pedirRedefinicao', 'definirSenha'];
 
+// Pacote 18.11 (8.18): limite de tempo e "Tentar de novo", no padrão do index (16.4.6). Sem resposta em
+// ADM_TIMEOUT_MS (ou com erro de rede) a faixa aparece e a MESMA chamada só é refeita no clique — nada se
+// repete sozinho (cadastro, convite e troca de senha não podem sair em dobro). Sair da área admin desiste.
+var ADM_TIMEOUT_MS = 60000;
+var ADM_GERACAO = 0;          // sobe a cada login e a cada saída: resposta de sessão anterior é descartada
+var ADM_ESPERANDO_FAIXA = [];
+
+function admAguardarTentarDeNovo_() {
+  return new Promise(function (resolver) {
+    ADM_ESPERANDO_FAIXA.push(resolver);
+    document.getElementById('admErroRede').classList.add('visivel');
+  });
+}
+function admSoltarFaixa_() {
+  document.getElementById('admErroRede').classList.remove('visivel');
+  ADM_ESPERANDO_FAIXA.splice(0).forEach(function (r) { r(); });
+}
+
 async function admChamarServidor(acao, dados = {}) {
-  mostrarLoading(true);
-  try {
-    const payload = { acao, ...dados };
-    if (ADM_ACOES_PUBLICAS.indexOf(acao) === -1) payload.token = ADM_STATE.token || '';
-    const resposta = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'cors',
-      redirect: 'follow',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload),
-    });
-    const json = await resposta.json();
-    if (json && json.ok === false && json.codigo === 'sessao_expirada') {
-      admLogout();
-      mostrarErro(document.getElementById('admLoginError'), json.erro || 'Sua sessão expirou. Entre de novo para continuar.');
+  const payload = { acao, ...dados };
+  if (ADM_ACOES_PUBLICAS.indexOf(acao) === -1) payload.token = ADM_STATE.token || '';
+  const geracao = ADM_GERACAO;
+  const descartada = { ok: false, codigo: 'sessao_expirada', erro: '' };
+  for (;;) {
+    mostrarLoading(true);
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), ADM_TIMEOUT_MS);
+    try {
+      const resposta = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'cors',
+        redirect: 'follow',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
+        signal: ctrl.signal,
+      });
+      if (!resposta.ok) throw new Error('HTTP ' + resposta.status);
+      const json = await resposta.json();
+      if (geracao !== ADM_GERACAO) return descartada;
+      if (json && json.ok === false && json.codigo === 'sessao_expirada') {
+        admLogout();
+        mostrarErro(document.getElementById('admLoginError'), json.erro || 'Sua sessão expirou. Entre de novo para continuar.');
+      }
+      return json;
+    } catch (erro) {
+      console.error('Erro ao chamar servidor:', erro && erro.message);
+    } finally {
+      clearTimeout(timer);
+      mostrarLoading(false);
     }
-    return json;
-  } catch (erro) {
-    console.error('Erro ao chamar servidor:', erro);
-    return { ok: false, erro: 'Falha de conexão com o servidor.' };
-  } finally {
-    mostrarLoading(false);
+    if (geracao !== ADM_GERACAO) return descartada;
+    await admAguardarTentarDeNovo_();
+    if (geracao !== ADM_GERACAO) return descartada;
   }
 }
 
@@ -904,6 +955,7 @@ async function admFazerLogin() {
 
   // Pacote 18.1: guarda só o crachá de sessão (memória); a senha não fica em lugar nenhum
   const perfil = resp.perfil || {};
+  ADM_GERACAO++;
   ADM_STATE.token = resp.token;
   ADM_STATE.nomeCompleto = perfil.nome_completo || perfil.nome;
   ADM_STATE.convites = {};
@@ -923,11 +975,24 @@ async function admFazerLogin() {
 
 function admLogout() {
   // Limpa estado em memória (não tem sessionStorage por segurança)
+  ADM_GERACAO++;
   ADM_STATE.token = null;
   ADM_STATE.nomeCompleto = null;
   ADM_STATE.profissionais = [];
   ADM_STATE.convites = {};
+  ADM_STATE.statusPendente = null;
+  admSoltarFaixa_();
   ['modalCadastro','modalEditar','modalSenha','modalStatus'].forEach(admFecharModal);
+  // 18.11 (8.54): a tela também sai — lista, cabeçalho, avisos e o que ficou digitado nos modais
+  document.getElementById('profTableBody').innerHTML = '';
+  document.getElementById('dashCount').textContent = '';
+  document.getElementById('dashUserNome').textContent = '—';
+  document.getElementById('dashUserSigla').textContent = '—';
+  ['dashMsg','dashErro'].forEach(id => { const el = document.getElementById(id); el.textContent = ''; el.classList.add('hidden'); });
+  ['cadSigla','cadNome','cadEmail','cadTelefone','cadCRP','cadDataInicio','edProfId','edNome','edEmail','edTelefone','edCRP','edDataInicio',
+   'senhaProfId','senhaNova','senhaConfirma'].forEach(id => { document.getElementById(id).value = ''; });
+  ['edInfoSigla','senhaInfoSigla'].forEach(id => { document.getElementById(id).textContent = '—'; });
+  document.getElementById('statusTextoConfirma').textContent = '';
   admMostrarLogin('entrar');
   admIrPara('sec-login-adm');
 }
@@ -1009,12 +1074,13 @@ function admRenderizarTabela() {
       ? `<a class="btn-icon" target="_blank" rel="noopener" aria-disabled="true" onclick="return false" title="Cadastre o telefone para enviar pelo WhatsApp">WhatsApp</a>`
       : link
         ? `<a class="btn-icon" target="_blank" rel="noopener" aria-disabled="false" href="${escapeHtml(admLinkWhatsApp(tel, link))}">WhatsApp</a>`
-        : `<a class="btn-icon" target="_blank" rel="noopener" aria-disabled="false" onclick="admWhatsGerarLink('${profId}'); return false">WhatsApp</a>`;
-    const convite = ativo ? `<button class="btn-icon" onclick="admEnviarConvite('${profId}')">Enviar convite</button>${whats}` : '';
+        : `<a class="btn-icon" target="_blank" rel="noopener" aria-disabled="false" data-adm-acao="whats" data-prof="${profId}">WhatsApp</a>`;
+    // 18.11 (8.54): nenhum valor do servidor dentro do JS de um onclick — o botão leva data-* e a tabela tem um ouvinte só
+    const convite = ativo ? `<button class="btn-icon" data-adm-acao="convite" data-prof="${profId}">Enviar convite</button>${whats}` : '';
 
     const btnStatus = ativo
-      ? `<button class="btn-icon danger" onclick="admConfirmarDesativar('${profId}','${sigla}')">Desativar</button>`
-      : `<button class="btn-icon" onclick="admConfirmarReativar('${profId}','${sigla}')">Reativar</button>`;
+      ? `<button class="btn-icon danger" data-adm-acao="desativar" data-prof="${profId}" data-sigla="${sigla}">Desativar</button>`
+      : `<button class="btn-icon" data-adm-acao="reativar" data-prof="${profId}" data-sigla="${sigla}">Reativar</button>`;
 
     html += `
       <tr>
@@ -1025,8 +1091,8 @@ function admRenderizarTabela() {
         <td data-label="Status"><span class="prof-status ${statusClass}">${statusTxt}</span></td>
         <td data-label="Ações">
           <div class="prof-actions">
-            <button class="btn-icon" onclick="admAbrirModalEditar('${profId}')">Editar</button>
-            <button class="btn-icon" onclick="admAbrirModalSenha('${profId}','${sigla}')">Senha</button>
+            <button class="btn-icon" data-adm-acao="editar" data-prof="${profId}">Editar</button>
+            <button class="btn-icon" data-adm-acao="senha" data-prof="${profId}" data-sigla="${sigla}">Senha</button>
             ${convite}
             ${btnStatus}
           </div>
@@ -1036,6 +1102,23 @@ function admRenderizarTabela() {
   }
   tbody.innerHTML = html;
 }
+
+document.getElementById('admErroRedeBtn').addEventListener('click', admSoltarFaixa_); // 18.11 (8.18)
+
+// 18.11 (8.54): um ouvinte para todos os botões da tabela (o valor vem do data-*, nunca de código montado)
+document.getElementById('profTableBody').addEventListener('click', function (e) {
+  const el = e.target.closest('[data-adm-acao]');
+  if (!el) return;
+  const profId = el.dataset.prof || '', sigla = el.dataset.sigla || '';
+  switch (el.dataset.admAcao) {
+    case 'editar': admAbrirModalEditar(profId); break;
+    case 'senha': admAbrirModalSenha(profId, sigla); break;
+    case 'convite': admEnviarConvite(profId); break;
+    case 'whats': e.preventDefault(); admWhatsGerarLink(profId); break;
+    case 'desativar': admConfirmarDesativar(profId, sigla); break;
+    case 'reativar': admConfirmarReativar(profId, sigla); break;
+  }
+});
 
 
 /* ============================================================
@@ -1179,11 +1262,19 @@ function admAbrirModalEditar(profId) {
   document.getElementById('edEmail').value = p.email || '';
   document.getElementById('edTelefone').value = p.telefone || '';
   document.getElementById('edCRP').value = p.crp || '';
-  document.getElementById('edDataInicio').value = p.data_inicio || '';
+  // 18.11 (8.54): a data chega do servidor como data ISO com hora ("2026-10-04T03:00:00.000Z"), que o campo
+  // de data recusa — ele ficava vazio e "Salvar alterações" apagava a data. O campo recebe só AAAA-MM-DD.
+  document.getElementById('edDataInicio').value = admDataParaCampo_(p.data_inicio);
+  document.getElementById('edDataInicio').dataset.original = document.getElementById('edDataInicio').value;
   document.getElementById('edError').classList.add('hidden');
   document.getElementById('edSuccess').classList.add('hidden');
 
   document.getElementById('modalEditar').classList.remove('hidden');
+}
+
+function admDataParaCampo_(valor) {
+  const m = /^(\d{4}-\d{2}-\d{2})/.exec(String(valor === null || valor === undefined ? '' : valor));
+  return m ? m[1] : '';
 }
 
 async function admSalvarEdicao() {
@@ -1198,9 +1289,11 @@ async function admSalvarEdicao() {
     nomeCompleto: document.getElementById('edNome').value.trim(),
     email: document.getElementById('edEmail').value.trim(),
     telefone: document.getElementById('edTelefone').value.trim(),
-    crp: document.getElementById('edCRP').value.trim(),
-    dataInicio: document.getElementById('edDataInicio').value
+    crp: document.getElementById('edCRP').value.trim()
   };
+  // 18.11 (8.54): a data de início só vai quando foi mexida (campo intocado não regrava nem apaga)
+  const campoData = document.getElementById('edDataInicio');
+  if (campoData.value !== (campoData.dataset.original || '')) mudancas.dataInicio = campoData.value;
 
   if (!mudancas.nomeCompleto) {
     return mostrarErro(erroBox, 'Nome completo não pode ficar vazio.');

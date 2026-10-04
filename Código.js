@@ -51,7 +51,7 @@
 // id_envio, autoria; 18.10b: rascunho no servidor) (03/10/2026)
 // Pacote 18.5 — registro e edicao pelo profissional: edicao por campo com carimbo (autoria_campos), criacao pelo
 // profissional (criado_por), escore de escala no servidor, leituras do paciente paginadas e por colunas (03/10/2026)
-var VERSAO_PACOTE = '18.6.2';
+var VERSAO_PACOTE = '18.11';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -173,7 +173,8 @@ function doPost(e) {
     var acao = payload.acao;
     // 18.5 (8.87): nas duas leituras do paciente a linha dele na Controle e a do profissional dono
     // sao lidas uma vez (o portao do cracha e a acao pediam a mesma linha, cada um a sua leitura)
-    if (acao === 'lerHistorico' || acao === 'lerEscalas') _MEMO_.linhas = {};
+    // 18.11: o mesmo vale para as leituras do profissional e do admin (nenhuma delas muda conta)
+    if (ACOES_SO_LEITURA.indexOf(acao) !== -1) _MEMO_.linhas = {};
 
     // Pacote 18.1: toda acao fora de ACOES_PUBLICAS exige o cracha de sessao.
     // Sigla e profissional saem do cracha (payload.sigla e ignorado);
@@ -424,10 +425,104 @@ function _respostaJson_(obj) {
  * (`ativo`); funcao chamada direto (clasp run, testes) sempre le a planilha. Quem
  * grava no indice chama _memoEsquecerIndice_().
  */
-var _MEMO_ = { ativo: false, planilhas: {}, controles: {}, indice: null };
+var _MEMO_ = { ativo: false, planilhas: {}, controles: {}, indice: null, cache: {} };
 
 function _memoZerar_(ativo) {
-  _MEMO_ = { ativo: ativo === true, planilhas: {}, controles: {}, indice: null };
+  _MEMO_ = { ativo: ativo === true, planilhas: {}, controles: {}, indice: null, cache: {} };
+}
+
+// 18.11: leituras em que a linha do paciente e a do profissional sao lidas uma vez por chamada
+var ACOES_SO_LEITURA = ['lerHistorico', 'lerEscalas', 'lerRascunhos', 'lerEditandoAuto',
+  'profListarPacientes', 'profLerDadosPaciente', 'profLerGrade', 'admListarProfissionais'];
+
+// ---------- 18.11: cache do script (CacheService) ----------
+// Tres coisas moram no cache do script, para a chamada comum nao abrir a Sistema_VMC:
+//   portao:<perfil>:<SIGLA>:<dono>  conferencia de conta ativa do cracha (5 min) — ver _validarToken_
+//   dono:<SIGLA>                    profissional dono do paciente, do Indice_Siglas (5 min)
+//   controle:<profissional_id>      id da Controle do profissional (6 h; o id nao muda)
+//   planilha:<SIGLA>                id da planilha do paciente (6 h; o id nao muda)
+// O cache nunca e a fonte: sem a chave (ou com o cache fora do ar) a planilha e lida como antes.
+var PORTAO_CACHE_SEG = 300;
+var LOCAL_CACHE_SEG = 21600;
+
+/** Le uma chave do cache do script (uma vez por chamada); null sem a chave ou com o cache fora do ar. */
+function _cacheLer_(chave) {
+  if (_MEMO_.cache[chave] !== undefined) return _MEMO_.cache[chave];
+  var v = null;
+  try { v = CacheService.getScriptCache().get(chave); } catch (e) { v = null; }
+  _MEMO_.cache[chave] = v;
+  return v;
+}
+
+/** Le varias chaves de uma vez (uma ida ao cache) e guarda na memoria da chamada. */
+function _cacheLerVarias_(chaves) {
+  var achadas = {};
+  try { achadas = CacheService.getScriptCache().getAll(chaves) || {}; } catch (e) { achadas = {}; }
+  for (var i = 0; i < chaves.length; i++) _MEMO_.cache[chaves[i]] = achadas[chaves[i]] !== undefined ? achadas[chaves[i]] : null;
+}
+
+function _cacheGuardar_(chave, valor, segundos) {
+  _MEMO_.cache[chave] = String(valor);
+  try { CacheService.getScriptCache().put(chave, String(valor), segundos); } catch (e) { /* sem cache: a planilha continua sendo lida */ }
+}
+
+/** Tira chaves do cache. Devolve false se o cache nao respondeu (quem chama decide o que fazer). */
+function _cacheEsquecer_(chaves) {
+  for (var i = 0; i < chaves.length; i++) _MEMO_.cache[chaves[i]] = null;
+  try { CacheService.getScriptCache().removeAll(chaves); return true; }
+  catch (e) { console.error('cache: nao consegui esquecer ' + chaves.length + ' chave(s): ' + String(e && e.message || e).slice(0, 120)); return false; }
+}
+
+function _siglaChave_(sigla) { return String(sigla === undefined || sigla === null ? '' : sigla).trim().toUpperCase(); }
+
+/** Chave do portao: uma por conta (perfil, sigla, dono). Funcao pura. */
+function _chavePortao_(tipo, sigla, profissionalId) {
+  return 'portao:' + String(tipo) + ':' + _siglaChave_(sigla) + ':' + String(profissionalId === undefined || profissionalId === null ? '' : profissionalId).trim();
+}
+
+/** O que o portao guarda de uma conta conferida na planilha: a impressao da credencial, o nome e o e-mail. Funcao pura. */
+function _valorPortao_(reg) {
+  return JSON.stringify({ i: impressaoCracha(reg.senha_hash), n: String(reg.nome || ''), e: String(reg.email || '') });
+}
+
+/**
+ * Valor guardado x cracha: devolve {nome, email} so quando a impressao guardada e a do cracha.
+ * Cracha de credencial trocada nunca passa por aqui — cai na planilha, que o recusa. Funcao pura.
+ */
+function _portaoConfere_(texto, impressao) {
+  if (!texto || !impressao) return null;
+  var o = null;
+  try { o = JSON.parse(String(texto)); } catch (e) { return null; }
+  if (!o || typeof o.i !== 'string' || !o.i) return null;
+  if (!_iguaisTempoConstante_(o.i, String(impressao))) return null;
+  return { nome: String(o.n || ''), email: String(o.e || '') };
+}
+
+/**
+ * Invalidacao imediata (18.11): toda acao do sistema que muda senha, e-mail, nome, `ativo`
+ * ou exclui uma conta chama isto DEPOIS de gravar. O flush vem antes para a planilha ja
+ * estar com o valor novo quando a proxima chamada for conferir. `contas` = [{tipo, sigla,
+ * profissional_id}].
+ */
+function _portaoEsquecer_(contas) {
+  var chaves = [];
+  for (var i = 0; i < contas.length; i++) {
+    chaves.push(_chavePortao_(contas[i].tipo, contas[i].sigla, contas[i].profissional_id));
+    if (contas[i].excluida) { chaves.push('dono:' + _siglaChave_(contas[i].sigla)); chaves.push('planilha:' + _siglaChave_(contas[i].sigla)); }
+  }
+  if (!chaves.length) return true;
+  try { SpreadsheetApp.flush(); } catch (e) { /* segue: o que importa e soltar o cache */ }
+  return _cacheEsquecer_(chaves);
+}
+
+/** O portao de um profissional e o de todos os pacientes dele (o paciente so entra com o dono ativo). */
+function _portaoEsquecerProfissional_(profissionalId, sigla) {
+  var contas = [{ tipo: 'profissional', sigla: sigla, profissional_id: profissionalId }];
+  var idx = _lerIndice_().linhas;
+  for (var i = 0; i < idx.length; i++) {
+    if (idx[i].tipo === 'paciente' && idx[i].profissional_id === String(profissionalId).trim()) contas.push(idx[i]);
+  }
+  return _portaoEsquecer_(contas);
 }
 
 function _memoEsquecerIndice_() { _MEMO_.indice = null; }
@@ -525,6 +620,14 @@ var ACOES_COM_TRAVA = [
 function resolverProfissionalIdPorSigla(sigla, tipo) {
   if (!sigla || !tipo) return null;
 
+  // 18.11: o dono de um paciente nao muda (so some na exclusao, que solta a chave) — a resposta
+  // do Indice fica 5 min no cache do script e a chamada comum nao abre a Sistema_VMC.
+  var chaveDono = String(tipo).trim().toLowerCase() === 'paciente' ? 'dono:' + _siglaChave_(sigla) : '';
+  if (chaveDono) {
+    var donoGuardado = _cacheLer_(chaveDono);
+    if (donoGuardado) return donoGuardado;
+  }
+
   var dados = _indiceValores_(); // 18.10: lido uma vez por chamada
   if (!dados || dados.length < 2) return null;
 
@@ -542,7 +645,9 @@ function resolverProfissionalIdPorSigla(sigla, tipo) {
     var s = String(dados[i][idxSigla]).trim().toUpperCase();
     var t = String(dados[i][idxTipo]).trim().toLowerCase();
     if (s === siglaLimpa && t === tipoLimpo) {
-      return String(dados[i][idxProf]).trim();
+      var achado = String(dados[i][idxProf]).trim();
+      if (chaveDono && achado) _cacheGuardar_(chaveDono, achado, PORTAO_CACHE_SEG);
+      return achado;
     }
   }
   return null;
@@ -622,6 +727,18 @@ function buscarAdmin(adminId) {
 function abrirControleDoProfissional(profissionalId) {
   var chave = String(profissionalId || '').trim();
   if (_MEMO_.controles[chave]) return _MEMO_.controles[chave];
+  if (!chave) return null;
+
+  // 18.11: o id da Controle fica no cache do script — sem ele a chamada abria a Sistema_VMC so
+  // para ler `controle_id`. Id que nao abre (ou sem a aba Pacientes) cai no caminho de sempre.
+  var chaveCache = 'controle:' + chave;
+  var idCache = _cacheLer_(chaveCache);
+  if (idCache) {
+    try {
+      var doCache = _abrirPlanilha_(idCache);
+      if (doCache.getSheetByName(ABA_PACIENTES)) { _MEMO_.controles[chave] = doCache; return doCache; }
+    } catch (e) { /* cai no caminho de sempre */ }
+  }
 
   var prof = buscarProfissional(profissionalId);
   if (!prof) return null;
@@ -652,6 +769,7 @@ function abrirControleDoProfissional(profissionalId) {
     }
   }
   _MEMO_.controles[chave] = controle;
+  _cacheGuardar_(chaveCache, controle.getId(), LOCAL_CACHE_SEG);
   return controle;
 }
 
@@ -1166,6 +1284,11 @@ function _anexarIndice_(sigla, tipo, profissionalId, email) {
     email: normalizarEmail(email)
   });
   _memoEsquecerIndice_();
+  // 18.11: conta nova — nada de uma conta antiga com a mesma sigla (ou o mesmo id) fica no cache do script
+  var chavesNovas = [_chavePortao_(tipo, sigla, profissionalId)];
+  if (tipo === 'paciente') chavesNovas.push('dono:' + _siglaChave_(sigla), 'planilha:' + _siglaChave_(sigla));
+  if (tipo === 'profissional') chavesNovas.push('controle:' + String(profissionalId).trim());
+  _cacheEsquecer_(chavesNovas);
 }
 
 /** Linhas do Indice como objetos {linha, sigla, tipo, profissional_id, email}. */
@@ -1189,11 +1312,18 @@ function _lerIndice_() {
 
 /** Todas as contas do perfil com aquele e-mail. 18.1.3: um e-mail de paciente pode ter uma conta por profissional. */
 function _contasPorEmail_(tipo, email) {
-  var idx = _lerIndice_();
+  // 18.11: so leitura — o Indice vem de _indiceValores_ (lido uma vez por chamada, sem conferir colunas)
+  var dados = _indiceValores_();
   var out = [];
-  for (var i = 0; i < idx.linhas.length; i++) {
-    var l = idx.linhas[i];
-    if (l.tipo === tipo && l.email && l.email === email) out.push(l);
+  if (!dados || dados.length < 2) return out;
+  var h = dados[0];
+  var iS = h.indexOf('sigla'), iT = h.indexOf('tipo'), iP = h.indexOf('profissional_id'), iE = h.indexOf('email');
+  if (iS === -1 || iT === -1 || iP === -1 || iE === -1) return out;
+  for (var i = 1; i < dados.length; i++) {
+    var mail = normalizarEmail(dados[i][iE]);
+    if (String(dados[i][iT] || '').trim().toLowerCase() !== tipo || !mail || mail !== email) continue;
+    out.push({ linha: i + 1, sigla: String(dados[i][iS] || '').trim().toUpperCase(), tipo: tipo,
+      profissional_id: String(dados[i][iP] || '').trim(), email: mail });
   }
   return out;
 }
@@ -1226,6 +1356,7 @@ function _gravarEmailIndice_(sigla, tipo, email) {
   }
   idx.aba.getRange(alvo.linha, idx.header.indexOf('email') + 1).setValue(_celulaTexto_('email', email));
   _memoEsquecerIndice_();
+  _portaoEsquecer_([alvo]); // 18.11: e-mail da conta mudou
   return { ok: true, mudou: alvo.email !== normalizarEmail(email) };
 }
 
@@ -1404,14 +1535,18 @@ function _registroDaConta_(tipo, sigla, profissionalId) {
 
 /** Grava `hash` na linha da conta (so a celula senha_hash). Devolve true se gravou. */
 function _gravarHashDaConta_(tipo, sigla, profissionalId, hash) {
+  var gravou = false;
   if (tipo === 'paciente') {
     var controle = abrirControleDoProfissional(profissionalId);
-    return !!controle && _atualizarLinhaPorChave_(controle.getSheetByName(ABA_PACIENTES), 'sigla', sigla, { senha_hash: hash });
+    gravou = !!controle && _atualizarLinhaPorChave_(controle.getSheetByName(ABA_PACIENTES), 'sigla', sigla, { senha_hash: hash });
+  } else {
+    var global = _abrirPlanilha_(SISTEMA_VMC_ID);
+    if (tipo === 'profissional') gravou = _atualizarLinhaPorChave_(global.getSheetByName(ABA_PROFISSIONAIS), 'profissional_id', profissionalId, { senha_hash: hash });
+    if (tipo === 'admin') gravou = _atualizarLinhaPorChave_(global.getSheetByName(ABA_ADMINS), 'admin_id', profissionalId, { senha_hash: hash });
   }
-  var global = _abrirPlanilha_(SISTEMA_VMC_ID);
-  if (tipo === 'profissional') return _atualizarLinhaPorChave_(global.getSheetByName(ABA_PROFISSIONAIS), 'profissional_id', profissionalId, { senha_hash: hash });
-  if (tipo === 'admin') return _atualizarLinhaPorChave_(global.getSheetByName(ABA_ADMINS), 'admin_id', profissionalId, { senha_hash: hash });
-  return false;
+  // 18.11: credencial nova — o portao em cache desta conta cai na hora (o cracha antigo e recusado na chamada seguinte)
+  if (gravou) _portaoEsquecer_([{ tipo: tipo, sigla: sigla, profissional_id: profissionalId }]);
+  return gravou;
 }
 
 /**
@@ -1437,11 +1572,30 @@ function _respostaSessaoExpirada_() {
 
 /** Confere o cracha e o `ativo` da conta; devolve a sessao {tipo, sigla, profissional_id, ...} ou null. */
 function _validarToken_(token) {
+  // Assinatura e validade primeiro, sempre: cracha adulterado ou expirado nem chega ao cache.
   var dados = lerToken(token, _segredoSessao_(), Date.now());
   if (!dados) return null;
+  // 18.11 (8.90): a conferencia de conta ativa feita na planilha vale por ate PORTAO_CACHE_SEG no
+  // cache do script, por conta, junto com a impressao da credencial que conferiu. So entra no
+  // cache o que a planilha aprovou; cracha de outra credencial nao bate com o guardado e vai a
+  // planilha. Toda acao do sistema que muda senha, e-mail, `ativo` ou exclui a conta solta a
+  // chave na hora (_portaoEsquecer_) — o atraso de ate 5 min so existe para edicao feita direto
+  // na planilha. A mesma ida ao cache ja traz o que a acao vai pedir (Controle e dono).
+  var chavePortao = _chavePortao_(dados.tipo, dados.sigla, dados.profissional_id);
+  var chaves = [chavePortao];
+  if (dados.tipo !== 'admin') chaves.push('controle:' + String(dados.profissional_id).trim());
+  if (dados.tipo === 'paciente') chaves.push('dono:' + _siglaChave_(dados.sigla));
+  _cacheLerVarias_(chaves);
+  var guardado = _portaoConfere_(_cacheLer_(chavePortao), dados.impressao);
+  if (guardado) {
+    dados.nome = guardado.nome;
+    dados.email = guardado.email;
+    return dados;
+  }
   var reg = _registroDaConta_(dados.tipo, dados.sigla, dados.profissional_id);
   if (!reg || !reg.ativo) return null;
   if (!_iguaisTempoConstante_(impressaoCracha(reg.senha_hash), dados.impressao)) return null;
+  _cacheGuardar_(chavePortao, _valorPortao_(reg), PORTAO_CACHE_SEG);
   dados.nome = reg.nome;
   dados.email = reg.email;
   return dados;
@@ -1564,11 +1718,27 @@ function autenticar(tipo, email, senha, escolha) {
   }
   var perfil = { tipo: t, sigla: conta.sigla, nome: reg.nome, email: e };
   for (var k in reg.extra) perfil[k] = reg.extra[k];
-  return {
+  var entrada = {
     ok: true,
     token: emitirToken({ tipo: t, sigla: conta.sigla, profissional_id: conta.profissional_id, impressao: impressaoCracha(hashDaConta) }, segredo, Date.now()),
     perfil: perfil
   };
+  // 18.11: a conta acabou de ser conferida na planilha (ativa, senha certa) — o portao ja nasce em
+  // cache, com a impressao do hash que ficou gravado; a primeira chamada depois do login nao reabre a Sistema_VMC.
+  _cacheGuardar_(_chavePortao_(t, conta.sigla, conta.profissional_id),
+    _valorPortao_({ senha_hash: hashDaConta, nome: reg.nome, email: reg.email }), PORTAO_CACHE_SEG);
+  // 18.11: o profissional entra direto na lista de pacientes — ela vai na resposta do login e a tela
+  // nao faz a segunda chamada (cada ida ao Apps Script custa mais de 1 s so de caminho). Sem a
+  // lista (erro aqui), o cliente pede profListarPacientes como antes.
+  if (t === 'profissional') {
+    try {
+      var lista = listarPacientesDoProfissional({ tipo: t, sigla: conta.sigla, profissional_id: conta.profissional_id, nome: reg.nome, email: reg.email });
+      if (lista && lista.ok === true) entrada.pacientes = lista.pacientes;
+    } catch (erroLista) {
+      console.error('autenticar: lista de pacientes nao foi junto: ' + String(erroLista && erroLista.message || erroLista).slice(0, 120));
+    }
+  }
+  return entrada;
 }
 
 /**
@@ -1740,6 +1910,7 @@ function _atualizarContatoPaciente_(sigla, contato) {
   if (!_atualizarLinhaPorChave_(controle.getSheetByName(ABA_PACIENTES), 'sigla', sigla, { email: c.email, telefone: c.telefone })) {
     return { ok: false, erro: 'Paciente não encontrado na Controle.' };
   }
+  _portaoEsquecer_([{ tipo: 'paciente', sigla: sigla, profissional_id: dono }]); // 18.11: e-mail gravado na linha da conta
   if (idx.mudou) _invalidarLinks_('paciente', sigla); // 18.1.2: link antigo nao vale para o e-mail novo
   return { ok: true, email: c.email, telefone: c.telefone };
 }
@@ -2495,13 +2666,17 @@ function lerEditandoAuto(sigla, timestamp) {
   if (!sigla || !timestamp) return { ok: false, erro: 'Parametros ausentes' };
   var planilhaId = _obterPlanilhaIdPaciente_(sigla);
   if (!planilhaId) return { ok: false, erro: 'Paciente nao encontrado' };
-  var linha = _encontrarLinhaAuto_(planilhaId, timestamp);
-  if (!linha) return { ok: true, editando_quem: '' }; // registro nao encontrado = sem lock
-  var idx = linha.cabecalhos.indexOf('editando_quem');
-  if (idx === -1) return { ok: true, editando_quem: '' };
-  var aba = linha.aba;
-  var val = aba.getRange(linha.rowIndex, idx + 1).getValue();
-  return { ok: true, editando_quem: String(val || '').trim() };
+  // 18.11: leitura de verdade — uma ida a aba (so leitura; sem criar coluna) e a resposta sai dela
+  var aba = _abrirPlanilha_(planilhaId).getSheetByName(ABA_AUTOMONITORAMENTO);
+  if (!aba || aba.getLastRow() < 2) return { ok: true, editando_quem: '' };
+  var dados = aba.getDataRange().getValues();
+  var idxTs = dados[0].indexOf('timestamp'), idx = dados[0].indexOf('editando_quem');
+  if (idxTs === -1 || idx === -1) return { ok: true, editando_quem: '' };
+  var tsLimpo = String(timestamp).trim();
+  for (var i = 1; i < dados.length; i++) {
+    if (_tsNormalizar_(dados[i][idxTs]) === tsLimpo) return { ok: true, editando_quem: String(dados[i][idx] || '').trim() };
+  }
+  return { ok: true, editando_quem: '' }; // registro nao encontrado = sem lock
 }
 
 // ---------- 18.5 (8.87): leituras do paciente por colunas e paginadas ----------
@@ -3256,9 +3431,16 @@ function _atualizarCamposLinha_(aba, rowIndex, cabecalhos, campos) {
  * Retorna o planilhaId ou null.
  */
 function _obterPlanilhaIdPaciente_(sigla) {
+  // 18.11: o id da planilha do paciente nao muda (desativar so troca a pasta); fica no cache do
+  // script e a chamada nao abre a Controle so para achar o link. A exclusao solta a chave.
+  var chave = 'planilha:' + _siglaChave_(sigla);
+  var guardado = _cacheLer_(chave);
+  if (guardado) return guardado;
   var pac = buscarPaciente(sigla);
   if (!pac || !pac.link_planilha_individual) return null;
-  return extrairIdDaUrl(String(pac.link_planilha_individual));
+  var id = extrairIdDaUrl(String(pac.link_planilha_individual));
+  if (id) _cacheGuardar_(chave, id, LOCAL_CACHE_SEG);
+  return id;
 }
 
 // --- Paciente: marcar / limpar / salvar ---
@@ -3895,6 +4077,8 @@ function profExcluirPaciente(s, siglaPaciente, confirmacaoSigla) {
       }
     }
 
+    // 18.11: conta excluida — portao, dono e planilha saem do cache na hora
+    _portaoEsquecer_([{ tipo: 'paciente', sigla: siglaPaciente, profissional_id: profissionalId, excluida: true }]);
     _invalidarLinks_('paciente', siglaPaciente);
     return { ok: true, mensagem: 'Paciente excluido permanentemente' };
   } catch (e) {
@@ -3940,6 +4124,7 @@ function profAlterarSenhaPaciente(s, siglaPaciente, novaSenha) {
   for (var i = 1; i < dados.length; i++) {
     if (String(dados[i][idxSigla]).trim().toUpperCase() === String(siglaPaciente).trim().toUpperCase()) {
       aba.getRange(i + 1, idxHash + 1).setValue(novoHash);
+      _portaoEsquecer_([{ tipo: 'paciente', sigla: siglaPaciente, profissional_id: profissionalId }]); // 18.11: senha trocada
       _invalidarLinks_('paciente', siglaPaciente);
       return { ok: true };
     }
@@ -3965,6 +4150,7 @@ function _alterarStatusPacienteControle_(profissionalId, siglaPaciente, novoStat
   for (var i = 1; i < dados.length; i++) {
     if (String(dados[i][idxSigla] || '').trim().toUpperCase() === siglaLimpa) {
       aba.getRange(i + 1, idxAtivo + 1).setValue(novoStatus);
+      _portaoEsquecer_([{ tipo: 'paciente', sigla: siglaPaciente, profissional_id: profissionalId }]); // 18.11: `ativo` mudou
       return true;
     }
   }
@@ -4180,6 +4366,8 @@ function atualizarProfissional(s, profissionalId, mudancas) {
         aba.getRange(i + 1, idxCol + 1).setValue(_celulaTexto_(nomeColuna, String(mudancas[chaveCli]).trim())); // 18.2
         alteracoes.push(nomeColuna);
       }
+      // 18.11: nome e e-mail da sessao vem da linha da conta
+      _portaoEsquecer_([{ tipo: 'profissional', sigla: dados[i][cabecalhos.indexOf('sigla')], profissional_id: profissionalId }]);
       return {
         ok: true,
         mensagem: 'Profissional atualizado',
@@ -4218,6 +4406,7 @@ function trocarSenhaProfissional(s, profissionalId, novaSenha) {
   for (var i = 1; i < dados.length; i++) {
     if (String(dados[i][idxId]).trim() === String(profissionalId).trim()) {
       aba.getRange(i + 1, idxSenha + 1).setValue(hashProf);
+      _portaoEsquecer_([{ tipo: 'profissional', sigla: dados[i][cabecalhos.indexOf('sigla')], profissional_id: profissionalId }]); // 18.11: senha trocada
       _invalidarLinks_('profissional', dados[i][cabecalhos.indexOf('sigla')]);
       return { ok: true, mensagem: 'Senha trocada com sucesso' };
     }
@@ -4255,6 +4444,8 @@ function _alterarStatusProfissional(s, profissionalId, novoStatus) {
   for (var i = 1; i < dados.length; i++) {
     if (String(dados[i][idxId]).trim() === String(profissionalId).trim()) {
       aba.getRange(i + 1, idxAtivo + 1).setValue(novoStatus);
+      // 18.11: `ativo` do profissional mudou — cai o portao dele e o de todos os pacientes dele
+      _portaoEsquecerProfissional_(profissionalId, dados[i][cabecalhos.indexOf('sigla')]);
       if (!_estaAtivo_(novoStatus)) _invalidarLinks_('profissional', dados[i][cabecalhos.indexOf('sigla')]);
       return {
         ok: true,
