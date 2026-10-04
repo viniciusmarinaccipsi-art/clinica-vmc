@@ -1386,3 +1386,62 @@ por `_autoriaDeCriacao_(profissionalId)`; em `CAMPOS_DO_SERVIDOR` e nas `COLUNAS
 `timestamp` da linha), igual nas duas telas; sem nome, só a data. A faixa do topo da leitura
 da anamnese mostra "Última alteração por <Nome> em …" (`vmcUltimaAlteracaoTexto_`: o carimbo
 mais recente de `autoria_campos`; vazio quando não há carimbo).
+
+## Velocidade do profissional (Pacote 18.11 — publicado em 04/10/2026, @40)
+
+Medição que guiou o pacote (conta real do profissional, só leitura, uma execução por amostra):
+toda ida ao Apps Script custa **1,1–1,8 s só de caminho** (`ping`, que não faz nada no servidor),
+e por cima disso vinha o trabalho do servidor — portão do crachá 0,5 s, lista 1,3 s, abrir paciente
+2,2 s. O conserto ataca os dois lados: menos trabalho por chamada e menos chamadas.
+
+**Portão do crachá em cache (`_validarToken_`).** A ordem não mudou: assinatura e validade do crachá
+primeiro (`lerToken`), sempre. Depois, em vez de abrir a `Sistema_VMC` em toda chamada, o portão lê
+do cache do script (`CacheService`) a chave `portao:<perfil>:<SIGLA>:<dono>`, que guarda a impressão
+da credencial (`impressaoCracha`, a mesma que já vai dentro do crachá — nunca o hash), o nome e o
+e-mail da conta. Só passa pelo cache o crachá cuja impressão é igual à guardada; qualquer outro vai
+à planilha, como antes. Só entra no cache conta que a planilha acabou de aprovar (ativa, e com o
+profissional dono ativo, no caso do paciente); recusa nunca é guardada. Validade: `PORTAO_CACHE_SEG`
+= 300 s, sem renovação — a cada 5 min uma chamada confere na planilha de novo.
+
+**Invalidação imediata (`_portaoEsquecer_`).** Toda ação do sistema que muda senha, e-mail, nome,
+`ativo` ou exclui uma conta solta a chave depois de gravar (com `SpreadsheetApp.flush()` antes):
+`_gravarHashDaConta_` (ativação, redefinição, troca pelo próprio paciente, regravação v2→v3),
+`profAlterarSenhaPaciente`, `trocarSenhaProfissional`, `_gravarEmailIndice_`,
+`_atualizarContatoPaciente_`, `atualizarProfissional`, `_alterarStatusPacienteControle_`,
+`_alterarStatusProfissional` (o profissional **e todos os pacientes dele**,
+`_portaoEsquecerProfissional_`), `profExcluirPaciente` (portão, dono e planilha) e `_anexarIndice_`
+(conta nova). O atraso de até 5 min só existe para edição feita direto na planilha. **Regra para
+pacote futuro: ação nova que mude senha, e-mail, `ativo` ou exclua conta chama `_portaoEsquecer_`.**
+
+**O que mais mora no cache (fatos que não mudam, nunca estado de acesso):** `dono:<SIGLA>` (o
+profissional dono do paciente, lido do `Indice_Siglas`; 5 min; `resolverProfissionalIdPorSigla`),
+`controle:<profissional_id>` (id da Controle; 6 h; `abrirControleDoProfissional` confere que o id
+abre e tem a aba `Pacientes`) e `planilha:<SIGLA>` (id da planilha do paciente; 6 h;
+`_obterPlanilhaIdPaciente_`). O cache nunca é a fonte: sem a chave, ou com o `CacheService` fora do
+ar, a planilha é lida como antes (`_cacheLer_`, `_cacheLerVarias_`, `_cacheGuardar_`,
+`_cacheEsquecer_`; uma leitura de cada chave por chamada, em `_MEMO_.cache`). O isolamento entre
+profissionais continua igual: o dono vem do Índice e é comparado com o profissional do crachá em
+cada função. O segredo do crachá e a pimenta **não** vão para o cache.
+
+**Login.** `autenticar` lê o Índice por `_indiceValores_` (sem conferir colunas), deixa o portão em
+cache ao emitir o crachá e, para o profissional, devolve `pacientes` (a mesma lista de
+`profListarPacientes`) na própria resposta — a tela não faz a segunda chamada. Pisos de tempo,
+iterações do hash e validade do crachá não mudaram; a falha continua igual e não traz lista.
+
+**Leituras.** `ACOES_SO_LEITURA` liga a memória de linhas (`_MEMO_.linhas`) nas leituras do
+profissional e do admin (a linha do profissional era lida duas vezes por chamada); `lerEditandoAuto`
+virou uma leitura só da aba, sem `_garantirColunasAutomonitoramento_`. `profLerDadosPaciente`
+**não** foi paginada: 74 registros + 61 escalas custam ~0,25 s por aba — o peso era abrir planilhas.
+
+**Tela do profissional.** `PROF_PACIENTES_MEM[sigla]` guarda a resposta de `profLerDadosPaciente`
+por sessão: voltar a um paciente já aberto desenha a tela na hora (`profRenderPaciente_`) e confere
+o servidor sem overlay (`profConferirPaciente_`); se algo mudou, a tela é refeita mantendo os
+módulos abertos — menos com modal, fluxo ou editor de anamnese abertos (a memória fica com o dado
+novo para a próxima abertura). Toda gravação do profissional esvazia a memória do paciente
+(`chamarServidor`), e a saída esvazia tudo. `profLerGrade_` pede a grade uma vez por sessão para a
+Agenda e a Grade de Atendimento; salvar a grade pede de novo.
+
+**Admin (`admin.html`).** `admChamarServidor` com limite de 60 s e a faixa "O servidor não
+respondeu…" + "Tentar de novo" (mesma chamada, só no clique; sair desiste); botões da tabela por
+`data-adm-acao` com um ouvinte só; data de início normalizada para o campo e enviada só quando
+mexida; a saída limpa a tabela, o cabeçalho e os modais.
