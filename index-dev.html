@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.11 — produção (04/10/2026) -->
+<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.11.1 — produção (04/10/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -8868,6 +8868,8 @@ async function profCarregarDashboard(pacientesProntos) {
   var ativos   = pacientes.filter(function(p){ return String(p.ativo||'Sim').trim().toLowerCase() !== 'nao'; });
   var inativos = pacientes.filter(function(p){ return String(p.ativo||'Sim').trim().toLowerCase() === 'nao'; });
 
+  profPreCarregar_(ativos); // 18.11.1: só depois de a lista estar na tela, em segundo plano
+
   html += '<p class="prof-pac-count">Pacientes ativos (' + ativos.length + ')</p>';
   html += '<div class="prof-pac-list">';
 
@@ -9019,9 +9021,20 @@ async function profAbrirPaciente(sigla) {
 
   abrirSecao('sec-prof-paciente');
 
-  var resp = await chamarServidor('profLerDadosPaciente', {
-    siglaPaciente: sigla
-  });
+  // 18.11.1: se o pré-carregamento deste paciente já está a caminho, a tela espera por ele (sem segunda chamada)
+  var resp = null;
+  if (PROF_PRE.andamento[sigla]) resp = (await PROF_PRE.andamento[sigla]).resp;
+  if (!PROF_SESSAO) return;
+  if (!resp) {
+    var direto = chamarServidor('profLerDadosPaciente', {
+      siglaPaciente: sigla
+    });
+    // a fila do pré-carregamento vê esta chamada e não pede o mesmo paciente de novo
+    var marca = direto.then(function (r) { return { ok: !!(r && r.ok), resp: null }; }, function () { return { ok: false, resp: null }; });
+    PROF_PRE.andamento[sigla] = marca;
+    marca.then(function () { if (PROF_PRE.andamento[sigla] === marca) delete PROF_PRE.andamento[sigla]; });
+    resp = await direto;
+  }
 
   if (!resp.ok) {
     container.innerHTML =
@@ -9042,7 +9055,51 @@ async function profAbrirPaciente(sigla) {
    paciente gravou algo nesse meio-tempo, a tela é refeita com o que voltou. */
 var PROF_PACIENTES_MEM = {};
 function profMemEsquecer_(sigla) {
-  if (sigla) delete PROF_PACIENTES_MEM[String(sigla)]; else PROF_PACIENTES_MEM = {};
+  if (sigla) { delete PROF_PACIENTES_MEM[String(sigla)]; PROF_PRE.versao[String(sigla)] = (PROF_PRE.versao[String(sigla)] || 0) + 1; }
+  else { PROF_PACIENTES_MEM = {}; PROF_PRE.versaoTudo++; }
+}
+
+/* 18.11.1 (decisão do usuário, 04/10): pré-carregamento. Com a lista de pacientes JÁ na tela, os dados dos pacientes
+   ativos são buscados em segundo plano, um de cada vez, sem overlay, começando por quem registrou há menos tempo, e
+   vão para PROF_PACIENTES_MEM — a primeira abertura também fica imediata. Só em memória: sair, sessão expirada ou
+   fechar a aba levam tudo. Falhou uma busca, a fila para (nada insiste em segundo plano); o clique continua
+   funcionando como sempre. Resposta que chega depois de uma gravação do profissional não é guardada. */
+var PROF_PRE = { rodada: 0, andamento: {}, versao: {}, versaoTudo: 0 };
+function profPreVersao_(sigla) { return (PROF_PRE.versao[sigla] || 0) + ':' + PROF_PRE.versaoTudo; }
+function profPreBuscar_(sigla) {
+  if (PROF_PRE.andamento[sigla]) return PROF_PRE.andamento[sigla];
+  var geracao = VMC_GERACAO_SESSAO, versao = profPreVersao_(sigla);
+  var pedido = (async function () {
+    var resp = null;
+    try {
+      resp = await _chamarComRepeticao_({ acao: 'profLerDadosPaciente', siglaPaciente: sigla, token: vmcTokenSessao_() });
+    } catch (e) { return { ok: false, resp: null }; }
+    if (geracao !== VMC_GERACAO_SESSAO || !PROF_SESSAO) return { ok: false, resp: null };
+    if (resp && resp.ok === false && resp.codigo === 'sessao_expirada') { vmcSessaoExpirada_(resp.erro); return { ok: false, resp: null }; }
+    if (!resp || !resp.ok) return { ok: false, resp: null };
+    if (versao !== profPreVersao_(sigla)) return { ok: true, resp: null }; // houve gravação no meio: não serve
+    if (!PROF_PACIENTES_MEM[sigla]) PROF_PACIENTES_MEM[sigla] = resp;
+    return { ok: true, resp: PROF_PACIENTES_MEM[sigla] };
+  })();
+  PROF_PRE.andamento[sigla] = pedido;
+  var soltar = function () { if (PROF_PRE.andamento[sigla] === pedido) delete PROF_PRE.andamento[sigla]; };
+  pedido.then(soltar, soltar);
+  return pedido;
+}
+function profPreCarregar_(ativos) {
+  var rodada = ++PROF_PRE.rodada, geracao = VMC_GERACAO_SESSAO;
+  var dias = function (p) { return typeof p.ind_dias_desde_auto === 'number' ? p.ind_dias_desde_auto : Infinity; };
+  var fila = ativos.filter(function (p) { return !!p.sigla; })
+    .map(function (p, i) { return { sigla: String(p.sigla), dias: dias(p), i: i }; })
+    .sort(function (a, b) { return a.dias === b.dias ? a.i - b.i : (a.dias < b.dias ? -1 : 1); });
+  setTimeout(async function () {
+    for (var i = 0; i < fila.length; i++) {
+      if (rodada !== PROF_PRE.rodada || geracao !== VMC_GERACAO_SESSAO || !PROF_SESSAO) return;
+      if (PROF_PACIENTES_MEM[fila[i].sigla]) continue;
+      var r = await profPreBuscar_(fila[i].sigla);
+      if (!r.ok) return;
+    }
+  }, 0);
 }
 async function profConferirPaciente_(sigla, mostrado) {
   var geracao = VMC_GERACAO_SESSAO, resp = null;
@@ -10214,6 +10271,7 @@ function sairDoSistema(opcoes) {
   PROF_FLUXO = null; // 18.5
   PROF_PACIENTE_SEL = null;
   PROF_PACIENTES_MEM = {}; PROF_GRADE_MEM = null; // 18.11
+  PROF_PRE.rodada++; PROF_PRE.andamento = {}; PROF_PRE.versaoTudo++; // 18.11.1
   PROF_LINK_POR_SIGLA = {}; // 18.1.2: links de convite são da sessão que os gerou
   PROF_CONVITE = { cad: { sigla: '', telefone: '', link: '' }, ed: { sigla: '', telefone: '', link: '' } };
   graEstado = null; graCarregando = false; CAL_GRADE_JANELAS = {}; CAL_SESSOES = [];
