@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.11.1 — produção (04/10/2026) -->
+<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.7 — produção (04/10/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -471,6 +471,7 @@ body.vmc-largo .topbar-in{max-width:1360px;}
   margin-bottom:20px;
 }
 .login-tipo-card{
+  display:block;width:100%;color:inherit;font:inherit; /* 18.7 (C6): o cartão virou botão; zera o visual de botão do navegador */
   background:var(--c-surface);border-radius:var(--r-card);padding:16px 10px;
   cursor:pointer;transition:all .25s;
   box-shadow:var(--sh-1);
@@ -880,6 +881,10 @@ body.vmc-largo .topbar-in{max-width:1360px;}
   transition:all .15s;
 }
 .p136-humor-btn.ativo{background:var(--c-action);color:var(--c-ink-inv);border-color:var(--c-action);}
+/* 18.7 (C6): área de toque ≥ 44 px sem mudar o desenho — a camada invisível ::after cresce na vertical, o botão não */
+.p136-humor-btn,.p135-btn,.pev-periodo-btn{position:relative;}
+.p136-humor-btn::after,.p135-btn::after,.pev-periodo-btn::after{content:'';position:absolute;left:0;right:0;top:50%;height:max(100%,var(--hit-min));transform:translateY(-50%);}
+.p135-acoes-wrap{row-gap:12px;} /* no celular os botões de gestão quebram em duas linhas: 33 + 12 ≥ 44, as áreas não se sobrepõem */
 .p136-humor-vazio{font:var(--t-body-sm);color:var(--c-ink-3);margin:-4px 0 10px;} /* 18.4 (8.50) */
 /* Carimbo de edição no card histc */
 
@@ -911,6 +916,8 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .field textarea:disabled{background:var(--c-surface-sub);cursor:not-allowed;color:var(--c-ink-2);}
 .field textarea{min-height:80px;resize:vertical;font-family:var(--f-text);}
 .field-hint{font:var(--t-body-sm);color:var(--c-ink-3);margin-top:4px;}
+/* 18.7 (8.91): a dica "Preenchido automaticamente pelo CEP" acompanha só o campo travado; aberto para digitação, some */
+#f_estado:enabled ~ .field-hint,#f_cidade:enabled ~ .field-hint,#f_endereco_logradouro:enabled ~ .field-hint,#f_endereco_bairro:enabled ~ .field-hint{display:none;}
 .field-error{font:var(--t-body-sm);color:var(--c-reg-neg-ink);margin-top:4px;display:none;font-weight:600;}
 .field.has-error input,
 .field.has-error select,
@@ -4027,15 +4034,15 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 </div>
 
 <div class="modal-overlay" id="modalConfirma">
-  <div class="modal-card">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalConfirmaTitulo">
     <div class="modal-icon"><svg class="ico" aria-hidden="true"><use href="#i-alert"/></svg></div>
-    <div class="modal-title">Enviar anamnese</div>
+    <div class="modal-title" id="modalConfirmaTitulo">Enviar anamnese</div>
     <div class="modal-text">
       Você revisou todos os dados e quer enviar agora?
       Se precisar, você poderá corrigir a anamnese depois, pelo cartão Anamnese do Início.
     </div>
     <div class="modal-actions">
-      <button class="btn-modal-cancel" onclick="fecharModalConfirma()">Voltar e revisar</button>
+      <button type="button" class="btn-modal-cancel" id="modalConfirmaVoltar" onclick="fecharModalConfirma()">Voltar e revisar</button>
       <button class="btn-modal-confirm" onclick="enviarAnamneseDefinitivo()">Enviar</button>
     </div>
   </div>
@@ -4091,14 +4098,15 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 
       <!-- Pacote 13.2.1: Seletor de tipo -->
       <div class="login-tipo-grid" id="loginTipoGrid">
-        <div class="login-tipo-card" id="loginTipoPaciente" onclick="selecionarTipoLogin('paciente')">
+        <!-- 18.7 (C6): os cartões são botões — o Tab para neles, Enter e espaço escolhem; aria-pressed diz qual está escolhido -->
+        <button type="button" class="login-tipo-card" id="loginTipoPaciente" aria-pressed="false" onclick="selecionarTipoLogin('paciente')">
           <span class="login-tipo-icon"><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg></span>
           <span class="login-tipo-label">Sou Paciente</span>
-        </div>
-        <div class="login-tipo-card" id="loginTipoProfissional" onclick="selecionarTipoLogin('profissional')">
+        </button>
+        <button type="button" class="login-tipo-card" id="loginTipoProfissional" aria-pressed="false" onclick="selecionarTipoLogin('profissional')">
           <span class="login-tipo-icon"><svg class="ico" aria-hidden="true"><use href="#i-compass"/></svg></span>
           <span class="login-tipo-label">Sou Psicólogo</span>
-        </div>
+        </button>
       </div>
 
       <!-- Formulário aparece após seleção de tipo -->
@@ -7132,7 +7140,8 @@ function vmcTok(nome) {
   return VMC_TOK_CACHE[nome];
 }
 if (window.matchMedia) {
-  try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () { VMC_TOK_CACHE = {}; }); } catch (e) {}
+  // 18.7 (C8): com o Painel de Evolução na tela, trocar o tema redesenha os gráficos com as cores novas
+  try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () { VMC_TOK_CACHE = {}; if (typeof pevRenderizar === 'function' && secaoAtivaId() === 'sec-auto-painel' && document.getElementById('pevChartHumor')) pevRenderizar(); }); } catch (e) {}
 }
 /* ============================================================
    SISTEMA CLÍNICO DIGITAL — v2
@@ -7863,9 +7872,32 @@ function secaoAtivaId() {
   return bloco ? bloco.id : at.id;
 }
 
+// 18.7 (C6): depois da troca de tela o foco vai ao título dela — o da barra (#topbarTitulo) nas telas com
+// data-barra-titulo, senão o primeiro título visível da seção; tabindex="-1" recebe o foco sem entrar no Tab. O contorno
+// segue o :focus-visible do navegador (aparece só quando a troca veio do teclado). Não move o foco antes da primeira
+// interação (abertura da página) nem quando quem abriu a tela já levou o foco a outro elemento.
+function vmcFocarTitulo_(sec, focoAntes) {
+  if (!sec || !sec.classList.contains('active')) return;
+  if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return;
+  var atual = document.activeElement;
+  if (atual && atual !== document.body && atual !== focoAntes && document.contains(atual)) return;
+  var visivel = function (el) { return !!el && el.getClientRects().length > 0; };
+  var bar = document.getElementById('topbar');
+  var alvo = (bar && bar.classList.contains('tela')) ? document.getElementById('topbarTitulo') : null;
+  if (!visivel(alvo) || !alvo.textContent.trim()) alvo = Array.prototype.find.call(sec.querySelectorAll('.login-title, .ini-ola, .prof-pv-nome, h1, h2, h3'), visivel) || null;
+  if (!alvo) return;
+  if (!alvo.hasAttribute('tabindex')) alvo.setAttribute('tabindex', '-1');
+  alvo.focus({ preventScroll: true });
+}
+// 18.7 (C6): rolagem suave só sem prefers-reduced-motion
+function vmcRolagem_() {
+  return (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'auto' : 'smooth';
+}
+
 function abrirSecao(idSecao) {
   // 18.5: fluxo do paciente aberto pelo profissional — destino fora do fluxo devolve à tela do paciente
   if (PROF_FLUXO && profFluxoTelas_().indexOf(idSecao) === -1) { profFluxoEncerrar_(); return; }
+  var focoAntes = document.activeElement; // 18.7 (C6)
   var alvo = document.getElementById(idSecao);
   var bloco = (alvo && alvo.classList.contains('auto-tipo')) ? alvo : null;
   var secFisica = bloco ? bloco.closest('.section') : alvo;
@@ -7875,7 +7907,8 @@ function abrirSecao(idSecao) {
   if (bloco) autoMostrarTipo(secFisica, bloco);
   topbarAtualizar(secFisica.id);
   progressoParaTela(idSecao);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo({ top: 0, behavior: vmcRolagem_() });
+  setTimeout(function () { vmcFocarTitulo_(secFisica, focoAntes); }, 0); // 18.7 (C6): depois de quem abriu a tela renderizar
   // Pacote 14.2.1: telas do módulo Agenda usam container largo no desktop
   document.body.classList.toggle('vmc-largo',
     idSecao === 'sec-prof-agenda-cal' || idSecao === 'sec-prof-agenda');
@@ -8340,6 +8373,8 @@ function selecionarTipoLogin(tipo) {
   // Visual: marcar card selecionado
   document.getElementById('loginTipoPaciente').classList.toggle('selected', tipo === 'paciente');
   document.getElementById('loginTipoProfissional').classList.toggle('selected', tipo === 'profissional');
+  document.getElementById('loginTipoPaciente').setAttribute('aria-pressed', String(tipo === 'paciente')); // 18.7 (C6)
+  document.getElementById('loginTipoProfissional').setAttribute('aria-pressed', String(tipo === 'profissional'));
 
   // Limpar erro anterior
   document.getElementById('loginError').classList.add('hidden');
@@ -8512,6 +8547,8 @@ function resetarTelaLogin_() {
   LOGIN_ACEITE = null;  // 18.1.6: login pendente de aceite descartado
   document.getElementById('loginTipoPaciente').classList.remove('selected');
   document.getElementById('loginTipoProfissional').classList.remove('selected');
+  document.getElementById('loginTipoPaciente').setAttribute('aria-pressed', 'false'); // 18.7 (C6)
+  document.getElementById('loginTipoProfissional').setAttribute('aria-pressed', 'false');
   document.getElementById('loginFormFields').classList.remove('visible');
   document.getElementById('loginError').classList.add('hidden');
   document.getElementById('inputEmail').value = '';
@@ -10157,7 +10194,7 @@ function vmcAvisoNaTela(msg, ancora) {
   sec.querySelectorAll('[data-aviso-tela]').forEach(a => a.remove());
   const av = autoAvisoEl(msg); av.setAttribute('data-aviso-tela', '');
   if (ancora) ancora.insertAdjacentElement('beforebegin', av); else sec.insertAdjacentElement('afterbegin', av);
-  av.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  av.scrollIntoView({ block: 'center', behavior: vmcRolagem_() });
 }
 
 // ESC fecha modal de senha
@@ -10308,7 +10345,7 @@ function sairDoSistema(opcoes) {
 /* ============================================================
    MÓDULO 1 — ANAMNESE
    ============================================================ */
-const ANAM_STATE = {
+var ANAM_STATE = {
   passoAtual: 1,
   totalPassos: 4,
   modoConsulta: false,
@@ -10398,7 +10435,7 @@ function renderPasso(numero) {
   restaurarValoresDoRascunho();
   if (ANAM_STATE.editando) anamCarimbosAplicar_(); // 18.5
   configurarListenersDoPasso(numero);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo({ top: 0, behavior: vmcRolagem_() });
 }
 
 var ANAM_PASSOS_NOMES = { 1: 'Dados Pessoais', 2: 'Histórico de Tratamentos', 3: 'Histórico de Saúde', 4: 'Pessoa(s) de Confiança', 5: 'Revisão' };
@@ -11985,7 +12022,7 @@ function renderRevisao(dados) {
 
   html += '</div>';
   container.innerHTML = html;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo({ top: 0, behavior: vmcRolagem_() });
 }
 
 function voltarDaRevisao() {
@@ -11997,10 +12034,15 @@ function voltarDaRevisao() {
    ============================================================ */
 function abrirModalConfirma() {
   document.getElementById('modalConfirma').classList.add('visible');
+  document.getElementById('modalConfirmaVoltar').focus(); // 18.7 (C6): foco na ação segura, como na folha "Sair sem enviar?"
 }
 function fecharModalConfirma() {
   document.getElementById('modalConfirma').classList.remove('visible');
 }
+// 18.7 (C6): Esc fecha a confirmação com o mesmo efeito de "Voltar e revisar"
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') { const m = document.getElementById('modalConfirma'); if (m && m.classList.contains('visible')) fecharModalConfirma(); }
+});
 
 /* ============================================================
    ENVIO DEFINITIVO
@@ -12247,7 +12289,7 @@ function renderConsulta(dados, recemEnviado) {
 
   html += '</div>';
   container.innerHTML = html;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo({ top: 0, behavior: vmcRolagem_() });
 }
 
 /* ============================================================
@@ -12340,7 +12382,7 @@ const AUTO_SEQ_NEG = ['sec-auto-sit-a','sec-auto-emo-a','sec-auto-fis-a','sec-au
 const AUTO_SEQ_POS = ['sec-auto-sit-b','sec-auto-emo-b','sec-auto-fis-b','sec-auto-pens-b','sec-auto-comp-b'];
 
 // Estado global do módulo
-const AUTO_STATE = {
+var AUTO_STATE = {
   dados: {},
   preenchido: {},
   // Etapa atual para sequência obrigatória (índice em AUTO_SEQ_*)
@@ -12454,7 +12496,7 @@ async function autoVerificarPrimeiroNeg() {
    ============================================================ */
 
 // Estado local do pacote 5
-const P5_STATE = {
+var P5_STATE = {
   verificado: false,       // já consultou o servidor?
   primeiraVez: false,      // paciente nunca fez nenhum registro de Auto?
   carregando: false,       // evita chamadas paralelas
@@ -12536,7 +12578,7 @@ function p5MarcarComoUsarLido() {
    - Botão "Entendi" só destrava após abrir as 6 seções
    ============================================================ */
 
-const P8_STATE = {
+var P8_STATE = {
   eduLidas: new Set()
 };
 
@@ -13325,7 +13367,7 @@ function autoExibirAviso(idSecao, valid) {
     if (ultimo) ultimo.insertAdjacentElement('afterend', primeiro);
     else { const rod = sec.querySelector('.auto-rodape'); if (rod) rod.insertAdjacentElement('beforebegin', primeiro); else sec.appendChild(primeiro); }
   }
-  if (primeiro) setTimeout(() => primeiro.scrollIntoView({ block: 'center', behavior: 'smooth' }), 50);
+  if (primeiro) setTimeout(() => primeiro.scrollIntoView({ block: 'center', behavior: vmcRolagem_() }), 50);
 }
 
 // ============================================================
@@ -13482,7 +13524,7 @@ function autoBarraGarantir(op) {
   const slider = document.createElement('div');
   slider.className = 'auto-slider';
   slider.innerHTML = '<div class="auto-slider-trilha"><div class="auto-slider-fill"></div><span class="auto-slider-pt"></span><span class="auto-slider-pt"></span><span class="auto-slider-pt"></span><span class="auto-slider-pt"></span><span class="auto-slider-pt"></span></div>' +
-    '<input type="range" class="auto-slider-inp" min="1" max="5" step="1" value="3"><span class="auto-slider-thumb" aria-hidden="true"></span>';
+    '<input type="range" class="auto-slider-inp" min="1" max="5" step="1" value="3" aria-valuetext="Nenhum valor escolhido"><span class="auto-slider-thumb" aria-hidden="true"></span>';
   slider.querySelector('.auto-slider-inp').setAttribute('aria-label', (rotulo + ' ' + nomeItem).trim());
   lk.appendChild(slider);
   const leg = document.createElement('div');
@@ -13517,7 +13559,8 @@ function autoBarraDefinirValor(op, v) {
   const inp = lk.querySelector('.auto-slider-inp');
   if (inp) {
     inp.value = String(n || 3);
-    if (n) inp.setAttribute('aria-valuetext', n + ' · ' + palavra); else inp.removeAttribute('aria-valuetext');
+    // 18.7 (C6, 8.25): sem valor, o leitor de tela não anuncia o 3 interno do controle nativo
+    inp.setAttribute('aria-valuetext', n ? n + ' de 5' + (palavra ? ' — ' + palavra : '') : 'Nenhum valor escolhido');
   }
   lk.querySelectorAll('.auto-slider-pt').forEach((p, i) => p.classList.toggle('ativo', n > 0 && i < n));
   lk.querySelectorAll('.auto-slider-legenda span').forEach((s, i) => s.classList.toggle('ativo', i + 1 === n));
@@ -13847,7 +13890,7 @@ async function autoEnviarRegistro(opcoes) {
 
   if (!resp.ok) {
     const av = autoAvisoEl('Erro ao salvar: ' + (resp.erro || 'erro desconhecido'));
-    if (aviso) { aviso.appendChild(av); av.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+    if (aviso) { aviso.appendChild(av); av.scrollIntoView({ block: 'center', behavior: vmcRolagem_() }); }
     return;
   }
   // 18.5: registro criado pelo profissional — volta à tela do paciente com a confirmação do servidor
@@ -14272,7 +14315,7 @@ function histAvisoNaTela(msg) {
   box.querySelectorAll(':scope > .auto-aviso').forEach(a => a.remove());
   const av = autoAvisoEl(msg);
   box.insertAdjacentElement('afterbegin', av);
-  av.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  av.scrollIntoView({ block: 'center', behavior: vmcRolagem_() });
 }
 
 function histFecharModal() {
@@ -14859,37 +14902,38 @@ function autoHidratarFormulario() {
 
 // ----- 1. CONSTANTES -----
 
+// 18.7 (C8): cada seção guarda o nome do token; a cor é lida na hora de desenhar (acompanha a troca de tema)
 const PEV_SECOES = [
   // ----- NEGATIVAS -----
   // Tipos de Situação vai PRIMEIRO no lado negativo (gatilho)
   { secao: 'neg', prefixo: 'neg_sit_tipo_', titulo: 'Tipos de Situação',
     sub: 'Em que tipo de contexto seus registros costumam acontecer',
-    cor: vmcTok('--c-reg-neg'), classe: 'coral' },
+    tok: '--c-reg-neg', classe: 'coral' },
   { secao: 'neg', prefixo: 'neg_emo_', titulo: 'Emoções Desagradáveis',
     sub: 'Quais grupos de emoções aparecem mais nos seus registros',
-    cor: vmcTok('--c-reg-neg'), classe: 'coral' },
+    tok: '--c-reg-neg', classe: 'coral' },
   { secao: 'neg', prefixo: 'neg_fis_', titulo: 'Reações Físicas — Mal-Estar',
     sub: 'Quais grupos de sensações corporais aparecem mais',
-    cor: vmcTok('--c-reg-neg'), classe: 'coral' },
+    tok: '--c-reg-neg', classe: 'coral' },
   { secao: 'neg', prefixo: 'neg_pens_', titulo: 'Pensamentos Desadaptativos',
     sub: 'Quais tipos de pensamento aparecem mais',
-    cor: vmcTok('--c-reg-neg'), classe: 'coral' },
+    tok: '--c-reg-neg', classe: 'coral' },
   { secao: 'neg', prefixo: 'neg_comp_', titulo: 'Comportamentos Disfuncionais',
     sub: 'Quais reações comportamentais aparecem mais',
-    cor: vmcTok('--c-reg-neg'), classe: 'coral' },
+    tok: '--c-reg-neg', classe: 'coral' },
   // ----- POSITIVAS -----
   { secao: 'pos', prefixo: 'pos_emo_', titulo: 'Emoções Agradáveis',
     sub: 'Quais grupos de emoções positivas você tem registrado',
-    cor: vmcTok('--c-reg-pos'), classe: 'green' },
+    tok: '--c-reg-pos', classe: 'green' },
   { secao: 'pos', prefixo: 'pos_fis_', titulo: 'Reações Físicas — Bem-Estar',
     sub: 'Quais sensações corporais agradáveis aparecem mais',
-    cor: vmcTok('--c-reg-pos'), classe: 'green' },
+    tok: '--c-reg-pos', classe: 'green' },
   { secao: 'pos', prefixo: 'pos_pens_', titulo: 'Pensamentos Adaptativos',
     sub: 'Quais tipos de pensamento saudável aparecem mais',
-    cor: vmcTok('--c-reg-pos'), classe: 'green' },
+    tok: '--c-reg-pos', classe: 'green' },
   { secao: 'pos', prefixo: 'pos_comp_', titulo: 'Comportamentos Funcionais',
     sub: 'Quais ações saudáveis aparecem mais',
-    cor: vmcTok('--c-reg-pos'), classe: 'green' }
+    tok: '--c-reg-pos', classe: 'green' }
 ];
 
 const PEV_TITULOS_GRUPO = {
@@ -14905,7 +14949,7 @@ const PEV_TITULOS_GRUPO = {
 };
 
 // Subitens de cada grupo — lidos do DOM do formulário em runtime (fonte única de verdade)
-const PEV_SUBITENS_CACHE = { dados: null };
+var PEV_SUBITENS_CACHE = { dados: null };
 function pevConstruirCacheSubitens() {
   const mapa = {};
   const grupos = document.querySelectorAll('.auto-group[data-grupo]');
@@ -14951,7 +14995,7 @@ function pevOutroTemTexto(nomeItem) {
 }
 
 // ----- 3. ESTADO -----
-const PEV_STATE = {
+var PEV_STATE = {
   registros: [],
   carregadoEm: 0,
   cacheTtlMs: 30 * 1000,
@@ -15383,7 +15427,7 @@ function pevDesenharBarras(secao, regs) {
       labels: contagens.map(c => c.label),
       datasets: [{
         data: contagens.map(c => c.count),
-        backgroundColor: secao.cor,
+        backgroundColor: vmcTok(secao.tok),
         borderRadius: 6,
         barThickness: 18,
         maxBarThickness: 22
@@ -15458,7 +15502,7 @@ function pevAbrirModalPizza(coluna, secao, regs) {
     canvas.style.display = 'block';
     zerado.style.display = 'none';
 
-    const cores = pevGerarPaletaPizza(secao.cor, valores.length);
+    const cores = pevGerarPaletaPizza(vmcTok(secao.tok), valores.length);
 
     PEV_STATE.charts.pizza = new Chart(canvas.getContext('2d'), {
       type: 'doughnut',
@@ -15585,7 +15629,7 @@ const ESC_VERSAO_INSTRUMENTO = 'v1';
 const ESC_FLAG_COMO_USAR = 'escComoUsarLido';
 
 // Estado do módulo (derivado do servidor)
-const ESC_STATE = {
+var ESC_STATE = {
   carregando: false,
   verificado: false,
   temEscalas: false,       // paciente já aplicou alguma escala? (veterano)
@@ -16392,7 +16436,7 @@ function escAtualizarProgresso() {
   progressoDefinir({
     total: totalComFuncional, atual: proximo === -1 ? totalComFuncional : proximo + 1, rotulo: 'Item',
     nome: ESC_STATE.escalaAtual, feitos,
-    irPara: function (k) { const box = document.getElementById('escItemBox-' + ids[k - 1]); if (box) box.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    irPara: function (k) { const box = document.getElementById('escItemBox-' + ids[k - 1]); if (box) box.scrollIntoView({ behavior: vmcRolagem_(), block: 'center' }); }
   });
   void pct;
 
