@@ -51,7 +51,7 @@
 // id_envio, autoria; 18.10b: rascunho no servidor) (03/10/2026)
 // Pacote 18.5 — registro e edicao pelo profissional: edicao por campo com carimbo (autoria_campos), criacao pelo
 // profissional (criado_por), escore de escala no servidor, leituras do paciente paginadas e por colunas (03/10/2026)
-var VERSAO_PACOTE = '18.6';
+var VERSAO_PACOTE = '18.6.1';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -3397,10 +3397,17 @@ function _mesmoValor_(col, atual, novo) {
   return String(atual === undefined || atual === null ? '' : atual).trim() === n;
 }
 
-/** Carimba as colunas no JSON de autoria (so as chaves alteradas mudam). Devolve { json, mapa }. */
-function _carimbar_(textoAtual, colunas, por, em) {
+/**
+ * Carimba as colunas no JSON de autoria (so as chaves alteradas mudam). Devolve { json, mapa }.
+ * 18.6.1: o carimbo leva tambem o NOME de quem alterou (`nome`), como estava no cadastro na hora
+ * da alteracao — a tela mostra "Alterado por <nome> em <data> as <hora>".
+ */
+function _carimbar_(textoAtual, colunas, por, em, nome) {
   var mapa = _jsonOuVazio_(textoAtual);
-  for (var i = 0; i < colunas.length; i++) mapa[colunas[i]] = { por: por, em: em };
+  for (var i = 0; i < colunas.length; i++) {
+    mapa[colunas[i]] = { por: por, em: em };
+    if (nome) mapa[colunas[i]].nome = nome;
+  }
   var json = JSON.stringify(mapa);
   if (json.length > AUTORIA_MAX) {
     var recentes = Object.keys(mapa).sort(function (a, b) {
@@ -3419,7 +3426,7 @@ function _carimbar_(textoAtual, colunas, por, em) {
  * Grava na linha so os campos de 'campos' que existem no cabecalho, nao sao do servidor e
  * tem valor diferente do que esta na celula; carimba cada um em autoria_campos e atualiza
  * editado_por/editado_em. opcoes: { fora: [colunas ignoradas], so: funcao(coluna) que diz se
- * a coluna pode ser editada, derivados: funcao(cabecalho, linhaAtual, mudancas) que devolve
+ * a coluna pode ser editada, nome: nome de quem altera (vai no carimbo), derivados: funcao(cabecalho, linhaAtual, mudancas) que devolve
  * colunas calculadas pelo servidor (gravadas sem carimbo) ou { __erro } para nao gravar }.
  * Saida: { alterados, autoria_campos, editado_em, anteriores, em } ou { erro } — `anteriores`
  * e o valor de cada celula alterada, lido antes de gravar; `em` e a hora do carimbo.
@@ -3448,7 +3455,7 @@ function _editarCampos_(aba, linha, campos, por, opcoes) {
   }
   var agora = new Date();
   var em = Utilities.formatDate(agora, 'America/Sao_Paulo', 'yyyy-MM-dd HH:mm:ss');
-  var carimbo = _carimbar_(textoAutoria, alterados, por, em);
+  var carimbo = _carimbar_(textoAutoria, alterados, por, em, o.nome || '');
   var editadoEm = Utilities.formatDate(agora, 'America/Sao_Paulo', "yyyy-MM-dd'T'HH:mm:ss");
   mudar.editado_por = por;
   mudar.editado_em = editadoEm;
@@ -3458,13 +3465,32 @@ function _editarCampos_(aba, linha, campos, por, opcoes) {
   return { alterados: alterados, autoria_campos: carimbo.mapa, editado_em: editadoEm, anteriores: anteriores, em: em };
 }
 
+/**
+ * 18.6.1 — nome que vai no carimbo: do profissional, o `nome_completo` do cadastro; do paciente,
+ * o nome da anamnese (`ind_nome` da Controle) ou, sem ficha, o nome do cadastro. Sai do servidor,
+ * pela conta do cracha — nunca do cliente. Falha de leitura nao impede a gravacao (carimbo sem nome).
+ */
+function _nomeDeQuemAltera_(por, sigla, profissionalId) {
+  try {
+    if (por === 'profissional') {
+      var prof = buscarProfissional(profissionalId);
+      return String((prof && prof.nome_completo) || '').trim();
+    }
+    var pac = buscarPaciente(sigla);
+    return String((pac && (pac.ind_nome || pac.nome)) || '').trim();
+  } catch (e) {
+    console.error('carimbo sem nome: ' + String(e && e.message || e).slice(0, 120));
+    return '';
+  }
+}
+
 /** Edicao de um registro de automonitoramento (paciente ou profissional), por campo. */
 function _editarRegistroAuto_(planilhaId, timestamp, campos, por, idEnvio, profissionalId, sigla) {
   var id = _idEnvioValido_(idEnvio);
   if (_edicaoJaFeita_(id)) return { ok: true, duplicado: true, mensagem: 'Registro atualizado com sucesso' };
   var linha = _encontrarLinhaAuto_(planilhaId, timestamp);
   if (!linha) return { ok: false, erro: 'Registro nao encontrado' };
-  var r = _editarCampos_(linha.aba, linha.rowIndex, campos, por);
+  var r = _editarCampos_(linha.aba, linha.rowIndex, campos, por, { nome: _nomeDeQuemAltera_(por, sigla, profissionalId) });
   // quem salvou deixou de editar: o aviso de presenca sai junto
   _atualizarCamposLinha_(linha.aba, linha.rowIndex, linha.cabecalhos, { editando_quem: '', editando_desde: '' });
   if (r.alterados.length) _indicadoresAposGravar_(profissionalId, sigla, _abrirPlanilha_(planilhaId));
@@ -3478,7 +3504,7 @@ function _editarAnamnesePorCampos_(planilha, aba, campos, por, idEnvio, profissi
   var id = _idEnvioValido_(idEnvio);
   if (_edicaoJaFeita_(id)) return { ok: true, duplicado: true, mensagem: mensagem };
   if (aba.getLastRow() < 2) return { ok: false, erro: 'Dados da anamnese ausentes' };
-  var r = _editarCampos_(aba, 2, campos, por, { fora: ['email', 'telefone'] });
+  var r = _editarCampos_(aba, 2, campos, por, { fora: ['email', 'telefone'], nome: _nomeDeQuemAltera_(por, sigla, profissionalId) });
   if (r.alterados.length) {
     _historicoDaAnamnese_(planilha, r.alterados, r.anteriores, por, r.em);
     registrarDataAnamnese(sigla, profissionalId);
@@ -3666,6 +3692,7 @@ function profEditarEscala(s, siglaPaciente, timestamp, campos, idEnvio) {
   var t = ESCALAS_CALCULO[instrumento];
   if (!t) return { ok: false, erro: 'Escala não encontrada: ' + instrumento };
   var r = _editarCampos_(aba, linha, campos, 'profissional', {
+    nome: _nomeDeQuemAltera_('profissional', siglaPaciente, alvo.profissionalId),
     so: function (k) {
       if (/^item_\d{2}$/.test(k)) return parseInt(k.slice(5), 10) >= 1 && parseInt(k.slice(5), 10) <= t.n;
       return k === 'item_funcional' || k === 'item_funcional_texto' || k === 'observacoes';

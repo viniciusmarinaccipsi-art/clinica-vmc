@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.6 — produção (03/10/2026) -->
+<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.6.1 — produção (03/10/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -36,6 +36,7 @@
   --c-ink:           #1D1B2B;  /* texto principal  — 14.8:1 sobre --c-surface */
   --c-ink-2:         #3F3C52;  /* corpo secundário — 9.6:1 */
   --c-ink-3:         #5E5B73;  /* rótulo e metadado — 6.1:1 (mínimo permitido) */
+  --c-ink-carimbo:   #6F6C85;  /* 18.6.1: só o carimbo "Alterado por…" — 5.0:1 (decisão do usuário: mais claro, sem poluir) */
   --c-ink-inv:       #F7F6FB;  /* texto sobre fundo índigo, ameixa ou teal cheio */
 
   /* ---------- Traço ---------- */
@@ -146,6 +147,7 @@
   --t-body:      400 14px/1.5 var(--f-text);
   --t-body-sm:   400 13px/1.45 var(--f-text);
   --t-label:     700 12px/1.3 var(--f-text);
+  --t-carimbo:   400 12px/1.35 var(--f-text);   /* 18.6.1: carimbo "Alterado por…" (menor que o texto, sem negrito) */
   --t-action:    600 14px/1.2 var(--f-text);
   --ls-label:    .08em;
   --num-tnum:    'tnum' 1;   /* font-feature-settings de escore, data e hora */
@@ -202,6 +204,7 @@
     --c-ink:         #EDECF4;
     --c-ink-2:       #C6C4D4;
     --c-ink-3:       #9C99AD;
+    --c-ink-carimbo: #8A879C;
     --c-ink-inv:     #14131C;
     --c-line-soft:   #262436;
     --c-line-inner:  #2B2940;
@@ -2090,7 +2093,7 @@ button.cab-no-item{cursor:pointer;}
 .histc-meta .humor-pill{background:var(--c-action-tint);color:var(--c-action);font-weight:800;padding:1px 8px;border-radius:8px;}
 .histc-obs{font:var(--t-body-sm);color:var(--c-ink-2);margin-top:3px;white-space:pre-wrap;overflow-wrap:anywhere;} /* 18.4 (8.50): observação da checagem */
 /* 18.5: carimbo por campo ("alterado por … em dd/mm às hh:mm"), faixa "registrado pelo seu psicólogo", "Carregar mais" e ações do profissional */
-.vmc-carimbo{display:block;font:var(--t-body-sm);color:var(--c-ink-3);margin-top:3px;}
+.vmc-carimbo,.review-row span.vmc-carimbo{display:block;font:var(--t-carimbo);color:var(--c-ink-carimbo);margin-top:3px;} /* 18.6.1: o segundo seletor vence `.review-row span`, que pintava o carimbo com a cor do valor */
 .vmc-mais{display:block;width:100%;min-height:var(--hit-min);margin-top:var(--s-3);border:1.5px solid var(--c-action);border-radius:var(--r-field);background:var(--c-surface);color:var(--c-action);font:var(--t-body);font-weight:600;cursor:pointer;}
 .prof-acoes-mod{display:flex;gap:var(--s-2);flex-wrap:wrap;justify-content:flex-end;margin-bottom:var(--s-3);}
 .prof-btn-acao{display:inline-flex;align-items:center;gap:6px;min-height:var(--hit-min);padding:0 var(--s-4);border:none;border-radius:var(--r-field);background:var(--c-action);color:var(--c-ink-inv);font:var(--t-body);font-weight:600;cursor:pointer;}
@@ -7551,13 +7554,13 @@ function vmcAutoria_(reg) {
   if (a && typeof a === 'object') return a;
   try { const o = JSON.parse(String(a || '')); return (o && typeof o === 'object') ? o : {}; } catch (e) { return {}; }
 }
-// Textos aprovados (03/10): dependem de quem lê — o paciente ou o profissional
+// 18.6.1 — texto decidido pelo usuário (04/10): "Alterado por <nome> em dd/mm/aaaa às hh:mm", igual para quem quer que
+// leia. O nome vem do servidor, dentro do carimbo; carimbo sem nome (falha de leitura do cadastro) mostra só a data.
 function vmcCarimboTexto_(c) {
   const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/.exec(String((c && c.em) || ''));
   if (!m || !c.por) return '';
-  const quando = ' em ' + m[3] + '/' + m[2] + ' às ' + m[4] + ':' + m[5];
-  if (c.por === (PROF_SESSAO ? 'profissional' : 'paciente')) return 'alterado por você' + quando;
-  return (PROF_SESSAO ? 'alterado pelo paciente' : 'alterado pelo seu psicólogo') + quando;
+  const nome = String(c.nome || '').trim();
+  return 'Alterado' + (nome ? ' por ' + nome : '') + ' em ' + m[3] + '/' + m[2] + '/' + m[1] + ' às ' + m[4] + ':' + m[5];
 }
 // Carimbo de um campo (ou o mais recente entre vários, quando a tela junta colunas num bloco só); '' sem carimbo
 function vmcCarimboHtml_(reg, colunas) {
@@ -12029,13 +12032,12 @@ function renderConsulta(dados, recemEnviado) {
   html += `
     <div class="consulta-banner">
       <strong>Anamnese preenchida${dataEnvio ? ' em ' + esc(dataEnvio) : ''}</strong>
-      Para qualquer alteração, por favor fale diretamente com seu terapeuta.
     </div>
   `;
 
   progressoOcultar();
   html += '<div class="anam-step-title">Sua Anamnese</div>';
-  html += '<div class="anam-step-sub">Visualização somente leitura</div>';
+
 
   // Seção 1
   html += '<div class="review-section"><h4>1. Dados Pessoais</h4>';
