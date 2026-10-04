@@ -7554,7 +7554,7 @@ function vmcAutoria_(reg) {
   if (a && typeof a === 'object') return a;
   try { const o = JSON.parse(String(a || '')); return (o && typeof o === 'object') ? o : {}; } catch (e) { return {}; }
 }
-// 18.6.1 — texto decidido pelo usuário (04/10): "Alterado por <nome> em dd/mm/aaaa às hh:mm", igual para quem quer que
+// 18.6.1 — texto decidido pelo usuário (03/10): "Alterado por <nome> em dd/mm/aaaa às hh:mm", igual para quem quer que
 // leia. O nome vem do servidor, dentro do carimbo; carimbo sem nome (falha de leitura do cadastro) mostra só a data.
 function vmcCarimboTexto_(c) {
   const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/.exec(String((c && c.em) || ''));

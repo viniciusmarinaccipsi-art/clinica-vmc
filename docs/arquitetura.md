@@ -1367,3 +1367,14 @@ de risco, condições clínicas), nas pessoas de confiança e nas perguntas de s
 (`anamCarimbosAplicar_`). `vmcFaixaCriadoHtml_` mostra "registrado por você em dd/mm" na
 tela do profissional (lista de registros e histórico de escalas) e "registrado pelo seu
 psicólogo em dd/mm" na do paciente.
+
+**18.6.1 (@38) — carimbo com nome.** O carimbo de `autoria_campos` passou a ser
+`{por, em, nome}`: `nome` é gravado pelo servidor (`_nomeDeQuemAltera_`: profissional =
+`nome_completo` do cadastro; paciente = `ind_nome` — o nome da anamnese — ou o `nome` do
+cadastro), nunca vem do cliente e guarda o nome da hora da alteração. A tela mostra
+"Alterado por <Nome> em dd/mm/aaaa às hh:mm" (`vmcCarimboTexto_`), o mesmo texto para
+paciente e profissional; carimbo sem nome mostra só a data. Visual: `--t-carimbo` (12 px,
+peso 400) e `--c-ink-carimbo` (5,0:1), decisão do usuário ("menor e mais claro, para não
+poluir"); o seletor `.review-row span.vmc-carimbo` existe para vencer `.review-row span`,
+que dava ao carimbo a cor do valor. A leitura da anamnese não tem mais os textos
+"fale diretamente com seu terapeuta" e "Visualização somente leitura".
