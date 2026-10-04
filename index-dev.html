@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.6.1 — produção (03/10/2026) -->
+<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.6.2 — produção (03/10/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -7576,13 +7576,22 @@ function vmcCamposAlterados_(antes, depois) {
   Object.keys(depois).forEach(function (k) { if (txt(antes[k]) !== txt(depois[k])) campos[k] = depois[k]; });
   return campos;
 }
-// Textos aprovados, em registro ou escala criados pelo profissional: "registrado pelo seu psicólogo em dd/mm" na tela
-// do paciente e, desde o 18.6, "registrado por você em dd/mm" na tela do profissional
+// 18.6.2 — texto decidido pelo usuário (03/10), em registro ou escala criados pelo profissional: "Registrado por <nome>
+// em dd/mm/aaaa às hh:mm", igual nas duas telas. O nome vem do servidor (criado_por_nome); sem nome, só a data.
 function vmcFaixaCriadoHtml_(reg) {
   if (!reg || reg.criado_por !== 'profissional') return '';
   const d = new Date(String(reg.timestamp || ''));
   if (isNaN(d.getTime())) return '';
-  return '<span class="vmc-carimbo">' + (PROF_SESSAO ? 'registrado por você em ' : 'registrado pelo seu psicólogo em ') + ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2) + '</span>';
+  const p2 = function (n) { return ('0' + n).slice(-2); };
+  const nome = String(reg.criado_por_nome || '').trim();
+  return '<span class="vmc-carimbo">' + esc('Registrado' + (nome ? ' por ' + nome : '') + ' em ' + p2(d.getDate()) + '/' + p2(d.getMonth() + 1) + '/' + d.getFullYear() + ' às ' + p2(d.getHours()) + ':' + p2(d.getMinutes())) + '</span>';
+}
+// 18.6.2 — faixa do topo da leitura da anamnese: a alteração mais recente entre os carimbos ('' se nunca foi alterada)
+function vmcUltimaAlteracaoTexto_(reg) {
+  const a = vmcAutoria_(reg); let c = null;
+  Object.keys(a).forEach(function (k) { if (a[k] && a[k].em && (!c || String(a[k].em) > String(c.em))) c = a[k]; });
+  const t = c ? vmcCarimboTexto_(c) : '';
+  return t ? 'Última alteração' + t.slice('Alterado'.length) : '';
 }
 
 // "Novo registro", "Nova escala" e a edição de escala do profissional abrem as MESMAS telas do paciente. Enquanto
@@ -12032,6 +12041,7 @@ function renderConsulta(dados, recemEnviado) {
   html += `
     <div class="consulta-banner">
       <strong>Anamnese preenchida${dataEnvio ? ' em ' + esc(dataEnvio) : ''}</strong>
+      ${esc(vmcUltimaAlteracaoTexto_(dados))}
     </div>
   `;
 

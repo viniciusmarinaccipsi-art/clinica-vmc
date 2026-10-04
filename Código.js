@@ -51,7 +51,7 @@
 // id_envio, autoria; 18.10b: rascunho no servidor) (03/10/2026)
 // Pacote 18.5 — registro e edicao pelo profissional: edicao por campo com carimbo (autoria_campos), criacao pelo
 // profissional (criado_por), escore de escala no servidor, leituras do paciente paginadas e por colunas (03/10/2026)
-var VERSAO_PACOTE = '18.6.1';
+var VERSAO_PACOTE = '18.6.2';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -140,7 +140,8 @@ var HEADERS_AUTOMONITORAMENTO = [
   'editando_quem', 'editando_desde',
   'editado', 'editado_por', 'editado_em',
   'id_envio', // 18.10 (8.14)
-  'criado_por', 'autoria_campos' // 18.5: quem criou a linha (so o profissional e marcado) e carimbo por campo
+  'criado_por', 'autoria_campos', // 18.5: quem criou a linha (so o profissional e marcado) e carimbo por campo
+  'criado_por_nome' // 18.6.2: nome do profissional que criou a linha ("Registrado por <nome> em ...")
 ];
 
 var HEADERS_ESCALAS = [
@@ -156,7 +157,8 @@ var HEADERS_ESCALAS = [
   'alerta_risco_flag', 'alerta_risco_item', 'alerta_risco_valor',
   'observacoes', 'tempo_preenchimento_seg',
   'id_envio', // 18.10 (8.14)
-  'editado_por', 'editado_em', 'criado_por', 'autoria_campos' // 18.5
+  'editado_por', 'editado_em', 'criado_por', 'autoria_campos', // 18.5
+  'criado_por_nome' // 18.6.2
 ];
 
 
@@ -1078,7 +1080,8 @@ function _celulaSegura_(v) {
  */
 var COLUNAS_TEXTO_LIVRE_FORA_ANAMNESE = ['timestamp', 'versao_formulario', 'data_nascimento'];
 var COLUNAS_TEXTO_LIVRE_AVULSAS = ['nome', 'observacoes', 'crp', 'humor_observacoes', 'item_funcional_texto', 'ind_nome',
-  'valor_anterior']; // 18.6: Anamnese_Historico
+  'valor_anterior', // 18.6: Anamnese_Historico
+  'criado_por_nome']; // 18.6.2
 
 function _colunaTextoLivre_(col) {
   var c = String(col);
@@ -2244,7 +2247,8 @@ function salvarAnamnese(sigla, dados) {
 // tiver cara de identificador (letras, numeros e hifen, 8 a 64).
 var CAMPOS_DO_SERVIDOR = ['timestamp', 'versao_formulario', 'sigla', 'profissional_id',
   'editado', 'editado_por', 'editado_em', 'editando_quem', 'editando_desde',
-  'criado_por', 'autoria_campos']; // 18.5
+  'criado_por', 'autoria_campos', // 18.5
+  'criado_por_nome']; // 18.6.2
 
 function _dadosDoCliente_(dados) {
   var limpo = {};
@@ -2517,7 +2521,7 @@ var COLUNAS_LEITURA_AUTO = [
   'pos_fis_atencao', 'pos_pens_o_que', 'pos_pens_autocompaixao', 'pos_pens_esperanca', 'pos_pens_confianca',
   'pos_pens_flexibilidade', 'pos_pens_responsabilidade', 'pos_comp_o_que', 'pos_comp_enfrentamento', 'pos_comp_conexao',
   'pos_comp_expressao', 'pos_comp_autocuidado', 'pos_comp_aceitacao',
-  'editando_quem', 'editado', 'editado_por', 'editado_em', 'criado_por', 'autoria_campos'
+  'editando_quem', 'editado', 'editado_por', 'editado_em', 'criado_por', 'autoria_campos', 'criado_por_nome'
 ];
 var COLUNAS_LEITURA_ESCALAS = [
   'timestamp', 'data_aplicacao', 'instrumento', 'versao_instrumento',
@@ -2525,7 +2529,7 @@ var COLUNAS_LEITURA_ESCALAS = [
   'item_11', 'item_12', 'item_13', 'item_14', 'item_15', 'item_16', 'item_17', 'item_18', 'item_19', 'item_20', 'item_21',
   'item_funcional', 'item_funcional_texto', 'escore_total', 'escore_depressao', 'escore_ansiedade', 'escore_estresse',
   'faixa', 'alerta_risco_flag', 'alerta_risco_item', 'alerta_risco_valor', 'observacoes', 'tempo_preenchimento_seg',
-  'editado_por', 'editado_em', 'criado_por', 'autoria_campos'
+  'editado_por', 'editado_em', 'criado_por', 'autoria_campos', 'criado_por_nome'
 ];
 var PAGINA_LEITURA = 60;      // registros por pagina (os mais recentes primeiro)
 var PAGINA_LEITURA_MAX = 200;
@@ -3555,8 +3559,9 @@ function _pacienteDoProfissional_(s, siglaPaciente) {
 }
 
 /** O que o servidor grava na linha criada pelo profissional. */
-function _autoriaDeCriacao_() {
+function _autoriaDeCriacao_(profissionalId) {
   return { criado_por: 'profissional', editado_por: 'profissional',
+    criado_por_nome: _nomeDeQuemAltera_('profissional', '', profissionalId), // 18.6.2
     editado_em: Utilities.formatDate(new Date(), 'America/Sao_Paulo', "yyyy-MM-dd'T'HH:mm:ss") };
 }
 
@@ -3575,8 +3580,8 @@ function profCriarAutomonitoramento(s, siglaPaciente, dados) {
   var repetido = _linhaDoEnvio_(aba, dados.id_envio);
   if (repetido) return _respostaDuplicado_(alvo.planilha, ABA_AUTOMONITORAMENTO, repetido, 'Registro salvo com sucesso');
   _garantirColunasAutomonitoramento_(aba);
-  _garantirColunas_(aba, ['criado_por', 'autoria_campos']);
-  aba.appendRow(montarLinha(aba, dados, _autoriaDeCriacao_()));
+  _garantirColunas_(aba, ['criado_por', 'autoria_campos', 'criado_por_nome']);
+  aba.appendRow(montarLinha(aba, dados, _autoriaDeCriacao_(alvo.profissionalId)));
   _indicadoresAposGravar_(alvo.profissionalId, siglaPaciente, alvo.planilha);
   return { ok: true, mensagem: 'Registro salvo com sucesso' };
 }
@@ -3655,8 +3660,8 @@ function profCriarEscala(s, siglaPaciente, dados) {
   var calc = _escoresDaEscala_(dados.instrumento, function (col) { return dados[col]; });
   if (!calc.ok) return calc;
   for (var k in calc.campos) dados[k] = calc.campos[k];
-  _garantirColunas_(aba, ['editado_por', 'editado_em', 'criado_por', 'autoria_campos']);
-  aba.appendRow(montarLinha(aba, dados, _autoriaDeCriacao_()));
+  _garantirColunas_(aba, ['editado_por', 'editado_em', 'criado_por', 'autoria_campos', 'criado_por_nome']);
+  aba.appendRow(montarLinha(aba, dados, _autoriaDeCriacao_(alvo.profissionalId)));
   _indicadoresAposGravar_(alvo.profissionalId, siglaPaciente, alvo.planilha);
   return { ok: true, mensagem: 'Escala salva com sucesso' };
 }
