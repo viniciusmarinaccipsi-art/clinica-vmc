@@ -1378,3 +1378,11 @@ peso 400) e `--c-ink-carimbo` (5,0:1), decisão do usuário ("menor e mais claro
 poluir"); o seletor `.review-row span.vmc-carimbo` existe para vencer `.review-row span`,
 que dava ao carimbo a cor do valor. A leitura da anamnese não tem mais os textos
 "fale diretamente com seu terapeuta" e "Visualização somente leitura".
+
+**18.6.2 (@39) — "Registrado por" e última alteração.** Registro e escala criados pelo
+profissional guardam `criado_por_nome` (coluna nova em Automonitoramento e Escalas, gravada
+por `_autoriaDeCriacao_(profissionalId)`; em `CAMPOS_DO_SERVIDOR` e nas `COLUNAS_LEITURA_*`);
+`vmcFaixaCriadoHtml_` mostra "Registrado por <Nome> em dd/mm/aaaa às hh:mm" (data e hora do
+`timestamp` da linha), igual nas duas telas; sem nome, só a data. A faixa do topo da leitura
+da anamnese mostra "Última alteração por <Nome> em …" (`vmcUltimaAlteracaoTexto_`: o carimbo
+mais recente de `autoria_campos`; vazio quando não há carimbo).
