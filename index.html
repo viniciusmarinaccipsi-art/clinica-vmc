@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.7 — produção (04/10/2026) -->
+<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.8 — produção (05/10/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+<!-- Pacote 18.8 (A8): CSP. Origem nova (script, fonte, fetch) só funciona depois de entrar nesta lista. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://script.google.com https://script.googleusercontent.com https://viacep.com.br; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#2C5F7C">
 <title>COGNIATIVO</title>
@@ -7687,6 +7689,16 @@ function loadingMensagem(txt) {
 /* ============================================================
    NAVEGAÇÃO ENTRE SEÇÕES
    ============================================================ */
+// Pacote 18.8 (8.43): o que a barra executa (data-barra-voltar / data-barra-acao-onclick) sai de uma lista fechada de
+// funções — nenhum código montado a partir de texto, e a CSP não precisa liberar execução de texto. Formatos aceitos: nome() e nome('texto').
+// Função nova usada num desses atributos entra aqui.
+function vmcAcaoDaBarra_(codigo) {
+  var acoes = { abrirSecao: abrirSecao, menuSalvarESair: menuSalvarESair, etapaSalvarESair: etapaSalvarESair,
+    autoVoltarEditarRevisar: autoVoltarEditarRevisar, escCancelarAplicacao: escCancelarAplicacao, voltarMenuAnamnese: voltarMenuAnamnese };
+  var m = /^([A-Za-z_$][\w$]*)\((?:'([^']*)')?\)$/.exec(String(codigo || '').trim());
+  if (!m || !Object.prototype.hasOwnProperty.call(acoes, m[1])) { console.error('Ação da barra fora da lista: ' + codigo); return; }
+  if (m[2] === undefined) acoes[m[1]](); else acoes[m[1]](m[2]);
+}
 // Pacote 16.1 (T1): barra única. Título e destino do voltar vêm do DOM (data-barra-* da seção);
 // sem atributos (menu, telas do profissional) a barra mostra a marca; no login ela some.
 function topbarAtualizar(idSecao) {
@@ -7712,7 +7724,7 @@ function topbarAtualizar(idSecao) {
     var acao = sec.getAttribute('data-barra-acao') || '';
     var acaoEl = document.getElementById('topbarAcao');
     acaoEl.textContent = acao;
-    acaoEl.onclick = acao ? function () { (new Function(sec.getAttribute('data-barra-acao-onclick') || ''))(); } : null;
+    acaoEl.onclick = acao ? function () { vmcAcaoDaBarra_(sec.getAttribute('data-barra-acao-onclick')); } : null;
     bar.classList.toggle('com-acao', !!acao);
     var btn = document.getElementById('topbarVoltar');
     // Pacote 16.4c: data-barra-voltar="" (atributo presente e vazio) = tela sem volta.
@@ -7722,7 +7734,7 @@ function topbarAtualizar(idSecao) {
     bar.classList.toggle('sem-voltar', codigo === '');
     btn.removeAttribute('onclick');
     btn.onclick = codigo === '' ? null : function () {
-      var executar = function () { (new Function(codigo))(); };
+      var executar = function () { vmcAcaoDaBarra_(codigo); };
       if (destinoForaDoFluxo(codigo, idSecao)) confirmarSaida(executar); else executar();
     };
     btn.setAttribute('aria-label', sec.getAttribute('data-barra-voltar-rotulo') || 'Voltar');

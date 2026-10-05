@@ -1,0 +1,91 @@
+# Pacote 18.8 — portões automáticos (E1, E4). Rodam a cada push na main e nos branches de pacote, e em pull request.
+# Nada aqui publica nem faz deploy: só confere. Sem dado de paciente e sem segredo.
+name: Portões
+
+on:
+  push:
+    branches: [main, 'pacote-*']
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  portoes:
+    name: Portões
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Baixar o repositório (histórico inteiro e tags — os testes comparam com versões anteriores)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+        timeout-minutes: 5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+        timeout-minutes: 5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+        timeout-minutes: 5
+
+      - name: node --check (Código.js e scripts)
+        timeout-minutes: 2
+        run: |
+          node --check "Código.js"
+          for f in scripts/*.js scripts/testes/*.js; do node --check "$f"; done
+
+      - name: Escores das escalas (gabarito por ponto de corte, servidor e frontend)
+        timeout-minutes: 3
+        run: node scripts/testes/teste_escores.js
+
+      - name: Backend sobre planilhas simuladas (funções puras e regressões)
+        timeout-minutes: 8
+        run: |
+          for f in scripts/testes/backend_*.js; do
+            echo "::group::$f"
+            node "$f"
+            echo "::endgroup::"
+          done
+
+      - name: Validador estático do index-dev.html
+        timeout-minutes: 3
+        run: python scripts/validar_index_dev.py
+
+      - name: Gabarito clínico (md5)
+        timeout-minutes: 2
+        run: python scripts/conferir_entrega_16_5.py --so-gabarito
+
+      - name: index.html = index-dev.html
+        timeout-minutes: 1
+        run: cmp index.html index-dev.html
+
+      - name: CSP presente e nenhum código montado a partir de texto
+        timeout-minutes: 1
+        run: |
+          for f in index.html index-dev.html admin.html privacidade.html; do
+            grep -q 'http-equiv="Content-Security-Policy"' "$f" || { echo "::error file=$f::sem CSP"; exit 1; }
+            if grep -q "unsafe-eval" "$f"; then echo "::error file=$f::CSP com unsafe-eval"; exit 1; fi
+          done
+          if grep -nE "new Function|[^A-Za-z_.]eval\(" index.html index-dev.html admin.html; then echo "::error::new Function/eval em página"; exit 1; fi
+
+      - name: Gitleaks (histórico inteiro, achados mascarados)
+        timeout-minutes: 5
+        run: |
+          set +e
+          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.18.4 detect --source /repo --redact --no-banner \
+            --report-format json --report-path /repo/gitleaks-relatorio.json --exit-code 1
+          codigo=$?
+          set -e
+          if [ -f gitleaks-relatorio.json ]; then
+            node -e "
+              const a = JSON.parse(require('fs').readFileSync('gitleaks-relatorio.json', 'utf8'));
+              a.forEach(x => console.log('::error file=' + x.File + ',line=' + x.StartLine + '::gitleaks ' + x.RuleID + ' — impressão: ' + x.Fingerprint));
+              console.log(a.length + ' achado(s)');
+            "
+          fi
+          exit $codigo

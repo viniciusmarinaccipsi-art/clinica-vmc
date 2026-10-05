@@ -16,3 +16,6 @@ token*.json
 itens_instrumentos_preenchido.xlsx
 docs/escalas/itens_instrumentos_preenchido.xlsx
 client_secret*.json
+
+# Pacote 18.8 - relatorio do gitleaks gerado no portao (nunca versionar)
+gitleaks-relatorio.json

@@ -56,28 +56,36 @@ async function esperarMarcador(url, marcador, maxSeg) {
   }
 }
 
+/* Pacote 18.8 (8.36): cada passo tem limite; estourou, a fumaça para dizendo em qual passo (não espera para sempre). */
+const LIMITE_PASSO_MS = 120000;
+function passo(nome, promessa, ms) {
+  let relogio;
+  const limite = new Promise((_, rej) => { relogio = setTimeout(() => rej(new Error('passo "' + nome + '" passou de ' + Math.round((ms || LIMITE_PASSO_MS) / 1000) + ' s')), ms || LIMITE_PASSO_MS); });
+  return Promise.race([promessa, limite]).finally(() => clearTimeout(relogio));
+}
+
 (async () => {
   const a = args(process.argv.slice(2));
   const vp = vmc.viewportsDe(a.viewport)[0];
   const dir = a.dir || path.join(__dirname, '..', '..', 'VMC-offline', 'fumaca');
   const F = { url: a.url, rotulo: a.rotulo, viewport: vp.w + 'x' + vp.h, inicio: new Date().toISOString(), checks: {} };
 
-  if (a.marcador) { F.pages = await esperarMarcador(a.url, a.marcador, a.espera); F.checks.marcadorNoPages = F.pages.ok; console.log('Pages: ' + (F.pages.ok ? 'marcador servido em ' + F.pages.segundos + ' s' : 'marcador NÃO apareceu em ' + F.pages.segundos + ' s') + ' — linha 2: ' + F.pages.linha2.slice(-60)); }
+  if (a.marcador) { F.pages = await passo('esperar o Pages', esperarMarcador(a.url, a.marcador, a.espera), (a.espera + 60) * 1000); F.checks.marcadorNoPages = F.pages.ok; console.log('Pages: ' + (F.pages.ok ? 'marcador servido em ' + F.pages.segundos + ' s' : 'marcador NÃO apareceu em ' + F.pages.segundos + ' s') + ' — linha 2: ' + F.pages.linha2.slice(-60)); }
 
-  const browser = await vmc.abrirNavegador();
-  const S = await vmc.abrir(browser, a.url, vp, { modo: 'fingir', rotulo: a.rotulo, dirCap: dir });
-  await S.ir();
+  const browser = await passo('abrir o navegador', vmc.abrirNavegador());
+  const S = await passo('abrir a aba', vmc.abrir(browser, a.url, vp, { modo: 'fingir', rotulo: a.rotulo, dirCap: dir }));
+  await passo('carregar a página', S.ir());
   F.marcador = S.R.marcador;
   if (a.marcador) F.checks.marcadorNaPagina = F.marcador.indexOf(a.marcador) !== -1;
 
-  F.login = await S.login();
+  F.login = await passo('login inválido', S.login());
   F.checks.loginMensagem = /incorret/i.test(F.login.mensagem);
 
-  await S.simularSessao();
-  F.inicioRegistro = await S.iniciarRegistro('neg', 2);
-  await S.preencherEtapas('neg', { comOutro: false });
-  await S.nextBtn(); F.checks.revisao = await S.esperarSecao('sec-auto-revisar', 10000);
-  F.envio = await S.enviar();
+  await passo('sessão simulada', S.simularSessao());
+  F.inicioRegistro = await passo('iniciar o registro', S.iniciarRegistro('neg', 2));
+  await passo('preencher as etapas', S.preencherEtapas('neg', { comOutro: false }));
+  await S.nextBtn(); F.checks.revisao = await passo('abrir a revisão', S.esperarSecao('sec-auto-revisar', 10000));
+  F.envio = await passo('enviar (fingido)', S.enviar());
   F.checks.enviado = F.envio.secaoDepois === 'sec-auto-enviado';
   F.enviado = F.checks.enviado ? await S.medirEnviado() : null;
   await S.foto('fumaca_enviado');
@@ -88,9 +96,10 @@ async function esperarMarcador(url, marcador, maxSeg) {
   }
   await S.fechar(); await browser.close();
 
-  F.pageerror = S.R.pageerror; F.dialogos = S.R.dialogos; F.consoleErros = S.R.consoleErros; F.requests = S.R.requests; F.capturas = S.R.capturas;
+  F.pageerror = S.R.pageerror; F.dialogos = S.R.dialogos; F.consoleErros = S.R.consoleErros; F.requests = S.R.requests; F.capturas = S.R.capturas; F.csp = S.R.csp;
   F.checks.pageerrorZero = S.R.pageerror.length === 0;
   F.checks.dialogosZero = S.R.dialogos.length === 0;
+  F.checks.cspZero = S.R.csp.length === 0; // 18.8
   F.ok = Object.keys(F.checks).every(k => F.checks[k]);
 
   const saida = vmc.gravarResultado(path.join(dir, 'fumaca_' + a.rotulo + '_' + vp.w + '.json'), F);
@@ -99,6 +108,7 @@ async function esperarMarcador(url, marcador, maxSeg) {
     ['login', F.login.mensagem + ' (' + F.login.segundos + ' s)'],
     ['envio fingido', F.envio.n + ' chaves → ' + F.envio.secaoDepois + (F.contrato ? (F.checks.contratoIgual ? ' · = linha de base' : ' · DIFERE da linha de base: faltam ' + F.contrato.faltam.join(',') + ' sobram ' + F.contrato.sobram.join(',')) : '')],
     ['pageerror / diálogos / console', S.R.pageerror.length + ' / ' + S.R.dialogos.length + ' / ' + S.R.consoleErros.length],
+    ['violações de CSP', S.R.csp.length + (S.R.csp.length ? ' → ' + S.R.csp.slice(0, 3).join(' | ') : '')],
     ['capturas', S.R.capturas.join(', ')],
     ['resultado', F.ok ? 'OK' : 'FALHA em: ' + Object.keys(F.checks).filter(k => !F.checks[k]).join(', ')],
     ['json', saida]

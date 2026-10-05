@@ -76,7 +76,7 @@ function gravarResultado(caminho, obj) {
 
 /* Resumo por viewport (o que se olha primeiro): pageerror, diálogos, erros de console, payloads, capturas. */
 function resumo(resultado) {
-  return (resultado.viewports || []).map(R => ({ viewport: R.viewport, pageerror: (R.pageerror || []).length, dialogos: (R.dialogos || []).length, consoleErros: (R.consoleErros || []).length, payloads: (R.payloads || []).length, requests: (R.requests || []).length, capturas: (R.capturas || []).length }));
+  return (resultado.viewports || []).map(R => ({ viewport: R.viewport, pageerror: (R.pageerror || []).length, dialogos: (R.dialogos || []).length, consoleErros: (R.consoleErros || []).length, csp: (R.csp || []).length, payloads: (R.payloads || []).length, requests: (R.requests || []).length, capturas: (R.capturas || []).length }));
 }
 
 function falhar(e) { console.error('FALHA: ' + e.message + '\n' + e.stack); process.exit(1); }
@@ -91,7 +91,7 @@ async function abrir(browser, url, vp, opts) {
   const ctx = await browser.newContext(ctxOpts);
   const page = await ctx.newPage();
   const erros = [];
-  const R = { viewport: vp.w + 'x' + vp.h, modo: o.modo, capturas: [], dialogos: [], payloads: [], edicoes: [], consoleErros: [], requests: [], chavesPorAcao: {}, pageerror: erros };
+  const R = { viewport: vp.w + 'x' + vp.h, modo: o.modo, capturas: [], dialogos: [], payloads: [], edicoes: [], consoleErros: [], requests: [], chavesPorAcao: {}, pageerror: erros, csp: [] };
   // S.servidor (opcional, do roteiro): (acao, corpo) => resposta | undefined — servidor simulado por page.route
   const S = { page, ctx, vp, modo: o.modo, rotulo: o.rotulo, dirCap: o.dirCap, R, bloquearEnvio: 0, servidor: null };
   const responder = (route, obj) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(obj) });
@@ -99,6 +99,10 @@ async function abrir(browser, url, vp, opts) {
   page.on('pageerror', e => erros.push(e.message.slice(0, 200)));
   page.on('crash', () => erros.push('CRASH do renderizador'));
   page.on('console', m => { if (m.type() === 'error') R.consoleErros.push(m.text().slice(0, 160)); });
+  // Pacote 18.8: violações da CSP (evento da página; a mensagem do console entra como segunda fonte)
+  await page.exposeFunction('__vmcCsp', v => { R.csp.push(String(v).slice(0, 200)); });
+  await page.addInitScript(() => { document.addEventListener('securitypolicyviolation', e => { window.__vmcCsp(e.effectiveDirective + ' ← ' + (e.blockedURI || '(inline)') + (e.lineNumber ? ' l.' + e.lineNumber : '')); }); });
+  page.on('console', m => { if (/Content Security Policy/i.test(m.text())) R.csp.push('console: ' + m.text().slice(0, 200)); });
   page.on('dialog', async d => { R.dialogos.push(d.message().slice(0, 80)); await d.accept(); });
   await page.route(/script\.google\.com/, async route => {
     let corpo = null;
