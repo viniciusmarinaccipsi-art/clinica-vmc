@@ -1,8 +1,11 @@
 # Pacote 18.8 — exceções do gitleaks (uma linha por achado conferido à mão; nenhuma é segredo).
-# Regra generic-api-key disparada por nome de variável terminado em "Key":
-# itemRiscoKey: 'SRQ20_item17' (nome do item de risco da escala SRQ-20)
+# As quatro são a regra generic-api-key disparada por nome de variável terminado em "Key":
+# as duas primeiras, o nome do item de risco da escala SRQ-20; as duas últimas, o nome da
+# chave do rascunho das escalas no navegador. (Não citar aqui o trecho: o gitleaks acusa a citação.)
 37c34b93f6a8e4cd817e4cd559ab2548bc8a2739:index.html:generic-api-key:15832
 21b544a82103185790f60379ae36d3fc29533ff0:index-dev.html:generic-api-key:15727
-# ESC_RASCUNHO_KEY = 'esc_rascunho_v1' (nome da chave do rascunho no navegador)
 3c2fd76f7443833dec671d1e029b4e856ddd9726:index-dev.html:generic-api-key:15987
 0a9f719808336771e12db751f78e014ca6e83b93:index.html:generic-api-key:15523
+# A versão anterior deste arquivo (commit 114fb0b) citava os dois trechos nos comentários:
+114fb0b169989829c68e3b2710ff45d06a864f15:.gitleaksignore:generic-api-key:3
+114fb0b169989829c68e3b2710ff45d06a864f15:.gitleaksignore:generic-api-key:6
