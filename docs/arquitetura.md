@@ -783,6 +783,17 @@ do commit) e fumaça no publicado. Envio real só quando o contrato, `Código.js
 ou a planilha mudarem, ou no fechamento de fase. Modelo de prompt com as
 regras: `docs/prompts/MODELO_PROMPT.md`.
 
+**Portões automáticos (18.8):** `.github/workflows/portoes.yml` roda a cada push na
+`main` e nos branches `pacote-*` e em pull request: `node --check` (`Código.js` e
+scripts), `scripts/testes/teste_escores.js` (gabarito dos escores por ponto de
+corte, servidor e frontend), `scripts/testes/backend_*.js` (o backend real sobre
+planilhas simuladas), validador, gabarito md5, `index.html` = `index-dev.html`,
+CSP presente sem `'unsafe-eval'`, zero `new Function`, e gitleaks no histórico
+inteiro (exceções conferidas à mão em `.gitleaksignore`, sem citar o trecho).
+O branch do pacote fica verde antes do merge. A fumaça (`vmc_fumaca.js`) tem
+limite por passo e falha com violação de CSP; `vmc_playwright_base.js` coleta
+as violações em `R.csp`. Playwright e comparação de capturas seguem no PC.
+
 ## Acesso por e-mail e crachá de sessão (Pacote 18.1 — implementado e publicado em 01/10/2026, @27)
 
 Detalhes da implementação que o desenho abaixo não fixava: o token do link
@@ -1121,7 +1132,17 @@ deploy @31).
   Regra: loading e faixa de erro ficam acima de qualquer modal ou folha; modal novo usa até 10199.
 - **SRI:** `chart.js@4.4.1/dist/chart.umd.min.js` (jsDelivr) com `integrity="sha384-…"` calculado do
   arquivo baixado (`openssl dgst -sha384 -binary | openssl base64 -A`, conferido em dois downloads) e
-  `crossorigin="anonymous"`. Trocar a versão = recalcular o hash. CSP fica no 18.8.
+  `crossorigin="anonymous"`. Trocar a versão = recalcular o hash.
+- **CSP (18.8):** `<meta http-equiv="Content-Security-Policy">` logo depois do `charset` em `index.html`,
+  `index-dev.html`, `admin.html` e `privacidade.html`; cada página lista só as origens que usa
+  (`script.google.com` e `script.googleusercontent.com`, `viacep.com.br`, `cdn.jsdelivr.net`,
+  `fonts.googleapis.com`, `fonts.gstatic.com`; `img-src 'self' data:` por causa dos ícones em `data:` do CSS).
+  `'unsafe-inline'` fica (manipuladores inline); `'unsafe-eval'` não entra. **Origem nova de script, fonte,
+  imagem ou `fetch` só funciona depois de entrar na CSP da página.** Links de navegação (`wa.me`, Correios)
+  não dependem dela.
+- **Barra sem código montado de texto (18.8):** `vmcAcaoDaBarra_(codigo)` executa `data-barra-voltar` e
+  `data-barra-acao-onclick` por uma lista fechada de funções (formatos `nome()` e `nome('texto')`); função
+  nova usada nesses atributos entra na lista.
 - **Zoom:** viewport `width=device-width, initial-scale=1.0` (sem `maximum-scale` nem `user-scalable=no`).
 - **Confirmação na tela:** `vmcAvisoOkNaTela(msg)` — o `autoAvisoEl` com `.auto-aviso-ok` (cor
   `--c-pos-ink`, ícone `i-check`, `role="status"`) no topo da tela ativa; `abrirSecao` remove. Usado na
