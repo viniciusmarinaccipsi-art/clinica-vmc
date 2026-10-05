@@ -1179,6 +1179,19 @@ deploy @31).
   (Sistema_VMC, Controle, planilha do paciente); a Controle fica em `_MEMO_.controles`; o
   `Indice_Siglas` é lido uma vez (`_indiceValores_`, só dentro do `doPost`) e quem grava no índice
   chama `_memoEsquecerIndice_()`. Não existe mais `SpreadsheetApp.openById` fora de `_abrirPlanilha_`.
+- **`genero` e `pedido_alteracao` (18.8.1).** Duas colunas aditivas na aba `Profissionais`, criadas pelo cabeçalho no
+  primeiro uso. `genero`: `M`, `F` ou vazio (vazio = textos no masculino); só o próprio profissional grava, em
+  "Meus dados" (`profSalvarMeusDados`); decide "Psicólogo/Psicóloga — CRP" (`_assinaturaDe_`), "Aqui é o/a" e
+  "Área do Psicólogo/da Psicóloga". `pedido_alteracao`: JSON `{ campos: { nomeCompleto, email, telefone, crp }, em }`
+  com o que o profissional pediu para mudar — o cadastro só muda quando o admin aprova (`admAprovarPedido`, que
+  aplica por `atualizarProfissional`) e o pedido sai na aprovação ou na recusa (`admRecusarPedido`). Um pedido por
+  vez. `listarProfissionais` devolve o pedido já lido (`pedido`), nunca a célula crua. A aba `Admins` não tem CRP
+  nem gênero: o admin é o controlador do sistema.
+- **Carimbo pelo cadastro (18.8.1).** O nome exibido em "Alterado por…", "Última alteração por…" e "Registrado
+  por…" é o do cadastro na hora da leitura: `_nomesDoCarimbo_(sigla, profissionalId)` + `_carimbosDoCadastro_` em
+  `lerHistorico`, `lerEscalas`, `lerDadosPaciente` e nas respostas de edição. O nome gravado em `autoria_campos` e
+  em `criado_por_nome` é só reserva (cadastro ilegível); nada é regravado. Leitura nova que devolva carimbo passa
+  pelas mesmas funções.
 - **`controle_id` (8.34).** Coluna `controle_id` na aba `Profissionais` (criada pelo cabeçalho, texto).
   `abrirControleDoProfissional` abre por id; a busca por nome na pasta do Drive só roda com a coluna
   vazia ou com id que não abre, e grava o id encontrado (`_gravarControleId_`). Profissional novo já

@@ -80,6 +80,7 @@ Deploy manual (colar no editor do Apps Script, arrastar no GitHub) está descont
 - [ ] Nenhum fragmento órfão; nenhuma função nova sem chamada; nenhuma aba/coluna "reservada"
 - [ ] Ação nova do `doPost` exige `token` (18.1+) e, se gravar, entra em `ACOES_COM_TRAVA` (servidor) e em `VMC_ACOES_GRAVACAO` (cliente); ação que mude senha, e-mail, `ativo` ou exclua conta chama `_portaoEsquecer_` depois de gravar (18.11: o portão do crachá fica 5 min em cache); gravação nova do paciente chama `_indicadoresAposGravar_`; `data-grupo` alinhado com colunas
 - [ ] Origem externa nova (script, fonte, imagem, `fetch`) entrou na CSP da página; função nova em `data-barra-voltar` / `data-barra-acao-onclick` entrou na lista de `vmcAcaoDaBarra_`; nenhum `new Function`/`eval`
+- [ ] Leitura nova que devolva carimbo (`autoria_campos`, `criado_por_nome`) passa por `_carimbosDoCadastro_` (18.8.1: o nome exibido é o do cadastro na hora de mostrar); mudança nos dados do profissional feita por ele é pedido (`pedido_alteracao`), nunca gravação direta — só o gênero é dele
 - [ ] `VERSAO_PACOTE` atualizada e devolvida pelo `ping` quando o backend mudou
 - [ ] Nenhum `console.log` com dado clínico; nenhuma senha, hash, token, segredo ou descrição de senha em arquivo que suba ao GitHub; nenhuma função de teste com credencial no `Código.js`
 
