@@ -406,6 +406,11 @@ a.btn-icon[aria-disabled="true"] { opacity:.5; cursor:not-allowed; }
   color:var(--adm);
   background:var(--adm-bg);
 }
+/* Pacote 18.8.1: profissional com pedido de alteração de dados */
+.btn-icon.pedido { border-color:var(--adm); color:var(--adm); font-weight:700; }
+.pedido-linha { padding:8px 0; border-bottom:1px solid var(--adm-lt); overflow-wrap:anywhere; }
+.pedido-linha:last-child { border-bottom:none; }
+.pedido-campo { font-weight:700; }
 .btn-icon.danger:hover {
   border-color:var(--red);
   color:var(--red);
@@ -759,6 +764,32 @@ a.btn-icon[aria-disabled="true"] { opacity:.5; cursor:not-allowed; }
 
 
   <!-- ============================================================
+       MODAL: PEDIDO DE ALTERAÇÃO DE DADOS (Pacote 18.8.1)
+       ============================================================ -->
+  <div class="modal-backdrop hidden" id="modalPedido">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title">Pedido de alteração de dados</div>
+        <button class="modal-close" onclick="admFecharModal('modalPedido')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-info">
+          Profissional: <strong id="pedInfoSigla">—</strong>
+        </div>
+        <div id="pedCampos"></div>
+        <input type="hidden" id="pedProfId">
+        <div class="alert alert-error hidden" id="pedError"></div>
+        <div class="alert alert-success hidden" id="pedSuccess"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-secondary" id="pedBtnRecusar" onclick="admDecidirPedido(false)">Recusar</button>
+        <button class="btn-primary" id="pedBtnAprovar" onclick="admDecidirPedido(true)">Aprovar</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
        MODAL: TROCAR SENHA
        ============================================================ -->
   <div class="modal-backdrop hidden" id="modalSenha">
@@ -984,7 +1015,8 @@ function admLogout() {
   ADM_STATE.convites = {};
   ADM_STATE.statusPendente = null;
   admSoltarFaixa_();
-  ['modalCadastro','modalEditar','modalSenha','modalStatus'].forEach(admFecharModal);
+  ['modalCadastro','modalEditar','modalSenha','modalStatus','modalPedido'].forEach(admFecharModal);
+  document.getElementById('pedCampos').innerHTML = ''; document.getElementById('pedProfId').value = ''; document.getElementById('pedInfoSigla').textContent = '—'; // 18.8.1
   // 18.11 (8.54): a tela também sai — lista, cabeçalho, avisos e o que ficou digitado nos modais
   document.getElementById('profTableBody').innerHTML = '';
   document.getElementById('dashCount').textContent = '';
@@ -1093,6 +1125,7 @@ function admRenderizarTabela() {
         <td data-label="Status"><span class="prof-status ${statusClass}">${statusTxt}</span></td>
         <td data-label="Ações">
           <div class="prof-actions">
+            ${p.pedido ? `<button class="btn-icon pedido" data-adm-acao="pedido" data-prof="${profId}">Pedido de alteração</button>` : ''}
             <button class="btn-icon" data-adm-acao="editar" data-prof="${profId}">Editar</button>
             <button class="btn-icon" data-adm-acao="senha" data-prof="${profId}" data-sigla="${sigla}">Senha</button>
             ${convite}
@@ -1114,6 +1147,7 @@ document.getElementById('profTableBody').addEventListener('click', function (e) 
   const profId = el.dataset.prof || '', sigla = el.dataset.sigla || '';
   switch (el.dataset.admAcao) {
     case 'editar': admAbrirModalEditar(profId); break;
+    case 'pedido': admAbrirModalPedido(profId); break; // 18.8.1
     case 'senha': admAbrirModalSenha(profId, sigla); break;
     case 'convite': admEnviarConvite(profId); break;
     case 'whats': e.preventDefault(); admWhatsGerarLink(profId); break;
@@ -1248,6 +1282,59 @@ async function admSalvarCadastro() {
     admFecharModal('modalCadastro');
     await admCarregarProfissionais();
   }, 1200);
+}
+
+
+/* ============================================================
+   MODAL: PEDIDO DE ALTERAÇÃO DE DADOS (Pacote 18.8.1)
+   O profissional pede em "Meus dados"; aqui o admin vê campo a campo "atual → pedido" e aprova ou recusa.
+   ============================================================ */
+const ADM_PEDIDO_CAMPOS = [['nomeCompleto', 'nome_completo', 'Nome completo'], ['email', 'email', 'Email'],
+  ['telefone', 'telefone', 'Telefone'], ['crp', 'crp', 'CRP']];
+
+function admAbrirModalPedido(profId) {
+  const p = ADM_STATE.profissionais.find(x => x.profissional_id === profId);
+  if (!p || !p.pedido || !p.pedido.campos) return;
+  document.getElementById('pedProfId').value = p.profissional_id;
+  document.getElementById('pedInfoSigla').textContent = p.sigla + ' — ' + (p.nome_completo || '');
+  let html = '';
+  for (const [chave, coluna, rotulo] of ADM_PEDIDO_CAMPOS) {
+    if (typeof p.pedido.campos[chave] !== 'string') continue;
+    html += '<div class="pedido-linha"><span class="pedido-campo">' + escapeHtml(rotulo) + ':</span> ' +
+      escapeHtml(String(p[coluna] === undefined || p[coluna] === null || p[coluna] === '' ? '(vazio)' : p[coluna])) + ' → <strong>' +
+      escapeHtml(p.pedido.campos[chave] || '(vazio)') + '</strong></div>';
+  }
+  document.getElementById('pedCampos').innerHTML = html;
+  document.getElementById('pedError').classList.add('hidden');
+  document.getElementById('pedSuccess').classList.add('hidden');
+  document.getElementById('pedBtnAprovar').disabled = false;
+  document.getElementById('pedBtnRecusar').disabled = false;
+  document.getElementById('modalPedido').classList.remove('hidden');
+}
+
+async function admDecidirPedido(aprovar) {
+  const erroBox = document.getElementById('pedError');
+  const sucBox = document.getElementById('pedSuccess');
+  const profId = document.getElementById('pedProfId').value;
+  if (!profId) return;
+  erroBox.classList.add('hidden');
+  sucBox.classList.add('hidden');
+  const botoes = [document.getElementById('pedBtnAprovar'), document.getElementById('pedBtnRecusar')];
+  botoes.forEach(b => { b.disabled = true; });
+
+  const resp = await admChamarServidor(aprovar ? 'admAprovarPedido' : 'admRecusarPedido', { profissionalId: profId });
+
+  if (!resp.ok) {
+    botoes.forEach(b => { b.disabled = false; });
+    return mostrarErro(erroBox, resp.erro || 'Erro ao gravar a decisão.');
+  }
+  if (aprovar) delete ADM_STATE.convites[profId]; // e-mail trocado invalida os links pendentes no servidor
+  sucBox.textContent = aprovar ? 'Alteração aprovada.' : 'Pedido recusado.';
+  sucBox.classList.remove('hidden');
+  setTimeout(async () => {
+    admFecharModal('modalPedido');
+    await admCarregarProfissionais();
+  }, 1000);
 }
 
 

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.8 — produção (05/10/2026) -->
+<!-- Sistema Clínico Digital VMC — index.html = index-dev.html (tema G) — Pacote 18.8.1 — produção (05/10/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -549,6 +549,11 @@ body.vmc-largo .topbar-in{max-width:1360px;}
   transition:all .25s;font-family:var(--f-text);
 }
 .prof-btn-logout:hover{background:rgba(255,255,255,.25);}
+/* Pacote 18.8.1 — "Meus dados" do profissional: botão ao lado do "Sair" e janela (mesmo modelo p5-modal) */
+.prof-header-acoes{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+.prof-md-aviso{font:var(--t-body-sm);color:var(--c-ink-2);margin:0 0 14px;}
+.prof-md-pend{font:var(--t-body-sm);color:var(--c-warn-ink);margin-top:4px;overflow-wrap:anywhere;}
+.prof-md-pend:empty{display:none;}
 .prof-placeholder{
   text-align:center;color:var(--c-ink-3);
   padding:40px 20px;font-size:14px;
@@ -714,12 +719,12 @@ body.vmc-largo .topbar-in{max-width:1360px;}
   margin-bottom:5px;font-family:var(--f-text);
 }
 .prof-cad-field label .req{color:var(--c-reg-neg-ink);}
-.prof-cad-field input{
+.prof-cad-field input,.prof-cad-field select{
   width:100%;padding:10px 12px;border:1.5px solid var(--c-line);
   border-radius:8px;font-size:14px;font-family:var(--f-text);
   box-sizing:border-box;transition:border-color .2s;
 }
-.prof-cad-field input:focus{border-color:var(--c-action);}
+.prof-cad-field input:focus,.prof-cad-field select:focus{border-color:var(--c-action);}
 .prof-cad-erro{
   display:none;background:var(--c-risk-tint);color:var(--c-risk-ink);
   padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px;
@@ -4194,7 +4199,10 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <h2 id="profNomeHeader">Olá, Profissional</h2>
         <p id="profSiglaHeader">Área do Psicólogo</p>
       </div>
-      <button class="prof-btn-logout" onclick="sairDoSistema()">Sair</button>
+      <div class="prof-header-acoes">
+        <button class="prof-btn-logout" type="button" id="profBtnMeusDados" onclick="profAbrirMeusDados()">Meus dados</button>
+        <button class="prof-btn-logout" onclick="sairDoSistema()">Sair</button>
+      </div>
     </div>
     <div class="prof-placeholder" id="profDashboardConteudo">
       <p style="font-size:32px;margin-bottom:12px;"><svg class="ico" aria-hidden="true"><use href="#i-wrench"/></svg></p>
@@ -4299,6 +4307,52 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
   </div>
 
   <!-- Pacote 13.4: Modal de cadastro de novo paciente -->
+  <!-- Pacote 18.8.1: "Meus dados" do profissional — o gênero grava na hora; nome, e-mail, telefone e CRP viram pedido ao admin -->
+  <div class="p5-modal-overlay" id="profMeusDadosModal" onclick="if(event.target===this)profFecharMeusDados()">
+    <div class="p5-modal-card" role="dialog" aria-modal="true" aria-labelledby="profMdTitulo" style="max-width:420px;">
+      <div class="p5-modal-head">
+        <span class="p5-modal-icone"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg></span>
+        <div class="p5-modal-titulo" id="profMdTitulo">Meus dados</div>
+      </div>
+      <div class="p5-modal-body">
+        <div class="prof-cad-erro" id="profMdErro" role="alert"></div>
+        <div class="alert alert-success hidden" id="profMdOk" role="status"></div>
+        <div class="prof-cad-field">
+          <label for="profMdGenero">Gênero</label>
+          <select id="profMdGenero">
+            <option value="M">Masculino</option>
+            <option value="F">Feminino</option>
+          </select>
+        </div>
+        <p class="prof-md-aviso">Alterações de nome, e-mail, telefone e CRP são enviadas ao administrador e só valem depois de aprovadas.</p>
+        <div class="prof-cad-field">
+          <label for="profMdNome">Nome completo</label>
+          <input type="text" id="profMdNome" maxlength="120">
+          <div class="prof-md-pend" id="profMdPendNome"></div>
+        </div>
+        <div class="prof-cad-field">
+          <label for="profMdEmail">E-mail</label>
+          <input type="email" id="profMdEmail" inputmode="email" autocapitalize="off" maxlength="120">
+          <div class="prof-md-pend" id="profMdPendEmail"></div>
+        </div>
+        <div class="prof-cad-field">
+          <label for="profMdTel">Telefone (WhatsApp)</label>
+          <input type="tel" id="profMdTel" inputmode="numeric" maxlength="13" oninput="profContatoMascara_(this)">
+          <div class="prof-md-pend" id="profMdPendTel"></div>
+        </div>
+        <div class="prof-cad-field">
+          <label for="profMdCrp">CRP</label>
+          <input type="text" id="profMdCrp" maxlength="120">
+          <div class="prof-md-pend" id="profMdPendCrp"></div>
+        </div>
+      </div>
+      <div class="p5-modal-acoes">
+        <button class="p5-btn p5-btn-secondary" type="button" onclick="profFecharMeusDados()">Fechar</button>
+        <button class="p5-btn p5-btn-primary" type="button" id="profMdBtnSalvar" onclick="profSalvarMeusDados()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
   <div class="p5-modal-overlay" id="profCadModal" onclick="if(event.target===this)profFecharModalCadastro()">
     <div class="p5-modal-card" role="dialog" aria-modal="true" aria-labelledby="profCadTitulo" style="max-width:420px;">
       <div class="p5-modal-head">
@@ -7394,7 +7448,7 @@ var VMC_ACOES_GRAVACAO = [
   'salvarRascunho', 'apagarRascunho', // 18.10b
   'alterarSenhaPaciente', 'pacienteAtualizarAnamnese',
   'pacienteMarcarEditandoAuto', 'pacienteLimparEditandoAuto', 'pacienteEditarAutomonitoramento',
-  'profCadastrarPaciente', 'profSalvarAnamnese', 'profSalvarGrade',
+  'profCadastrarPaciente', 'profSalvarAnamnese', 'profSalvarGrade', 'profSalvarMeusDados', // 18.8.1
   'profMarcarEditandoAuto', 'profLimparEditandoAuto', 'profEditarAutomonitoramento',
   'profCriarAutomonitoramento', 'profCriarEscala', 'profEditarEscala', // 18.5
   'profDesativarPaciente', 'profReativarPaciente', 'profExcluirPaciente', 'profAlterarSenhaPaciente',
@@ -8470,11 +8524,12 @@ function loginConcluir_(tipo, resposta) {
       sigla: perfil.sigla,
       nome_completo: perfil.nome_completo || perfil.nome,
       email: perfil.email,
+      genero: perfil.genero === 'F' ? 'F' : (perfil.genero === 'M' ? 'M' : ''), // 18.8.1
       token: resposta.token
     };
     // Atualizar header do dashboard
     document.getElementById('profNomeHeader').textContent = 'Olá, ' + (PROF_SESSAO.nome_completo || perfil.sigla);
-    document.getElementById('profSiglaHeader').textContent = 'Área do Psicólogo · ' + perfil.sigla;
+    document.getElementById('profSiglaHeader').textContent = profAreaTitulo_() + ' · ' + perfil.sigla;
     // Badge mostra sigla do profissional
     document.getElementById('userBadgeText').textContent = perfil.sigla;
     document.getElementById('userBadge').classList.add('visible');
@@ -8755,7 +8810,8 @@ function profContatoMascara_(el) {
 function vmcLinkWhatsApp(telefone, link) {
   // 18.10: quem assina é o profissional da sessão (primeiro nome do cadastro); o resto do texto não mudou
   var quem = iniPrimeiroNome(PROF_SESSAO && PROF_SESSAO.nome_completo);
-  var msg = 'Olá! ' + (quem ? 'Aqui é o ' + quem + '. ' : '') + 'Seu acesso ao COGNIATIVO está pronto. Toque no link para criar sua senha: ' + link + '. Ele vale por 48 horas.';
+  var artigo = (PROF_SESSAO && PROF_SESSAO.genero === 'F') ? 'a' : 'o'; // 18.8.1: gênero escolhido em "Meus dados"
+  var msg = 'Olá! ' + (quem ? 'Aqui é ' + artigo + ' ' + quem + '. ' : '') + 'Seu acesso ao COGNIATIVO está pronto. Toque no link para criar sua senha: ' + link + '. Ele vale por 48 horas.';
   return 'https://wa.me/55' + String(telefone || '').replace(/\D/g, '') + '?text=' + encodeURIComponent(msg);
 }
 
@@ -9588,6 +9644,78 @@ function profRenderizarEscalas_(escalas) {
  * Volta da tela individual do paciente para o dashboard do profissional.
  */
 /* ============================================================
+   PACOTE 18.8.1 — "Meus dados" do profissional
+   O gênero é dele e grava na hora; nome, e-mail, telefone e CRP viram um pedido que o admin aprova
+   (um por vez; o campo com pedido abre já com o valor pedido e mostra "Aguardando aprovação").
+   ============================================================ */
+function profAreaTitulo_() {
+  return (PROF_SESSAO && PROF_SESSAO.genero === 'F') ? 'Área da Psicóloga' : 'Área do Psicólogo';
+}
+var PROF_MD_CAMPOS = [['nomeCompleto', 'profMdNome', 'profMdPendNome'], ['email', 'profMdEmail', 'profMdPendEmail'],
+  ['telefone', 'profMdTel', 'profMdPendTel'], ['crp', 'profMdCrp', 'profMdPendCrp']];
+function profMeusDadosPreencher_(dados, pedido) {
+  var pedidos = (pedido && pedido.campos) || {};
+  document.getElementById('profMdGenero').value = dados.genero === 'F' ? 'F' : 'M';
+  PROF_MD_CAMPOS.forEach(function (c) {
+    var temPedido = typeof pedidos[c[0]] === 'string';
+    var valor = temPedido ? pedidos[c[0]] : (dados[c[0]] || '');
+    document.getElementById(c[1]).value = c[0] === 'telefone' ? vmcFormatarTelefone(valor) : valor;
+    var mostrado = c[0] === 'telefone' ? vmcFormatarTelefone(pedidos[c[0]] || '') : pedidos[c[0]];
+    document.getElementById(c[2]).textContent = temPedido ? 'Aguardando aprovação: ' + (mostrado || '(vazio)') : '';
+  });
+}
+function profMeusDadosMsg_(erro, ok) {
+  var e = document.getElementById('profMdErro'), o = document.getElementById('profMdOk');
+  e.textContent = erro || ''; e.classList.toggle('visivel', !!erro);
+  o.textContent = ok || ''; o.classList.toggle('hidden', !ok);
+}
+async function profAbrirMeusDados() {
+  if (!PROF_SESSAO) return;
+  profMeusDadosMsg_('', '');
+  var r = await chamarServidor('profLerMeusDados', {});
+  if (!r || !r.ok) {
+    if (r && r.codigo === 'sessao_expirada') return;
+    vmcAvisoNaTela((r && r.erro) || 'Não foi possível abrir os seus dados. Tente de novo.');
+    return;
+  }
+  profMeusDadosPreencher_(r.dados || {}, r.pedido);
+  document.getElementById('profMdBtnSalvar').disabled = false;
+  document.getElementById('profMeusDadosModal').classList.add('show');
+  document.getElementById('profMdGenero').focus();
+}
+function profFecharMeusDados(limpar) {
+  document.getElementById('profMeusDadosModal').classList.remove('show');
+  if (limpar === true) { profMeusDadosPreencher_({}, null); profMeusDadosMsg_('', ''); }
+}
+async function profSalvarMeusDados() {
+  if (!PROF_SESSAO) return;
+  var dados = {
+    genero: document.getElementById('profMdGenero').value,
+    nomeCompleto: document.getElementById('profMdNome').value.trim(),
+    email: document.getElementById('profMdEmail').value.trim().toLowerCase(),
+    telefone: document.getElementById('profMdTel').value.replace(/\D/g, ''),
+    crp: document.getElementById('profMdCrp').value.trim()
+  };
+  profMeusDadosMsg_('', '');
+  if (!dados.nomeCompleto) return profMeusDadosMsg_('Nome completo não pode ficar vazio.', '');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dados.email)) return profMeusDadosMsg_('E-mail inválido', '');
+  var btn = document.getElementById('profMdBtnSalvar');
+  btn.disabled = true;
+  var r = await chamarServidor('profSalvarMeusDados', { dados: dados });
+  btn.disabled = false;
+  if (!r || !r.ok) {
+    if (r && r.codigo === 'sessao_expirada') return;
+    return profMeusDadosMsg_((r && r.erro) || 'Não foi possível salvar. Tente de novo.', '');
+  }
+  if (PROF_SESSAO) {
+    PROF_SESSAO.genero = (r.dados && r.dados.genero) || '';
+    document.getElementById('profSiglaHeader').textContent = profAreaTitulo_() + ' · ' + PROF_SESSAO.sigla;
+  }
+  profMeusDadosPreencher_(r.dados || {}, r.pedido);
+  profMeusDadosMsg_('', r.pedido ? 'Pedido enviado. Aguardando aprovação do administrador.' : 'Dados salvos.');
+}
+
+/* ============================================================
    PACOTE 13.5 — Desativar / Reativar / Excluir Paciente
    ============================================================ */
 
@@ -9887,6 +10015,8 @@ document.addEventListener('keydown', function(evt) {
   if (evt.key === 'Escape') {
     var m = document.getElementById('profCadModal');
     if (m && m.classList.contains('show')) profFecharModalCadastro();
+    var md = document.getElementById('profMeusDadosModal'); // 18.8.1
+    if (md && md.classList.contains('show')) profFecharMeusDados();
   }
 });
 
@@ -10326,6 +10456,7 @@ function sairDoSistema(opcoes) {
   graEstado = null; graCarregando = false; CAL_GRADE_JANELAS = {}; CAL_SESSOES = [];
   document.getElementById('profNomeHeader').textContent = 'Olá, Profissional';
   document.getElementById('profSiglaHeader').textContent = 'Área do Psicólogo';
+  profFecharMeusDados(true); // 18.8.1: a janela "Meus dados" sai com a sessão, sem nada digitado
   // paciente: registro em memória (fica só na sessão expirada), escalas, anamnese, Início, caches e gráficos
   if (!manter) { autoResetState(); VMC_ULTIMA_SIGLA_PACIENTE = ''; }
   descartarCachesPaciente_(); // 16.5d-3.2: Painel, histórico de escalas, gráficos, Meus Registros

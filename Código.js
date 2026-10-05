@@ -51,7 +51,10 @@
 // id_envio, autoria; 18.10b: rascunho no servidor) (03/10/2026)
 // Pacote 18.5 — registro e edicao pelo profissional: edicao por campo com carimbo (autoria_campos), criacao pelo
 // profissional (criado_por), escore de escala no servidor, leituras do paciente paginadas e por colunas (03/10/2026)
-var VERSAO_PACOTE = '18.11';
+// Pacote 18.8.1 — assinatura dos convites: genero do profissional (escolhido por ele em "Meus dados"), pedido de
+// alteracao de dados aprovado pelo admin, linhas de formacao fora dos e-mails, carimbo com o nome lido do cadastro
+// na hora de mostrar (05/10/2026)
+var VERSAO_PACOTE = '18.8.1';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -367,6 +370,15 @@ function _despachar_(acao, payload, s) {
         resposta = salvarGradeAtendimento(s, payload.config, payload.grade);
         break;
 
+      // Pacote 18.8.1 - "Meus dados" do profissional (genero na hora; nome, e-mail, telefone e CRP viram pedido)
+      case 'profLerMeusDados':
+        resposta = profLerMeusDados(s);
+        break;
+
+      case 'profSalvarMeusDados':
+        resposta = profSalvarMeusDados(s, payload.dados);
+        break;
+
       // Acoes do admin (admin do cracha)
       case 'admListarProfissionais':
         resposta = listarProfissionais(s);
@@ -394,6 +406,15 @@ function _despachar_(acao, payload, s) {
 
       case 'admEnviarConvite':
         resposta = admEnviarConvite(s, payload.profissionalId, payload.canal);
+        break;
+
+      // Pacote 18.8.1 - pedido de alteracao de dados do profissional
+      case 'admAprovarPedido':
+        resposta = admAprovarPedido(s, payload.profissionalId);
+        break;
+
+      case 'admRecusarPedido':
+        resposta = admRecusarPedido(s, payload.profissionalId);
         break;
 
       default:
@@ -433,7 +454,7 @@ function _memoZerar_(ativo) {
 
 // 18.11: leituras em que a linha do paciente e a do profissional sao lidas uma vez por chamada
 var ACOES_SO_LEITURA = ['lerHistorico', 'lerEscalas', 'lerRascunhos', 'lerEditandoAuto',
-  'profListarPacientes', 'profLerDadosPaciente', 'profLerGrade', 'admListarProfissionais'];
+  'profListarPacientes', 'profLerDadosPaciente', 'profLerGrade', 'admListarProfissionais', 'profLerMeusDados'];
 
 // ---------- 18.11: cache do script (CacheService) ----------
 // Tres coisas moram no cache do script, para a chamada comum nao abrir a Sistema_VMC:
@@ -590,7 +611,8 @@ var ACOES_COM_TRAVA = [
   'profDesativarPaciente', 'profReativarPaciente', 'profExcluirPaciente', 'profAlterarSenhaPaciente',
   'profSalvarGrade',
   'admCadastrarProfissional', 'admAtualizarProfissional', 'admTrocarSenhaProfissional',
-  'admDesativarProfissional', 'admReativarProfissional', 'admEnviarConvite'
+  'admDesativarProfissional', 'admReativarProfissional', 'admEnviarConvite',
+  'profSalvarMeusDados', 'admAprovarPedido', 'admRecusarPedido' // 18.8.1
 ];
 
 
@@ -896,12 +918,8 @@ var MSG_REDEFINICAO = 'Se o e-mail estiver cadastrado, o link chegará em alguns
 var MSG_COTA_EMAIL = 'Limite diário de e-mails atingido. Use o botão WhatsApp ou tente amanhã.'; // texto do 18.1 (8.66)
 var EMAIL_DESTAQUE = 'COGNIATIVO — Psicoterapia para além das sessões, com intervenções cognitivo-comportamentais no dia a dia.';
 // 18.10: a assinatura deixou de ser fixa — e o nome (e o CRP, se houver) de quem assina,
-// lido da planilha (_assinaturaDe_). As linhas de formacao abaixo nao mudaram.
-var EMAIL_FORMACAO = [
-  'Mestrando em Saúde Mental e Psiquiatria — Faculdade de Ciências Médicas, UNICAMP',
-  'Especialização em Terapia Cognitivo-Comportamental — PUC-RS',
-  'Especialização em Neurociências e Comportamento — PUC-RS'
-];
+// lido da planilha (_assinaturaDe_). 18.8.1: as linhas de formacao fixas sairam de todos os
+// e-mails (decisao do usuario, 05/10): a assinatura e so nome + "Psicologo/Psicologa — CRP".
 
 // ---------- funcoes puras (testadas em Node: scratchpad check_18_1.js) ----------
 
@@ -1129,37 +1147,48 @@ function montarEmail(tipoEmail, nome, link, profissionalNome, assinatura) {
   var texto = [EMAIL_DESTAQUE, '', ola, '', paragrafo]
     .concat(acompanhamento ? ['', acompanhamento] : [])
     .concat(['', link, '', aviso, ''])
-    .concat(linhasAssinatura).concat(EMAIL_FORMACAO).join('\n');
+    .concat(linhasAssinatura).join('\n');
   var html = '<p><strong>' + esc(EMAIL_DESTAQUE) + '</strong></p>' +
     '<p>' + esc(ola) + '</p>' +
     '<p>' + esc(paragrafo) + '</p>' +
     (acompanhamento ? '<p>' + esc(acompanhamento) + '</p>' : '') +
     '<p><a href="' + esc(link) + '">' + esc(link) + '</a></p>' +
     '<p>' + esc(aviso) + '</p>' +
-    '<p>' + linhasAssinatura.map(esc).join('<br>') + (linhasAssinatura.length ? '<br>' : '') +
-    '<span style="font-size:12px">' + EMAIL_FORMACAO.map(esc).join('<br>') + '</span></p>';
+    (linhasAssinatura.length ? '<p>' + linhasAssinatura.map(esc).join('<br>') + '</p>' : '');
   return { assunto: assunto, texto: texto, html: html };
 }
 
-/** Linhas da assinatura: nome e, se houver CRP, "Psicólogo — CRP <numero>". */
-function _assinaturaDe_(nome, crp) {
+/** Genero como o sistema o guarda: 'M', 'F' ou '' (sem escolha = textos no masculino, como sempre foi). */
+function _generoDe_(v) {
+  var g = String(v === undefined || v === null ? '' : v).trim().toUpperCase();
+  return g === 'M' || g === 'F' ? g : '';
+}
+
+/**
+ * Linhas da assinatura: nome e, se houver CRP, "Psicólogo — CRP <numero>" ou, com
+ * genero 'F' (18.8.1), "Psicóloga — CRP <numero>".
+ */
+function _assinaturaDe_(nome, crp, genero) {
   var n = String(nome || '').trim();
   if (!n) return [];
   var c = String(crp || '').trim().replace(/^crp\s*/i, '');
-  return c ? [n, 'Psicólogo — CRP ' + c] : [n];
+  return c ? [n, (_generoDe_(genero) === 'F' ? 'Psicóloga' : 'Psicólogo') + ' — CRP ' + c] : [n];
 }
 
-/** Assinatura do profissional (aba Profissionais: nome_completo e crp, se a coluna existir). */
+/** Assinatura do profissional (aba Profissionais: nome_completo, crp e genero, se as colunas existirem). */
 function _assinaturaDoProfissional_(profissionalId) {
   var prof = buscarProfissional(profissionalId);
-  return prof ? _assinaturaDe_(prof.nome_completo, prof.crp) : [];
+  return prof ? _assinaturaDe_(prof.nome_completo, prof.crp, prof.genero) : [];
 }
 
-/** Assinatura dos e-mails de profissional e de admin: o primeiro admin ativo (aba Admins). */
+/**
+ * Assinatura dos e-mails de profissional e de admin: o primeiro admin ativo (aba Admins).
+ * 18.8.1: so o nome — o admin e o controlador do sistema, nao psicologo (sem CRP e sem genero).
+ */
 function _assinaturaDoSistema_() {
   var admins = lerAbaComoObjetos(_abrirPlanilha_(SISTEMA_VMC_ID), ABA_ADMINS);
   for (var i = 0; i < admins.length; i++) {
-    if (_estaAtivo_(admins[i].ativo)) return _assinaturaDe_(admins[i].nome_completo, admins[i].crp);
+    if (_estaAtivo_(admins[i].ativo)) return _assinaturaDe_(admins[i].nome_completo);
   }
   return [];
 }
@@ -1518,7 +1547,7 @@ function _registroDaConta_(tipo, sigla, profissionalId) {
     return {
       ativo: _estaAtivo_(prof.ativo), senha_hash: prof.senha_hash,
       nome: prof.nome_completo || '', email: normalizarEmail(prof.email),
-      extra: { profissional_id: prof.profissional_id, nome_completo: prof.nome_completo }
+      extra: { profissional_id: prof.profissional_id, nome_completo: prof.nome_completo, genero: _generoDe_(prof.genero) } // 18.8.1
     };
   }
   if (tipo === 'admin') {
@@ -1972,7 +2001,7 @@ function admEnviarConvite(s, profissionalId, canal) {
   var enviado = false;
   if (canal === 'email') {
     // 18.10: convite de profissional assinado pelo admin que o enviou
-    enviado = _enviarEmail_(email, montarEmail('convite', primeiroNome(prof.nome_completo), link, '', _assinaturaDe_(adm.nome_completo, adm.crp)));
+    enviado = _enviarEmail_(email, montarEmail('convite', primeiroNome(prof.nome_completo), link, '', _assinaturaDe_(adm.nome_completo)));
     if (!enviado) { _anularLink_(link); return { ok: false, erro: MSG_COTA_EMAIL }; }
   }
   return { ok: true, link: link, enviado: enviado };
@@ -2312,6 +2341,12 @@ function lerDadosPaciente(s, siglaPaciente) {
 
   // 6. Pacote 13.3.3: Ler escalas
   var escalas = lerAbaComoObjetos(planilha, ABA_ESCALAS);
+
+  // 18.8.1: carimbos com o nome atual do cadastro
+  var nomesCarimbo = _nomesDoCarimbo_(siglaPaciente, profissionalId);
+  _carimbosDoCadastro_(anamnese, nomesCarimbo);
+  _carimbosDoCadastro_(automonitoramento, nomesCarimbo);
+  _carimbosDoCadastro_(escalas, nomesCarimbo);
 
   return {
     ok: true,
@@ -2773,9 +2808,10 @@ function lerHistorico(sigla, antes, limite) {
   var temNegativo = pagina.registros.some(function (r) { return r.neg_preenchido === 'sim'; });
   if (!temNegativo && pagina.registros.length < pagina.total) temNegativo = _colunaTemValor_(abaAuto, 'neg_preenchido', 'sim');
 
+  var nomesCarimbo = _nomesDoCarimbo_(sigla, paciente.__profissional_id); // 18.8.1
   var resposta = {
     ok: true,
-    automonitoramento: pagina.registros,
+    automonitoramento: _carimbosDoCadastro_(pagina.registros, nomesCarimbo),
     total_registros: pagina.total,
     tem_mais: pagina.tem_mais,
     tem_negativo: temNegativo
@@ -2783,7 +2819,7 @@ function lerHistorico(sigla, antes, limite) {
   if (!(parseInt(antes, 10) > 0)) {
     var anamnese = lerAbaComoObjetos(planilha, ABA_ANAMNESE);
     resposta.anamnese_preenchida = anamnese.length > 0;
-    resposta.anamnese = anamnese.length > 0 ? anamnese[0] : null;
+    resposta.anamnese = anamnese.length > 0 ? _carimboDoCadastro_(anamnese[0], nomesCarimbo) : null;
   }
   return resposta;
 }
@@ -2889,7 +2925,7 @@ function lerEscalas(sigla, antes, limite) {
     ok: true,
     total: pagina.total,
     tem_mais: pagina.tem_mais,
-    escalas: pagina.registros
+    escalas: _carimbosDoCadastro_(pagina.registros, _nomesDoCarimbo_(sigla, paciente.__profissional_id)) // 18.8.1
   };
 }
 
@@ -3670,6 +3706,47 @@ function _nomeDeQuemAltera_(por, sigla, profissionalId) {
   }
 }
 
+// ---------- 18.8.1: o nome do carimbo e o do cadastro NA HORA DE MOSTRAR ----------
+// Regra do usuario (04/10): carimbo e assinatura seguem sempre o nome do cadastro; mudou o nome,
+// mudam. O nome gravado em autoria_campos e em criado_por_nome continua sendo escrito, mas so
+// vale como reserva: toda leitura que devolve carimbo troca-o pelo nome atual — "profissional"
+// e o dono do paciente (cada paciente tem um so), "paciente" e o proprio. Nada e regravado.
+
+/** Nomes atuais de quem pode ter carimbado os registros deste paciente: { profissional, paciente }. */
+function _nomesDoCarimbo_(sigla, profissionalId) {
+  return { profissional: _nomeDeQuemAltera_('profissional', sigla, profissionalId),
+    paciente: _nomeDeQuemAltera_('paciente', sigla, profissionalId) };
+}
+
+/** autoria_campos (texto JSON da celula ou mapa) com o nome atual; devolve no mesmo formato em que veio. */
+function _autoriaComNomeAtual_(autoria, nomes) {
+  var texto = typeof autoria === 'string';
+  if (texto && !autoria) return autoria;
+  var mapa = texto ? _jsonOuVazio_(autoria) : autoria;
+  if (!mapa || typeof mapa !== 'object') return autoria;
+  var mudou = false;
+  for (var col in mapa) {
+    var c = mapa[col];
+    if (!c || typeof c !== 'object') continue;
+    var atual = nomes[c.por];
+    if (atual && c.nome !== atual) { c.nome = atual; mudou = true; }
+  }
+  return texto ? (mudou ? JSON.stringify(mapa) : autoria) : mapa;
+}
+
+/** Aplica o nome atual aos carimbos de um registro lido (autoria_campos e criado_por_nome). Devolve o registro. */
+function _carimboDoCadastro_(registro, nomes) {
+  if (!registro) return registro;
+  if (registro.autoria_campos) registro.autoria_campos = _autoriaComNomeAtual_(registro.autoria_campos, nomes);
+  if (registro.criado_por === 'profissional' && nomes.profissional) registro.criado_por_nome = nomes.profissional;
+  return registro;
+}
+
+function _carimbosDoCadastro_(registros, nomes) {
+  for (var i = 0; registros && i < registros.length; i++) _carimboDoCadastro_(registros[i], nomes);
+  return registros;
+}
+
 /** Edicao de um registro de automonitoramento (paciente ou profissional), por campo. */
 function _editarRegistroAuto_(planilhaId, timestamp, campos, por, idEnvio, profissionalId, sigla) {
   var id = _idEnvioValido_(idEnvio);
@@ -3682,7 +3759,7 @@ function _editarRegistroAuto_(planilhaId, timestamp, campos, por, idEnvio, profi
   if (r.alterados.length) _indicadoresAposGravar_(profissionalId, sigla, _abrirPlanilha_(planilhaId));
   _edicaoFeita_(id);
   return { ok: true, mensagem: 'Registro atualizado com sucesso', editado_em: r.editado_em,
-    campos_alterados: r.alterados, autoria_campos: r.autoria_campos };
+    campos_alterados: r.alterados, autoria_campos: _autoriaComNomeAtual_(r.autoria_campos, _nomesDoCarimbo_(sigla, profissionalId)) };
 }
 
 /** Edicao da anamnese (linha 2) por campo. E-mail e telefone espelham o cadastro e ficam de fora. */
@@ -3697,7 +3774,8 @@ function _editarAnamnesePorCampos_(planilha, aba, campos, por, idEnvio, profissi
     _indicadoresAposGravar_(profissionalId, sigla, planilha);
   }
   _edicaoFeita_(id);
-  return { ok: true, mensagem: mensagem, editado_em: r.editado_em, campos_alterados: r.alterados, autoria_campos: r.autoria_campos };
+  return { ok: true, mensagem: mensagem, editado_em: r.editado_em, campos_alterados: r.alterados,
+    autoria_campos: _autoriaComNomeAtual_(r.autoria_campos, _nomesDoCarimbo_(sigla, profissionalId)) };
 }
 
 // 18.6 — historico da anamnese: aba `Anamnese_Historico` na planilha do paciente, criada no
@@ -3898,8 +3976,10 @@ function profEditarEscala(s, siglaPaciente, timestamp, campos, idEnvio) {
   var valores = aba.getRange(linha, 1, 1, header.length).getValues()[0];
   var registro = {};
   for (var i = 0; i < header.length; i++) registro[header[i]] = _valorDeLeitura_(header[i], valores[i]);
+  var nomesEscala = _nomesDoCarimbo_(siglaPaciente, alvo.profissionalId); // 18.8.1
   return { ok: true, mensagem: 'Escala salva com sucesso', editado_em: r.editado_em,
-    campos_alterados: r.alterados, autoria_campos: r.autoria_campos, registro: registro };
+    campos_alterados: r.alterados, autoria_campos: _autoriaComNomeAtual_(r.autoria_campos, nomesEscala),
+    registro: _carimboDoCadastro_(registro, nomesEscala) };
 }
 
 
@@ -4181,11 +4261,127 @@ function listarProfissionais(s) {
     var obj = {};
     for (var j = 0; j < cabecalhos.length; j++) {
       if (cabecalhos[j] === 'senha_hash') continue;  // nunca volta pro cliente
+      if (cabecalhos[j] === 'pedido_alteracao') { obj.pedido = _pedidoDe_(dados[i][j]); continue; } // 18.8.1
       obj[cabecalhos[j]] = cabecalhos[j] === 'ativo' ? _ativoParaCliente_(dados[i][j]) : dados[i][j];
     }
     lista.push(obj);
   }
   return { ok: true, total: lista.length, profissionais: lista };
+}
+
+
+// ============================================================
+// PACOTE 18.8.1 — "MEUS DADOS" DO PROFISSIONAL E PEDIDO DE ALTERACAO
+// ============================================================
+// O profissional abre "Meus dados" na area dele: o genero e dele e grava na hora (coluna
+// `genero`: 'M', 'F' ou vazio). Nome, e-mail, telefone e CRP ele edita, mas o cadastro so
+// muda quando o admin aprova: o que ele pediu fica na coluna `pedido_alteracao` da propria
+// linha (JSON { campos: {nomeCompleto, email, telefone, crp}, em }), um pedido por vez —
+// salvar de novo substitui; salvar igual ao cadastro retira o pedido. Aprovar aplica por
+// atualizarProfissional (o mesmo caminho da edicao do admin: e-mail unico, links, portao).
+
+var PEDIDO_CAMPOS = { nomeCompleto: 'nome_completo', email: 'email', telefone: 'telefone', crp: 'crp' };
+var PEDIDO_TAMANHO_MAX = 120;
+
+/** Pedido guardado na celula: { campos, em } so com as chaves conhecidas, ou null. */
+function _pedidoDe_(texto) {
+  var bruto = _jsonOuVazio_(texto);
+  var campos = {}, tem = false;
+  for (var k in PEDIDO_CAMPOS) {
+    if (bruto && bruto.campos && typeof bruto.campos[k] === 'string') { campos[k] = bruto.campos[k]; tem = true; }
+  }
+  return tem ? { campos: campos, em: String(bruto.em || '') } : null;
+}
+
+/** Os dados do cadastro como "Meus dados" os mostra. */
+function _meusDadosDe_(prof) {
+  return { sigla: String(prof.sigla || ''), nomeCompleto: String(prof.nome_completo || '').trim(), email: normalizarEmail(prof.email),
+    telefone: normalizarTelefone(prof.telefone), crp: String(prof.crp || '').trim(), genero: _generoDe_(prof.genero) };
+}
+
+function profLerMeusDados(s) {
+  var auth = _authProfissional_(s);
+  if (!auth.ok) return auth;
+  var prof = buscarProfissional(auth.profissional.profissional_id);
+  if (!prof) return { ok: false, erro: 'Profissional nao encontrado' };
+  return { ok: true, dados: _meusDadosDe_(prof), pedido: _pedidoDe_(prof.pedido_alteracao) };
+}
+
+/**
+ * Grava o genero e registra (ou retira) o pedido de alteracao. `dados` = { genero, nomeCompleto,
+ * email, telefone, crp }; chave ausente = campo intocado. Saida: { ok, dados, pedido }.
+ */
+function profSalvarMeusDados(s, dados) {
+  var auth = _authProfissional_(s);
+  if (!auth.ok) return auth;
+  if (!dados || typeof dados !== 'object') return { ok: false, erro: 'Dados ausentes' };
+  var profId = auth.profissional.profissional_id;
+  var prof = buscarProfissional(profId);
+  if (!prof) return { ok: false, erro: 'Profissional nao encontrado' };
+  var atual = _meusDadosDe_(prof);
+
+  var generoCru = String(dados.genero === undefined || dados.genero === null ? atual.genero : dados.genero).trim().toUpperCase();
+  if (generoCru !== '' && generoCru !== 'M' && generoCru !== 'F') return { ok: false, erro: 'Gênero inválido.' };
+
+  var pedidos = {};
+  for (var k in PEDIDO_CAMPOS) {
+    if (dados[k] === undefined || dados[k] === null) continue;
+    var v = String(dados[k]).trim();
+    if (v.length > PEDIDO_TAMANHO_MAX) return { ok: false, erro: 'Texto longo demais.' };
+    if (k === 'email') v = normalizarEmail(v);
+    if (k === 'telefone') v = normalizarTelefone(v);
+    if (v !== atual[k]) pedidos[k] = v;
+  }
+  if (pedidos.nomeCompleto === '') return { ok: false, erro: 'Nome completo não pode ficar vazio.' };
+  if (pedidos.email !== undefined) {
+    if (!emailValido(pedidos.email)) return { ok: false, erro: 'E-mail inválido.' };
+    var outra = _contaPorEmail_('profissional', pedidos.email);
+    if (outra && outra.profissional_id !== String(profId).trim()) return { ok: false, erro: 'Este e-mail já está em uso por outra conta.' };
+  }
+
+  var tem = Object.keys(pedidos).length > 0;
+  var pedido = tem ? { campos: pedidos, em: Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd HH:mm:ss') } : null;
+  var aba = _abrirPlanilha_(SISTEMA_VMC_ID).getSheetByName(ABA_PROFISSIONAIS);
+  if (!_atualizarLinhaPorChave_(aba, 'profissional_id', profId, { genero: generoCru, pedido_alteracao: pedido ? JSON.stringify(pedido) : '' })) {
+    return { ok: false, erro: 'Profissional nao encontrado' };
+  }
+  if (_MEMO_.linhas) delete _MEMO_.linhas['prof:' + String(profId).trim()];
+  atual.genero = generoCru;
+  return { ok: true, dados: atual, pedido: pedido };
+}
+
+/** Limpa o pedido da linha do profissional. */
+function _pedidoApagar_(profissionalId) {
+  var aba = _abrirPlanilha_(SISTEMA_VMC_ID).getSheetByName(ABA_PROFISSIONAIS);
+  var ok = _atualizarLinhaPorChave_(aba, 'profissional_id', profissionalId, { pedido_alteracao: '' });
+  if (_MEMO_.linhas) delete _MEMO_.linhas['prof:' + String(profissionalId).trim()];
+  return ok;
+}
+
+/** O admin aprova o pedido: os campos pedidos entram no cadastro pelo caminho da edicao do admin. */
+function admAprovarPedido(s, profissionalId) {
+  var adm = _admDaSessao_(s);
+  if (!adm) return { ok: false, erro: 'Credenciais de admin invalidas' };
+  var prof = buscarProfissional(profissionalId);
+  if (!prof) return { ok: false, erro: 'Profissional nao encontrado: ' + profissionalId };
+  var pedido = _pedidoDe_(prof.pedido_alteracao);
+  if (!pedido) return { ok: false, erro: 'Não há pedido de alteração para este profissional.' };
+  if (pedido.campos.nomeCompleto === '') return { ok: false, erro: 'Nome completo não pode ficar vazio.' };
+  var r = atualizarProfissional(s, profissionalId, pedido.campos);
+  if (!r || !r.ok) return r || { ok: false, erro: 'Erro ao aplicar o pedido.' };
+  _pedidoApagar_(profissionalId);
+  return { ok: true, campos_alterados: r.campos_alterados };
+}
+
+/** O admin recusa o pedido: o cadastro fica como esta e o pedido sai. */
+function admRecusarPedido(s, profissionalId) {
+  var adm = _admDaSessao_(s);
+  if (!adm) return { ok: false, erro: 'Credenciais de admin invalidas' };
+  var prof = buscarProfissional(profissionalId);
+  if (!prof) return { ok: false, erro: 'Profissional nao encontrado: ' + profissionalId };
+  if (!_pedidoDe_(prof.pedido_alteracao)) return { ok: false, erro: 'Não há pedido de alteração para este profissional.' };
+  _pedidoApagar_(profissionalId);
+  return { ok: true };
 }
 
 
