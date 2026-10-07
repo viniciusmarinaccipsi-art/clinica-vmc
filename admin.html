@@ -582,7 +582,7 @@ a.btn-icon[aria-disabled="true"] { opacity:.5; cursor:not-allowed; }
       <div class="login-title" id="admLoginTitulo">Acesso Administrativo</div>
       <div class="login-sub" id="admLoginSub">Apenas administradores autorizados podem entrar aqui.</div>
 
-      <!-- Pacote 18.1: login por e-mail; "Esqueci a senha" manda o link de redefinição (tela "Crie sua senha" no index.html) -->
+      <!-- Pacote 18.1: login por e-mail; "Esqueci a senha" manda o link de redefinição (tela "Crie sua senha" no index-dev.html) -->
       <div id="admEntrar">
         <div class="field">
           <label for="admEmail">E-mail</label>
@@ -610,7 +610,7 @@ a.btn-icon[aria-disabled="true"] { opacity:.5; cursor:not-allowed; }
 
       <div class="login-footer">
         Esta é a área administrativa do sistema. Para acessar como
-        psicólogo ou paciente, use a <a href="index.html">página principal</a>.
+        psicólogo ou paciente, use a <a href="index-dev.html">página principal</a>.
       </div>
     </div>
   </div>
@@ -862,7 +862,7 @@ a.btn-icon[aria-disabled="true"] { opacity:.5; cursor:not-allowed; }
    PACOTE 13.1.2 — FRONTEND ADMIN
    ========================================================== */
 
-// URL do Apps Script (mesma do index.html — backend unificado)
+// URL do Apps Script (mesma do index-dev.html — backend unificado)
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx7kHrVq7KizCWCVeEhTpsBFcU36Vc1zUBWF1AuJxdPD3iO5K4LIPuZs2vXXr1OK94eAg/exec';
 
 // Estado global da área admin (em memória apenas)
@@ -1543,7 +1543,7 @@ function mostrarErro(box, msg) {
   box.classList.remove('hidden');
 }
 
-// Pacote 18.3: escapador ÚNICO de saída (o mesmo do index.html): & < > " ' (o & primeiro); null/undefined → ''.
+// Pacote 18.3: escapador ÚNICO de saída (o mesmo do index-dev.html): & < > " ' (o & primeiro); null/undefined → ''.
 function esc(s) {
   return (s === null || s === undefined ? '' : String(s))
     .replace(/&/g, '&amp;')

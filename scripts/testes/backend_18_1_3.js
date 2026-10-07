@@ -308,7 +308,7 @@ ok('D5 senha nova da PM1 entra direto (senhas voltaram a ser diferentes)', d5.ok
 
 /* ============ regressões rápidas ============ */
 console.log('R. Regressões');
-ok('R1 VERSAO_PACOTE definida (era fixa em 18.1.3; a versao e conferida no teste do pacote corrente)', /^18\.\d/.test(VERSAO_PACOTE));
+ok('R1 VERSAO_PACOTE definida (era fixa em 18.1.3; a versao e conferida no teste do pacote corrente)', (typeof VERSAO_PACOTE === 'string' && VERSAO_PACOTE.length > 0));
 limparTranca('profissional', 'nao-existe@exemplo.test');
 const r2 = autenticar('profissional', 'nao-existe@exemplo.test', aleat());
 ok('R2 e-mail inexistente de profissional → falha padrão com hash de descarte', !r2.ok && r2.erro === MSG_LOGIN);

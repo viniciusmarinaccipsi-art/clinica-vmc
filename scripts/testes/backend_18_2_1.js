@@ -269,7 +269,7 @@ tenta('V', () => {
   const src = fs.readFileSync(path.join(__dirname, '..', '..', 'Código.js'), 'utf8');
   ok('V1 nenhuma função temporária no código', src.indexOf('TEMP18') === -1 && !/function \w*18_2_1\(/.test(src));
   ok('V2 a pimenta não está no código nem em constante', !/PIMENTA_SENHA\s*=\s*['"]/.test(src) && src.indexOf("getProperty('PIMENTA_SENHA')") !== -1);
-  ok('V3 VERSAO_PACOTE definida (era fixa em 18.2.1; a versao e conferida no teste do pacote corrente)', /^18\.\d/.test(VERSAO_PACOTE), VERSAO_PACOTE);
+  ok('V3 VERSAO_PACOTE definida (era fixa em 18.2.1; a versao e conferida no teste do pacote corrente)', (typeof VERSAO_PACOTE === 'string' && VERSAO_PACOTE.length > 0), VERSAO_PACOTE);
 });
 
 console.log('\n' + (falhas === 0 ? 'RESULTADO: OK — ' + passo + '/' + passo + ' provas' : 'RESULTADO: ' + falhas + ' FALHA(S) em ' + passo + ' provas'));

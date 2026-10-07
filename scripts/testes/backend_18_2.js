@@ -293,7 +293,7 @@ tenta('B', () => {
   ok('B3 mensagem sem segredo = "Servidor sem segredo de sessão."', src.indexOf("erro: 'Servidor sem segredo de sessão.'") !== -1);
   ok('B4 e3TextoSeguro saiu (o log do backup usa a trava única)', typeof e3TextoSeguro === 'undefined' && /detalhe: _celulaSegura_\(/.test(src));
   ok('B5 nenhuma função temporária no código (prova/formato/varredura/restauração/exp)', !/function (prova|formato|varredura|restaur|exp)\w*18_2/.test(src) && src.indexOf('TEMP18_2') === -1);
-  ok('B6 VERSAO_PACOTE definida (era fixa em 18.2)', /^18\.\d/.test(VERSAO_PACOTE), VERSAO_PACOTE);
+  ok('B6 VERSAO_PACOTE definida (era fixa em 18.2)', (typeof VERSAO_PACOTE === 'string' && VERSAO_PACOTE.length > 0), VERSAO_PACOTE);
 });
 
 console.log('\n' + (falhas === 0 ? 'RESULTADO: OK — ' + passo + '/' + passo + ' provas' : 'RESULTADO: ' + falhas + ' FALHA(S) em ' + passo + ' provas'));

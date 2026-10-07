@@ -284,7 +284,7 @@ tenta('Z', () => {
   const e = post({ acao: 'pacienteAtualizarAnamnese', token: tokZ, campos: { zip_code: '00501' }, id_envio: uuid() });
   ok('Z2 zip_code editado por campo: texto, com histórico do valor anterior', e.ok && celula(abaN, 2, 'zip_code') === '00501' && linhasHist(Zs)[0].valor_anterior === '02134', celula(abaN, 2, 'zip_code'));
   ok('Z3 cabeçalho do servidor tem zip_code e não tem cep_exterior', HEADERS_ANAMNESE.indexOf('zip_code') !== -1 && HEADERS_ANAMNESE.indexOf('cep_exterior') === -1);
-  ok('Z4 VERSAO_PACOTE definida e o ping a devolve (era fixa em 18.6.2; a versao e conferida no pacote corrente)', /^\d+\.\d+/.test(VERSAO_PACOTE) && post({ acao: 'ping' }).versao_pacote === VERSAO_PACOTE);
+  ok('Z4 VERSAO_PACOTE definida e o ping a devolve (era fixa em 18.6.2; a versao e conferida no pacote corrente)', (typeof VERSAO_PACOTE === 'string' && VERSAO_PACOTE.length > 0) && post({ acao: 'ping' }).versao_pacote === VERSAO_PACOTE);
   ok('Z5 nenhuma função temporária no código', FONTE.indexOf('TEMP18_') === -1 && !/function (prova|copia|cabecalhos)18_/.test(FONTE));
 });
 

@@ -174,6 +174,6 @@ const l7c = _criarLinkAtivacao_('admin', 'ADM_N', 'ADM_N', 'convite', 'admn@exem
 const r7c = definirSenha(_brutoDoLink_(l7c), aleat() + 'A7');
 ok('N7c admin cria senha sem aceite', r7c.ok === true, r7c);
 
-ok('R1 VERSAO_PACOTE definida (era fixa em 18.1.6; a versao e conferida no teste do pacote corrente)', /^18\.\d/.test(VERSAO_PACOTE));
+ok('R1 VERSAO_PACOTE definida (era fixa em 18.1.6; a versao e conferida no teste do pacote corrente)', (typeof VERSAO_PACOTE === 'string' && VERSAO_PACOTE.length > 0));
 console.log('\n' + (falhas === 0 ? 'RESULTADO: OK — ' + passo + '/' + passo + ' provas' : 'RESULTADO: ' + falhas + ' FALHA(S) em ' + passo + ' provas'));
 process.exit(falhas === 0 ? 0 : 1);

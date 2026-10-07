@@ -22,7 +22,6 @@ Uso (raiz do repositório):
   python scripts/validar_index_dev.py --antes               # grava a linha de base em ../VMC-offline/validar_index_dev_antes.json
   python scripts/validar_index_dev.py --depois              # compara com essa linha de base (além do --ref)
   python scripts/validar_index_dev.py --ref 4586d3a         # outra revisão como referência
-  python scripts/validar_index_dev.py --arquivo index.html --sem-cor   # produção: sem a regra de cor fixa/classes
   python scripts/validar_index_dev.py --json saida.json     # também grava o resultado em JSON
   --proibidos "Gravar,gravado,Sair sem gravar,Módulo 2"     (lista padrão)
 Saída: uma linha por regra (OK / AVISO / FALHA), tabela antes × depois; código 1 se houver FALHA.

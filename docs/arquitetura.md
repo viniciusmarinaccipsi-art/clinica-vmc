@@ -6,10 +6,19 @@ Projeto e no próprio código — em caso de dúvida, conferir a fonte real.
 
 ## Stack
 
-- **Frontend:** single-page app `index.html`, vanilla JavaScript sem
+- **Frontend:** single-page app `index-dev.html` (index oficial desde 07/10/2026), vanilla JavaScript sem
   framework, Chart.js 4.4.1 via jsDelivr com SRI (18.3), `sessionStorage` apenas (localStorage não
   é usado). Sem service worker (removido no Pacote 15.0).
   `admin.html` é arquivo separado e independente.
+  **Index oficial (decisão do usuário, 07/10/2026):** o `index-dev.html` é o único
+  arquivo de frontend que recebe pacotes, e todo link que o sistema gera ou mostra
+  (`SITE_URL` do `Código.js` — convite, redefinição e WhatsApp —, "Voltar ao
+  COGNIATIVO" da `privacidade.html`, "página principal" do `admin.html`) aponta
+  para ele. O `index.html` só redireciona (`location.replace` levando `?ativar=` e
+  `#`; CSP com o hash do script; link de reserva "Se a página não abrir sozinha,
+  toque aqui.") para quem tem a raiz do site salva; não é copiado, atualizado nem
+  validado. A versão congelada de 05/10/2026 (Pacote 18.8.1) fica na tag `v18.8.1`
+  e em `..\VMC-offline\index_18_8_1_consulta.html`.
 - **Backend:** Google Apps Script publicado como Web App (`doPost` com
   roteador de ações). Deploy por `clasp push` + `clasp deploy
   --deploymentId` na mesma implantação (URL fixa); `VERSAO_PACOTE` no
@@ -787,7 +796,7 @@ regras: `docs/prompts/MODELO_PROMPT.md`.
 `main` e nos branches `pacote-*` e em pull request: `node --check` (`Código.js` e
 scripts), `scripts/testes/teste_escores.js` (gabarito dos escores por ponto de
 corte, servidor e frontend), `scripts/testes/backend_*.js` (o backend real sobre
-planilhas simuladas), validador, gabarito md5, `index.html` = `index-dev.html`,
+planilhas simuladas), validador, gabarito md5 (o portão `index.html` = `index-dev.html` saiu em 07/10/2026),
 CSP presente sem `'unsafe-eval'`, zero `new Function`, e gitleaks no histórico
 inteiro (exceções conferidas à mão em `.gitleaksignore`, sem citar o trecho).
 O branch do pacote fica verde antes do merge. A fumaça (`vmc_fumaca.js`) tem
@@ -891,7 +900,7 @@ contratos de dados); o e-mail é só o identificador de login.
   botão WhatsApp da área do profissional abre em `wa.me/55<dígitos>` com a
   mensagem aprovada (nenhum envio automático). O e-mail sai por `MailApp` com
   remetente "COGNIATIVO", em HTML simples com texto puro de reserva: linha de
-  destaque (nome + subtítulo) no topo, um único link `index.html?ativar=<token>`
+  destaque (nome + subtítulo) no topo, um único link `index-dev.html?ativar=<token>`
   e a assinatura do profissional no fim; a tela "Crie sua senha" chama
   `definirSenha(token, senha)`, que grava o hash e marca o token como usado;
   o cliente apaga o token da URL com `history.replaceState`.
@@ -1091,7 +1100,7 @@ deploy @31).
 
 ### Escape único, saída única e camadas (Pacote 18.3 — publicado em 03/10/2026, só frontend)
 
-- **Escapador único `esc(s)`** (`index.html` e `admin.html`): converte `& < > " '` (o `&`
+- **Escapador único `esc(s)`** (`index-dev.html` e `admin.html`): converte `& < > " '` (o `&`
   primeiro); `null`/`undefined` → `''`; número → texto. `escapeHtml`, `escapeAttr`, `profEscHtml_` e
   `escapeHtmlAuto` são atalhos que chamam `esc`; não existe outro `.replace(/&/g…)`. Regra: todo dado do
   usuário ou do servidor que entra em `innerHTML`, template string ou atributo (`value="…"`,
@@ -1133,8 +1142,8 @@ deploy @31).
 - **SRI:** `chart.js@4.4.1/dist/chart.umd.min.js` (jsDelivr) com `integrity="sha384-…"` calculado do
   arquivo baixado (`openssl dgst -sha384 -binary | openssl base64 -A`, conferido em dois downloads) e
   `crossorigin="anonymous"`. Trocar a versão = recalcular o hash.
-- **CSP (18.8):** `<meta http-equiv="Content-Security-Policy">` logo depois do `charset` em `index.html`,
-  `index-dev.html`, `admin.html` e `privacidade.html`; cada página lista só as origens que usa
+- **CSP (18.8):** `<meta http-equiv="Content-Security-Policy">` logo depois do `charset` em
+  `index-dev.html`, `admin.html` e `privacidade.html` (o `index.html`, só redirecionamento desde 07/10/2026, tem a sua: nada além do script com hash); cada página lista só as origens que usa
   (`script.google.com` e `script.googleusercontent.com`, `viacep.com.br`, `cdn.jsdelivr.net`,
   `fonts.googleapis.com`, `fonts.gstatic.com`; `img-src 'self' data:` por causa dos ícones em `data:` do CSS).
   `'unsafe-inline'` fica (manipuladores inline); `'unsafe-eval'` não entra. **Origem nova de script, fonte,
@@ -1395,7 +1404,7 @@ nenhuma planilha (conferido nas 20 em 03/10) e deixou de existir no código.
 
 **Avisos e carimbos.** Os 6 `alert()` da anamnese viraram aviso na tela
 (`vmcAvisoNaTela` junto do bloco que falta; "Sessão expirada" no login, por
-`vmcAvisoNoLogin_`) — não resta `alert()` real no `index.html`. Na edição pelo paciente o
+`vmcAvisoNoLogin_`) — não resta `alert()` real no `index-dev.html`. Na edição pelo paciente o
 carimbo aparece também nos campos compostos (medicação, categorias de transtornos, sinais
 de risco, condições clínicas), nas pessoas de confiança e nas perguntas de sim/não
 (`anamCarimbosAplicar_`). `vmcFaixaCriadoHtml_` mostra "registrado por você em dd/mm" na

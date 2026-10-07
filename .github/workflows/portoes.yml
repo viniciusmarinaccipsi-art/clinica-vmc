@@ -1,5 +1,6 @@
 # Pacote 18.8 — portões automáticos (E1, E4). Rodam a cada push na main e nos branches de pacote, e em pull request.
 # Nada aqui publica nem faz deploy: só confere. Sem dado de paciente e sem segredo.
+# Desde 07/10/2026 o index-dev.html é o index oficial; o index.html só redireciona e não é conferido.
 name: Portões
 
 on:
@@ -60,18 +61,14 @@ jobs:
         timeout-minutes: 2
         run: python scripts/conferir_entrega_16_5.py --so-gabarito
 
-      - name: index.html = index-dev.html
-        timeout-minutes: 1
-        run: cmp index.html index-dev.html
-
       - name: CSP presente e nenhum código montado a partir de texto
         timeout-minutes: 1
         run: |
-          for f in index.html index-dev.html admin.html privacidade.html; do
+          for f in index-dev.html admin.html privacidade.html; do
             grep -q 'http-equiv="Content-Security-Policy"' "$f" || { echo "::error file=$f::sem CSP"; exit 1; }
             if grep -q "unsafe-eval" "$f"; then echo "::error file=$f::CSP com unsafe-eval"; exit 1; fi
           done
-          if grep -nE "new Function|[^A-Za-z_.]eval\(" index.html index-dev.html admin.html; then echo "::error::new Function/eval em página"; exit 1; fi
+          if grep -nE "new Function|[^A-Za-z_.]eval\(" index-dev.html admin.html; then echo "::error::new Function/eval em página"; exit 1; fi
 
       - name: Gitleaks (histórico inteiro, achados mascarados)
         timeout-minutes: 5

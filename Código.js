@@ -44,7 +44,7 @@
 // ID da planilha global Sistema_VMC.
 // Criada pelo script Python migracao_13_0_1.py.
 // Pacote 17.0 — Escalas de Beck: acao lerItensInstrumento (23/09/2026)
-// Pacote E3 — backup diário e monitor do ping (só clasp push, sem deploy)
+// Pacote E3 — backup (sob demanda desde 30/09) e monitor do ping (só clasp push, sem deploy)
 // Pacote 18.1 — acesso por e-mail, cracha de sessao, convite e redefinicao (01/10/2026)
 // Pacote 18.1.2 — correcoes de seguranca do acesso: links, cracha, acoes publicas, ativo (02/10/2026)
 // Pacote 18.10 — desempenho e integridade (18.10a: indicadores na Controle, controle_id, trava de gravacao,
@@ -54,7 +54,9 @@
 // Pacote 18.8.1 — assinatura dos convites: genero do profissional (escolhido por ele em "Meus dados"), pedido de
 // alteracao de dados aprovado pelo admin, linhas de formacao fora dos e-mails, carimbo com o nome lido do cadastro
 // na hora de mostrar (05/10/2026)
-var VERSAO_PACOTE = '18.8.1';
+// Rodada DOCS_2026-10-07 — index-dev.html e o index oficial: SITE_URL aponta para ele; texto do aviso de backup
+// com falha alinhado ao backup sob demanda (07/10/2026)
+var VERSAO_PACOTE = 'DOCS_2026-10-07';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -865,7 +867,8 @@ function buscarPaciente(sigla) {
 //     usuario). Senha, hash, cracha e segredo nunca vao para o Logger.
 // ============================================================
 
-var SITE_URL = 'https://viniciusmarinaccipsi-art.github.io/clinica-vmc/index.html';
+// 07/10/2026: index-dev.html e o index oficial (decisao do usuario); o index.html so redireciona para ele.
+var SITE_URL = 'https://viniciusmarinaccipsi-art.github.io/clinica-vmc/index-dev.html';
 // 18.1.6: versao da Politica de Privacidade (a mesma exibida em privacidade.html).
 // Mudou o texto da politica -> sobe a versao aqui e na pagina; paciente com aceite
 // de versao anterior ve o aceite de novo no proximo login.
@@ -4878,8 +4881,8 @@ var HEADERS_BACKUPS = ['data_hora', 'arquivos', 'erros', 'duracao_s', 'detalhe']
 var E3_RETENCAO_COPIAS = 5;
 
 // URL da implantacao de PRODUCAO (@26). E a mesma constante APPS_SCRIPT_URL
-// de index.html, index-dev.html e admin.html: se a implantacao mudar, os
-// quatro pontos mudam juntos. Publica por decisao do usuario (28/09).
+// de index-dev.html e admin.html: se a implantacao mudar, os tres pontos
+// mudam juntos (o index.html so redireciona desde 07/10/2026). Publica por decisao do usuario (28/09).
 var E3_PING_URL = 'https://script.google.com/macros/s/AKfycbx7kHrVq7KizCWCVeEhTpsBFcU36Vc1zUBWF1AuJxdPD3iO5K4LIPuZs2vXXr1OK94eAg/exec';
 
 // Propriedade do script que guarda a hora do ultimo aviso por e-mail
@@ -5087,9 +5090,9 @@ function _e3RegistrarBackup_(inicio, arquivos, erros, detalhe) {
 }
 
 /**
- * E-mail ao dono quando o backup do dia nao fechou limpo.
- * Sem limite por hora: o gatilho e diario, e backup quebrado todo dia deve
- * incomodar todo dia.
+ * E-mail ao dono quando o backup nao fechou limpo.
+ * Sem limite por hora: o backup e sob demanda (sem gatilho), e cada falha
+ * deve avisar.
  *
  * `retencaoRodou` e passado de fora: o texto nao pode afirmar que nada foi
  * apagado quando a retencao rodou e falhou no meio.
@@ -5102,12 +5105,12 @@ function _e3AvisarBackup_(inicio, esperados, presentes, detalhes, retencaoRodou)
   }
   var quando = Utilities.formatDate(inicio, 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm:ss');
   var sobreRetencao = retencaoRodou
-    ? 'A retencao de 30 dias JA havia rodado nesta execucao quando o erro apareceu: confira na ' +
+    ? 'A retencao (5 copias mais recentes) JA havia rodado nesta execucao quando o erro apareceu: confira na ' +
       'lixeira do Drive se alguma pasta de backup foi apagada e restaure se precisar.'
-    : 'A retencao de 30 dias NAO rodou nesta execucao: nenhum backup antigo foi apagado.';
+    : 'A retencao (5 copias mais recentes) NAO rodou nesta execucao: nenhuma copia antiga foi apagada.';
 
   var texto =
-    'O backup diario nao fechou limpo.\n\n' +
+    'O backup nao fechou limpo.\n\n' +
     'Hora (America/Sao_Paulo): ' + quando + '\n' +
     'Arquivos esperados: ' + esperados + '\n' +
     'Arquivos presentes na pasta do dia: ' + presentes + '\n' +
@@ -5119,7 +5122,7 @@ function _e3AvisarBackup_(inicio, esperados, presentes, detalhes, retencaoRodou)
   try {
     MailApp.sendEmail({
       to: dono,
-      subject: 'Clinica VMC - backup diario com falha',
+      subject: 'Clinica VMC - backup com falha',
       body: texto,
       name: 'Clínica VMC'
     });
