@@ -911,9 +911,19 @@ contratos de dados); o e-mail é só o identificador de login.
   formulário de anamnese não pergunta; o editor do profissional pré-carrega
   os campos de cadastro com os valores da anamnese quando a Controle está
   vazia, e `_atualizarContatoPaciente_` grava a Controle por nome de cabeçalho.
-- **Marca (COGNIATIVO):** nome em caixa alta; frase de destaque "pensar,
-  registrar, transformar" logo abaixo do nome, no login e na barra do Início;
-  subtítulo oficial "Psicoterapia para além das sessões, com intervenções cognitivo-comportamentais no dia a dia." em letra miúda (piso de 13 px) no rodapé do login e nos
+- **Marca (COGNIATIVO; logo desde o Pacote 16.10):** símbolo "C de terminais
+  redondos + ponto" (entrega do Design de 10/10/2026, originais limpos em
+  `docs/design/marca/`; ícones da aba e de atalho em `marca/`, ligados no
+  `<head>` das três páginas). Duas tintas: o C em `--c-action` (no quadrado
+  lavanda, `--c-marca-quadro`) e o ponto sempre um tom mais claro
+  (`--c-marca-ponto`); no `index-dev.html` é o símbolo `#i-marca` do sprite.
+  Na marca gráfica o nome vai em minúsculas, "cogniativo" (Figtree 600); os
+  textos de tela e títulos seguem "COGNIATIVO". Barra: símbolo 17 px sem
+  quadrado + nome 18 px, **sem a frase**; login empilhado (prancha 6B):
+  quadrado lavanda 56 px, nome 26 px e a frase "pensar, registrar,
+  transformar" (13 px) embaixo — a frase só aparece no login e no e-mail
+  (decisão do usuário de 10/10); privacidade: símbolo 20 px + nome; admin:
+  símbolo 24 px ao lado do título, cores fixas da marca. Subtítulo oficial "Psicoterapia para além das sessões, com intervenções cognitivo-comportamentais no dia a dia." em letra miúda (piso de 13 px) no rodapé do login e nos
   e-mails; admin e documentos só com o subtítulo. Títulos internos mudam no
   pacote de renomeação.
 - **Senha:** (desde o 18.2.1 o formato é o v3 com pimenta — ver a subseção própria abaixo; o v2 só é conferido) hash `v2$<sal_hex>$<iter>$<hmac_sha256_hex>` com sal por usuário

@@ -7,6 +7,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#4A3B6B">
 <title>COGNIATIVO — Área Administrativa</title>
+<!-- Pacote 16.10: ícones da marca (marca/) -->
+<link rel="icon" href="marca/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="marca/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="marca/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ==========================================================
@@ -70,7 +74,12 @@ body {
   font-size:24px;
   font-weight:700;
   color:var(--adm);
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
 }
+/* Pacote 16.10: símbolo da marca ao lado do título (cores fixas da marca: C #4C4A8F, ponto #A8A5E0) */
+.adm-marca-simbolo { width:24px; height:24px; flex-shrink:0; }
 .app-header p {
   font-size:13px;
   color:var(--txt-l);
@@ -568,7 +577,7 @@ a.btn-icon[aria-disabled="true"] { opacity:.5; cursor:not-allowed; }
 <div class="app">
 
   <div class="app-header">
-    <h1>COGNIATIVO</h1>
+    <h1><svg class="adm-marca-simbolo" viewBox="0 0 64 64" aria-hidden="true"><path d="M47.32 19.14A20 20 0 1 0 47.32 44.86" fill="none" stroke="#4C4A8F" stroke-width="11" stroke-linecap="round"/><circle cx="32" cy="32" r="7.5" fill="#A8A5E0"/></svg>COGNIATIVO</h1>
     <p>Psicoterapia para além das sessões, com intervenções cognitivo-comportamentais no dia a dia.</p>
     <span class="adm-badge">Área Administrativa</span>
   </div>

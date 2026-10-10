@@ -1,13 +1,17 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Pacote DOCS_2026-10-07 — produção (07/10/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Pacote 16.10 — Marca COGNIATIVO (10/10/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <!-- Pacote 18.8 (A8): CSP. Origem nova (script, fonte, fetch) só funciona depois de entrar nesta lista. -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://script.google.com https://script.googleusercontent.com https://viacep.com.br; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#2C5F7C">
+<meta name="theme-color" content="#4C4A8F">
 <title>COGNIATIVO</title>
+<!-- Pacote 16.10: ícones da marca (marca/, gerados de docs/design/marca/; fecha o débito 8.20) -->
+<link rel="icon" href="marca/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="marca/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="marca/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4" crossorigin="anonymous"></script>
 <style>
@@ -57,6 +61,8 @@
   --c-action-ring:   #C9C7E6;  /* anel de foco: 3px, offset 2px */
   --c-action-tint:   #E7E6F5;  /* fundo de ícone, monograma, chip selecionado leve */
   --c-action-ink:    #3D3A6B;  /* texto sobre o tinte índigo */
+  --c-marca-ponto:   #A8A5E0;  /* Pacote 16.10: ponto do símbolo — sempre um tom mais claro que o C */
+  --c-marca-quadro:  #3D3A6B;  /* Pacote 16.10: o C dentro do quadrado lavanda (login) */
 
   /* ---------- Tipo de registro · o código semântico do paciente ----------
      Registro Negativo  = situação que fez mal   → ameixa
@@ -221,6 +227,8 @@
     --c-action-ring: #4C4A8F;
     --c-action-tint: #262441;
     --c-action-ink:  #C4C2EE;
+    --c-marca-ponto: #C4C2EE;
+    --c-marca-quadro:#A8A5E0;
     --c-reg-neg:     #D79BB6;
     --c-reg-neg-ink: #E4B4C9;
     --c-reg-neg-tint:#2E2130;
@@ -329,11 +337,15 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .topbar.com-acao .topbar-acao{display:inline-flex;align-items:center;}
 .topbar.com-acao .user-badge,.topbar.com-acao .pac-hamburger-wrap{display:none;}
 @media (max-width:540px){ .topbar.tela #userBadgeText,.topbar.marca #userBadgeText{display:none;} .topbar.tela .user-badge,.topbar.marca .user-badge{padding:0 8px;} }
-.topbar-marca{flex:1;display:none;align-items:center;gap:var(--s-2);}
+/* Pacote 16.10: marca nova (docs/design/marca/) — símbolo #i-marca + nome em minúsculas; na barra, sem quadrado e sem lema */
+.topbar-marca{flex:1;display:none;align-items:flex-end;gap:5px;}
 .topbar.marca .topbar-marca{display:flex;}
-.marca-ico{width:32px;height:32px;border-radius:9px;background:var(--c-action-tint);color:var(--c-action-ink);
-  font:600 18px/1 var(--f-title);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
-.marca-nome{font:var(--t-h3);color:var(--c-ink);}
+.marca-simbolo{display:block;flex-shrink:0;color:var(--c-action);}
+.topbar-marca .marca-simbolo{width:17px;height:17px;margin-bottom:1px;}
+.marca-ico{width:56px;height:56px;border-radius:16px;background:var(--c-action-tint);
+  display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+.marca-ico .marca-simbolo{width:35px;height:35px;color:var(--c-marca-quadro);}
+.marca-nome{font:600 18px/1 var(--f-title);letter-spacing:-.01em;color:var(--c-ink);}
 .topbar-acoes{display:flex;align-items:center;gap:var(--s-2);flex-shrink:0;}
 .user-badge{display:none;align-items:center;gap:4px;height:32px;padding:0 var(--s-3);border-radius:var(--r-chip);
   background:var(--c-action-tint);color:var(--c-action-ink);font:var(--t-label);letter-spacing:var(--ls-label);}
@@ -341,12 +353,11 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .btn-logout{background:none;border:none;color:var(--c-action);font-size:16px;cursor:pointer;padding:0 0 0 4px;line-height:1;opacity:.75;transition:opacity var(--dur-fast);}
 .btn-logout:hover{opacity:1;}
 /* marca reduzida: só no login (o menu usa a barra em modo .marca) */
-.login-marca{display:flex;align-items:center;justify-content:center;gap:var(--s-2);padding:var(--s-7) 0 var(--s-5);}
-/* Pacote 18.1: marca COGNIATIVO com a frase de destaque logo abaixo do nome (login e barra do Início) */
-.marca-txt{display:flex;flex-direction:column;min-width:0;}
-.marca-frase{font:var(--t-body-sm);font-weight:500;color:var(--c-action-ink);}
-.topbar-marca .marca-nome{line-height:1.1;}
-.topbar-marca .marca-frase{line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+/* Pacote 16.10: login empilhado (prancha 6B) — quadrado lavanda, nome e lema centralizados */
+.login-marca{display:flex;flex-direction:column;align-items:center;gap:10px;padding:var(--s-7) 0 var(--s-5);text-align:center;}
+.login-marca .marca-nome{font-size:26px;}
+.marca-txt{display:flex;flex-direction:column;align-items:center;min-width:0;}
+.marca-frase{font:400 13px/1.3 var(--f-text);color:var(--c-ink-3);margin-top:5px;}
 
 /* ===== Cards de menu ===== */
 .card-grid{display:grid;gap:14px;margin-top:16px;}
@@ -4016,6 +4027,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
   <symbol id="i-humor-3" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9.5h.01M15 9.5h.01"/><path d="M9 15.5h6"/></symbol>
   <symbol id="i-humor-4" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9.5h.01M15 9.5h.01"/><path d="M8.5 14.5c1 1.8 6 1.8 7 0"/></symbol>
   <symbol id="i-humor-5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9h.01M15 9h.01"/><path d="M7.5 13.5c1 3.2 8 3.2 9 0"/></symbol>
+  <!-- Pacote 16.10: símbolo da marca (docs/design/marca/simbolo.svg) — o C pega currentColor, o ponto --c-marca-ponto -->
+  <symbol id="i-marca" viewBox="0 0 64 64"><path d="M47.32 19.14A20 20 0 1 0 47.32 44.86" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round"/><circle cx="32" cy="32" r="7.5" stroke="none" style="fill:var(--c-marca-ponto)"/></symbol>
 </svg>
 
 <div class="loading-overlay" id="loadingOverlay">
@@ -4060,7 +4073,7 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 <div class="topbar" id="topbar">
   <div class="topbar-in">
     <button class="topbar-voltar" id="topbarVoltar" type="button" aria-label="Voltar">‹</button>
-    <div class="topbar-marca"><span class="marca-ico">C</span><span class="marca-txt"><span class="marca-nome">COGNIATIVO</span><span class="marca-frase">pensar, registrar, transformar</span></span></div>
+    <div class="topbar-marca"><svg class="marca-simbolo" aria-hidden="true"><use href="#i-marca"/></svg><span class="marca-nome">cogniativo</span></div>
     <div class="topbar-texto"><span class="topbar-sobre" id="topbarSobre"></span><span class="topbar-titulo" id="topbarTitulo"></span></div>
     <div class="topbar-acoes">
       <!-- Pacote 16.5c: botão de ação da tela (ex.: "Salvar e sair"), lido de data-barra-acao / data-barra-acao-onclick -->
@@ -4096,7 +4109,7 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 
   <!-- LOGIN -->
   <div class="section active" id="sec-login">
-    <div class="login-marca"><span class="marca-ico">C</span><span class="marca-txt"><span class="marca-nome">COGNIATIVO</span><span class="marca-frase">pensar, registrar, transformar</span></span></div>
+    <div class="login-marca"><span class="marca-ico"><svg class="marca-simbolo" aria-hidden="true"><use href="#i-marca"/></svg></span><span class="marca-txt"><span class="marca-nome">cogniativo</span><span class="marca-frase">pensar, registrar, transformar</span></span></div>
     <div class="login-card">
       <div class="login-icon"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg></div>
       <!-- Pacote 18.1: o cartão alterna entre as telas de acesso (loginMostrar): entrar, esqueci, verifique, ativar, invalido -->

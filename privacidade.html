@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — privacidade.html — Pacote 18.1.5 (03/10/2026) -->
+<!-- Sistema Clínico Digital VMC — privacidade.html — Pacote 18.1.5 (03/10/2026); marca nova no Pacote 16.10 (10/10/2026) -->
 <!-- Página pública de leitura: sem login, sem JavaScript de sistema. Tokens de docs/design/tokens.css. -->
 <html lang="pt-BR">
 <head>
@@ -8,6 +8,9 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Política de Privacidade — COGNIATIVO</title>
+<link rel="icon" href="marca/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="marca/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="marca/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -19,17 +22,13 @@
     font-family:var(--f-text);font-size:14px;line-height:1.6;
   }
   .priv-wrap{max-width:720px;margin:0 auto;padding:24px 16px 48px;}
+  /* Pacote 16.10: marca nova (horizontal só o nome, docs/design/marca/) */
   .priv-marca{
-    display:flex;align-items:center;gap:10px;margin:8px 0 24px;
+    display:flex;align-items:flex-end;gap:6px;margin:8px 0 24px;
     font-family:var(--f-title);
   }
-  .priv-marca-ico{
-    display:inline-flex;align-items:center;justify-content:center;
-    width:36px;height:36px;border-radius:10px;
-    background:var(--c-action-tint);color:var(--c-action);
-    font-weight:700;font-size:18px;
-  }
-  .priv-marca-nome{font-weight:700;font-size:18px;letter-spacing:.02em;}
+  .priv-marca-ico{display:block;flex-shrink:0;width:20px;height:20px;margin-bottom:1px;color:var(--c-action);}
+  .priv-marca-nome{font-weight:600;font-size:22px;line-height:1;letter-spacing:-.01em;}
   .priv-card{
     background:var(--c-surface);border:1px solid var(--c-line);
     border-radius:var(--r-card);box-shadow:var(--sh-1);
@@ -53,8 +52,8 @@
 <body>
 <div class="priv-wrap">
   <div class="priv-marca">
-    <span class="priv-marca-ico" aria-hidden="true">C</span>
-    <span class="priv-marca-nome">COGNIATIVO</span>
+    <svg class="priv-marca-ico" viewBox="0 0 64 64" aria-hidden="true"><path d="M47.32 19.14A20 20 0 1 0 47.32 44.86" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round"/><circle cx="32" cy="32" r="7.5" style="fill:var(--c-marca-ponto)"/></svg>
+    <span class="priv-marca-nome">cogniativo</span>
   </div>
 
   <div class="priv-card">

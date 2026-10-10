@@ -42,6 +42,8 @@
   --c-action-ring:   #C9C7E6;  /* anel de foco: 3px, offset 2px */
   --c-action-tint:   #E7E6F5;  /* fundo de ícone, monograma, chip selecionado leve */
   --c-action-ink:    #3D3A6B;  /* texto sobre o tinte índigo */
+  --c-marca-ponto:   #A8A5E0;  /* Pacote 16.10: ponto do símbolo — sempre um tom mais claro que o C */
+  --c-marca-quadro:  #3D3A6B;  /* Pacote 16.10: o C dentro do quadrado lavanda */
 
   /* ---------- Tipo de registro · o código semântico do paciente ----------
      Registro Negativo  = situação que fez mal   → ameixa
@@ -199,6 +201,8 @@
     --c-action-ring: #4C4A8F;
     --c-action-tint: #262441;
     --c-action-ink:  #C4C2EE;
+    --c-marca-ponto: #C4C2EE;
+    --c-marca-quadro:#A8A5E0;
     --c-reg-neg:     #D79BB6;
     --c-reg-neg-ink: #E4B4C9;
     --c-reg-neg-tint:#2E2130;

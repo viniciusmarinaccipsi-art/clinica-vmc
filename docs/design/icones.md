@@ -26,6 +26,8 @@ Pseudo-elementos que exibiam emoji (`.card.locked …::after`, `.auto-sec-warn::
 | `#i-humor-4` | 4 · Bem | `.ico-humor-4` → `--c-humor-4-ink` |
 | `#i-humor-5` | 5 · Muito bem | `.ico-humor-5` → `--c-humor-5-ink` |
 
+**Símbolo da marca (Pacote 16.10).** `#i-marca` (`viewBox 0 0 64 64`, fora da grade 24): o C é traço `currentColor` de 11 px e o ponto central pinta `--c-marca-ponto`. Uso: `<svg class="marca-simbolo" aria-hidden="true"><use href="#i-marca"/></svg>` — 17 px na barra (cor `--c-action`) e 35 px dentro do quadrado lavanda do login (`.marca-ico`, cor `--c-marca-quadro`). Originais e regras de uso: `docs/design/marca/` (`00_LEIA-ME.md`).
+
 Os nomes dos níveis seguem `HUMOR_NOMES` (16.5c, D6): Muito mal · Mal · Mais ou menos · Bem · Muito bem.
 
 **Rodada 3 (Pacote 16.5c):** o `icones.js` do Design traz `i-lock` (cadeado do primeiro acesso, `M5 11h14v10H5z` + arco). O sprite já tinha `#i-lock` desde o 16.2 (retângulo arredondado + o mesmo arco), com o mesmo significado; o id não foi duplicado e o desenho existente foi mantido. Usos novos do 16.5c: aviso D11 da página Automonitoramento e nota do Positivo trancado (`#i-lock`), botão "+ Iniciar novo registro" (`#i-plus`), bloco HUMOR (`#i-thermometer`, `#i-pencil`), círculo de confirmação da checagem enviada (`#i-check`), cartões do menu "Suas 5 etapas" (`#i-pin`, `#i-heart-crack`/`#i-heart`, `#i-zap`/`#i-leaf`, `#i-cloud-rain`/`#i-sun`, `#i-trend-down`/`#i-trend-up`), cartões da página (`#i-chart`, `#i-archive`, `#i-book`).
