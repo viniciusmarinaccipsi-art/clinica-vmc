@@ -184,7 +184,7 @@ tenta('G', () => {
   ok('G4 sem CRP a assinatura é só o nome, com qualquer gênero', ['', 'M', 'F'].every(g => JSON.stringify(_assinaturaDe_('Fulana', '', g)) === '["Fulana"]') && _assinaturaDe_('', '06/1', 'F').length === 0);
   ok('G5 valor estranho na célula do gênero vale como vazio', _generoDe_('X') === '' && _generoDe_(null) === '' && _generoDe_(1) === '' && _assinaturaDe_('F', '06/1', 'Feminino')[1] === 'Psicólogo — CRP 06/1');
   const e = montarEmail('convite', 'Fulano', 'https://x/?ativar=abc', '', _assinaturaDe_('Fulana de Tal', '06/1', 'F'));
-  ok('G6 o e-mail termina na assinatura: nenhuma linha de formação no texto nem no HTML', /\nFulana de Tal\nPsicóloga — CRP 06\/1$/.test(e.texto) && /<p>Fulana de Tal<br>Psicóloga — CRP 06\/1<\/p>$/.test(e.html) && !/UNICAMP|PUC-RS|Mestrando|Especializa/.test(e.texto + e.html), e.texto.slice(-120));
+  ok('G6 o e-mail termina na assinatura: nenhuma linha de formação no texto nem no HTML', /\nFulana de Tal\nPsicóloga — CRP 06\/1$/.test(e.texto) && /<strong>Fulana de Tal<\/strong><br><span[^>]*>Psicóloga — CRP 06\/1<\/span><\/p><\/td><\/tr>\n<\/table>/.test(e.html) && !/UNICAMP|PUC-RS|Mestrando|Especializa/.test(e.texto + e.html), e.texto.slice(-120));
   const semAss = montarEmail('redefinicao', '', 'https://x/?ativar=abc');
   ok('G7 sem assinatura o e-mail não ganha parágrafo vazio', !/<p><\/p>/.test(semAss.html) && typeof EMAIL_FORMACAO === 'undefined' && FONTE.indexOf('EMAIL_FORMACAO') === -1);
 });

@@ -302,7 +302,7 @@ tenta('S', () => {
   const r = profEnviarConvite(sProf, P1, 'email');
   const m = EMAILS[0] || {};
   ok('S2 convite do paciente sai assinado com o nome do profissional dono e o CRP dele', r.ok && r.enviado === true && /\nDra\. Nova de Prova\nPsicólogo — CRP 06\/999999$/.test(m.body || ''), (m.body || '').slice(-330));
-  ok('S3 o HTML traz a mesma assinatura', /<p>Dra\. Nova de Prova<br>Psicólogo — CRP 06\/999999<\/p>$/.test(m.htmlBody || ''));
+  ok('S3 o HTML traz a mesma assinatura, como última linha do cartão (16.11: layout novo)', /<strong>Dra\. Nova de Prova<\/strong><br><span[^>]*>Psicólogo — CRP 06\/999999<\/span><\/p><\/td><\/tr>\n<\/table>/.test(m.htmlBody || ''));
   const antigo = new Function(FONTE_BASE + '\nreturn montarEmail;')()('convite', 'Fulano', 'https://x/?ativar=abc');
   const novo = montarEmail('convite', 'Fulano', 'https://x/?ativar=abc', '', ['Vinícius Marinacci Cardim', 'Psicólogo — CRP 06/165128']);
   ok('S4 (18.8.1) com o mesmo nome e CRP o e-mail é o da @33 sem as linhas de formação: o texto novo é o começo do antigo e termina na assinatura', antigo.texto.indexOf(novo.texto + '\n') === 0 && /CRP 06\/165128$/.test(novo.texto) && !/UNICAMP|PUC-RS|Mestrando|Especializa/.test(novo.texto + novo.html) && novo.assunto === antigo.assunto, novo.texto.slice(-200));

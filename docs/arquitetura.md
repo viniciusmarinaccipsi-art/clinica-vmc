@@ -899,9 +899,21 @@ contratos de dados); o e-mail é só o identificador de login.
   `canal` = `email` (envia) ou `link` (só gera); ambos devolvem o link, que o
   botão WhatsApp da área do profissional abre em `wa.me/55<dígitos>` com a
   mensagem aprovada (nenhum envio automático). O e-mail sai por `MailApp` com
-  remetente "COGNIATIVO", em HTML simples com texto puro de reserva: linha de
-  destaque (nome + subtítulo) no topo, um único link `index-dev.html?ativar=<token>`
-  e a assinatura do profissional no fim; a tela "Crie sua senha" chama
+  remetente "COGNIATIVO", em HTML com texto puro de reserva. O texto puro tem a linha
+  de destaque (nome + subtítulo) no topo, um único link `index-dev.html?ativar=<token>`
+  e a assinatura do profissional no fim. **Desde o Pacote 16.11 o HTML segue o layout
+  aprovado no Design** (entrega `marca_email` de 10/10/2026, em
+  `Meu Drive\clinica-vmc\design_cogniativo\entrega\`): `_layoutEmail_` monta tabelas com
+  estilo inline (600 px no máximo, bom a 375 px), logo embutido como `cid:logo`
+  (`_enviarEmail_` passa `inlineImages` com o PNG de `EMAIL_LOGO_PNG_B64`, gerado de
+  `docs/design/marca/logo-email.png`; sem a imagem o e-mail sai assim mesmo), título,
+  pílula lavanda "Acompanhamento com:" (só quando há), saudação, parágrafo, botão
+  (`EMAIL_HTML`: "Criar minha senha" / "Criar senha nova"), o endereço em texto
+  (`EMAIL_LINK_RESERVA`), aviso, assinatura e, fora do cartão, o subtítulo e
+  `EMAIL_RODAPE`; todo texto passa por `_escHtml_`, o único escapador de HTML do
+  backend. Textos de corpo, saudação, aviso e assunto são os mesmos do texto puro;
+  `enviarEmailsDeExemplo()` (fora do `doPost`, via `clasp run`) manda um convite e uma
+  redefinição de exemplo só ao dono do script; a tela "Crie sua senha" chama
   `definirSenha(token, senha)`, que grava o hash e marca o token como usado;
   o cliente apaga o token da URL com `history.replaceState`.
 - **Contato do paciente (decisão de 30/09):** o cadastro (Controle: `email`,
@@ -1254,7 +1266,7 @@ deploy @31).
   nome e CRP do profissional dono (`_assinaturaDoProfissional_`, colunas `nome_completo` e `crp` da aba
   `Profissionais`; sem CRP, só o nome). Convite de profissional: o admin que enviou. Redefinição de
   profissional e de admin: o primeiro admin ativo (`_assinaturaDoSistema_`). As linhas de formação
-  (`EMAIL_FORMACAO`) continuam fixas. No WhatsApp, "Aqui é o <primeiro nome>" de quem está logado.
+  (`EMAIL_FORMACAO`) saíram no 18.8.1: a assinatura é só o nome e, havendo CRP, "Psicólogo/Psicóloga — CRP". No WhatsApp, "Aqui é o <primeiro nome>" de quem está logado.
 - **Rascunho no servidor (G2, 8.57 — 18.10b).** Aba `Rascunho` na planilha do paciente (cabeçalhos
   `tipo`, `atualizado_em`, `dados_json`), uma linha por tipo: `auto_negativo`, `auto_positivo`,
   `escala_<codigo>` (o código como o cliente usa, ex. `escala_PHQ-9`) e `anamnese`. Nasce no primeiro
@@ -1282,7 +1294,7 @@ na aba `Backups` da `Sistema_VMC`. **Roda sob demanda, quando o Code
 indica** (mudança com risco de perda) — nunca por gatilho. Guarda **as
 últimas 5 cópias** (`pastasExcedentes`; a limpeza só roda com o dia fechado
 limpo). Backup que falha nunca parece saudável: falha total lança exceção e
-falha parcial manda e-mail ao dono.
+falha parcial manda e-mail ao dono (remetente e assunto "COGNIATIVO - …", texto com acentos desde o 16.11; continua em texto puro).
 
 `monitorarPing_()` (invólucro `rodarMonitorAgora`) chama o `ping` da
 implantação de produção **1× ao dia** (gatilho único criado por
