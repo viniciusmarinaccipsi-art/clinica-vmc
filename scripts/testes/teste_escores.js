@@ -13,7 +13,7 @@ const blocoDe = (src, inicio) => { const i = src.indexOf(inicio); if (i < 0) thr
 
 const back = ler('Código.js'), front = ler('index-dev.html');
 const servidor = new Function(blocoDe(back, 'var ESCALAS_CALCULO = {') + '\n' + corpoDe(back, '_escoresDaEscala_') + '\nreturn { tabela: ESCALAS_CALCULO, calc: _escoresDaEscala_ };')();
-const cliente = new Function(blocoDe(front, 'const ESC_ESCALAS = {') + '\n' + corpoDe(front, 'escValorNumerico') + '\n' + corpoDe(front, 'escCalcularEscoreEAlerta') + '\nreturn { catalogo: ESC_ESCALAS, calc: escCalcularEscoreEAlerta };')();
+const cliente = new Function(blocoDe(front, 'const ESC_ESCALAS = {') + '\n' + corpoDe(front, 'escValorNumerico') + '\n' + corpoDe(front, 'escCondicionalAtivo_') + '\n' + corpoDe(front, 'escRespostasEfetivas_') + '\n' + corpoDe(front, 'escCalcularEscoreEAlerta') + '\nreturn { catalogo: ESC_ESCALAS, calc: escCalcularEscoreEAlerta };')(); // 17.1: + bloco condicional
 
 let passo = 0, falhas = 0;
 const ok = (n, c, x) => { passo++; if (c) console.log('  ok   ' + n); else { falhas++; console.log('  FALHA ' + n + (x !== undefined ? '  → ' + JSON.stringify(x).slice(0, 400) : '')); } };
@@ -59,8 +59,8 @@ function caso(cod, nome, respostas, esperado) {
 }
 
 console.log('0. Catálogo');
-const ESPERADAS = ['BAI', 'BDI-II', 'DASS-21', 'GAD-7', 'PHQ-9', 'PSS-10', 'SRQ-20'];
-ok('servidor e frontend têm as mesmas 7 escalas do gabarito', Object.keys(servidor.tabela).sort().join() === ESPERADAS.join() && Object.keys(cliente.catalogo).sort().join() === ESPERADAS.join(), [Object.keys(servidor.tabela), Object.keys(cliente.catalogo)]);
+const ESPERADAS = ['BAI', 'BDI-II', 'BHS', 'BSS', 'DASS-21', 'GAD-7', 'PHQ-9', 'PSS-10', 'SRQ-20'];
+ok('servidor e frontend têm as mesmas 9 escalas do gabarito', Object.keys(servidor.tabela).sort().join() === ESPERADAS.join() && Object.keys(cliente.catalogo).sort().join() === ESPERADAS.join(), [Object.keys(servidor.tabela), Object.keys(cliente.catalogo)]);
 
 console.log('1. PHQ-9 (0–27; cortes 5, 10, 15, 20; risco: item 9 ≥ 1)');
 [[0, 'Sintomas mínimos ou ausentes'], [4, 'Sintomas mínimos ou ausentes'], [5, 'Depressão leve'], [9, 'Depressão leve'], [10, 'Depressão moderada'], [14, 'Depressão moderada'],
@@ -111,7 +111,25 @@ console.log('7. BAI (0–63; cortes 11, 20, 31; sem item de risco)');
 [[0, 'Mínimo'], [10, 'Mínimo'], [11, 'Leve'], [19, 'Leve'], [20, 'Moderado'], [30, 'Moderado'], [31, 'Grave'], [63, 'Grave']]
   .forEach(([t, f]) => caso('BAI', 'total ' + t, somando(21, 3, t), { total: t, faixa: f, alerta: 'NAO', item: '' }));
 
-console.log('8. Resposta inválida (servidor recusa)');
+console.log('8. BHS (0–20; Certo = 1, Errado = 0; itens 1, 3, 5, 6, 8, 10, 13, 15, 19 pontuam no "Errado"; cortes 5, 9, 14; sem item de risco)');
+const BHS_ERRADO = [1, 3, 5, 6, 8, 10, 13, 15, 19];
+/* bhs(p): os p primeiros itens respondidos na direção da desesperança (pontuam), os demais na direção oposta. */
+const bhs = p => { const r = {}; for (let i = 1; i <= 20; i++) { const ponto = i <= p, errado = BHS_ERRADO.indexOf(i) !== -1; r[i] = errado ? (ponto ? 0 : 1) : (ponto ? 1 : 0); } return r; };
+[[0, 'Mínimo'], [4, 'Mínimo'], [5, 'Leve'], [8, 'Leve'], [9, 'Moderado'], [13, 'Moderado'], [14, 'Grave'], [20, 'Grave']]
+  .forEach(([t, f]) => caso('BHS', 'total ' + t, bhs(t), { total: t, faixa: f, alerta: 'NAO', item: '' }));
+caso('BHS', 'tudo "Certo": só os 11 itens de chave Certo pontuam (11)', tudo(20, 1), { total: 11, faixa: 'Moderado', alerta: 'NAO' });
+caso('BHS', 'tudo "Errado": só os 9 itens de chave Errado pontuam (9)', tudo(20, 0), { total: 9, faixa: 'Moderado', alerta: 'NAO' });
+
+console.log('9. BSS (0–38 = soma dos itens 1–19; 20 e 21 não pontuam; 4 e 5 em 0 fecham os itens 6–19; risco: item 4 ou 5 ≥ 1; sem faixas)');
+caso('BSS', 'tudo em zero', tudo(21, 0), { total: 0, faixa: '', alerta: 'NAO', item: '' });
+caso('BSS', 'só o item 4 = 1: alerta', com(tudo(21, 0), { 4: 1 }), { total: 1, faixa: '', alerta: 'SIM', item: 'BSS_item4' });
+caso('BSS', 'só o item 5 = 2: alerta', com(tudo(21, 0), { 5: 2 }), { total: 2, faixa: '', alerta: 'SIM', item: 'BSS_item5' });
+caso('BSS', 'itens 20 e 21 em 2 não somam', com(tudo(21, 0), { 20: 2, 21: 2 }), { total: 0, faixa: '', alerta: 'NAO', item: '' });
+caso('BSS', '4 e 5 em 0: os itens 6–19 valem 0 mesmo marcados (só 1–3 contam: 6)', com(tudo(21, 2), { 4: 0, 5: 0 }), { total: 6, faixa: '', alerta: 'NAO', item: '' });
+caso('BSS', 'item 4 = 2 e 5 = 0 abre os itens 6–19 (6 + 2 + 28 = 36)', com(tudo(21, 2), { 5: 0 }), { total: 36, faixa: '', alerta: 'SIM', item: 'BSS_item4' });
+caso('BSS', 'máximo 38', tudo(21, 2), { total: 38, faixa: '', alerta: 'SIM', item: 'BSS_item5' });
+
+console.log('10. Resposta inválida (servidor recusa)');
 ok('PHQ-9 com um item sem resposta', servidor.calc('PHQ-9', c => (c === 'item_05' ? '' : 1)).ok === false);
 ok('PHQ-9 com resposta fora da faixa', servidor.calc('PHQ-9', c => (c === 'item_05' ? 4 : 1)).ok === false);
 ok('escala desconhecida', servidor.calc('XYZ', () => 1).ok === false);

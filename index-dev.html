@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Pacote 16.10 — Marca COGNIATIVO (10/10/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Escalas de Beck BHS e BSS — Pacote 17.1 (19/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -122,6 +122,10 @@
   --c-bdi2-ink:      #35477F;
   --c-bai-tint:      #EAEFDC;  /* Pacote 17.0 — BAI, verde-oliva */
   --c-bai-ink:       #4F5B23;
+  --c-bhs-tint:      #F0E8DC;  /* Pacote 17.1 — BHS, sépia */
+  --c-bhs-ink:       #6A5236;
+  --c-bss-tint:      #E6EAEE;  /* Pacote 17.1 — BSS, grafite-azulado */
+  --c-bss-ink:       #3F4F5E;
 
   /* ---------- Módulos do menu · tinte de identificação ---------- */
   --c-mod-anamnese:  #E7E6F5;  /* Anamnese */
@@ -264,6 +268,8 @@
     --c-srq20-tint:  #16302E; --c-srq20-ink:  #8FD3CC;
     --c-bdi2-tint:   #1B2135; --c-bdi2-ink:   #A9B9E8;
     --c-bai-tint:    #232815; --c-bai-ink:    #C3CE8E;
+    --c-bhs-tint:    #2A2418; --c-bhs-ink:    #D2BE9A;
+    --c-bss-tint:    #1E252C; --c-bss-ink:    #AEBFCD;
     --c-chart-neg:   #D97A7A;
     --c-chart-neutro:#6E6B85;
     --c-chart-pos:   #5FAFA8;
@@ -2766,6 +2772,8 @@ button.cab-no-item{cursor:pointer;}
 .esc-card.gray{border-color:var(--c-line);}.esc-card.gray .esc-card-title{color:var(--c-ink-3);}
 .esc-card.bdi2{border-color:var(--c-bdi2-tint);}.esc-card.bdi2 .esc-card-title{color:var(--c-bdi2-ink);}
 .esc-card.bai{border-color:var(--c-bai-tint);}.esc-card.bai .esc-card-title{color:var(--c-bai-ink);}
+.esc-card.bhs{border-color:var(--c-bhs-tint);}.esc-card.bhs .esc-card-title{color:var(--c-bhs-ink);}
+.esc-card.bss{border-color:var(--c-bss-tint);}.esc-card.bss .esc-card-title{color:var(--c-bss-ink);}
 
 /* Subtítulo de aviso primeira vez (leitura do "Como Usar" obrigatória) */
 .esc-sub-aviso{
@@ -3025,6 +3033,27 @@ button.cab-no-item{cursor:pointer;}
 .esc-tint-bai .esc-btn-primary:hover { background:var(--c-bai-ink); }
 .esc-tint-bai .esc-btn-primary:disabled { background: transparent; color:var(--c-bai-ink); border:2px solid var(--c-bai-ink); }
 
+/* Pacote 17.1 — tinturas do BHS e do BSS (mesmo conjunto do 17.0) */
+.esc-tint-bhs .esc-aplic-head { border-left-color:var(--c-bhs-ink); }
+.esc-tint-bhs .esc-aplic-head h2 { color:var(--c-bhs-ink); }
+.esc-tint-bhs .esc-aplic-head .esc-enunciado { background:var(--c-bhs-tint); }
+.esc-tint-bhs .esc-item-num { background:var(--c-bhs-ink); }
+.esc-tint-bhs .esc-opcao:hover { border-color:var(--c-bhs-ink); background:var(--c-bhs-tint); }
+.esc-tint-bhs .esc-opcao.selecionada { background:var(--c-bhs-ink); color:var(--c-ink-inv); border-color:var(--c-bhs-ink); box-shadow:var(--sh-2); }
+.esc-tint-bhs .esc-btn-primary { background:var(--c-bhs-ink); }
+.esc-tint-bhs .esc-btn-primary:hover { background:var(--c-bhs-ink); }
+.esc-tint-bhs .esc-btn-primary:disabled { background: transparent; color:var(--c-bhs-ink); border:2px solid var(--c-bhs-ink); }
+
+.esc-tint-bss .esc-aplic-head { border-left-color:var(--c-bss-ink); }
+.esc-tint-bss .esc-aplic-head h2 { color:var(--c-bss-ink); }
+.esc-tint-bss .esc-aplic-head .esc-enunciado { background:var(--c-bss-tint); }
+.esc-tint-bss .esc-item-num { background:var(--c-bss-ink); }
+.esc-tint-bss .esc-opcao:hover { border-color:var(--c-bss-ink); background:var(--c-bss-tint); }
+.esc-tint-bss .esc-opcao.selecionada { background:var(--c-bss-ink); color:var(--c-ink-inv); border-color:var(--c-bss-ink); box-shadow:var(--sh-2); }
+.esc-tint-bss .esc-btn-primary { background:var(--c-bss-ink); }
+.esc-tint-bss .esc-btn-primary:hover { background:var(--c-bss-ink); }
+.esc-tint-bss .esc-btn-primary:disabled { background: transparent; color:var(--c-bss-ink); border:2px solid var(--c-bss-ink); }
+
 .esc-tint-teal .esc-aplic-head { border-left-color:var(--c-srq20-ink); }
 .esc-tint-teal .esc-aplic-head h2 { color:var(--c-srq20-ink); }
 .esc-tint-teal .esc-aplic-head .esc-enunciado { background:var(--c-srq20-tint); }
@@ -3137,6 +3166,8 @@ button.cab-no-item{cursor:pointer;}
 .esch-bloco.teal   { border-left:5px solid var(--c-srq20-ink); }
 .esch-bloco.bdi2   { border-left:5px solid var(--c-bdi2-ink); }
 .esch-bloco.bai    { border-left:5px solid var(--c-bai-ink); }
+.esch-bloco.bhs    { border-left:5px solid var(--c-bhs-ink); }
+.esch-bloco.bss    { border-left:5px solid var(--c-bss-ink); }
 
 .esch-bloco-head {
   display: flex; align-items: center; gap: 10px;
@@ -3156,6 +3187,8 @@ button.cab-no-item{cursor:pointer;}
 .esch-bloco.teal   .esch-bloco-titulo { color:var(--c-srq20-ink); }
 .esch-bloco.bdi2   .esch-bloco-titulo { color:var(--c-bdi2-ink); }
 .esch-bloco.bai    .esch-bloco-titulo { color:var(--c-bai-ink); }
+.esch-bloco.bhs    .esch-bloco-titulo { color:var(--c-bhs-ink); }
+.esch-bloco.bss    .esch-bloco-titulo { color:var(--c-bss-ink); }
 
 .esch-bloco-contagem {
    font:var(--t-body-sm);font-weight: 600; color:var(--c-ink-3);
@@ -7026,6 +7059,25 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <span class="esc-card-arrow">›</span>
       </button>
 
+      <!-- Pacote 17.1 — BHS e BSS: mesma regra dos dois de cima (ocultos até a liberação). -->
+      <button class="esc-card bhs hidden" id="escCardBHS" type="button" onclick="escClicarCardEscala('BHS')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-compass"/></svg></span>
+        <div class="esc-card-title">BHS — Escala de Desesperança de Beck</div>
+        <div class="esc-card-meta">
+          <span>Última semana, incluindo hoje</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card bss hidden" id="escCardBSS" type="button" onclick="escClicarCardEscala('BSS')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-clipboard"/></svg></span>
+        <div class="esc-card-title">BSS — Escala de Ideação Suicida de Beck</div>
+        <div class="esc-card-meta">
+          <span>Última semana, incluindo hoje</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
       <!-- PACOTE 12.7 (Fase 1): card destravado -->
       <button class="esc-card blue" type="button" style="margin-top:8px;" onclick="escAbrirHistorico()">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-trend-up"/></svg></span>
@@ -7116,7 +7168,7 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 
       <!-- Pacote 17.0: os dois inventários de Beck seguem a prática com o papel —
            o resultado é conversado na sessão, não devolvido na tela. -->
-      <p>Há duas exceções: o <strong>BDI-II</strong> e o <strong>BAI</strong>. Neles você vê apenas a confirmação de que as respostas foram enviadas — sem pontuação e sem texto interpretativo, exatamente como acontece quando esses inventários são respondidos no papel. O resultado fica com o seu terapeuta e é conversado na sessão.</p>
+      <p>Há exceções: o <strong>BDI-II</strong>, o <strong>BAI</strong>, a <strong>BHS</strong> e a <strong>BSS</strong>. Nelas você vê apenas a confirmação de que as respostas foram enviadas — sem pontuação e sem texto interpretativo, exatamente como acontece quando esses inventários são respondidos no papel. O resultado fica com o seu terapeuta e é conversado na sessão.</p>
 
       <div class="esc-intro-disclaimer">
         <svg class="ico" aria-hidden="true"><use href="#i-alert"/></svg> <strong>Importante:</strong> Os resultados destas escalas são <strong>medidas de rastreamento</strong> — não substituem avaliação diagnóstica realizada pelo seu psicólogo. São uma ferramenta de apoio ao tratamento, não um diagnóstico automático.
@@ -15805,7 +15857,7 @@ var ESC_STATE = {
 var ESC_TEXTOS = {};        // { bdi2: { instrucao, titulos, itens, opcoes, ancoras } }
 var ESC_LIBERADOS = null;   // null = ainda nao perguntou ao servidor; [] = nenhum
 // Cartao do menu por instrumento — o cartao so aparece com o instrumento liberado
-var ESC_CARTOES_POR_INSTRUMENTO = { bdi2: 'escCardBDI2', bai: 'escCardBAI' };
+var ESC_CARTOES_POR_INSTRUMENTO = { bdi2: 'escCardBDI2', bai: 'escCardBAI', bhs: 'escCardBHS', bsi: 'escCardBSS' }; // 17.1: + BHS e BSS
 
 // Valor numerico de uma resposta. Nas escalas do 12.x ja e numero; no BDI-II os
 // itens 16 e 18 guardam o codigo da folha ('2b'), e ali so o digito pontua.
@@ -15828,6 +15880,34 @@ function escLetrasDeDirecao(def, respostas) {
     if (/[A-Za-z]/.test(codigo)) partes.push('i' + n + '=' + codigo);
   });
   return partes.join('; ');
+}
+
+// Pacote 17.1 — bloco condicional (BSS): os grupos 6–19 só se aplicam quando o
+// item 4 ou o 5 chega ao limiar; fechados, valem 0 no escore e na gravação e não
+// contam como pendentes. Escala sem 'condicional' passa por aqui sem mudança.
+function escCondicionalAtivo_(def, respostas) {
+  var c = def && def.condicional;
+  if (!c) return true;
+  return c.se.some(function (id) { return escValorNumerico(respostas[id]) >= (c.limiar || 1); });
+}
+function escItensAtivos_(def, respostas) {
+  if (!def.condicional || escCondicionalAtivo_(def, respostas)) return def.itens;
+  var ocultos = def.condicional.itens;
+  return def.itens.filter(function (i) { return ocultos.indexOf(i.id) === -1; });
+}
+function escRespostasEfetivas_(def, respostas) {
+  if (!def || !def.condicional || escCondicionalAtivo_(def, respostas)) return respostas;
+  var r = Object.assign({}, respostas);
+  def.condicional.itens.forEach(function (id) { r[id] = 0; });
+  return r;
+}
+function escCondicionalAplicar_(def) {
+  if (!def || !def.condicional) return;
+  var ativo = escCondicionalAtivo_(def, ESC_STATE.respostas);
+  def.condicional.itens.forEach(function (id) {
+    var box = document.getElementById('escItemBox-' + id);
+    if (box) box.classList.toggle('hidden', !ativo);
+  });
 }
 
 // Pergunta ao servidor quais instrumentos estao liberados (ativo=SIM e hash
@@ -15881,7 +15961,9 @@ async function escCarregarTextos(codigoEscala) {
 //   BDI-II           -> quatro afirmacoes proprias (sete nos itens 16 e 18)
 //   BAI              -> as quatro colunas (ancoras), iguais para todos os itens
 function escOpcoesDoItem(def, item, textos) {
-  if (!def.textoDaAba) {
+  // 17.1: escala com texto na aba mas opções fixas no catálogo (BHS: Certo/Errado)
+  // usa o conjunto do catálogo, como as escalas do 12.x.
+  if (!def.textoDaAba || (def.opcoes && def.opcoes.length)) {
     return (def.opcoes || []).map(function (o) {
       return { codigo: String(o.valor), label: o.label, detalhe: '' };
     });
@@ -16281,9 +16363,87 @@ const ESC_ESCALAS = {
       '<strong>31-63</strong> — Grave',
       '<em style="color:var(--c-ink-3);">Tabela 2 do manual brasileiro (pacientes psiquiátricos, versão em português). Os cortes dependem da amostra e do objetivo: em triagem tendem a ser baixados (menos falsos negativos); em pesquisa, elevados (menos falsos positivos). O sistema usa a Tabela 2 sem ajuste.</em>'
     ]
+  },
+
+  // Pacote 17.1 — BHS e BSS (Beck). Texto na aba privada, como BDI-II e BAI; o
+  // paciente vê "Respostas enviadas" (decisão de 22/09/2026, mantida em 19/11/2026).
+  // Referências (regra de 19/11/2026: conteúdo clínico vindo do Code sempre com fonte):
+  //   BHS — Beck, Weissman, Lester & Trexler (1974). The measurement of pessimism: The
+  //         Hopelessness Scale. J. Consult. Clin. Psychol., 42(6), 861–865 (chave dos 20 itens);
+  //         Beck & Steer (1988). Manual for the Beck Hopelessness Scale. Psychological Corp.;
+  //         Cunha (2001). Manual da versão em português das Escalas Beck. Casa do Psicólogo
+  //         (níveis 0–4 / 5–8 / 9–13 / 14–20). Chave conferida em Pineda-Roa et al. (2024).
+  //   BSS — Beck, Kovacs & Weissman (1979). Assessment of suicidal intention: The Scale for
+  //         Suicide Ideation. J. Consult. Clin. Psychol., 47(2), 343–352; Beck & Steer (1991).
+  //         Manual for the Beck Scale for Suicide Ideation. Psychological Corp. (total = itens
+  //         1–19; 20 e 21 não pontuam; 4 e 5 são a triagem: ambos em 0 → 6–19 não se aplicam);
+  //         Cunha (2001). Sem pontos de corte no manual.
+  //   Propriedades novas (aditivas): 'reverso' com opções fora de ordem crescente (o máximo é o
+  //   maior 'valor'), 'naoPontua' no item e 'condicional' na escala.
+  'BHS': {
+    nomeCompleto: 'BHS — Escala de Desesperança de Beck',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-compass></use></svg>',
+    corPrefix: 'bhs',
+    instrumentoId: 'bhs',
+    textoDaAba: true,
+    escoreOculto: true,
+    dicotomica: true,
+    subtitulo: '20 afirmações · Pensando na <strong>última semana</strong>, incluindo hoje',
+    escoreMax: 20,
+    // Certo = 1, Errado = 0. Os itens com 'reverso' pontuam quando a resposta é "Errado".
+    opcoes: [
+      { valor: 1, label: 'Certo' },
+      { valor: 0, label: 'Errado' }
+    ],
+    itens: [
+      { id: 1, reverso: true }, { id: 2 }, { id: 3, reverso: true }, { id: 4 }, { id: 5, reverso: true },
+      { id: 6, reverso: true }, { id: 7 }, { id: 8, reverso: true }, { id: 9 }, { id: 10, reverso: true },
+      { id: 11 }, { id: 12 }, { id: 13, reverso: true }, { id: 14 }, { id: 15, reverso: true },
+      { id: 16 }, { id: 17 }, { id: 18 }, { id: 19, reverso: true }, { id: 20 }
+    ],
+    faixas: [
+      { min: 14, max: 20, rotulo: 'Grave',    cor: 'vermelho' },
+      { min: 9,  max: 13, rotulo: 'Moderado', cor: 'laranja'  },
+      { min: 5,  max: 8,  rotulo: 'Leve',     cor: 'amarelo'  },
+      { min: 0,  max: 4,  rotulo: 'Mínimo',   cor: 'verde'    }
+    ],
+    faixasLista: [
+      '<strong>0-4</strong> — Mínimo',
+      '<strong>5-8</strong> — Leve',
+      '<strong>9-13</strong> — Moderado',
+      '<strong>14-20</strong> — Grave',
+      '<em style="color:var(--c-ink-3);">Níveis da versão brasileira (Cunha, 2001).</em>'
+    ]
+  },
+
+  'BSS': {
+    nomeCompleto: 'BSS — Escala de Ideação Suicida de Beck',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-clipboard></use></svg>',
+    corPrefix: 'bss',
+    instrumentoId: 'bsi',
+    textoDaAba: true,
+    escoreOculto: true,
+    opcoesPorItem: true,
+    subtitulo: '21 grupos de afirmações · Pensando na <strong>última semana</strong>, incluindo hoje',
+    escoreMax: 38,
+    // Itens 4 e 5 são a triagem: ambos em 0 → os grupos 6–19 não se aplicam (valem 0) e o
+    // paciente segue para o 20. Os grupos 20 e 21 são registro clínico e não entram no total.
+    condicional: { itens: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19], se: [4, 5], limiar: 1 },
+    itens: [
+      { id: 1 }, { id: 2 }, { id: 3 },
+      // Desejo ativo e passivo de morrer: mesma camada de acolhimento do PHQ-9 item 9.
+      { id: 4, critico: true, criticoLimiar: 1, itemRiscoKey: 'BSS_item4' },
+      { id: 5, critico: true, criticoLimiar: 1, itemRiscoKey: 'BSS_item5' },
+      { id: 6 }, { id: 7 }, { id: 8 }, { id: 9 }, { id: 10 }, { id: 11 }, { id: 12 },
+      { id: 13 }, { id: 14 }, { id: 15 }, { id: 16 }, { id: 17 }, { id: 18 }, { id: 19 },
+      { id: 20, naoPontua: true }, { id: 21, naoPontua: true }
+    ],
+    faixasLista: [
+      '<em style="color:var(--c-ink-3);">Sem pontos de corte no manual (Beck & Steer, 1991): qualquer escore acima de 0 indica ideação a avaliar clinicamente.</em>'
+    ]
   }
 
-  // Módulo 4: 5 escalas do 12.x + BDI-II e BAI (17.0)
+  // Módulo 4: 5 escalas do 12.x + BDI-II e BAI (17.0) + BHS e BSS (17.1)
 };
 
 // ============================================================
@@ -16436,7 +16596,7 @@ async function escIniciarAplicacao(codigoEscala) {
   // para que a barra de progresso, borda e botões sigam a cor da escala
   const secAplic = document.getElementById('sec-escalas-aplicar');
   if (secAplic) {
-    secAplic.classList.remove('esc-tint-coral', 'esc-tint-amber', 'esc-tint-green', 'esc-tint-purple', 'esc-tint-gray', 'esc-tint-orange', 'esc-tint-blue', 'esc-tint-teal', 'esc-tint-bdi2', 'esc-tint-bai');
+    secAplic.classList.remove('esc-tint-coral', 'esc-tint-amber', 'esc-tint-green', 'esc-tint-purple', 'esc-tint-gray', 'esc-tint-orange', 'esc-tint-blue', 'esc-tint-teal', 'esc-tint-bdi2', 'esc-tint-bai', 'esc-tint-bhs', 'esc-tint-bss');
     secAplic.classList.add('esc-tint-' + (def.corPrefix || 'coral'));
   }
 
@@ -16446,6 +16606,7 @@ async function escIniciarAplicacao(codigoEscala) {
   Object.entries(ESC_STATE.respostas).forEach(([itemId, valor]) => {
     document.querySelectorAll('.esc-opcao[data-item="' + itemId + '"]').forEach(b => b.classList.toggle('selecionada', String(b.dataset.valor) === String(valor)));
   });
+  escCondicionalAplicar_(def); // 17.1: BSS — grupos 6–19 conforme as respostas de 4 e 5 (inclusive do rascunho)
 
   // Reseta progresso
   escAtualizarProgresso();
@@ -16477,9 +16638,12 @@ function escRenderItens(def) {
     const opcoes = escOpcoesDoItem(def, item, textos);
     // As afirmacoes do BDI-II e as colunas do BAI sao frases inteiras da folha:
     // empilham uma por linha, alinhadas a esquerda, com o codigo a esquerda.
-    const empilhada = def.textoDaAba ? ' esc-item-opcoes-empilhada' : '';
+    // 17.1: com opções do catálogo (BHS, Certo/Errado) o formato é o das escalas do 12.x.
+    const empilhada = (def.textoDaAba && !(def.opcoes && def.opcoes.length)) ? ' esc-item-opcoes-empilhada' : '';
+    // 17.1: itens do bloco condicional (BSS 6–19) ganham a marca; escCondicionalAplicar_ os esconde ou mostra.
+    const condicional = (def.condicional && def.condicional.itens.indexOf(item.id) !== -1) ? ' esc-item-cond' : '';
 
-    html += '<div class="esc-item" id="escItemBox-' + item.id + '">';
+    html += '<div class="esc-item' + condicional + '" id="escItemBox-' + item.id + '">';
     html += '<div class="esc-item-head">';
     html += '<div class="esc-item-num">' + item.id + '</div>';
     html += '<div class="esc-item-texto">' + escapeHtmlAuto(textoItem) + '</div>';
@@ -16565,6 +16729,7 @@ function escSelecionarOpcao(itemId, valor, critico) {
     if (caixa) caixa.classList.toggle('show', escValorNumerico(valor) >= 1);
   }
 
+  escCondicionalAplicar_(ESC_ESCALAS[ESC_STATE.escalaAtual]); // 17.1: BSS — abre ou fecha os grupos 6–19
   escAtualizarProgresso();
 }
 
@@ -16575,18 +16740,19 @@ function escAtualizarProgresso() {
   const def = ESC_ESCALAS[ESC_STATE.escalaAtual];
   if (!def) return;
 
-  const totalItensObrig = def.itens.length;
+  const itensAtivos = escItensAtivos_(def, ESC_STATE.respostas); // 17.1: BSS — grupos 6–19 fechados não contam
+  const totalItensObrig = itensAtivos.length;
   const totalComFuncional = totalItensObrig + (def.itemFuncional ? 1 : 0);
 
   // Conta respondidos obrigatórios (exclui funcional do obrigatório)
-  const respondidosObrig = def.itens.filter(i => ESC_STATE.respostas[i.id] !== undefined).length;
+  const respondidosObrig = itensAtivos.filter(i => ESC_STATE.respostas[i.id] !== undefined).length;
 
   // Progresso mostrado inclui funcional (o paciente vê que ele existe)
-  const preenchidosVisual = Object.keys(ESC_STATE.respostas).length;
+  const preenchidosVisual = Math.min(Object.keys(ESC_STATE.respostas).length, totalComFuncional);
   const pct = Math.round((preenchidosVisual / totalComFuncional) * 100);
 
   // Pacote 16.3: componente único de progresso (item atual = próximo não respondido; itens respondidos são tocáveis e rolam até o item)
-  const ids = def.itens.map(i => i.id).concat(def.itemFuncional ? ['funcional'] : []);
+  const ids = itensAtivos.map(i => i.id).concat(def.itemFuncional ? ['funcional'] : []);
   const feitos = ids.map((id, k) => ESC_STATE.respostas[id] !== undefined ? k + 1 : 0).filter(Boolean);
   const proximo = ids.findIndex(id => ESC_STATE.respostas[id] === undefined);
   progressoDefinir({
@@ -16659,15 +16825,17 @@ function escCancelarAplicacao() {
  */
 function escCalcularEscoreEAlerta(codigoEscala, respostas) {
   const def = ESC_ESCALAS[codigoEscala];
+  respostas = escRespostasEfetivas_(def, respostas); // 17.1: BSS — grupos 6–19 fechados valem 0
   let escoreTotal = 0;
   let alertaFlag = 'NAO';
   let alertaItem = '';
   let alertaValor = '';
 
   // Valor máximo da escala Likert (ex: PHQ-9 vai 0-3, PSS-10 vai 0-4)
-  // Usado para inverter itens reversos.
+  // Usado para inverter itens reversos. 17.1: o maior 'valor', não o último
+  // (o BHS lista Certo = 1 antes de Errado = 0, na ordem da folha).
   const escalaMax = (def.opcoes && def.opcoes.length)
-    ? def.opcoes[def.opcoes.length - 1].valor
+    ? Math.max.apply(null, def.opcoes.map(o => Number(o.valor)))
     : 3;
 
   // Pacote 12.5: escalas multi-subescala (DASS-21) acumulam somas separadas
@@ -16679,7 +16847,7 @@ function escCalcularEscoreEAlerta(codigoEscala, respostas) {
 
     // Se o item é reverso, inverte: 0↔max, 1↔max-1, etc. (Pacote 12.4 / PSS-10)
     const v = item.reverso ? (escalaMax - bruto) : bruto;
-    escoreTotal += v;
+    if (!item.naoPontua) escoreTotal += v; // 17.1: BSS 20 e 21 são registro clínico, fora do total
 
     // Se o item pertence a uma subescala, acumula separadamente (Pacote 12.5 / DASS-21)
     if (item.subescala) {
@@ -16728,6 +16896,7 @@ function escCalcularEscoreEAlerta(codigoEscala, respostas) {
 // próprio valor nas escalas do 12.x e o dígito de '2b' no BDI-II), o item funcional e as letras de direção
 function escColunasDasRespostas_(def, respostas) {
   const cols = {};
+  respostas = escRespostasEfetivas_(def, respostas); // 17.1: BSS — grupos fechados gravam 0 (o servidor exige todos os itens)
   def.itens.forEach(item => {
     const bruto = respostas[item.id];
     cols['item_' + String(item.id).padStart(2, '0')] = (bruto !== undefined) ? escValorNumerico(bruto) : '';
@@ -17530,20 +17699,24 @@ function rrRenderRespostasItens(cod, def, reg) {
     let rotulo = '—';
     let complemento = '';
     if (temValor) {
-      if (def.dicotomica) {
-        rotulo = (Number(valor) === 1) ? 'Sim' : 'Não';
-      } else if (def.opcoes && def.opcoes.length) {
+      // 17.1: o rótulo vem do catálogo quando existe (SRQ-20 Sim/Não, BHS Certo/Errado); dicotômica sem catálogo = Sim/Não
+      if (def.opcoes && def.opcoes.length) {
         const op = def.opcoes.find(function(x){ return Number(x.valor) === Number(valor); });
         if (op) {
           rotulo = op.label;
-          complemento = ' (' + valor + ')';
+          complemento = def.dicotomica ? '' : ' (' + valor + ')';
         } else {
           rotulo = String(valor);
         }
+      } else if (def.dicotomica) {
+        rotulo = (Number(valor) === 1) ? 'Sim' : 'Não';
       } else {
         rotulo = String(valor);
       }
     }
+    // 17.1: escalas com texto na aba (BDI-II, BAI, BHS, BSS) mostram o item quando os textos estão em memória
+    const textosAba = (def.textoDaAba && ESC_TEXTOS[def.instrumentoId]) ? ESC_TEXTOS[def.instrumentoId] : null;
+    const textoItem = item.texto || (textosAba ? (textosAba.itens[String(item.id)] || textosAba.titulos[String(item.id)] || '') : '');
 
     const isCritico = !!item.critico;
     const classeCrit = isCritico ? ' critico' : '';
@@ -17555,7 +17728,7 @@ function rrRenderRespostasItens(cod, def, reg) {
 
     html += '<div class="rr-item' + classeCrit + '">';
     html +=   '<span class="rr-item-num">' + item.id + '</span>';
-    html +=   '<div class="rr-item-texto">' + escapeHtmlAuto(item.texto || '');
+    html +=   '<div class="rr-item-texto">' + escapeHtmlAuto(textoItem);
     html +=     '<div class="rr-item-resposta">Resposta: <strong>' + escapeHtmlAuto(rotulo) + '</strong>' + escapeHtmlAuto(complemento) + '</div>';
     html +=     vmcCarimboHtml_(reg, col); // 18.5: carimbo do item alterado
     html +=     notaHtml;
@@ -17621,7 +17794,7 @@ var ESC_HIST_STATE = {
 // Ordem fixa dos blocos (casada com a ordem do menu do Módulo 4)
 // Pacote 17.0: sem BDI-II e BAI aqui, o registro é gravado e fica invisível —
 // esta lista alimenta o histórico do paciente E o card Escalas do profissional.
-var ESC_HIST_ORDEM = ['PHQ-9', 'GAD-7', 'PSS-10', 'DASS-21', 'SRQ-20', 'BDI-II', 'BAI'];
+var ESC_HIST_ORDEM = ['PHQ-9', 'GAD-7', 'PSS-10', 'DASS-21', 'SRQ-20', 'BDI-II', 'BAI', 'BHS', 'BSS']; // 17.1: + BHS e BSS
 
 function escHistInvalidarCache() {
   ESC_HIST_STATE.invalidado = true;
@@ -17749,7 +17922,7 @@ function escHistRenderBlocos(cont, registros) {
     cont.innerHTML = '<div class="esch-vazio">' +
       '<span class="esch-vazio-icon"><svg class=ico aria-hidden=true><use href=#i-inbox></use></svg></span>' +
       '<div class="esch-vazio-titulo">Você ainda não aplicou nenhuma escala</div>' +
-      '<div class="esch-vazio-texto">Quando você preencher sua primeira escala (PHQ-9, GAD-7, PSS-10, DASS-21, SRQ-20, BDI-II ou BAI), ela aparecerá aqui.</div>' +
+      '<div class="esch-vazio-texto">Quando você preencher sua primeira escala (PHQ-9, GAD-7, PSS-10, DASS-21, SRQ-20, BDI-II, BAI, BHS ou BSS), ela aparecerá aqui.</div>' +
     '</div>';
     return;
   }

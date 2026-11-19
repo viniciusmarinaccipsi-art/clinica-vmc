@@ -56,7 +56,7 @@
 // na hora de mostrar (05/10/2026)
 // Rodada DOCS_2026-10-07 — index-dev.html e o index oficial: SITE_URL aponta para ele; texto do aviso de backup
 // com falha alinhado ao backup sob demanda (07/10/2026)
-var VERSAO_PACOTE = '16.11';
+var VERSAO_PACOTE = '17.1';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -3047,7 +3047,7 @@ function lerEscalas(sigla, antes, limite) {
 //      com hash divergente => nao entrega texto nenhum e nao aparece no menu.
 //   4. A acao nao grava nada (fica FORA de VMC_ACOES_GRAVACAO no frontend).
 
-var INSTRUMENTOS_VALIDOS = ['bdi2', 'bai'];
+var INSTRUMENTOS_VALIDOS = ['bdi2', 'bai', 'bhs', 'bsi']; // 17.1: + BHS e BSS (id tecnico 'bsi')
 
 /**
  * Normalizacao canonica de uma celula para o hash.
@@ -3953,6 +3953,8 @@ function profCriarAutomonitoramento(s, siglaPaciente, dados) {
 // contra ele em Node (mesmo escore, faixa e alerta para qualquer resposta): n = itens;
 // max = maior valor da resposta; rev = itens invertidos; crit = [item, limiar, chave do alerta];
 // sub = itens de cada subescala (soma x 2); faixas = [min, max, rotulo]; func = opcoes do item funcional.
+// 17.1: naoPontua = itens fora do total (BSS 20 e 21); cond = bloco condicional (BSS: os itens de 'itens'
+// valem 0 quando nenhum item de 'se' chega a 1). Referencias no catalogo do frontend (ESC_ESCALAS).
 var ESCALAS_CALCULO = {
   'PHQ-9':{n:9,max:3,crit:[[9,1,'PHQ9_item9']],faixas:[[20,27,'Depressão grave'],[15,19,'Depressão moderadamente grave'],[10,14,'Depressão moderada'],[5,9,'Depressão leve'],[0,4,'Sintomas mínimos ou ausentes']],func:4},
   'GAD-7':{n:7,max:3,faixas:[[15,21,'Ansiedade grave'],[10,14,'Ansiedade moderada'],[5,9,'Ansiedade leve'],[0,4,'Ansiedade mínima']],func:4},
@@ -3960,7 +3962,9 @@ var ESCALAS_CALCULO = {
   'DASS-21':{n:21,max:3,crit:[[21,2,'DASS21_item21']],sub:{estresse:[1,6,8,11,12,14,18],ansiedade:[2,4,7,9,15,19,20],depressao:[3,5,10,13,16,17,21]},multi:true,faixasSub:{depressao:[[28,99,'Extremamente severo'],[21,27,'Severo'],[14,20,'Moderado'],[10,13,'Leve'],[0,9,'Normal']],ansiedade:[[20,99,'Extremamente severo'],[15,19,'Severo'],[10,14,'Moderado'],[8,9,'Leve'],[0,7,'Normal']],estresse:[[34,99,'Extremamente severo'],[26,33,'Severo'],[19,25,'Moderado'],[15,18,'Leve'],[0,14,'Normal']]}},
   'SRQ-20':{n:20,max:1,crit:[[17,1,'SRQ20_item17']],faixas:[[7,20,'Suspeita de transtorno mental comum'],[0,6,'Baixa probabilidade de TMC']]},
   'BDI-II':{n:21,max:3,crit:[[9,1,'BDI2_item9']],faixas:[[29,63,'Grave'],[20,28,'Moderado'],[14,19,'Leve'],[0,13,'Mínimo']],letra:[16,18]},
-  'BAI':{n:21,max:3,faixas:[[31,63,'Grave'],[20,30,'Moderado'],[11,19,'Leve'],[0,10,'Mínimo']]}
+  'BAI':{n:21,max:3,faixas:[[31,63,'Grave'],[20,30,'Moderado'],[11,19,'Leve'],[0,10,'Mínimo']]},
+  'BHS':{n:20,max:1,rev:[1,3,5,6,8,10,13,15,19],faixas:[[14,20,'Grave'],[9,13,'Moderado'],[5,8,'Leve'],[0,4,'Mínimo']]},
+  'BSS':{n:21,max:2,crit:[[4,1,'BSS_item4'],[5,1,'BSS_item5']],naoPontua:[20,21],cond:{itens:[6,7,8,9,10,11,12,13,14,15,16,17,18,19],se:[4,5]}}
 };
 
 /**
@@ -3973,12 +3977,26 @@ function _escoresDaEscala_(instrumento, lerColuna) {
   var t = ESCALAS_CALCULO[codigo];
   if (!t) return { ok: false, erro: 'Escala não encontrada: ' + codigo };
   var total = 0, somas = {}, flag = 'NAO', alertaItem = '', alertaValor = '';
+  // 17.1 (BSS): bloco condicional fechado quando nenhum item de 'se' chega a 1 - os itens do bloco valem 0.
+  var condFechado = false;
+  if (t.cond) {
+    condFechado = true;
+    for (var s = 0; s < t.cond.se.length; s++) {
+      var vs = parseInt(String(lerColuna('item_' + (t.cond.se[s] < 10 ? '0' : '') + t.cond.se[s]) || ''), 10);
+      if (!isNaN(vs) && vs >= 1) condFechado = false;
+    }
+  }
   for (var id = 1; id <= t.n; id++) {
-    var cru = lerColuna('item_' + (id < 10 ? '0' : '') + id);
-    var bruto = parseInt(String(cru === undefined || cru === null ? '' : cru), 10);
-    if (isNaN(bruto) || bruto < 0 || bruto > t.max) return { ok: false, erro: 'Responda todas as questões' };
+    var bruto;
+    if (condFechado && t.cond.itens.indexOf(id) !== -1) {
+      bruto = 0;
+    } else {
+      var cru = lerColuna('item_' + (id < 10 ? '0' : '') + id);
+      bruto = parseInt(String(cru === undefined || cru === null ? '' : cru), 10);
+      if (isNaN(bruto) || bruto < 0 || bruto > t.max) return { ok: false, erro: 'Responda todas as questões' };
+    }
     var v = (t.rev && t.rev.indexOf(id) !== -1) ? (t.max - bruto) : bruto;
-    total += v;
+    if (!t.naoPontua || t.naoPontua.indexOf(id) === -1) total += v; // 17.1: BSS 20 e 21 fora do total
     if (t.sub) {
       for (var sub in t.sub) if (t.sub[sub].indexOf(id) !== -1) somas[sub] = (somas[sub] || 0) + v;
     }
