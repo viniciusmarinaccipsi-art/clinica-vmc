@@ -13,7 +13,7 @@ const blocoDe = (src, inicio) => { const i = src.indexOf(inicio); if (i < 0) thr
 
 const back = ler('Código.js'), front = ler('index-dev.html');
 const servidor = new Function(blocoDe(back, 'var ESCALAS_CALCULO = {') + '\n' + corpoDe(back, '_escoresDaEscala_') + '\nreturn { tabela: ESCALAS_CALCULO, calc: _escoresDaEscala_ };')();
-const cliente = new Function(blocoDe(front, 'const ESC_ESCALAS = {') + '\n' + corpoDe(front, 'escValorNumerico') + '\n' + corpoDe(front, 'escCondicionalAtivo_') + '\n' + corpoDe(front, 'escRespostasEfetivas_') + '\n' + corpoDe(front, 'escCalcularEscoreEAlerta') + '\nreturn { catalogo: ESC_ESCALAS, calc: escCalcularEscoreEAlerta };')(); // 17.1: + bloco condicional
+const cliente = new Function(blocoDe(front, 'const ESC_ESCALAS = {') + '\n' + corpoDe(front, 'escValorNumerico') + '\n' + corpoDe(front, 'escCondicionais_') + '\n' + corpoDe(front, 'escCondicionalAtivo_') + '\n' + corpoDe(front, 'escItensFechados_') + '\n' + corpoDe(front, 'escRespostasEfetivas_') + '\n' + corpoDe(front, 'escCalcularEscoreEAlerta') + '\nreturn { catalogo: ESC_ESCALAS, calc: escCalcularEscoreEAlerta };')(); // 17.1: + bloco condicional
 
 let passo = 0, falhas = 0;
 const ok = (n, c, x) => { passo++; if (c) console.log('  ok   ' + n); else { falhas++; console.log('  FALHA ' + n + (x !== undefined ? '  → ' + JSON.stringify(x).slice(0, 400) : '')); } };
@@ -128,6 +128,9 @@ caso('BSS', 'itens 20 e 21 em 2 não somam', com(tudo(21, 0), { 20: 2, 21: 2 }),
 caso('BSS', '4 e 5 em 0: os itens 6–19 valem 0 mesmo marcados (só 1–3 contam: 6)', com(tudo(21, 2), { 4: 0, 5: 0 }), { total: 6, faixa: '', alerta: 'NAO', item: '' });
 caso('BSS', 'item 4 = 2 e 5 = 0 abre os itens 6–19 (6 + 2 + 28 = 36)', com(tudo(21, 2), { 5: 0 }), { total: 36, faixa: '', alerta: 'SIM', item: 'BSS_item4' });
 caso('BSS', 'máximo 38', tudo(21, 2), { total: 38, faixa: '', alerta: 'SIM', item: 'BSS_item5' });
+caso('BSS', 'item 20 = 0: o 21 vale 0 mesmo marcado (nada muda no total)', com(tudo(21, 0), { 20: 0, 21: 2 }), { total: 0, faixa: '', alerta: 'NAO', item: '' });
+ok('BSS: 20 = 0 dispensa o 21 no servidor (coluna vazia aceita)', servidor.calc('BSS', c => (c === 'item_21' ? '' : 0)).ok === true);
+ok('BSS: 4 e 5 = 0 dispensam 6–19 no servidor (colunas vazias aceitas)', servidor.calc('BSS', c => (/item_(0[6-9]|1[0-9])/.test(c) ? '' : 0)).ok === true);
 
 console.log('10. Resposta inválida (servidor recusa)');
 ok('PHQ-9 com um item sem resposta', servidor.calc('PHQ-9', c => (c === 'item_05' ? '' : 1)).ok === false);

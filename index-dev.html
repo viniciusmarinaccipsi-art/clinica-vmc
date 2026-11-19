@@ -15882,31 +15882,45 @@ function escLetrasDeDirecao(def, respostas) {
   return partes.join('; ');
 }
 
-// Pacote 17.1 — bloco condicional (BSS): os grupos 6–19 só se aplicam quando o
-// item 4 ou o 5 chega ao limiar; fechados, valem 0 no escore e na gravação e não
-// contam como pendentes. Escala sem 'condicional' passa por aqui sem mudança.
-function escCondicionalAtivo_(def, respostas) {
+// Pacote 17.1 — blocos condicionais (BSS): um bloco só se aplica quando algum item
+// de 'se' chega ao limiar (grupos 6–19 ← itens 4 ou 5; grupo 21 ← item 20); fechado,
+// os itens valem 0 no escore e na gravação e não contam como pendentes. 'condicional'
+// é um bloco ou uma lista de blocos. Escala sem 'condicional' passa sem mudança.
+function escCondicionais_(def) {
   var c = def && def.condicional;
-  if (!c) return true;
+  if (!c) return [];
+  return Array.isArray(c) ? c : [c];
+}
+function escCondicionalAtivo_(c, respostas) {
   return c.se.some(function (id) { return escValorNumerico(respostas[id]) >= (c.limiar || 1); });
 }
+function escItensFechados_(def, respostas) {
+  var fechados = [];
+  escCondicionais_(def).forEach(function (c) { if (!escCondicionalAtivo_(c, respostas)) fechados = fechados.concat(c.itens); });
+  return fechados;
+}
 function escItensAtivos_(def, respostas) {
-  if (!def.condicional || escCondicionalAtivo_(def, respostas)) return def.itens;
-  var ocultos = def.condicional.itens;
-  return def.itens.filter(function (i) { return ocultos.indexOf(i.id) === -1; });
+  var fechados = escItensFechados_(def, respostas);
+  if (!fechados.length) return def.itens;
+  return def.itens.filter(function (i) { return fechados.indexOf(i.id) === -1; });
 }
 function escRespostasEfetivas_(def, respostas) {
-  if (!def || !def.condicional || escCondicionalAtivo_(def, respostas)) return respostas;
+  var fechados = escItensFechados_(def, respostas);
+  if (!fechados.length) return respostas;
   var r = Object.assign({}, respostas);
-  def.condicional.itens.forEach(function (id) { r[id] = 0; });
+  fechados.forEach(function (id) { r[id] = 0; });
   return r;
 }
+function escItemCondicional_(def, id) {
+  return escCondicionais_(def).some(function (c) { return c.itens.indexOf(id) !== -1; });
+}
 function escCondicionalAplicar_(def) {
-  if (!def || !def.condicional) return;
-  var ativo = escCondicionalAtivo_(def, ESC_STATE.respostas);
-  def.condicional.itens.forEach(function (id) {
-    var box = document.getElementById('escItemBox-' + id);
-    if (box) box.classList.toggle('hidden', !ativo);
+  escCondicionais_(def).forEach(function (c) {
+    var ativo = escCondicionalAtivo_(c, ESC_STATE.respostas);
+    c.itens.forEach(function (id) {
+      var box = document.getElementById('escItemBox-' + id);
+      if (box) box.classList.toggle('hidden', !ativo);
+    });
   });
 }
 
@@ -16427,8 +16441,12 @@ const ESC_ESCALAS = {
     subtitulo: '21 grupos de afirmações · Pensando na <strong>última semana</strong>, incluindo hoje',
     escoreMax: 38,
     // Itens 4 e 5 são a triagem: ambos em 0 → os grupos 6–19 não se aplicam (valem 0) e o
-    // paciente segue para o 20. Os grupos 20 e 21 são registro clínico e não entram no total.
-    condicional: { itens: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19], se: [4, 5], limiar: 1 },
+    // paciente segue para o 20. O grupo 21 só se aplica a quem já tentou suicídio (20 ≥ 1).
+    // Os grupos 20 e 21 são registro clínico e não entram no total.
+    condicional: [
+      { itens: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19], se: [4, 5], limiar: 1 },
+      { itens: [21], se: [20], limiar: 1 }
+    ],
     itens: [
       { id: 1 }, { id: 2 }, { id: 3 },
       // Desejo ativo e passivo de morrer: mesma camada de acolhimento do PHQ-9 item 9.
@@ -16641,7 +16659,7 @@ function escRenderItens(def) {
     // 17.1: com opções do catálogo (BHS, Certo/Errado) o formato é o das escalas do 12.x.
     const empilhada = (def.textoDaAba && !(def.opcoes && def.opcoes.length)) ? ' esc-item-opcoes-empilhada' : '';
     // 17.1: itens do bloco condicional (BSS 6–19) ganham a marca; escCondicionalAplicar_ os esconde ou mostra.
-    const condicional = (def.condicional && def.condicional.itens.indexOf(item.id) !== -1) ? ' esc-item-cond' : '';
+    const condicional = escItemCondicional_(def, item.id) ? ' esc-item-cond' : '';
 
     html += '<div class="esc-item' + condicional + '" id="escItemBox-' + item.id + '">';
     html += '<div class="esc-item-head">';

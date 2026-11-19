@@ -293,7 +293,7 @@ console.log('S. Escore do servidor = escore do paciente (motor do frontend)');
 tenta('S', () => {
   const html = fs.readFileSync(path.join(__dirname, '..', '..', 'index-dev.html'), 'utf8').replace(/\r\n/g, '\n');
   const ini = html.indexOf('const ESC_ESCALAS = {'), fim = html.indexOf('\n};', ini) + 3;
-  const motor = new Function(html.slice(ini, fim) + '\n' + corpoDe(html, 'escValorNumerico') + '\n' + corpoDe(html, 'escCondicionalAtivo_') + '\n' + corpoDe(html, 'escRespostasEfetivas_') + '\n' + corpoDe(html, 'escCalcularEscoreEAlerta') + '\nreturn { ESC_ESCALAS: ESC_ESCALAS, calc: escCalcularEscoreEAlerta };')(); // 17.1: + bloco condicional
+  const motor = new Function(html.slice(ini, fim) + '\n' + corpoDe(html, 'escValorNumerico') + '\n' + corpoDe(html, 'escCondicionais_') + '\n' + corpoDe(html, 'escCondicionalAtivo_') + '\n' + corpoDe(html, 'escItensFechados_') + '\n' + corpoDe(html, 'escRespostasEfetivas_') + '\n' + corpoDe(html, 'escCalcularEscoreEAlerta') + '\nreturn { ESC_ESCALAS: ESC_ESCALAS, calc: escCalcularEscoreEAlerta };')(); // 17.1: + bloco condicional
   ok('S0 a tabela do servidor cobre os mesmos instrumentos do frontend', Object.keys(motor.ESC_ESCALAS).sort().join() === Object.keys(ESCALAS_CALCULO).sort().join(), Object.keys(ESCALAS_CALCULO));
   // o que o cliente grava (escEnviarEscala) a partir do cálculo dele
   const doCliente = calc => ({
