@@ -7059,7 +7059,9 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <span class="esc-card-arrow">›</span>
       </button>
 
-      <!-- Pacote 17.1 — BHS e BSS: mesma regra dos dois de cima (ocultos até a liberação). -->
+      <!-- Pacote 17.1 — BHS e BSS: mesma regra dos dois de cima (ocultos até a liberação). A BSS é
+           'soProfissional' (decisão de 19/11/2026): o cartão fica sempre oculto para o paciente; a
+           escala só é aplicada pelo profissional, em "Nova escala". -->
       <button class="esc-card bhs hidden" id="escCardBHS" type="button" onclick="escClicarCardEscala('BHS')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-compass"/></svg></span>
         <div class="esc-card-title">BHS — Escala de Desesperança de Beck</div>
@@ -15944,7 +15946,10 @@ function escAplicarCartoesLiberados() {
   var liberados = ESC_LIBERADOS || [];
   Object.keys(ESC_CARTOES_POR_INSTRUMENTO).forEach(function (instr) {
     var el = document.getElementById(ESC_CARTOES_POR_INSTRUMENTO[instr]);
-    if (el) el.classList.toggle('hidden', liberados.indexOf(instr) === -1);
+    // 17.1 (decisão do usuário, 19/11/2026): escala 'soProfissional' (BSS) nunca entra no menu do
+    // paciente — só é aplicada pelo profissional, em "Nova escala".
+    var soProf = Object.keys(ESC_ESCALAS).some(function (cod) { var d = ESC_ESCALAS[cod]; return d.instrumentoId === instr && d.soProfissional; });
+    if (el) el.classList.toggle('hidden', soProf || liberados.indexOf(instr) === -1);
   });
 }
 
@@ -16438,6 +16443,7 @@ const ESC_ESCALAS = {
     textoDaAba: true,
     escoreOculto: true,
     opcoesPorItem: true,
+    soProfissional: true, // decisão do usuário (19/11/2026): só o profissional aplica, pelo "Nova escala"
     subtitulo: '21 grupos de afirmações · Pensando na <strong>última semana</strong>, incluindo hoje',
     escoreMax: 38,
     // Itens 4 e 5 são a triagem: ambos em 0 → os grupos 6–19 não se aplicam (valem 0) e o
