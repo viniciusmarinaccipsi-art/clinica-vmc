@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — cadeado em todas as escalas, resultado ao paciente e cartões padronizados — Pacote 17.3.1 (20/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — grade horizontal, nomes originais, ficha da escala e busca por tags (piloto: PHQ-9, BDI-II, BSS, AAQ-II, PCL-5) — Pacote 17.3.2 (20/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -2768,6 +2768,8 @@ button.cab-no-item{cursor:pointer;}
 .esc-card.locked .esc-card-title::after{content:'';display:inline-block;width:.85em;height:.85em;margin-left:.3em;vertical-align:-.08em;background:currentColor;-webkit-mask:var(--ico-lock) center/contain no-repeat;mask:var(--ico-lock) center/contain no-repeat;}
 .esc-card-icon{font-size:28px;margin-bottom:6px;display:block;}
 .esc-card-title{font-family:var(--f-title);font-size:15px;font-weight:700;margin-bottom:3px;}
+.esc-card-trad{font:var(--t-label);font-weight:500;color:var(--c-ink-3);margin:-2px 0 4px;padding-right:90px;} /* 17.3.2: tradução do nome original */
+.esc-nome-trad{display:block;font:var(--t-label);font-weight:500;color:var(--c-ink-3);margin-top:2px;} /* 17.3.2: tradução abaixo do título (cabeçalho, resultado, histórico, cartão do profissional) */
 .esc-card-desc{font:var(--t-body-sm);color:var(--c-ink-3);line-height:1.5;padding-right:90px;}
 .esc-card-meta{font:var(--t-body-sm);color:var(--c-ink-3);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;}
 .esc-card-meta span{background:var(--c-surface-sub);padding:2px 8px;border-radius:10px;}
@@ -2852,9 +2854,16 @@ button.cab-no-item{cursor:pointer;}
   font-weight:700;flex-shrink:0;
 }
 .esc-item-texto{font-size:14.5px;line-height:1.5;color:var(--c-ink);flex:1;}
-.esc-item-opcoes{display:flex;gap:6px;flex-wrap:wrap;}
+/* 17.3.2 (decisão do usuário, 20/11/2026): as opções ficam sempre numa linha só, em colunas iguais —
+   o número de colunas vem de data-n (quantas opções o item tem). No celular, duas por linha. */
+.esc-item-opcoes{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.esc-item-opcoes[data-n="2"]{grid-template-columns:repeat(2,1fr);}
+.esc-item-opcoes[data-n="3"]{grid-template-columns:repeat(3,1fr);}
+.esc-item-opcoes[data-n="5"]{grid-template-columns:repeat(5,1fr);}
+.esc-item-opcoes[data-n="6"]{grid-template-columns:repeat(6,1fr);}
+.esc-item-opcoes[data-n="7"]{grid-template-columns:repeat(7,1fr);}
 .esc-opcao{
-  flex:1;min-width:120px;
+  min-width:0;
   background:var(--c-surface-sub);border:2px solid var(--c-line);
   padding:10px 12px;border-radius:var(--r-field);
   cursor:pointer;font-family:var(--f-text);
@@ -2871,9 +2880,9 @@ button.cab-no-item{cursor:pointer;}
 /* Pacote 17.0 — BDI-II e BAI: as opções são as frases da folha, não rótulos
    curtos de Likert. Empilham uma por linha, alinhadas à esquerda, com o código
    do papel (0, 1a, 2b…) na coluna da esquerda. */
-.esc-item-opcoes-empilhada{flex-direction:column;gap:8px;}
+.esc-item-opcoes.esc-item-opcoes-empilhada{grid-template-columns:1fr;gap:8px;}
 .esc-item-opcoes-empilhada .esc-opcao{
-  flex:none;width:100%;min-width:0;text-align:left;
+  width:100%;min-width:0;text-align:left;
   display:grid;grid-template-columns:2.4em 1fr;column-gap:10px;align-items:start;
   min-height:var(--hit-min);
 }
@@ -2946,7 +2955,9 @@ button.cab-no-item{cursor:pointer;}
 
 /* Responsividade mobile */
 @media (max-width: 520px) {
-  .esc-opcao { font:var(--t-body-sm);flex: 1 1 48%; min-width: 0;  padding: 8px 6px; }
+  .esc-item-opcoes, .esc-item-opcoes[data-n] { grid-template-columns:repeat(2,1fr); } /* 17.3.2: duas por linha, iguais */
+  .esc-item-opcoes.esc-item-opcoes-empilhada { grid-template-columns:1fr; }
+  .esc-opcao { font:var(--t-body-sm); padding: 8px 6px; }
   .esc-opcao-num { font-size: 14px; }
   .esc-item-texto { font-size: 13.5px; }
   
@@ -3271,12 +3282,52 @@ button.cab-no-item{cursor:pointer;}
 .esch-bloco-cadeado[aria-pressed="true"] { background:var(--c-action); border-color:var(--c-action); color:var(--c-ink-inv); }
 .esch-bloco-cadeado:focus-visible { outline:2px solid var(--c-action); outline-offset:2px; }
 .esch-bloco-vazio { font:var(--t-body-sm); color:var(--c-ink-3); padding:12px 0 4px; }
+/* Pacote 17.3.2 — ficha da escala (Informações · Escalas · Questões) e busca por nome/tag, tela do profissional */
+.esch-bloco-ficha {
+  display:inline-flex; align-items:center; gap:6px; min-height:var(--hit-min); padding:0 var(--s-3);
+  border:1px solid var(--c-line); border-radius:var(--r-field); background:var(--c-surface-sub);
+  color:var(--c-ink-2); font:var(--t-body-sm); font-weight:600; cursor:pointer; white-space:nowrap;
+}
+.esch-bloco-ficha:hover, .esch-bloco-ficha:focus-visible { border-color:var(--c-action); color:var(--c-action); outline:none; }
+.ficha-abas { display:flex; gap:4px; padding:0 var(--s-4); border-bottom:1px solid var(--c-line); }
+.ficha-aba {
+  min-height:var(--hit-min); padding:0 var(--s-3); border:none; border-bottom:2px solid transparent;
+  background:none; color:var(--c-ink-3); font:var(--t-body); font-weight:600; cursor:pointer;
+}
+.ficha-aba[aria-selected="true"] { color:var(--c-action); border-bottom-color:var(--c-action); }
+.ficha-painel h4 { font:var(--t-label); text-transform:uppercase; letter-spacing:.04em; color:var(--c-ink-3); margin:14px 0 4px; }
+.ficha-painel h4:first-child { margin-top:4px; }
+.ficha-painel p, .ficha-painel li { font:var(--t-body-sm); line-height:1.55; color:var(--c-ink); margin:0 0 6px; }
+.ficha-painel ul { padding-left:18px; margin:4px 0; }
+.ficha-tags { display:flex; gap:6px; flex-wrap:wrap; margin-top:4px; }
+.ficha-tag { display:inline-block; padding:3px 10px; border-radius:999px; background:var(--c-surface-sub); border:1px solid var(--c-line); color:var(--c-ink-2); font:var(--t-label); font-weight:600; }
+.ficha-item { padding:8px 0; border-bottom:1px solid var(--c-line); }
+.ficha-item:last-child { border-bottom:none; }
+.ficha-item-texto { font:var(--t-body-sm); color:var(--c-ink); }
+.ficha-item-num { font-weight:700; color:var(--c-action); margin-right:6px; }
+.ficha-item-marca { font:var(--t-label); font-weight:500; color:var(--c-ink-3); margin-left:6px; }
+.ficha-item-opcoes { font:var(--t-body-sm); color:var(--c-ink-3); margin-top:3px; }
+.ficha-vazio { font:var(--t-body-sm); color:var(--c-ink-3); }
+.esc-busca { display:flex; flex-direction:column; gap:8px; margin-bottom:var(--s-3); }
+.esc-busca-campo {
+  min-height:var(--hit-min); padding:0 var(--s-3); width:100%; box-sizing:border-box;
+  border:1px solid var(--c-line); border-radius:var(--r-field); background:var(--c-surface); color:var(--c-ink); font:var(--t-body);
+}
+.esc-busca-campo:focus { outline:2px solid var(--c-action); outline-offset:1px; }
+.esc-busca-tags { display:flex; gap:6px; flex-wrap:wrap; }
+.esc-busca-chip {
+  min-height:var(--hit-min); padding:0 12px; border:1px solid var(--c-line); border-radius:999px;
+  background:var(--c-surface-sub); color:var(--c-ink-2); font:var(--t-body-sm); font-weight:600; cursor:pointer;
+}
+.esc-busca-chip[aria-pressed="true"] { background:var(--c-action); border-color:var(--c-action); color:var(--c-ink-inv); }
+.esc-busca-vazio { font:var(--t-body-sm); color:var(--c-ink-3); padding:8px 0; }
 /* no celular, o cabeçalho do cartão do profissional quebra em duas linhas: título + seta; contagem + cadeado */
 @media (max-width: 600px) {
   #profModEscBody .esch-bloco-head { flex-wrap: wrap; row-gap: 8px; }
   #profModEscBody .esch-bloco-titulo { flex: 1 1 0; min-width: 55%; }
   #profModEscBody .esch-bloco-contagem { order: 1; margin-left: auto; }
   #profModEscBody .esch-bloco-cadeado { order: 1; }
+  #profModEscBody .esch-bloco-ficha { order: 1; } /* 17.3.2 */
 }
 .esc-menu-vazio { font:var(--t-body-sm); color:var(--c-ink-3); line-height:1.5; padding:4px 4px 8px; }
 
@@ -7088,7 +7139,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 
       <button class="esc-card coral hidden" id="escCardPHQ9" type="button" onclick="escClicarCardEscala('PHQ-9')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-cloud-rain"/></svg></span>
-        <div class="esc-card-title">PHQ-9 — Sintomas Depressivos</div>
+        <div class="esc-card-title">Patient Health Questionnaire-9 (PHQ-9)</div>
+        <div class="esc-card-trad">Questionário sobre a Saúde do Paciente-9</div>
         <div class="esc-card-desc">Avalia sintomas depressivos das últimas 2 semanas</div>
         <div class="esc-card-meta">
           <span>9 itens</span><span>3-5 min</span><span>Últimos 15 dias</span>
@@ -7142,7 +7194,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
            nome oficial e a janela temporal da instrução, nada mais (seção 0.1). -->
       <button class="esc-card bdi2 hidden" id="escCardBDI2" type="button" onclick="escClicarCardEscala('BDI-II')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-heart-crack"/></svg></span>
-        <div class="esc-card-title">BDI-II — Inventário de Depressão de Beck</div>
+        <div class="esc-card-title">Beck Depression Inventory-II (BDI-II)</div>
+        <div class="esc-card-trad">Inventário de Depressão de Beck-II</div>
         <div class="esc-card-desc">Intensidade de sintomas depressivos nas últimas 2 semanas</div>
         <div class="esc-card-meta">
           <span>21 itens</span><span>5-10 min</span><span>Últimas 2 semanas</span>
@@ -7174,7 +7227,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 
       <button class="esc-card bss hidden" id="escCardBSS" type="button" onclick="escClicarCardEscala('BSS')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-clipboard"/></svg></span>
-        <div class="esc-card-title">BSS — Escala de Ideação Suicida de Beck</div>
+        <div class="esc-card-title">Beck Scale for Suicide Ideation (BSS)</div>
+        <div class="esc-card-trad">Escala de Ideação Suicida de Beck</div>
         <div class="esc-card-desc">Pensamentos sobre viver e morrer, na última semana</div>
         <div class="esc-card-meta">
           <span>21 itens</span><span>5-10 min</span><span>Última semana</span>
@@ -7228,7 +7282,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
            20/11/2026) — o cartão só aparece quando o profissional libera aquela escala para o paciente. -->
       <button class="esc-card trauma hidden" id="escCardPCL5" type="button" onclick="escClicarCardEscala('PCL-5')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-heart-crack"/></svg></span>
-        <div class="esc-card-title">PCL-5 — Reações após um evento muito difícil</div>
+        <div class="esc-card-title">Posttraumatic Stress Disorder Checklist for DSM-5 (PCL-5)</div>
+        <div class="esc-card-trad">Lista de Verificação de TEPT para o DSM-5</div>
         <div class="esc-card-desc">Reações a um evento muito difícil, no último mês</div>
         <div class="esc-card-meta">
           <span>20 itens</span><span>5-10 min</span><span>Último mês</span>
@@ -7258,7 +7313,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 
       <button class="esc-card processo hidden" id="escCardAAQ2" type="button" onclick="escClicarCardEscala('AAQ-II')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-puzzle"/></svg></span>
-        <div class="esc-card-title">AAQ-II — Aceitação e Ação</div>
+        <div class="esc-card-title">Acceptance and Action Questionnaire-II (AAQ-II)</div>
+        <div class="esc-card-trad">Questionário de Aceitação e Ação-II</div>
         <div class="esc-card-desc">Como você lida com pensamentos e sentimentos difíceis</div>
         <div class="esc-card-meta">
           <span>7 itens</span><span>2-3 min</span><span>Em geral</span>
@@ -7333,6 +7389,26 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
     </div>
   </div>
 
+  <!-- Pacote 17.3.2 — FICHA DA ESCALA (tela do profissional): Informações · Escalas · Questões -->
+  <div class="p11-mov" id="fichaModal" onclick="if(event.target===this)fichaFechar_()">
+    <div class="p11-mbox">
+      <div class="p11-mhead">
+        <h3 class="p11-mtitle" id="fichaTitulo"><svg class="ico" aria-hidden="true"><use href="#i-book"/></svg> Ficha da escala</h3>
+        <button class="p11-mclose" type="button" onclick="fichaFechar_()" aria-label="Fechar">×</button>
+      </div>
+      <div class="ficha-abas" role="tablist">
+        <button type="button" class="ficha-aba" role="tab" aria-selected="true" data-aba="info" onclick="fichaAba_(this)">Informações</button>
+        <button type="button" class="ficha-aba" role="tab" aria-selected="false" data-aba="escalas" onclick="fichaAba_(this)">Escalas</button>
+        <button type="button" class="ficha-aba" role="tab" aria-selected="false" data-aba="questoes" onclick="fichaAba_(this)">Questões</button>
+      </div>
+      <div class="p11-mbody">
+        <div class="ficha-painel" id="fichaPainel-info"></div>
+        <div class="ficha-painel hidden" id="fichaPainel-escalas"></div>
+        <div class="ficha-painel hidden" id="fichaPainel-questoes"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal ao clicar em card de escala sem ter lido "Como Usar" -->
   <div class="p5-modal-overlay" id="escModalComoUsar" onclick="if(event.target===this)escFecharModalComoUsar()">
     <div class="p5-modal-card" role="dialog" aria-modal="true">
@@ -7386,7 +7462,7 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 
       <!-- Pacote 17.0: os dois inventários de Beck seguem a prática com o papel —
            o resultado é conversado na sessão, não devolvido na tela. -->
-      <p>Há exceções: o <strong>BDI-II</strong>, o <strong>BAI</strong>, a <strong>BHS</strong> e a <strong>BSS</strong>. Nelas você vê apenas a confirmação de que as respostas foram enviadas — sem pontuação e sem texto interpretativo, exatamente como acontece quando esses inventários são respondidos no papel. O resultado fica com o seu terapeuta e é conversado na sessão.</p>
+      <p>Há uma exceção: a <strong>BSS</strong>. Nela você vê apenas a confirmação de que as respostas foram enviadas — sem pontuação e sem texto interpretativo, como acontece quando essa escala é respondida no papel. O resultado fica com o seu terapeuta e é conversado na sessão.</p>
 
       <div class="esc-intro-disclaimer">
         <svg class="ico" aria-hidden="true"><use href="#i-alert"/></svg> <strong>Importante:</strong> Os resultados destas escalas são <strong>medidas de rastreamento</strong> — não substituem avaliação diagnóstica realizada pelo seu psicólogo. São uma ferramenta de apoio ao tratamento, não um diagnóstico automático.
@@ -9609,6 +9685,7 @@ function profRenderPaciente_(sigla, resp) {
   html += '<div class="prof-acoes-mod"><button class="prof-btn-acao" type="button" onclick="profNovaEscala()"><svg class=ico aria-hidden=true><use href=#i-plus-circle></use></svg> Nova escala</button></div>'; // 18.5
   html += '<div class="prof-acoes-mod" id="profNovaEscalaLista" hidden></div>';
   html += '<div class="prof-acoes-mod" id="profAvisoLiberacao"></div>'; // 17.3.1: âncora do aviso; o cadeado agora fica em cada cartão de escala
+  html += profBuscaHtml_(); // 17.3.2: busca por nome, sigla ou tag (filtra os cartões e a lista "Nova escala")
   html += profRenderizarEscalas_(resp.escalas || []);
   html += '</div></div>';
 
@@ -9678,6 +9755,7 @@ async function profNovaEscala() {
     return '<button class="prof-btn-acao" type="button" data-esc="' + esc(cod) + '" onclick="profEscalaIniciar_(this.dataset.esc)">' + esc(cod) + '</button>';
   }).join('');
   box.hidden = false;
+  profFiltrarEscalas_(); // 17.3.2: a lista nova respeita a busca ativa
 }
 // Abre a tela de aplicação no fluxo do profissional; com edicao = { timestamp, reg }, já com as respostas gravadas
 async function profEscalaIniciar_(cod, edicao) {
@@ -9944,8 +10022,9 @@ function profRenderizarEscalas_(escalas) {
     html += '<div class="esch-bloco-head" onclick="escHistToggleBloco(this)">';
     // 16.4.1: def.emoji é HTML do sprite (literal do catálogo ESC_ESCALAS, nunca entrada do usuário) — não escapar
     html += '<span class="esch-bloco-icone">' + (def.emoji || '<svg class=ico aria-hidden=true><use href=#i-chart></use></svg>') + '</span>';
-    html += '<span class="esch-bloco-titulo">' + escapeHtmlAuto(def.nomeCompleto || cod) + '</span>';
+    html += '<span class="esch-bloco-titulo">' + escapeHtmlAuto(def.nomeCompleto || cod) + escNomeTraducaoHtml_(def) + '</span>';
     html += '<span class="esch-bloco-contagem">' + textoContagem + '</span>';
+    html += fichaHtmlBotao_(cod); // 17.3.2: só quando a escala tem ficha
     html += profCadeadoHtml_(cod, liberadas.indexOf(def.instrumentoId) !== -1);
     html += '<span class="esch-bloco-chevron">›</span>';
     html += '</div>';
@@ -16306,7 +16385,8 @@ function escOpcoesDoItem(def, item, textos) {
 // ===== Dicionário de escalas (só PHQ-9 implementado no Pacote 12.2) =====
 const ESC_ESCALAS = {
   'PHQ-9': {
-    nomeCompleto: 'PHQ-9 — Sintomas Depressivos',
+    nomeCompleto: 'Patient Health Questionnaire-9 (PHQ-9)',
+    nomeTraducao: 'Questionário sobre a Saúde do Paciente-9', // 17.3.2: nome original no título, tradução em letra menor
     instrumentoId: 'phq9', // 17.3.1: id de liberação por paciente (escalas_liberadas)
     emoji: '<svg class=ico aria-hidden=true><use href=#i-cloud-rain></use></svg>',
     corPrefix: 'coral',
@@ -16630,7 +16710,8 @@ const ESC_ESCALAS = {
   //   opcoesPorItem  - cada item tem as suas opções (o BDI-II não tem um conjunto
   //                    único), e os itens de 'itensComLetra' têm 7 em vez de 4.
   'BDI-II': {
-    nomeCompleto: 'BDI-II — Inventário de Depressão de Beck',
+    nomeCompleto: 'Beck Depression Inventory-II (BDI-II)',
+    nomeTraducao: 'Inventário de Depressão de Beck-II', // 17.3.2: nome original no título, tradução em letra menor
     emoji: '<svg class=ico aria-hidden=true><use href=#i-heart-crack></use></svg>',
     corPrefix: 'bdi2',
     instrumentoId: 'bdi2',
@@ -16718,7 +16799,7 @@ const ESC_ESCALAS = {
   },
 
   // Pacote 17.1 — BHS e BSS (Beck). Texto na aba privada, como BDI-II e BAI; o
-  // paciente vê "Respostas enviadas" (decisão de 22/09/2026, mantida em 19/11/2026).
+  // paciente via "Respostas enviadas" (decisão de 22/09/2026) — revertida no 17.3.1 (20/11/2026): só a BSS fica oculta.
   // Referências (regra de 19/11/2026: conteúdo clínico vindo do Code sempre com fonte):
   //   BHS — Beck, Weissman, Lester & Trexler (1974). The measurement of pessimism: The
   //         Hopelessness Scale. J. Consult. Clin. Psychol., 42(6), 861–865 (chave dos 20 itens);
@@ -16780,7 +16861,8 @@ const ESC_ESCALAS = {
   },
 
   'BSS': {
-    nomeCompleto: 'BSS — Escala de Ideação Suicida de Beck',
+    nomeCompleto: 'Beck Scale for Suicide Ideation (BSS)',
+    nomeTraducao: 'Escala de Ideação Suicida de Beck', // 17.3.2: nome original no título, tradução em letra menor
     emoji: '<svg class=ico aria-hidden=true><use href=#i-clipboard></use></svg>',
     corPrefix: 'bss',
     instrumentoId: 'bsi',
@@ -17002,7 +17084,8 @@ const ESC_ESCALAS = {
   //   WBSI — Wegner & Zanakos (1994). J. Personality, 62(4), 615–640; Talask et al. (2018). Trends Psychiatry
   //     Psychother., 40(1) (tradução e adaptação; sem validação final nem corte).
   'PCL-5': {
-    nomeCompleto: 'PCL-5 — Reações após um evento muito difícil',
+    nomeCompleto: 'Posttraumatic Stress Disorder Checklist for DSM-5 (PCL-5)',
+    nomeTraducao: 'Lista de Verificação de TEPT para o DSM-5', // 17.3.2: nome original no título, tradução em letra menor
     nomeCurto: 'PCL-5',
     emoji: '<svg class=ico aria-hidden=true><use href=#i-heart-crack></use></svg>',
     corPrefix: 'trauma',
@@ -17098,7 +17181,8 @@ const ESC_ESCALAS = {
   },
 
   'AAQ-II': {
-    nomeCompleto: 'AAQ-II — Aceitação e Ação',
+    nomeCompleto: 'Acceptance and Action Questionnaire-II (AAQ-II)',
+    nomeTraducao: 'Questionário de Aceitação e Ação-II', // 17.3.2: nome original no título, tradução em letra menor
     nomeCurto: 'AAQ-II',
     emoji: '<svg class=ico aria-hidden=true><use href=#i-puzzle></use></svg>',
     corPrefix: 'processo',
@@ -17357,7 +17441,7 @@ async function escIniciarAplicacao(codigoEscala) {
 
   // Preenche cabeçalho
   topbarDefinirTitulo('sec-escalas-aplicar', codigoEscala); // Pacote 16.1: título vai para a barra
-  document.getElementById('escAplicarHead').innerHTML = def.emoji + ' ' + def.nomeCompleto;
+  document.getElementById('escAplicarHead').innerHTML = def.emoji + ' ' + def.nomeCompleto + escNomeTraducaoHtml_(def); // 17.3.2: tradução abaixo
   document.getElementById('escAplicarSub').innerHTML = def.subtitulo;
   // Pacote 17.0: a instrução do BDI-II e do BAI vem da aba, inteira e sem
   // reescrita (seção 0.1 item 2). textContent preserva o texto como digitado.
@@ -17421,7 +17505,7 @@ function escRenderItens(def) {
     html += '<div class="esc-item-num">' + item.id + '</div>';
     html += '<div class="esc-item-texto">' + escapeHtmlAuto(textoItem) + '</div>';
     html += '</div>';
-    html += '<div class="esc-item-opcoes' + (isDicotomica ? ' esc-item-opcoes-dicotomica' : '') + empilhada + '">';
+    html += '<div class="esc-item-opcoes' + (isDicotomica ? ' esc-item-opcoes-dicotomica' : '') + empilhada + '" data-n="' + opcoes.length + '">'; // 17.3.2: colunas = nº de opções
     opcoes.forEach(o => {
       html += '<button type="button" class="esc-opcao' + classeBotaoExtra + '" ' +
               'data-item="' + item.id + '" data-valor="' + escapeHtmlAuto(o.codigo) + '" ' +
@@ -17465,7 +17549,7 @@ function escRenderItens(def) {
     html += '<div class="esc-item-num">F</div>';
     html += '<div class="esc-item-texto">' + escapeHtmlAuto(def.itemFuncional.texto) + '</div>';
     html += '</div>';
-    html += '<div class="esc-item-opcoes">';
+    html += '<div class="esc-item-opcoes" data-n="' + def.itemFuncional.opcoes.length + '">';
     def.itemFuncional.opcoes.forEach((txt, i) => {
       html += '<button type="button" class="esc-opcao" ' +
               'data-item="funcional" data-valor="' + i + '" ' +
@@ -17799,6 +17883,11 @@ async function escEnviarEscala(event) {
 // também serve o modal do histórico de escalas.
 // ============================================================
 
+// 17.3.2: tradução do nome original, em letra menor, abaixo do título (vazio quando a escala não tem)
+function escNomeTraducaoHtml_(def) {
+  return (def && def.nomeTraducao) ? '<span class="esc-nome-trad">' + escapeHtmlAuto(def.nomeTraducao) + '</span>' : '';
+}
+
 function escMostrarResultado(codigo, calc, respostas) {
   escLimparRascunho(); // Pacote 16.3: escala gravada, rascunho não faz mais sentido
   rascEsquecer_('escala_' + codigo); // 18.10b: o servidor já apagou o dele
@@ -17979,7 +18068,7 @@ function escRenderizarConteudoResultado(reg, def, modo, contexto) {
   if (eDass) {
     // DASS-21: cabeçalho enxuto + 3 boxes abaixo
     html += '<div class="rr-header">';
-    html +=   '<h2>' + (def.emoji || '') + ' ' + escapeHtmlAuto(def.nomeCompleto || cod) + '</h2>'; // 16.4.1: emoji é HTML do sprite
+    html +=   '<h2>' + (def.emoji || '') + ' ' + escapeHtmlAuto(def.nomeCompleto || cod) + escNomeTraducaoHtml_(def) + '</h2>'; // 16.4.1: emoji é HTML do sprite; 17.3.2: tradução
     html += '</div>';
     html += escRrBlocoSubescalasDass(reg, def);
   } else {
@@ -18143,7 +18232,7 @@ function escRrBlocoHeaderEscore(reg, def) {
   const faixaRotulo = String(reg.faixa || '');
 
   return '<div class="rr-header">' +
-    '<h2>' + (def.emoji || '') + ' ' + escapeHtmlAuto(def.nomeCompleto || '') + '</h2>' + // 16.4.1: emoji é HTML do sprite
+    '<h2>' + (def.emoji || '') + ' ' + escapeHtmlAuto(def.nomeCompleto || '') + escNomeTraducaoHtml_(def) + '</h2>' + // 16.4.1: emoji é HTML do sprite; 17.3.2: tradução
     '<div class="rr-header-escore">' + escapeHtmlAuto(String(escore)) +
       (escoreMax ? '<span class="rr-header-escore-max">/' + escapeHtmlAuto(String(escoreMax)) + '</span>' : '') +
     '</div>' +
@@ -18778,7 +18867,7 @@ function escHistRenderBlocos(cont, registros) {
     html +=   '<div class="esch-bloco-head" onclick="escHistToggleBloco(this)">';
     // 16.4.1: def.emoji é HTML do sprite (literal do catálogo ESC_ESCALAS, nunca entrada do usuário) — não escapar
     html +=     '<span class="esch-bloco-icone">' + (def.emoji || '<svg class=ico aria-hidden=true><use href=#i-chart></use></svg>') + '</span>';
-    html +=     '<span class="esch-bloco-titulo">' + escapeHtmlAuto(def.nomeCompleto || cod) + '</span>';
+    html +=     '<span class="esch-bloco-titulo">' + escapeHtmlAuto(def.nomeCompleto || cod) + escNomeTraducaoHtml_(def) + '</span>';
     html +=     '<span class="esch-bloco-contagem">' + textoContagem + '</span>';
     html +=     '<span class="esch-bloco-chevron">›</span>';
     html +=   '</div>';
@@ -18988,7 +19077,7 @@ function escHistAbrirDetalhe(idxGlobal) {
   if (titulo) {
     // 16.4.1: def.emoji é HTML do sprite (literal do catálogo ESC_ESCALAS, nunca entrada do usuário) — não escapar
     titulo.innerHTML = (def ? (def.emoji || '<svg class=ico aria-hidden=true><use href=#i-search></use></svg>') + ' ' : '<svg class=ico aria-hidden=true><use href=#i-search></use></svg> ') +
-                       escapeHtmlAuto(def ? def.nomeCompleto : cod);
+                       escapeHtmlAuto(def ? def.nomeCompleto : cod) + escNomeTraducaoHtml_(def);
   }
 
   conteudo.innerHTML = escHistMontarHtmlDetalhe(cod, def, reg);
@@ -19002,6 +19091,185 @@ function escHistAbrirDetalhe(idxGlobal) {
 function escHistFecharDetalhe() {
   const modal = document.getElementById('eschModalDetalhe');
   if (modal) modal.classList.remove('show');
+}
+
+// ============================================================
+// Pacote 17.3.2 — FICHA DA ESCALA (tela do profissional)
+// Informações: conteúdo original do catálogo (def.ficha), escrito a partir das
+// publicações e aprovado pelo usuário; Escalas: gerada do catálogo; Questões:
+// itens e opções (catálogo ou aba privada, pela mesma leitura da aplicação).
+// ============================================================
+var FICHA_COD = null;
+function fichaHtmlBotao_(cod) {
+  var def = ESC_ESCALAS[cod];
+  if (!def || !def.ficha) return '';
+  return '<button type="button" class="esch-bloco-ficha" data-esc="' + escapeHtmlAuto(cod) + '" ' +
+         'onclick="event.stopPropagation(); fichaAbrir_(this.dataset.esc)" aria-label="Ficha da escala ' + escapeHtmlAuto(cod) + '">' +
+         '<svg class=ico aria-hidden=true><use href=#i-book></use></svg> Ficha</button>';
+}
+async function fichaAbrir_(cod) {
+  var def = ESC_ESCALAS[cod];
+  var modal = document.getElementById('fichaModal');
+  if (!def || !modal) return;
+  FICHA_COD = cod;
+  document.getElementById('fichaTitulo').innerHTML = (def.emoji || '') + ' ' + escapeHtmlAuto(def.nomeCompleto || cod) + escNomeTraducaoHtml_(def);
+  document.getElementById('fichaPainel-info').innerHTML = fichaHtmlInfo_(def);
+  document.getElementById('fichaPainel-escalas').innerHTML = fichaHtmlEscalas_(def);
+  document.getElementById('fichaPainel-questoes').innerHTML = '<p class="ficha-vazio">Carregando os itens…</p>';
+  fichaAba_(modal.querySelector('.ficha-aba[data-aba="info"]'));
+  modal.classList.add('show');
+  // Questões: escala com texto na aba privada precisa dos textos (mesma leitura da aplicação pelo profissional)
+  var ok = true;
+  if (def.textoDaAba && !ESC_TEXTOS[def.instrumentoId]) {
+    var fluxoAntes = PROF_FLUXO;
+    if (!fluxoAntes && PROF_SESSAO && PROF_PACIENTE_SEL) PROF_FLUXO = { sigla: PROF_PACIENTE_SEL.sigla };
+    ok = await escCarregarTextos(cod);
+    if (!fluxoAntes) PROF_FLUXO = null;
+  }
+  if (FICHA_COD !== cod) return; // o profissional abriu outra ficha enquanto esta carregava
+  document.getElementById('fichaPainel-questoes').innerHTML = ok
+    ? fichaHtmlQuestoes_(def)
+    : '<p class="ficha-vazio">Os itens desta escala não puderam ser carregados agora.</p>';
+  if (ok && def.textoDaAba) document.getElementById('fichaPainel-info').innerHTML = fichaHtmlInfo_(def); // instrução vinda da aba
+}
+function fichaFechar_() {
+  var modal = document.getElementById('fichaModal');
+  if (modal) modal.classList.remove('show');
+  FICHA_COD = null;
+}
+function fichaAba_(btn) {
+  if (!btn) return;
+  var alvo = btn.dataset.aba;
+  document.querySelectorAll('#fichaModal .ficha-aba').forEach(function (b) { b.setAttribute('aria-selected', b === btn ? 'true' : 'false'); });
+  document.querySelectorAll('#fichaModal .ficha-painel').forEach(function (p) { p.classList.toggle('hidden', p.id !== 'fichaPainel-' + alvo); });
+}
+// Bloco "título + conteúdo"; o conteúdo da ficha é literal do catálogo (HTML simples), nunca entrada do usuário
+function fichaBloco_(titulo, html) {
+  if (!html) return '';
+  return '<h4>' + titulo + '</h4>' + html;
+}
+function fichaParagrafos_(v) {
+  if (!v) return '';
+  if (Array.isArray(v)) return '<ul>' + v.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>';
+  return '<p>' + v + '</p>';
+}
+function fichaHtmlInfo_(def) {
+  var f = def.ficha;
+  if (!f) return '<p class="ficha-vazio">Esta escala ainda não tem ficha.</p>';
+  var textos = def.textoDaAba ? (ESC_TEXTOS[def.instrumentoId] || null) : null;
+  var instrucao = def.textoDaAba ? (textos ? textos.instrucao : '') : def.enunciado;
+  var html = '';
+  if (f.tags && f.tags.length) html += '<div class="ficha-tags">' + f.tags.map(function (t) { return '<span class="ficha-tag">' + escapeHtmlAuto(t) + '</span>'; }).join('') + '</div>';
+  html += fichaBloco_('Descrição', fichaParagrafos_(f.descricao));
+  html += fichaBloco_('Tempo médio de aplicação', fichaParagrafos_(f.tempo));
+  html += fichaBloco_('População-alvo', fichaParagrafos_(f.populacao));
+  html += fichaBloco_('Usos recomendados', fichaParagrafos_(f.usos));
+  html += fichaBloco_('Interpretação', fichaParagrafos_(f.interpretacao));
+  if (instrucao) html += fichaBloco_('Instruções do paciente', '<p>' + escapeHtmlAuto(instrucao) + '</p>');
+  html += fichaBloco_('Desenvolvedores', fichaParagrafos_(f.desenvolvedores));
+  html += fichaBloco_('Validação brasileira', fichaParagrafos_(f.validacaoBr));
+  html += fichaBloco_('Referências bibliográficas', fichaParagrafos_(f.referencias));
+  return html;
+}
+function fichaHtmlEscalas_(def) {
+  var itens = def.itens || [];
+  var pontuados = itens.filter(function (i) { return !i.naoPontua; });
+  var reversos = itens.filter(function (i) { return i.reverso; }).map(function (i) { return i.id; });
+  var minTotal = (def.valorMin || 0) * pontuados.length;
+  var html = '';
+  var estrutura = '<li>' + itens.length + ' itens' + (pontuados.length !== itens.length ? ' (' + pontuados.length + ' pontuam)' : '') +
+                  (def.itemFuncional ? ' + 1 item complementar sem pontuação' : '') + '</li>';
+  if (def.escoreMax) estrutura += '<li>Escore total: soma dos itens, de ' + minTotal + ' a ' + def.escoreMax + (def.mediaPor ? ' (lido pela média, de ' + (def.valorMin || 0) + ' a ' + Math.round(def.escoreMax / def.mediaPor) + ')' : '') + '</li>';
+  if (reversos.length) estrutura += '<li>Itens invertidos: ' + reversos.join(', ') + '</li>';
+  if (def.condicional) estrutura += '<li>Bloco condicional: parte dos itens só se aplica conforme a resposta aos itens de triagem</li>';
+  if (def.escoreOculto) estrutura += '<li>O paciente não vê o escore: o resultado é conversado na sessão</li>';
+  html += fichaBloco_('Estrutura', '<ul>' + estrutura + '</ul>');
+  if (def.subescalasMeta) {
+    var subs = Object.keys(def.subescalasMeta).map(function (k) {
+      var m = def.subescalasMeta[k];
+      var n = itens.filter(function (i) { return (i.sub || i.subescala) === k; }).length;
+      return '<li>' + (m.nome || k) + (n ? ' — ' + n + ' itens' : '') + '</li>';
+    }).join('');
+    html += fichaBloco_('Subescalas', '<ul>' + subs + '</ul>');
+  }
+  if (def.faixasLista && def.faixasLista.length) {
+    html += fichaBloco_('Faixas de interpretação', '<ul>' + def.faixasLista.map(function (l) { return '<li>' + l + '</li>'; }).join('') + '</ul>');
+  }
+  return html || '<p class="ficha-vazio">Sem dados de pontuação.</p>';
+}
+function fichaHtmlQuestoes_(def) {
+  var textos = def.textoDaAba ? (ESC_TEXTOS[def.instrumentoId] || null) : null;
+  if (def.textoDaAba && !textos) return '<p class="ficha-vazio">Os itens desta escala não puderam ser carregados agora.</p>';
+  var html = '';
+  (def.itens || []).forEach(function (item) {
+    var texto = textos ? (textos.itens[String(item.id)] || textos.titulos[String(item.id)] || '') : (item.texto || '');
+    var opcoes = escOpcoesDoItem(def, item, textos);
+    var marcas = '';
+    if (item.reverso) marcas += '<span class="ficha-item-marca">invertido</span>';
+    if (item.naoPontua) marcas += '<span class="ficha-item-marca">não pontua</span>';
+    if (item.critico) marcas += '<span class="ficha-item-marca">item crítico</span>';
+    html += '<div class="ficha-item"><div class="ficha-item-texto"><span class="ficha-item-num">' + item.id + '</span>' + escapeHtmlAuto(texto) + marcas + '</div>';
+    if (opcoes.length) html += '<div class="ficha-item-opcoes">' + opcoes.map(function (o) { return escapeHtmlAuto(o.codigo) + ' = ' + escapeHtmlAuto(o.label); }).join(' · ') + '</div>';
+    html += '</div>';
+  });
+  if (def.itemFuncional) {
+    html += '<div class="ficha-item"><div class="ficha-item-texto"><span class="ficha-item-num">F</span>' + escapeHtmlAuto(def.itemFuncional.texto) + '<span class="ficha-item-marca">não pontua</span></div>' +
+            '<div class="ficha-item-opcoes">' + def.itemFuncional.opcoes.map(function (t, i) { return i + ' = ' + escapeHtmlAuto(t); }).join(' · ') + '</div></div>';
+  }
+  return html || '<p class="ficha-vazio">Sem itens.</p>';
+}
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') { var m = document.getElementById('fichaModal'); if (m && m.classList.contains('show')) fichaFechar_(); }
+});
+
+// ---- Busca por nome, sigla ou tag (tela do profissional): filtra os cartões das escalas e a lista "Nova escala"
+function profTagsDoCatalogo_() {
+  var vistas = {}, lista = [];
+  ESC_HIST_ORDEM.forEach(function (cod) {
+    var d = ESC_ESCALAS[cod];
+    ((d && d.ficha && d.ficha.tags) || []).forEach(function (t) { if (!vistas[t]) { vistas[t] = true; lista.push(t); } });
+  });
+  return lista.sort(function (a, b) { return a.localeCompare(b, 'pt-BR'); });
+}
+function profBuscaHtml_() {
+  var chips = profTagsDoCatalogo_().map(function (t) {
+    return '<button type="button" class="esc-busca-chip" data-tag="' + escapeHtmlAuto(t) + '" aria-pressed="false" onclick="profAlternarTag_(this)">' + escapeHtmlAuto(t) + '</button>';
+  }).join('');
+  return '<div class="esc-busca" id="profEscBusca">' +
+         '<input type="search" class="esc-busca-campo" id="profEscBuscaCampo" placeholder="Buscar escala por nome, sigla ou tag" aria-label="Buscar escala" oninput="profFiltrarEscalas_()">' +
+         (chips ? '<div class="esc-busca-tags" id="profEscBuscaTags">' + chips + '</div>' : '') +
+         '<div class="esc-busca-vazio hidden" id="profEscBuscaVazio">Nenhuma escala corresponde à busca.</div>' +
+         '</div>';
+}
+function profAlternarTag_(btn) {
+  btn.setAttribute('aria-pressed', btn.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+  profFiltrarEscalas_();
+}
+function profNormalizar_(t) {
+  return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+function profEscalaCorresponde_(cod, texto, tags) {
+  var d = ESC_ESCALAS[cod];
+  if (!d) return false;
+  var dTags = (d.ficha && d.ficha.tags) || [];
+  if (tags.length && !tags.some(function (t) { return dTags.indexOf(t) !== -1; })) return false;
+  if (!texto) return true;
+  var palheiro = profNormalizar_([cod, d.nomeCompleto, d.nomeTraducao, d.nomeCurto].concat(dTags).join(' '));
+  return palheiro.indexOf(texto) !== -1;
+}
+function profFiltrarEscalas_() {
+  var campo = document.getElementById('profEscBuscaCampo');
+  if (!campo) return;
+  var texto = profNormalizar_(campo.value).trim();
+  var tags = Array.prototype.map.call(document.querySelectorAll('#profEscBuscaTags .esc-busca-chip[aria-pressed="true"]'), function (b) { return b.dataset.tag; });
+  var visiveis = 0;
+  document.querySelectorAll('#profModEscBody .esch-bloco[data-esc], #profNovaEscalaLista button[data-esc]').forEach(function (el) {
+    var mostra = profEscalaCorresponde_(el.dataset.esc, texto, tags);
+    el.classList.toggle('hidden', !mostra);
+    if (mostra && el.classList.contains('esch-bloco')) visiveis++;
+  });
+  var vazio = document.getElementById('profEscBuscaVazio');
+  if (vazio) vazio.classList.toggle('hidden', visiveis > 0);
 }
 
 // ESC fecha o modal
