@@ -779,7 +779,7 @@ Quatro peças versionadas em `scripts/` substituem o que cada pacote reescrevia
   `node --check` por bloco, tags fora de `<script>` por profundidade,
   `var()` sem declaração (reconhece `setProperty`), hex fora dos `:root`
   (falha) e `rgba()` (não pode aumentar), classes sem uso (só as novas
-  falham), `font-size` < 13 px, emoji, marcadores, `fetch(` ≤ 2, texto
+  falham), `font-size` < 13 px, emoji, marcadores, `fetch(` ≤ 3 (chamarServidor, ViaCEP e a conferência de versão da página, 17.1.3), texto
   proibido fora de comentários, função nova sem chamador e função removida
   ainda referenciada; tabela antes × depois contra `HEAD` (`--ref`) ou contra
   a linha de base gravada por `--antes` e lida por `--depois`.

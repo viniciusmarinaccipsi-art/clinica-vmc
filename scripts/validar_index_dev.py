@@ -12,7 +12,7 @@ Substitui o Python reescrito a cada sessão. Regras (CLAUDE.md, checklist "antes
   5. zero classe CSS sem uso (classe usada = nome aparece fora do `<style>`); as sem uso já existentes na
      referência são toleradas e listadas; classe NOVA sem uso é falha;
   6. nenhum `font-size` abaixo de 13 px; 7. zero emoji; 8. marcadores preservados; `fetch(` só em
-     `chamarServidor` + ViaCEP; 9. verbos proibidos fora de comentários = 0;
+     `chamarServidor` + ViaCEP + a conferência de versão da própria página (17.1.3); 9. verbos proibidos fora de comentários = 0;
  10. funções: nova sem chamador = falha; função removida que ainda é chamada = falha;
  11. contagens antes × depois (linhas, CRLF, classes, rgba, funções, blocos) contra `--ref` (git, default HEAD)
      ou contra a linha de base gravada por `--antes`.
@@ -234,8 +234,8 @@ def analisar(texto_bytes, arquivo, opcoes):
     texto_sem_com = sem_comentarios(texto)
     fetches = [linha_de(texto_sem_com, m.start()) for m in re.finditer(r'\bfetch\s*\(', texto_sem_com)]
     R['fetch'] = fetches
-    if len(fetches) > 2:
-        falhas.append(f'fetch( em {len(fetches)} pontos (esperado ≤ 2: chamarServidor + ViaCEP): linhas {fetches}')
+    if len(fetches) > 3:  # 17.1.3: + vmcVersaoPublicada_ (fetch da própria página, mesma origem)
+        falhas.append(f'fetch( em {len(fetches)} pontos (esperado ≤ 3: chamarServidor + ViaCEP + vmcVersaoPublicada_): linhas {fetches}')
 
     # 9. verbos proibidos fora de comentários
     proibidos = {}
