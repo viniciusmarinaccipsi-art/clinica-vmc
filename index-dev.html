@@ -3271,6 +3271,13 @@ button.cab-no-item{cursor:pointer;}
 .esch-bloco-cadeado[aria-pressed="true"] { background:var(--c-action); border-color:var(--c-action); color:var(--c-ink-inv); }
 .esch-bloco-cadeado:focus-visible { outline:2px solid var(--c-action); outline-offset:2px; }
 .esch-bloco-vazio { font:var(--t-body-sm); color:var(--c-ink-3); padding:12px 0 4px; }
+/* no celular, o cabeçalho do cartão do profissional quebra em duas linhas: título + seta; contagem + cadeado */
+@media (max-width: 600px) {
+  #profModEscBody .esch-bloco-head { flex-wrap: wrap; row-gap: 8px; }
+  #profModEscBody .esch-bloco-titulo { flex: 1 1 0; min-width: 55%; }
+  #profModEscBody .esch-bloco-contagem { order: 1; margin-left: auto; }
+  #profModEscBody .esch-bloco-cadeado { order: 1; }
+}
 .esc-menu-vazio { font:var(--t-body-sm); color:var(--c-ink-3); line-height:1.5; padding:4px 4px 8px; }
 
 .esch-bloco-corpo {
