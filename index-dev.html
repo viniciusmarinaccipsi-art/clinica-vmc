@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — grade horizontal, nomes originais, ficha da escala e busca por tags (piloto: PHQ-9, BDI-II, BSS, AAQ-II, PCL-5) — Pacote 17.3.2 (20/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — nome original, tradução, ficha e tags nas 20 escalas (as outras 15 no molde do piloto) — Pacote 17.4 (20/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -7150,7 +7150,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 
       <button class="esc-card amber hidden" id="escCardGAD7" type="button" onclick="escClicarCardEscala('GAD-7')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-zap"/></svg></span>
-        <div class="esc-card-title">GAD-7 — Ansiedade Generalizada</div>
+        <div class="esc-card-title">Generalized Anxiety Disorder-7 (GAD-7)</div>
+        <div class="esc-card-trad">Escala de Transtorno de Ansiedade Generalizada-7</div>
         <div class="esc-card-desc">Avalia sintomas de ansiedade das últimas 2 semanas</div>
         <div class="esc-card-meta">
           <span>7 itens</span><span>2-3 min</span><span>Últimos 15 dias</span>
@@ -7160,7 +7161,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 
       <button class="esc-card orange hidden" id="escCardPSS10" type="button" onclick="escClicarCardEscala('PSS-10')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-thermometer"/></svg></span>
-        <div class="esc-card-title">PSS-10 — Estresse Percebido</div>
+        <div class="esc-card-title">Perceived Stress Scale-10 (PSS-10)</div>
+        <div class="esc-card-trad">Escala de Estresse Percebido-10</div>
         <div class="esc-card-desc">Percepção subjetiva de estresse no último mês</div>
         <div class="esc-card-meta">
           <span>10 itens</span><span>3-5 min</span><span>Último mês</span>
@@ -7170,7 +7172,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 
       <button class="esc-card purple hidden" id="escCardDASS21" type="button" onclick="escClicarCardEscala('DASS-21')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg></span>
-        <div class="esc-card-title">DASS-21 — Depressão, Ansiedade e Estresse</div>
+        <div class="esc-card-title">Depression, Anxiety and Stress Scale-21 (DASS-21)</div>
+        <div class="esc-card-trad">Escala de Depressão, Ansiedade e Estresse-21</div>
         <div class="esc-card-desc">Visão ampla em três subescalas (última semana)</div>
         <div class="esc-card-meta">
           <span>21 itens</span><span>5-7 min</span><span>Última semana</span>
@@ -7180,7 +7183,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 
       <button class="esc-card teal hidden" id="escCardSRQ20" type="button" onclick="escClicarCardEscala('SRQ-20')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-help"/></svg></span>
-        <div class="esc-card-title">SRQ-20 — Rastreamento Geral</div>
+        <div class="esc-card-title">Self-Reporting Questionnaire-20 (SRQ-20)</div>
+        <div class="esc-card-trad">Questionário de Autorrelato-20</div>
         <div class="esc-card-desc">Rastreamento de transtornos mentais comuns</div>
         <div class="esc-card-meta">
           <span>20 itens</span><span>5 min</span><span>Últimos 30 dias</span>
@@ -7205,7 +7209,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 
       <button class="esc-card bai hidden" id="escCardBAI" type="button" onclick="escClicarCardEscala('BAI')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-brain"/></svg></span>
-        <div class="esc-card-title">BAI — Inventário de Ansiedade de Beck</div>
+        <div class="esc-card-title">Beck Anxiety Inventory (BAI)</div>
+        <div class="esc-card-trad">Inventário de Ansiedade de Beck</div>
         <div class="esc-card-desc">Intensidade de sintomas de ansiedade na última semana</div>
         <div class="esc-card-meta">
           <span>21 itens</span><span>5-10 min</span><span>Última semana</span>
@@ -7217,7 +7222,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
            o que o profissional abriu para o paciente (escalas_liberadas) — regra de TODAS desde o 17.3.1. -->
       <button class="esc-card bhs hidden" id="escCardBHS" type="button" onclick="escClicarCardEscala('BHS')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-compass"/></svg></span>
-        <div class="esc-card-title">BHS — Escala de Desesperança de Beck</div>
+        <div class="esc-card-title">Beck Hopelessness Scale (BHS)</div>
+        <div class="esc-card-trad">Escala de Desesperança de Beck</div>
         <div class="esc-card-desc">Como você vê o futuro, na última semana</div>
         <div class="esc-card-meta">
           <span>20 itens</span><span>3-5 min</span><span>Última semana</span>
@@ -7240,7 +7246,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
            aparece para o paciente a quem o profissional liberou aquela versão. -->
       <button class="esc-card urica hidden" id="escCardURICA_A" type="button" onclick="escClicarCardEscala('URICA-A')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-refresh"/></svg></span>
-        <div class="esc-card-title">URICA — Álcool · Motivação para a mudança</div>
+        <div class="esc-card-title">University of Rhode Island Change Assessment — Álcool (URICA)</div>
+        <div class="esc-card-trad">Escala de Avaliação da Mudança da Universidade de Rhode Island — álcool</div>
         <div class="esc-card-desc">Como você se vê hoje em relação ao uso de álcool</div>
         <div class="esc-card-meta">
           <span>24 itens</span><span>5-8 min</span><span>Hoje</span>
@@ -7250,7 +7257,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 
       <button class="esc-card urica hidden" id="escCardURICA_D" type="button" onclick="escClicarCardEscala('URICA-D')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-refresh"/></svg></span>
-        <div class="esc-card-title">URICA — Drogas ilícitas · Motivação para a mudança</div>
+        <div class="esc-card-title">University of Rhode Island Change Assessment — Drogas ilícitas (URICA)</div>
+        <div class="esc-card-trad">Escala de Avaliação da Mudança da Universidade de Rhode Island — drogas ilícitas</div>
         <div class="esc-card-desc">Como você se vê hoje em relação ao uso de drogas</div>
         <div class="esc-card-meta">
           <span>24 itens</span><span>5-8 min</span><span>Hoje</span>
@@ -7260,7 +7268,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 
       <button class="esc-card urica hidden" id="escCardURICA_T" type="button" onclick="escClicarCardEscala('URICA-T')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-refresh"/></svg></span>
-        <div class="esc-card-title">URICA — Tabaco · Motivação para a mudança</div>
+        <div class="esc-card-title">University of Rhode Island Change Assessment — Tabaco (URICA)</div>
+        <div class="esc-card-trad">Escala de Avaliação da Mudança da Universidade de Rhode Island — tabaco</div>
         <div class="esc-card-desc">Como você se vê hoje em relação ao uso de tabaco</div>
         <div class="esc-card-meta">
           <span>24 itens</span><span>5-8 min</span><span>Hoje</span>
@@ -7270,7 +7279,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 
       <button class="esc-card urica hidden" id="escCardURICA_HA" type="button" onclick="escClicarCardEscala('URICA-HA')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-refresh"/></svg></span>
-        <div class="esc-card-title">URICA — Hábitos alimentares · Motivação para a mudança</div>
+        <div class="esc-card-title">University of Rhode Island Change Assessment — Hábitos alimentares (URICA)</div>
+        <div class="esc-card-trad">Escala de Avaliação da Mudança da Universidade de Rhode Island — hábitos alimentares</div>
         <div class="esc-card-desc">Como você se vê hoje em relação aos seus hábitos alimentares</div>
         <div class="esc-card-meta">
           <span>24 itens</span><span>5-8 min</span><span>Hoje</span>
@@ -7293,7 +7303,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 
       <button class="esc-card processo hidden" id="escCardPSWQ" type="button" onclick="escClicarCardEscala('PSWQ')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-zap"/></svg></span>
-        <div class="esc-card-title">PSWQ — Preocupação</div>
+        <div class="esc-card-title">Penn State Worry Questionnaire (PSWQ)</div>
+        <div class="esc-card-trad">Questionário de Preocupação do Estado da Pensilvânia</div>
         <div class="esc-card-desc">Quanto a preocupação faz parte do seu jeito de ser</div>
         <div class="esc-card-meta">
           <span>16 itens</span><span>3-5 min</span><span>Em geral</span>
@@ -7303,7 +7314,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 
       <button class="esc-card bemestar hidden" id="escCardEAR" type="button" onclick="escClicarCardEscala('EAR')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-star"/></svg></span>
-        <div class="esc-card-title">EAR — Autoestima</div>
+        <div class="esc-card-title">Rosenberg Self-Esteem Scale (RSES)</div>
+        <div class="esc-card-trad">Escala de Autoestima de Rosenberg (EAR)</div>
         <div class="esc-card-desc">Como você se sente em relação a si mesmo(a)</div>
         <div class="esc-card-meta">
           <span>10 itens</span><span>2-3 min</span><span>Em geral</span>
@@ -7324,7 +7336,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 
       <button class="esc-card bemestar hidden" id="escCardSWLS" type="button" onclick="escClicarCardEscala('SWLS')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-sun"/></svg></span>
-        <div class="esc-card-title">SWLS — Satisfação com a Vida</div>
+        <div class="esc-card-title">Satisfaction with Life Scale (SWLS)</div>
+        <div class="esc-card-trad">Escala de Satisfação com a Vida</div>
         <div class="esc-card-desc">O quanto você está satisfeito(a) com a sua vida</div>
         <div class="esc-card-meta">
           <span>5 itens</span><span>1-2 min</span><span>Em geral</span>
@@ -7334,7 +7347,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 
       <button class="esc-card bemestar hidden" id="escCardMAAS" type="button" onclick="escClicarCardEscala('MAAS')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-leaf"/></svg></span>
-        <div class="esc-card-title">MAAS — Atenção e Consciência Plenas</div>
+        <div class="esc-card-title">Mindful Attention Awareness Scale (MAAS)</div>
+        <div class="esc-card-trad">Escala de Atenção e Consciência Plenas</div>
         <div class="esc-card-desc">Atenção ao que acontece no seu dia a dia</div>
         <div class="esc-card-meta">
           <span>15 itens</span><span>3-5 min</span><span>Atualmente</span>
@@ -7344,7 +7358,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 
       <button class="esc-card processo hidden" id="escCardWBSI" type="button" onclick="escClicarCardEscala('WBSI')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg></span>
-        <div class="esc-card-title">WBSI — Supressão de Pensamentos</div>
+        <div class="esc-card-title">White Bear Suppression Inventory (WBSI)</div>
+        <div class="esc-card-trad">Inventário de Supressão de Pensamentos do Urso Branco</div>
         <div class="esc-card-desc">Como você lida com pensamentos que não quer ter</div>
         <div class="esc-card-meta">
           <span>15 itens</span><span>3-5 min</span><span>Em geral</span>
@@ -16478,7 +16493,35 @@ const ESC_ESCALAS = {
   },
 
   'GAD-7': {
-    nomeCompleto: 'GAD-7 — Ansiedade Generalizada',
+    nomeCompleto: 'Generalized Anxiety Disorder-7 (GAD-7)',
+    nomeTraducao: 'Escala de Transtorno de Ansiedade Generalizada-7', // 17.4: nome original no título, tradução em letra menor
+    ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
+      tags: [
+        'Ansiedade',
+        'Rastreamento',
+        'Mensuração'
+      ],
+      descricao: 'Escala de autorrelato com sete itens que cobrem os sintomas centrais do transtorno de ansiedade generalizada do DSM-IV (nervosismo, preocupação incontrolável e excessiva, dificuldade de relaxar, inquietação, irritabilidade e medo de que algo terrível aconteça), pontuados pela frequência nas duas últimas semanas, de 0 (nenhuma vez) a 3 (quase todos os dias). Foi construída para rastrear o transtorno e medir a gravidade dos sintomas na atenção primária (Spitzer, Kroenke, Williams & Löwe, 2006).',
+      tempo: '2 a 3 minutos.',
+      populacao: 'Adultos, em atenção primária, ambulatórios e população geral. Os estudos brasileiros usaram adultos da comunidade e universitários (Moreno et al., 2016; Monteiro et al., 2020).',
+      usos: 'Rastreamento de transtorno de ansiedade generalizada e, com desempenho um pouco menor, de transtorno de pânico, ansiedade social e TEPT (Kroenke, Spitzer, Williams, Monahan & Löwe, 2007); medida de gravidade na linha de base e monitoramento ao longo do tratamento. Não substitui a entrevista clínica para diagnóstico (Spitzer et al., 2006).',
+      interpretacao: [
+        '<em>Estrutura:</em> 7 itens, escala de 0 a 3, duas semanas de referência; escore total de 0 a 21 pela soma. Um item adicional, não pontuado, pergunta quanto os problemas dificultaram o dia a dia.',
+        '<em>Faixas de gravidade (Spitzer et al., 2006):</em> 0–4 mínima; 5–9 leve; 10–14 moderada; 15–21 grave. São as faixas que o sistema usa.',
+        '<em>Ponto de corte para rastreamento:</em> ≥ 10, com sensibilidade 89% e especificidade 82% para TAG na validação original, em 965 pacientes de atenção primária entrevistados por profissional de saúde mental (Spitzer et al., 2006). O mesmo corte rastreia os outros transtornos de ansiedade com área sob a curva de 0,80 a 0,91 (Kroenke et al., 2007).',
+        '<em>Normas populacionais:</em> na população geral alemã, cerca de 5% pontuam 10 ou mais e 1% pontuam 15 ou mais (Löwe et al., 2008). Não há norma nem corte brasileiro validado contra entrevista diagnóstica.',
+        '<em>Cuidados:</em> a escala mede sintomas ansiosos em geral e correlaciona-se com depressão; não distingue sozinha entre os transtornos de ansiedade.'
+      ],
+      desenvolvedores: 'Robert L. Spitzer, Kurt Kroenke, Janet B. W. Williams e Bernd Löwe (2006). Domínio público (desenvolvida com apoio da Pfizer, sem licença para uso clínico).',
+      validacaoBr: 'Sim, com evidências de estrutura e fidedignidade; sem corte validado contra padrão-ouro. Moreno et al. (2016): 206 adultos da comunidade, estrutura unidimensional confirmada, alfa de Cronbach 0,916; as mulheres pontuaram mais que os homens. Monteiro et al. (2020): 746 adultos, estrutura unifatorial estável, ômega 0,91, correlações convergentes com a DASS-21 e com neuroticismo.',
+      referencias: [
+        'Kroenke, K., Spitzer, R. L., Williams, J. B. W., Monahan, P. O., & Löwe, B. (2007). Anxiety disorders in primary care: Prevalence, impairment, comorbidity, and detection. <em>Annals of Internal Medicine, 146</em>(5), 317–325. https://doi.org/10.7326/0003-4819-146-5-200703060-00004',
+        'Löwe, B., Decker, O., Müller, S., Brähler, E., Schellberg, D., Herzog, W., & Herzberg, P. Y. (2008). Validation and standardization of the Generalized Anxiety Disorder Screener (GAD-7) in the general population. <em>Medical Care, 46</em>(3), 266–274. https://doi.org/10.1097/MLR.0b013e318160d093',
+        'Monteiro, R. P., Coelho, G. L. H., Hanel, P. H. P., Medeiros, E. D., & Silva, P. D. G. (2020). Psychometric evidence of the 7-Item Generalized Anxiety Disorder Questionnaire in Brazil. <em>International Journal of Mental Health and Addiction</em>.',
+        'Moreno, A. L., DeSousa, D. A., Souza, A. M. F. L. P., Manfro, G. G., Salum, G. A., Koller, S. H., Osório, F. L., & Crippa, J. A. S. (2016). Factor structure, reliability, and item parameters of the Brazilian-Portuguese version of the GAD-7 questionnaire. <em>Temas em Psicologia, 24</em>(1), 367–376.',
+        'Spitzer, R. L., Kroenke, K., Williams, J. B. W., & Löwe, B. (2006). A brief measure for assessing generalized anxiety disorder: The GAD-7. <em>Archives of Internal Medicine, 166</em>(10), 1092–1097. https://doi.org/10.1001/archinte.166.10.1092'
+      ]
+    },
     instrumentoId: 'gad7', // 17.3.1
     emoji: '<svg class=ico aria-hidden=true><use href=#i-zap></use></svg>',
     corPrefix: 'amber',
@@ -16536,7 +16579,32 @@ const ESC_ESCALAS = {
   },
 
   'PSS-10': {
-    nomeCompleto: 'PSS-10 — Estresse Percebido',
+    nomeCompleto: 'Perceived Stress Scale-10 (PSS-10)',
+    nomeTraducao: 'Escala de Estresse Percebido-10', // 17.4: nome original no título, tradução em letra menor
+    ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
+      tags: [
+        'Estresse',
+        'Mensuração'
+      ],
+      descricao: 'Escala de autorrelato que mede o quanto a pessoa avalia as situações da própria vida como imprevisíveis, incontroláveis e sobrecarregadas no último mês. Não lista eventos: mede a percepção de estresse, com base no modelo transacional de estresse e enfrentamento. A versão original tem 14 itens (Cohen, Kamarck & Mermelstein, 1983); a de 10 itens retirou os quatro de pior desempenho e é a recomendada pelos autores (Cohen & Williamson, 1988).',
+      tempo: '3 a 5 minutos.',
+      populacao: 'Adolescentes e adultos, em qualquer contexto. No Brasil, foi estudada em idosos (Luft, Sanches, Mazo & Andrade, 2007) e em professores universitários (Reis, Hino & Añez, 2010).',
+      usos: 'Medida dimensional de estresse percebido para linha de base e acompanhamento; pesquisa sobre estresse e saúde; apoio à formulação de caso. Não é instrumento diagnóstico e não mede um transtorno (Cohen et al., 1983).',
+      interpretacao: [
+        '<em>Estrutura:</em> 10 itens, escala de 0 (nunca) a 4 (sempre), um mês de referência; os itens 4, 5, 7 e 8 são formulados de forma positiva e invertidos no cálculo; escore total de 0 a 40 pela soma. Quanto maior, mais estresse percebido.',
+        '<em>Faixas:</em> os autores não propõem faixas nem ponto de corte; a leitura é dimensional e por comparação com médias da população e com o próprio paciente ao longo do tempo (Cohen & Williamson, 1988). As faixas que o sistema mostra (0–13 baixo, 14–26 moderado, 27–40 alto) são uma convenção de uso clínico difundida, não proposta pelos autores e não validada no Brasil: servem de guia de leitura, não de norma.',
+        '<em>Estrutura fatorial:</em> os estudos costumam encontrar dois fatores, um de desamparo percebido (itens negativos) e outro de autoeficácia percebida (itens positivos), com uso do escore total (Reis et al., 2010).',
+        '<em>Cuidados:</em> o escore sobe em períodos de crise e cai com a resolução do evento; reaplicações mostram a trajetória. Correlaciona-se com depressão e ansiedade sem se confundir com elas.'
+      ],
+      desenvolvedores: 'Sheldon Cohen, Tom Kamarck e Robin Mermelstein (1983); versão de 10 itens por Sheldon Cohen e Gail Williamson (1988). Uso livre para pesquisa e prática sem fins lucrativos, com citação.',
+      validacaoBr: 'Sim. Luft et al. (2007): tradução e validação em 76 idosos de Florianópolis (60–84 anos); a versão de 10 itens teve consistência interna 0,83 e um só fator. Reis et al. (2010): 793 professores universitários; dois fatores (56,8% da variância), alfa de Cronbach 0,87 para o escore total e 0,83 e 0,77 para os fatores; teste-reteste 0,86 para o total; correlações negativas com saúde percebida. Não há corte brasileiro.',
+      referencias: [
+        'Cohen, S., Kamarck, T., & Mermelstein, R. (1983). A global measure of perceived stress. <em>Journal of Health and Social Behavior, 24</em>(4), 385–396. https://doi.org/10.2307/2136404',
+        'Cohen, S., & Williamson, G. (1988). Perceived stress in a probability sample of the United States. In S. Spacapan & S. Oskamp (Eds.), <em>The social psychology of health</em> (pp. 31–67). Sage.',
+        'Luft, C. D. B., Sanches, S. O., Mazo, G. Z., & Andrade, A. (2007). Versão brasileira da Escala de Estresse Percebido: Tradução e validação para idosos. <em>Revista de Saúde Pública, 41</em>(4), 606–615. https://doi.org/10.1590/s0034-89102007000400015',
+        'Reis, R. S., Hino, A. A. F., & Añez, C. R. R. (2010). Perceived Stress Scale: Reliability and validity study in Brazil. <em>Journal of Health Psychology, 15</em>(1), 107–114. https://doi.org/10.1177/1359105309346343'
+      ]
+    },
     instrumentoId: 'pss10', // 17.3.1
     emoji: '<svg class=ico aria-hidden=true><use href=#i-thermometer></use></svg>',
     corPrefix: 'orange',
@@ -16586,7 +16654,37 @@ const ESC_ESCALAS = {
   },
 
   'DASS-21': {
-    nomeCompleto: 'DASS-21 — Depressão, Ansiedade e Estresse',
+    nomeCompleto: 'Depression, Anxiety and Stress Scale-21 (DASS-21)',
+    nomeTraducao: 'Escala de Depressão, Ansiedade e Estresse-21', // 17.4: nome original no título, tradução em letra menor
+    ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
+      tags: [
+        'Depressão',
+        'Ansiedade',
+        'Estresse',
+        'Rastreamento',
+        'Mensuração'
+      ],
+      descricao: 'Versão curta da DASS-42, com três subescalas de sete itens que medem, na última semana, sintomas de depressão (disforia, desesperança, anedonia, inércia), de ansiedade (ativação autonômica, efeitos musculares, ansiedade situacional) e de estresse (tensão, irritabilidade, dificuldade de relaxar, reatividade). Foi construída para separar depressão de ansiedade e isolar um terceiro fator, o estresse, que o modelo tripartite não previa (Lovibond & Lovibond, 1995).',
+      tempo: '5 a 7 minutos.',
+      populacao: 'Adultos, em população geral e clínica (Lovibond & Lovibond, 1995; Henry & Crawford, 2005). No Brasil, adultos (Vignola & Tucci, 2014) e adolescentes de 12 a 18 anos (Patias, Machado, Bandeira & Dell\'Aglio, 2016).',
+      usos: 'Rastreamento e medida de gravidade dos três estados ao mesmo tempo, com um só instrumento; monitoramento da evolução; pesquisa. Não é instrumento diagnóstico: as subescalas medem dimensões de sintomas, não transtornos (Lovibond & Lovibond, 1995).',
+      interpretacao: [
+        '<em>Estrutura:</em> 21 itens, escala de 0 (não se aplicou) a 3 (aplicou-se muito), uma semana de referência; cada subescala soma 0 a 21 e é multiplicada por 2 para ficar comparável à DASS-42 (0 a 42). Não há escore total: as três subescalas são lidas separadamente.',
+        '<em>Faixas de gravidade do manual (Lovibond & Lovibond, 1995), já com o escore multiplicado por 2:</em> Depressão 0–9 normal, 10–13 leve, 14–20 moderada, 21–27 severa, ≥ 28 extremamente severa; Ansiedade 0–7, 8–9, 10–14, 15–19, ≥ 20; Estresse 0–14, 15–18, 19–25, 26–33, ≥ 34. São as faixas que o sistema usa. Os rótulos são posições em relação à população, não categorias diagnósticas.',
+        '<em>Item 21 ("a vida não tem sentido"):</em> resposta 2 ou 3 dispara o alerta de risco no sistema e pede avaliação na sessão.',
+        '<em>Estrutura fatorial:</em> as três subescalas se sustentam, mas todas carregam também num fator geral de sofrimento psicológico (Henry & Crawford, 2005); escores altos nas três juntas são comuns.',
+        '<em>Cuidados:</em> o período de uma semana torna a escala sensível a flutuações; comparar aplicações com intervalo.'
+      ],
+      desenvolvedores: 'Sydney H. Lovibond e Peter F. Lovibond (1995), Psychology Foundation of Australia. Domínio público, uso livre com citação. Versão brasileira: Rose C. B. Vignola e Adriana M. Tucci (2014).',
+      validacaoBr: 'Sim. Vignola e Tucci (2014): tradução e retrotradução; 242 adultos; alfa de Cronbach 0,92 (depressão), 0,86 (ansiedade) e 0,90 (estresse); três fatores confirmados; correlações fortes com BDI, BAI e Inventário de Sintomas de Stress de Lipp. Patias et al. (2016): 426 adolescentes de 12 a 18 anos de escolas públicas de Porto Alegre, com bom ajuste do modelo de três fatores (versão para adolescentes, EDAE-A). As faixas de gravidade não foram validadas no Brasil.',
+      referencias: [
+        'Henry, J. D., & Crawford, J. R. (2005). The short-form version of the Depression Anxiety Stress Scales (DASS-21): Construct validity and normative data in a large non-clinical sample. <em>British Journal of Clinical Psychology, 44</em>(2), 227–239. https://doi.org/10.1348/014466505X29657',
+        'Lovibond, P. F., & Lovibond, S. H. (1995). The structure of negative emotional states: Comparison of the Depression Anxiety Stress Scales (DASS) with the Beck Depression and Anxiety Inventories. <em>Behaviour Research and Therapy, 33</em>(3), 335–343. https://doi.org/10.1016/0005-7967(94)00075-U',
+        'Lovibond, S. H., & Lovibond, P. F. (1995). <em>Manual for the Depression Anxiety Stress Scales</em> (2nd ed.). Psychology Foundation of Australia.',
+        'Patias, N. D., Machado, W. L., Bandeira, D. R., & Dell\'Aglio, D. D. (2016). Depression Anxiety and Stress Scale (DASS-21) – Short Form: Adaptação e validação para adolescentes brasileiros. <em>Psico-USF, 21</em>(3), 459–469. https://doi.org/10.1590/1413-82712016210302',
+        'Vignola, R. C. B., & Tucci, A. M. (2014). Adaptation and validation of the Depression, Anxiety and Stress Scale (DASS) to Brazilian Portuguese. <em>Journal of Affective Disorders, 155</em>, 104–109. https://doi.org/10.1016/j.jad.2013.10.031'
+      ]
+    },
     instrumentoId: 'dass21', // 17.3.1
     emoji: '<svg class=ico aria-hidden=true><use href=#i-layers></use></svg>',
     corPrefix: 'purple',
@@ -16666,7 +16764,33 @@ const ESC_ESCALAS = {
   },
 
   'SRQ-20': {
-    nomeCompleto: 'SRQ-20 — Rastreamento Geral',
+    nomeCompleto: 'Self-Reporting Questionnaire-20 (SRQ-20)',
+    nomeTraducao: 'Questionário de Autorrelato-20', // 17.4: nome original no título, tradução em letra menor
+    ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
+      tags: [
+        'Rastreamento',
+        'Transtornos mentais comuns',
+        'Mensuração'
+      ],
+      descricao: 'Questionário de rastreamento de transtornos mentais comuns (sintomas depressivos, ansiosos e somáticos não psicóticos) nos últimos 30 dias, com 20 perguntas de resposta sim ou não. Foi desenvolvido pela Organização Mundial da Saúde para a atenção primária de países em desenvolvimento, num estudo colaborativo em quatro países (Harding et al., 1980), e tem guia de uso oficial (Beusenberg & Orley, 1994).',
+      tempo: 'Cerca de 5 minutos.',
+      populacao: 'Adultos da atenção primária e da comunidade; é a escala de rastreamento mais usada em estudos brasileiros de saúde mental (Mari & Williams, 1986; Gonçalves, Stein & Kapczinski, 2008).',
+      usos: 'Rastreamento de sofrimento psíquico e de transtorno mental comum; triagem inicial antes de uma avaliação mais específica; pesquisa epidemiológica. Resultado positivo indica avaliação diagnóstica, não a substitui (Beusenberg & Orley, 1994).',
+      interpretacao: [
+        '<em>Estrutura:</em> 20 itens dicotômicos (sim = 1, não = 0), 30 dias de referência; escore total de 0 a 20 pela soma.',
+        '<em>Ponto de corte brasileiro:</em> 7/8, isto é, sete ou mais respostas "sim" indicam suspeita de transtorno mental comum, com sensibilidade 86,3% e especificidade 89,3% frente à SCID-IV-TR em 485 adultos de Santa Cruz do Sul (Gonçalves et al., 2008). É o corte que o sistema usa. A primeira validação brasileira, em 875 pacientes da atenção primária de São Paulo, encontrou sensibilidade 83% e especificidade 80% (Mari & Williams, 1986).',
+        '<em>Item 17 (pensamento de acabar com a vida):</em> resposta "sim" dispara o alerta de risco no sistema e exige avaliação na sessão.',
+        '<em>Cuidados:</em> os cortes variam com a amostra e o sexo (Mari & Williams, 1986); o SRQ-20 rastreia, não gradua gravidade, e não cobre transtornos psicóticos nem uso de álcool (itens de outras versões do SRQ).'
+      ],
+      desenvolvedores: 'Organização Mundial da Saúde; estudo original coordenado por T. W. Harding (1980). Domínio público. Versão brasileira: Jair de Jesus Mari e Paul Williams (1986).',
+      validacaoBr: 'Sim, duas vezes. Mari e Williams (1986): três unidades de atenção primária de São Paulo, 875 pacientes responderam e 260 foram entrevistados por psiquiatra; sensibilidade 83%, especificidade 80%, correlação 0,70 entre o escore e o julgamento clínico. Gonçalves et al. (2008): 485 adultos, SCID-IV-TR como padrão-ouro; corte 7/8, sensibilidade 86,33%, especificidade 89,31%, alfa de Cronbach 0,86.',
+      referencias: [
+        'Beusenberg, M., & Orley, J. (1994). <em>A user\'s guide to the Self Reporting Questionnaire (SRQ)</em>. World Health Organization.',
+        'Gonçalves, D. M., Stein, A. T., & Kapczinski, F. (2008). Avaliação de desempenho do Self-Reporting Questionnaire como instrumento de rastreamento psiquiátrico: Um estudo comparativo com o Structured Clinical Interview for DSM-IV-TR. <em>Cadernos de Saúde Pública, 24</em>(2), 380–390. https://doi.org/10.1590/s0102-311x2008000200017',
+        'Harding, T. W., de Arango, M. V., Baltazar, J., Climent, C. E., Ibrahim, H. H. A., Ladrido-Ignacio, L., Murthy, R. S., & Wig, N. N. (1980). Mental disorders in primary health care: A study of their frequency and diagnosis in four developing countries. <em>Psychological Medicine, 10</em>(2), 231–241. https://doi.org/10.1017/S0033291700043993',
+        'Mari, J. J., & Williams, P. (1986). A validity study of a psychiatric screening questionnaire (SRQ-20) in primary care in the city of São Paulo. <em>British Journal of Psychiatry, 148</em>, 23–26. https://doi.org/10.1192/bjp.148.1.23'
+      ]
+    },
     instrumentoId: 'srq20', // 17.3.1
     emoji: '<svg class=ico aria-hidden=true><use href=#i-help></use></svg>',
     corPrefix: 'teal',
@@ -16807,7 +16931,33 @@ const ESC_ESCALAS = {
   },
 
   'BAI': {
-    nomeCompleto: 'BAI — Inventário de Ansiedade de Beck',
+    nomeCompleto: 'Beck Anxiety Inventory (BAI)',
+    nomeTraducao: 'Inventário de Ansiedade de Beck', // 17.4: nome original no título, tradução em letra menor
+    ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
+      tags: [
+        'Ansiedade',
+        'Mensuração'
+      ],
+      descricao: 'Inventário de autorrelato com 21 sintomas de ansiedade (predominantemente somáticos e de pânico, como dormência, calor, tremor, medo de perder o controle), pontuados pela intensidade na última semana, incluindo o dia de hoje, de 0 (absolutamente não) a 3 (gravemente). Foi construído para medir ansiedade com o mínimo de sobreposição com depressão (Beck, Epstein, Brown & Steer, 1988).',
+      tempo: '5 a 10 minutos.',
+      populacao: 'Adolescentes a partir de 17 anos e adultos, em contexto clínico e não clínico (Beck & Steer, 1993). No Brasil, amostras clínicas e não clínicas do manual (Cunha, 2001) e universitários (Osório, Crippa & Loureiro, 2011).',
+      usos: 'Medida de intensidade dos sintomas ansiosos; monitoramento da resposta ao tratamento; rastreamento em população não clínica. Não é instrumento diagnóstico e não distingue entre os transtornos de ansiedade (Beck et al., 1988).',
+      interpretacao: [
+        '<em>Estrutura:</em> 21 itens, escala de 0 a 3 com âncoras iguais para todos, uma semana de referência; escore total de 0 a 63 pela soma.',
+        '<em>Níveis da versão brasileira (Cunha, 2001):</em> 0–10 mínimo; 11–19 leve; 20–30 moderado; 31–63 grave. São os níveis que o sistema usa. O manual norte-americano usa cortes mais baixos (0–7, 8–15, 16–25, 26–63; Beck & Steer, 1993): os níveis dependem da amostra e do objetivo.',
+        '<em>Corte em universitários brasileiros:</em> 10, com sensibilidade 0,74 e especificidade 0,71 para ansiedade social frente à SCID (Osório et al., 2011); a utilidade para rastrear esse transtorno específico foi considerada limitada.',
+        '<em>Confiabilidade original:</em> alfa de Cronbach 0,92 e teste-reteste de uma semana 0,75 em 160 pacientes ambulatoriais (Beck et al., 1988).',
+        '<em>Cuidados:</em> o peso dos itens somáticos pode inflar o escore em doenças físicas, no pânico e na gravidez; instrumento protegido por direitos autorais (Pearson), de uso restrito a psicólogos.'
+      ],
+      desenvolvedores: 'Aaron T. Beck, Norman Epstein, Gary Brown e Robert A. Steer (1988), The Psychological Corporation. Versão brasileira: Jurema Alcides Cunha (2001), Casa do Psicólogo.',
+      validacaoBr: 'Sim. A versão em português e os estudos de padronização estão no manual das Escalas Beck (Cunha, 2001), que fixa os níveis acima; os coeficientes do manual entram na ficha quando forem conferidos no próprio manual. Osório et al. (2011): 2.314 universitários da população geral e 88 casos e 90 não casos de ansiedade social pela SCID; consistência interna 0,88 a 0,92; três fatores; corte 10 para o rastreamento de ansiedade social.',
+      referencias: [
+        'Beck, A. T., Epstein, N., Brown, G., & Steer, R. A. (1988). An inventory for measuring clinical anxiety: Psychometric properties. <em>Journal of Consulting and Clinical Psychology, 56</em>(6), 893–897. https://doi.org/10.1037/0022-006X.56.6.893',
+        'Beck, A. T., & Steer, R. A. (1993). <em>Beck Anxiety Inventory manual</em>. The Psychological Corporation.',
+        'Cunha, J. A. (2001). <em>Manual da versão em português das Escalas Beck</em>. Casa do Psicólogo.',
+        'Osório, F. L., Crippa, J. A. S., & Loureiro, S. R. (2011). Further psychometric study of the Beck Anxiety Inventory including factorial analysis and social anxiety disorder screening. <em>International Journal of Psychiatry in Clinical Practice, 15</em>(4), 255–262. https://doi.org/10.3109/13651501.2011.605955'
+      ]
+    },
     emoji: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg>',
     corPrefix: 'bai',
     instrumentoId: 'bai',
@@ -16865,7 +17015,35 @@ const ESC_ESCALAS = {
   //   Propriedades novas (aditivas): 'reverso' com opções fora de ordem crescente (o máximo é o
   //   maior 'valor'), 'naoPontua' no item e 'condicional' na escala.
   'BHS': {
-    nomeCompleto: 'BHS — Escala de Desesperança de Beck',
+    nomeCompleto: 'Beck Hopelessness Scale (BHS)',
+    nomeTraducao: 'Escala de Desesperança de Beck', // 17.4: nome original no título, tradução em letra menor
+    ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
+      tags: [
+        'Desesperança',
+        'Risco de suicídio',
+        'Depressão'
+      ],
+      descricao: 'Escala de autorrelato com 20 afirmações de certo ou errado sobre expectativas negativas quanto ao futuro, à motivação e ao próprio destino, respondidas pensando na última semana, incluindo o dia de hoje. Mede desesperança, o componente da tríade cognitiva da depressão que mais se liga à ideação e ao comportamento suicida (Beck, Weissman, Lester & Trexler, 1974).',
+      tempo: '3 a 5 minutos.',
+      populacao: 'Adolescentes a partir de 17 anos e adultos, em contexto clínico, sobretudo pacientes com depressão e ideação suicida (Beck & Steer, 1988). No Brasil, amostras clínicas e não clínicas do manual (Cunha, 2001).',
+      usos: 'Avaliação do pessimismo e do risco de suicídio a médio e longo prazo, junto com a avaliação clínica e com escalas de ideação (por exemplo, a BSS); monitoramento ao longo do tratamento; pesquisa. Não substitui a avaliação de risco na sessão (Beck & Steer, 1988).',
+      interpretacao: [
+        '<em>Estrutura:</em> 20 itens dicotômicos (certo = 1, errado = 0); nove itens são formulados de forma otimista (1, 3, 5, 6, 8, 10, 13, 15, 19) e pontuam quando a resposta é "errado"; escore total de 0 a 20 pela soma.',
+        '<em>Níveis da versão brasileira (Cunha, 2001):</em> 0–4 mínimo; 5–8 leve; 9–13 moderado; 14–20 grave. São os níveis que o sistema usa. O manual norte-americano usa 0–3, 4–8, 9–14 e 15–20 (Beck & Steer, 1988).',
+        '<em>Risco de suicídio:</em> em 207 pacientes internados por ideação suicida, escore ≥ 10 identificou 91% dos que se suicidaram em 5 a 10 anos (Beck, Steer, Kovacs & Garrison, 1985); em 1.958 pacientes ambulatoriais, escore ≥ 9 identificou 94% dos suicídios e o grupo acima do corte teve risco 11 vezes maior (Beck, Brown, Berchick, Stewart & Steer, 1990). Escores a partir de 9 pedem avaliação de risco na sessão, independentemente da ideação relatada.',
+        '<em>Confiabilidade original:</em> consistência interna 0,93 (KR-20) em pacientes hospitalizados após tentativa de suicídio (Beck et al., 1974).',
+        '<em>Cuidados:</em> a desesperança flutua com o humor; escore alto não é diagnóstico e escore baixo não exclui risco. Instrumento protegido por direitos autorais (Pearson), de uso restrito a psicólogos.'
+      ],
+      desenvolvedores: 'Aaron T. Beck, Arlene Weissman, David Lester e Larry Trexler (1974); manual de Beck e Steer (1988), The Psychological Corporation. Versão brasileira: Jurema Alcides Cunha (2001), Casa do Psicólogo.',
+      validacaoBr: 'Sim, pelo manual das Escalas Beck (Cunha, 2001), que traz a versão em português, os estudos com amostras clínicas e não clínicas e os níveis acima. Não foi encontrado artigo brasileiro de validação independente; os coeficientes do manual entram na ficha quando forem conferidos no próprio manual.',
+      referencias: [
+        'Beck, A. T., Brown, G., Berchick, R. J., Stewart, B. L., & Steer, R. A. (1990). Relationship between hopelessness and ultimate suicide: A replication with psychiatric outpatients. <em>American Journal of Psychiatry, 147</em>(2), 190–195. https://doi.org/10.1176/ajp.147.2.190',
+        'Beck, A. T., & Steer, R. A. (1988). <em>Manual for the Beck Hopelessness Scale</em>. The Psychological Corporation.',
+        'Beck, A. T., Steer, R. A., Kovacs, M., & Garrison, B. (1985). Hopelessness and eventual suicide: A 10-year prospective study of patients hospitalized with suicidal ideation. <em>American Journal of Psychiatry, 142</em>(5), 559–563. https://doi.org/10.1176/ajp.142.5.559',
+        'Beck, A. T., Weissman, A., Lester, D., & Trexler, L. (1974). The measurement of pessimism: The Hopelessness Scale. <em>Journal of Consulting and Clinical Psychology, 42</em>(6), 861–865. https://doi.org/10.1037/h0037562',
+        'Cunha, J. A. (2001). <em>Manual da versão em português das Escalas Beck</em>. Casa do Psicólogo.'
+      ]
+    },
     emoji: '<svg class=ico aria-hidden=true><use href=#i-compass></use></svg>',
     corPrefix: 'bhs',
     instrumentoId: 'bhs',
@@ -16992,7 +17170,32 @@ const ESC_ESCALAS = {
   // Liberação por paciente (17.1.2; regra de todas desde o 17.3.1): o profissional libera a versão certa
   // para cada paciente (17.1.2).
   'URICA-A': {
-    nomeCompleto: 'URICA — Álcool · Motivação para a mudança',
+    nomeCompleto: 'University of Rhode Island Change Assessment — Álcool (URICA)',
+    nomeTraducao: 'Escala de Avaliação da Mudança da Universidade de Rhode Island — álcool', // 17.4: nome original no título, tradução em letra menor
+    ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
+      tags: [
+        'Motivação',
+        'Mudança de comportamento',
+        'Álcool'
+      ],
+      descricao: 'Escala de autorrelato que mede a prontidão para mudar um comportamento-problema a partir do modelo transteórico dos estágios de mudança: pré-contemplação (não reconhece o problema), contemplação (reconhece e pondera), ação (já está mudando) e manutenção (sustenta a mudança). A versão original tem 32 itens e foi criada para pacientes em psicoterapia (McConnaughy, Prochaska & Velicer, 1983); as versões brasileiras usam 24 itens, seis por estágio, com o comportamento nomeado nos itens.',
+      tempo: '5 a 8 minutos.',
+      populacao: 'Adolescentes e adultos em avaliação ou tratamento do comportamento-alvo: dependência de álcool, de drogas ilícitas ou de tabaco, e programas de mudança de hábitos alimentares (ver validação de cada versão).',
+      usos: 'Planejar a intervenção pelo estágio em que o paciente está (entrevista motivacional, prevenção de recaída); acompanhar a motivação ao longo do tratamento; pesquisa. Não mede gravidade do uso nem diagnostica dependência (McConnaughy et al., 1983).',
+      interpretacao: [
+        '<em>Estrutura:</em> 24 itens, escala de 1 (discordo totalmente) a 5 (concordo totalmente), sem itens invertidos; quatro subescalas de seis itens, cada uma somando 6 a 30. O sistema mostra as quatro subescalas e grava a soma dos 24 itens apenas como registro.',
+        '<em>Prontidão para a mudança:</em> média(contemplação) + média(ação) + média(manutenção) − média(pré-contemplação), de −4 a +14 (DiClemente & Hughes, 1990). O sistema calcula com uma casa decimal.',
+        '<em>Leitura:</em> pelo perfil, isto é, pela subescala mais alta e pelo desenho das quatro, mais do que por um número só. Em 224 pacientes ambulatoriais com alcoolismo, o perfil das subescalas formou cinco grupos (pré-contemplação, ambivalente, participação, não envolvido e contemplação), que diferiram no uso de álcool e nos resultados (DiClemente & Hughes, 1990).',
+        '<em>Pontos de corte:</em> não há corte validado para as versões brasileiras; duas delas oferecem escore T (normatização) na publicação original (Szupszynski & Oliveira, 2008; Oliveira et al., 2014), que o sistema não calcula.',
+        '<em>Cuidados:</em> a subescala de pré-contemplação costuma ter consistência interna mais baixa que as demais nas versões brasileiras; a motivação muda rápido e deve ser reavaliada ao longo do tratamento.'
+      ],
+      desenvolvedores: 'Eileen A. McConnaughy, James O. Prochaska e Wayne F. Velicer (1983); escore de prontidão de Carlo C. DiClemente e Sheryl O. Hughes (1990). Uso livre com citação. Versões brasileiras do grupo de Margareth da Silva Oliveira (PUCRS).',
+      validacaoBr: 'Adaptação brasileira para abuso ou dependência de álcool apresentada em congresso por Oliveira, Freire e Cazassa (2007); os dados de validação dessa versão entram na ficha quando forem conferidos no texto original. As demais versões brasileiras da URICA-24 (drogas ilícitas, tabaco, hábitos alimentares) têm estudos publicados; ver as fichas correspondentes.',
+      referencias: [
+        'DiClemente, C. C., & Hughes, S. O. (1990). Stages of change profiles in outpatient alcoholism treatment. <em>Journal of Substance Abuse, 2</em>(2), 217–235. https://doi.org/10.1016/s0899-3289(05)80057-4',
+        'McConnaughy, E. A., Prochaska, J. O., & Velicer, W. F. (1983). Stages of change in psychotherapy: Measurement and sample profiles. <em>Psychotherapy: Theory, Research & Practice, 20</em>(3), 368–375. https://doi.org/10.1037/h0090198'
+      ]
+    },
     nomeCurto: 'URICA — Álcool', // botão de liberação por paciente
     emoji: '<svg class=ico aria-hidden=true><use href=#i-refresh></use></svg>',
     corPrefix: 'urica',
@@ -17027,7 +17230,33 @@ const ESC_ESCALAS = {
   },
 
   'URICA-D': {
-    nomeCompleto: 'URICA — Drogas ilícitas · Motivação para a mudança',
+    nomeCompleto: 'University of Rhode Island Change Assessment — Drogas ilícitas (URICA)',
+    nomeTraducao: 'Escala de Avaliação da Mudança da Universidade de Rhode Island — drogas ilícitas', // 17.4: nome original no título, tradução em letra menor
+    ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
+      tags: [
+        'Motivação',
+        'Mudança de comportamento',
+        'Drogas'
+      ],
+      descricao: 'Escala de autorrelato que mede a prontidão para mudar um comportamento-problema a partir do modelo transteórico dos estágios de mudança: pré-contemplação (não reconhece o problema), contemplação (reconhece e pondera), ação (já está mudando) e manutenção (sustenta a mudança). A versão original tem 32 itens e foi criada para pacientes em psicoterapia (McConnaughy, Prochaska & Velicer, 1983); as versões brasileiras usam 24 itens, seis por estágio, com o comportamento nomeado nos itens.',
+      tempo: '5 a 8 minutos.',
+      populacao: 'Adolescentes e adultos em avaliação ou tratamento do comportamento-alvo: dependência de álcool, de drogas ilícitas ou de tabaco, e programas de mudança de hábitos alimentares (ver validação de cada versão).',
+      usos: 'Planejar a intervenção pelo estágio em que o paciente está (entrevista motivacional, prevenção de recaída); acompanhar a motivação ao longo do tratamento; pesquisa. Não mede gravidade do uso nem diagnostica dependência (McConnaughy et al., 1983).',
+      interpretacao: [
+        '<em>Estrutura:</em> 24 itens, escala de 1 (discordo totalmente) a 5 (concordo totalmente), sem itens invertidos; quatro subescalas de seis itens, cada uma somando 6 a 30. O sistema mostra as quatro subescalas e grava a soma dos 24 itens apenas como registro.',
+        '<em>Prontidão para a mudança:</em> média(contemplação) + média(ação) + média(manutenção) − média(pré-contemplação), de −4 a +14 (DiClemente & Hughes, 1990). O sistema calcula com uma casa decimal.',
+        '<em>Leitura:</em> pelo perfil, isto é, pela subescala mais alta e pelo desenho das quatro, mais do que por um número só. Em 224 pacientes ambulatoriais com alcoolismo, o perfil das subescalas formou cinco grupos (pré-contemplação, ambivalente, participação, não envolvido e contemplação), que diferiram no uso de álcool e nos resultados (DiClemente & Hughes, 1990).',
+        '<em>Pontos de corte:</em> não há corte validado para as versões brasileiras; duas delas oferecem escore T (normatização) na publicação original (Szupszynski & Oliveira, 2008; Oliveira et al., 2014), que o sistema não calcula.',
+        '<em>Cuidados:</em> a subescala de pré-contemplação costuma ter consistência interna mais baixa que as demais nas versões brasileiras; a motivação muda rápido e deve ser reavaliada ao longo do tratamento.'
+      ],
+      desenvolvedores: 'Eileen A. McConnaughy, James O. Prochaska e Wayne F. Velicer (1983); escore de prontidão de Carlo C. DiClemente e Sheryl O. Hughes (1990). Uso livre com citação. Versões brasileiras do grupo de Margareth da Silva Oliveira (PUCRS).',
+      validacaoBr: 'Sim. Szupszynski e Oliveira (2008): 214 usuários de substâncias ilícitas (194 homens), de 13 a 44 anos, em ambulatórios e internações de Porto Alegre; consistência interna da escala de 24 itens 0,657; normatização brasileira por escore T. Não há corte validado.',
+      referencias: [
+        'DiClemente, C. C., & Hughes, S. O. (1990). Stages of change profiles in outpatient alcoholism treatment. <em>Journal of Substance Abuse, 2</em>(2), 217–235. https://doi.org/10.1016/s0899-3289(05)80057-4',
+        'McConnaughy, E. A., Prochaska, J. O., & Velicer, W. F. (1983). Stages of change in psychotherapy: Measurement and sample profiles. <em>Psychotherapy: Theory, Research & Practice, 20</em>(3), 368–375. https://doi.org/10.1037/h0090198',
+        'Szupszynski, K. P. D. R., & Oliveira, M. S. (2008). Adaptação brasileira da University of Rhode Island Change Assessment (URICA) para usuários de substâncias ilícitas. <em>Psico-USF, 13</em>(1), 31–39. https://doi.org/10.1590/S1413-82712008000100005'
+      ]
+    },
     nomeCurto: 'URICA — Drogas ilícitas',
     emoji: '<svg class=ico aria-hidden=true><use href=#i-refresh></use></svg>',
     corPrefix: 'urica',
@@ -17062,7 +17291,33 @@ const ESC_ESCALAS = {
   },
 
   'URICA-T': {
-    nomeCompleto: 'URICA — Tabaco · Motivação para a mudança',
+    nomeCompleto: 'University of Rhode Island Change Assessment — Tabaco (URICA)',
+    nomeTraducao: 'Escala de Avaliação da Mudança da Universidade de Rhode Island — tabaco', // 17.4: nome original no título, tradução em letra menor
+    ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
+      tags: [
+        'Motivação',
+        'Mudança de comportamento',
+        'Tabaco'
+      ],
+      descricao: 'Escala de autorrelato que mede a prontidão para mudar um comportamento-problema a partir do modelo transteórico dos estágios de mudança: pré-contemplação (não reconhece o problema), contemplação (reconhece e pondera), ação (já está mudando) e manutenção (sustenta a mudança). A versão original tem 32 itens e foi criada para pacientes em psicoterapia (McConnaughy, Prochaska & Velicer, 1983); as versões brasileiras usam 24 itens, seis por estágio, com o comportamento nomeado nos itens.',
+      tempo: '5 a 8 minutos.',
+      populacao: 'Adolescentes e adultos em avaliação ou tratamento do comportamento-alvo: dependência de álcool, de drogas ilícitas ou de tabaco, e programas de mudança de hábitos alimentares (ver validação de cada versão).',
+      usos: 'Planejar a intervenção pelo estágio em que o paciente está (entrevista motivacional, prevenção de recaída); acompanhar a motivação ao longo do tratamento; pesquisa. Não mede gravidade do uso nem diagnostica dependência (McConnaughy et al., 1983).',
+      interpretacao: [
+        '<em>Estrutura:</em> 24 itens, escala de 1 (discordo totalmente) a 5 (concordo totalmente), sem itens invertidos; quatro subescalas de seis itens, cada uma somando 6 a 30. O sistema mostra as quatro subescalas e grava a soma dos 24 itens apenas como registro.',
+        '<em>Prontidão para a mudança:</em> média(contemplação) + média(ação) + média(manutenção) − média(pré-contemplação), de −4 a +14 (DiClemente & Hughes, 1990). O sistema calcula com uma casa decimal.',
+        '<em>Leitura:</em> pelo perfil, isto é, pela subescala mais alta e pelo desenho das quatro, mais do que por um número só. Em 224 pacientes ambulatoriais com alcoolismo, o perfil das subescalas formou cinco grupos (pré-contemplação, ambivalente, participação, não envolvido e contemplação), que diferiram no uso de álcool e nos resultados (DiClemente & Hughes, 1990).',
+        '<em>Pontos de corte:</em> não há corte validado para as versões brasileiras; duas delas oferecem escore T (normatização) na publicação original (Szupszynski & Oliveira, 2008; Oliveira et al., 2014), que o sistema não calcula.',
+        '<em>Cuidados:</em> a subescala de pré-contemplação costuma ter consistência interna mais baixa que as demais nas versões brasileiras; a motivação muda rápido e deve ser reavaliada ao longo do tratamento.'
+      ],
+      desenvolvedores: 'Eileen A. McConnaughy, James O. Prochaska e Wayne F. Velicer (1983); escore de prontidão de Carlo C. DiClemente e Sheryl O. Hughes (1990). Uso livre com citação. Versões brasileiras do grupo de Margareth da Silva Oliveira (PUCRS).',
+      validacaoBr: 'Sim. Oliveira et al. (2014): estudo instrumental com dependentes de tabaco; alfa de Cronbach 0,55 (pré-contemplação), 0,78 (contemplação), 0,81 (ação) e 0,80 (manutenção); validade concorrente com a régua de prontidão; normatização por escore T. Não há corte validado.',
+      referencias: [
+        'DiClemente, C. C., & Hughes, S. O. (1990). Stages of change profiles in outpatient alcoholism treatment. <em>Journal of Substance Abuse, 2</em>(2), 217–235. https://doi.org/10.1016/s0899-3289(05)80057-4',
+        'McConnaughy, E. A., Prochaska, J. O., & Velicer, W. F. (1983). Stages of change in psychotherapy: Measurement and sample profiles. <em>Psychotherapy: Theory, Research & Practice, 20</em>(3), 368–375. https://doi.org/10.1037/h0090198',
+        'Oliveira, M. S., Ludwig, M. W. B., Moraes, J. F. D., Rodrigues, V. S., & Fernandes, R. S. (2014). Evidências de validade da University of Rhode Island Change Assessment (URICA-24) para dependentes de tabaco. <em>Revista de Ciências Médicas, 23</em>(1), 5–14. https://doi.org/10.24220/2318-0897v23n1a2410'
+      ]
+    },
     nomeCurto: 'URICA — Tabaco',
     emoji: '<svg class=ico aria-hidden=true><use href=#i-refresh></use></svg>',
     corPrefix: 'urica',
@@ -17097,7 +17352,33 @@ const ESC_ESCALAS = {
   },
 
   'URICA-HA': {
-    nomeCompleto: 'URICA — Hábitos alimentares · Motivação para a mudança',
+    nomeCompleto: 'University of Rhode Island Change Assessment — Hábitos alimentares (URICA)',
+    nomeTraducao: 'Escala de Avaliação da Mudança da Universidade de Rhode Island — hábitos alimentares', // 17.4: nome original no título, tradução em letra menor
+    ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
+      tags: [
+        'Motivação',
+        'Mudança de comportamento',
+        'Alimentação'
+      ],
+      descricao: 'Escala de autorrelato que mede a prontidão para mudar um comportamento-problema a partir do modelo transteórico dos estágios de mudança: pré-contemplação (não reconhece o problema), contemplação (reconhece e pondera), ação (já está mudando) e manutenção (sustenta a mudança). A versão original tem 32 itens e foi criada para pacientes em psicoterapia (McConnaughy, Prochaska & Velicer, 1983); as versões brasileiras usam 24 itens, seis por estágio, com o comportamento nomeado nos itens.',
+      tempo: '5 a 8 minutos.',
+      populacao: 'Adolescentes e adultos em avaliação ou tratamento do comportamento-alvo: dependência de álcool, de drogas ilícitas ou de tabaco, e programas de mudança de hábitos alimentares (ver validação de cada versão).',
+      usos: 'Planejar a intervenção pelo estágio em que o paciente está (entrevista motivacional, prevenção de recaída); acompanhar a motivação ao longo do tratamento; pesquisa. Não mede gravidade do uso nem diagnostica dependência (McConnaughy et al., 1983).',
+      interpretacao: [
+        '<em>Estrutura:</em> 24 itens, escala de 1 (discordo totalmente) a 5 (concordo totalmente), sem itens invertidos; quatro subescalas de seis itens, cada uma somando 6 a 30. O sistema mostra as quatro subescalas e grava a soma dos 24 itens apenas como registro.',
+        '<em>Prontidão para a mudança:</em> média(contemplação) + média(ação) + média(manutenção) − média(pré-contemplação), de −4 a +14 (DiClemente & Hughes, 1990). O sistema calcula com uma casa decimal.',
+        '<em>Leitura:</em> pelo perfil, isto é, pela subescala mais alta e pelo desenho das quatro, mais do que por um número só. Em 224 pacientes ambulatoriais com alcoolismo, o perfil das subescalas formou cinco grupos (pré-contemplação, ambivalente, participação, não envolvido e contemplação), que diferiram no uso de álcool e nos resultados (DiClemente & Hughes, 1990).',
+        '<em>Pontos de corte:</em> não há corte validado para as versões brasileiras; duas delas oferecem escore T (normatização) na publicação original (Szupszynski & Oliveira, 2008; Oliveira et al., 2014), que o sistema não calcula.',
+        '<em>Cuidados:</em> a subescala de pré-contemplação costuma ter consistência interna mais baixa que as demais nas versões brasileiras; a motivação muda rápido e deve ser reavaliada ao longo do tratamento.'
+      ],
+      desenvolvedores: 'Eileen A. McConnaughy, James O. Prochaska e Wayne F. Velicer (1983); escore de prontidão de Carlo C. DiClemente e Sheryl O. Hughes (1990). Uso livre com citação. Versões brasileiras do grupo de Margareth da Silva Oliveira (PUCRS).',
+      validacaoBr: 'Sim. Bittencourt, Lucena-Santos, Moraes e Oliveira (2012): 175 participantes de programas de redução de peso do sul do Brasil; análise fatorial com quatro fatores correspondentes aos estágios; alfa total 0,842 (0,813 a 0,940 por domínio); redução de 32 para 24 itens. Não há corte validado.',
+      referencias: [
+        'Bittencourt, S. A., Lucena-Santos, P., Moraes, J. F. D., & Oliveira, M. S. (2012). Motivação para mudança: Análise fatorial da URICA para hábitos alimentares. <em>Psico-USF, 17</em>(3), 497–505.',
+        'DiClemente, C. C., & Hughes, S. O. (1990). Stages of change profiles in outpatient alcoholism treatment. <em>Journal of Substance Abuse, 2</em>(2), 217–235. https://doi.org/10.1016/s0899-3289(05)80057-4',
+        'McConnaughy, E. A., Prochaska, J. O., & Velicer, W. F. (1983). Stages of change in psychotherapy: Measurement and sample profiles. <em>Psychotherapy: Theory, Research & Practice, 20</em>(3), 368–375. https://doi.org/10.1037/h0090198'
+      ]
+    },
     nomeCurto: 'URICA — Hábitos alimentares',
     emoji: '<svg class=ico aria-hidden=true><use href=#i-refresh></use></svg>',
     corPrefix: 'urica',
@@ -17221,7 +17502,33 @@ const ESC_ESCALAS = {
   },
 
   'PSWQ': {
-    nomeCompleto: 'PSWQ — Preocupação',
+    nomeCompleto: 'Penn State Worry Questionnaire (PSWQ)',
+    nomeTraducao: 'Questionário de Preocupação do Estado da Pensilvânia', // 17.4: nome original no título, tradução em letra menor
+    ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
+      tags: [
+        'Preocupação',
+        'Ansiedade',
+        'Mensuração'
+      ],
+      descricao: 'Questionário de autorrelato com 16 itens que mede a preocupação patológica como traço: a tendência a se preocupar de forma excessiva, generalizada e difícil de controlar, independentemente do tema. É a medida de referência do processo central do transtorno de ansiedade generalizada (Meyer, Miller, Metzger & Borkovec, 1990).',
+      tempo: '3 a 5 minutos.',
+      populacao: 'Adultos, em população clínica e não clínica. No Brasil, universitários (Castillo, Macrini, Cheniaux & Landeira-Fernandez, 2010).',
+      usos: 'Medida de processo em TCC para preocupação e TAG: linha de base e acompanhamento da preocupação ao longo do tratamento; rastreamento de TAG com os cortes da literatura; pesquisa (Behar, Alcaine, Zuellig & Borkovec, 2003). Não é instrumento diagnóstico.',
+      interpretacao: [
+        '<em>Estrutura:</em> 16 itens, escala de 1 (nada típico de mim) a 5 (muito típico de mim); os itens 1, 3, 8, 10 e 11 são formulados ao contrário e invertidos no cálculo; escore total de 16 a 80 pela soma. Quanto maior, mais preocupação.',
+        '<em>Cortes da literatura (Behar et al., 2003):</em> 45 separou pacientes com TAG de controles numa amostra clínica; 62 identificou TAG em universitários pelos critérios de autorrelato. O sistema mostra 16–44 abaixo do corte clínico, 45–61 preocupação elevada e 62–80 muito elevada. Não há corte brasileiro.',
+        '<em>Confiabilidade original:</em> consistência interna alta e boa estabilidade em 8 a 10 semanas (Meyer et al., 1990).',
+        '<em>Estrutura fatorial:</em> na versão brasileira, os itens invertidos formam um fator próprio (ausência de preocupação) e os demais outro (presença), com um só construto significativo por trás (Castillo et al., 2010). O escore total é a leitura recomendada.',
+        '<em>Cuidados:</em> mede traço, muda devagar; é sensível ao tratamento, mas reaplicações muito próximas trazem pouca informação.'
+      ],
+      desenvolvedores: 'Thomas J. Meyer, Michelle L. Miller, Richard L. Metzger e Thomas D. Borkovec (1990), Pennsylvania State University. Uso livre com citação. Versão brasileira: Cristian Castillo, Leonardo Macrini, Elie Cheniaux e Jesus Landeira-Fernandez (2010).',
+      validacaoBr: 'Sim, com evidências de estrutura e fidedignidade, sem corte. Castillo et al. (2010): dois estudos com grande amostra de universitários brasileiros; consistência interna adequada; dois fatores na análise exploratória (presença e ausência de preocupação) e três na confirmatória (um geral e dois de método), com correlações que indicam um único construto; correlação com o traço de ansiedade do IDATE.',
+      referencias: [
+        'Behar, E., Alcaine, O., Zuellig, A. R., & Borkovec, T. D. (2003). Screening for generalized anxiety disorder using the Penn State Worry Questionnaire: A receiver operating characteristic analysis. <em>Journal of Behavior Therapy and Experimental Psychiatry, 34</em>(1), 25–43. https://doi.org/10.1016/s0005-7916(03)00004-1',
+        'Castillo, C., Macrini, L., Cheniaux, E., & Landeira-Fernandez, J. (2010). Psychometric properties and latent structure of the Portuguese version of the Penn State Worry Questionnaire. <em>Spanish Journal of Psychology, 13</em>(1), 431–443. https://doi.org/10.1017/s113874160000398x',
+        'Meyer, T. J., Miller, M. L., Metzger, R. L., & Borkovec, T. D. (1990). Development and validation of the Penn State Worry Questionnaire. <em>Behaviour Research and Therapy, 28</em>(6), 487–495. https://doi.org/10.1016/0005-7967(90)90135-6'
+      ]
+    },
     nomeCurto: 'PSWQ',
     emoji: '<svg class=ico aria-hidden=true><use href=#i-zap></use></svg>',
     corPrefix: 'processo',
@@ -17260,7 +17567,31 @@ const ESC_ESCALAS = {
   },
 
   'EAR': {
-    nomeCompleto: 'EAR — Autoestima',
+    nomeCompleto: 'Rosenberg Self-Esteem Scale (RSES)',
+    nomeTraducao: 'Escala de Autoestima de Rosenberg (EAR)', // 17.4: nome original no título, tradução em letra menor
+    ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
+      tags: [
+        'Autoestima',
+        'Bem-estar'
+      ],
+      descricao: 'Escala de autorrelato com 10 afirmações sobre o valor que a pessoa atribui a si mesma (autoestima global), metade formuladas de forma positiva e metade de forma negativa, respondidas em quatro pontos de concordância. É a medida de autoestima mais usada no mundo e nasceu num estudo com adolescentes (Rosenberg, 1965).',
+      tempo: '2 a 3 minutos.',
+      populacao: 'Adolescentes e adultos. No Brasil, estudantes do ensino fundamental ao superior do sul do país (Hutz & Zanon, 2011) e adolescentes de nove cidades (Sbicigo, Bandeira & Dell\'Aglio, 2010).',
+      usos: 'Medida de autoestima global para formulação de caso e acompanhamento; variável de desfecho em intervenções; pesquisa. Não é instrumento diagnóstico e não mede autoestima em domínios específicos (Rosenberg, 1965).',
+      interpretacao: [
+        '<em>Estrutura:</em> 10 itens, escala de 1 (discordo totalmente) a 4 (concordo totalmente); na versão brasileira, os itens 3, 5, 8, 9 e 10 são negativos e invertidos no cálculo (Hutz & Zanon, 2011); escore total de 10 a 40 pela soma. Quanto maior, mais positiva a autoestima.',
+        '<em>Pontos de corte:</em> não há. A leitura é pelas tabelas normativas por idade e sexo (Hutz & Zanon, 2011) e pela evolução do próprio paciente.',
+        '<em>Estrutura fatorial:</em> um fator nos estudantes do sul do Brasil (Hutz & Zanon, 2011); dois fatores (itens positivos e negativos) nos adolescentes, com 51,4% da variância explicada (Sbicigo et al., 2010). O escore total é a leitura recomendada nos dois casos.',
+        '<em>Cuidados:</em> os itens negativos produzem um fator de método; sem norma clínica, não classificar o paciente por faixa.'
+      ],
+      desenvolvedores: 'Morris Rosenberg (1965), Princeton University Press. Domínio público. Versão brasileira: Claudio Simon Hutz (2000); revisão e normas em Hutz e Zanon (2011).',
+      validacaoBr: 'Sim. Hutz e Zanon (2011): 1.151 estudantes do ensino fundamental, médio e superior do sul do Brasil; um fator; alfa de Cronbach 0,90; normas de autoestima por faixa etária; correlação negativa com a idade dentro da amostra. Sbicigo et al. (2010): 4.757 adolescentes de 14 a 18 anos de nove cidades brasileiras; estrutura bidimensional confirmada; boa fidedignidade (alfa, confiabilidade composta e variância extraída); sem diferenças por sexo ou idade.',
+      referencias: [
+        'Hutz, C. S., & Zanon, C. (2011). Revisão da adaptação, validação e normatização da Escala de Autoestima de Rosenberg. <em>Avaliação Psicológica, 10</em>(1), 41–49.',
+        'Rosenberg, M. (1965). <em>Society and the adolescent self-image</em>. Princeton University Press.',
+        'Sbicigo, J. B., Bandeira, D. R., & Dell\'Aglio, D. D. (2010). Escala de Autoestima de Rosenberg (EAR): Validade fatorial e consistência interna. <em>Psico-USF, 15</em>(3), 395–403.'
+      ]
+    },
     nomeCurto: 'EAR (Rosenberg)',
     emoji: '<svg class=ico aria-hidden=true><use href=#i-star></use></svg>',
     corPrefix: 'bemestar',
@@ -17333,7 +17664,32 @@ const ESC_ESCALAS = {
   },
 
   'SWLS': {
-    nomeCompleto: 'SWLS — Satisfação com a Vida',
+    nomeCompleto: 'Satisfaction with Life Scale (SWLS)',
+    nomeTraducao: 'Escala de Satisfação com a Vida', // 17.4: nome original no título, tradução em letra menor
+    ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
+      tags: [
+        'Bem-estar',
+        'Satisfação com a vida'
+      ],
+      descricao: 'Escala de autorrelato com cinco afirmações que medem o julgamento global que a pessoa faz da própria vida, componente cognitivo do bem-estar subjetivo, distinto dos afetos positivos e negativos. Não pergunta por domínios (saúde, trabalho): deixa o respondente pesar o que importa para ele (Diener, Emmons, Larsen & Griffin, 1985).',
+      tempo: '1 a 2 minutos.',
+      populacao: 'Adolescentes, adultos e idosos, em qualquer contexto. No Brasil, cinco amostras (universitários, estudantes do ensino médio, população geral, professores e médicos; Gouveia, Milfont, Fonseca & Coelho, 2009) e universitários (Zanon, Bardagi, Layous & Hutz, 2014).',
+      usos: 'Medida de bem-estar para complementar escalas de sintomas; linha de base e acompanhamento, pois a escala é sensível à mudança em intervenções (Pavot & Diener, 2008); pesquisa. Não é instrumento diagnóstico.',
+      interpretacao: [
+        '<em>Estrutura:</em> 5 itens, escala de 1 (discordo totalmente) a 7 (concordo totalmente), sem itens invertidos; escore total de 5 a 35 pela soma; 20 é o ponto neutro.',
+        '<em>Faixas de referência (Pavot & Diener, 2008):</em> 30–35 satisfação muito alta; 25–29 alta; 20–24 média; 15–19 um pouco abaixo da média; 10–14 insatisfeito; 5–9 extremamente insatisfeito. São as faixas que o sistema mostra. Não foram validadas no Brasil: guia de leitura, não norma.',
+        '<em>Confiabilidade original:</em> alfa de Cronbach 0,87 e teste-reteste de dois meses 0,82 (Diener et al., 1985); estabilidade moderada em períodos longos, com sensibilidade a mudanças de vida (Pavot & Diener, 2008).',
+        '<em>Cuidados:</em> comparações entre países são frágeis, pois a escala não mostrou equivalência de medida entre Brasil e Estados Unidos (Zanon et al., 2014); comparar o paciente com ele mesmo e com normas brasileiras.'
+      ],
+      desenvolvedores: 'Ed Diener, Robert A. Emmons, Randy J. Larsen e Sharon Griffin (1985). Domínio público, uso livre com citação. Versão brasileira: Valdiney V. Gouveia e colaboradores (2009).',
+      validacaoBr: 'Sim. Gouveia et al. (2009): 2.180 participantes de cinco populações; estrutura unifatorial confirmada; alfa de Cronbach de 0,77 a 0,88 (média 0,81); correlações positivas com afeto positivo e negativas com afeto negativo e sofrimento psicológico em todas as amostras. Zanon et al. (2014): 1.388 universitários brasileiros e 241 norte-americanos; validade e invariância entre sexos na amostra brasileira; não equivalência entre os dois países.',
+      referencias: [
+        'Diener, E., Emmons, R. A., Larsen, R. J., & Griffin, S. (1985). The Satisfaction With Life Scale. <em>Journal of Personality Assessment, 49</em>(1), 71–75. https://doi.org/10.1207/s15327752jpa4901_13',
+        'Gouveia, V. V., Milfont, T. L., Fonseca, P. N., & Coelho, J. A. P. M. (2009). Life satisfaction in Brazil: Testing the psychometric properties of the Satisfaction With Life Scale (SWLS) in five Brazilian samples. <em>Social Indicators Research, 90</em>(2), 267–277.',
+        'Pavot, W., & Diener, E. (2008). The Satisfaction With Life Scale and the emerging construct of life satisfaction. <em>The Journal of Positive Psychology, 3</em>(2), 137–152. https://doi.org/10.1080/17439760701756946',
+        'Zanon, C., Bardagi, M. P., Layous, K., & Hutz, C. S. (2014). Validation of the Satisfaction with Life Scale to Brazilians: Evidences of measurement noninvariance across Brazil and US. <em>Social Indicators Research</em>.'
+      ]
+    },
     nomeCurto: 'SWLS',
     emoji: '<svg class=ico aria-hidden=true><use href=#i-sun></use></svg>',
     corPrefix: 'bemestar',
@@ -17382,7 +17738,31 @@ const ESC_ESCALAS = {
   },
 
   'MAAS': {
-    nomeCompleto: 'MAAS — Atenção e Consciência Plenas',
+    nomeCompleto: 'Mindful Attention Awareness Scale (MAAS)',
+    nomeTraducao: 'Escala de Atenção e Consciência Plenas', // 17.4: nome original no título, tradução em letra menor
+    ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
+      tags: [
+        'Atenção plena',
+        'Processo',
+        'Bem-estar'
+      ],
+      descricao: 'Escala de autorrelato com 15 itens que mede a disposição para estar atento e consciente ao que acontece no momento presente, no dia a dia. Os itens descrevem situações de desatenção e funcionamento automático (fazer as coisas sem prestar atenção, não notar sensações), e a atenção plena é inferida pela frequência baixa dessas experiências (Brown & Ryan, 2003).',
+      tempo: '3 a 5 minutos.',
+      populacao: 'Adultos, meditadores ou não. No Brasil, fumantes, população geral, universitários e meditadores (Barros, Kozasa, Souza & Ronzani, 2015).',
+      usos: 'Medida de processo em intervenções baseadas em mindfulness e em terapias contextuais: linha de base e acompanhamento; pesquisa sobre atenção plena e bem-estar. Não é instrumento diagnóstico (Brown & Ryan, 2003).',
+      interpretacao: [
+        '<em>Estrutura:</em> 15 itens, escala de 1 (quase sempre) a 6 (quase nunca), sem itens invertidos; o escore é a média dos 15 itens (1 a 6). Quanto maior, mais atenção plena. O sistema mostra a média e grava o total (15 a 90).',
+        '<em>Pontos de corte:</em> não há (Brown & Ryan, 2003; Barros et al., 2015). A leitura é pela evolução do próprio paciente.',
+        '<em>Confiabilidade original:</em> alfa de Cronbach 0,82 em universitários e 0,87 em adultos; teste-reteste de quatro semanas 0,81; meditadores pontuam mais que não meditadores (Brown & Ryan, 2003).',
+        '<em>Cuidados:</em> mede um só aspecto da atenção plena (atenção e consciência no presente), não a aceitação nem a ausência de julgamento; na amostra brasileira, meditadores não pontuaram mais que os demais (Barros et al., 2015).'
+      ],
+      desenvolvedores: 'Kirk Warren Brown e Richard M. Ryan (2003), University of Rochester. Uso livre com citação. Versão brasileira: Víviam Vargas de Barros, Elisa Harumi Kozasa, Isabel Cristina Weiss de Souza e Telmo Mota Ronzani (2015).',
+      validacaoBr: 'Sim. Barros et al. (2015): 395 participantes (fumantes, população geral, universitários e meditadores); escala unidimensional; alfa de Cronbach 0,83; teste-reteste 0,80; metades 0,67; correlação com bem-estar psicológico (validade de construto); a validade de critério pela comparação com meditadores não se confirmou. Não há corte brasileiro.',
+      referencias: [
+        'Barros, V. V., Kozasa, E. H., Souza, I. C. W., & Ronzani, T. M. (2015). Validity evidence of the Brazilian version of the Mindful Attention Awareness Scale (MAAS). <em>Psicologia: Reflexão e Crítica, 28</em>(1), 87–95.',
+        'Brown, K. W., & Ryan, R. M. (2003). The benefits of being present: Mindfulness and its role in psychological well-being. <em>Journal of Personality and Social Psychology, 84</em>(4), 822–848. https://doi.org/10.1037/0022-3514.84.4.822'
+      ]
+    },
     nomeCurto: 'MAAS',
     emoji: '<svg class=ico aria-hidden=true><use href=#i-leaf></use></svg>',
     corPrefix: 'bemestar',
@@ -17407,7 +17787,31 @@ const ESC_ESCALAS = {
   },
 
   'WBSI': {
-    nomeCompleto: 'WBSI — Supressão de Pensamentos',
+    nomeCompleto: 'White Bear Suppression Inventory (WBSI)',
+    nomeTraducao: 'Inventário de Supressão de Pensamentos do Urso Branco', // 17.4: nome original no título, tradução em letra menor
+    ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
+      tags: [
+        'Supressão de pensamentos',
+        'Processo',
+        'Transdiagnóstico'
+      ],
+      descricao: 'Inventário de autorrelato com 15 itens que mede a tendência crônica a suprimir pensamentos indesejados: tentar não pensar em algo, afastar pensamentos, distrair-se deles. O nome vem do experimento em que tentar não pensar num urso branco aumenta a frequência desse pensamento. A supressão é um processo transdiagnóstico ligado a pensamentos intrusivos, obsessões, depressão e ansiedade (Wegner & Zanakos, 1994).',
+      tempo: '3 a 5 minutos.',
+      populacao: 'Adultos, em população geral e clínica. No Brasil, adultos da população geral no estudo de adaptação (Talask et al., 2018).',
+      usos: 'Medida de processo em TCC e terapias contextuais quando a estratégia de controle de pensamentos faz parte da formulação (TOC, ansiedade, depressão, trauma); linha de base e acompanhamento; pesquisa. Não é instrumento diagnóstico (Wegner & Zanakos, 1994).',
+      interpretacao: [
+        '<em>Estrutura:</em> 15 itens, escala de 1 (discordo totalmente) a 5 (concordo totalmente), sem itens invertidos; escore total de 15 a 75 pela soma. Quanto maior, mais supressão.',
+        '<em>Pontos de corte:</em> não há. A leitura é pela evolução do próprio paciente e em conjunto com a entrevista.',
+        '<em>Evidências originais:</em> consistência interna e estabilidade temporal aceitáveis; correlação com pensamento obsessivo e com afeto depressivo e ansioso; o inventário previu sinais de obsessão em pessoas propensas e depressão em quem rejeita pensamentos negativos (Wegner & Zanakos, 1994).',
+        '<em>Cuidados:</em> estudos posteriores discutem se a escala mede supressão ou também a frequência de pensamentos intrusivos; interpretar como medida de estratégia de controle, não de sintoma. A versão brasileira ainda não tem validação psicométrica.'
+      ],
+      desenvolvedores: 'Daniel M. Wegner e Sophia Zanakos (1994), University of Virginia. Uso livre com citação. Versão brasileira: Gabriel Talask e colaboradores (2018), Instituto de Psiquiatria da UFRJ.',
+      validacaoBr: 'Não. Há tradução e adaptação transcultural (Talask et al., 2018): três traduções e retrotraduções independentes, avaliação de equivalência semântica, versão síntese e aplicação-piloto com comentários dos participantes; a maioria compreendeu as descrições. Propriedades psicométricas (consistência, estrutura, validade) não foram publicadas.',
+      referencias: [
+        'Talask, G., de Freitas, S. B., Rasmussen, M. E. W., Silva, M. S., da Costa, R. T., Dias, G. P., Nardi, A. E., & de Carvalho, M. R. (2018). White Bear Suppression Inventory: Translation and cross-cultural adaptation to Brazilian Portuguese. <em>Trends in Psychiatry and Psychotherapy, 40</em>(1), 47–52. https://doi.org/10.1590/2237-6089-2017-0082',
+        'Wegner, D. M., & Zanakos, S. (1994). Chronic thought suppression. <em>Journal of Personality, 62</em>(4), 615–640. https://doi.org/10.1111/j.1467-6494.1994.tb00311.x'
+      ]
+    },
     nomeCurto: 'WBSI',
     emoji: '<svg class=ico aria-hidden=true><use href=#i-layers></use></svg>',
     corPrefix: 'processo',
