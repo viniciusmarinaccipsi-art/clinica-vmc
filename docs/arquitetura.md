@@ -146,6 +146,24 @@ pares de cor por família (`trauma`, `bemestar`, `processo`). Carga e
 liberação parciais pela tabela genérica `GRADES_SIMPLES` de
 `gerar_modelo_itens_17_0.py` / `carga_itens_17_0.py`.
 
+**Liberação universal e molde único das escalas (17.3.1):** toda escala do
+catálogo é por liberação do profissional, paciente a paciente: `ESCALAS_MENU`
+(servidor) mapeia o código do catálogo ao id de `escalas_liberadas`
+(Controle); `INSTRUMENTOS_SO_PROFISSIONAL` são os 20 ids; o cliente
+esconde os 20 cartões do menu até `lerItensInstrumento` (sem instrumento)
+devolver os liberados — ids do 12.x entram direto, ids da aba só quando a
+aba os libera. O cadeado fica dentro do cartão de cada escala na tela do
+profissional (`profRenderizarEscalas_` desenha as 20, com ou sem aplicação;
+`profCadeadoHtml_` / `profLiberarEscala_`); `profCriarEscala` abre a escala
+que o profissional aplicou (`_abrirEscalaParaPaciente_`) e devolve a lista.
+Molde do paciente: cartão com `.esc-card-desc` + 3 fichas (itens · tempo ·
+recorte), subtítulo "N itens · X a Y minutos · Pensando em …", grade de
+opções do 12.x para âncoras da aba (só `opcoesPorItem` empilha), resultado
+com escore, faixa, "O que isso significa?" (`descricao`/`sugestao` por
+faixa ou `eduGeral*`) e "Sobre a faixa"; `escoreOculto` só na BSS. A
+migração única `rodarMigracaoLiberacoes` (20/11/2026, removida depois)
+abriu para cada paciente as escalas que ele já tinha respondido.
+
 ### Renderer unificado de resultado (Pacote 12.7.2)
 `escRenderizarConteudoResultado(modo)` serve a tela imediata E o modal
 do histórico — 1 função, 2 modos. Mudança na tela de resultado é feita
