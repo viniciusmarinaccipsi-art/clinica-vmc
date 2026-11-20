@@ -164,6 +164,26 @@ faixa ou `eduGeral*`) e "Sobre a faixa"; `escoreOculto` só na BSS. A
 migração única `rodarMigracaoLiberacoes` (20/11/2026, removida depois)
 abriu para cada paciente as escalas que ele já tinha respondido.
 
+**Nome original, ficha e tags (17.3.2, piloto em PHQ-9, BDI-II, BSS, AAQ-II,
+PCL-5; as outras 15 no 17.4):** `nomeCompleto` = nome original em inglês +
+(SIGLA) e `nomeTraducao` = tradução em letra menor, mostrada por
+`escNomeTraducaoHtml_` nos cinco lugares do nome (cartão do menu, cabeçalho
+do preenchimento, resultado, histórico, cartão do profissional). A grade de
+opções é `display:grid` com `data-n` colunas (nº de opções do item; celular =
+2; `opcoesPorItem` empilha; dicotômica = 2). `ESC_ESCALAS[cod].ficha` guarda
+a ficha da escala — `tags`, `descricao`, `tempo`, `populacao`, `usos`,
+`interpretacao[]`, `desenvolvedores`, `validacaoBr`, `referencias[]` — como
+HTML simples, conteúdo original escrito a partir das publicações e aprovado
+pelo usuário (nunca copiado de outra plataforma); `fichaAbrir_` monta o modal
+`#fichaModal` com as abas Informações (da ficha), Escalas (gerada do catálogo)
+e Questões (itens e opções pela mesma leitura da aplicação; nada da aba entra
+no repositório). A busca do profissional (`profBuscaHtml_`,
+`profFiltrarEscalas_`) filtra cartões e lista "Nova escala" por sigla, nome,
+tradução e chips de tag (união das `ficha.tags`). **Molde de inserção:** escala
+nova entra com `nomeTraducao`, `ficha` (com validação brasileira e
+referências) e `tags`. A lupa "Minhas respostas" carrega os textos da aba
+antes de montar a lista (`rrGarantirTextos_`) e mostra o rótulo da opção.
+
 ### Renderer unificado de resultado (Pacote 12.7.2)
 `escRenderizarConteudoResultado(modo)` serve a tela imediata E o modal
 do histórico — 1 função, 2 modos. Mudança na tela de resultado é feita
