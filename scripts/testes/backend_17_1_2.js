@@ -46,17 +46,20 @@ G(`
 
 console.log('A. lerItensInstrumento — lista de liberados');
 const TODOS = ['bdi2', 'bai', 'bhs', 'bsi', 'urica_alcool', 'urica_drogas', 'urica_tabaco', 'urica_alimentar', 'pcl5', 'pswq', 'ear', 'aaq2', 'swls', 'maas', 'wbsi']; // 17.2; 17.3: + lote A
-ok('A1 paciente sem liberação: bdi2, bai e bhs (sem bsi nem as URICA, que são só por liberação)', JSON.stringify(G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'ABC' }).liberados")) === JSON.stringify(['bdi2', 'bai', 'bhs']), G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'ABC' })"));
-ok('A2 paciente com a BSS liberada: bdi2, bai, bhs e bsi (as URICA continuam fora)', JSON.stringify(G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'DEF' }).liberados")) === JSON.stringify(['bdi2', 'bai', 'bhs', 'bsi']));
+ok('A1 (17.3.1) paciente sem liberação: nenhuma escala — toda escala é por liberação', JSON.stringify(G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'ABC' }).liberados")) === JSON.stringify([]), G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'ABC' })"));
+ok('A2 paciente com a BSS liberada: só bsi', JSON.stringify(G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'DEF' }).liberados")) === JSON.stringify(['bsi']));
+ok('A2b (17.3.1) paciente com phq9, bdi2 e um id inválido em escalas_liberadas: phq9 (sem aba) e bdi2 (aba liberada); o inválido cai', (() => { G("__PAC.MNO = { sigla: 'MNO', escalas_liberadas: 'phq9, bdi2, xyz' }"); return JSON.stringify(G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'MNO' }).liberados")) === JSON.stringify(['phq9', 'bdi2']); })(), G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'MNO' })"));
+ok('A2c (17.3.1) instrumento da aba liberado para o paciente mas desligado na aba (controle NAO): não entra', (() => { G("__LINHAS.forEach(function (l) { if (l.instrumento === 'bhs' && l.tipo === 'controle') l.ativo = 'NAO'; }); __PAC.PQR = { sigla: 'PQR', escalas_liberadas: 'bhs,gad7' }"); const r = JSON.stringify(G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'PQR' }).liberados")); G("__LINHAS.forEach(function (l) { if (l.instrumento === 'bhs' && l.tipo === 'controle') l.ativo = 'SIM'; })"); return r === JSON.stringify(['gad7']); })());
 ok('A3 profissional: os quinze, sempre', JSON.stringify(G("lerItensInstrumento({}, { tipo: 'profissional', sigla: 'VMC' }).liberados")) === JSON.stringify(TODOS));
-ok('A5 (17.2) paciente com a URICA-Álcool liberada: a URICA entra, as outras três não', (() => { G("__PAC.GHI = { sigla: 'GHI', escalas_liberadas: 'urica_alcool' }"); return JSON.stringify(G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'GHI' }).liberados")) === JSON.stringify(['bdi2', 'bai', 'bhs', 'urica_alcool']); })(), G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'GHI' })"));
-ok('A6 (17.3) paciente com a PSWQ liberada: a PSWQ entra, as outras seis do lote A não', (() => { G("__PAC.JKL = { sigla: 'JKL', escalas_liberadas: 'pswq' }"); return JSON.stringify(G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'JKL' }).liberados")) === JSON.stringify(['bdi2', 'bai', 'bhs', 'pswq']); })(), G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'JKL' })"));
+ok('A5 (17.2) paciente com a URICA-Álcool liberada: a URICA entra, as outras três não', (() => { G("__PAC.GHI = { sigla: 'GHI', escalas_liberadas: 'urica_alcool' }"); return JSON.stringify(G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'GHI' }).liberados")) === JSON.stringify(['urica_alcool']); })(), G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'GHI' })"));
+ok('A6 (17.3) paciente com a PSWQ liberada: a PSWQ entra, as outras seis do lote A não', (() => { G("__PAC.JKL = { sigla: 'JKL', escalas_liberadas: 'pswq' }"); return JSON.stringify(G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'JKL' }).liberados")) === JSON.stringify(['pswq']); })(), G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'JKL' })"));
 ok('A4 admin ou sem crachá: recusa', G("lerItensInstrumento({}, { tipo: 'admin' }).ok") === false && G("lerItensInstrumento({}, null).ok") === false);
 
 console.log('B. lerItensInstrumento — textos de um instrumento');
 ok('B1 paciente sem liberação pede bsi: recusa, motivo nao_liberado_paciente', G("JSON.stringify(lerItensInstrumento({ instrumento: 'bsi' }, { tipo: 'paciente', sigla: 'ABC' }))") === JSON.stringify({ ok: false, erro: 'Instrumento nao liberado', motivo: 'nao_liberado_paciente' }));
 ok('B2 paciente com liberação pede bsi: recebe os textos', G("lerItensInstrumento({ instrumento: 'bsi' }, { tipo: 'paciente', sigla: 'DEF' }).textos.instrucao") === 'Instrucao de teste bsi');
-ok('B3 paciente sem liberação pede bhs: recebe (não é só do profissional)', G("lerItensInstrumento({ instrumento: 'bhs' }, { tipo: 'paciente', sigla: 'ABC' }).ok") === true);
+ok('B3 (17.3.1) paciente sem liberação pede bhs: recusa (toda escala é por liberação)', G("JSON.stringify(lerItensInstrumento({ instrumento: 'bhs' }, { tipo: 'paciente', sigla: 'ABC' }))") === JSON.stringify({ ok: false, erro: 'Instrumento nao liberado', motivo: 'nao_liberado_paciente' }));
+ok('B3b paciente com bhs liberada pede bhs: recebe', G("lerItensInstrumento({ instrumento: 'bhs' }, { tipo: 'paciente', sigla: 'PQR' }).ok") === true);
 ok('B4 profissional pede bsi: recebe', G("lerItensInstrumento({ instrumento: 'bsi' }, { tipo: 'profissional', sigla: 'VMC' }).ok") === true);
 
 console.log('C. profLiberarEscala — lista gravada na Controle');
@@ -70,10 +73,42 @@ const S = "{ tipo: 'profissional', sigla: 'VMC' }";
 ok('C1 liberar bsi para ABC: lista ["bsi"], gravada em escalas_liberadas pela sigla', G("JSON.stringify(profLiberarEscala(" + S + ", 'ABC', 'bsi', true))") === JSON.stringify({ ok: true, escalas_liberadas: ['bsi'] }) && G("JSON.stringify(__GRAVADO)") === JSON.stringify({ aba: 'aba', chave: 'sigla', valor: 'ABC', campos: { escalas_liberadas: 'bsi' } }), G("__GRAVADO"));
 ok('C2 retirar bsi de DEF: lista vazia gravada como texto vazio', G("JSON.stringify(profLiberarEscala(" + S + ", 'DEF', 'bsi', false))") === JSON.stringify({ ok: true, escalas_liberadas: [] }) && G("__GRAVADO.campos.escalas_liberadas") === '');
 ok('C3 liberar de novo para DEF não duplica', G("JSON.stringify(profLiberarEscala(" + S + ", 'DEF', 'BSI', 'true').escalas_liberadas)") === JSON.stringify(['bsi']));
-ok('C4 instrumento que não é só do profissional (bhs): recusa', G("profLiberarEscala(" + S + ", 'ABC', 'bhs', true).ok") === false);
+ok('C4 (17.3.1) qualquer das 20 é aceita (bhs, phq9); id desconhecido (xyz) recusa', G("profLiberarEscala(" + S + ", 'ABC', 'bhs', true).ok") === true && JSON.stringify(G("profLiberarEscala(" + S + ", 'ABC', 'PHQ9', true).escalas_liberadas")) === JSON.stringify(['phq9']) && G("profLiberarEscala(" + S + ", 'ABC', 'xyz', true).ok") === false);
+ok('C4b ESCALAS_MENU tem 20 códigos e INSTRUMENTOS_SO_PROFISSIONAL os 20 ids; _idDaEscala_ traduz código → id', G("Object.keys(ESCALAS_MENU).length") === 20 && G("INSTRUMENTOS_SO_PROFISSIONAL.length") === 20 && G("_idDaEscala_('URICA-HA')") === 'urica_alimentar' && G("_idDaEscala_('XYZ')") === '');
 ok('C5 paciente de outro profissional: recusa', G("profLiberarEscala(" + S + ", 'XYZ', 'bsi', true).ok") === false);
 ok('C6 crachá de paciente: recusa', G("profLiberarEscala({ tipo: 'paciente', sigla: 'ABC' }, 'ABC', 'bsi', true).ok") === false);
 ok('C7 a ação está na trava de gravação e na lista do roteador', G("ACOES_COM_TRAVA.indexOf('profLiberarEscala') !== -1") && /case 'profLiberarEscala'/.test(fs.readFileSync(path.join(__dirname, '..', '..', 'Código.js'), 'utf8')));
+
+console.log('E. 17.3.1 — abertura ao aplicar e migração das liberações');
+G(`
+  __PAC.ABC.escalas_liberadas = '';
+  __GRAVADO = null;
+`);
+ok('E1 _abrirEscalaParaPaciente_: PHQ-9 aplicado pelo profissional abre phq9 para ABC (grava a lista)', JSON.stringify(G("_abrirEscalaParaPaciente_('P1', 'ABC', 'PHQ-9')")) === JSON.stringify(['phq9']) && G("__GRAVADO && __GRAVADO.campos.escalas_liberadas") === 'phq9', G("__GRAVADO"));
+ok('E2 já aberta (DEF tem bsi): não regrava', (() => { G("__GRAVADO = null"); return JSON.stringify(G("_abrirEscalaParaPaciente_('P1', 'DEF', 'BSS')")) === JSON.stringify(['bsi']) && G("__GRAVADO") === null; })());
+ok('E3 código desconhecido: lista intacta, nada gravado', JSON.stringify(G("_abrirEscalaParaPaciente_('P1', 'DEF', 'XYZ')")) === JSON.stringify(['bsi']) && G("__GRAVADO") === null);
+G(`
+  var __ESCALAS = { ABC: ['PHQ-9', 'BDI-II', 'PHQ-9'], DEF: [], GHI: ['URICA-A', 'XYZ'] };
+  var __GRAVADOS = {};
+  _memoZerar_ = function () {};
+  _lerIndice_ = function () { return { linhas: [
+    { sigla: 'ABC', tipo: 'paciente', profissional_id: 'P1' }, { sigla: 'DEF', tipo: 'paciente', profissional_id: 'P1' },
+    { sigla: 'GHI', tipo: 'paciente', profissional_id: 'P1' }, { sigla: 'VMC', tipo: 'profissional', profissional_id: 'P1' },
+    { sigla: 'SEM', tipo: 'paciente', profissional_id: 'P1' } ] }; };
+  _planilhaDoPaciente_ = function (sigla) {
+    if (!__ESCALAS[sigla]) return null;
+    var cod = __ESCALAS[sigla];
+    return { getSheetByName: function () { return {
+      getLastRow: function () { return cod.length + 1; }, getLastColumn: function () { return 3; },
+      getRange: function (l, c, n) { return { getValues: function () { return l === 1 ? [['timestamp', 'instrumento', 'x']] : cod.map(function (k) { return [k]; }); } }; }
+    }; } };
+  };
+  __PAC.GHI = { sigla: 'GHI', escalas_liberadas: 'urica_alcool,swls' };
+  _atualizarLinhaPorChave_ = function (aba, chave, valor, campos) { __GRAVADOS[valor] = campos.escalas_liberadas; return true; };
+`);
+const mig = JSON.parse(G("rodarMigracaoLiberacoes()"));
+ok('E4 migração: 4 pacientes, 2 com registro, 1 alterado (ABC ← phq9,bdi2), 1 sem planilha; GHI já tinha urica_alcool e swls e não muda; DEF sem registro fica vazio', mig.ok && mig.pacientes === 4 && mig.com_registro === 2 && mig.alterados === 1 && mig.sem_planilha === 1 && JSON.stringify(G("__GRAVADOS")) === JSON.stringify({ ABC: 'phq9,bdi2' }) && mig.por_sigla.GHI.depois === 2 && mig.por_sigla.DEF.antes === 1 && mig.por_sigla.DEF.depois === 1, mig); // DEF já tinha bsi (liberação explícita preservada)
+ok('E5 migração: código desconhecido na aba (XYZ) é ignorado e a saída não traz ids nem nomes', JSON.stringify(mig.por_sigla.ABC) === JSON.stringify({ antes: 0, depois: 2 }) && !/phq9|bdi2/.test(JSON.stringify(mig)), mig.por_sigla);
 
 console.log('D. lista normalizada');
 ok('D1 " BSI, x ,," → ["bsi","x"]', JSON.stringify(G("_escalasLiberadasLista_(' BSI, x ,,')")) === JSON.stringify(['bsi', 'x']) && JSON.stringify(G("_escalasLiberadasLista_(undefined)")) === '[]');

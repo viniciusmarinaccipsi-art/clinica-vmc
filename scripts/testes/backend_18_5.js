@@ -287,6 +287,7 @@ tenta('C', () => {
   const foraFaixa = Object.assign({ id_envio: uuid(), instrumento: 'PHQ-9' }, itens, { item_05: 7 });
   ok('C12 escala incompleta, com resposta fora da faixa, de instrumento desconhecido ou sem id_envio é recusada sem gravar', [semItem, foraFaixa, Object.assign({ id_envio: uuid(), instrumento: 'XYZ' }, itens), Object.assign({ instrumento: 'PHQ-9' }, itens)].every(d => semMemo(() => profCriarEscala(sProf, E2, d)).ok === false) && abaS.getLastRow() === e0 + 1);
   ok('C13 alerta e última escala chegam aos indicadores da lista', JSON.parse(ind(E2, 'ind_ultima_escala')).nome === 'PHQ-9' && JSON.parse(ind(E2, 'ind_alertas_json')).item === 'PHQ9_item9');
+  ok('C14 (17.3.1) escala aplicada pelo profissional abre a escala para o paciente: resposta e Controle com phq9', Array.isArray(re.escalas_liberadas) && re.escalas_liberadas.indexOf('phq9') !== -1 && String(ind(E2, 'escalas_liberadas')) === 'phq9', { resp: re.escalas_liberadas, controle: ind(E2, 'escalas_liberadas') });
 });
 
 console.log('S. Escore do servidor = escore do paciente (motor do frontend)');

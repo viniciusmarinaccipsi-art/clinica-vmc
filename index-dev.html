@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — lote A da HumanTrack: PCL-5, PSWQ, EAR, AAQ-II, SWLS, MAAS, WBSI — Pacote 17.3 (20/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — cadeado em todas as escalas, resultado ao paciente e cartões padronizados — Pacote 17.3.1 (20/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -3262,6 +3262,16 @@ button.cab-no-item{cursor:pointer;}
 }
 /* Pacote 16.4.2: a seta serve a qualquer bloco recolhível (esch-bloco e histm) */
 .aberto .esch-bloco-chevron { transform: rotate(90deg); }
+/* 17.3.1 — cadeado por escala no cartão do profissional (aberta = cor de ação; fechada = cinza) */
+.esch-bloco-cadeado {
+  display:inline-flex; align-items:center; gap:6px; min-height:var(--hit-min); padding:0 var(--s-3);
+  border:1px solid var(--c-line); border-radius:var(--r-field); background:var(--c-surface-sub);
+  color:var(--c-ink-3); font:var(--t-body-sm); font-weight:600; cursor:pointer; white-space:nowrap;
+}
+.esch-bloco-cadeado[aria-pressed="true"] { background:var(--c-action); border-color:var(--c-action); color:var(--c-ink-inv); }
+.esch-bloco-cadeado:focus-visible { outline:2px solid var(--c-action); outline-offset:2px; }
+.esch-bloco-vazio { font:var(--t-body-sm); color:var(--c-ink-3); padding:12px 0 4px; }
+.esc-menu-vazio { font:var(--t-body-sm); color:var(--c-ink-3); line-height:1.5; padding:4px 4px 8px; }
 
 .esch-bloco-corpo {
   display: none; padding: 4px 16px 16px 16px;
@@ -7065,7 +7075,11 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <span class="esc-card-arrow">›</span>
       </button>
 
-      <button class="esc-card coral" id="escCardPHQ9" type="button" onclick="escClicarCardEscala('PHQ-9')">
+      <!-- Pacote 17.3.1 (decisão do usuário, 20/11/2026): TODA escala fica fechada até o profissional abrir para
+           o paciente; os 20 cartões começam ocultos e escAplicarCartoesLiberados mostra os liberados. -->
+      <div class="esc-menu-vazio hidden" id="escMenuSemEscalas">Nenhuma escala liberada por enquanto — seu terapeuta libera cada uma conforme o acompanhamento.</div>
+
+      <button class="esc-card coral hidden" id="escCardPHQ9" type="button" onclick="escClicarCardEscala('PHQ-9')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-cloud-rain"/></svg></span>
         <div class="esc-card-title">PHQ-9 — Sintomas Depressivos</div>
         <div class="esc-card-desc">Avalia sintomas depressivos das últimas 2 semanas</div>
@@ -7075,7 +7089,7 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <span class="esc-card-arrow">›</span>
       </button>
 
-      <button class="esc-card amber" id="escCardGAD7" type="button" onclick="escClicarCardEscala('GAD-7')">
+      <button class="esc-card amber hidden" id="escCardGAD7" type="button" onclick="escClicarCardEscala('GAD-7')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-zap"/></svg></span>
         <div class="esc-card-title">GAD-7 — Ansiedade Generalizada</div>
         <div class="esc-card-desc">Avalia sintomas de ansiedade das últimas 2 semanas</div>
@@ -7085,7 +7099,7 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <span class="esc-card-arrow">›</span>
       </button>
 
-      <button class="esc-card orange" id="escCardPSS10" type="button" onclick="escClicarCardEscala('PSS-10')">
+      <button class="esc-card orange hidden" id="escCardPSS10" type="button" onclick="escClicarCardEscala('PSS-10')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-thermometer"/></svg></span>
         <div class="esc-card-title">PSS-10 — Estresse Percebido</div>
         <div class="esc-card-desc">Percepção subjetiva de estresse no último mês</div>
@@ -7095,7 +7109,7 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <span class="esc-card-arrow">›</span>
       </button>
 
-      <button class="esc-card purple" id="escCardDASS21" type="button" onclick="escClicarCardEscala('DASS-21')">
+      <button class="esc-card purple hidden" id="escCardDASS21" type="button" onclick="escClicarCardEscala('DASS-21')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg></span>
         <div class="esc-card-title">DASS-21 — Depressão, Ansiedade e Estresse</div>
         <div class="esc-card-desc">Visão ampla em três subescalas (última semana)</div>
@@ -7105,7 +7119,7 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <span class="esc-card-arrow">›</span>
       </button>
 
-      <button class="esc-card teal" id="escCardSRQ20" type="button" onclick="escClicarCardEscala('SRQ-20')">
+      <button class="esc-card teal hidden" id="escCardSRQ20" type="button" onclick="escClicarCardEscala('SRQ-20')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-help"/></svg></span>
         <div class="esc-card-title">SRQ-20 — Rastreamento Geral</div>
         <div class="esc-card-desc">Rastreamento de transtornos mentais comuns</div>
@@ -7122,8 +7136,9 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <button class="esc-card bdi2 hidden" id="escCardBDI2" type="button" onclick="escClicarCardEscala('BDI-II')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-heart-crack"/></svg></span>
         <div class="esc-card-title">BDI-II — Inventário de Depressão de Beck</div>
+        <div class="esc-card-desc">Intensidade de sintomas depressivos nas últimas 2 semanas</div>
         <div class="esc-card-meta">
-          <span>Duas últimas semanas, incluindo hoje</span>
+          <span>21 itens</span><span>5-10 min</span><span>Últimas 2 semanas</span>
         </div>
         <span class="esc-card-arrow">›</span>
       </button>
@@ -7131,20 +7146,21 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <button class="esc-card bai hidden" id="escCardBAI" type="button" onclick="escClicarCardEscala('BAI')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-brain"/></svg></span>
         <div class="esc-card-title">BAI — Inventário de Ansiedade de Beck</div>
+        <div class="esc-card-desc">Intensidade de sintomas de ansiedade na última semana</div>
         <div class="esc-card-meta">
-          <span>Última semana, incluindo hoje</span>
+          <span>21 itens</span><span>5-10 min</span><span>Última semana</span>
         </div>
         <span class="esc-card-arrow">›</span>
       </button>
 
-      <!-- Pacote 17.1 — BHS e BSS: mesma regra dos dois de cima (ocultos até a liberação). A BSS é
-           'soProfissional' (decisão de 19/11/2026): o servidor só a inclui em 'liberados' para o
-           paciente quando o profissional a liberou para ele (17.1.2, botão na tela do paciente). -->
+      <!-- Pacote 17.1 — BHS e BSS: ocultos até a liberação. 17.1.2: o servidor só inclui em 'liberados'
+           o que o profissional abriu para o paciente (escalas_liberadas) — regra de TODAS desde o 17.3.1. -->
       <button class="esc-card bhs hidden" id="escCardBHS" type="button" onclick="escClicarCardEscala('BHS')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-compass"/></svg></span>
         <div class="esc-card-title">BHS — Escala de Desesperança de Beck</div>
+        <div class="esc-card-desc">Como você vê o futuro, na última semana</div>
         <div class="esc-card-meta">
-          <span>Última semana, incluindo hoje</span>
+          <span>20 itens</span><span>3-5 min</span><span>Última semana</span>
         </div>
         <span class="esc-card-arrow">›</span>
       </button>
@@ -7152,19 +7168,21 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <button class="esc-card bss hidden" id="escCardBSS" type="button" onclick="escClicarCardEscala('BSS')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-clipboard"/></svg></span>
         <div class="esc-card-title">BSS — Escala de Ideação Suicida de Beck</div>
+        <div class="esc-card-desc">Pensamentos sobre viver e morrer, na última semana</div>
         <div class="esc-card-meta">
-          <span>Última semana, incluindo hoje</span>
+          <span>21 itens</span><span>5-10 min</span><span>Última semana</span>
         </div>
         <span class="esc-card-arrow">›</span>
       </button>
 
-      <!-- Pacote 17.2 — URICA, quatro versões: todas 'soProfissional' (decisão de 20/11/2026) — o cartão só
+      <!-- Pacote 17.2 — URICA, quatro versões: por liberação do profissional (decisão de 20/11/2026) — o cartão só
            aparece para o paciente a quem o profissional liberou aquela versão. -->
       <button class="esc-card urica hidden" id="escCardURICA_A" type="button" onclick="escClicarCardEscala('URICA-A')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-refresh"/></svg></span>
         <div class="esc-card-title">URICA — Álcool · Motivação para a mudança</div>
+        <div class="esc-card-desc">Como você se vê hoje em relação ao uso de álcool</div>
         <div class="esc-card-meta">
-          <span>24 afirmações · como você se vê hoje</span>
+          <span>24 itens</span><span>5-8 min</span><span>Hoje</span>
         </div>
         <span class="esc-card-arrow">›</span>
       </button>
@@ -7172,8 +7190,9 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <button class="esc-card urica hidden" id="escCardURICA_D" type="button" onclick="escClicarCardEscala('URICA-D')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-refresh"/></svg></span>
         <div class="esc-card-title">URICA — Drogas ilícitas · Motivação para a mudança</div>
+        <div class="esc-card-desc">Como você se vê hoje em relação ao uso de drogas</div>
         <div class="esc-card-meta">
-          <span>24 afirmações · como você se vê hoje</span>
+          <span>24 itens</span><span>5-8 min</span><span>Hoje</span>
         </div>
         <span class="esc-card-arrow">›</span>
       </button>
@@ -7181,8 +7200,9 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <button class="esc-card urica hidden" id="escCardURICA_T" type="button" onclick="escClicarCardEscala('URICA-T')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-refresh"/></svg></span>
         <div class="esc-card-title">URICA — Tabaco · Motivação para a mudança</div>
+        <div class="esc-card-desc">Como você se vê hoje em relação ao uso de tabaco</div>
         <div class="esc-card-meta">
-          <span>24 afirmações · como você se vê hoje</span>
+          <span>24 itens</span><span>5-8 min</span><span>Hoje</span>
         </div>
         <span class="esc-card-arrow">›</span>
       </button>
@@ -7190,19 +7210,21 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <button class="esc-card urica hidden" id="escCardURICA_HA" type="button" onclick="escClicarCardEscala('URICA-HA')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-refresh"/></svg></span>
         <div class="esc-card-title">URICA — Hábitos alimentares · Motivação para a mudança</div>
+        <div class="esc-card-desc">Como você se vê hoje em relação aos seus hábitos alimentares</div>
         <div class="esc-card-meta">
-          <span>24 afirmações · como você se vê hoje</span>
+          <span>24 itens</span><span>5-8 min</span><span>Hoje</span>
         </div>
         <span class="esc-card-arrow">›</span>
       </button>
 
-      <!-- Pacote 17.3 — lote A da HumanTrack: sete escalas de escore único, todas 'soProfissional' (decisão de
+      <!-- Pacote 17.3 — lote A da HumanTrack: sete escalas de escore único, por liberação do profissional (decisão de
            20/11/2026) — o cartão só aparece quando o profissional libera aquela escala para o paciente. -->
       <button class="esc-card trauma hidden" id="escCardPCL5" type="button" onclick="escClicarCardEscala('PCL-5')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-heart-crack"/></svg></span>
         <div class="esc-card-title">PCL-5 — Reações após um evento muito difícil</div>
+        <div class="esc-card-desc">Reações a um evento muito difícil, no último mês</div>
         <div class="esc-card-meta">
-          <span>20 itens · pensando no último mês</span>
+          <span>20 itens</span><span>5-10 min</span><span>Último mês</span>
         </div>
         <span class="esc-card-arrow">›</span>
       </button>
@@ -7210,8 +7232,9 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <button class="esc-card processo hidden" id="escCardPSWQ" type="button" onclick="escClicarCardEscala('PSWQ')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-zap"/></svg></span>
         <div class="esc-card-title">PSWQ — Preocupação</div>
+        <div class="esc-card-desc">Quanto a preocupação faz parte do seu jeito de ser</div>
         <div class="esc-card-meta">
-          <span>16 afirmações · o quanto cada uma descreve você</span>
+          <span>16 itens</span><span>3-5 min</span><span>Em geral</span>
         </div>
         <span class="esc-card-arrow">›</span>
       </button>
@@ -7219,8 +7242,9 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <button class="esc-card bemestar hidden" id="escCardEAR" type="button" onclick="escClicarCardEscala('EAR')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-star"/></svg></span>
         <div class="esc-card-title">EAR — Autoestima</div>
+        <div class="esc-card-desc">Como você se sente em relação a si mesmo(a)</div>
         <div class="esc-card-meta">
-          <span>10 afirmações · o quanto concorda com cada uma</span>
+          <span>10 itens</span><span>2-3 min</span><span>Em geral</span>
         </div>
         <span class="esc-card-arrow">›</span>
       </button>
@@ -7228,8 +7252,9 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <button class="esc-card processo hidden" id="escCardAAQ2" type="button" onclick="escClicarCardEscala('AAQ-II')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-puzzle"/></svg></span>
         <div class="esc-card-title">AAQ-II — Aceitação e Ação</div>
+        <div class="esc-card-desc">Como você lida com pensamentos e sentimentos difíceis</div>
         <div class="esc-card-meta">
-          <span>7 afirmações · o quanto cada uma é verdadeira para você</span>
+          <span>7 itens</span><span>2-3 min</span><span>Em geral</span>
         </div>
         <span class="esc-card-arrow">›</span>
       </button>
@@ -7237,8 +7262,9 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <button class="esc-card bemestar hidden" id="escCardSWLS" type="button" onclick="escClicarCardEscala('SWLS')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-sun"/></svg></span>
         <div class="esc-card-title">SWLS — Satisfação com a Vida</div>
+        <div class="esc-card-desc">O quanto você está satisfeito(a) com a sua vida</div>
         <div class="esc-card-meta">
-          <span>5 afirmações · o quanto concorda com cada uma</span>
+          <span>5 itens</span><span>1-2 min</span><span>Em geral</span>
         </div>
         <span class="esc-card-arrow">›</span>
       </button>
@@ -7246,8 +7272,9 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <button class="esc-card bemestar hidden" id="escCardMAAS" type="button" onclick="escClicarCardEscala('MAAS')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-leaf"/></svg></span>
         <div class="esc-card-title">MAAS — Atenção e Consciência Plenas</div>
+        <div class="esc-card-desc">Atenção ao que acontece no seu dia a dia</div>
         <div class="esc-card-meta">
-          <span>15 afirmações · com que frequência acontece com você</span>
+          <span>15 itens</span><span>3-5 min</span><span>Atualmente</span>
         </div>
         <span class="esc-card-arrow">›</span>
       </button>
@@ -7255,8 +7282,9 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <button class="esc-card processo hidden" id="escCardWBSI" type="button" onclick="escClicarCardEscala('WBSI')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg></span>
         <div class="esc-card-title">WBSI — Supressão de Pensamentos</div>
+        <div class="esc-card-desc">Como você lida com pensamentos que não quer ter</div>
         <div class="esc-card-meta">
-          <span>15 afirmações · o quanto concorda com cada uma</span>
+          <span>15 itens</span><span>3-5 min</span><span>Em geral</span>
         </div>
         <span class="esc-card-arrow">›</span>
       </button>
@@ -9573,7 +9601,7 @@ function profRenderPaciente_(sigla, resp) {
   html += '<div class="prof-pv-mod-body" id="profModEscBody">';
   html += '<div class="prof-acoes-mod"><button class="prof-btn-acao" type="button" onclick="profNovaEscala()"><svg class=ico aria-hidden=true><use href=#i-plus-circle></use></svg> Nova escala</button></div>'; // 18.5
   html += '<div class="prof-acoes-mod" id="profNovaEscalaLista" hidden></div>';
-  html += '<div class="prof-acoes-mod" id="profLiberacoesEsc">' + profRenderLiberacoes_() + '</div>'; // 17.1.2
+  html += '<div class="prof-acoes-mod" id="profAvisoLiberacao"></div>'; // 17.3.1: âncora do aviso; o cadeado agora fica em cada cartão de escala
   html += profRenderizarEscalas_(resp.escalas || []);
   html += '</div></div>';
 
@@ -9592,27 +9620,38 @@ function profNovoRegistro() {
   PEV_STATE.registros = []; PEV_STATE.invalidado = true; // nada do paciente anterior serve a este
   iniNovoRegistro();
 }
-// 17.1.2: escalas 'soProfissional' (BSS) — o profissional libera por paciente; liberada, entra no menu do
-// paciente no próximo acesso dele. Um botão por escala, com cadeado aberto/fechado e o estado atual.
-function profRenderLiberacoes_() {
+// 17.1.2 → 17.3.1 (decisão do usuário, 20/11/2026): TODA escala é por liberação, paciente a paciente. O cadeado
+// fica dentro do cartão de cada escala (profRenderizarEscalas_): "Aberta" (no menu do paciente) / "Fechada".
+function profCadeadoHtml_(cod, aberta) {
+  var d = ESC_ESCALAS[cod] || {};
+  var nome = d.nomeCurto || cod; // 17.2: nomeCurto ("URICA — Álcool") quando o código não diz nada ao profissional
+  return '<button class="esch-bloco-cadeado" type="button" data-instr="' + esc(d.instrumentoId || '') + '" data-cod="' + esc(cod) + '" aria-pressed="' + (aberta ? 'true' : 'false') + '"' +
+    ' aria-label="' + esc((aberta ? 'Fechar ' : 'Abrir ') + nome + ' para o paciente') + '" title="' + esc(aberta ? 'Aberta no menu do paciente — toque para fechar' : 'Fechada para o paciente — toque para abrir') + '"' +
+    ' onclick="profClicarCadeado_(event, this)">' +
+    '<svg class=ico aria-hidden=true><use href=#' + (aberta ? 'i-unlock' : 'i-lock') + '></use></svg> ' + (aberta ? 'Aberta' : 'Fechada') + '</button>';
+}
+function profClicarCadeado_(ev, botao) {
+  if (ev && ev.stopPropagation) ev.stopPropagation(); // não abre nem fecha o corpo do cartão
+  profLiberarEscala_(botao.dataset.instr, botao.dataset.cod);
+}
+function profAtualizarCadeados_() {
   var lib = (PROF_PACIENTE_SEL && PROF_PACIENTE_SEL.escalasLiberadas) || [];
-  return ESC_HIST_ORDEM.filter(function (cod) { return ESC_ESCALAS[cod] && ESC_ESCALAS[cod].soProfissional; }).map(function (cod) {
-    var d = ESC_ESCALAS[cod], on = lib.indexOf(d.instrumentoId) !== -1;
-    return '<button class="prof-btn-acao" type="button" data-instr="' + esc(d.instrumentoId) + '" data-cod="' + esc(cod) + '" aria-pressed="' + (on ? 'true' : 'false') + '" onclick="profLiberarEscala_(this.dataset.instr, this.dataset.cod)">' +
-      '<svg class=ico aria-hidden=true><use href=#' + (on ? 'i-unlock' : 'i-lock') + '></use></svg> ' +
-      esc(on ? (d.nomeCurto || cod) + ' liberada para o paciente' : 'Liberar ' + (d.nomeCurto || cod) + ' para o paciente') + '</button>'; // 17.2: nomeCurto ("URICA — Álcool") quando o código não diz nada ao profissional
-  }).join('');
+  document.querySelectorAll('#profModEscBody .esch-bloco-cadeado').forEach(function (b) {
+    var d = ESC_ESCALAS[b.dataset.cod];
+    if (d) b.outerHTML = profCadeadoHtml_(b.dataset.cod, lib.indexOf(d.instrumentoId) !== -1);
+  });
 }
 async function profLiberarEscala_(instr, cod) {
   if (!PROF_SESSAO || !PROF_PACIENTE_SEL) return;
   var lib = PROF_PACIENTE_SEL.escalasLiberadas || [];
   var liberar = lib.indexOf(instr) === -1;
-  var box = document.getElementById('profLiberacoesEsc');
+  var box = document.getElementById('profAvisoLiberacao');
   var resp = await chamarServidor('profLiberarEscala', { siglaPaciente: PROF_PACIENTE_SEL.sigla, instrumento: instr, liberar: liberar });
   if (!resp || !resp.ok) { vmcAvisoNaTela('Não foi possível gravar agora. Tente de novo.', box); return; }
   PROF_PACIENTE_SEL.escalasLiberadas = resp.escalas_liberadas || [];
-  if (box) box.innerHTML = profRenderLiberacoes_();
-  vmcAvisoNaTela(liberar ? cod + ' liberada: aparece no menu do paciente no próximo acesso dele.' : cod + ' retirada do menu do paciente.', box);
+  profAtualizarCadeados_();
+  var nome = (ESC_ESCALAS[cod] && ESC_ESCALAS[cod].nomeCurto) || cod;
+  vmcAvisoNaTela(liberar ? nome + ' aberta: aparece no menu do paciente no próximo acesso dele.' : nome + ' fechada: sai do menu do paciente.', box);
 }
 // "Nova escala": lista dos instrumentos (os de texto protegido só quando liberados pelo servidor)
 async function profNovaEscala() {
@@ -9864,9 +9903,8 @@ function profRenderizarAutomonitoramento_(registros) {
  * Popula ESC_HIST_STATE.registros para que o modal escHistAbrirDetalhe funcione.
  */
 function profRenderizarEscalas_(escalas) {
-  if (!escalas || escalas.length === 0) {
-    return '<div class="prof-pv-mod-vazio"><span><svg class=ico aria-hidden=true><use href=#i-clipboard></use></svg></span>O paciente ainda não aplicou nenhuma escala.</div>';
-  }
+  escalas = escalas || [];
+  // 17.3.1: paciente sem nenhuma aplicação também vê os 20 cartões — é por eles que o profissional abre a primeira escala.
 
   // Popula ESC_HIST_STATE para o modal funcionar
   ESC_HIST_STATE.visaoProfissional = true; // Pacote 17.0: o profissional vê tudo
@@ -9885,14 +9923,15 @@ function profRenderizarEscalas_(escalas) {
   });
 
   var html = '';
+  var liberadas = (PROF_PACIENTE_SEL && PROF_PACIENTE_SEL.escalasLiberadas) || []; // 17.3.1
   ESC_HIST_ORDEM.forEach(function(cod){
-    var grupo = porEscala[cod];
-    if (!grupo || grupo.length === 0) return;
     var def = ESC_ESCALAS[cod];
     if (!def) return;
+    // 17.3.1: todas as escalas aparecem, com ou sem aplicação — o cadeado fica no cartão
+    var grupo = porEscala[cod] || [];
 
     var corClasse = def.corPrefix;
-    var textoContagem = grupo.length === 1 ? '1 aplicação' : (grupo.length + ' aplicações');
+    var textoContagem = grupo.length === 0 ? 'Nenhuma aplicação' : (grupo.length === 1 ? '1 aplicação' : (grupo.length + ' aplicações'));
 
     html += '<div class="esch-bloco ' + corClasse + '" data-esc="' + escapeHtmlAuto(cod) + '">';
     html += '<div class="esch-bloco-head" onclick="escHistToggleBloco(this)">';
@@ -9900,9 +9939,11 @@ function profRenderizarEscalas_(escalas) {
     html += '<span class="esch-bloco-icone">' + (def.emoji || '<svg class=ico aria-hidden=true><use href=#i-chart></use></svg>') + '</span>';
     html += '<span class="esch-bloco-titulo">' + escapeHtmlAuto(def.nomeCompleto || cod) + '</span>';
     html += '<span class="esch-bloco-contagem">' + textoContagem + '</span>';
+    html += profCadeadoHtml_(cod, liberadas.indexOf(def.instrumentoId) !== -1);
     html += '<span class="esch-bloco-chevron">›</span>';
     html += '</div>';
     html += '<div class="esch-bloco-corpo">';
+    if (!grupo.length) html += '<div class="esch-bloco-vazio">O paciente ainda não respondeu esta escala.</div>';
     grupo.forEach(function(item){
       html += escHistRenderAplicacao(cod, def, item.reg, item.idxGlobal);
     });
@@ -16105,7 +16146,8 @@ var ESC_STATE = {
 var ESC_TEXTOS = {};        // { bdi2: { instrucao, titulos, itens, opcoes, ancoras } }
 var ESC_LIBERADOS = null;   // null = ainda nao perguntou ao servidor; [] = nenhum
 // Cartao do menu por instrumento — o cartao so aparece com o instrumento liberado
-var ESC_CARTOES_POR_INSTRUMENTO = { bdi2: 'escCardBDI2', bai: 'escCardBAI', bhs: 'escCardBHS', bsi: 'escCardBSS', // 17.1: + BHS e BSS
+var ESC_CARTOES_POR_INSTRUMENTO = { phq9: 'escCardPHQ9', gad7: 'escCardGAD7', pss10: 'escCardPSS10', dass21: 'escCardDASS21', srq20: 'escCardSRQ20', // 17.3.1: as cinco do 12.x também são por liberação
+  bdi2: 'escCardBDI2', bai: 'escCardBAI', bhs: 'escCardBHS', bsi: 'escCardBSS', // 17.1: + BHS e BSS
   urica_alcool: 'escCardURICA_A', urica_drogas: 'escCardURICA_D', urica_tabaco: 'escCardURICA_T', urica_alimentar: 'escCardURICA_HA', // 17.2
   pcl5: 'escCardPCL5', pswq: 'escCardPSWQ', ear: 'escCardEAR', aaq2: 'escCardAAQ2', swls: 'escCardSWLS', maas: 'escCardMAAS', wbsi: 'escCardWBSI' }; // 17.3
 
@@ -16192,12 +16234,17 @@ async function escCarregarLiberados() {
 
 function escAplicarCartoesLiberados() {
   var liberados = ESC_LIBERADOS || [];
+  var visiveis = 0;
   Object.keys(ESC_CARTOES_POR_INSTRUMENTO).forEach(function (instr) {
     var el = document.getElementById(ESC_CARTOES_POR_INSTRUMENTO[instr]);
-    // 17.1.2: quem decide é o servidor — para o paciente, uma escala 'soProfissional' (BSS) só vem
-    // em 'liberados' quando o profissional a liberou para ele (escalas_liberadas na Controle).
-    if (el) el.classList.toggle('hidden', liberados.indexOf(instr) === -1);
+    // 17.1.2 / 17.3.1: quem decide é o servidor — toda escala só vem em 'liberados' quando o profissional
+    // a abriu para este paciente (escalas_liberadas na Controle).
+    var mostra = liberados.indexOf(instr) !== -1;
+    if (el) el.classList.toggle('hidden', !mostra);
+    if (mostra) visiveis++;
   });
+  var vazio = document.getElementById('escMenuSemEscalas');
+  if (vazio) vazio.classList.toggle('hidden', ESC_LIBERADOS === null || visiveis > 0);
 }
 
 // Busca os textos de um instrumento e guarda em memoria. Devolve false quando o
@@ -16253,6 +16300,7 @@ function escOpcoesDoItem(def, item, textos) {
 const ESC_ESCALAS = {
   'PHQ-9': {
     nomeCompleto: 'PHQ-9 — Sintomas Depressivos',
+    instrumentoId: 'phq9', // 17.3.1: id de liberação por paciente (escalas_liberadas)
     emoji: '<svg class=ico aria-hidden=true><use href=#i-cloud-rain></use></svg>',
     corPrefix: 'coral',
     enunciado: 'Durante as últimas 2 semanas, com que frequência você foi incomodado(a) por qualquer um dos problemas abaixo?',
@@ -16318,6 +16366,7 @@ const ESC_ESCALAS = {
 
   'GAD-7': {
     nomeCompleto: 'GAD-7 — Ansiedade Generalizada',
+    instrumentoId: 'gad7', // 17.3.1
     emoji: '<svg class=ico aria-hidden=true><use href=#i-zap></use></svg>',
     corPrefix: 'amber',
     enunciado: 'Durante as últimas 2 semanas, com que frequência você foi incomodado(a) pelos problemas abaixo?',
@@ -16375,6 +16424,7 @@ const ESC_ESCALAS = {
 
   'PSS-10': {
     nomeCompleto: 'PSS-10 — Estresse Percebido',
+    instrumentoId: 'pss10', // 17.3.1
     emoji: '<svg class=ico aria-hidden=true><use href=#i-thermometer></use></svg>',
     corPrefix: 'orange',
     enunciado: 'As perguntas a seguir se referem aos seus sentimentos e pensamentos durante o último mês. Em cada caso, indique com que frequência você se sentiu ou pensou de determinada maneira.',
@@ -16424,6 +16474,7 @@ const ESC_ESCALAS = {
 
   'DASS-21': {
     nomeCompleto: 'DASS-21 — Depressão, Ansiedade e Estresse',
+    instrumentoId: 'dass21', // 17.3.1
     emoji: '<svg class=ico aria-hidden=true><use href=#i-layers></use></svg>',
     corPrefix: 'purple',
     enunciado: 'Por favor, leia cuidadosamente cada uma das afirmações abaixo e marque a opção que indique o quanto ela se aplicou a você durante a última semana.',
@@ -16503,6 +16554,7 @@ const ESC_ESCALAS = {
 
   'SRQ-20': {
     nomeCompleto: 'SRQ-20 — Rastreamento Geral',
+    instrumentoId: 'srq20', // 17.3.1
     emoji: '<svg class=ico aria-hidden=true><use href=#i-help></use></svg>',
     corPrefix: 'teal',
     enunciado: 'Estas questões são relacionadas a certas dores e problemas que podem ter lhe incomodado nos últimos 30 dias. Se você acha que a questão se aplica a você, responda SIM. Se a questão não se aplica a você, responda NÃO.',
@@ -16564,10 +16616,10 @@ const ESC_ESCALAS = {
   // pontuação, faixas e item crítico.
   //   textoDaAba     - o renderizador exige os textos do servidor antes de desenhar
   //   instrumentoId  - chave do instrumento na aba
-  //   escoreOculto   - o paciente não vê escore, faixa nem interpretação (seção 4
-  //                    da especificação): escore, faixa e alerta são da área do
-  //                    profissional. Por isso não há 'descricao' nem 'sugestao'
-  //                    nas faixas, só o rótulo.
+  //   escoreOculto   - o paciente não vê escore, faixa nem interpretação. 17.3.1 (decisão
+  //                    do usuário, 20/11/2026): só a BSS fica oculta; as demais mostram o
+  //                    resultado ao paciente no mesmo molde das escalas do 12.x, com
+  //                    'descricao' e 'sugestao' por faixa (ou 'eduGeral*' quando não há faixa).
   //   opcoesPorItem  - cada item tem as suas opções (o BDI-II não tem um conjunto
   //                    único), e os itens de 'itensComLetra' têm 7 em vez de 4.
   'BDI-II': {
@@ -16576,10 +16628,9 @@ const ESC_ESCALAS = {
     corPrefix: 'bdi2',
     instrumentoId: 'bdi2',
     textoDaAba: true,
-    escoreOculto: true,
     opcoesPorItem: true,
     itensComLetra: [16, 18],
-    subtitulo: '21 itens · Pensando nas <strong>duas últimas semanas</strong>, incluindo hoje',
+    subtitulo: '21 itens · 5 a 10 minutos · Pensando nas <strong>últimas 2 semanas</strong>, incluindo hoje',
     escoreMax: 63,
     itens: [
       { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }, { id: 8 },
@@ -16589,11 +16640,23 @@ const ESC_ESCALAS = {
       { id: 10 }, { id: 11 }, { id: 12 }, { id: 13 }, { id: 14 }, { id: 15 },
       { id: 16 }, { id: 17 }, { id: 18 }, { id: 19 }, { id: 20 }, { id: 21 }
     ],
-    faixas: [
-      { min: 29, max: 63, rotulo: 'Grave',    cor: 'vermelho' },
-      { min: 20, max: 28, rotulo: 'Moderado', cor: 'laranja'  },
-      { min: 14, max: 19, rotulo: 'Leve',     cor: 'amarelo'  },
-      { min: 0,  max: 13, rotulo: 'Mínimo',   cor: 'verde'    }
+    faixas: [ // 17.3.1: textos ao paciente no molde do PHQ-9 (níveis de Cunha, 2001)
+      { min: 29, max: 63, rotulo: 'Grave',    cor: 'vermelho',
+        titulo: '<svg class=ico&#32;ico-risk aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>sintomas depressivos graves</strong> nas duas últimas semanas. Este resultado é um alerta importante que merece atenção imediata.',
+        sugestao: 'Entre em contato com seu terapeuta o quanto antes. Ele vai definir com você os próximos passos — que podem incluir intensificação do acompanhamento e avaliação médica.' },
+      { min: 20, max: 28, rotulo: 'Moderado', cor: 'laranja',
+        titulo: '<svg class=ico&#32;ico-risk2 aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>sintomas depressivos moderados</strong> nas duas últimas semanas. É um sinal importante de que o tratamento atual merece atenção especial.',
+        sugestao: 'Traga este resultado para sua próxima sessão. Seu terapeuta vai discutir com você possíveis ajustes no plano terapêutico e estratégias para as próximas semanas.' },
+      { min: 14, max: 19, rotulo: 'Leve',     cor: 'amarelo',
+        titulo: '<svg class=ico&#32;ico-warn aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>sintomas depressivos leves</strong> nas duas últimas semanas. Isso não é um diagnóstico — são sintomas que merecem atenção e acompanhamento.',
+        sugestao: 'Converse com seu terapeuta sobre o que você tem sentido. O Registro de Automonitoramento ajuda a identificar situações, pensamentos e comportamentos ligados ao seu humor.' },
+      { min: 0,  max: 13, rotulo: 'Mínimo',   cor: 'verde',
+        titulo: '<svg class=ico&#32;ico-pos aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>sintomas mínimos ou ausentes</strong> nas duas últimas semanas. Continue com os cuidados de rotina e, se notar piora, converse com seu terapeuta.',
+        sugestao: 'Aproveite este momento para fortalecer hábitos que te fazem bem. O Registro de Automonitoramento ajuda a mapear o que está funcionando.' }
     ],
     faixasLista: [
       '<strong>0-13</strong> — Mínimo',
@@ -16610,8 +16673,7 @@ const ESC_ESCALAS = {
     corPrefix: 'bai',
     instrumentoId: 'bai',
     textoDaAba: true,
-    escoreOculto: true,
-    subtitulo: '21 itens · Pensando na <strong>última semana</strong>, incluindo hoje',
+    subtitulo: '21 itens · 5 a 10 minutos · Pensando na <strong>última semana</strong>, incluindo hoje',
     escoreMax: 63,
     // O BAI tem um conjunto único de quatro colunas para todos os itens (as
     // âncoras), como a PHQ-9 — por isso não usa opcoesPorItem. Os rótulos e as
@@ -16621,11 +16683,23 @@ const ESC_ESCALAS = {
       { id: 8 }, { id: 9 }, { id: 10 }, { id: 11 }, { id: 12 }, { id: 13 }, { id: 14 },
       { id: 15 }, { id: 16 }, { id: 17 }, { id: 18 }, { id: 19 }, { id: 20 }, { id: 21 }
     ],
-    faixas: [
-      { min: 31, max: 63, rotulo: 'Grave',    cor: 'vermelho' },
-      { min: 20, max: 30, rotulo: 'Moderado', cor: 'laranja'  },
-      { min: 11, max: 19, rotulo: 'Leve',     cor: 'amarelo'  },
-      { min: 0,  max: 10, rotulo: 'Mínimo',   cor: 'verde'    }
+    faixas: [ // 17.3.1: textos ao paciente no molde do GAD-7 (níveis de Cunha, 2001)
+      { min: 31, max: 63, rotulo: 'Grave',    cor: 'vermelho',
+        titulo: '<svg class=ico&#32;ico-risk aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>sintomas de ansiedade graves</strong> na última semana. Este nível de sofrimento interfere no dia a dia e merece atenção imediata.',
+        sugestao: 'Entre em contato com seu terapeuta o quanto antes. Ele vai avaliar com você os próximos passos — que podem incluir intensificação do acompanhamento e, se pertinente, avaliação médica.' },
+      { min: 20, max: 30, rotulo: 'Moderado', cor: 'laranja',
+        titulo: '<svg class=ico&#32;ico-risk2 aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>sintomas de ansiedade moderados</strong> na última semana. Vale a pena discutir com seu terapeuta estratégias específicas para a ansiedade.',
+        sugestao: 'Traga este resultado para sua próxima sessão. Use o Registro de Automonitoramento para mapear situações-gatilho, pensamentos ansiosos e reações físicas.' },
+      { min: 11, max: 19, rotulo: 'Leve',     cor: 'amarelo',
+        titulo: '<svg class=ico&#32;ico-warn aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>sintomas de ansiedade leves</strong> na última semana. Não é um diagnóstico — são sintomas que merecem atenção e acompanhamento.',
+        sugestao: 'Converse com seu terapeuta sobre quando a ansiedade aparece. O Registro de Automonitoramento ajuda a identificar os gatilhos.' },
+      { min: 0,  max: 10, rotulo: 'Mínimo',   cor: 'verde',
+        titulo: '<svg class=ico&#32;ico-pos aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>sintomas de ansiedade mínimos ou ausentes</strong> na última semana. Continue com os cuidados de rotina e, se notar piora, converse com seu terapeuta.',
+        sugestao: 'Aproveite este momento para fortalecer hábitos que te fazem bem.' }
     ],
     faixasLista: [
       '<strong>0-10</strong> — Mínimo',
@@ -16657,9 +16731,8 @@ const ESC_ESCALAS = {
     corPrefix: 'bhs',
     instrumentoId: 'bhs',
     textoDaAba: true,
-    escoreOculto: true,
     dicotomica: true,
-    subtitulo: '20 afirmações · Pensando na <strong>última semana</strong>, incluindo hoje',
+    subtitulo: '20 itens · 3 a 5 minutos · Pensando na <strong>última semana</strong>, incluindo hoje',
     escoreMax: 20,
     // Certo = 1, Errado = 0. Os itens com 'reverso' pontuam quando a resposta é "Errado".
     opcoes: [
@@ -16672,11 +16745,23 @@ const ESC_ESCALAS = {
       { id: 11 }, { id: 12 }, { id: 13, reverso: true }, { id: 14 }, { id: 15, reverso: true },
       { id: 16 }, { id: 17 }, { id: 18 }, { id: 19, reverso: true }, { id: 20 }
     ],
-    faixas: [
-      { min: 14, max: 20, rotulo: 'Grave',    cor: 'vermelho' },
-      { min: 9,  max: 13, rotulo: 'Moderado', cor: 'laranja'  },
-      { min: 5,  max: 8,  rotulo: 'Leve',     cor: 'amarelo'  },
-      { min: 0,  max: 4,  rotulo: 'Mínimo',   cor: 'verde'    }
+    faixas: [ // 17.3.1: textos ao paciente (níveis de Cunha, 2001)
+      { min: 14, max: 20, rotulo: 'Grave',    cor: 'vermelho',
+        titulo: '<svg class=ico&#32;ico-risk aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>desesperança grave</strong> na última semana: uma visão muito negativa do futuro. Este resultado merece atenção imediata.',
+        sugestao: 'Entre em contato com seu terapeuta o quanto antes. Ele vai conversar com você sobre o que está pesando e definir os próximos passos.' },
+      { min: 9,  max: 13, rotulo: 'Moderado', cor: 'laranja',
+        titulo: '<svg class=ico&#32;ico-risk2 aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>desesperança moderada</strong> na última semana. O modo como você está vendo o futuro merece atenção clínica.',
+        sugestao: 'Traga este resultado para sua próxima sessão. Seu terapeuta vai trabalhar com você as expectativas sobre o futuro.' },
+      { min: 5,  max: 8,  rotulo: 'Leve',     cor: 'amarelo',
+        titulo: '<svg class=ico&#32;ico-warn aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>desesperança leve</strong> na última semana: algum pessimismo em relação ao futuro, comum em fases difíceis.',
+        sugestao: 'Converse com seu terapeuta sobre o que tem tirado a sua esperança e o que ainda a sustenta.' },
+      { min: 0,  max: 4,  rotulo: 'Mínimo',   cor: 'verde',
+        titulo: '<svg class=ico&#32;ico-pos aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>desesperança mínima</strong> na última semana: você mantém expectativas razoáveis sobre o futuro.',
+        sugestao: 'Continue com os cuidados de rotina e, se notar mudança, converse com seu terapeuta.' }
     ],
     faixasLista: [
       '<strong>0-4</strong> — Mínimo',
@@ -16693,10 +16778,9 @@ const ESC_ESCALAS = {
     corPrefix: 'bss',
     instrumentoId: 'bsi',
     textoDaAba: true,
-    escoreOculto: true,
+    escoreOculto: true, // 17.3.1: a BSS é a única sem resultado ao paciente (ideação suicida: o resultado é conversado na sessão)
     opcoesPorItem: true,
-    soProfissional: true, // decisão do usuário (19/11/2026): fora do menu do paciente até o profissional liberar para ele (17.1.2)
-    subtitulo: '21 grupos de afirmações · Pensando na <strong>última semana</strong>, incluindo hoje',
+    subtitulo: '21 itens · 5 a 10 minutos · Pensando na <strong>última semana</strong>, incluindo hoje',
     escoreMax: 38,
     // Itens 4 e 5 são a triagem: ambos em 0 → os grupos 6–19 não se aplicam (valem 0) e o
     // paciente segue para o 20. O grupo 21 só se aplica a quem já tentou suicídio (20 ≥ 1).
@@ -16724,7 +16808,7 @@ const ESC_ESCALAS = {
   // uma versão para outra), quatro subescalas de 6 itens — Pré-contemplação (PC) 1, 5, 7, 16, 19, 22;
   // Contemplação (C) 3, 6, 9, 13, 14, 17; Ação (A) 2, 4, 8, 11, 18, 23; Manutenção (M) 10, 12, 15, 20, 21, 24.
   // Subescala = soma dos 6 itens (6–30). Sem itens reversos, sem item crítico. Sem pontos de corte validados
-  // para a versão brasileira: a leitura é pelo perfil, do profissional (escoreOculto). Prontidão = média(C)
+  // para a versão brasileira: a leitura é pelo perfil (o paciente vê o resultado desde o 17.3.1). Prontidão = média(C)
   // + média(A) + média(M) − média(PC), de −4 a +14, uma casa decimal.
   // Referências (regra de 19/11/2026: conteúdo clínico sempre com fonte):
   //   McConnaughy, E. A., Prochaska, J. O., & Velicer, W. F. (1983). Stages of change in psychotherapy:
@@ -16740,7 +16824,7 @@ const ESC_ESCALAS = {
   //   Hábitos alimentares — Bittencourt, A. S., Lucena-Santos, P. L., Moraes, J. F., & Oliveira, M. S. (2012).
   //     Motivação para mudança: análise fatorial da URICA para hábitos alimentares. Psico-USF, 17(3), 497–505.
   //     (a captura da HumanTrack traz duas perguntas de triagem sem pontuação antes dos 24 itens: ficam fora)
-  // As quatro são 'soProfissional' (decisão do usuário, 20/11/2026): o profissional libera a versão certa
+  // Liberação por paciente (17.1.2; regra de todas desde o 17.3.1): o profissional libera a versão certa
   // para cada paciente (17.1.2).
   'URICA-A': {
     nomeCompleto: 'URICA — Álcool · Motivação para a mudança',
@@ -16749,11 +16833,9 @@ const ESC_ESCALAS = {
     corPrefix: 'urica',
     instrumentoId: 'urica_alcool',
     textoDaAba: true,
-    escoreOculto: true,
-    soProfissional: true,
     multiSubescalas: true,
     multSub: 1,
-    subtitulo: '24 afirmações · 5 a 8 minutos · Marque o quanto concorda com cada uma',
+    subtitulo: '24 itens · 5 a 8 minutos · Pensando em <strong>como você se vê hoje</strong>',
     escoreMax: 30, // por subescala (6 itens × 5); a soma dos 24 (24–120) é gravada em escore_total e não aparece
     itens: [
       { id: 1, subescala: 'precontemplacao' }, { id: 2, subescala: 'acao' }, { id: 3, subescala: 'contemplacao' },
@@ -16786,11 +16868,9 @@ const ESC_ESCALAS = {
     corPrefix: 'urica',
     instrumentoId: 'urica_drogas',
     textoDaAba: true,
-    escoreOculto: true,
-    soProfissional: true,
     multiSubescalas: true,
     multSub: 1,
-    subtitulo: '24 afirmações · 5 a 8 minutos · Marque o quanto concorda com cada uma',
+    subtitulo: '24 itens · 5 a 8 minutos · Pensando em <strong>como você se vê hoje</strong>',
     escoreMax: 30,
     itens: [
       { id: 1, subescala: 'precontemplacao' }, { id: 2, subescala: 'acao' }, { id: 3, subescala: 'contemplacao' },
@@ -16823,11 +16903,9 @@ const ESC_ESCALAS = {
     corPrefix: 'urica',
     instrumentoId: 'urica_tabaco',
     textoDaAba: true,
-    escoreOculto: true,
-    soProfissional: true,
     multiSubescalas: true,
     multSub: 1,
-    subtitulo: '24 afirmações · 5 a 8 minutos · Marque o quanto concorda com cada uma',
+    subtitulo: '24 itens · 5 a 8 minutos · Pensando em <strong>como você se vê hoje</strong>',
     escoreMax: 30,
     itens: [
       { id: 1, subescala: 'precontemplacao' }, { id: 2, subescala: 'acao' }, { id: 3, subescala: 'contemplacao' },
@@ -16860,11 +16938,9 @@ const ESC_ESCALAS = {
     corPrefix: 'urica',
     instrumentoId: 'urica_alimentar',
     textoDaAba: true,
-    escoreOculto: true,
-    soProfissional: true,
     multiSubescalas: true,
     multSub: 1,
-    subtitulo: '24 afirmações · 5 a 8 minutos · Marque o quanto concorda com cada uma',
+    subtitulo: '24 itens · 5 a 8 minutos · Pensando em <strong>como você se vê hoje</strong>',
     escoreMax: 30,
     itens: [
       { id: 1, subescala: 'precontemplacao' }, { id: 2, subescala: 'acao' }, { id: 3, subescala: 'contemplacao' },
@@ -16892,7 +16968,7 @@ const ESC_ESCALAS = {
 
   // ---- Pacote 17.3 — lote A da HumanTrack: sete escalas de escore único ----
   // Textos (itens, instrução, âncoras) na aba privada Itens_Instrumentos; âncoras iguais para todos os itens
-  // de cada escala, lidas em ordem numérica. Todas 'soProfissional' e 'escoreOculto' (decisão do usuário,
+  // de cada escala, lidas em ordem numérica. Todas por liberação do profissional e com resultado ao paciente (decisões do usuário,
   // 20/11/2026). 'valorMin'/'valorMax' espelham min/max de ESCALAS_CALCULO no servidor e alimentam a inversão
   // dos itens reversos (min + max − bruto). Faixas só onde há fonte (regra de 19/11/2026).
   // Referências:
@@ -16925,8 +17001,6 @@ const ESC_ESCALAS = {
     corPrefix: 'trauma',
     instrumentoId: 'pcl5',
     textoDaAba: true,
-    escoreOculto: true,
-    soProfissional: true,
     valorMin: 0,
     valorMax: 4,
     subtitulo: '20 itens · 5 a 10 minutos · Pensando no <strong>último mês</strong>',
@@ -16935,9 +17009,15 @@ const ESC_ESCALAS = {
       { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }, { id: 8 }, { id: 9 }, { id: 10 },
       { id: 11 }, { id: 12 }, { id: 13 }, { id: 14 }, { id: 15 }, { id: 16 }, { id: 17 }, { id: 18 }, { id: 19 }, { id: 20 }
     ],
-    faixas: [
-      { min: 36, max: 80, rotulo: 'Sugestivo de TEPT',        cor: 'vermelho' },
-      { min: 0,  max: 35, rotulo: 'Abaixo do ponto de corte', cor: 'verde'    }
+    faixas: [ // 17.3.1: textos ao paciente
+      { min: 36, max: 80, rotulo: 'Sugestivo de TEPT',        cor: 'vermelho',
+        titulo: '<svg class=ico&#32;ico-risk aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore está <strong>acima do ponto de corte</strong> para reações de estresse pós-traumático no último mês. Isso não é um diagnóstico: é um sinal de que essas reações merecem avaliação cuidadosa.',
+        sugestao: 'Converse com seu terapeuta o quanto antes sobre este resultado. Ele vai avaliar com você o que está acontecendo e os próximos passos.' },
+      { min: 0,  max: 35, rotulo: 'Abaixo do ponto de corte', cor: 'verde',
+        titulo: '<svg class=ico&#32;ico-pos aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore está <strong>abaixo do ponto de corte</strong> no último mês. Reações a um evento difícil podem existir sem chegar a esse nível.',
+        sugestao: 'Traga este resultado para a sessão: o que você sentiu em cada item importa mais do que o número.' }
     ],
     faixasLista: [
       '<strong>0-35</strong> — Abaixo do ponto de corte',
@@ -16953,11 +17033,9 @@ const ESC_ESCALAS = {
     corPrefix: 'processo',
     instrumentoId: 'pswq',
     textoDaAba: true,
-    escoreOculto: true,
-    soProfissional: true,
     valorMin: 1,
     valorMax: 5,
-    subtitulo: '16 afirmações · 3 a 5 minutos · O quanto cada uma <strong>descreve você</strong>',
+    subtitulo: '16 itens · 3 a 5 minutos · Pensando em <strong>como você é em geral</strong>',
     escoreMax: 80,
     // Reversos 1, 3, 8, 10, 11 (Meyer et al., 1990): pontuam 6 − resposta.
     itens: [
@@ -16965,10 +17043,19 @@ const ESC_ESCALAS = {
       { id: 8, reverso: true }, { id: 9 }, { id: 10, reverso: true }, { id: 11, reverso: true }, { id: 12 },
       { id: 13 }, { id: 14 }, { id: 15 }, { id: 16 }
     ],
-    faixas: [
-      { min: 62, max: 80, rotulo: 'Preocupação muito elevada', cor: 'vermelho' },
-      { min: 45, max: 61, rotulo: 'Preocupação elevada',       cor: 'laranja'  },
-      { min: 16, max: 44, rotulo: 'Abaixo do corte clínico',   cor: 'verde'    }
+    faixas: [ // 17.3.1: textos ao paciente
+      { min: 62, max: 80, rotulo: 'Preocupação muito elevada', cor: 'vermelho',
+        titulo: '<svg class=ico&#32;ico-risk aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>preocupação muito elevada</strong>, no nível observado em pessoas com ansiedade generalizada. A preocupação parece ocupar muito espaço no seu dia a dia.',
+        sugestao: 'Traga este resultado para a sessão. Seu terapeuta pode trabalhar com você estratégias específicas para a preocupação.' },
+      { min: 45, max: 61, rotulo: 'Preocupação elevada',       cor: 'laranja',
+        titulo: '<svg class=ico&#32;ico-risk2 aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>preocupação elevada</strong>, acima do que se observa em quem não tem ansiedade clínica.',
+        sugestao: 'Converse com seu terapeuta sobre as situações em que a preocupação mais aparece e o que você faz com ela.' },
+      { min: 16, max: 44, rotulo: 'Abaixo do corte clínico',   cor: 'verde',
+        titulo: '<svg class=ico&#32;ico-pos aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>preocupação abaixo do corte clínico</strong>. Preocupar-se às vezes faz parte da vida.',
+        sugestao: 'Continue acompanhando. Se perceber que a preocupação cresce, comente na sessão.' }
     ],
     faixasLista: [
       '<strong>16-44</strong> — Abaixo do corte clínico',
@@ -16985,17 +17072,18 @@ const ESC_ESCALAS = {
     corPrefix: 'bemestar',
     instrumentoId: 'ear',
     textoDaAba: true,
-    escoreOculto: true,
-    soProfissional: true,
     valorMin: 1,
     valorMax: 4,
-    subtitulo: '10 afirmações · 2 a 3 minutos · O quanto <strong>concorda</strong> com cada uma',
+    subtitulo: '10 itens · 2 a 3 minutos · Pensando em <strong>como você se sente em geral</strong>',
     escoreMax: 40,
     // Reversos 3, 5, 8, 9, 10 (Hutz & Zanon, 2011): pontuam 5 − resposta.
     itens: [
       { id: 1 }, { id: 2 }, { id: 3, reverso: true }, { id: 4 }, { id: 5, reverso: true },
       { id: 6 }, { id: 7 }, { id: 8, reverso: true }, { id: 9, reverso: true }, { id: 10, reverso: true }
     ],
+    eduGeralTitulo: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg> Como ler', // 17.3.1: texto ao paciente (sem faixa)
+    eduGeralDesc: 'A escala vai de 10 a 40: quanto maior o escore, mais positiva é a forma como você se vê. Não há ponto de corte — o que importa é como esse número evolui ao longo do acompanhamento.',
+    eduGeralSugestao: 'Traga este resultado para a sessão: as afirmações com que você mais concordou ou discordou dizem mais do que o total.',
     faixasLista: [
       '<strong>10-40</strong> — quanto maior, maior a autoestima',
       '<em style="color:var(--c-ink-3);">Sem pontos de corte validados: a leitura é pelas tabelas normativas por idade e sexo de Hutz & Zanon (2011) e pela evolução do próprio paciente.</em>'
@@ -17009,13 +17097,14 @@ const ESC_ESCALAS = {
     corPrefix: 'processo',
     instrumentoId: 'aaq2',
     textoDaAba: true,
-    escoreOculto: true,
-    soProfissional: true,
     valorMin: 1,
     valorMax: 7,
-    subtitulo: '7 afirmações · 2 a 3 minutos · O quanto cada uma é <strong>verdadeira</strong> para você',
+    subtitulo: '7 itens · 2 a 3 minutos · Pensando em <strong>como você é em geral</strong>',
     escoreMax: 49,
     itens: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }],
+    eduGeralTitulo: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg> Como ler', // 17.3.1
+    eduGeralDesc: 'A escala vai de 7 a 49: quanto maior o escore, mais você tende a evitar ou lutar contra pensamentos e sentimentos difíceis. Não há ponto de corte — a leitura é pela evolução ao longo do acompanhamento.',
+    eduGeralSugestao: 'Seu terapeuta usa este resultado para acompanhar como você vem lidando com experiências internas difíceis.',
     faixasLista: [
       '<strong>7-49</strong> — quanto maior, maior a inflexibilidade psicológica (esquiva experiencial)',
       '<em style="color:var(--c-ink-3);">Sem pontos de corte validados (Barbosa & Murta, 2015; Bond et al., 2011). Sensível à mudança: acompanhe ao longo do tratamento.</em>'
@@ -17029,20 +17118,36 @@ const ESC_ESCALAS = {
     corPrefix: 'bemestar',
     instrumentoId: 'swls',
     textoDaAba: true,
-    escoreOculto: true,
-    soProfissional: true,
     valorMin: 1,
     valorMax: 7,
-    subtitulo: '5 afirmações · 1 a 2 minutos · O quanto <strong>concorda</strong> com cada uma',
+    subtitulo: '5 itens · 1 a 2 minutos · Pensando na <strong>sua vida em geral</strong>',
     escoreMax: 35,
     itens: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }],
-    faixas: [
-      { min: 30, max: 35, rotulo: 'Satisfação muito alta',     cor: 'verde'    },
-      { min: 25, max: 29, rotulo: 'Satisfação alta',           cor: 'verde'    },
-      { min: 20, max: 24, rotulo: 'Satisfação média',          cor: 'amarelo'  },
-      { min: 15, max: 19, rotulo: 'Um pouco abaixo da média',  cor: 'amarelo'  },
-      { min: 10, max: 14, rotulo: 'Insatisfeito',              cor: 'laranja'  },
-      { min: 5,  max: 9,  rotulo: 'Extremamente insatisfeito', cor: 'vermelho' }
+    faixas: [ // 17.3.1: textos ao paciente (faixas de Diener, 2006)
+      { min: 30, max: 35, rotulo: 'Satisfação muito alta',     cor: 'verde',
+        titulo: '<svg class=ico&#32;ico-pos aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>satisfação muito alta</strong> com a vida: você avalia a sua vida como está de forma muito positiva.',
+        sugestao: 'Vale reconhecer o que está funcionando bem e o que sustenta isso.' },
+      { min: 25, max: 29, rotulo: 'Satisfação alta',           cor: 'verde',
+        titulo: '<svg class=ico&#32;ico-pos aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>satisfação alta</strong> com a vida: no geral, as coisas estão indo bem, mesmo com áreas a melhorar.',
+        sugestao: 'Traga para a sessão as áreas da vida que mais ajudam e as que você gostaria de mudar.' },
+      { min: 20, max: 24, rotulo: 'Satisfação média',          cor: 'amarelo',
+        titulo: '<svg class=ico&#32;ico-warn aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>satisfação média</strong> com a vida: nem satisfeito(a) nem insatisfeito(a) — algumas áreas vão bem e outras pesam.',
+        sugestao: 'Traga para a sessão as áreas da vida que mais pesam e as que mais ajudam.' },
+      { min: 15, max: 19, rotulo: 'Um pouco abaixo da média',  cor: 'amarelo',
+        titulo: '<svg class=ico&#32;ico-warn aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica satisfação com a vida <strong>um pouco abaixo da média</strong>: há áreas importantes que não estão como você gostaria.',
+        sugestao: 'Converse com seu terapeuta sobre quais áreas pesam mais e por onde começar.' },
+      { min: 10, max: 14, rotulo: 'Insatisfeito',              cor: 'laranja',
+        titulo: '<svg class=ico&#32;ico-risk2 aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>insatisfação</strong> com a vida: várias áreas estão longe do que você gostaria.',
+        sugestao: 'Traga este resultado para a sessão. Seu terapeuta vai trabalhar com você o que pode mudar e como.' },
+      { min: 5,  max: 9,  rotulo: 'Extremamente insatisfeito', cor: 'vermelho',
+        titulo: '<svg class=ico&#32;ico-risk aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>insatisfação extrema</strong> com a vida. Este resultado merece atenção.',
+        sugestao: 'Converse com seu terapeuta o quanto antes sobre como você está se sentindo.' }
     ],
     faixasLista: [
       '<strong>5-9</strong> — Extremamente insatisfeito',
@@ -17062,17 +17167,18 @@ const ESC_ESCALAS = {
     corPrefix: 'bemestar',
     instrumentoId: 'maas',
     textoDaAba: true,
-    escoreOculto: true,
-    soProfissional: true,
     valorMin: 1,
     valorMax: 6,
     mediaPor: 15, // a MAAS é lida pela média dos 15 itens (1–6); o total (15–90) é o que se grava
-    subtitulo: '15 afirmações · 3 a 5 minutos · Com que <strong>frequência</strong> acontece com você',
+    subtitulo: '15 itens · 3 a 5 minutos · Pensando em <strong>como você é atualmente</strong>',
     escoreMax: 90,
     itens: [
       { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }, { id: 8 },
       { id: 9 }, { id: 10 }, { id: 11 }, { id: 12 }, { id: 13 }, { id: 14 }, { id: 15 }
     ],
+    eduGeralTitulo: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg> Como ler', // 17.3.1
+    eduGeralDesc: 'A escala vai de 15 a 90 (média de 1 a 6): quanto maior, mais atenção ao momento presente no dia a dia. Não há ponto de corte; adultos em geral ficam entre 58 e 65.',
+    eduGeralSugestao: 'Observe em quais situações você percebe mais o "piloto automático" e comente na sessão.',
     faixasLista: [
       '<strong>15-90</strong> (média 1-6) — quanto maior, mais atenção plena no dia a dia',
       '<em style="color:var(--c-ink-3);">Sem pontos de corte validados (Barros et al., 2015; Brown & Ryan, 2003). Adultos saudáveis costumam somar entre 58 e 65 nos estudos internacionais.</em>'
@@ -17086,16 +17192,17 @@ const ESC_ESCALAS = {
     corPrefix: 'processo',
     instrumentoId: 'wbsi',
     textoDaAba: true,
-    escoreOculto: true,
-    soProfissional: true,
     valorMin: 1,
     valorMax: 5,
-    subtitulo: '15 afirmações · 3 a 5 minutos · O quanto <strong>concorda</strong> com cada uma',
+    subtitulo: '15 itens · 3 a 5 minutos · Pensando em <strong>como você é em geral</strong>',
     escoreMax: 75,
     itens: [
       { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }, { id: 8 },
       { id: 9 }, { id: 10 }, { id: 11 }, { id: 12 }, { id: 13 }, { id: 14 }, { id: 15 }
     ],
+    eduGeralTitulo: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg> Como ler', // 17.3.1
+    eduGeralDesc: 'A escala vai de 15 a 75: quanto maior, mais você tende a tentar afastar pensamentos indesejados. Não há ponto de corte validado no Brasil — a leitura é pela evolução ao longo do acompanhamento.',
+    eduGeralSugestao: 'Traga para a sessão exemplos de pensamentos que você tenta afastar e o que acontece quando faz isso.',
     faixasLista: [
       '<strong>15-75</strong> — quanto maior, maior a tendência a suprimir pensamentos indesejados',
       '<em style="color:var(--c-ink-3);">Sem pontos de corte validados: a versão brasileira é uma adaptação transcultural (Talask et al., 2018). Leitura pela evolução e em conjunto com a entrevista.</em>'
@@ -17295,10 +17402,10 @@ function escRenderItens(def) {
     // Opções por item (BDI-II tem 4, e 7 nos itens 16 e 18); nas demais, o
     // conjunto único da escala.
     const opcoes = escOpcoesDoItem(def, item, textos);
-    // As afirmacoes do BDI-II e as colunas do BAI sao frases inteiras da folha:
-    // empilham uma por linha, alinhadas a esquerda, com o codigo a esquerda.
-    // 17.1: com opções do catálogo (BHS, Certo/Errado) o formato é o das escalas do 12.x.
-    const empilhada = (def.textoDaAba && !(def.opcoes && def.opcoes.length)) ? ' esc-item-opcoes-empilhada' : '';
+    // 17.3.1 (decisão do usuário, 20/11/2026): preenchimento uniforme — as âncoras da aba (BAI, URICA, lote A)
+    // usam a mesma grade de opções das escalas do 12.x. Só as escalas cujas opções são frases inteiras por
+    // item (BDI-II e BSS, 'opcoesPorItem') empilham uma por linha, com o código à esquerda.
+    const empilhada = def.opcoesPorItem ? ' esc-item-opcoes-empilhada' : '';
     // 17.1: itens do bloco condicional (BSS 6–19) ganham a marca; escCondicionalAplicar_ os esconde ou mostra.
     const condicional = escItemCondicional_(def, item.id) ? ' esc-item-cond' : '';
 
@@ -17655,6 +17762,8 @@ async function escEnviarEscala(event) {
       throw new Error((resp && resp.erro) ? resp.erro : 'Erro ao salvar escala');
     }
     // 18.5: escala aplicada pelo profissional — volta à tela do paciente com a confirmação do servidor
+    // 17.3.1: o servidor abriu a escala para o paciente; o cadeado do cartão acompanha sem recarregar
+    if (PROF_FLUXO && PROF_PACIENTE_SEL && Array.isArray(resp.escalas_liberadas)) PROF_PACIENTE_SEL.escalasLiberadas = resp.escalas_liberadas;
     if (PROF_FLUXO) { escLimparRascunho(); profFluxoEncerrar_(resp.mensagem); return; }
 
     // Atualiza flag de veterano localmente (destrava cards)
@@ -17725,11 +17834,11 @@ function escMostrarResultado(codigo, calc, respostas) {
 
   const container = document.getElementById('escResultContainer');
 
-  // Pacote 17.0 (seção 4 da especificação): no BDI-II e no BAI o paciente vê
-  // "Respostas enviadas" e nada mais — sem escore, sem faixa, sem texto
-  // interpretativo, igual à prática com o papel. Escore, faixa e histórico
-  // aparecem só na área do profissional. O alerta do item 9 é a exceção: mantém
-  // para o paciente a mesma camada de segurança do PHQ-9 item 9.
+  // Pacote 17.0 (seção 4 da especificação): escala 'escoreOculto' — o paciente vê
+  // "Respostas enviadas" e nada mais; escore, faixa e histórico só na área do
+  // profissional. 17.3.1 (decisão do usuário, 20/11/2026): só a BSS continua assim;
+  // as demais mostram o resultado no molde do 12.x. O alerta de item crítico
+  // mantém para o paciente a mesma camada de segurança do PHQ-9 item 9.
   if (def.escoreOculto) {
     let htmlEnviado = escRrBlocoData(reg, 'imediata');
     if (String(calc.alertaFlag || '').toUpperCase() === 'SIM') {
@@ -18624,7 +18733,7 @@ function escHistRenderBlocos(cont, registros) {
     cont.innerHTML = '<div class="esch-vazio">' +
       '<span class="esch-vazio-icon"><svg class=ico aria-hidden=true><use href=#i-inbox></use></svg></span>' +
       '<div class="esch-vazio-titulo">Você ainda não aplicou nenhuma escala</div>' +
-      '<div class="esch-vazio-texto">Quando você preencher sua primeira escala (PHQ-9, GAD-7, PSS-10, DASS-21, SRQ-20, BDI-II, BAI, BHS, BSS, URICA ou outra liberada pelo profissional), ela aparecerá aqui.</div>' +
+      '<div class="esch-vazio-texto">Quando você preencher sua primeira escala, ela aparecerá aqui.</div>' + // 17.3.1: sem lista de siglas (toda escala é liberada pelo profissional)
     '</div>';
     return;
   }
