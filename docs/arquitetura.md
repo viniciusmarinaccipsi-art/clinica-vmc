@@ -164,8 +164,9 @@ faixa ou `eduGeral*`) e "Sobre a faixa"; `escoreOculto` só na BSS. A
 migração única `rodarMigracaoLiberacoes` (20/11/2026, removida depois)
 abriu para cada paciente as escalas que ele já tinha respondido.
 
-**Nome original, ficha e tags (17.3.2, piloto em PHQ-9, BDI-II, BSS, AAQ-II,
-PCL-5; as outras 15 no 17.4):** `nomeCompleto` = nome original em inglês +
+**Nome original, ficha e tags (17.3.2 piloto em PHQ-9, BDI-II, BSS, AAQ-II,
+PCL-5; 17.4 nas outras 15 — as 20 desde 20/11/2026; o menu do paciente é
+HTML estático: mudança de nome passa pelo catálogo e pelos cartões):** `nomeCompleto` = nome original em inglês +
 (SIGLA) e `nomeTraducao` = tradução em letra menor, mostrada por
 `escNomeTraducaoHtml_` nos cinco lugares do nome (cartão do menu, cabeçalho
 do preenchimento, resultado, histórico, cartão do profissional). A grade de
