@@ -293,28 +293,28 @@ console.log('S. Escore do servidor = escore do paciente (motor do frontend)');
 tenta('S', () => {
   const html = fs.readFileSync(path.join(__dirname, '..', '..', 'index-dev.html'), 'utf8').replace(/\r\n/g, '\n');
   const ini = html.indexOf('const ESC_ESCALAS = {'), fim = html.indexOf('\n};', ini) + 3;
-  const motor = new Function(html.slice(ini, fim) + '\n' + corpoDe(html, 'escValorNumerico') + '\n' + corpoDe(html, 'escCondicionais_') + '\n' + corpoDe(html, 'escCondicionalAtivo_') + '\n' + corpoDe(html, 'escItensFechados_') + '\n' + corpoDe(html, 'escRespostasEfetivas_') + '\n' + corpoDe(html, 'escCalcularEscoreEAlerta') + '\nreturn { ESC_ESCALAS: ESC_ESCALAS, calc: escCalcularEscoreEAlerta };')(); // 17.1: + bloco condicional
+  const motor = new Function(html.slice(ini, fim) + '\n' + corpoDe(html, 'escValorNumerico') + '\n' + corpoDe(html, 'escCondicionais_') + '\n' + corpoDe(html, 'escCondicionalAtivo_') + '\n' + corpoDe(html, 'escItensFechados_') + '\n' + corpoDe(html, 'escRespostasEfetivas_') + '\n' + corpoDe(html, 'escCalcularEscoreEAlerta') + '\n' + corpoDe(html, 'escCamposSubescalas_') + '\nreturn { ESC_ESCALAS: ESC_ESCALAS, calc: escCalcularEscoreEAlerta, campos: escCamposSubescalas_ };')(); // 17.1: + bloco condicional; 17.2: + colunas das subescalas
   ok('S0 a tabela do servidor cobre os mesmos instrumentos do frontend', Object.keys(motor.ESC_ESCALAS).sort().join() === Object.keys(ESCALAS_CALCULO).sort().join(), Object.keys(ESCALAS_CALCULO));
-  // o que o cliente grava (escEnviarEscala) a partir do cálculo dele
-  const doCliente = calc => ({
-    escore_total: calc.escoreTotal,
-    escore_depressao: (calc.subescalas && calc.subescalas.depressao) ? calc.subescalas.depressao.escore : '',
-    escore_ansiedade: (calc.subescalas && calc.subescalas.ansiedade) ? calc.subescalas.ansiedade.escore : '',
-    escore_estresse: (calc.subescalas && calc.subescalas.estresse) ? calc.subescalas.estresse.escore : '',
-    faixa: calc.faixa ? calc.faixa.rotulo : (calc.subescalas ? ('Dep:' + calc.subescalas.depressao.faixa.rotulo + ' | Ans:' + calc.subescalas.ansiedade.faixa.rotulo + ' | Est:' + calc.subescalas.estresse.faixa.rotulo) : ''),
-    alerta_risco_flag: calc.alertaFlag, alerta_risco_item: calc.alertaItem, alerta_risco_valor: calc.alertaValor });
+  // o que o cliente grava (escEnviarEscala) a partir do cálculo dele — 17.2: escCamposSubescalas_ (subescalas, composto e 'faixa')
+  const doCliente = (cod, calc) => {
+    const o = { escore_total: calc.escoreTotal };
+    Object.assign(o, motor.campos(motor.ESC_ESCALAS[cod], calc));
+    o.alerta_risco_flag = calc.alertaFlag; o.alerta_risco_item = calc.alertaItem; o.alerta_risco_valor = calc.alertaValor;
+    return o;
+  };
+  const canon = o => JSON.stringify(Object.keys(o).sort().map(k => [k, o[k]])); // a ordem das chaves não é contrato
   let semente = 20261003; const rnd = n => { semente = (semente * 1103515245 + 12345) & 0x7fffffff; return semente % n; };
   Object.keys(motor.ESC_ESCALAS).forEach(cod => {
-    const def = motor.ESC_ESCALAS[cod], max = ESCALAS_CALCULO[cod].max; let iguais = 0, total = 0, primeiro = null;
+    const def = motor.ESC_ESCALAS[cod], max = ESCALAS_CALCULO[cod].max, min = ESCALAS_CALCULO[cod].min || 0; let iguais = 0, total = 0, primeiro = null;
     const casos = [];
-    for (let v = 0; v <= max; v++) casos.push(def.itens.map(() => v));           // tudo no mínimo … tudo no máximo
-    for (let k = 0; k < 400; k++) casos.push(def.itens.map(() => rnd(max + 1)));   // aleatórios (semente fixa)
+    for (let v = min; v <= max; v++) casos.push(def.itens.map(() => v));           // tudo no mínimo … tudo no máximo
+    for (let k = 0; k < 400; k++) casos.push(def.itens.map(() => min + rnd(max - min + 1)));   // aleatórios (semente fixa)
     casos.forEach(vals => {
       const respostas = {}, cols = {};
       def.itens.forEach((it, i) => { respostas[it.id] = vals[i]; cols['item_' + String(it.id).padStart(2, '0')] = vals[i]; });
-      const cli = doCliente(motor.calc(cod, respostas)), srv = _escoresDaEscala_(cod, c => cols[c]);
+      const cli = doCliente(cod, motor.calc(cod, respostas)), srv = _escoresDaEscala_(cod, c => cols[c]);
       total++;
-      if (srv.ok && JSON.stringify(srv.campos) === JSON.stringify(cli)) iguais++; else if (!primeiro) primeiro = { vals, cli, srv };
+      if (srv.ok && canon(srv.campos) === canon(cli)) iguais++; else if (!primeiro) primeiro = { vals, cli, srv };
     });
     ok('S· ' + cod + ': ' + total + ' respostas → escore, subescores, faixa e alerta idênticos aos do cliente', iguais === total, primeiro);
   });

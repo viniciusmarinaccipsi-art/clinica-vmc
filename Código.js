@@ -56,7 +56,7 @@
 // na hora de mostrar (05/10/2026)
 // Rodada DOCS_2026-10-07 — index-dev.html e o index oficial: SITE_URL aponta para ele; texto do aviso de backup
 // com falha alinhado ao backup sob demanda (07/10/2026)
-var VERSAO_PACOTE = '17.1.2';
+var VERSAO_PACOTE = '17.2';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -156,8 +156,11 @@ var HEADERS_ESCALAS = [
   'item_06', 'item_07', 'item_08', 'item_09', 'item_10',
   'item_11', 'item_12', 'item_13', 'item_14', 'item_15',
   'item_16', 'item_17', 'item_18', 'item_19', 'item_20', 'item_21',
+  'item_22', 'item_23', 'item_24', // 17.2: URICA tem 24 itens
   'item_funcional', 'item_funcional_texto',
   'escore_total', 'escore_depressao', 'escore_ansiedade', 'escore_estresse',
+  // 17.2: subescalas da URICA (soma de 6 itens, 6-30) e prontidao (medias: C + A + M - PC)
+  'escore_precontemplacao', 'escore_contemplacao', 'escore_acao', 'escore_manutencao', 'escore_prontidao',
   'faixa',
   'alerta_risco_flag', 'alerta_risco_item', 'alerta_risco_valor',
   'observacoes', 'tempo_preenchimento_seg',
@@ -2847,7 +2850,9 @@ var COLUNAS_LEITURA_ESCALAS = [
   'timestamp', 'data_aplicacao', 'instrumento', 'versao_instrumento',
   'item_01', 'item_02', 'item_03', 'item_04', 'item_05', 'item_06', 'item_07', 'item_08', 'item_09', 'item_10',
   'item_11', 'item_12', 'item_13', 'item_14', 'item_15', 'item_16', 'item_17', 'item_18', 'item_19', 'item_20', 'item_21',
+  'item_22', 'item_23', 'item_24', // 17.2
   'item_funcional', 'item_funcional_texto', 'escore_total', 'escore_depressao', 'escore_ansiedade', 'escore_estresse',
+  'escore_precontemplacao', 'escore_contemplacao', 'escore_acao', 'escore_manutencao', 'escore_prontidao', // 17.2
   'faixa', 'alerta_risco_flag', 'alerta_risco_item', 'alerta_risco_valor', 'observacoes', 'tempo_preenchimento_seg',
   'editado_por', 'editado_em', 'criado_por', 'autoria_campos', 'criado_por_nome'
 ];
@@ -3014,6 +3019,9 @@ function salvarEscala(sigla, dados) {
     return _respostaDuplicado_(planilha, ABA_ESCALAS, repetido, 'Escala salva com sucesso');
   }
 
+  // 17.2: planilhas antigas nao tem item_22..item_24 nem as colunas das subescalas da URICA -
+  // montarLinha grava pelo nome do cabecalho e descartaria o que nao existe (aditivo: so acrescenta).
+  _garantirColunas_(aba, HEADERS_ESCALAS);
   var linha = montarLinha(aba, dados);
   aba.appendRow(linha);
   _indicadoresAposGravar_(paciente.__profissional_id, sigla, planilha);
@@ -3054,12 +3062,14 @@ function lerEscalas(sigla, antes, limite) {
 //      com hash divergente => nao entrega texto nenhum e nao aparece no menu.
 //   4. A acao nao grava nada (fica FORA de VMC_ACOES_GRAVACAO no frontend).
 
-var INSTRUMENTOS_VALIDOS = ['bdi2', 'bai', 'bhs', 'bsi']; // 17.1: + BHS e BSS (id tecnico 'bsi')
+var INSTRUMENTOS_VALIDOS = ['bdi2', 'bai', 'bhs', 'bsi', 'urica_alcool', 'urica_drogas', 'urica_tabaco', 'urica_alimentar']; // 17.1: + BHS e BSS (id tecnico 'bsi'); 17.2: + as quatro URICA
 
 // 17.1.2 (decisao do usuario, 19/11/2026): instrumentos que o paciente so ve quando o profissional
 // libera para ele - lista em 'escalas_liberadas' na linha do paciente na Controle (coluna criada no
 // primeiro uso). O profissional sempre pode aplicar pelo "Nova escala".
-var INSTRUMENTOS_SO_PROFISSIONAL = ['bsi'];
+// 17.2 (decisao do usuario, 20/11/2026): as quatro URICA tambem - o profissional libera a versao certa para
+// cada paciente; sem isso, quatro cartoes de dependencia apareceriam no menu de quem nao usa.
+var INSTRUMENTOS_SO_PROFISSIONAL = ['bsi', 'urica_alcool', 'urica_drogas', 'urica_tabaco', 'urica_alimentar'];
 
 function _escalasLiberadasLista_(valor) {
   return String(valor === undefined || valor === null ? '' : valor).toLowerCase().split(',')
@@ -4000,19 +4010,28 @@ function profCriarAutomonitoramento(s, siglaPaciente, dados) {
 // Regras de calculo de cada escala, geradas do catalogo do frontend (ESC_ESCALAS) e conferidas
 // contra ele em Node (mesmo escore, faixa e alerta para qualquer resposta): n = itens;
 // max = maior valor da resposta; rev = itens invertidos; crit = [item, limiar, chave do alerta];
-// sub = itens de cada subescala (soma x 2); faixas = [min, max, rotulo]; func = opcoes do item funcional.
+// sub = itens de cada subescala; faixas = [min, max, rotulo]; func = opcoes do item funcional.
 // 17.1: naoPontua = itens fora do total (BSS 20 e 21); cond = lista de blocos condicionais (BSS: os itens
 // de 'itens' valem 0 quando nenhum item de 'se' chega a 1). Referencias no catalogo do frontend (ESC_ESCALAS).
+// 17.2 (URICA): min = menor valor da resposta (default 0); multi = grava escore_<sub> para cada chave de 'sub',
+// na ordem declarada, vezes multSub (DASS-21: 2, de 21 para 42 itens; default 1); siglaSub = rotulo curto de
+// cada subescala no resumo gravado em 'faixa'; faixasSub = faixas por subescala (opcional - a URICA nao tem);
+// composto = { chave, sigla, mais, menos, casas }: escore derivado das MEDIAS das subescalas
+// (prontidao = C + A + M - PC, DiClemente & Hughes, 1990), gravado em escore_<chave>.
 var ESCALAS_CALCULO = {
   'PHQ-9':{n:9,max:3,crit:[[9,1,'PHQ9_item9']],faixas:[[20,27,'Depressão grave'],[15,19,'Depressão moderadamente grave'],[10,14,'Depressão moderada'],[5,9,'Depressão leve'],[0,4,'Sintomas mínimos ou ausentes']],func:4},
   'GAD-7':{n:7,max:3,faixas:[[15,21,'Ansiedade grave'],[10,14,'Ansiedade moderada'],[5,9,'Ansiedade leve'],[0,4,'Ansiedade mínima']],func:4},
   'PSS-10':{n:10,max:4,rev:[4,5,7,8],faixas:[[27,40,'Estresse alto'],[14,26,'Estresse moderado'],[0,13,'Estresse baixo']]},
-  'DASS-21':{n:21,max:3,crit:[[21,2,'DASS21_item21']],sub:{estresse:[1,6,8,11,12,14,18],ansiedade:[2,4,7,9,15,19,20],depressao:[3,5,10,13,16,17,21]},multi:true,faixasSub:{depressao:[[28,99,'Extremamente severo'],[21,27,'Severo'],[14,20,'Moderado'],[10,13,'Leve'],[0,9,'Normal']],ansiedade:[[20,99,'Extremamente severo'],[15,19,'Severo'],[10,14,'Moderado'],[8,9,'Leve'],[0,7,'Normal']],estresse:[[34,99,'Extremamente severo'],[26,33,'Severo'],[19,25,'Moderado'],[15,18,'Leve'],[0,14,'Normal']]}},
+  'DASS-21':{n:21,max:3,crit:[[21,2,'DASS21_item21']],sub:{depressao:[3,5,10,13,16,17,21],ansiedade:[2,4,7,9,15,19,20],estresse:[1,6,8,11,12,14,18]},multi:true,multSub:2,siglaSub:{depressao:'Dep',ansiedade:'Ans',estresse:'Est'},faixasSub:{depressao:[[28,99,'Extremamente severo'],[21,27,'Severo'],[14,20,'Moderado'],[10,13,'Leve'],[0,9,'Normal']],ansiedade:[[20,99,'Extremamente severo'],[15,19,'Severo'],[10,14,'Moderado'],[8,9,'Leve'],[0,7,'Normal']],estresse:[[34,99,'Extremamente severo'],[26,33,'Severo'],[19,25,'Moderado'],[15,18,'Leve'],[0,14,'Normal']]}},
   'SRQ-20':{n:20,max:1,crit:[[17,1,'SRQ20_item17']],faixas:[[7,20,'Suspeita de transtorno mental comum'],[0,6,'Baixa probabilidade de TMC']]},
   'BDI-II':{n:21,max:3,crit:[[9,1,'BDI2_item9']],faixas:[[29,63,'Grave'],[20,28,'Moderado'],[14,19,'Leve'],[0,13,'Mínimo']],letra:[16,18]},
   'BAI':{n:21,max:3,faixas:[[31,63,'Grave'],[20,30,'Moderado'],[11,19,'Leve'],[0,10,'Mínimo']]},
   'BHS':{n:20,max:1,rev:[1,3,5,6,8,10,13,15,19],faixas:[[14,20,'Grave'],[9,13,'Moderado'],[5,8,'Leve'],[0,4,'Mínimo']]},
-  'BSS':{n:21,max:2,crit:[[4,1,'BSS_item4'],[5,1,'BSS_item5']],naoPontua:[20,21],cond:[{itens:[6,7,8,9,10,11,12,13,14,15,16,17,18,19],se:[4,5]},{itens:[21],se:[20]}]}
+  'BSS':{n:21,max:2,crit:[[4,1,'BSS_item4'],[5,1,'BSS_item5']],naoPontua:[20,21],cond:[{itens:[6,7,8,9,10,11,12,13,14,15,16,17,18,19],se:[4,5]},{itens:[21],se:[20]}]},
+  'URICA-A':{n:24,min:1,max:5,sub:{precontemplacao:[1,5,7,16,19,22],contemplacao:[3,6,9,13,14,17],acao:[2,4,8,11,18,23],manutencao:[10,12,15,20,21,24]},multi:true,siglaSub:{precontemplacao:'PC',contemplacao:'C',acao:'A',manutencao:'M'},composto:{chave:'prontidao',sigla:'Prontidão',mais:['contemplacao','acao','manutencao'],menos:['precontemplacao'],casas:1}},
+  'URICA-D':{n:24,min:1,max:5,sub:{precontemplacao:[1,5,7,16,19,22],contemplacao:[3,6,9,13,14,17],acao:[2,4,8,11,18,23],manutencao:[10,12,15,20,21,24]},multi:true,siglaSub:{precontemplacao:'PC',contemplacao:'C',acao:'A',manutencao:'M'},composto:{chave:'prontidao',sigla:'Prontidão',mais:['contemplacao','acao','manutencao'],menos:['precontemplacao'],casas:1}},
+  'URICA-T':{n:24,min:1,max:5,sub:{precontemplacao:[1,5,7,16,19,22],contemplacao:[3,6,9,13,14,17],acao:[2,4,8,11,18,23],manutencao:[10,12,15,20,21,24]},multi:true,siglaSub:{precontemplacao:'PC',contemplacao:'C',acao:'A',manutencao:'M'},composto:{chave:'prontidao',sigla:'Prontidão',mais:['contemplacao','acao','manutencao'],menos:['precontemplacao'],casas:1}},
+  'URICA-HA':{n:24,min:1,max:5,sub:{precontemplacao:[1,5,7,16,19,22],contemplacao:[3,6,9,13,14,17],acao:[2,4,8,11,18,23],manutencao:[10,12,15,20,21,24]},multi:true,siglaSub:{precontemplacao:'PC',contemplacao:'C',acao:'A',manutencao:'M'},composto:{chave:'prontidao',sigla:'Prontidão',mais:['contemplacao','acao','manutencao'],menos:['precontemplacao'],casas:1}}
 };
 
 /**
@@ -4042,9 +4061,9 @@ function _escoresDaEscala_(instrumento, lerColuna) {
     } else {
       var cru = lerColuna('item_' + (id < 10 ? '0' : '') + id);
       bruto = parseInt(String(cru === undefined || cru === null ? '' : cru), 10);
-      if (isNaN(bruto) || bruto < 0 || bruto > t.max) return { ok: false, erro: 'Responda todas as questões' };
+      if (isNaN(bruto) || bruto < (t.min || 0) || bruto > t.max) return { ok: false, erro: 'Responda todas as questões' }; // 17.2: min
     }
-    var v = (t.rev && t.rev.indexOf(id) !== -1) ? (t.max - bruto) : bruto;
+    var v = (t.rev && t.rev.indexOf(id) !== -1) ? ((t.min || 0) + t.max - bruto) : bruto;
     if (!t.naoPontua || t.naoPontua.indexOf(id) === -1) total += v; // 17.1: BSS 20 e 21 fora do total
     if (t.sub) {
       for (var sub in t.sub) if (t.sub[sub].indexOf(id) !== -1) somas[sub] = (somas[sub] || 0) + v;
@@ -4060,13 +4079,25 @@ function _escoresDaEscala_(instrumento, lerColuna) {
   var campos = { escore_total: total, escore_depressao: '', escore_ansiedade: '', escore_estresse: '', faixa: '',
     alerta_risco_flag: flag, alerta_risco_item: alertaItem, alerta_risco_valor: alertaValor };
   if (t.multi) {
-    var rotulos = {};
-    ['depressao', 'ansiedade', 'estresse'].forEach(function (sub) {
-      var escore = (somas[sub] || 0) * 2; // DASS-21 -> DASS-42
+    // 17.2: generico - uma parte do resumo por subescala, na ordem de 'sub'; faixa quando houver, senao o escore.
+    var partes = [];
+    Object.keys(t.sub).forEach(function (sub) {
+      var escore = (somas[sub] || 0) * (t.multSub || 1); // DASS-21: x2 (de 21 para 42 itens)
       campos['escore_' + sub] = escore;
-      rotulos[sub] = achar(t.faixasSub[sub], escore, 'ultima');
+      var rotulo = (t.faixasSub && t.faixasSub[sub]) ? achar(t.faixasSub[sub], escore, 'ultima') : String(escore);
+      partes.push((t.siglaSub && t.siglaSub[sub] ? t.siglaSub[sub] : sub) + ':' + rotulo);
     });
-    campos.faixa = 'Dep:' + rotulos.depressao + ' | Ans:' + rotulos.ansiedade + ' | Est:' + rotulos.estresse;
+    if (t.composto) {
+      // Escore composto pelas MEDIAS das subescalas (URICA: prontidao = C + A + M - PC); mesma ordem de contas no cliente.
+      var comp = 0;
+      t.composto.mais.forEach(function (k) { comp += (somas[k] || 0) / t.sub[k].length; });
+      t.composto.menos.forEach(function (k) { comp -= (somas[k] || 0) / t.sub[k].length; });
+      var fator = Math.pow(10, t.composto.casas || 0);
+      comp = Math.round(comp * fator) / fator;
+      campos['escore_' + t.composto.chave] = comp;
+      partes.push(t.composto.sigla + ': ' + String(comp).replace('.', ','));
+    }
+    campos.faixa = partes.join(' | ');
   } else if (t.faixas) {
     campos.faixa = achar(t.faixas, total, 'primeira');
   }

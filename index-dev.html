@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Escalas de Beck BHS e BSS — atualização automática da página — Pacote 17.1.3 (19/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — URICA (4 versões) e motor de subescalas genérico — Pacote 17.2 (20/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -126,6 +126,8 @@
   --c-bhs-ink:       #6A5236;
   --c-bss-tint:      #E6EAEE;  /* Pacote 17.1 — BSS, grafite-azulado */
   --c-bss-ink:       #3F4F5E;
+  --c-urica-tint:    #DCEEF3;  /* Pacote 17.2 — URICA (as quatro versões), petróleo */
+  --c-urica-ink:     #22596B;
 
   /* ---------- Módulos do menu · tinte de identificação ---------- */
   --c-mod-anamnese:  #E7E6F5;  /* Anamnese */
@@ -270,6 +272,7 @@
     --c-bai-tint:    #232815; --c-bai-ink:    #C3CE8E;
     --c-bhs-tint:    #2A2418; --c-bhs-ink:    #D2BE9A;
     --c-bss-tint:    #1E252C; --c-bss-ink:    #AEBFCD;
+    --c-urica-tint:  #15303A; --c-urica-ink:  #8FC9DB;
     --c-chart-neg:   #D97A7A;
     --c-chart-neutro:#6E6B85;
     --c-chart-pos:   #5FAFA8;
@@ -2774,6 +2777,7 @@ button.cab-no-item{cursor:pointer;}
 .esc-card.bai{border-color:var(--c-bai-tint);}.esc-card.bai .esc-card-title{color:var(--c-bai-ink);}
 .esc-card.bhs{border-color:var(--c-bhs-tint);}.esc-card.bhs .esc-card-title{color:var(--c-bhs-ink);}
 .esc-card.bss{border-color:var(--c-bss-tint);}.esc-card.bss .esc-card-title{color:var(--c-bss-ink);}
+.esc-card.urica{border-color:var(--c-urica-tint);}.esc-card.urica .esc-card-title{color:var(--c-urica-ink);}
 
 /* Subtítulo de aviso primeira vez (leitura do "Como Usar" obrigatória) */
 .esc-sub-aviso{
@@ -3054,6 +3058,16 @@ button.cab-no-item{cursor:pointer;}
 .esc-tint-bss .esc-btn-primary:hover { background:var(--c-bss-ink); }
 .esc-tint-bss .esc-btn-primary:disabled { background: transparent; color:var(--c-bss-ink); border:2px solid var(--c-bss-ink); }
 
+.esc-tint-urica .esc-aplic-head { border-left-color:var(--c-urica-ink); }
+.esc-tint-urica .esc-aplic-head h2 { color:var(--c-urica-ink); }
+.esc-tint-urica .esc-aplic-head .esc-enunciado { background:var(--c-urica-tint); }
+.esc-tint-urica .esc-item-num { background:var(--c-urica-ink); }
+.esc-tint-urica .esc-opcao:hover { border-color:var(--c-urica-ink); background:var(--c-urica-tint); }
+.esc-tint-urica .esc-opcao.selecionada { background:var(--c-urica-ink); color:var(--c-ink-inv); border-color:var(--c-urica-ink); box-shadow:var(--sh-2); }
+.esc-tint-urica .esc-btn-primary { background:var(--c-urica-ink); }
+.esc-tint-urica .esc-btn-primary:hover { background:var(--c-urica-ink); }
+.esc-tint-urica .esc-btn-primary:disabled { background: transparent; color:var(--c-urica-ink); border:2px solid var(--c-urica-ink); }
+
 .esc-tint-teal .esc-aplic-head { border-left-color:var(--c-srq20-ink); }
 .esc-tint-teal .esc-aplic-head h2 { color:var(--c-srq20-ink); }
 .esc-tint-teal .esc-aplic-head .esc-enunciado { background:var(--c-srq20-tint); }
@@ -3168,6 +3182,7 @@ button.cab-no-item{cursor:pointer;}
 .esch-bloco.bai    { border-left:5px solid var(--c-bai-ink); }
 .esch-bloco.bhs    { border-left:5px solid var(--c-bhs-ink); }
 .esch-bloco.bss    { border-left:5px solid var(--c-bss-ink); }
+.esch-bloco.urica  { border-left:5px solid var(--c-urica-ink); }
 
 .esch-bloco-head {
   display: flex; align-items: center; gap: 10px;
@@ -3189,6 +3204,7 @@ button.cab-no-item{cursor:pointer;}
 .esch-bloco.bai    .esch-bloco-titulo { color:var(--c-bai-ink); }
 .esch-bloco.bhs    .esch-bloco-titulo { color:var(--c-bhs-ink); }
 .esch-bloco.bss    .esch-bloco-titulo { color:var(--c-bss-ink); }
+.esch-bloco.urica  .esch-bloco-titulo { color:var(--c-urica-ink); }
 
 .esch-bloco-contagem {
    font:var(--t-body-sm);font-weight: 600; color:var(--c-ink-3);
@@ -3252,6 +3268,11 @@ button.cab-no-item{cursor:pointer;}
 .esch-aplic-tri.ans .esch-aplic-tri-val { color:var(--c-warn-ink); }
 .esch-aplic-tri.est { background:var(--c-pos-tint); }
 .esch-aplic-tri.est .esch-aplic-tri-val { color:var(--c-pos-ink); }
+/* 17.2 — URICA: 4 subescalas + prontidão, azulejos mais estreitos */
+.esch-aplic-tri.urica { background:var(--c-urica-tint); }
+.esch-aplic-tri.urica .esch-aplic-tri-val { color:var(--c-urica-ink); }
+.esch-aplic-tris.cinco { gap: 4px; padding: 0 4px; }
+.esch-aplic-tris.cinco .esch-aplic-tri { min-width: 34px; padding: 4px 3px; }
 
 /* Botão lupa */
 .esch-aplic-lupa {
@@ -3424,6 +3445,11 @@ button.cab-no-item{cursor:pointer;}
 .rr-sub-box.coral { background:var(--c-phq9-tint); border-color:var(--c-reg-neg-line); }
 .rr-sub-box.amber { background:var(--c-gad7-tint); border-color:var(--c-warn-line); }
 .rr-sub-box.green { background:var(--c-pos-tint); border-color:var(--c-reg-pos-line); }
+/* 17.2 — URICA: 4 boxes (2×2 no celular) + prontidão em largura inteira */
+.rr-subescalas-grid.quatro { grid-template-columns: repeat(4, 1fr); }
+.rr-sub-box.urica { background:var(--c-urica-tint); border-color:var(--c-urica-tint); }
+.rr-sub-box.rr-sub-composto { grid-column: 1 / -1; }
+.rr-sub-media { font:var(--t-body-sm); color:var(--c-ink-3); margin-top: 6px; }
 .rr-sub-icone { font-size: 20px; display: block; margin-bottom: 4px; }
 .rr-sub-nome {
   
@@ -3436,6 +3462,7 @@ button.cab-no-item{cursor:pointer;}
 .rr-sub-box.coral .rr-sub-nome { color:var(--c-phq9-ink); }
 .rr-sub-box.amber .rr-sub-nome { color:var(--c-warn-ink); }
 .rr-sub-box.green .rr-sub-nome { color:var(--c-pos-ink); }
+.rr-sub-box.urica .rr-sub-nome { color:var(--c-urica-ink); }
 .rr-sub-escore {
   font-family:var(--f-title);
   font-size: 30px;
@@ -3445,6 +3472,7 @@ button.cab-no-item{cursor:pointer;}
 .rr-sub-box.coral .rr-sub-escore { color:var(--c-phq9-ink); }
 .rr-sub-box.amber .rr-sub-escore { color:var(--c-warn-ink); }
 .rr-sub-box.green .rr-sub-escore { color:var(--c-pos-ink); }
+.rr-sub-box.urica .rr-sub-escore { color:var(--c-urica-ink); }
 .rr-sub-faixa {
   
   font:var(--t-body-sm);font-weight: 700;
@@ -3456,6 +3484,7 @@ button.cab-no-item{cursor:pointer;}
 
 @media (max-width: 420px) {
   .rr-subescalas-grid { gap: 5px; }
+  .rr-subescalas-grid.quatro { grid-template-columns: repeat(2, 1fr); }
   .rr-sub-box { padding: 10px 4px; }
   .rr-sub-escore { font-size: 24px; }
   .rr-sub-faixa {  font:var(--t-body-sm);padding: 2px 6px; }
@@ -7076,6 +7105,44 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <div class="esc-card-title">BSS — Escala de Ideação Suicida de Beck</div>
         <div class="esc-card-meta">
           <span>Última semana, incluindo hoje</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <!-- Pacote 17.2 — URICA, quatro versões: todas 'soProfissional' (decisão de 20/11/2026) — o cartão só
+           aparece para o paciente a quem o profissional liberou aquela versão. -->
+      <button class="esc-card urica hidden" id="escCardURICA_A" type="button" onclick="escClicarCardEscala('URICA-A')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-refresh"/></svg></span>
+        <div class="esc-card-title">URICA — Álcool · Motivação para a mudança</div>
+        <div class="esc-card-meta">
+          <span>24 afirmações · como você se vê hoje</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card urica hidden" id="escCardURICA_D" type="button" onclick="escClicarCardEscala('URICA-D')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-refresh"/></svg></span>
+        <div class="esc-card-title">URICA — Drogas ilícitas · Motivação para a mudança</div>
+        <div class="esc-card-meta">
+          <span>24 afirmações · como você se vê hoje</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card urica hidden" id="escCardURICA_T" type="button" onclick="escClicarCardEscala('URICA-T')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-refresh"/></svg></span>
+        <div class="esc-card-title">URICA — Tabaco · Motivação para a mudança</div>
+        <div class="esc-card-meta">
+          <span>24 afirmações · como você se vê hoje</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card urica hidden" id="escCardURICA_HA" type="button" onclick="escClicarCardEscala('URICA-HA')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-refresh"/></svg></span>
+        <div class="esc-card-title">URICA — Hábitos alimentares · Motivação para a mudança</div>
+        <div class="esc-card-meta">
+          <span>24 afirmações · como você se vê hoje</span>
         </div>
         <span class="esc-card-arrow">›</span>
       </button>
@@ -15924,7 +15991,8 @@ var ESC_STATE = {
 var ESC_TEXTOS = {};        // { bdi2: { instrucao, titulos, itens, opcoes, ancoras } }
 var ESC_LIBERADOS = null;   // null = ainda nao perguntou ao servidor; [] = nenhum
 // Cartao do menu por instrumento — o cartao so aparece com o instrumento liberado
-var ESC_CARTOES_POR_INSTRUMENTO = { bdi2: 'escCardBDI2', bai: 'escCardBAI', bhs: 'escCardBHS', bsi: 'escCardBSS' }; // 17.1: + BHS e BSS
+var ESC_CARTOES_POR_INSTRUMENTO = { bdi2: 'escCardBDI2', bai: 'escCardBAI', bhs: 'escCardBHS', bsi: 'escCardBSS', // 17.1: + BHS e BSS
+  urica_alcool: 'escCardURICA_A', urica_drogas: 'escCardURICA_D', urica_tabaco: 'escCardURICA_T', urica_alimentar: 'escCardURICA_HA' }; // 17.2
 
 // Valor numerico de uma resposta. Nas escalas do 12.x ja e numero; no BDI-II os
 // itens 16 e 18 guardam o codigo da folha ('2b'), e ali so o digito pontua.
@@ -16057,7 +16125,10 @@ function escOpcoesDoItem(def, item, textos) {
       return { codigo: String(o.codigo), label: o.texto, detalhe: '' };
     });
   }
-  return ['0', '1', '2', '3'].map(function (c) {
+  // 17.2: as âncoras são as que a aba traz, em ordem numérica (BAI 0–3; URICA 1–5).
+  var codigos = Object.keys(textos.ancoras || {}).sort(function (a, b) { return Number(a) - Number(b); });
+  if (!codigos.length) codigos = ['0', '1', '2', '3'];
+  return codigos.map(function (c) {
     var a = textos.ancoras[c] || { rotulo: '', descricao: '' };
     return { codigo: c, label: a.rotulo, detalhe: a.descricao };
   });
@@ -16247,6 +16318,7 @@ const ESC_ESCALAS = {
     // e é usado apenas para o grid de faixas (não aparece como "XX/42" na tela)
     escoreMax: 42,
     multiSubescalas: true,
+    multSub: 2, // 17.2: cada soma vezes 2 (DASS-21 → DASS-42); antes estava fixo no cálculo
     opcoes: [
       { valor: 0, label: 'Não se aplicou' },
       { valor: 1, label: 'Aplicou-se em algum grau' },
@@ -16302,10 +16374,11 @@ const ESC_ESCALAS = {
         { min: 0,  max: 14, rotulo: 'Normal',              cor: 'verde'    }
       ]
     },
+    // 17.2: sigla = rótulo curto no resumo gravado e no histórico; tri = classe do azulejo do histórico
     subescalasMeta: {
-      depressao: { nome: 'Depressão', icone: '<svg class=ico aria-hidden=true><use href=#i-cloud-rain></use></svg>', corPrefix: 'coral' },
-      ansiedade: { nome: 'Ansiedade', icone: '<svg class=ico aria-hidden=true><use href=#i-zap></use></svg>', corPrefix: 'amber' },
-      estresse:  { nome: 'Estresse',  icone: '<svg class=ico aria-hidden=true><use href=#i-thermometer></use></svg>', corPrefix: 'green' }
+      depressao: { sigla: 'Dep', tri: 'dep', nome: 'Depressão', icone: '<svg class=ico aria-hidden=true><use href=#i-cloud-rain></use></svg>', corPrefix: 'coral' },
+      ansiedade: { sigla: 'Ans', tri: 'ans', nome: 'Ansiedade', icone: '<svg class=ico aria-hidden=true><use href=#i-zap></use></svg>', corPrefix: 'amber' },
+      estresse:  { sigla: 'Est', tri: 'est', nome: 'Estresse',  icone: '<svg class=ico aria-hidden=true><use href=#i-thermometer></use></svg>', corPrefix: 'green' }
     },
     // Texto educativo genérico (não varia por faixa — é muita combinação)
     eduGeralTitulo: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg> O que isso significa?',
@@ -16529,9 +16602,176 @@ const ESC_ESCALAS = {
     faixasLista: [
       '<em style="color:var(--c-ink-3);">Sem pontos de corte no manual (Beck & Steer, 1991): qualquer escore acima de 0 indica ideação a avaliar clinicamente.</em>'
     ]
+  },
+
+  // ---- Pacote 17.2 — URICA (University of Rhode Island Change Assessment), quatro versões brasileiras ----
+  // Estrutura comum às quatro: 24 afirmações, Likert 1–5 (as âncoras vêm da aba, pois os rótulos mudam de
+  // uma versão para outra), quatro subescalas de 6 itens — Pré-contemplação (PC) 1, 5, 7, 16, 19, 22;
+  // Contemplação (C) 3, 6, 9, 13, 14, 17; Ação (A) 2, 4, 8, 11, 18, 23; Manutenção (M) 10, 12, 15, 20, 21, 24.
+  // Subescala = soma dos 6 itens (6–30). Sem itens reversos, sem item crítico. Sem pontos de corte validados
+  // para a versão brasileira: a leitura é pelo perfil, do profissional (escoreOculto). Prontidão = média(C)
+  // + média(A) + média(M) − média(PC), de −4 a +14, uma casa decimal.
+  // Referências (regra de 19/11/2026: conteúdo clínico sempre com fonte):
+  //   McConnaughy, E. A., Prochaska, J. O., & Velicer, W. F. (1983). Stages of change in psychotherapy:
+  //     Measurement and sample profiles. Psychotherapy: Theory, Research & Practice, 20(3), 368–375.
+  //   DiClemente, C. C., & Hughes, S. O. (1990). Stages of change profiles in outpatient alcoholism treatment.
+  //     Journal of Substance Abuse, 2(2), 217–235. (escore de prontidão pelas médias das subescalas)
+  //   Álcool — Oliveira, M. S., Freire, S. F., & Cazassa, M. J. (2007). Validação da versão brasileira da escala
+  //     URICA para abuso ou dependência de álcool. Anais do XIX Congresso da ABEAD, Rio de Janeiro.
+  //   Drogas ilícitas — Szupszynski, K. P. D. R., & Oliveira, M. S. (2008). Adaptação brasileira da URICA para
+  //     usuários de substâncias ilícitas. Psico-USF, 13(1), 31–39. doi:10.1590/S1413-82712008000100005
+  //   Tabaco — Oliveira, M. S., Ludwig, M. W. B., Moraes, J. F. D., Rodrigues, V. S., & Fernandes, R. S. (2014).
+  //     Evidências de validade da URICA-24 para dependentes de tabaco. Rev. Ciências Médicas, 23(1), 5–14.
+  //   Hábitos alimentares — Bittencourt, A. S., Lucena-Santos, P. L., Moraes, J. F., & Oliveira, M. S. (2012).
+  //     Motivação para mudança: análise fatorial da URICA para hábitos alimentares. Psico-USF, 17(3), 497–505.
+  //     (a captura da HumanTrack traz duas perguntas de triagem sem pontuação antes dos 24 itens: ficam fora)
+  // As quatro são 'soProfissional' (decisão do usuário, 20/11/2026): o profissional libera a versão certa
+  // para cada paciente (17.1.2).
+  'URICA-A': {
+    nomeCompleto: 'URICA — Álcool · Motivação para a mudança',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-refresh></use></svg>',
+    corPrefix: 'urica',
+    instrumentoId: 'urica_alcool',
+    textoDaAba: true,
+    escoreOculto: true,
+    soProfissional: true,
+    multiSubescalas: true,
+    multSub: 1,
+    subtitulo: '24 afirmações · 5 a 8 minutos · Marque o quanto concorda com cada uma',
+    escoreMax: 30, // por subescala (6 itens × 5); a soma dos 24 (24–120) é gravada em escore_total e não aparece
+    itens: [
+      { id: 1, subescala: 'precontemplacao' }, { id: 2, subescala: 'acao' }, { id: 3, subescala: 'contemplacao' },
+      { id: 4, subescala: 'acao' }, { id: 5, subescala: 'precontemplacao' }, { id: 6, subescala: 'contemplacao' },
+      { id: 7, subescala: 'precontemplacao' }, { id: 8, subescala: 'acao' }, { id: 9, subescala: 'contemplacao' },
+      { id: 10, subescala: 'manutencao' }, { id: 11, subescala: 'acao' }, { id: 12, subescala: 'manutencao' },
+      { id: 13, subescala: 'contemplacao' }, { id: 14, subescala: 'contemplacao' }, { id: 15, subescala: 'manutencao' },
+      { id: 16, subescala: 'precontemplacao' }, { id: 17, subescala: 'contemplacao' }, { id: 18, subescala: 'acao' },
+      { id: 19, subescala: 'precontemplacao' }, { id: 20, subescala: 'manutencao' }, { id: 21, subescala: 'manutencao' },
+      { id: 22, subescala: 'precontemplacao' }, { id: 23, subescala: 'acao' }, { id: 24, subescala: 'manutencao' }
+    ],
+    subescalasMeta: {
+      precontemplacao: { sigla: 'PC', nome: 'Pré-contemplação', icone: '<svg class=ico aria-hidden=true><use href=#i-pause></use></svg>', corPrefix: 'urica' },
+      contemplacao:    { sigla: 'C',  nome: 'Contemplação',     icone: '<svg class=ico aria-hidden=true><use href=#i-bulb></use></svg>', corPrefix: 'urica' },
+      acao:            { sigla: 'A',  nome: 'Ação',             icone: '<svg class=ico aria-hidden=true><use href=#i-trend-up></use></svg>', corPrefix: 'urica' },
+      manutencao:      { sigla: 'M',  nome: 'Manutenção',       icone: '<svg class=ico aria-hidden=true><use href=#i-target></use></svg>', corPrefix: 'urica' }
+    },
+    composto: { chave: 'prontidao', sigla: 'Prontidão', nome: 'Prontidão para a mudança', legenda: 'média de C + A + M − média de PC · de −4 a +14', mais: ['contemplacao', 'acao', 'manutencao'], menos: ['precontemplacao'], casas: 1 },
+    eduGeralTitulo: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg> Como ler',
+    eduGeralDesc: 'A URICA descreve o perfil motivacional em quatro subescalas de 6 itens (6 a 30 cada): Pré-contemplação, Contemplação, Ação e Manutenção. Não há pontos de corte validados para a versão brasileira — a leitura é pelo perfil: qual subescala predomina e como ele muda ao longo do tratamento. A prontidão resume a disposição para a mudança; valores maiores indicam mais prontidão.',
+    faixasLista: [
+      '<em style="color:var(--c-ink-3);">Sem pontos de corte validados para a versão brasileira (Oliveira, Freire & Cazassa, 2007; McConnaughy, Prochaska & Velicer, 1983). Subescala = soma dos 6 itens (6–30); prontidão = média(C) + média(A) + média(M) − média(PC), de −4 a +14 (DiClemente & Hughes, 1990).</em>'
+    ]
+  },
+
+  'URICA-D': {
+    nomeCompleto: 'URICA — Drogas ilícitas · Motivação para a mudança',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-refresh></use></svg>',
+    corPrefix: 'urica',
+    instrumentoId: 'urica_drogas',
+    textoDaAba: true,
+    escoreOculto: true,
+    soProfissional: true,
+    multiSubescalas: true,
+    multSub: 1,
+    subtitulo: '24 afirmações · 5 a 8 minutos · Marque o quanto concorda com cada uma',
+    escoreMax: 30,
+    itens: [
+      { id: 1, subescala: 'precontemplacao' }, { id: 2, subescala: 'acao' }, { id: 3, subescala: 'contemplacao' },
+      { id: 4, subescala: 'acao' }, { id: 5, subescala: 'precontemplacao' }, { id: 6, subescala: 'contemplacao' },
+      { id: 7, subescala: 'precontemplacao' }, { id: 8, subescala: 'acao' }, { id: 9, subescala: 'contemplacao' },
+      { id: 10, subescala: 'manutencao' }, { id: 11, subescala: 'acao' }, { id: 12, subescala: 'manutencao' },
+      { id: 13, subescala: 'contemplacao' }, { id: 14, subescala: 'contemplacao' }, { id: 15, subescala: 'manutencao' },
+      { id: 16, subescala: 'precontemplacao' }, { id: 17, subescala: 'contemplacao' }, { id: 18, subescala: 'acao' },
+      { id: 19, subescala: 'precontemplacao' }, { id: 20, subescala: 'manutencao' }, { id: 21, subescala: 'manutencao' },
+      { id: 22, subescala: 'precontemplacao' }, { id: 23, subescala: 'acao' }, { id: 24, subescala: 'manutencao' }
+    ],
+    subescalasMeta: {
+      precontemplacao: { sigla: 'PC', nome: 'Pré-contemplação', icone: '<svg class=ico aria-hidden=true><use href=#i-pause></use></svg>', corPrefix: 'urica' },
+      contemplacao:    { sigla: 'C',  nome: 'Contemplação',     icone: '<svg class=ico aria-hidden=true><use href=#i-bulb></use></svg>', corPrefix: 'urica' },
+      acao:            { sigla: 'A',  nome: 'Ação',             icone: '<svg class=ico aria-hidden=true><use href=#i-trend-up></use></svg>', corPrefix: 'urica' },
+      manutencao:      { sigla: 'M',  nome: 'Manutenção',       icone: '<svg class=ico aria-hidden=true><use href=#i-target></use></svg>', corPrefix: 'urica' }
+    },
+    composto: { chave: 'prontidao', sigla: 'Prontidão', nome: 'Prontidão para a mudança', legenda: 'média de C + A + M − média de PC · de −4 a +14', mais: ['contemplacao', 'acao', 'manutencao'], menos: ['precontemplacao'], casas: 1 },
+    eduGeralTitulo: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg> Como ler',
+    eduGeralDesc: 'A URICA descreve o perfil motivacional em quatro subescalas de 6 itens (6 a 30 cada): Pré-contemplação, Contemplação, Ação e Manutenção. Não há pontos de corte validados para a versão brasileira — a leitura é pelo perfil: qual subescala predomina e como ele muda ao longo do tratamento. A prontidão resume a disposição para a mudança; valores maiores indicam mais prontidão.',
+    faixasLista: [
+      '<em style="color:var(--c-ink-3);">Sem pontos de corte validados para a versão brasileira (Szupszynski & Oliveira, 2008; McConnaughy, Prochaska & Velicer, 1983). Subescala = soma dos 6 itens (6–30); prontidão = média(C) + média(A) + média(M) − média(PC), de −4 a +14 (DiClemente & Hughes, 1990).</em>'
+    ]
+  },
+
+  'URICA-T': {
+    nomeCompleto: 'URICA — Tabaco · Motivação para a mudança',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-refresh></use></svg>',
+    corPrefix: 'urica',
+    instrumentoId: 'urica_tabaco',
+    textoDaAba: true,
+    escoreOculto: true,
+    soProfissional: true,
+    multiSubescalas: true,
+    multSub: 1,
+    subtitulo: '24 afirmações · 5 a 8 minutos · Marque o quanto concorda com cada uma',
+    escoreMax: 30,
+    itens: [
+      { id: 1, subescala: 'precontemplacao' }, { id: 2, subescala: 'acao' }, { id: 3, subescala: 'contemplacao' },
+      { id: 4, subescala: 'acao' }, { id: 5, subescala: 'precontemplacao' }, { id: 6, subescala: 'contemplacao' },
+      { id: 7, subescala: 'precontemplacao' }, { id: 8, subescala: 'acao' }, { id: 9, subescala: 'contemplacao' },
+      { id: 10, subescala: 'manutencao' }, { id: 11, subescala: 'acao' }, { id: 12, subescala: 'manutencao' },
+      { id: 13, subescala: 'contemplacao' }, { id: 14, subescala: 'contemplacao' }, { id: 15, subescala: 'manutencao' },
+      { id: 16, subescala: 'precontemplacao' }, { id: 17, subescala: 'contemplacao' }, { id: 18, subescala: 'acao' },
+      { id: 19, subescala: 'precontemplacao' }, { id: 20, subescala: 'manutencao' }, { id: 21, subescala: 'manutencao' },
+      { id: 22, subescala: 'precontemplacao' }, { id: 23, subescala: 'acao' }, { id: 24, subescala: 'manutencao' }
+    ],
+    subescalasMeta: {
+      precontemplacao: { sigla: 'PC', nome: 'Pré-contemplação', icone: '<svg class=ico aria-hidden=true><use href=#i-pause></use></svg>', corPrefix: 'urica' },
+      contemplacao:    { sigla: 'C',  nome: 'Contemplação',     icone: '<svg class=ico aria-hidden=true><use href=#i-bulb></use></svg>', corPrefix: 'urica' },
+      acao:            { sigla: 'A',  nome: 'Ação',             icone: '<svg class=ico aria-hidden=true><use href=#i-trend-up></use></svg>', corPrefix: 'urica' },
+      manutencao:      { sigla: 'M',  nome: 'Manutenção',       icone: '<svg class=ico aria-hidden=true><use href=#i-target></use></svg>', corPrefix: 'urica' }
+    },
+    composto: { chave: 'prontidao', sigla: 'Prontidão', nome: 'Prontidão para a mudança', legenda: 'média de C + A + M − média de PC · de −4 a +14', mais: ['contemplacao', 'acao', 'manutencao'], menos: ['precontemplacao'], casas: 1 },
+    eduGeralTitulo: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg> Como ler',
+    eduGeralDesc: 'A URICA descreve o perfil motivacional em quatro subescalas de 6 itens (6 a 30 cada): Pré-contemplação, Contemplação, Ação e Manutenção. Não há pontos de corte validados para a versão brasileira — a leitura é pelo perfil: qual subescala predomina e como ele muda ao longo do tratamento. A prontidão resume a disposição para a mudança; valores maiores indicam mais prontidão. No estudo brasileiro da versão para tabaco a subescala Pré-contemplação teve precisão baixa: leia-a com cautela.',
+    faixasLista: [
+      '<em style="color:var(--c-ink-3);">Sem pontos de corte validados para a versão brasileira (Oliveira et al., 2014; McConnaughy, Prochaska & Velicer, 1983). Subescala = soma dos 6 itens (6–30); prontidão = média(C) + média(A) + média(M) − média(PC), de −4 a +14 (DiClemente & Hughes, 1990). A subescala PC teve precisão baixa no estudo brasileiro.</em>'
+    ]
+  },
+
+  'URICA-HA': {
+    nomeCompleto: 'URICA — Hábitos alimentares · Motivação para a mudança',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-refresh></use></svg>',
+    corPrefix: 'urica',
+    instrumentoId: 'urica_alimentar',
+    textoDaAba: true,
+    escoreOculto: true,
+    soProfissional: true,
+    multiSubescalas: true,
+    multSub: 1,
+    subtitulo: '24 afirmações · 5 a 8 minutos · Marque o quanto concorda com cada uma',
+    escoreMax: 30,
+    itens: [
+      { id: 1, subescala: 'precontemplacao' }, { id: 2, subescala: 'acao' }, { id: 3, subescala: 'contemplacao' },
+      { id: 4, subescala: 'acao' }, { id: 5, subescala: 'precontemplacao' }, { id: 6, subescala: 'contemplacao' },
+      { id: 7, subescala: 'precontemplacao' }, { id: 8, subescala: 'acao' }, { id: 9, subescala: 'contemplacao' },
+      { id: 10, subescala: 'manutencao' }, { id: 11, subescala: 'acao' }, { id: 12, subescala: 'manutencao' },
+      { id: 13, subescala: 'contemplacao' }, { id: 14, subescala: 'contemplacao' }, { id: 15, subescala: 'manutencao' },
+      { id: 16, subescala: 'precontemplacao' }, { id: 17, subescala: 'contemplacao' }, { id: 18, subescala: 'acao' },
+      { id: 19, subescala: 'precontemplacao' }, { id: 20, subescala: 'manutencao' }, { id: 21, subescala: 'manutencao' },
+      { id: 22, subescala: 'precontemplacao' }, { id: 23, subescala: 'acao' }, { id: 24, subescala: 'manutencao' }
+    ],
+    subescalasMeta: {
+      precontemplacao: { sigla: 'PC', nome: 'Pré-contemplação', icone: '<svg class=ico aria-hidden=true><use href=#i-pause></use></svg>', corPrefix: 'urica' },
+      contemplacao:    { sigla: 'C',  nome: 'Contemplação',     icone: '<svg class=ico aria-hidden=true><use href=#i-bulb></use></svg>', corPrefix: 'urica' },
+      acao:            { sigla: 'A',  nome: 'Ação',             icone: '<svg class=ico aria-hidden=true><use href=#i-trend-up></use></svg>', corPrefix: 'urica' },
+      manutencao:      { sigla: 'M',  nome: 'Manutenção',       icone: '<svg class=ico aria-hidden=true><use href=#i-target></use></svg>', corPrefix: 'urica' }
+    },
+    composto: { chave: 'prontidao', sigla: 'Prontidão', nome: 'Prontidão para a mudança', legenda: 'média de C + A + M − média de PC · de −4 a +14', mais: ['contemplacao', 'acao', 'manutencao'], menos: ['precontemplacao'], casas: 1 },
+    eduGeralTitulo: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg> Como ler',
+    eduGeralDesc: 'A URICA descreve o perfil motivacional em quatro subescalas de 6 itens (6 a 30 cada): Pré-contemplação, Contemplação, Ação e Manutenção. Não há pontos de corte validados para a versão brasileira — a leitura é pelo perfil: qual subescala predomina e como ele muda ao longo do tratamento. A prontidão resume a disposição para a mudança; valores maiores indicam mais prontidão.',
+    faixasLista: [
+      '<em style="color:var(--c-ink-3);">Sem pontos de corte validados para a versão brasileira (Bittencourt et al., 2012; McConnaughy, Prochaska & Velicer, 1983). Subescala = soma dos 6 itens (6–30); prontidão = média(C) + média(A) + média(M) − média(PC), de −4 a +14 (DiClemente & Hughes, 1990).</em>'
+    ]
   }
 
-  // Módulo 4: 5 escalas do 12.x + BDI-II e BAI (17.0) + BHS e BSS (17.1)
+  // Módulo 4: 5 escalas do 12.x + BDI-II e BAI (17.0) + BHS e BSS (17.1) + as quatro URICA (17.2)
 };
 
 // ============================================================
@@ -16684,7 +16924,7 @@ async function escIniciarAplicacao(codigoEscala) {
   // para que a barra de progresso, borda e botões sigam a cor da escala
   const secAplic = document.getElementById('sec-escalas-aplicar');
   if (secAplic) {
-    secAplic.classList.remove('esc-tint-coral', 'esc-tint-amber', 'esc-tint-green', 'esc-tint-purple', 'esc-tint-gray', 'esc-tint-orange', 'esc-tint-blue', 'esc-tint-teal', 'esc-tint-bdi2', 'esc-tint-bai', 'esc-tint-bhs', 'esc-tint-bss');
+    secAplic.classList.remove('esc-tint-coral', 'esc-tint-amber', 'esc-tint-green', 'esc-tint-purple', 'esc-tint-gray', 'esc-tint-orange', 'esc-tint-blue', 'esc-tint-teal', 'esc-tint-bdi2', 'esc-tint-bai', 'esc-tint-bhs', 'esc-tint-bss', 'esc-tint-urica');
     secAplic.classList.add('esc-tint-' + (def.corPrefix || 'coral'));
   }
 
@@ -16951,17 +17191,34 @@ function escCalcularEscoreEAlerta(codigoEscala, respostas) {
     }
   });
 
-  // Para escalas multi-subescala: multiplicar cada soma por 2 (DASS-21 → DASS-42)
-  // e encontrar a faixa de cada uma
+  // Escalas multi-subescala (17.2: genérico — DASS-21 e URICA). Cada soma vai vezes def.multSub
+  // (DASS-21: 2, de 21 para 42 itens; URICA: 1) e ganha a faixa da subescala quando a escala tem
+  // faixas; a ordem é a de subescalasMeta, a mesma da tabela do servidor (ESCALAS_CALCULO).
   let subescalas = null;
-  if (def.multiSubescalas && def.faixasSubescalas) {
+  let composto = null;
+  if (def.multiSubescalas) {
     subescalas = {};
-    Object.keys(subescalasSomas).forEach(k => {
-      const escoreSub = subescalasSomas[k] * 2; // DASS-21 → DASS-42
-      const listaFaixas = def.faixasSubescalas[k] || [];
-      const faixaSub = listaFaixas.find(f => escoreSub >= f.min && escoreSub <= f.max) || listaFaixas[listaFaixas.length - 1];
-      subescalas[k] = { escore: escoreSub, faixa: faixaSub };
+    const nItens = {};
+    def.itens.forEach(item => { if (item.subescala) nItens[item.subescala] = (nItens[item.subescala] || 0) + 1; });
+    const ordem = def.subescalasMeta ? Object.keys(def.subescalasMeta) : Object.keys(subescalasSomas);
+    ordem.forEach(k => {
+      const soma = subescalasSomas[k] || 0;
+      const escoreSub = soma * (def.multSub || 1);
+      const listaFaixas = (def.faixasSubescalas && def.faixasSubescalas[k]) || [];
+      const faixaSub = listaFaixas.length
+        ? (listaFaixas.find(f => escoreSub >= f.min && escoreSub <= f.max) || listaFaixas[listaFaixas.length - 1])
+        : null;
+      subescalas[k] = { escore: escoreSub, media: nItens[k] ? soma / nItens[k] : 0, n: nItens[k] || 0, faixa: faixaSub };
     });
+    // Escore composto pelas MÉDIAS das subescalas (URICA: prontidão = C + A + M − PC; DiClemente &
+    // Hughes, 1990). Mesma ordem de contas do servidor para o arredondamento bater.
+    if (def.composto) {
+      let valor = 0;
+      def.composto.mais.forEach(k => { valor += (subescalasSomas[k] || 0) / nItens[k]; });
+      def.composto.menos.forEach(k => { valor -= (subescalasSomas[k] || 0) / nItens[k]; });
+      const fator = Math.pow(10, def.composto.casas || 0);
+      composto = { chave: def.composto.chave, sigla: def.composto.sigla, nome: def.composto.nome, valor: Math.round(valor * fator) / fator };
+    }
   }
 
   // Encontra faixa de classificação (só para escalas com escore único)
@@ -16973,7 +17230,8 @@ function escCalcularEscoreEAlerta(codigoEscala, respostas) {
   return {
     escoreTotal: escoreTotal,
     faixa: faixa,
-    subescalas: subescalas,      // null para PHQ-9, GAD-7, PSS-10; objeto para DASS-21
+    subescalas: subescalas,      // null para PHQ-9, GAD-7, PSS-10; objeto para DASS-21 e URICA
+    composto: composto,          // 17.2: null, ou { chave, sigla, nome, valor } (URICA: prontidão)
     alertaFlag: alertaFlag,
     alertaItem: alertaItem,
     alertaValor: alertaValor
@@ -17034,18 +17292,9 @@ async function escEnviarEscala(event) {
       versao_instrumento: ESC_VERSAO_INSTRUMENTO,
       data_aplicacao: escDataHojeISO(),
       escore_total: calc.escoreTotal,
-      // Subescalas do DASS-21 (ou '' para escalas de escore único)
-      escore_depressao: (calc.subescalas && calc.subescalas.depressao) ? calc.subescalas.depressao.escore : '',
-      escore_ansiedade: (calc.subescalas && calc.subescalas.ansiedade) ? calc.subescalas.ansiedade.escore : '',
-      escore_estresse:  (calc.subescalas && calc.subescalas.estresse)  ? calc.subescalas.estresse.escore  : '',
-      // Faixa: escalas de escore único têm faixa textual; DASS-21 grava resumo das 3
-      faixa: calc.faixa
-        ? calc.faixa.rotulo
-        : (calc.subescalas
-            ? ('Dep:' + calc.subescalas.depressao.faixa.rotulo +
-               ' | Ans:' + calc.subescalas.ansiedade.faixa.rotulo +
-               ' | Est:' + calc.subescalas.estresse.faixa.rotulo)
-            : ''),
+      // Subescalas (DASS-21, URICA) e resumo em 'faixa': 17.2, escCamposSubescalas_ (as três colunas do
+      // DASS-21 vão sempre, vazias nas demais; as da URICA só quando existem)
+      escore_depressao: '', escore_ansiedade: '', escore_estresse: '', faixa: '',
       alerta_risco_flag: calc.alertaFlag,
       alerta_risco_item: calc.alertaItem,
       alerta_risco_valor: calc.alertaValor,
@@ -17058,6 +17307,7 @@ async function escEnviarEscala(event) {
         ? Math.round((Date.now() - ESC_STATE.inicioPreenchimento) / 1000)
         : ''
     };
+    Object.assign(dados, escCamposSubescalas_(def, calc)); // 17.2
 
     // Respostas numeradas, item funcional e letras de direção: as mesmas colunas na criação e na edição (18.5)
     Object.assign(dados, escColunasDasRespostas_(def, ESC_STATE.respostas));
@@ -17113,16 +17363,7 @@ function escMostrarResultado(codigo, calc, respostas) {
     data_aplicacao: escDataHojeISO(),
     timestamp: new Date().toISOString(),
     escore_total: calc.escoreTotal,
-    faixa: calc.faixa ? calc.faixa.rotulo : (
-      calc.subescalas
-        ? ('Dep:' + calc.subescalas.depressao.faixa.rotulo +
-           ' | Ans:' + calc.subescalas.ansiedade.faixa.rotulo +
-           ' | Est:' + calc.subescalas.estresse.faixa.rotulo)
-        : ''
-    ),
-    escore_depressao: (calc.subescalas && calc.subescalas.depressao) ? calc.subescalas.depressao.escore : '',
-    escore_ansiedade: (calc.subescalas && calc.subescalas.ansiedade) ? calc.subescalas.ansiedade.escore : '',
-    escore_estresse:  (calc.subescalas && calc.subescalas.estresse)  ? calc.subescalas.estresse.escore  : '',
+    faixa: '', escore_depressao: '', escore_ansiedade: '', escore_estresse: '', // preenchidos abaixo (17.2)
     alerta_risco_flag: calc.alertaFlag,
     alerta_risco_item: calc.alertaItem,
     alerta_risco_valor: calc.alertaValor,
@@ -17138,8 +17379,9 @@ function escMostrarResultado(codigo, calc, respostas) {
       : '',
     observacoes: ''
   };
+  Object.assign(reg, escCamposSubescalas_(def, calc)); // 17.2: subescalas, composto e resumo em 'faixa'
 
-  // Preenche todas as colunas item_01..item_21 (só as que a escala usa)
+  // Preenche todas as colunas item_01..item_24 (só as que a escala usa)
   def.itens.forEach(function(item){
     const col = 'item_' + String(item.id).padStart(2, '0');
     const bruto = (respostas && respostas[item.id] !== undefined) ? respostas[item.id] : '';
@@ -17241,10 +17483,32 @@ async function escGarantirContextoLongitudinal(codigo, reg, def) {
 // modo: 'imediata' (tela pós-aplicação) | 'historico' (modal)
 // contexto: { ordinalTexto, ultimaFaz, total } | null
 // ============================================================
+// 17.2: as colunas gravadas a partir do cálculo das subescalas — escore_<subescala> para cada uma
+// (as três do DASS-21 existem sempre, vazias nas escalas de escore único), escore_<composto> quando
+// a escala tem (URICA: prontidão) e o resumo textual em 'faixa' ("Dep:Leve | Ans:Normal | Est:Normal";
+// "PC:14 | C:22 | A:19 | M:17 | Prontidão: 7,3"). Mesmo formato que o servidor (_escoresDaEscala_).
+function escCamposSubescalas_(def, calc) {
+  const campos = { escore_depressao: '', escore_ansiedade: '', escore_estresse: '', faixa: '' };
+  if (!calc.subescalas) { campos.faixa = calc.faixa ? calc.faixa.rotulo : ''; return campos; }
+  const meta = (def && def.subescalasMeta) || {};
+  const partes = [];
+  Object.keys(calc.subescalas).forEach(function (k) {
+    const s = calc.subescalas[k];
+    campos['escore_' + k] = s.escore;
+    partes.push(((meta[k] && meta[k].sigla) || k) + ':' + (s.faixa ? s.faixa.rotulo : String(s.escore)));
+  });
+  if (calc.composto) {
+    campos['escore_' + calc.composto.chave] = calc.composto.valor;
+    partes.push(calc.composto.sigla + ': ' + String(calc.composto.valor).replace('.', ','));
+  }
+  campos.faixa = partes.join(' | ');
+  return campos;
+}
+
 function escRenderizarConteudoResultado(reg, def, modo, contexto) {
   const cod = String(reg.instrumento || '');
   const temAlerta = String(reg.alerta_risco_flag || '').toUpperCase() === 'SIM';
-  const eDass = (cod === 'DASS-21');
+  const eDass = !!(def && def.multiSubescalas); // 17.2: qualquer escala de subescalas (DASS-21, URICA), não só o DASS-21
 
   let html = '';
 
@@ -17437,24 +17701,24 @@ function escRrBlocoHeaderEscore(reg, def) {
   '</div>';
 }
 
-// --- DASS-21: 3 boxes coloridos ---
+// --- Escalas de subescalas: um box por subescala (DASS-21: 3; URICA: 4 + prontidão) ---
+// 17.2: os valores vêm de reg['escore_' + chave], na ordem de subescalasMeta; a faixa só aparece
+// quando a escala tem faixas por subescala; o composto (URICA: prontidão pelas médias) ganha um
+// box de largura inteira com o nome por extenso.
 function escRrBlocoSubescalasDass(reg, def) {
   const meta = def.subescalasMeta || {};
   const ordem = Object.keys(meta).length ? Object.keys(meta) : ['depressao', 'ansiedade', 'estresse'];
+  const temValor = v => (v !== '' && v !== null && v !== undefined);
+  const nPor = {};
+  (def.itens || []).forEach(function (it) { if (it.subescala) nPor[it.subescala] = (nPor[it.subescala] || 0) + 1; });
 
-  const valores = {
-    depressao: reg.escore_depressao,
-    ansiedade: reg.escore_ansiedade,
-    estresse:  reg.escore_estresse
-  };
-
-  let html = '<div class="rr-subescalas-grid">';
+  let html = '<div class="rr-subescalas-grid' + (ordem.length === 4 ? ' quatro' : '') + '">';
   ordem.forEach(function(k){
     const m = meta[k] || { nome: k, icone: '', corPrefix: 'gray' };
-    const escore = valores[k];
-    const escoreDisp = (escore !== '' && escore !== null && escore !== undefined) ? escore : '—';
-    const faixaCor = escHistCorSubFaixa(k, escore);
-    const faixaRot = escHistRotuloSubFaixa(k, escore);
+    const escore = reg['escore_' + k];
+    const escoreDisp = temValor(escore) ? escore : '—';
+    const faixaCor = escHistCorSubFaixa(def, k, escore);
+    const faixaRot = escHistRotuloSubFaixa(def, k, escore);
 
     html += '<div class="rr-sub-box ' + m.corPrefix + '">';
     html +=   '<span class="rr-sub-icone">' + (m.icone || '') + '</span>'; // 18.4 (8.48): ícone do sprite (constante do catálogo), fora do escape
@@ -17462,9 +17726,21 @@ function escRrBlocoSubescalasDass(reg, def) {
     html +=   '<div class="rr-sub-escore">' + escapeHtmlAuto(String(escoreDisp)) + '</div>';
     if (faixaRot) {
       html +=   '<div class="rr-sub-faixa esch-faixa ' + faixaCor + '">' + escapeHtmlAuto(faixaRot) + '</div>';
+    } else if (def.composto && temValor(escore) && nPor[k]) {
+      // Sem faixa: a média dos itens (é dela que sai o composto)
+      html +=   '<div class="rr-sub-media">média ' + escapeHtmlAuto(String(Math.round(Number(escore) / nPor[k] * 10) / 10).replace('.', ',')) + '</div>';
     }
     html += '</div>';
   });
+  if (def.composto) {
+    const c = reg['escore_' + def.composto.chave];
+    const m = meta[ordem[0]] || { corPrefix: 'gray' };
+    html += '<div class="rr-sub-box rr-sub-composto ' + m.corPrefix + '">';
+    html +=   '<div class="rr-sub-nome">' + escapeHtmlAuto(def.composto.nome || def.composto.sigla) + '</div>';
+    html +=   '<div class="rr-sub-escore">' + escapeHtmlAuto(temValor(c) ? String(c).replace('.', ',') : '—') + '</div>';
+    if (def.composto.legenda) html += '<div class="rr-sub-media">' + escapeHtmlAuto(def.composto.legenda) + '</div>';
+    html += '</div>';
+  }
   html += '</div>';
   return html;
 }
@@ -17473,7 +17749,7 @@ function escRrBlocoSubescalasDass(reg, def) {
 function escRrBlocoOQueSignifica(cod, def, reg) {
   if (!def) return '';
 
-  if (cod === 'DASS-21') {
+  if (def.eduGeralDesc || def.eduGeralSugestao) { // 17.2: texto geral — DASS-21 e URICA (não varia por faixa)
     const titulo = def.eduGeralTitulo || '<svg class=ico aria-hidden=true><use href=#i-star></use></svg> O que isso significa?';
     const desc = def.eduGeralDesc || '';
     const sug  = def.eduGeralSugestao || '';
@@ -17503,8 +17779,8 @@ function escRrBlocoOQueSignifica(cod, def, reg) {
 function escRrBlocoSobreFaixa(cod, def, reg) {
   if (!def) return '';
 
-  // DASS-21: tabela comparativa 3 colunas
-  if (cod === 'DASS-21') {
+  // Escala com faixas por subescala (DASS-21): tabela comparativa. 17.2: a URICA não tem faixas e cai na lista.
+  if (def.multiSubescalas && def.faixasSubescalas) {
     const meta = def.subescalasMeta || {};
     const fs = def.faixasSubescalas || {};
     const ordem = Object.keys(meta).length ? Object.keys(meta) : Object.keys(fs);
@@ -17882,7 +18158,7 @@ var ESC_HIST_STATE = {
 // Ordem fixa dos blocos (casada com a ordem do menu do Módulo 4)
 // Pacote 17.0: sem BDI-II e BAI aqui, o registro é gravado e fica invisível —
 // esta lista alimenta o histórico do paciente E o card Escalas do profissional.
-var ESC_HIST_ORDEM = ['PHQ-9', 'GAD-7', 'PSS-10', 'DASS-21', 'SRQ-20', 'BDI-II', 'BAI', 'BHS', 'BSS']; // 17.1: + BHS e BSS
+var ESC_HIST_ORDEM = ['PHQ-9', 'GAD-7', 'PSS-10', 'DASS-21', 'SRQ-20', 'BDI-II', 'BAI', 'BHS', 'BSS', 'URICA-A', 'URICA-D', 'URICA-T', 'URICA-HA']; // 17.1: + BHS e BSS; 17.2: + URICA
 
 function escHistInvalidarCache() {
   ESC_HIST_STATE.invalidado = true;
@@ -18010,7 +18286,7 @@ function escHistRenderBlocos(cont, registros) {
     cont.innerHTML = '<div class="esch-vazio">' +
       '<span class="esch-vazio-icon"><svg class=ico aria-hidden=true><use href=#i-inbox></use></svg></span>' +
       '<div class="esch-vazio-titulo">Você ainda não aplicou nenhuma escala</div>' +
-      '<div class="esch-vazio-texto">Quando você preencher sua primeira escala (PHQ-9, GAD-7, PSS-10, DASS-21, SRQ-20, BDI-II, BAI, BHS ou BSS), ela aparecerá aqui.</div>' +
+      '<div class="esch-vazio-texto">Quando você preencher sua primeira escala (PHQ-9, GAD-7, PSS-10, DASS-21, SRQ-20, BDI-II, BAI, BHS, BSS ou URICA), ela aparecerá aqui.</div>' +
     '</div>';
     return;
   }
@@ -18093,26 +18369,29 @@ function escHistRenderAplicacao(cod, def, reg, idxGlobal) {
     : '';
 
   let escoreHtml;
-  if (cod === 'DASS-21') {
-    // 3 boxes lado a lado com subescalas
-    const d = (reg.escore_depressao !== '' && reg.escore_depressao !== null && reg.escore_depressao !== undefined)
-              ? reg.escore_depressao : '—';
-    const a = (reg.escore_ansiedade !== '' && reg.escore_ansiedade !== null && reg.escore_ansiedade !== undefined)
-              ? reg.escore_ansiedade : '—';
-    const e = (reg.escore_estresse  !== '' && reg.escore_estresse  !== null && reg.escore_estresse  !== undefined)
-              ? reg.escore_estresse  : '—';
-    escoreHtml =
-      '<div class="esch-aplic-tris">' +
-        '<div class="esch-aplic-tri dep"><div class="esch-aplic-tri-nome">Dep</div><div class="esch-aplic-tri-val">' + escapeHtmlAuto(String(d)) + '</div></div>' +
-        '<div class="esch-aplic-tri ans"><div class="esch-aplic-tri-nome">Ans</div><div class="esch-aplic-tri-val">' + escapeHtmlAuto(String(a)) + '</div></div>' +
-        '<div class="esch-aplic-tri est"><div class="esch-aplic-tri-nome">Est</div><div class="esch-aplic-tri-val">' + escapeHtmlAuto(String(e)) + '</div></div>' +
-      '</div>';
-  } else if (ocultarEscore) {
-    // Só a confirmação de que a aplicação existe: data, nome e nada de número.
+  if (ocultarEscore) {
+    // Só a confirmação de que a aplicação existe: data, nome e nada de número. 17.2: vem ANTES do
+    // ramo das subescalas — a URICA é oculta ao paciente e tem subescalas.
     escoreHtml =
       '<div class="esch-aplic-escore">' + flagRisco +
         '<span class="esch-aplic-enviado">Respostas enviadas</span>' +
       '</div>';
+  } else if (def && def.multiSubescalas) {
+    // Um azulejo por subescala (DASS-21: Dep/Ans/Est; URICA: PC/C/A/M + prontidão) — 17.2: genérico,
+    // sigla e classe de cor vêm de subescalasMeta
+    const meta = def.subescalasMeta || {};
+    const chaves = Object.keys(meta);
+    const val = v => (v !== '' && v !== null && v !== undefined) ? String(v) : '—';
+    escoreHtml = '<div class="esch-aplic-tris' + (chaves.length > 3 ? ' cinco' : '') + '">';
+    chaves.forEach(function (k) {
+      const m = meta[k];
+      escoreHtml += '<div class="esch-aplic-tri ' + (m.tri || m.corPrefix) + '"><div class="esch-aplic-tri-nome">' + escapeHtmlAuto(m.sigla || k) + '</div><div class="esch-aplic-tri-val">' + escapeHtmlAuto(val(reg['escore_' + k])) + '</div></div>';
+    });
+    if (def.composto) {
+      const m0 = meta[chaves[0]] || {};
+      escoreHtml += '<div class="esch-aplic-tri ' + (m0.tri || m0.corPrefix || '') + '"><div class="esch-aplic-tri-nome">' + escapeHtmlAuto(def.composto.sigla) + '</div><div class="esch-aplic-tri-val">' + escapeHtmlAuto(val(reg['escore_' + def.composto.chave]).replace('.', ',')) + '</div></div>';
+    }
+    escoreHtml += '</div>';
   } else {
     // Escore único
     const escore = (reg.escore_total !== '' && reg.escore_total !== null && reg.escore_total !== undefined)
@@ -18134,8 +18413,8 @@ function escHistRenderAplicacao(cod, def, reg, idxGlobal) {
       '</div>';
   }
 
-  // Para DASS-21 também queremos o marcador de risco (fica na área de data)
-  const marcadorRiscoLinha = (cod === 'DASS-21' && String(reg.alerta_risco_flag || '').toUpperCase() === 'SIM')
+  // Para escalas de subescalas também queremos o marcador de risco (fica na área de data)
+  const marcadorRiscoLinha = (def && def.multiSubescalas && !ocultarEscore && String(reg.alerta_risco_flag || '').toUpperCase() === 'SIM')
     ? '<span class="esch-aplic-flag-risco" title="Alerta de risco nesta aplicação"></span>'
     : '';
 
@@ -18219,9 +18498,8 @@ function escHistCorDaFaixa(cod, rotulo, escore) {
   return 'cinza';
 }
 
-// Cor por subescala do DASS-21 (buscando pelo escore)
-function escHistCorSubFaixa(subKey, escore) {
-  const def = ESC_ESCALAS['DASS-21'];
+// Cor por subescala (buscando pelo escore nas faixas da própria escala — 17.2: não só DASS-21)
+function escHistCorSubFaixa(def, subKey, escore) {
   if (!def || !def.faixasSubescalas || !def.faixasSubescalas[subKey]) return 'cinza';
   const num = Number(escore);
   if (isNaN(num)) return 'cinza';
@@ -18229,9 +18507,8 @@ function escHistCorSubFaixa(subKey, escore) {
   return (f && f.cor) ? f.cor : 'cinza';
 }
 
-// Rótulo de subfaixa DASS-21 por escore
-function escHistRotuloSubFaixa(subKey, escore) {
-  const def = ESC_ESCALAS['DASS-21'];
+// Rótulo de subfaixa por escore (17.2: da própria escala)
+function escHistRotuloSubFaixa(def, subKey, escore) {
   if (!def || !def.faixasSubescalas || !def.faixasSubescalas[subKey]) return '';
   const num = Number(escore);
   if (isNaN(num)) return '';

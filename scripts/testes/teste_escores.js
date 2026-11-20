@@ -13,7 +13,7 @@ const blocoDe = (src, inicio) => { const i = src.indexOf(inicio); if (i < 0) thr
 
 const back = ler('Código.js'), front = ler('index-dev.html');
 const servidor = new Function(blocoDe(back, 'var ESCALAS_CALCULO = {') + '\n' + corpoDe(back, '_escoresDaEscala_') + '\nreturn { tabela: ESCALAS_CALCULO, calc: _escoresDaEscala_ };')();
-const cliente = new Function(blocoDe(front, 'const ESC_ESCALAS = {') + '\n' + corpoDe(front, 'escValorNumerico') + '\n' + corpoDe(front, 'escCondicionais_') + '\n' + corpoDe(front, 'escCondicionalAtivo_') + '\n' + corpoDe(front, 'escItensFechados_') + '\n' + corpoDe(front, 'escRespostasEfetivas_') + '\n' + corpoDe(front, 'escCalcularEscoreEAlerta') + '\nreturn { catalogo: ESC_ESCALAS, calc: escCalcularEscoreEAlerta };')(); // 17.1: + bloco condicional
+const cliente = new Function(blocoDe(front, 'const ESC_ESCALAS = {') + '\n' + corpoDe(front, 'escValorNumerico') + '\n' + corpoDe(front, 'escCondicionais_') + '\n' + corpoDe(front, 'escCondicionalAtivo_') + '\n' + corpoDe(front, 'escItensFechados_') + '\n' + corpoDe(front, 'escRespostasEfetivas_') + '\n' + corpoDe(front, 'escCalcularEscoreEAlerta') + '\n' + corpoDe(front, 'escCamposSubescalas_') + '\nreturn { catalogo: ESC_ESCALAS, calc: escCalcularEscoreEAlerta, campos: escCamposSubescalas_ };')(); // 17.1: + bloco condicional; 17.2: + colunas das subescalas
 
 let passo = 0, falhas = 0;
 const ok = (n, c, x) => { passo++; if (c) console.log('  ok   ' + n); else { falhas++; console.log('  FALHA ' + n + (x !== undefined ? '  → ' + JSON.stringify(x).slice(0, 400) : '')); } };
@@ -37,30 +37,30 @@ function noServidor(cod, r) {
   const s = servidor.calc(cod, c => r[parseInt(c.slice(5), 10)]);
   return s.ok ? s.campos : { erro: s.erro };
 }
+/* 17.2: o que o cliente grava (escEnviarEscala) — escore_total + as colunas que escCamposSubescalas_ devolve
+   (as três do DASS-21 sempre, as da URICA e o composto quando existem, e o resumo em 'faixa') + alerta. */
 function noCliente(cod, r) {
   const c = cliente.calc(cod, r);
-  return {
-    escore_total: c.escoreTotal,
-    escore_depressao: (c.subescalas && c.subescalas.depressao) ? c.subescalas.depressao.escore : '',
-    escore_ansiedade: (c.subescalas && c.subescalas.ansiedade) ? c.subescalas.ansiedade.escore : '',
-    escore_estresse: (c.subescalas && c.subescalas.estresse) ? c.subescalas.estresse.escore : '',
-    faixa: c.faixa ? c.faixa.rotulo : (c.subescalas ? ('Dep:' + c.subescalas.depressao.faixa.rotulo + ' | Ans:' + c.subescalas.ansiedade.faixa.rotulo + ' | Est:' + c.subescalas.estresse.faixa.rotulo) : ''),
-    alerta_risco_flag: c.alertaFlag, alerta_risco_item: c.alertaItem, alerta_risco_valor: c.alertaValor };
+  const o = { escore_total: c.escoreTotal };
+  Object.assign(o, cliente.campos(cliente.catalogo[cod], c));
+  o.alerta_risco_flag = c.alertaFlag; o.alerta_risco_item = c.alertaItem; o.alerta_risco_valor = c.alertaValor;
+  return o;
 }
-/* esperado: { total, faixa, alerta: 'SIM'|'NAO', item?, dep?, ans?, est? } */
+/* esperado: { total, faixa, alerta: 'SIM'|'NAO', item?, dep?, ans?, est?, sub?: { escore_<chave>: valor, ... } } */
 function caso(cod, nome, respostas, esperado) {
   ['servidor', 'frontend'].forEach(lado => {
     const o = lado === 'servidor' ? noServidor(cod, respostas) : noCliente(cod, respostas);
     const certo = !o.erro && o.escore_total === esperado.total && o.faixa === esperado.faixa && o.alerta_risco_flag === esperado.alerta &&
       (esperado.item === undefined || o.alerta_risco_item === esperado.item) &&
-      (esperado.dep === undefined || (o.escore_depressao === esperado.dep && o.escore_ansiedade === esperado.ans && o.escore_estresse === esperado.est));
+      (esperado.dep === undefined || (o.escore_depressao === esperado.dep && o.escore_ansiedade === esperado.ans && o.escore_estresse === esperado.est)) &&
+      (esperado.sub === undefined || Object.keys(esperado.sub).every(k => o[k] === esperado.sub[k]));
     ok(cod + ' · ' + nome + ' (' + lado + ')', certo, { esperado, obtido: o });
   });
 }
 
 console.log('0. Catálogo');
-const ESPERADAS = ['BAI', 'BDI-II', 'BHS', 'BSS', 'DASS-21', 'GAD-7', 'PHQ-9', 'PSS-10', 'SRQ-20'];
-ok('servidor e frontend têm as mesmas 9 escalas do gabarito', Object.keys(servidor.tabela).sort().join() === ESPERADAS.join() && Object.keys(cliente.catalogo).sort().join() === ESPERADAS.join(), [Object.keys(servidor.tabela), Object.keys(cliente.catalogo)]);
+const ESPERADAS = ['BAI', 'BDI-II', 'BHS', 'BSS', 'DASS-21', 'GAD-7', 'PHQ-9', 'PSS-10', 'SRQ-20', 'URICA-A', 'URICA-D', 'URICA-HA', 'URICA-T'];
+ok('servidor e frontend têm as mesmas 13 escalas do gabarito', Object.keys(servidor.tabela).sort().join() === ESPERADAS.join() && Object.keys(cliente.catalogo).sort().join() === ESPERADAS.join(), [Object.keys(servidor.tabela), Object.keys(cliente.catalogo)]);
 
 console.log('1. PHQ-9 (0–27; cortes 5, 10, 15, 20; risco: item 9 ≥ 1)');
 [[0, 'Sintomas mínimos ou ausentes'], [4, 'Sintomas mínimos ou ausentes'], [5, 'Depressão leve'], [9, 'Depressão leve'], [10, 'Depressão moderada'], [14, 'Depressão moderada'],
@@ -132,7 +132,25 @@ caso('BSS', 'item 20 = 0: o 21 vale 0 mesmo marcado (nada muda no total)', com(t
 ok('BSS: 20 = 0 dispensa o 21 no servidor (coluna vazia aceita)', servidor.calc('BSS', c => (c === 'item_21' ? '' : 0)).ok === true);
 ok('BSS: 4 e 5 = 0 dispensam 6–19 no servidor (colunas vazias aceitas)', servidor.calc('BSS', c => (/item_(0[6-9]|1[0-9])/.test(c) ? '' : 0)).ok === true);
 
-console.log('10. Resposta inválida (servidor recusa)');
+console.log('10. URICA (17.2: 24 itens de 1 a 5; PC 1,5,7,16,19,22 · C 3,6,9,13,14,17 · A 2,4,8,11,18,23 · M 10,12,15,20,21,24; soma por subescala 6–30; prontidão = média C + A + M − média PC; sem faixas; sem item de risco)');
+const URICA_PC = [1, 5, 7, 16, 19, 22], URICA_C = [3, 6, 9, 13, 14, 17], URICA_A = [2, 4, 8, 11, 18, 23], URICA_M = [10, 12, 15, 20, 21, 24];
+const urica = (pc, c, a, m) => { const r = {}; URICA_PC.forEach((i, k) => r[i] = Array.isArray(pc) ? pc[k] : pc); URICA_C.forEach(i => r[i] = c); URICA_A.forEach(i => r[i] = a); URICA_M.forEach(i => r[i] = m); return r; };
+['URICA-A', 'URICA-D', 'URICA-T', 'URICA-HA'].forEach(cod => {
+  caso(cod, 'tudo 1: subescalas 6, prontidão 2', tudo(24, 1), { total: 24, faixa: 'PC:6 | C:6 | A:6 | M:6 | Prontidão: 2', alerta: 'NAO', item: '',
+    sub: { escore_precontemplacao: 6, escore_contemplacao: 6, escore_acao: 6, escore_manutencao: 6, escore_prontidao: 2 } });
+  caso(cod, 'tudo 5: subescalas 30, prontidão 10', tudo(24, 5), { total: 120, faixa: 'PC:30 | C:30 | A:30 | M:30 | Prontidão: 10', alerta: 'NAO',
+    sub: { escore_precontemplacao: 30, escore_contemplacao: 30, escore_acao: 30, escore_manutencao: 30, escore_prontidao: 10 } });
+});
+caso('URICA-A', 'PC em 5 e o resto em 1: prontidão negativa (−2)', urica(5, 1, 1, 1), { total: 48, faixa: 'PC:30 | C:6 | A:6 | M:6 | Prontidão: -2', alerta: 'NAO',
+  sub: { escore_precontemplacao: 30, escore_contemplacao: 6, escore_acao: 6, escore_manutencao: 6, escore_prontidao: -2 } });
+caso('URICA-D', 'perfil misto com decimal: PC 1,2,3,4,5,1 (16) · C 4 (24) · A 3 (18) · M 2 (12) → 4 + 3 + 2 − 2,667 = 6,3', urica([1, 2, 3, 4, 5, 1], 4, 3, 2),
+  { total: 70, faixa: 'PC:16 | C:24 | A:18 | M:12 | Prontidão: 6,3', alerta: 'NAO', sub: { escore_precontemplacao: 16, escore_contemplacao: 24, escore_acao: 18, escore_manutencao: 12, escore_prontidao: 6.3 } });
+ok('URICA-A: resposta 0 recusada (mínimo é 1)', servidor.calc('URICA-A', c => (c === 'item_07' ? 0 : 3)).ok === false);
+ok('URICA-A: resposta 6 recusada (máximo é 5)', servidor.calc('URICA-A', c => (c === 'item_07' ? 6 : 3)).ok === false);
+ok('URICA-A: item 24 vazio recusado (são 24 itens)', servidor.calc('URICA-A', c => (c === 'item_24' ? '' : 3)).ok === false);
+ok('DASS-21 continua gravando as três colunas e nenhuma da URICA', (() => { const o = noServidor('DASS-21', tudo(21, 1)); return o.escore_depressao === 14 && o.escore_precontemplacao === undefined && o.faixa === 'Dep:Moderado | Ans:Moderado | Est:Normal'; })(), noServidor('DASS-21', tudo(21, 1)));
+
+console.log('11. Resposta inválida (servidor recusa)');
 ok('PHQ-9 com um item sem resposta', servidor.calc('PHQ-9', c => (c === 'item_05' ? '' : 1)).ok === false);
 ok('PHQ-9 com resposta fora da faixa', servidor.calc('PHQ-9', c => (c === 'item_05' ? 4 : 1)).ok === false);
 ok('escala desconhecida', servidor.calc('XYZ', () => 1).ok === false);

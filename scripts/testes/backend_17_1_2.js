@@ -33,7 +33,7 @@ const ok = (n, c, x) => { total++; if (c) console.log('  ok   ' + n); else { fal
 /* ---- aba Itens_Instrumentos de teste: 1 linha de conteúdo por instrumento + controle com o hash real ---- */
 G(`
   var __LINHAS = [];
-  ['bdi2', 'bai', 'bhs', 'bsi'].forEach(function (ins) {
+  ['bdi2', 'bai', 'bhs', 'bsi', 'urica_alcool', 'urica_drogas', 'urica_tabaco', 'urica_alimentar'].forEach(function (ins) { // 17.2: + URICA
     var conteudo = [{ instrumento: ins, tipo: 'instrucao', item: '', opcao: '', texto: 'Instrucao de teste ' + ins, ativo: '' },
                     { instrumento: ins, tipo: 'item', item: 1, opcao: '', texto: 'Item de teste 1 ' + ins, ativo: '' }];
     __LINHAS = __LINHAS.concat(conteudo, [{ instrumento: ins, tipo: 'controle', item: '', opcao: '', texto: _itensHashConteudo_(conteudo), ativo: 'SIM' }]);
@@ -45,9 +45,11 @@ G(`
 `);
 
 console.log('A. lerItensInstrumento — lista de liberados');
-ok('A1 paciente sem liberação: bdi2, bai e bhs (sem bsi)', JSON.stringify(G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'ABC' }).liberados")) === JSON.stringify(['bdi2', 'bai', 'bhs']), G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'ABC' })"));
-ok('A2 paciente com a BSS liberada: os quatro', JSON.stringify(G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'DEF' }).liberados")) === JSON.stringify(['bdi2', 'bai', 'bhs', 'bsi']));
-ok('A3 profissional: os quatro, sempre', JSON.stringify(G("lerItensInstrumento({}, { tipo: 'profissional', sigla: 'VMC' }).liberados")) === JSON.stringify(['bdi2', 'bai', 'bhs', 'bsi']));
+const TODOS = ['bdi2', 'bai', 'bhs', 'bsi', 'urica_alcool', 'urica_drogas', 'urica_tabaco', 'urica_alimentar']; // 17.2
+ok('A1 paciente sem liberação: bdi2, bai e bhs (sem bsi nem as URICA, que são só por liberação)', JSON.stringify(G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'ABC' }).liberados")) === JSON.stringify(['bdi2', 'bai', 'bhs']), G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'ABC' })"));
+ok('A2 paciente com a BSS liberada: bdi2, bai, bhs e bsi (as URICA continuam fora)', JSON.stringify(G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'DEF' }).liberados")) === JSON.stringify(['bdi2', 'bai', 'bhs', 'bsi']));
+ok('A3 profissional: os oito, sempre', JSON.stringify(G("lerItensInstrumento({}, { tipo: 'profissional', sigla: 'VMC' }).liberados")) === JSON.stringify(TODOS));
+ok('A5 (17.2) paciente com a URICA-Álcool liberada: a URICA entra, as outras três não', (() => { G("__PAC.GHI = { sigla: 'GHI', escalas_liberadas: 'urica_alcool' }"); return JSON.stringify(G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'GHI' }).liberados")) === JSON.stringify(['bdi2', 'bai', 'bhs', 'urica_alcool']); })(), G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'GHI' })"));
 ok('A4 admin ou sem crachá: recusa', G("lerItensInstrumento({}, { tipo: 'admin' }).ok") === false && G("lerItensInstrumento({}, null).ok") === false);
 
 console.log('B. lerItensInstrumento — textos de um instrumento');
