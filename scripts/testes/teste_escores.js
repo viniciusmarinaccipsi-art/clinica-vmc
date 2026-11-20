@@ -59,8 +59,8 @@ function caso(cod, nome, respostas, esperado) {
 }
 
 console.log('0. Catálogo');
-const ESPERADAS = ['BAI', 'BDI-II', 'BHS', 'BSS', 'DASS-21', 'GAD-7', 'PHQ-9', 'PSS-10', 'SRQ-20', 'URICA-A', 'URICA-D', 'URICA-HA', 'URICA-T'];
-ok('servidor e frontend têm as mesmas 13 escalas do gabarito', Object.keys(servidor.tabela).sort().join() === ESPERADAS.join() && Object.keys(cliente.catalogo).sort().join() === ESPERADAS.join(), [Object.keys(servidor.tabela), Object.keys(cliente.catalogo)]);
+const ESPERADAS = ['AAQ-II', 'BAI', 'BDI-II', 'BHS', 'BSS', 'DASS-21', 'EAR', 'GAD-7', 'MAAS', 'PCL-5', 'PHQ-9', 'PSS-10', 'PSWQ', 'SRQ-20', 'SWLS', 'URICA-A', 'URICA-D', 'URICA-HA', 'URICA-T', 'WBSI']; // 17.3: + lote A
+ok('servidor e frontend têm as mesmas 20 escalas do gabarito', Object.keys(servidor.tabela).sort().join() === ESPERADAS.join() && Object.keys(cliente.catalogo).sort().join() === ESPERADAS.join(), [Object.keys(servidor.tabela), Object.keys(cliente.catalogo)]);
 
 console.log('1. PHQ-9 (0–27; cortes 5, 10, 15, 20; risco: item 9 ≥ 1)');
 [[0, 'Sintomas mínimos ou ausentes'], [4, 'Sintomas mínimos ou ausentes'], [5, 'Depressão leve'], [9, 'Depressão leve'], [10, 'Depressão moderada'], [14, 'Depressão moderada'],
@@ -149,6 +149,43 @@ ok('URICA-A: resposta 0 recusada (mínimo é 1)', servidor.calc('URICA-A', c => 
 ok('URICA-A: resposta 6 recusada (máximo é 5)', servidor.calc('URICA-A', c => (c === 'item_07' ? 6 : 3)).ok === false);
 ok('URICA-A: item 24 vazio recusado (são 24 itens)', servidor.calc('URICA-A', c => (c === 'item_24' ? '' : 3)).ok === false);
 ok('DASS-21 continua gravando as três colunas e nenhuma da URICA', (() => { const o = noServidor('DASS-21', tudo(21, 1)); return o.escore_depressao === 14 && o.escore_precontemplacao === undefined && o.faixa === 'Dep:Moderado | Ans:Moderado | Est:Normal'; })(), noServidor('DASS-21', tudo(21, 1)));
+
+console.log('12. Lote A da HumanTrack (17.3: escore único; PSWQ e EAR com reversos e mínimo 1 — inversão min + max − bruto nos dois lados)');
+caso('PCL-5', 'tudo 0', tudo(20, 0), { total: 0, faixa: 'Abaixo do ponto de corte', alerta: 'NAO', item: '' });
+caso('PCL-5', 'tudo 1 (20): abaixo do corte', tudo(20, 1), { total: 20, faixa: 'Abaixo do ponto de corte', alerta: 'NAO' });
+caso('PCL-5', 'último ponto abaixo do corte (35)', somando(20, 4, 35), { total: 35, faixa: 'Abaixo do ponto de corte', alerta: 'NAO' });
+caso('PCL-5', 'corte da versão brasileira (36)', somando(20, 4, 36), { total: 36, faixa: 'Sugestivo de TEPT', alerta: 'NAO' });
+caso('PCL-5', 'tudo 2 (40): sugestivo; item 15 não é alerta', tudo(20, 2), { total: 40, faixa: 'Sugestivo de TEPT', alerta: 'NAO', item: '' });
+caso('PCL-5', 'máximo 80', tudo(20, 4), { total: 80, faixa: 'Sugestivo de TEPT', alerta: 'NAO' });
+caso('PSWQ', 'tudo 1: os 5 reversos valem 5 (11 + 25 = 36)', tudo(16, 1), { total: 36, faixa: 'Abaixo do corte clínico', alerta: 'NAO', item: '' });
+caso('PSWQ', 'tudo 5: os 5 reversos valem 1 (55 + 5 = 60)', tudo(16, 5), { total: 60, faixa: 'Preocupação elevada', alerta: 'NAO' });
+caso('PSWQ', 'tudo 3: 48', tudo(16, 3), { total: 48, faixa: 'Preocupação elevada', alerta: 'NAO' });
+caso('PSWQ', 'reversos em 1 e o resto em 5: máximo 80', com(tudo(16, 5), { 1: 1, 3: 1, 8: 1, 10: 1, 11: 1 }), { total: 80, faixa: 'Preocupação muito elevada', alerta: 'NAO' });
+caso('PSWQ', 'reversos em 5 e o resto em 1: mínimo 16', com(tudo(16, 1), { 1: 5, 3: 5, 8: 5, 10: 5, 11: 5 }), { total: 16, faixa: 'Abaixo do corte clínico', alerta: 'NAO' });
+caso('PSWQ', 'último ponto abaixo do corte (44)', com(tudo(16, 1), { 1: 5, 3: 5, 8: 5, 10: 5, 11: 5, 2: 5, 4: 5, 5: 5, 6: 5, 7: 5, 9: 5, 12: 5 }), { total: 44, faixa: 'Abaixo do corte clínico', alerta: 'NAO' });
+caso('PSWQ', 'primeiro ponto do corte clínico (45)', com(tudo(16, 1), { 1: 5, 3: 5, 8: 5, 10: 5, 11: 5, 2: 5, 4: 5, 5: 5, 6: 5, 7: 5, 9: 5, 12: 5, 13: 2 }), { total: 45, faixa: 'Preocupação elevada', alerta: 'NAO' });
+caso('PSWQ', 'primeiro ponto do corte em universitários (62)', com(tudo(16, 5), { 1: 1, 3: 1, 8: 1, 10: 1, 11: 1, 2: 1, 4: 1, 5: 1, 6: 1, 7: 3 }), { total: 62, faixa: 'Preocupação muito elevada', alerta: 'NAO' });
+caso('EAR', 'tudo 4: os 5 reversos valem 1 (20 + 5 = 25)', tudo(10, 4), { total: 25, faixa: '', alerta: 'NAO', item: '' });
+caso('EAR', 'tudo 1: os 5 reversos valem 4 (5 + 20 = 25)', tudo(10, 1), { total: 25, faixa: '', alerta: 'NAO' });
+caso('EAR', 'diretos em 4 e reversos em 1: máximo 40', com(tudo(10, 4), { 3: 1, 5: 1, 8: 1, 9: 1, 10: 1 }), { total: 40, faixa: '', alerta: 'NAO' });
+caso('EAR', 'diretos em 1 e reversos em 4: mínimo 10', com(tudo(10, 1), { 3: 4, 5: 4, 8: 4, 9: 4, 10: 4 }), { total: 10, faixa: '', alerta: 'NAO' });
+caso('AAQ-II', 'tudo 1: mínimo 7', tudo(7, 1), { total: 7, faixa: '', alerta: 'NAO', item: '' });
+caso('AAQ-II', 'tudo 7: máximo 49', tudo(7, 7), { total: 49, faixa: '', alerta: 'NAO' });
+caso('SWLS', 'tudo 1: mínimo 5, extremamente insatisfeito', tudo(5, 1), { total: 5, faixa: 'Extremamente insatisfeito', alerta: 'NAO', item: '' });
+[[9, 'Extremamente insatisfeito'], [10, 'Insatisfeito'], [14, 'Insatisfeito'], [15, 'Um pouco abaixo da média'], [19, 'Um pouco abaixo da média'], [20, 'Satisfação média'],
+  [24, 'Satisfação média'], [25, 'Satisfação alta'], [29, 'Satisfação alta'], [30, 'Satisfação muito alta'], [35, 'Satisfação muito alta']]
+  .forEach(([t, f]) => caso('SWLS', 'total ' + t, com(tudo(5, 1), (() => { const r = {}; let resta = t - 5; for (let i = 1; i <= 5; i++) { const v = Math.min(6, resta); r[i] = 1 + v; resta -= v; } return r; })()), { total: t, faixa: f, alerta: 'NAO' }));
+caso('MAAS', 'tudo 1: mínimo 15', tudo(15, 1), { total: 15, faixa: '', alerta: 'NAO', item: '' });
+caso('MAAS', 'tudo 6: máximo 90', tudo(15, 6), { total: 90, faixa: '', alerta: 'NAO' });
+caso('WBSI', 'tudo 1: mínimo 15', tudo(15, 1), { total: 15, faixa: '', alerta: 'NAO', item: '' });
+caso('WBSI', 'tudo 5: máximo 75', tudo(15, 5), { total: 75, faixa: '', alerta: 'NAO' });
+ok('PSWQ: resposta 0 recusada (mínimo é 1)', servidor.calc('PSWQ', c => (c === 'item_02' ? 0 : 3)).ok === false);
+ok('PSWQ: resposta 6 recusada (máximo é 5)', servidor.calc('PSWQ', c => (c === 'item_02' ? 6 : 3)).ok === false);
+ok('EAR: resposta 5 recusada (máximo é 4)', servidor.calc('EAR', c => (c === 'item_01' ? 5 : 2)).ok === false);
+ok('SWLS: resposta 8 recusada (máximo é 7)', servidor.calc('SWLS', c => (c === 'item_05' ? 8 : 4)).ok === false);
+ok('PCL-5: item 20 vazio recusado (são 20 itens)', servidor.calc('PCL-5', c => (c === 'item_20' ? '' : 1)).ok === false);
+ok('PCL-5: item 21 não é lido (20 itens)', servidor.calc('PCL-5', c => (c === 'item_21' ? 99 : 1)).ok === true);
+ok('lote A não grava coluna de subescala', (() => { const o = noServidor('PSWQ', tudo(16, 3)); return o.escore_depressao === '' && o.escore_precontemplacao === undefined; })(), noServidor('PSWQ', tudo(16, 3)));
 
 console.log('11. Resposta inválida (servidor recusa)');
 ok('PHQ-9 com um item sem resposta', servidor.calc('PHQ-9', c => (c === 'item_05' ? '' : 1)).ok === false);

@@ -131,6 +131,21 @@ planilha do paciente antes de gravar. Âncoras vindas da aba
 URICA 1–5). A linha do histórico esconde o escore (`escoreOculto`) **antes**
 de desenhar subescalas.
 
+**Escala simples com âncoras na aba (17.3, lote A da HumanTrack):** PCL-5,
+PSWQ, EAR, AAQ-II, SWLS, MAAS e WBSI são escalas de escore único cujos
+itens, instrução e âncoras vivem em `Itens_Instrumentos` (1 `instrucao` +
+n `item` + k `ancora_rotulo`, códigos numéricos lidos em ordem). Propriedades
+novas do catálogo: `valorMin`/`valorMax` (espelho de `min`/`max` em
+`ESCALAS_CALCULO`; sem `opcoes`, o cliente inverte item reverso com
+`valorMin + valorMax − bruto`, a mesma conta do servidor) e `mediaPor`
+(MAAS = 15: o cabeçalho do resultado mostra "média x,x" ao lado do total;
+grava-se só o total). Faixas (`faixas` + `faixasLista`) só onde há fonte
+publicada (PCL-5, PSWQ, SWLS); as demais entram sem `faixas`, com a nota e
+a direção em `faixasLista`. Todas `soProfissional` e `escoreOculto`; três
+pares de cor por família (`trauma`, `bemestar`, `processo`). Carga e
+liberação parciais pela tabela genérica `GRADES_SIMPLES` de
+`gerar_modelo_itens_17_0.py` / `carga_itens_17_0.py`.
+
 ### Renderer unificado de resultado (Pacote 12.7.2)
 `escRenderizarConteudoResultado(modo)` serve a tela imediata E o modal
 do histórico — 1 função, 2 modos. Mudança na tela de resultado é feita

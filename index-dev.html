@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — URICA (4 versões) e motor de subescalas genérico — Pacote 17.2 (20/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — lote A da HumanTrack: PCL-5, PSWQ, EAR, AAQ-II, SWLS, MAAS, WBSI — Pacote 17.3 (20/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -128,6 +128,12 @@
   --c-bss-ink:       #3F4F5E;
   --c-urica-tint:    #DCEEF3;  /* Pacote 17.2 — URICA (as quatro versões), petróleo */
   --c-urica-ink:     #22596B;
+  --c-trauma-tint:   #EFE3E9;  /* Pacote 17.3 — PCL-5, vinho suave */
+  --c-trauma-ink:    #6B3A52;
+  --c-bemestar-tint: #E3F0E5;  /* Pacote 17.3 — EAR, SWLS, MAAS (bem-estar), verde-folha */
+  --c-bemestar-ink:  #2F6B46;
+  --c-processo-tint: #ECE6F3;  /* Pacote 17.3 — PSWQ, AAQ-II, WBSI (processos), lilás */
+  --c-processo-ink:  #5A467F;
 
   /* ---------- Módulos do menu · tinte de identificação ---------- */
   --c-mod-anamnese:  #E7E6F5;  /* Anamnese */
@@ -273,6 +279,9 @@
     --c-bhs-tint:    #2A2418; --c-bhs-ink:    #D2BE9A;
     --c-bss-tint:    #1E252C; --c-bss-ink:    #AEBFCD;
     --c-urica-tint:  #15303A; --c-urica-ink:  #8FC9DB;
+    --c-trauma-tint: #2E1F28; --c-trauma-ink: #D9AEC4;
+    --c-bemestar-tint:#192B1E; --c-bemestar-ink:#9FD4B0;
+    --c-processo-tint:#241F33; --c-processo-ink:#C3B4E6;
     --c-chart-neg:   #D97A7A;
     --c-chart-neutro:#6E6B85;
     --c-chart-pos:   #5FAFA8;
@@ -2778,6 +2787,10 @@ button.cab-no-item{cursor:pointer;}
 .esc-card.bhs{border-color:var(--c-bhs-tint);}.esc-card.bhs .esc-card-title{color:var(--c-bhs-ink);}
 .esc-card.bss{border-color:var(--c-bss-tint);}.esc-card.bss .esc-card-title{color:var(--c-bss-ink);}
 .esc-card.urica{border-color:var(--c-urica-tint);}.esc-card.urica .esc-card-title{color:var(--c-urica-ink);}
+/* 17.3 — lote A: três famílias de cor */
+.esc-card.trauma{border-color:var(--c-trauma-tint);}.esc-card.trauma .esc-card-title{color:var(--c-trauma-ink);}
+.esc-card.bemestar{border-color:var(--c-bemestar-tint);}.esc-card.bemestar .esc-card-title{color:var(--c-bemestar-ink);}
+.esc-card.processo{border-color:var(--c-processo-tint);}.esc-card.processo .esc-card-title{color:var(--c-processo-ink);}
 
 /* Subtítulo de aviso primeira vez (leitura do "Como Usar" obrigatória) */
 .esc-sub-aviso{
@@ -3067,6 +3080,34 @@ button.cab-no-item{cursor:pointer;}
 .esc-tint-urica .esc-btn-primary { background:var(--c-urica-ink); }
 .esc-tint-urica .esc-btn-primary:hover { background:var(--c-urica-ink); }
 .esc-tint-urica .esc-btn-primary:disabled { background: transparent; color:var(--c-urica-ink); border:2px solid var(--c-urica-ink); }
+/* 17.3 — lote A: trauma (PCL-5), bemestar (EAR, SWLS, MAAS), processo (PSWQ, AAQ-II, WBSI) */
+.esc-tint-trauma .esc-aplic-head { border-left-color:var(--c-trauma-ink); }
+.esc-tint-trauma .esc-aplic-head h2 { color:var(--c-trauma-ink); }
+.esc-tint-trauma .esc-aplic-head .esc-enunciado { background:var(--c-trauma-tint); }
+.esc-tint-trauma .esc-item-num { background:var(--c-trauma-ink); }
+.esc-tint-trauma .esc-opcao:hover { border-color:var(--c-trauma-ink); background:var(--c-trauma-tint); }
+.esc-tint-trauma .esc-opcao.selecionada { background:var(--c-trauma-ink); color:var(--c-ink-inv); border-color:var(--c-trauma-ink); box-shadow:var(--sh-2); }
+.esc-tint-trauma .esc-btn-primary { background:var(--c-trauma-ink); }
+.esc-tint-trauma .esc-btn-primary:hover { background:var(--c-trauma-ink); }
+.esc-tint-trauma .esc-btn-primary:disabled { background: transparent; color:var(--c-trauma-ink); border:2px solid var(--c-trauma-ink); }
+.esc-tint-bemestar .esc-aplic-head { border-left-color:var(--c-bemestar-ink); }
+.esc-tint-bemestar .esc-aplic-head h2 { color:var(--c-bemestar-ink); }
+.esc-tint-bemestar .esc-aplic-head .esc-enunciado { background:var(--c-bemestar-tint); }
+.esc-tint-bemestar .esc-item-num { background:var(--c-bemestar-ink); }
+.esc-tint-bemestar .esc-opcao:hover { border-color:var(--c-bemestar-ink); background:var(--c-bemestar-tint); }
+.esc-tint-bemestar .esc-opcao.selecionada { background:var(--c-bemestar-ink); color:var(--c-ink-inv); border-color:var(--c-bemestar-ink); box-shadow:var(--sh-2); }
+.esc-tint-bemestar .esc-btn-primary { background:var(--c-bemestar-ink); }
+.esc-tint-bemestar .esc-btn-primary:hover { background:var(--c-bemestar-ink); }
+.esc-tint-bemestar .esc-btn-primary:disabled { background: transparent; color:var(--c-bemestar-ink); border:2px solid var(--c-bemestar-ink); }
+.esc-tint-processo .esc-aplic-head { border-left-color:var(--c-processo-ink); }
+.esc-tint-processo .esc-aplic-head h2 { color:var(--c-processo-ink); }
+.esc-tint-processo .esc-aplic-head .esc-enunciado { background:var(--c-processo-tint); }
+.esc-tint-processo .esc-item-num { background:var(--c-processo-ink); }
+.esc-tint-processo .esc-opcao:hover { border-color:var(--c-processo-ink); background:var(--c-processo-tint); }
+.esc-tint-processo .esc-opcao.selecionada { background:var(--c-processo-ink); color:var(--c-ink-inv); border-color:var(--c-processo-ink); box-shadow:var(--sh-2); }
+.esc-tint-processo .esc-btn-primary { background:var(--c-processo-ink); }
+.esc-tint-processo .esc-btn-primary:hover { background:var(--c-processo-ink); }
+.esc-tint-processo .esc-btn-primary:disabled { background: transparent; color:var(--c-processo-ink); border:2px solid var(--c-processo-ink); }
 
 .esc-tint-teal .esc-aplic-head { border-left-color:var(--c-srq20-ink); }
 .esc-tint-teal .esc-aplic-head h2 { color:var(--c-srq20-ink); }
@@ -3183,6 +3224,9 @@ button.cab-no-item{cursor:pointer;}
 .esch-bloco.bhs    { border-left:5px solid var(--c-bhs-ink); }
 .esch-bloco.bss    { border-left:5px solid var(--c-bss-ink); }
 .esch-bloco.urica  { border-left:5px solid var(--c-urica-ink); }
+.esch-bloco.trauma   { border-left:5px solid var(--c-trauma-ink); }   /* 17.3 */
+.esch-bloco.bemestar { border-left:5px solid var(--c-bemestar-ink); }
+.esch-bloco.processo { border-left:5px solid var(--c-processo-ink); }
 
 .esch-bloco-head {
   display: flex; align-items: center; gap: 10px;
@@ -3205,6 +3249,9 @@ button.cab-no-item{cursor:pointer;}
 .esch-bloco.bhs    .esch-bloco-titulo { color:var(--c-bhs-ink); }
 .esch-bloco.bss    .esch-bloco-titulo { color:var(--c-bss-ink); }
 .esch-bloco.urica  .esch-bloco-titulo { color:var(--c-urica-ink); }
+.esch-bloco.trauma   .esch-bloco-titulo { color:var(--c-trauma-ink); }   /* 17.3 */
+.esch-bloco.bemestar .esch-bloco-titulo { color:var(--c-bemestar-ink); }
+.esch-bloco.processo .esch-bloco-titulo { color:var(--c-processo-ink); }
 
 .esch-bloco-contagem {
    font:var(--t-body-sm);font-weight: 600; color:var(--c-ink-3);
@@ -3420,6 +3467,8 @@ button.cab-no-item{cursor:pointer;}
   opacity: .65;
   vertical-align: super;
 }
+/* 17.3 — MAAS: média dos itens abaixo do total */
+.rr-header-media { display:block; font:var(--t-body-sm); opacity:.85; margin:2px 0 6px; }
 .rr-header-faixa {
   display: inline-block;
   background: rgba(255,255,255,.2);
@@ -7143,6 +7192,71 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <div class="esc-card-title">URICA — Hábitos alimentares · Motivação para a mudança</div>
         <div class="esc-card-meta">
           <span>24 afirmações · como você se vê hoje</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <!-- Pacote 17.3 — lote A da HumanTrack: sete escalas de escore único, todas 'soProfissional' (decisão de
+           20/11/2026) — o cartão só aparece quando o profissional libera aquela escala para o paciente. -->
+      <button class="esc-card trauma hidden" id="escCardPCL5" type="button" onclick="escClicarCardEscala('PCL-5')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-heart-crack"/></svg></span>
+        <div class="esc-card-title">PCL-5 — Reações após um evento muito difícil</div>
+        <div class="esc-card-meta">
+          <span>20 itens · pensando no último mês</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card processo hidden" id="escCardPSWQ" type="button" onclick="escClicarCardEscala('PSWQ')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-zap"/></svg></span>
+        <div class="esc-card-title">PSWQ — Preocupação</div>
+        <div class="esc-card-meta">
+          <span>16 afirmações · o quanto cada uma descreve você</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card bemestar hidden" id="escCardEAR" type="button" onclick="escClicarCardEscala('EAR')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-star"/></svg></span>
+        <div class="esc-card-title">EAR — Autoestima</div>
+        <div class="esc-card-meta">
+          <span>10 afirmações · o quanto concorda com cada uma</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card processo hidden" id="escCardAAQ2" type="button" onclick="escClicarCardEscala('AAQ-II')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-puzzle"/></svg></span>
+        <div class="esc-card-title">AAQ-II — Aceitação e Ação</div>
+        <div class="esc-card-meta">
+          <span>7 afirmações · o quanto cada uma é verdadeira para você</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card bemestar hidden" id="escCardSWLS" type="button" onclick="escClicarCardEscala('SWLS')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-sun"/></svg></span>
+        <div class="esc-card-title">SWLS — Satisfação com a Vida</div>
+        <div class="esc-card-meta">
+          <span>5 afirmações · o quanto concorda com cada uma</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card bemestar hidden" id="escCardMAAS" type="button" onclick="escClicarCardEscala('MAAS')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-leaf"/></svg></span>
+        <div class="esc-card-title">MAAS — Atenção e Consciência Plenas</div>
+        <div class="esc-card-meta">
+          <span>15 afirmações · com que frequência acontece com você</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card processo hidden" id="escCardWBSI" type="button" onclick="escClicarCardEscala('WBSI')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-layers"/></svg></span>
+        <div class="esc-card-title">WBSI — Supressão de Pensamentos</div>
+        <div class="esc-card-meta">
+          <span>15 afirmações · o quanto concorda com cada uma</span>
         </div>
         <span class="esc-card-arrow">›</span>
       </button>
@@ -15992,7 +16106,8 @@ var ESC_TEXTOS = {};        // { bdi2: { instrucao, titulos, itens, opcoes, anco
 var ESC_LIBERADOS = null;   // null = ainda nao perguntou ao servidor; [] = nenhum
 // Cartao do menu por instrumento — o cartao so aparece com o instrumento liberado
 var ESC_CARTOES_POR_INSTRUMENTO = { bdi2: 'escCardBDI2', bai: 'escCardBAI', bhs: 'escCardBHS', bsi: 'escCardBSS', // 17.1: + BHS e BSS
-  urica_alcool: 'escCardURICA_A', urica_drogas: 'escCardURICA_D', urica_tabaco: 'escCardURICA_T', urica_alimentar: 'escCardURICA_HA' }; // 17.2
+  urica_alcool: 'escCardURICA_A', urica_drogas: 'escCardURICA_D', urica_tabaco: 'escCardURICA_T', urica_alimentar: 'escCardURICA_HA', // 17.2
+  pcl5: 'escCardPCL5', pswq: 'escCardPSWQ', ear: 'escCardEAR', aaq2: 'escCardAAQ2', swls: 'escCardSWLS', maas: 'escCardMAAS', wbsi: 'escCardWBSI' }; // 17.3
 
 // Valor numerico de uma resposta. Nas escalas do 12.x ja e numero; no BDI-II os
 // itens 16 e 18 guardam o codigo da folha ('2b'), e ali so o digito pontua.
@@ -16773,9 +16888,221 @@ const ESC_ESCALAS = {
     faixasLista: [
       '<em style="color:var(--c-ink-3);">Sem pontos de corte validados para a versão brasileira (Bittencourt et al., 2012; McConnaughy, Prochaska & Velicer, 1983). Subescala = soma dos 6 itens (6–30); prontidão = média(C) + média(A) + média(M) − média(PC), de −4 a +14 (DiClemente & Hughes, 1990).</em>'
     ]
+  },
+
+  // ---- Pacote 17.3 — lote A da HumanTrack: sete escalas de escore único ----
+  // Textos (itens, instrução, âncoras) na aba privada Itens_Instrumentos; âncoras iguais para todos os itens
+  // de cada escala, lidas em ordem numérica. Todas 'soProfissional' e 'escoreOculto' (decisão do usuário,
+  // 20/11/2026). 'valorMin'/'valorMax' espelham min/max de ESCALAS_CALCULO no servidor e alimentam a inversão
+  // dos itens reversos (min + max − bruto). Faixas só onde há fonte (regra de 19/11/2026).
+  // Referências:
+  //   PCL-5 — Blevins, Weathers, Davis, Witte & Domino (2015). J. Traumatic Stress, 28(6), 489–498 (original);
+  //     Lima et al. (2016). Trends Psychiatry Psychother., 38(4), 207–215 (adaptação); Osório et al. (2017).
+  //     Arch. Clin. Psychiatry, 44(1), 10–19 (versão brasileira; âncoras); Pereira-Lima et al. (2019). Eur. J.
+  //     Psychotraumatology, 10(1), 1581020 — corte ≥ 36 (eficiência geral 0,80). Sem item de risco suicida: o
+  //     marcador que a HumanTrack põe no item 15 (irritabilidade) foi gerado por LLM e não entra.
+  //   PSWQ — Meyer, Miller, Metzger & Borkovec (1990). Behav. Res. Ther., 28(6), 487–495; Castillo, Macrini,
+  //     Cheniaux & Landeira-Fernandez (2010). Span. J. Psychol., 13(1), 431–443 (versão brasileira); Behar,
+  //     Alcaine, Zuellig & Borkovec (2003). J. Behav. Ther. Exp. Psychiatry, 34(1), 25–43 — cortes 45 (amostra
+  //     clínica de TAG) e 62 (universitários). Reversos 1, 3, 8, 10, 11.
+  //   EAR — Rosenberg (1965); Hutz (2000); Hutz & Zanon (2011). Avaliação Psicológica, 10(1), 41–49 (versão
+  //     brasileira, tabelas normativas; reversos 3, 5, 8, 9, 10); Sbicigo, Bandeira & Dell'Aglio (2010).
+  //     Psico-USF, 15(3), 395–403. Sem corte validado.
+  //   AAQ-II — Bond et al. (2011). Behavior Therapy, 42(4), 676–688; Barbosa & Murta (2015). Psico-USF, 20(1),
+  //     75–85 (versão brasileira). 1 = nunca verdadeiro … 7 = sempre verdadeiro; maior = mais inflexibilidade
+  //     (a HumanTrack traz os pesos invertidos; entra como publicada). Sem corte validado.
+  //   SWLS — Diener, Emmons, Larsen & Griffin (1985). J. Pers. Assess., 49(1), 71–75; Gouveia, Milfont, Fonseca
+  //     & Coelho (2009). Soc. Indic. Res., 90(2), 267–277 (Brasil). Faixas de Diener (2006, "Understanding
+  //     scores on the SWLS") e Pavot & Diener (2008) — não validadas no Brasil (nota na tela).
+  //   MAAS — Brown & Ryan (2003). J. Pers. Soc. Psychol., 84(4), 822–848; Barros, Kozasa, Souza & Ronzani
+  //     (2015). Psicol. Reflex. Crít., 28(1), 87–95 (versão brasileira). Leitura pela média (1–6). Sem corte.
+  //   WBSI — Wegner & Zanakos (1994). J. Personality, 62(4), 615–640; Talask et al. (2018). Trends Psychiatry
+  //     Psychother., 40(1) (tradução e adaptação; sem validação final nem corte).
+  'PCL-5': {
+    nomeCompleto: 'PCL-5 — Reações após um evento muito difícil',
+    nomeCurto: 'PCL-5',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-heart-crack></use></svg>',
+    corPrefix: 'trauma',
+    instrumentoId: 'pcl5',
+    textoDaAba: true,
+    escoreOculto: true,
+    soProfissional: true,
+    valorMin: 0,
+    valorMax: 4,
+    subtitulo: '20 itens · 5 a 10 minutos · Pensando no <strong>último mês</strong>',
+    escoreMax: 80,
+    itens: [
+      { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }, { id: 8 }, { id: 9 }, { id: 10 },
+      { id: 11 }, { id: 12 }, { id: 13 }, { id: 14 }, { id: 15 }, { id: 16 }, { id: 17 }, { id: 18 }, { id: 19 }, { id: 20 }
+    ],
+    faixas: [
+      { min: 36, max: 80, rotulo: 'Sugestivo de TEPT',        cor: 'vermelho' },
+      { min: 0,  max: 35, rotulo: 'Abaixo do ponto de corte', cor: 'verde'    }
+    ],
+    faixasLista: [
+      '<strong>0-35</strong> — Abaixo do ponto de corte',
+      '<strong>36-80</strong> — Sugestivo de TEPT',
+      '<em style="color:var(--c-ink-3);">Corte ≥ 36 da versão brasileira (Pereira-Lima et al., 2019; eficiência geral 0,80); a original sugere 31–33 (Blevins et al., 2015). Triagem — não substitui a entrevista clínica.</em>'
+    ]
+  },
+
+  'PSWQ': {
+    nomeCompleto: 'PSWQ — Preocupação',
+    nomeCurto: 'PSWQ',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-zap></use></svg>',
+    corPrefix: 'processo',
+    instrumentoId: 'pswq',
+    textoDaAba: true,
+    escoreOculto: true,
+    soProfissional: true,
+    valorMin: 1,
+    valorMax: 5,
+    subtitulo: '16 afirmações · 3 a 5 minutos · O quanto cada uma <strong>descreve você</strong>',
+    escoreMax: 80,
+    // Reversos 1, 3, 8, 10, 11 (Meyer et al., 1990): pontuam 6 − resposta.
+    itens: [
+      { id: 1, reverso: true }, { id: 2 }, { id: 3, reverso: true }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 },
+      { id: 8, reverso: true }, { id: 9 }, { id: 10, reverso: true }, { id: 11, reverso: true }, { id: 12 },
+      { id: 13 }, { id: 14 }, { id: 15 }, { id: 16 }
+    ],
+    faixas: [
+      { min: 62, max: 80, rotulo: 'Preocupação muito elevada', cor: 'vermelho' },
+      { min: 45, max: 61, rotulo: 'Preocupação elevada',       cor: 'laranja'  },
+      { min: 16, max: 44, rotulo: 'Abaixo do corte clínico',   cor: 'verde'    }
+    ],
+    faixasLista: [
+      '<strong>16-44</strong> — Abaixo do corte clínico',
+      '<strong>45-61</strong> — Preocupação elevada',
+      '<strong>62-80</strong> — Preocupação muito elevada',
+      '<em style="color:var(--c-ink-3);">Cortes de Behar et al. (2003): 45 separa pacientes com TAG de controles; 62 em universitários. Sem norma brasileira (Castillo et al., 2010).</em>'
+    ]
+  },
+
+  'EAR': {
+    nomeCompleto: 'EAR — Autoestima',
+    nomeCurto: 'EAR (Rosenberg)',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-star></use></svg>',
+    corPrefix: 'bemestar',
+    instrumentoId: 'ear',
+    textoDaAba: true,
+    escoreOculto: true,
+    soProfissional: true,
+    valorMin: 1,
+    valorMax: 4,
+    subtitulo: '10 afirmações · 2 a 3 minutos · O quanto <strong>concorda</strong> com cada uma',
+    escoreMax: 40,
+    // Reversos 3, 5, 8, 9, 10 (Hutz & Zanon, 2011): pontuam 5 − resposta.
+    itens: [
+      { id: 1 }, { id: 2 }, { id: 3, reverso: true }, { id: 4 }, { id: 5, reverso: true },
+      { id: 6 }, { id: 7 }, { id: 8, reverso: true }, { id: 9, reverso: true }, { id: 10, reverso: true }
+    ],
+    faixasLista: [
+      '<strong>10-40</strong> — quanto maior, maior a autoestima',
+      '<em style="color:var(--c-ink-3);">Sem pontos de corte validados: a leitura é pelas tabelas normativas por idade e sexo de Hutz & Zanon (2011) e pela evolução do próprio paciente.</em>'
+    ]
+  },
+
+  'AAQ-II': {
+    nomeCompleto: 'AAQ-II — Aceitação e Ação',
+    nomeCurto: 'AAQ-II',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-puzzle></use></svg>',
+    corPrefix: 'processo',
+    instrumentoId: 'aaq2',
+    textoDaAba: true,
+    escoreOculto: true,
+    soProfissional: true,
+    valorMin: 1,
+    valorMax: 7,
+    subtitulo: '7 afirmações · 2 a 3 minutos · O quanto cada uma é <strong>verdadeira</strong> para você',
+    escoreMax: 49,
+    itens: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }],
+    faixasLista: [
+      '<strong>7-49</strong> — quanto maior, maior a inflexibilidade psicológica (esquiva experiencial)',
+      '<em style="color:var(--c-ink-3);">Sem pontos de corte validados (Barbosa & Murta, 2015; Bond et al., 2011). Sensível à mudança: acompanhe ao longo do tratamento.</em>'
+    ]
+  },
+
+  'SWLS': {
+    nomeCompleto: 'SWLS — Satisfação com a Vida',
+    nomeCurto: 'SWLS',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-sun></use></svg>',
+    corPrefix: 'bemestar',
+    instrumentoId: 'swls',
+    textoDaAba: true,
+    escoreOculto: true,
+    soProfissional: true,
+    valorMin: 1,
+    valorMax: 7,
+    subtitulo: '5 afirmações · 1 a 2 minutos · O quanto <strong>concorda</strong> com cada uma',
+    escoreMax: 35,
+    itens: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }],
+    faixas: [
+      { min: 30, max: 35, rotulo: 'Satisfação muito alta',     cor: 'verde'    },
+      { min: 25, max: 29, rotulo: 'Satisfação alta',           cor: 'verde'    },
+      { min: 20, max: 24, rotulo: 'Satisfação média',          cor: 'amarelo'  },
+      { min: 15, max: 19, rotulo: 'Um pouco abaixo da média',  cor: 'amarelo'  },
+      { min: 10, max: 14, rotulo: 'Insatisfeito',              cor: 'laranja'  },
+      { min: 5,  max: 9,  rotulo: 'Extremamente insatisfeito', cor: 'vermelho' }
+    ],
+    faixasLista: [
+      '<strong>5-9</strong> — Extremamente insatisfeito',
+      '<strong>10-14</strong> — Insatisfeito',
+      '<strong>15-19</strong> — Um pouco abaixo da média',
+      '<strong>20-24</strong> — Satisfação média',
+      '<strong>25-29</strong> — Satisfação alta',
+      '<strong>30-35</strong> — Satisfação muito alta',
+      '<em style="color:var(--c-ink-3);">Faixas de Diener (2006) e Pavot & Diener (2008), não validadas no Brasil (Gouveia et al., 2009): guia auxiliar, não norma.</em>'
+    ]
+  },
+
+  'MAAS': {
+    nomeCompleto: 'MAAS — Atenção e Consciência Plenas',
+    nomeCurto: 'MAAS',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-leaf></use></svg>',
+    corPrefix: 'bemestar',
+    instrumentoId: 'maas',
+    textoDaAba: true,
+    escoreOculto: true,
+    soProfissional: true,
+    valorMin: 1,
+    valorMax: 6,
+    mediaPor: 15, // a MAAS é lida pela média dos 15 itens (1–6); o total (15–90) é o que se grava
+    subtitulo: '15 afirmações · 3 a 5 minutos · Com que <strong>frequência</strong> acontece com você',
+    escoreMax: 90,
+    itens: [
+      { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }, { id: 8 },
+      { id: 9 }, { id: 10 }, { id: 11 }, { id: 12 }, { id: 13 }, { id: 14 }, { id: 15 }
+    ],
+    faixasLista: [
+      '<strong>15-90</strong> (média 1-6) — quanto maior, mais atenção plena no dia a dia',
+      '<em style="color:var(--c-ink-3);">Sem pontos de corte validados (Barros et al., 2015; Brown & Ryan, 2003). Adultos saudáveis costumam somar entre 58 e 65 nos estudos internacionais.</em>'
+    ]
+  },
+
+  'WBSI': {
+    nomeCompleto: 'WBSI — Supressão de Pensamentos',
+    nomeCurto: 'WBSI',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-layers></use></svg>',
+    corPrefix: 'processo',
+    instrumentoId: 'wbsi',
+    textoDaAba: true,
+    escoreOculto: true,
+    soProfissional: true,
+    valorMin: 1,
+    valorMax: 5,
+    subtitulo: '15 afirmações · 3 a 5 minutos · O quanto <strong>concorda</strong> com cada uma',
+    escoreMax: 75,
+    itens: [
+      { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }, { id: 8 },
+      { id: 9 }, { id: 10 }, { id: 11 }, { id: 12 }, { id: 13 }, { id: 14 }, { id: 15 }
+    ],
+    faixasLista: [
+      '<strong>15-75</strong> — quanto maior, maior a tendência a suprimir pensamentos indesejados',
+      '<em style="color:var(--c-ink-3);">Sem pontos de corte validados: a versão brasileira é uma adaptação transcultural (Talask et al., 2018). Leitura pela evolução e em conjunto com a entrevista.</em>'
+    ]
   }
 
-  // Módulo 4: 5 escalas do 12.x + BDI-II e BAI (17.0) + BHS e BSS (17.1) + as quatro URICA (17.2)
+  // Módulo 4: 5 escalas do 12.x + BDI-II e BAI (17.0) + BHS e BSS (17.1) + as quatro URICA (17.2) + lote A (17.3)
 };
 
 // ============================================================
@@ -16928,7 +17255,7 @@ async function escIniciarAplicacao(codigoEscala) {
   // para que a barra de progresso, borda e botões sigam a cor da escala
   const secAplic = document.getElementById('sec-escalas-aplicar');
   if (secAplic) {
-    secAplic.classList.remove('esc-tint-coral', 'esc-tint-amber', 'esc-tint-green', 'esc-tint-purple', 'esc-tint-gray', 'esc-tint-orange', 'esc-tint-blue', 'esc-tint-teal', 'esc-tint-bdi2', 'esc-tint-bai', 'esc-tint-bhs', 'esc-tint-bss', 'esc-tint-urica');
+    secAplic.classList.remove('esc-tint-coral', 'esc-tint-amber', 'esc-tint-green', 'esc-tint-purple', 'esc-tint-gray', 'esc-tint-orange', 'esc-tint-blue', 'esc-tint-teal', 'esc-tint-bdi2', 'esc-tint-bai', 'esc-tint-bhs', 'esc-tint-bss', 'esc-tint-urica', 'esc-tint-trauma', 'esc-tint-bemestar', 'esc-tint-processo');
     secAplic.classList.add('esc-tint-' + (def.corPrefix || 'coral'));
   }
 
@@ -17166,9 +17493,12 @@ function escCalcularEscoreEAlerta(codigoEscala, respostas) {
   // Valor máximo da escala Likert (ex: PHQ-9 vai 0-3, PSS-10 vai 0-4)
   // Usado para inverter itens reversos. 17.1: o maior 'valor', não o último
   // (o BHS lista Certo = 1 antes de Errado = 0, na ordem da folha).
+  // 17.3: escala com âncoras na aba (sem 'opcoes') declara valorMin/valorMax no catálogo (PSWQ 1–5,
+  // EAR 1–4); a inversão é min + max − bruto, a mesma conta do servidor (_escoresDaEscala_).
   const escalaMax = (def.opcoes && def.opcoes.length)
     ? Math.max.apply(null, def.opcoes.map(o => Number(o.valor)))
-    : 3;
+    : (def.valorMax || 3);
+  const escalaMin = def.valorMin || 0;
 
   // Pacote 12.5: escalas multi-subescala (DASS-21) acumulam somas separadas
   const subescalasSomas = {}; // { depressao: 0, ansiedade: 0, estresse: 0 }
@@ -17178,7 +17508,7 @@ function escCalcularEscoreEAlerta(codigoEscala, respostas) {
     const bruto = escValorNumerico(respostas[item.id]);
 
     // Se o item é reverso, inverte: 0↔max, 1↔max-1, etc. (Pacote 12.4 / PSS-10)
-    const v = item.reverso ? (escalaMax - bruto) : bruto;
+    const v = item.reverso ? (escalaMin + escalaMax - bruto) : bruto;
     if (!item.naoPontua) escoreTotal += v; // 17.1: BSS 20 e 21 são registro clínico, fora do total
 
     // Se o item pertence a uma subescala, acumula separadamente (Pacote 12.5 / DASS-21)
@@ -17701,6 +18031,9 @@ function escRrBlocoHeaderEscore(reg, def) {
     '<div class="rr-header-escore">' + escapeHtmlAuto(String(escore)) +
       (escoreMax ? '<span class="rr-header-escore-max">/' + escapeHtmlAuto(String(escoreMax)) + '</span>' : '') +
     '</div>' +
+    // 17.3: escala lida pela média dos itens (MAAS: total ÷ 15, de 1 a 6)
+    ((def && def.mediaPor && escore !== '—' && !isNaN(Number(escore)))
+      ? '<span class="rr-header-media">média ' + escapeHtmlAuto((Math.round(Number(escore) / def.mediaPor * 10) / 10).toFixed(1).replace('.', ',')) + '</span>' : '') +
     (faixaRotulo ? '<span class="rr-header-faixa">' + escapeHtmlAuto(faixaRotulo) + '</span>' : '') +
   '</div>';
 }
@@ -18162,7 +18495,8 @@ var ESC_HIST_STATE = {
 // Ordem fixa dos blocos (casada com a ordem do menu do Módulo 4)
 // Pacote 17.0: sem BDI-II e BAI aqui, o registro é gravado e fica invisível —
 // esta lista alimenta o histórico do paciente E o card Escalas do profissional.
-var ESC_HIST_ORDEM = ['PHQ-9', 'GAD-7', 'PSS-10', 'DASS-21', 'SRQ-20', 'BDI-II', 'BAI', 'BHS', 'BSS', 'URICA-A', 'URICA-D', 'URICA-T', 'URICA-HA']; // 17.1: + BHS e BSS; 17.2: + URICA
+var ESC_HIST_ORDEM = ['PHQ-9', 'GAD-7', 'PSS-10', 'DASS-21', 'SRQ-20', 'BDI-II', 'BAI', 'BHS', 'BSS', 'URICA-A', 'URICA-D', 'URICA-T', 'URICA-HA', // 17.1: + BHS e BSS; 17.2: + URICA
+  'PCL-5', 'PSWQ', 'EAR', 'AAQ-II', 'SWLS', 'MAAS', 'WBSI']; // 17.3: lote A da HumanTrack
 
 function escHistInvalidarCache() {
   ESC_HIST_STATE.invalidado = true;
@@ -18290,7 +18624,7 @@ function escHistRenderBlocos(cont, registros) {
     cont.innerHTML = '<div class="esch-vazio">' +
       '<span class="esch-vazio-icon"><svg class=ico aria-hidden=true><use href=#i-inbox></use></svg></span>' +
       '<div class="esch-vazio-titulo">Você ainda não aplicou nenhuma escala</div>' +
-      '<div class="esch-vazio-texto">Quando você preencher sua primeira escala (PHQ-9, GAD-7, PSS-10, DASS-21, SRQ-20, BDI-II, BAI, BHS, BSS ou URICA), ela aparecerá aqui.</div>' +
+      '<div class="esch-vazio-texto">Quando você preencher sua primeira escala (PHQ-9, GAD-7, PSS-10, DASS-21, SRQ-20, BDI-II, BAI, BHS, BSS, URICA ou outra liberada pelo profissional), ela aparecerá aqui.</div>' +
     '</div>';
     return;
   }

@@ -56,7 +56,7 @@
 // na hora de mostrar (05/10/2026)
 // Rodada DOCS_2026-10-07 — index-dev.html e o index oficial: SITE_URL aponta para ele; texto do aviso de backup
 // com falha alinhado ao backup sob demanda (07/10/2026)
-var VERSAO_PACOTE = '17.2';
+var VERSAO_PACOTE = '17.3';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -3062,14 +3062,17 @@ function lerEscalas(sigla, antes, limite) {
 //      com hash divergente => nao entrega texto nenhum e nao aparece no menu.
 //   4. A acao nao grava nada (fica FORA de VMC_ACOES_GRAVACAO no frontend).
 
-var INSTRUMENTOS_VALIDOS = ['bdi2', 'bai', 'bhs', 'bsi', 'urica_alcool', 'urica_drogas', 'urica_tabaco', 'urica_alimentar']; // 17.1: + BHS e BSS (id tecnico 'bsi'); 17.2: + as quatro URICA
+var INSTRUMENTOS_VALIDOS = ['bdi2', 'bai', 'bhs', 'bsi', 'urica_alcool', 'urica_drogas', 'urica_tabaco', 'urica_alimentar', // 17.1: + BHS e BSS (id tecnico 'bsi'); 17.2: + as quatro URICA
+  'pcl5', 'pswq', 'ear', 'aaq2', 'swls', 'maas', 'wbsi']; // 17.3: lote A da HumanTrack (PCL-5, PSWQ, EAR, AAQ-II, SWLS, MAAS, WBSI)
 
 // 17.1.2 (decisao do usuario, 19/11/2026): instrumentos que o paciente so ve quando o profissional
 // libera para ele - lista em 'escalas_liberadas' na linha do paciente na Controle (coluna criada no
 // primeiro uso). O profissional sempre pode aplicar pelo "Nova escala".
 // 17.2 (decisao do usuario, 20/11/2026): as quatro URICA tambem - o profissional libera a versao certa para
 // cada paciente; sem isso, quatro cartoes de dependencia apareceriam no menu de quem nao usa.
-var INSTRUMENTOS_SO_PROFISSIONAL = ['bsi', 'urica_alcool', 'urica_drogas', 'urica_tabaco', 'urica_alimentar'];
+// 17.3 (decisao do usuario, 20/11/2026): as sete do lote A tambem - o profissional libera o que cada paciente responde.
+var INSTRUMENTOS_SO_PROFISSIONAL = ['bsi', 'urica_alcool', 'urica_drogas', 'urica_tabaco', 'urica_alimentar',
+  'pcl5', 'pswq', 'ear', 'aaq2', 'swls', 'maas', 'wbsi'];
 
 function _escalasLiberadasLista_(valor) {
   return String(valor === undefined || valor === null ? '' : valor).toLowerCase().split(',')
@@ -4031,7 +4034,16 @@ var ESCALAS_CALCULO = {
   'URICA-A':{n:24,min:1,max:5,sub:{precontemplacao:[1,5,7,16,19,22],contemplacao:[3,6,9,13,14,17],acao:[2,4,8,11,18,23],manutencao:[10,12,15,20,21,24]},multi:true,siglaSub:{precontemplacao:'PC',contemplacao:'C',acao:'A',manutencao:'M'},composto:{chave:'prontidao',sigla:'Prontidão',mais:['contemplacao','acao','manutencao'],menos:['precontemplacao'],casas:1}},
   'URICA-D':{n:24,min:1,max:5,sub:{precontemplacao:[1,5,7,16,19,22],contemplacao:[3,6,9,13,14,17],acao:[2,4,8,11,18,23],manutencao:[10,12,15,20,21,24]},multi:true,siglaSub:{precontemplacao:'PC',contemplacao:'C',acao:'A',manutencao:'M'},composto:{chave:'prontidao',sigla:'Prontidão',mais:['contemplacao','acao','manutencao'],menos:['precontemplacao'],casas:1}},
   'URICA-T':{n:24,min:1,max:5,sub:{precontemplacao:[1,5,7,16,19,22],contemplacao:[3,6,9,13,14,17],acao:[2,4,8,11,18,23],manutencao:[10,12,15,20,21,24]},multi:true,siglaSub:{precontemplacao:'PC',contemplacao:'C',acao:'A',manutencao:'M'},composto:{chave:'prontidao',sigla:'Prontidão',mais:['contemplacao','acao','manutencao'],menos:['precontemplacao'],casas:1}},
-  'URICA-HA':{n:24,min:1,max:5,sub:{precontemplacao:[1,5,7,16,19,22],contemplacao:[3,6,9,13,14,17],acao:[2,4,8,11,18,23],manutencao:[10,12,15,20,21,24]},multi:true,siglaSub:{precontemplacao:'PC',contemplacao:'C',acao:'A',manutencao:'M'},composto:{chave:'prontidao',sigla:'Prontidão',mais:['contemplacao','acao','manutencao'],menos:['precontemplacao'],casas:1}}
+  'URICA-HA':{n:24,min:1,max:5,sub:{precontemplacao:[1,5,7,16,19,22],contemplacao:[3,6,9,13,14,17],acao:[2,4,8,11,18,23],manutencao:[10,12,15,20,21,24]},multi:true,siglaSub:{precontemplacao:'PC',contemplacao:'C',acao:'A',manutencao:'M'},composto:{chave:'prontidao',sigla:'Prontidão',mais:['contemplacao','acao','manutencao'],menos:['precontemplacao'],casas:1}},
+  // 17.3 - lote A da HumanTrack (escore unico). Faixas so onde ha fonte: PCL-5 >= 36 (Pereira-Lima et al., 2019);
+  // PSWQ 45 e 62 (Behar et al., 2003); SWLS (Diener, 2006; Pavot & Diener, 2008). EAR, AAQ-II, MAAS e WBSI sem corte validado.
+  'PCL-5':{n:20,max:4,faixas:[[36,80,'Sugestivo de TEPT'],[0,35,'Abaixo do ponto de corte']]},
+  'PSWQ':{n:16,min:1,max:5,rev:[1,3,8,10,11],faixas:[[62,80,'Preocupação muito elevada'],[45,61,'Preocupação elevada'],[16,44,'Abaixo do corte clínico']]},
+  'EAR':{n:10,min:1,max:4,rev:[3,5,8,9,10]},
+  'AAQ-II':{n:7,min:1,max:7},
+  'SWLS':{n:5,min:1,max:7,faixas:[[30,35,'Satisfação muito alta'],[25,29,'Satisfação alta'],[20,24,'Satisfação média'],[15,19,'Um pouco abaixo da média'],[10,14,'Insatisfeito'],[5,9,'Extremamente insatisfeito']]},
+  'MAAS':{n:15,min:1,max:6},
+  'WBSI':{n:15,min:1,max:5}
 };
 
 /**
