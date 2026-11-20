@@ -56,7 +56,7 @@
 // na hora de mostrar (05/10/2026)
 // Rodada DOCS_2026-10-07 — index-dev.html e o index oficial: SITE_URL aponta para ele; texto do aviso de backup
 // com falha alinhado ao backup sob demanda (07/10/2026)
-var VERSAO_PACOTE = '17.1';
+var VERSAO_PACOTE = '17.1.2';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -348,6 +348,11 @@ function _despachar_(acao, payload, s) {
         resposta = profEditarEscala(s, payload.siglaPaciente, payload.timestamp, payload.campos, payload.id_envio);
         break;
 
+      // 17.1.2 - liberacao de instrumento 'so do profissional' (BSS) por paciente
+      case 'profLiberarEscala':
+        resposta = profLiberarEscala(s, payload.siglaPaciente, payload.instrumento, payload.liberar);
+        break;
+
       case 'profDesativarPaciente':
         resposta = profDesativarPaciente(s, payload.siglaPaciente);
         break;
@@ -608,6 +613,7 @@ var ACOES_COM_TRAVA = [
   'alterarSenhaPaciente', 'pacienteAtualizarAnamnese',
   'pacienteMarcarEditandoAuto', 'pacienteLimparEditandoAuto', 'pacienteEditarAutomonitoramento',
   'profCadastrarPaciente', 'profSalvarAnamnese', 'profEnviarConvite',
+  'profLiberarEscala', // 17.1.2
   'profMarcarEditandoAuto', 'profLimparEditandoAuto', 'profEditarAutomonitoramento',
   'profCriarAutomonitoramento', 'profCriarEscala', 'profEditarEscala', // 18.5
   'profDesativarPaciente', 'profReativarPaciente', 'profExcluirPaciente', 'profAlterarSenhaPaciente',
@@ -2462,7 +2468,8 @@ function lerDadosPaciente(s, siglaPaciente) {
     total_escalas: escalas.length,
     // Pacote 18.1: contato do cadastro (Controle), unica fonte de e-mail e telefone
     contato: { email: normalizarEmail(paciente.email), telefone: normalizarTelefone(paciente.telefone) },
-    nome_cadastro: String(paciente.nome || '')
+    nome_cadastro: String(paciente.nome || ''),
+    escalas_liberadas: _escalasLiberadasLista_(paciente.escalas_liberadas) // 17.1.2: BSS liberada por paciente
   };
 }
 
@@ -3049,6 +3056,23 @@ function lerEscalas(sigla, antes, limite) {
 
 var INSTRUMENTOS_VALIDOS = ['bdi2', 'bai', 'bhs', 'bsi']; // 17.1: + BHS e BSS (id tecnico 'bsi')
 
+// 17.1.2 (decisao do usuario, 19/11/2026): instrumentos que o paciente so ve quando o profissional
+// libera para ele - lista em 'escalas_liberadas' na linha do paciente na Controle (coluna criada no
+// primeiro uso). O profissional sempre pode aplicar pelo "Nova escala".
+var INSTRUMENTOS_SO_PROFISSIONAL = ['bsi'];
+
+function _escalasLiberadasLista_(valor) {
+  return String(valor === undefined || valor === null ? '' : valor).toLowerCase().split(',')
+    .map(function (x) { return x.trim(); }).filter(Boolean);
+}
+function _escalasLiberadasDoPaciente_(sigla) {
+  var pac = buscarPaciente(sigla);
+  return pac ? _escalasLiberadasLista_(pac.escalas_liberadas) : [];
+}
+function _instrumentoVisivelAoPaciente_(instrumento, liberadasDoPaciente) {
+  return INSTRUMENTOS_SO_PROFISSIONAL.indexOf(instrumento) === -1 || liberadasDoPaciente.indexOf(instrumento) !== -1;
+}
+
 /**
  * Normalizacao canonica de uma celula para o hash.
  * O mesmo algoritmo roda no script Python de carga - qualquer divergencia aqui
@@ -3203,6 +3227,8 @@ function lerItensInstrumento(payload, s) {
   var todas = lerAbaComoObjetos(sistema, ABA_ITENS_INSTRUMENTOS);
 
   var pedido = _itensNormalizar_(payload.instrumento).toLowerCase();
+  // 17.1.2: para o paciente, os instrumentos 'so do profissional' dependem da liberacao por paciente
+  var doPaciente = (sessao.quem === 'paciente') ? _escalasLiberadasDoPaciente_(s.sigla) : null;
 
   // Sem instrumento: devolve so quais estao liberados (nenhum texto).
   if (!pedido) {
@@ -3210,13 +3236,16 @@ function lerItensInstrumento(payload, s) {
     for (var i = 0; i < INSTRUMENTOS_VALIDOS.length; i++) {
       var cod = INSTRUMENTOS_VALIDOS[i];
       var est = _itensEstado_(_itensLinhasDoInstrumento_(todas, cod));
-      if (est.liberado) liberados.push(cod);
+      if (est.liberado && (!doPaciente || _instrumentoVisivelAoPaciente_(cod, doPaciente))) liberados.push(cod);
     }
     return { ok: true, liberados: liberados };
   }
 
   if (INSTRUMENTOS_VALIDOS.indexOf(pedido) === -1) {
     return { ok: false, erro: 'Instrumento desconhecido' };
+  }
+  if (doPaciente && !_instrumentoVisivelAoPaciente_(pedido, doPaciente)) {
+    return { ok: false, erro: 'Instrumento nao liberado', motivo: 'nao_liberado_paciente' };
   }
 
   var linhas = _itensLinhasDoInstrumento_(todas, pedido);
@@ -3919,6 +3948,25 @@ function _pacienteDoProfissional_(s, siglaPaciente) {
   var planilha = _planilhaDoPaciente_(siglaPaciente);
   if (!planilha) return { ok: false, erro: 'Planilha do paciente nao encontrada' };
   return { ok: true, profissionalId: profId, planilha: planilha };
+}
+
+/**
+ * 17.1.2: o profissional libera (liberar = true) ou retira (false) um instrumento 'so do profissional'
+ * para um paciente seu. A lista fica em 'escalas_liberadas' na linha do paciente na Controle.
+ * Saida: { ok: true, escalas_liberadas: [...] }.
+ */
+function profLiberarEscala(s, siglaPaciente, instrumento, liberar) {
+  var alvo = _pacienteDoProfissional_(s, siglaPaciente);
+  if (!alvo.ok) return alvo;
+  var instr = String(instrumento || '').trim().toLowerCase();
+  if (INSTRUMENTOS_SO_PROFISSIONAL.indexOf(instr) === -1) return { ok: false, erro: 'Instrumento desconhecido' };
+  var lista = _escalasLiberadasDoPaciente_(siglaPaciente).filter(function (x) { return x !== instr; });
+  if (liberar === true || liberar === 'true' || liberar === 'SIM') lista.push(instr);
+  var controle = abrirControleDoProfissional(alvo.profissionalId);
+  if (!controle || !_atualizarLinhaPorChave_(controle.getSheetByName(ABA_PACIENTES), 'sigla', siglaPaciente, { escalas_liberadas: lista.join(',') })) {
+    return { ok: false, erro: 'Paciente nao encontrado na Controle' };
+  }
+  return { ok: true, escalas_liberadas: lista };
 }
 
 /** O que o servidor grava na linha criada pelo profissional. */

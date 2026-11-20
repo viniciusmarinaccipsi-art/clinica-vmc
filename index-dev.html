@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Escalas de Beck BHS e BSS — Pacote 17.1 (19/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Escalas de Beck BHS e BSS — Pacote 17.1.2 (19/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -7060,8 +7060,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       </button>
 
       <!-- Pacote 17.1 — BHS e BSS: mesma regra dos dois de cima (ocultos até a liberação). A BSS é
-           'soProfissional' (decisão de 19/11/2026): o cartão fica sempre oculto para o paciente; a
-           escala só é aplicada pelo profissional, em "Nova escala". -->
+           'soProfissional' (decisão de 19/11/2026): o servidor só a inclui em 'liberados' para o
+           paciente quando o profissional a liberou para ele (17.1.2, botão na tela do paciente). -->
       <button class="esc-card bhs hidden" id="escCardBHS" type="button" onclick="escClicarCardEscala('BHS')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-compass"/></svg></span>
         <div class="esc-card-title">BHS — Escala de Desesperança de Beck</div>
@@ -7510,6 +7510,7 @@ var VMC_RETRY_MS = 2000;
 // executada duas vezes no servidor (registro duplicado, senha trocada duas vezes…). A primeira
 // falha vai direto à faixa "O servidor não respondeu…", e só o usuário decide tentar de novo.
 var VMC_ACOES_GRAVACAO = [
+  'profLiberarEscala', // 17.1.2: liberação da BSS por paciente
   'salvarAnamnese', 'salvarAutomonitoramento', 'salvarEscala',
   'aceitarPolitica', // 18.1.6
   'salvarRascunho', 'apagarRascunho', // 18.10b
@@ -9310,6 +9311,7 @@ function profRenderPaciente_(sigla, resp) {
   // 18.5: o que os fluxos abertos pelo profissional leem no lugar de lerHistorico/lerEscalas
   PROF_PACIENTE_SEL.automonitoramento = resp.automonitoramento || [];
   PROF_PACIENTE_SEL.escalas = resp.escalas || [];
+  PROF_PACIENTE_SEL.escalasLiberadas = resp.escalas_liberadas || []; // 17.1.2: BSS liberada para este paciente?
 
   var iniciaisNome = nome.split(' ').filter(function(w){ return w.length > 0; })
     .map(function(w){ return w[0].toUpperCase(); }).slice(0,2).join('');
@@ -9390,6 +9392,7 @@ function profRenderPaciente_(sigla, resp) {
   html += '<div class="prof-pv-mod-body" id="profModEscBody">';
   html += '<div class="prof-acoes-mod"><button class="prof-btn-acao" type="button" onclick="profNovaEscala()"><svg class=ico aria-hidden=true><use href=#i-plus-circle></use></svg> Nova escala</button></div>'; // 18.5
   html += '<div class="prof-acoes-mod" id="profNovaEscalaLista" hidden></div>';
+  html += '<div class="prof-acoes-mod" id="profLiberacoesEsc">' + profRenderLiberacoes_() + '</div>'; // 17.1.2
   html += profRenderizarEscalas_(resp.escalas || []);
   html += '</div></div>';
 
@@ -9407,6 +9410,28 @@ function profNovoRegistro() {
   P5_STATE.verificado = false;
   PEV_STATE.registros = []; PEV_STATE.invalidado = true; // nada do paciente anterior serve a este
   iniNovoRegistro();
+}
+// 17.1.2: escalas 'soProfissional' (BSS) — o profissional libera por paciente; liberada, entra no menu do
+// paciente no próximo acesso dele. Um botão por escala, com cadeado aberto/fechado e o estado atual.
+function profRenderLiberacoes_() {
+  var lib = (PROF_PACIENTE_SEL && PROF_PACIENTE_SEL.escalasLiberadas) || [];
+  return ESC_HIST_ORDEM.filter(function (cod) { return ESC_ESCALAS[cod] && ESC_ESCALAS[cod].soProfissional; }).map(function (cod) {
+    var d = ESC_ESCALAS[cod], on = lib.indexOf(d.instrumentoId) !== -1;
+    return '<button class="prof-btn-acao" type="button" data-instr="' + esc(d.instrumentoId) + '" data-cod="' + esc(cod) + '" aria-pressed="' + (on ? 'true' : 'false') + '" onclick="profLiberarEscala_(this.dataset.instr, this.dataset.cod)">' +
+      '<svg class=ico aria-hidden=true><use href=#' + (on ? 'i-unlock' : 'i-lock') + '></use></svg> ' +
+      esc(on ? cod + ' liberada para o paciente' : 'Liberar ' + cod + ' para o paciente') + '</button>';
+  }).join('');
+}
+async function profLiberarEscala_(instr, cod) {
+  if (!PROF_SESSAO || !PROF_PACIENTE_SEL) return;
+  var lib = PROF_PACIENTE_SEL.escalasLiberadas || [];
+  var liberar = lib.indexOf(instr) === -1;
+  var box = document.getElementById('profLiberacoesEsc');
+  var resp = await chamarServidor('profLiberarEscala', { siglaPaciente: PROF_PACIENTE_SEL.sigla, instrumento: instr, liberar: liberar });
+  if (!resp || !resp.ok) { vmcAvisoNaTela('Não foi possível gravar agora. Tente de novo.', box); return; }
+  PROF_PACIENTE_SEL.escalasLiberadas = resp.escalas_liberadas || [];
+  if (box) box.innerHTML = profRenderLiberacoes_();
+  vmcAvisoNaTela(liberar ? cod + ' liberada: aparece no menu do paciente no próximo acesso dele.' : cod + ' retirada do menu do paciente.', box);
 }
 // "Nova escala": lista dos instrumentos (os de texto protegido só quando liberados pelo servidor)
 async function profNovaEscala() {
@@ -15946,10 +15971,9 @@ function escAplicarCartoesLiberados() {
   var liberados = ESC_LIBERADOS || [];
   Object.keys(ESC_CARTOES_POR_INSTRUMENTO).forEach(function (instr) {
     var el = document.getElementById(ESC_CARTOES_POR_INSTRUMENTO[instr]);
-    // 17.1 (decisão do usuário, 19/11/2026): escala 'soProfissional' (BSS) nunca entra no menu do
-    // paciente — só é aplicada pelo profissional, em "Nova escala".
-    var soProf = Object.keys(ESC_ESCALAS).some(function (cod) { var d = ESC_ESCALAS[cod]; return d.instrumentoId === instr && d.soProfissional; });
-    if (el) el.classList.toggle('hidden', soProf || liberados.indexOf(instr) === -1);
+    // 17.1.2: quem decide é o servidor — para o paciente, uma escala 'soProfissional' (BSS) só vem
+    // em 'liberados' quando o profissional a liberou para ele (escalas_liberadas na Controle).
+    if (el) el.classList.toggle('hidden', liberados.indexOf(instr) === -1);
   });
 }
 
@@ -16443,7 +16467,7 @@ const ESC_ESCALAS = {
     textoDaAba: true,
     escoreOculto: true,
     opcoesPorItem: true,
-    soProfissional: true, // decisão do usuário (19/11/2026): só o profissional aplica, pelo "Nova escala"
+    soProfissional: true, // decisão do usuário (19/11/2026): fora do menu do paciente até o profissional liberar para ele (17.1.2)
     subtitulo: '21 grupos de afirmações · Pensando na <strong>última semana</strong>, incluindo hoje',
     escoreMax: 38,
     // Itens 4 e 5 são a triagem: ambos em 0 → os grupos 6–19 não se aplicam (valem 0) e o
