@@ -87,28 +87,8 @@ G(`
 ok('E1 _abrirEscalaParaPaciente_: PHQ-9 aplicado pelo profissional abre phq9 para ABC (grava a lista)', JSON.stringify(G("_abrirEscalaParaPaciente_('P1', 'ABC', 'PHQ-9')")) === JSON.stringify(['phq9']) && G("__GRAVADO && __GRAVADO.campos.escalas_liberadas") === 'phq9', G("__GRAVADO"));
 ok('E2 já aberta (DEF tem bsi): não regrava', (() => { G("__GRAVADO = null"); return JSON.stringify(G("_abrirEscalaParaPaciente_('P1', 'DEF', 'BSS')")) === JSON.stringify(['bsi']) && G("__GRAVADO") === null; })());
 ok('E3 código desconhecido: lista intacta, nada gravado', JSON.stringify(G("_abrirEscalaParaPaciente_('P1', 'DEF', 'XYZ')")) === JSON.stringify(['bsi']) && G("__GRAVADO") === null);
-G(`
-  var __ESCALAS = { ABC: ['PHQ-9', 'BDI-II', 'PHQ-9'], DEF: [], GHI: ['URICA-A', 'XYZ'] };
-  var __GRAVADOS = {};
-  _memoZerar_ = function () {};
-  _lerIndice_ = function () { return { linhas: [
-    { sigla: 'ABC', tipo: 'paciente', profissional_id: 'P1' }, { sigla: 'DEF', tipo: 'paciente', profissional_id: 'P1' },
-    { sigla: 'GHI', tipo: 'paciente', profissional_id: 'P1' }, { sigla: 'VMC', tipo: 'profissional', profissional_id: 'P1' },
-    { sigla: 'SEM', tipo: 'paciente', profissional_id: 'P1' } ] }; };
-  _planilhaDoPaciente_ = function (sigla) {
-    if (!__ESCALAS[sigla]) return null;
-    var cod = __ESCALAS[sigla];
-    return { getSheetByName: function () { return {
-      getLastRow: function () { return cod.length + 1; }, getLastColumn: function () { return 3; },
-      getRange: function (l, c, n) { return { getValues: function () { return l === 1 ? [['timestamp', 'instrumento', 'x']] : cod.map(function (k) { return [k]; }); } }; }
-    }; } };
-  };
-  __PAC.GHI = { sigla: 'GHI', escalas_liberadas: 'urica_alcool,swls' };
-  _atualizarLinhaPorChave_ = function (aba, chave, valor, campos) { __GRAVADOS[valor] = campos.escalas_liberadas; return true; };
-`);
-const mig = JSON.parse(G("rodarMigracaoLiberacoes()"));
-ok('E4 migração: 4 pacientes, 2 com registro, 1 alterado (ABC ← phq9,bdi2), 1 sem planilha; GHI já tinha urica_alcool e swls e não muda; DEF sem registro fica vazio', mig.ok && mig.pacientes === 4 && mig.com_registro === 2 && mig.alterados === 1 && mig.sem_planilha === 1 && JSON.stringify(G("__GRAVADOS")) === JSON.stringify({ ABC: 'phq9,bdi2' }) && mig.por_sigla.GHI.depois === 2 && mig.por_sigla.DEF.antes === 1 && mig.por_sigla.DEF.depois === 1, mig); // DEF já tinha bsi (liberação explícita preservada)
-ok('E5 migração: código desconhecido na aba (XYZ) é ignorado e a saída não traz ids nem nomes', JSON.stringify(mig.por_sigla.ABC) === JSON.stringify({ antes: 0, depois: 2 }) && !/phq9|bdi2/.test(JSON.stringify(mig)), mig.por_sigla);
+// A migração única `rodarMigracaoLiberacoes` (17.3.1) foi provada aqui sobre planilhas simuladas no commit 4fe6f15,
+// rodou no servidor em 20/11/2026 (29 pacientes, 8 alterados) e saiu do Código.js no fechamento — as provas foram com ela.
 
 console.log('D. lista normalizada');
 ok('D1 " BSI, x ,," → ["bsi","x"]', JSON.stringify(G("_escalasLiberadasLista_(' BSI, x ,,')")) === JSON.stringify(['bsi', 'x']) && JSON.stringify(G("_escalasLiberadasLista_(undefined)")) === '[]');
