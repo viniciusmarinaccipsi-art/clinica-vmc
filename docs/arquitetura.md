@@ -105,9 +105,31 @@ mantém azul). Toda cor nova ganha o conjunto completo.
 
 ### Motor de cálculo aditivo (escalas)
 `escCalcularEscoreEAlerta` detecta propriedades opcionais do item/escala:
-`reverso`, `multiSubescalas`, `criticoLimiar`, `dicotomica`. Escala nova
-= entrada no dicionário `ESC_ESCALAS` (+ branch se necessário). Nunca
-reescrever o motor.
+`reverso`, `multiSubescalas`, `criticoLimiar`, `dicotomica`, `naoPontua`,
+`condicional` (17.1). Escala nova = entrada no dicionário `ESC_ESCALAS`
+(+ branch se necessário) e a entrada gêmea em `ESCALAS_CALCULO` no
+`Código.js` (o gabarito `teste_escores.js` e a seção S de `backend_18_5.js`
+conferem os dois lados). Nunca reescrever o motor.
+
+**Subescalas genéricas (17.2, URICA):** nada no motor cita o DASS-21 pelo
+nome. Propriedades da escala: `multSub` (multiplicador de cada soma; DASS-21
+= 2), `subescalasMeta[k] = { sigla, nome, icone, corPrefix, tri? }` (a ordem
+das chaves é a ordem de cálculo, de gravação e de tela — a mesma de `sub`
+no servidor), `faixasSubescalas` opcional (sem ela, o box mostra a média),
+`composto = { chave, sigla, nome, legenda, mais, menos, casas }` (escore
+derivado das **médias** das subescalas, gravado em `escore_<chave>`),
+`eduGeralDesc` (texto geral no lugar do texto por faixa). Servidor: `min`
+(menor valor da resposta; URICA = 1), `multSub`, `siglaSub`, `faixasSub`
+opcional, `composto`. Colunas gravadas: `escore_<subescala>` para cada chave
+(as três do DASS-21 existem sempre), `escore_<composto>`, e `faixa` com o
+resumo textual (`Dep:Leve | Ans:Normal | Est:Normal`; `PC:14 | C:22 | A:19
+| M:17 | Prontidão: 7,3`) — montado por `escCamposSubescalas_` no cliente e
+por `_escoresDaEscala_` no servidor, com o mesmo formato. `salvarEscala`
+garante as colunas de `HEADERS_ESCALAS` (item_22..item_24 e as novas) na
+planilha do paciente antes de gravar. Âncoras vindas da aba
+(`ancora_rotulo`) são lidas em ordem numérica, qualquer faixa (BAI 0–3,
+URICA 1–5). A linha do histórico esconde o escore (`escoreOculto`) **antes**
+de desenhar subescalas.
 
 ### Renderer unificado de resultado (Pacote 12.7.2)
 `escRenderizarConteudoResultado(modo)` serve a tela imediata E o modal

@@ -9486,7 +9486,7 @@ function profRenderLiberacoes_() {
     var d = ESC_ESCALAS[cod], on = lib.indexOf(d.instrumentoId) !== -1;
     return '<button class="prof-btn-acao" type="button" data-instr="' + esc(d.instrumentoId) + '" data-cod="' + esc(cod) + '" aria-pressed="' + (on ? 'true' : 'false') + '" onclick="profLiberarEscala_(this.dataset.instr, this.dataset.cod)">' +
       '<svg class=ico aria-hidden=true><use href=#' + (on ? 'i-unlock' : 'i-lock') + '></use></svg> ' +
-      esc(on ? cod + ' liberada para o paciente' : 'Liberar ' + cod + ' para o paciente') + '</button>';
+      esc(on ? (d.nomeCurto || cod) + ' liberada para o paciente' : 'Liberar ' + (d.nomeCurto || cod) + ' para o paciente') + '</button>'; // 17.2: nomeCurto ("URICA — Álcool") quando o código não diz nada ao profissional
   }).join('');
 }
 async function profLiberarEscala_(instr, cod) {
@@ -16629,6 +16629,7 @@ const ESC_ESCALAS = {
   // para cada paciente (17.1.2).
   'URICA-A': {
     nomeCompleto: 'URICA — Álcool · Motivação para a mudança',
+    nomeCurto: 'URICA — Álcool', // botão de liberação por paciente
     emoji: '<svg class=ico aria-hidden=true><use href=#i-refresh></use></svg>',
     corPrefix: 'urica',
     instrumentoId: 'urica_alcool',
@@ -16665,6 +16666,7 @@ const ESC_ESCALAS = {
 
   'URICA-D': {
     nomeCompleto: 'URICA — Drogas ilícitas · Motivação para a mudança',
+    nomeCurto: 'URICA — Drogas ilícitas',
     emoji: '<svg class=ico aria-hidden=true><use href=#i-refresh></use></svg>',
     corPrefix: 'urica',
     instrumentoId: 'urica_drogas',
@@ -16701,6 +16703,7 @@ const ESC_ESCALAS = {
 
   'URICA-T': {
     nomeCompleto: 'URICA — Tabaco · Motivação para a mudança',
+    nomeCurto: 'URICA — Tabaco',
     emoji: '<svg class=ico aria-hidden=true><use href=#i-refresh></use></svg>',
     corPrefix: 'urica',
     instrumentoId: 'urica_tabaco',
@@ -16737,6 +16740,7 @@ const ESC_ESCALAS = {
 
   'URICA-HA': {
     nomeCompleto: 'URICA — Hábitos alimentares · Motivação para a mudança',
+    nomeCurto: 'URICA — Hábitos alimentares',
     emoji: '<svg class=ico aria-hidden=true><use href=#i-refresh></use></svg>',
     corPrefix: 'urica',
     instrumentoId: 'urica_alimentar',
