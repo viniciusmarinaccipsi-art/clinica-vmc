@@ -16387,6 +16387,32 @@ const ESC_ESCALAS = {
   'PHQ-9': {
     nomeCompleto: 'Patient Health Questionnaire-9 (PHQ-9)',
     nomeTraducao: 'Questionário sobre a Saúde do Paciente-9', // 17.3.2: nome original no título, tradução em letra menor
+    ficha: { // 17.3.2: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
+      tags: [
+        'Depressão',
+        'Mensuração'
+      ],
+      descricao: 'Instrumento de autorrelato com nove itens que correspondem, um a um, aos critérios diagnósticos de episódio depressivo maior do DSM-IV, mantidos no DSM-5. Cada item é pontuado pela frequência nas duas últimas semanas (0 = nenhuma vez a 3 = quase todos os dias). Serve tanto para rastrear depressão quanto para medir a gravidade dos sintomas e acompanhar a resposta ao tratamento (Kroenke, Spitzer & Williams, 2001).',
+      tempo: '3 a 5 minutos.',
+      populacao: 'Adultos, em atenção primária, ambulatórios e população geral; a validação brasileira foi feita com adultos de 18 anos ou mais da população geral de Pelotas (Santos et al., 2013).',
+      usos: 'Rastreamento de depressão; medida de gravidade na linha de base; monitoramento da evolução ao longo do tratamento, com reaplicações periódicas; apoio à formulação de caso. Não substitui a entrevista clínica para diagnóstico (Kroenke et al., 2001).',
+      interpretacao: [
+        '<em>Estrutura:</em> 9 itens, escala de 0 a 3, período de referência de duas semanas; escore total de 0 a 27 pela soma simples. Um item adicional, não pontuado, pergunta quanto os problemas dificultaram o dia a dia (prejuízo funcional).',
+        '<em>Faixas de gravidade (Kroenke et al., 2001):</em> 0–4 mínima; 5–9 leve; 10–14 moderada; 15–19 moderadamente grave; 20–27 grave.',
+        '<em>Ponto de corte para rastreamento:</em> ≥ 10 na validação original (sensibilidade e especificidade de 88% para depressão maior; Kroenke et al., 2001). Na população geral brasileira o melhor equilíbrio foi em ≥ 9 (sensibilidade 77,5%, especificidade 86,7%), tendo a entrevista MINI como padrão-ouro (Santos et al., 2013). O sistema usa as faixas de Kroenke; o corte brasileiro de 9 cai dentro da faixa "leve" e vale como alerta de rastreamento.',
+        '<em>Item 9 (pensamentos de morte ou de se ferir):</em> qualquer resposta acima de zero exige avaliação de risco na sessão, independentemente do total. O sistema já dispara o alerta de risco nesse caso.',
+        '<em>Mudança clínica:</em> a mudança mínima clinicamente importante é de 5 pontos (Löwe, Unützer, Callahan, Perkins & Kroenke, 2004).',
+        '<em>Cuidados:</em> sintomas somáticos (sono, apetite, energia) podem elevar o escore em pessoas com doença física; o escore mede sintomas, não diagnostica.'
+      ],
+      desenvolvedores: 'Robert L. Spitzer, Janet B. W. Williams e Kurt Kroenke (Pfizer, domínio público para uso clínico). Publicação de referência: Kroenke, Spitzer & Williams (2001).',
+      validacaoBr: 'Sim. Santos et al. (2013): 447 adultos da população geral de Pelotas (RS), padrão-ouro MINI; corte ≥ 9 com sensibilidade 77,5% e especificidade 86,7%; o escore contínuo foi mais adequado ao rastreamento que o algoritmo diagnóstico. Antes, Osório, Mendes, Crippa e Loureiro (2009) estudaram a validade discriminativa do PHQ-9 e do PHQ-2 em 177 mulheres da atenção primária de Ribeirão Preto (SP), com a SCID como padrão-ouro e corte ≥ 10.',
+      referencias: [
+        'Kroenke, K., Spitzer, R. L., & Williams, J. B. W. (2001). The PHQ-9: Validity of a brief depression severity measure. <em>Journal of General Internal Medicine, 16</em>(9), 606–613. https://doi.org/10.1046/j.1525-1497.2001.016009606.x',
+        'Löwe, B., Unützer, J., Callahan, C. M., Perkins, A. J., & Kroenke, K. (2004). Monitoring depression treatment outcomes with the Patient Health Questionnaire-9. <em>Medical Care, 42</em>(12), 1194–1201. https://doi.org/10.1097/00005650-200412000-00006',
+        'Osório, F. L., Mendes, A. V., Crippa, J. A., & Loureiro, S. R. (2009). Study of the discriminative validity of the PHQ-9 and PHQ-2 in a sample of Brazilian women in the context of primary health care. <em>Perspectives in Psychiatric Care, 45</em>(3), 216–227. https://doi.org/10.1111/j.1744-6163.2009.00224.x',
+        'Santos, I. S., Tavares, B. F., Munhoz, T. N., Almeida, L. S. P., Silva, N. T. B., Tams, B. D., Patella, A. M., & Matijasevich, A. (2013). Sensibilidade e especificidade do Patient Health Questionnaire-9 (PHQ-9) entre adultos da população geral. <em>Cadernos de Saúde Pública, 29</em>(8), 1533–1543. https://doi.org/10.1590/0102-311X00144612'
+      ]
+    },
     instrumentoId: 'phq9', // 17.3.1: id de liberação por paciente (escalas_liberadas)
     emoji: '<svg class=ico aria-hidden=true><use href=#i-cloud-rain></use></svg>',
     corPrefix: 'coral',
@@ -16712,6 +16738,31 @@ const ESC_ESCALAS = {
   'BDI-II': {
     nomeCompleto: 'Beck Depression Inventory-II (BDI-II)',
     nomeTraducao: 'Inventário de Depressão de Beck-II', // 17.3.2: nome original no título, tradução em letra menor
+    ficha: { // 17.3.2: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
+      tags: [
+        'Depressão',
+        'Mensuração'
+      ],
+      descricao: 'Inventário de autorrelato com 21 grupos de afirmações que medem a intensidade de sintomas depressivos (afetivos, cognitivos, motivacionais e somáticos) nas duas últimas semanas, incluindo o dia de hoje. A segunda edição (1996) alinhou os itens aos critérios do DSM-IV, substituindo quatro itens da versão original e ampliando o período de referência de uma para duas semanas (Beck, Steer & Brown, 1996).',
+      tempo: '5 a 10 minutos.',
+      populacao: 'Adolescentes a partir de 13 anos e adultos, em contextos clínicos e não clínicos (Beck et al., 1996). No Brasil, validação em amostra da comunidade (Gomes-Oliveira et al., 2012).',
+      usos: 'Medida de intensidade dos sintomas depressivos em pacientes já identificados; monitoramento da resposta ao tratamento; rastreamento em população não clínica com o corte brasileiro. Não é instrumento diagnóstico (Beck et al., 1996; Wang & Gorenstein, 2013).',
+      interpretacao: [
+        '<em>Estrutura:</em> 21 itens, cada um com quatro afirmações de 0 a 3 (os itens 16 e 18 têm sete alternativas, que se reduzem a 0–3); escore total de 0 a 63 pela soma.',
+        '<em>Faixas do manual (Beck et al., 1996), sugeridas para pacientes com diagnóstico de depressão maior:</em> 0–13 mínima; 14–19 leve; 20–28 moderada; 29–63 grave. São as faixas que o sistema usa.',
+        '<em>Corte para rastreamento em população não clínica brasileira:</em> 10/11, com sensibilidade 70% e especificidade 87%, tendo a SCID como padrão-ouro (Gomes-Oliveira, Gorenstein, Lotufo Neto, Andrade & Wang, 2012). Esse corte é mais baixo que o início da faixa "leve" do manual: em quem não tem diagnóstico, escores a partir de 11 já merecem investigação.',
+        '<em>Item 9 (pensamentos ou desejos suicidas):</em> qualquer resposta acima de zero exige avaliação de risco na sessão. O sistema já dispara o alerta.',
+        '<em>Mudança clínica:</em> o manual não fixa um índice de mudança; na prática clínica usa-se a mudança de faixa e a redução proporcional do escore. Revisão das propriedades psicométricas em Wang e Gorenstein (2013).',
+        '<em>Cuidados:</em> instrumento protegido por direitos autorais (Pearson); uso restrito a psicólogos, conforme a avaliação do SATEPSI. Sintomas somáticos podem inflar o escore em doenças físicas.'
+      ],
+      desenvolvedores: 'Aaron T. Beck, Robert A. Steer e Gregory K. Brown (1996), The Psychological Corporation. Versão brasileira validada por Gomes-Oliveira et al. (2012); o manual brasileiro (Casa do Psicólogo, 2011) entra na ficha quando a autoria for conferida.',
+      validacaoBr: 'Sim. Gomes-Oliveira et al. (2012): 182 adultos da comunidade (20–60 anos) e 60 universitários no reteste; alfa de Cronbach 0,93; coeficiente de correlação intraclasse 0,89; corte 10/11 contra a SCID (sensibilidade 70%, especificidade 87%). Revisão das propriedades em Wang e Gorenstein (2013).',
+      referencias: [
+        'Beck, A. T., Steer, R. A., & Brown, G. K. (1996). <em>Manual for the Beck Depression Inventory-II</em>. The Psychological Corporation.',
+        'Gomes-Oliveira, M. H., Gorenstein, C., Lotufo Neto, F., Andrade, L. H., & Wang, Y. P. (2012). Validation of the Brazilian Portuguese version of the Beck Depression Inventory-II in a community sample. <em>Revista Brasileira de Psiquiatria, 34</em>(4), 389–394. https://doi.org/10.1016/j.rbp.2012.03.005',
+        'Wang, Y. P., & Gorenstein, C. (2013). Psychometric properties of the Beck Depression Inventory-II: A comprehensive review. <em>Revista Brasileira de Psiquiatria, 35</em>(4), 416–431. https://doi.org/10.1590/1516-4446-2012-1048'
+      ]
+    },
     emoji: '<svg class=ico aria-hidden=true><use href=#i-heart-crack></use></svg>',
     corPrefix: 'bdi2',
     instrumentoId: 'bdi2',
@@ -16863,6 +16914,31 @@ const ESC_ESCALAS = {
   'BSS': {
     nomeCompleto: 'Beck Scale for Suicide Ideation (BSS)',
     nomeTraducao: 'Escala de Ideação Suicida de Beck', // 17.3.2: nome original no título, tradução em letra menor
+    ficha: { // 17.3.2: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
+      tags: [
+        'Ideação suicida',
+        'Depressão',
+        'Mensuração'
+      ],
+      descricao: 'Escala de autorrelato com 21 grupos de afirmações que avalia a presença e a intensidade de pensamentos, planos e desejos suicidas na última semana, incluindo o dia de hoje. É a versão de autorrelato da Scale for Suicide Ideation, originalmente aplicada por entrevista (Beck, Kovacs & Weissman, 1979; Beck & Steer, 1991). Mede ideação, não prediz comportamento por si só.',
+      tempo: '5 a 10 minutos.',
+      populacao: 'Adolescentes e adultos em contexto clínico (ambulatorial e internação). A versão brasileira foi estudada em amostras clínicas e não clínicas (Cunha, 2001).',
+      usos: 'Detectar e graduar a ideação suicida em pacientes em avaliação ou tratamento; acompanhar a ideação ao longo do tratamento; apoiar, nunca substituir, a avaliação clínica de risco (Beck & Steer, 1991).',
+      interpretacao: [
+        '<em>Estrutura:</em> 21 itens com três afirmações cada (0, 1, 2). O escore total é a soma dos itens 1 a 19 (0 a 38); os itens 20 e 21 (tentativas anteriores e intenção de morrer na última tentativa) não pontuam e servem à anamnese.',
+        '<em>Triagem:</em> os itens 4 e 5 (desejo ativo e desejo passivo de morrer) funcionam como filtro: se ambos forem 0, os itens 6 a 19 não se aplicam e o respondente vai direto aos itens 20 e 21 (Beck & Steer, 1991). O sistema já implementa esse condicional.',
+        '<em>Leitura:</em> não há ponto de corte; qualquer escore acima de zero indica ideação presente e exige avaliação de risco na sessão (Beck & Steer, 1991). O escore é lido pela intensidade e pela comparação com aplicações anteriores do mesmo paciente.',
+        '<em>Itens críticos no sistema:</em> resposta acima de zero nos itens 4 ou 5 dispara o alerta de risco.',
+        '<em>Cuidados:</em> escala protegida por direitos autorais (Pearson); uso restrito a psicólogos. Por decisão de produto, o paciente não vê o escore: o resultado é conversado na sessão. Resultado nulo não exclui risco (dissimulação, ideação flutuante).'
+      ],
+      desenvolvedores: 'Aaron T. Beck e Robert A. Steer (1991), The Psychological Corporation; base conceitual em Beck, Kovacs e Weissman (1979). Versão brasileira: Jurema Alcides Cunha (2001), Casa do Psicólogo.',
+      validacaoBr: 'Sim: a versão em português e os estudos brasileiros estão no manual das Escalas Beck (Cunha, 2001). Os coeficientes do manual entram na ficha quando forem conferidos no próprio manual.',
+      referencias: [
+        'Beck, A. T., Kovacs, M., & Weissman, A. (1979). Assessment of suicidal intention: The Scale for Suicide Ideation. <em>Journal of Consulting and Clinical Psychology, 47</em>(2), 343–352. https://doi.org/10.1037/0022-006X.47.2.343',
+        'Beck, A. T., & Steer, R. A. (1991). <em>Manual for the Beck Scale for Suicide Ideation</em>. The Psychological Corporation.',
+        'Cunha, J. A. (2001). <em>Manual da versão em português das Escalas Beck</em>. Casa do Psicólogo.'
+      ]
+    },
     emoji: '<svg class=ico aria-hidden=true><use href=#i-clipboard></use></svg>',
     corPrefix: 'bss',
     instrumentoId: 'bsi',
@@ -17086,6 +17162,34 @@ const ESC_ESCALAS = {
   'PCL-5': {
     nomeCompleto: 'Posttraumatic Stress Disorder Checklist for DSM-5 (PCL-5)',
     nomeTraducao: 'Lista de Verificação de TEPT para o DSM-5', // 17.3.2: nome original no título, tradução em letra menor
+    ficha: { // 17.3.2: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
+      tags: [
+        'Trauma',
+        'TEPT',
+        'Diagnóstico',
+        'Mensuração'
+      ],
+      descricao: 'Lista de autorrelato com 20 itens que correspondem aos 20 sintomas de transtorno de estresse pós-traumático do DSM-5, nos quatro grupos de critérios: reexperiência (B), evitação (C), alterações negativas em cognição e humor (D) e alterações em excitação e reatividade (E). Cada item é pontuado pelo incômodo no último mês, de 0 (nenhum) a 4 (extremamente). Substitui a PCL do DSM-IV (Weathers et al., 2013; Blevins, Weathers, Davis, Witte & Domino, 2015).',
+      tempo: '5 a 10 minutos.',
+      populacao: 'Adultos expostos a um evento traumático. A validação brasileira usou adultos com história de exposição a pelo menos um evento traumático (Pereira-Lima, Loureiro, Bolsoni, Silva & Osório, 2019).',
+      usos: 'Rastreamento de TEPT provável; medida de gravidade dos sintomas; monitoramento da resposta ao tratamento; apoio ao diagnóstico, que deve ser confirmado por entrevista estruturada (por exemplo, CAPS-5 ou SCID-5) (Weathers et al., 2013).',
+      interpretacao: [
+        '<em>Estrutura:</em> 20 itens, escala de 0 a 4, período de um mês; escore total de 0 a 80 pela soma. Agrupamentos: itens 1–5 (B), 6–7 (C), 8–14 (D), 15–20 (E). O sistema grava o total; os agrupamentos podem ser lidos item a item.',
+        '<em>Corte da versão brasileira:</em> ≥ 36 pontos, com a melhor eficiência global (0,80) e índice de Youden 0,65 para diagnóstico de TEPT pela SCID-5-CV (Pereira-Lima et al., 2019). É o corte que o sistema usa.',
+        '<em>Corte da versão original:</em> 31 a 33 pontos em veteranos norte-americanos (Blevins et al., 2015; National Center for PTSD). Escores entre 31 e 35 ficam abaixo do corte brasileiro, mas merecem atenção.',
+        '<em>Leitura por critérios:</em> alternativa ao total, um item conta como sintoma presente quando pontua 2 ou mais; TEPT provável exige ao menos 1 item em B, 1 em C, 2 em D e 2 em E (Weathers et al., 2013).',
+        '<em>Cuidados:</em> o instrumento não identifica o evento; usar junto com a história clínica (por exemplo, a LEC-5). Não valida o diagnóstico sozinho. Domínio público (governo dos EUA); a versão brasileira é de livre uso com citação.'
+      ],
+      desenvolvedores: 'Frank W. Weathers, Brett T. Litz, Terence M. Keane, Patrick A. Palmieri, Brian P. Marx e Paula P. Schnurr (2013), National Center for PTSD. Adaptações brasileiras: Lima et al. (2016) e Osório et al. (2017).',
+      validacaoBr: 'Sim. Adaptação transcultural por Lima et al. (2016) e Osório et al. (2017); propriedades psicométricas e utilidade diagnóstica em Pereira-Lima et al. (2019): 85 adultos expostos a trauma, SCID-5-CV como padrão-ouro; alfa de Cronbach 0,96; teste-reteste (10–30 dias) com coeficiente intraclasse 0,87; corte ≥ 36 (eficiência 0,80; Youden 0,65). Na versão original, alfa 0,94 e reteste 0,82 (Blevins et al., 2015). O mesmo estudo brasileiro propôs versões abreviadas de 8 e 4 itens, que o sistema não usa.',
+      referencias: [
+        'Blevins, C. A., Weathers, F. W., Davis, M. T., Witte, T. K., & Domino, J. L. (2015). The Posttraumatic Stress Disorder Checklist for DSM-5 (PCL-5): Development and initial psychometric evaluation. <em>Journal of Traumatic Stress, 28</em>(6), 489–498. https://doi.org/10.1002/jts.22059',
+        'Lima, E. P., Vasconcelos, A. G., Berger, W., Kristensen, C. H., Nascimento, E., Figueira, I., & Mendlowicz, M. V. (2016). Cross-cultural adaptation of the Posttraumatic Stress Disorder Checklist 5 (PCL-5) and Life Events Checklist 5 (LEC-5) for the Brazilian context. <em>Trends in Psychiatry and Psychotherapy, 38</em>(4), 207–215. https://doi.org/10.1590/2237-6089-2015-0074',
+        'Osório, F. L., Silva, T. D. A., Santos, R. G., Chagas, M. H. N., Chagas, N. M. S., Sanches, R. F., & Crippa, J. A. S. (2017). Posttraumatic Stress Disorder Checklist for DSM-5 (PCL-5): Transcultural adaptation of the Brazilian version. <em>Archives of Clinical Psychiatry, 44</em>(1), 10–19. https://doi.org/10.1590/0101-60830000000107',
+        'Pereira-Lima, K., Loureiro, S. R., Bolsoni, L. M., Silva, T. D. A., & Osório, F. L. (2019). Psychometric properties and diagnostic utility of a Brazilian version of the PCL-5 (complete and abbreviated versions). <em>European Journal of Psychotraumatology, 10</em>(1), 1581020. https://doi.org/10.1080/20008198.2019.1581020',
+        'Weathers, F. W., Litz, B. T., Keane, T. M., Palmieri, P. A., Marx, B. P., & Schnurr, P. P. (2013). <em>The PTSD Checklist for DSM-5 (PCL-5)</em>. National Center for PTSD. https://www.ptsd.va.gov'
+      ]
+    },
     nomeCurto: 'PCL-5',
     emoji: '<svg class=ico aria-hidden=true><use href=#i-heart-crack></use></svg>',
     corPrefix: 'trauma',
@@ -17183,6 +17287,32 @@ const ESC_ESCALAS = {
   'AAQ-II': {
     nomeCompleto: 'Acceptance and Action Questionnaire-II (AAQ-II)',
     nomeTraducao: 'Questionário de Aceitação e Ação-II', // 17.3.2: nome original no título, tradução em letra menor
+    ficha: { // 17.3.2: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
+      tags: [
+        'Aceitação',
+        'Transdiagnóstico',
+        'Mensuração'
+      ],
+      descricao: 'Questionário de sete itens que mede a inflexibilidade psicológica, entendida na Terapia de Aceitação e Compromisso (ACT) como esquiva experiencial: a tendência a evitar ou controlar pensamentos, emoções e sensações desagradáveis mesmo quando isso afasta a pessoa do que importa para ela. É a revisão da versão original de 9 itens, com melhor consistência (Bond et al., 2011).',
+      tempo: '2 a 3 minutos.',
+      populacao: 'Adultos, em contextos clínicos e não clínicos. No Brasil, a versão foi estudada com universitários (Barbosa & Murta, 2015) e com 407 profissionais da atenção primária (Berta-Otero et al., 2022).',
+      usos: 'Medida de processo em ACT e terapias contextuais: linha de base e acompanhamento da flexibilidade psicológica ao longo do tratamento; pesquisa sobre mecanismos de mudança. Não é instrumento diagnóstico (Bond et al., 2011).',
+      interpretacao: [
+        '<em>Estrutura:</em> 7 itens, escala de 1 (nunca verdadeiro) a 7 (sempre verdadeiro), sem itens invertidos; escore total de 7 a 49 pela soma. Quanto maior, maior a inflexibilidade psicológica.',
+        '<em>Ponto de corte:</em> não há ponto de corte validado (Bond et al., 2011, não propõem corte). O sistema não aplica corte: a leitura é pela evolução do próprio paciente.',
+        '<em>Confiabilidade (Bond et al., 2011):</em> 2.816 participantes em seis amostras; alfa médio 0,84; teste-reteste 0,81 em 3 meses e 0,79 em 12 meses.',
+        '<em>Cuidados:</em> Wolgast (2014) mostrou que os itens do AAQ-II carregam mais em sofrimento psicológico do que em aceitação; interpretar junto com outras medidas e com a entrevista.'
+      ],
+      desenvolvedores: 'Frank W. Bond, Steven C. Hayes e colaboradores (2011). Uso livre com citação dos autores. Versão brasileira: Leonardo Martins Barbosa e Sheila Giardini Murta (2015).',
+      validacaoBr: 'Sim. Barbosa e Murta (2015): tradução e adaptação respondida por 1.352 universitários; estrutura unidimensional, confiabilidade adequada; correlação positiva com resiliência e saúde geral e negativa com depressão e ansiedade; os autores recomendam testar em amostras mais diversificadas. Berta-Otero et al. (2022): 407 profissionais da atenção primária, modelo unifatorial, boa consistência interna. Não há ponto de corte brasileiro.',
+      referencias: [
+        'Berta-Otero, T., Barceló-Soler, A., Montero-Marin, J., Maloney, S., Salvo, V., Pérez-Aranda, A., ... & Demarzo, M. (2022). Experiential avoidance in primary care providers: Psychometric properties of the Brazilian "Acceptance and Action Questionnaire" (AAQ-II) and its criterion validity on mood disorder-related psychological distress. <em>International Journal of Environmental Research and Public Health, 20</em>(1), 225. https://doi.org/10.3390/ijerph20010225',
+        'Barbosa, L. M., & Murta, S. G. (2015). Propriedades psicométricas iniciais do Acceptance and Action Questionnaire-II — versão brasileira. <em>Psico-USF, 20</em>(1), 75–85. https://doi.org/10.1590/1413-82712015200107',
+        'Bond, F. W., Hayes, S. C., Baer, R. A., Carpenter, K. M., Guenole, N., Orcutt, H. K., Waltz, T., & Zettle, R. D. (2011). Preliminary psychometric properties of the Acceptance and Action Questionnaire-II: A revised measure of psychological inflexibility and experiential avoidance. <em>Behavior Therapy, 42</em>(4), 676–688. https://doi.org/10.1016/j.beth.2011.03.007',
+        'Hayes, S. C., Strosahl, K. D., & Wilson, K. G. (2012). <em>Acceptance and Commitment Therapy: The process and practice of mindful change</em> (2nd ed.). Guilford Press.',
+        'Wolgast, M. (2014). What does the Acceptance and Action Questionnaire (AAQ-II) really measure? <em>Behavior Therapy, 45</em>(6), 831–839. https://doi.org/10.1016/j.beth.2014.07.002'
+      ]
+    },
     nomeCurto: 'AAQ-II',
     emoji: '<svg class=ico aria-hidden=true><use href=#i-puzzle></use></svg>',
     corPrefix: 'processo',
@@ -18575,8 +18705,22 @@ function rrAbrirSubmodalRespostas(chave) {
     'Itens marcados em vermelho indicam atenção clínica.' +
   '</div>';
 
-  body.innerHTML = introHtml + rrRenderRespostasItens(cod, def, reg);
+  body.innerHTML = introHtml + '<div class="ficha-vazio">Carregando os itens…</div>';
   overlay.classList.add('show');
+  // 17.3.2: escala com texto na aba carrega os itens antes de montar a lista — no fluxo do profissional, pela
+  // sigla do paciente aberto (mesma leitura da aplicação). Até aqui a lupa mostrava só o número da resposta.
+  rrGarantirTextos_(def).then(function () {
+    if (!overlay.classList.contains('show')) return;
+    body.innerHTML = introHtml + rrRenderRespostasItens(cod, def, reg);
+  });
+}
+async function rrGarantirTextos_(def) {
+  if (!def || !def.textoDaAba || ESC_TEXTOS[def.instrumentoId]) return true;
+  var fluxoAntes = PROF_FLUXO;
+  if (!fluxoAntes && PROF_SESSAO && PROF_PACIENTE_SEL) PROF_FLUXO = { sigla: PROF_PACIENTE_SEL.sigla };
+  var ok = await escCarregarTextos(Object.keys(ESC_ESCALAS).find(function (c) { return ESC_ESCALAS[c] === def; }));
+  if (!fluxoAntes) PROF_FLUXO = null;
+  return ok;
 }
 
 function rrFecharSubmodalRespostas() {
@@ -18622,6 +18766,11 @@ function rrRenderRespostasItens(cod, def, reg) {
     }
     // 17.1: escalas com texto na aba (BDI-II, BAI, BHS, BSS) mostram o item quando os textos estão em memória
     const textosAba = (def.textoDaAba && ESC_TEXTOS[def.instrumentoId]) ? ESC_TEXTOS[def.instrumentoId] : null;
+    // 17.3.2: o rótulo da opção também vem da aba (âncora ou frase do item), com o número entre parênteses
+    if (temValor && textosAba && !(def.opcoes && def.opcoes.length)) {
+      const opAba = escOpcoesDoItem(def, item, textosAba).find(function (o) { return String(o.codigo) === String(valor); });
+      if (opAba && opAba.label) { rotulo = opAba.label; complemento = ' (' + valor + ')'; }
+    }
     const textoItem = item.texto || (textosAba ? (textosAba.itens[String(item.id)] || textosAba.titulos[String(item.id)] || '') : '');
 
     const isCritico = !!item.critico;
