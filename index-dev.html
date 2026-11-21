@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — lote B da HumanTrack: PANAS, SPIN, OCI-R, ASRS-18 e SCS (25 escalas) — Pacote 17.5 (20/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — fichas do lote B: as 25 escalas com ficha, referências conferidas e tags — Pacote 17.5.1 (20/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -17943,6 +17943,31 @@ const ESC_ESCALAS = {
   'PANAS': {
     nomeCompleto: 'Positive and Negative Affect Schedule (PANAS)',
     nomeTraducao: 'Escala de Afetos Positivos e Negativos',
+    ficha: { // 17.5.1: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
+      tags: [
+        'Humor',
+        'Afeto',
+        'Bem-estar',
+        'Mensuração'
+      ],
+      descricao: 'Lista de palavras que descrevem sentimentos e emoções, respondida em cinco pontos de intensidade. Mede duas dimensões independentes do humor: afeto positivo (entusiasmo, energia, atenção) e afeto negativo (sofrimento subjetivo: medo, culpa, nervosismo). Escores baixos de afeto positivo acompanham tristeza e apatia; escores altos de afeto negativo acompanham ansiedade e angústia (Watson, Clark & Tellegen, 1988).',
+      tempo: '3 a 5 minutos.',
+      populacao: 'Adolescentes e adultos, em população geral e clínica. No Brasil, amostra comunitária representativa de São Paulo e Rio de Janeiro, 15 a 75 anos (Carvalho et al., 2013).',
+      usos: 'Medida de humor para linha de base e acompanhamento, em séries (semanal, por exemplo); apoio à formulação de caso, lendo os dois afetos em conjunto; pesquisa. Não é instrumento diagnóstico (Watson et al., 1988).',
+      interpretacao: [
+        '<em>Estrutura:</em> a versão brasileira validada tem 19 itens, 9 de afeto positivo e 10 de afeto negativo, de 1 (muito pouco ou nada) a 5 (extremamente); um item do afeto positivo da versão original não carregou em nenhum fator e foi excluído (Carvalho et al., 2013). O sistema soma cada parte: afeto positivo de 9 a 45, afeto negativo de 10 a 50.',
+        '<em>Período:</em> o sistema pergunta como a pessoa se sente em geral (medida de traço), o mesmo enquadre da validação brasileira; a escala admite outros períodos (hoje, última semana) quando o terapeuta quiser medir estado (Watson et al., 1988).',
+        '<em>Pontos de corte:</em> não há. A leitura é pela combinação dos dois afetos e pela evolução do próprio paciente.',
+        '<em>Confiabilidade:</em> na versão brasileira, alfa de Cronbach 0,88 para o afeto positivo e 0,87 para o negativo (Carvalho et al., 2013).',
+        '<em>Cuidados:</em> os dois afetos são quase independentes, não opostos: uma pessoa pode ter os dois altos. Os itens são adjetivos soltos; pessoas com baixa escolaridade podem precisar de apoio na leitura.'
+      ],
+      desenvolvedores: 'David Watson, Lee Anna Clark e Auke Tellegen (1988). Uso livre com citação. Versão brasileira: Hudson W. de Carvalho e colaboradores (2013).',
+      validacaoBr: 'Sim. Carvalho et al. (2013): 3.728 pessoas de 15 a 75 anos, amostra comunitária representativa de São Paulo e Rio de Janeiro, aplicação por entrevista; modelo de dois fatores confirmado; alfa 0,88 (positivo) e 0,87 (negativo); 19 itens retidos. Não há normas nem corte brasileiros.',
+      referencias: [
+        'Carvalho, H. W., Andreoli, S. B., Lara, D. R., Patrick, C. J., Quintana, M. I., Bressan, R. A., Melo, M. F., Mari, J. J., & Jorge, M. R. (2013). Structural validity and reliability of the Positive and Negative Affect Schedule (PANAS): Evidence from a large Brazilian community sample. <em>Revista Brasileira de Psiquiatria, 35</em>(2), 169–172. https://doi.org/10.1590/1516-4446-2012-0957',
+        'Watson, D., Clark, L. A., & Tellegen, A. (1988). Development and validation of brief measures of positive and negative affect: The PANAS scales. <em>Journal of Personality and Social Psychology, 54</em>(6), 1063–1070. https://doi.org/10.1037/0022-3514.54.6.1063'
+      ]
+    },
     nomeCurto: 'PANAS',
     emoji: '<svg class=ico aria-hidden=true><use href=#i-sun></use></svg>',
     corPrefix: 'bemestar',
@@ -17977,6 +18002,30 @@ const ESC_ESCALAS = {
   'SPIN': {
     nomeCompleto: 'Social Phobia Inventory (SPIN)',
     nomeTraducao: 'Inventário de Fobia Social',
+    ficha: { // 17.5.1: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
+      tags: [
+        'Ansiedade social',
+        'Rastreamento',
+        'Mensuração'
+      ],
+      descricao: 'Inventário de autorrelato com 17 itens que cobre os três componentes da ansiedade social: medo, evitação e sintomas fisiológicos (rubor, suor, tremor, palpitação), pontuados pelo incômodo na última semana, de 0 (nada) a 4 (extremamente) (Connor et al., 2000).',
+      tempo: '3 a 5 minutos.',
+      populacao: 'Adultos, em população clínica e geral. No Brasil, universitários (Osório, Crippa & Loureiro, 2009).',
+      usos: 'Rastreamento de transtorno de ansiedade social; medida de gravidade; monitoramento da resposta ao tratamento, para a qual a escala mostrou sensibilidade (Connor et al., 2000). O diagnóstico depende de entrevista.',
+      interpretacao: [
+        '<em>Estrutura:</em> 17 itens, 0 a 4, uma semana de referência; escore total de 0 a 68 pela soma.',
+        '<em>Ponto de corte:</em> 19 no estudo original, que separou pessoas com fobia social de controles (Connor et al., 2000). É o corte que o sistema usa. A versão brasileira não propõe corte.',
+        '<em>Subescalas:</em> o estudo original descreve cinco fatores e os três componentes (medo, evitação, fisiológico); a versão brasileira não analisou a estrutura fatorial (Osório et al., 2009). O sistema mostra só o total.',
+        '<em>Confiabilidade:</em> na versão brasileira, correlações item-total de 0,44 a 0,71 e consistência interna de 0,71 a 0,90 (Osório et al., 2009).',
+        '<em>Cuidados:</em> a validação brasileira foi feita só com universitários; em outras populações, cautela. O item sobre falar em público é o mais pontuado mesmo sem o transtorno (Osório et al., 2009).'
+      ],
+      desenvolvedores: 'Kathryn M. Connor, Jonathan R. T. Davidson e colaboradores (2000), Duke University. Uso livre com citação. Versão brasileira: Flávia de Lima Osório, José Alexandre S. Crippa e Sonia Regina Loureiro (2009).',
+      validacaoBr: 'Sim, com estudo dos itens e da consistência interna. Osório et al. (2009): tradução e adaptação com retrotradução aprovada pelos autores originais, estudo-piloto com 30 universitários e aplicação a 2.314 universitários; correlações item-total de 0,44 a 0,71; consistência interna de 0,71 a 0,90. Os autores apontam como necessários estudos de validade em amostras clínicas.',
+      referencias: [
+        'Connor, K. M., Davidson, J. R. T., Churchill, L. E., Sherwood, A., Foa, E., & Weisler, R. H. (2000). Psychometric properties of the Social Phobia Inventory (SPIN): New self-rating scale. <em>British Journal of Psychiatry, 176</em>, 379–386. https://doi.org/10.1192/bjp.176.4.379',
+        'Osório, F. L., Crippa, J. A. S., & Loureiro, S. R. (2009). Cross-cultural validation of the Brazilian Portuguese version of the Social Phobia Inventory (SPIN): Study of the items and internal consistency. <em>Revista Brasileira de Psiquiatria, 31</em>(1), 25–29. https://doi.org/10.1590/s1516-44462008005000018'
+      ]
+    },
     nomeCurto: 'SPIN',
     emoji: '<svg class=ico aria-hidden=true><use href=#i-user></use></svg>',
     corPrefix: 'amber',
@@ -18010,6 +18059,31 @@ const ESC_ESCALAS = {
   'OCI-R': {
     nomeCompleto: 'Obsessive-Compulsive Inventory-Revised (OCI-R)',
     nomeTraducao: 'Inventário de Obsessões e Compulsões-Revisado',
+    ficha: { // 17.5.1: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
+      tags: [
+        'TOC',
+        'Rastreamento',
+        'Mensuração'
+      ],
+      descricao: 'Inventário de autorrelato com 18 itens que mede o incômodo causado por sintomas obsessivo-compulsivos no último mês, de 0 (nem um pouco) a 4 (extremamente), em seis dimensões de três itens: verificação, lavagem, ordenação, acumulação, obsessões e neutralização. É a versão curta do OCI, com escore mais simples e menos sobreposição entre subescalas (Foa et al., 2002).',
+      tempo: '3 a 5 minutos.',
+      populacao: 'Adultos, em população clínica (TOC e outros transtornos de ansiedade) e geral. No Brasil, pacientes com TOC, fobia social e pânico e pessoas sem transtorno (Souza et al., 2011).',
+      usos: 'Rastreamento de TOC; medida de gravidade por dimensão; monitoramento da resposta ao tratamento, à qual a versão brasileira mostrou sensibilidade após terapia cognitivo-comportamental em grupo (Souza et al., 2011). Não substitui a entrevista diagnóstica.',
+      interpretacao: [
+        '<em>Estrutura:</em> 18 itens, 0 a 4, um mês de referência; escore total de 0 a 72 pela soma; seis subescalas de 0 a 12 (verificação 2, 8, 14; lavagem 5, 11, 17; ordenação 3, 9, 15; acumulação 1, 7, 13; obsessões 6, 12, 18; neutralização 4, 10, 16).',
+        '<em>Ponto de corte:</em> 21 no total, derivado por curva ROC no estudo original, para rastrear TOC (Foa et al., 2002). É o corte que o sistema usa. A versão brasileira não propõe corte.',
+        '<em>Leitura:</em> o total diz se o conjunto passa do corte; as seis partes dizem onde os sintomas pesam, o que orienta a exposição com prevenção de resposta.',
+        '<em>Cuidados:</em> a dimensão acumulação tende a se comportar de modo diferente das outras (Huppert et al., 2007).'
+      ],
+      desenvolvedores: 'Edna B. Foa, Jonathan D. Huppert e colaboradores (2002), University of Pennsylvania. Uso livre com citação. Versão brasileira: Fernanda Pasquoto de Souza e colaboradores (2008, 2011), UFRGS.',
+      validacaoBr: 'Sim. Souza et al. (2008): tradução por dois psiquiatras bilíngues, retrotradução independente, ajuste com 15 pacientes e aprovação da autora original. Souza et al. (2011): 260 participantes (64 com TOC, 33 com fobia social, 33 com pânico e 130 sem transtorno); estrutura original de seis fatores replicada; consistência interna de moderada a boa no total e nas subescalas; validade convergente e divergente adequadas; teste-reteste em 64 pacientes com TOC; sensibilidade à mudança após TCC em grupo. Sem corte brasileiro.',
+      referencias: [
+        'Foa, E. B., Huppert, J. D., Leiberg, S., Langner, R., Kichic, R., Hajcak, G., & Salkovskis, P. M. (2002). The Obsessive-Compulsive Inventory: Development and validation of a short version. <em>Psychological Assessment, 14</em>(4), 485–496.',
+        'Huppert, J. D., Walther, M. R., Hajcak, G., Yadin, E., Foa, E. B., Simpson, H. B., & Liebowitz, M. R. (2007). The OCI-R: Validation of the subscales in a clinical sample. <em>Journal of Anxiety Disorders, 21</em>(3), 394–406. https://doi.org/10.1016/j.janxdis.2006.05.006',
+        'Souza, F. P., Foa, E. B., Meyer, E., Niederauer, K. G., & Cordioli, A. V. (2011). Psychometric properties of the Brazilian Portuguese version of the Obsessive-Compulsive Inventory – Revised (OCI-R). <em>Revista Brasileira de Psiquiatria, 33</em>(2), 137–143. https://doi.org/10.1590/s1516-44462011000200008',
+        'Souza, F. P., Foa, E. B., Meyer, E., Niederauer, K. G., Raffin, A. L., & Cordioli, A. V. (2008). Obsessive-Compulsive Inventory and Obsessive-Compulsive Inventory-Revised scales: Translation into Brazilian Portuguese and cross-cultural adaptation. <em>Revista Brasileira de Psiquiatria, 30</em>(1), 42–46. https://doi.org/10.1590/s1516-44462006005000065'
+      ]
+    },
     nomeCurto: 'OCI-R',
     emoji: '<svg class=ico aria-hidden=true><use href=#i-check-square></use></svg>',
     corPrefix: 'purple',
@@ -18055,6 +18129,29 @@ const ESC_ESCALAS = {
   'ASRS-18': {
     nomeCompleto: 'Adult ADHD Self-Report Scale (ASRS-18)',
     nomeTraducao: 'Escala de Autorrelato de TDAH em Adultos',
+    ficha: { // 17.5.1: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
+      tags: [
+        'TDAH',
+        'Rastreamento',
+        'Mensuração'
+      ],
+      descricao: 'Escala de autorrelato da Organização Mundial da Saúde com 18 perguntas sobre a frequência, nos últimos seis meses, dos sintomas do critério A do DSM-IV para TDAH em adultos: nove de desatenção e nove de hiperatividade e impulsividade, de 0 (nunca) a 4 (muito frequentemente). Seis delas formam a triagem curta (ASRS-6) (Kessler et al., 2005).',
+      tempo: '5 a 8 minutos.',
+      populacao: 'Adultos. No Brasil, adaptação transcultural por Mattos et al. (2006).',
+      usos: 'Triagem de TDAH no adulto, para indicar avaliação diagnóstica; apoio à formulação (em que domínio os sintomas pesam); monitoramento. O diagnóstico exige confirmar início na infância, prejuízo e exclusão de outras causas (Kessler et al., 2005).',
+      interpretacao: [
+        '<em>Estrutura no sistema:</em> 18 itens, 0 a 4, seis meses de referência; soma por domínio, desatenção (itens 1 a 9) e hiperatividade/impulsividade (itens 10 a 18), cada um de 0 a 36. Os itens estão ordenados por domínio, não na ordem da folha original com Parte A (triagem) e Parte B; o conteúdo dos itens é o mesmo.',
+        '<em>Leitura original:</em> no estudo de Kessler et al. (2005) a pontuação ótima foi a contagem de respostas dicotomizadas (sintoma presente ou não), não a soma; a triagem de seis itens teve sensibilidade 68,7% e especificidade 99,5% contra o diagnóstico clínico. O sistema mostra as somas por domínio e não aplica corte, porque não há corte validado no Brasil (Mattos et al., 2006).',
+        '<em>Regra do DSM-IV, para a conversa clínica:</em> seis ou mais sintomas frequentes num domínio sugerem o quadro; a avaliação é clínica.',
+        '<em>Cuidados:</em> autorrelato pode superestimar ou subestimar; sintomas de ansiedade, depressão e sono se confundem com desatenção.'
+      ],
+      desenvolvedores: 'Ronald C. Kessler, Lenard Adler e colaboradores (2005), Organização Mundial da Saúde e Harvard Medical School. Uso livre com citação. Versão brasileira: Paulo Mattos e colaboradores (2006).',
+      validacaoBr: 'Adaptação transcultural: Mattos et al. (2006) traduziram e adaptaram a ASRS-18 para o português do Brasil, com retrotradução e avaliação de equivalência. Dados psicométricos brasileiros da versão de 18 itens (consistência, estrutura, corte) entram na ficha quando forem conferidos em publicação.',
+      referencias: [
+        'Kessler, R. C., Adler, L., Ames, M., Demler, O., Faraone, S., Hiripi, E., Howes, M. J., Jin, R., Secnik, K., Spencer, T., Ustun, T. B., & Walters, E. E. (2005). The World Health Organization Adult ADHD Self-Report Scale (ASRS): A short screening scale for use in the general population. <em>Psychological Medicine, 35</em>(2), 245–256. https://doi.org/10.1017/s0033291704002892',
+        'Mattos, P., Segenreich, D., Saboya, E., Louzã, M., Dias, G., & Romano, M. (2006). Adaptação transcultural para o português da escala Adult Self-Report Scale para avaliação do transtorno de déficit de atenção/hiperatividade em adultos. <em>Revista de Psiquiatria Clínica, 33</em>(4), 188–194.'
+      ]
+    },
     nomeCurto: 'ASRS-18',
     emoji: '<svg class=ico aria-hidden=true><use href=#i-pointer></use></svg>',
     corPrefix: 'teal',
@@ -18088,6 +18185,31 @@ const ESC_ESCALAS = {
   'SCS': {
     nomeCompleto: 'Self-Compassion Scale (SCS)',
     nomeTraducao: 'Escala de Autocompaixão',
+    ficha: { // 17.5.1: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
+      tags: [
+        'Autocompaixão',
+        'Processo',
+        'Bem-estar',
+        'Transdiagnóstico'
+      ],
+      descricao: 'Escala de autorrelato com 26 itens que mede como a pessoa se trata nos momentos de dor, fracasso ou inadequação, em seis componentes: bondade consigo versus autocrítica, humanidade comum versus isolamento, e mindfulness versus sobreidentificação. As respostas vão de 1 (quase nunca) a 5 (quase sempre) (Neff, 2003).',
+      tempo: '5 a 8 minutos.',
+      populacao: 'Adultos, em população geral e clínica. No Brasil, adultos de quase todos os estados (Souza & Hutz, 2016).',
+      usos: 'Medida de processo em terapias contextuais e focadas na compaixão: linha de base e acompanhamento; variável de desfecho em intervenções; pesquisa. Não é instrumento diagnóstico (Neff, 2003).',
+      interpretacao: [
+        '<em>Estrutura:</em> 26 itens, 1 a 5; os 13 itens negativos (1, 2, 4, 6, 8, 11, 13, 16, 18, 20, 21, 24, 25) são invertidos; cada subescala é a média dos seus itens (bondade consigo 5, 12, 19, 23, 26; autocrítica 1, 8, 11, 16, 21; humanidade comum 3, 7, 10, 15; isolamento 4, 13, 18, 25; mindfulness 9, 14, 17, 22; sobreidentificação 2, 6, 20, 24); o total é a média das seis médias, de 1 a 5 (Neff, 2003). Em todas as partes, quanto maior, mais autocompaixão.',
+        '<em>Pontos de corte:</em> não há. Leitura pelo perfil e pela evolução do próprio paciente.',
+        '<em>Total ou partes:</em> análise de 20 amostras em sete idiomas, 11.685 pessoas, apoia o uso tanto do total quanto das seis subescalas, mas não de dois escores separados (compassivo e não compassivo) (Neff et al., 2019).',
+        '<em>Cuidados:</em> correlação alta com autoestima e inversa com depressão, ansiedade e estresse; mudanças pequenas no total podem esconder mudanças grandes numa parte.'
+      ],
+      desenvolvedores: 'Kristin D. Neff (2003), University of Texas at Austin. Uso livre com citação. Versão brasileira: Luciana Karine de Souza e Claudio Simon Hutz (2016).',
+      validacaoBr: 'Sim. Souza e Hutz (2016): adaptação e evidências de validade de construto; análise fatorial confirmatória apoiou a estrutura de seis fatores da escala original, com correlações policóricas adequadas entre subescalas e um fator de ordem superior; consistência interna 0,92. Estudos posteriores dos mesmos autores relacionaram a escala à autoestima, à autoeficácia e à DASS-21 em adultos brasileiros.',
+      referencias: [
+        'Neff, K. D. (2003). The development and validation of a scale to measure self-compassion. <em>Self and Identity, 2</em>(3), 223–250.',
+        'Neff, K. D., Tóth-Király, I., Yarnell, L. M., Arimitsu, K., Castilho, P., Ghorbani, N., Guo, H. X., Hirsch, J. K., Hupfeld, J., Hutz, C. S., Kotsou, I., Lee, W. K., Montero-Marin, J., Sirois, F. M., de Souza, L. K., Svendsen, J. L., Wilkinson, R. B., & Mantzios, M. (2019). Examining the factor structure of the Self-Compassion Scale in 20 diverse samples: Support for use of a total score and six subscale scores. <em>Psychological Assessment, 31</em>(1), 27–45. https://doi.org/10.1037/pas0000629',
+        'Souza, L. K., & Hutz, C. S. (2016). Adaptation of the Self-Compassion Scale for use in Brazil: Evidences of construct validity. <em>Temas em Psicologia, 24</em>(1), 159–172.'
+      ]
+    },
     nomeCurto: 'SCS',
     emoji: '<svg class=ico aria-hidden=true><use href=#i-heart></use></svg>',
     corPrefix: 'bemestar',
