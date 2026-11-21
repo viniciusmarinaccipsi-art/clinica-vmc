@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — fichas do OCI-R e da ASRS-18 fechadas pelas fontes (Souza 2011 lido; Costa 2026 e Polanczyk 2010 conferidos) — Pacote 17.5.2 (20/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — SPIN (corte 19 com sensibilidade e especificidade do Connor 2000) e OCI-R (Abramowitz & Deacon 2006) fechados pelo modelo da captura — Pacote 17.5.3 (20/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -18014,9 +18014,9 @@ const ESC_ESCALAS = {
       usos: 'Rastreamento de transtorno de ansiedade social; medida de gravidade; monitoramento da resposta ao tratamento, para a qual a escala mostrou sensibilidade (Connor et al., 2000). O diagnóstico depende de entrevista.',
       interpretacao: [
         '<em>Estrutura:</em> 17 itens, 0 a 4, uma semana de referência; escore total de 0 a 68 pela soma.',
-        '<em>Ponto de corte:</em> 19 no estudo original, que separou pessoas com fobia social de controles (Connor et al., 2000). É o corte que o sistema usa. A versão brasileira não propõe corte.',
-        '<em>Subescalas:</em> o estudo original descreve cinco fatores e os três componentes (medo, evitação, fisiológico); a versão brasileira não analisou a estrutura fatorial (Osório et al., 2009). O sistema mostra só o total.',
-        '<em>Confiabilidade:</em> na versão brasileira, correlações item-total de 0,44 a 0,71 e consistência interna de 0,71 a 0,90 (Osório et al., 2009).',
+        '<em>Ponto de corte:</em> 19 no estudo original, que separou pessoas com fobia social de controles com sensibilidade 0,73, especificidade 0,84, eficiência diagnóstica 79% e área sob a curva 0,85 (Connor et al., 2000). É o corte que o sistema usa. A versão brasileira não propõe corte.',
+        '<em>Subescalas:</em> o estudo original descreve cinco fatores (inadequação social, autoestima, sintomas fisiológicos, inferioridade social e evitação de atenção) e os três componentes (medo, evitação, fisiológico); a versão brasileira não analisou a estrutura fatorial (Osório et al., 2009). O sistema mostra só o total.',
+        '<em>Confiabilidade:</em> no estudo original, alfa de Cronbach de 0,87 a 0,94 nos grupos com fobia social e teste-reteste de 0,89 e 0,78 (Connor et al., 2000); na versão brasileira, correlações item-total de 0,44 a 0,71 e consistência interna de 0,71 a 0,90 (Osório et al., 2009).',
         '<em>Cuidados:</em> a validação brasileira foi feita só com universitários; em outras populações, cautela. O item sobre falar em público é o mais pontuado mesmo sem o transtorno (Osório et al., 2009).'
       ],
       desenvolvedores: 'Kathryn M. Connor, Jonathan R. T. Davidson e colaboradores (2000), Duke University. Uso livre com citação. Versão brasileira: Flávia de Lima Osório, José Alexandre S. Crippa e Sonia Regina Loureiro (2009).',
@@ -18073,11 +18073,13 @@ const ESC_ESCALAS = {
         '<em>Estrutura:</em> 18 itens, 0 a 4, um mês de referência; escore total de 0 a 72 pela soma; seis subescalas de 0 a 12 (verificação 2, 8, 14; lavagem 5, 11, 17; ordenação 3, 9, 15; acumulação 1, 7, 13; obsessões 6, 12, 18; neutralização 4, 10, 16).',
         '<em>Ponto de corte:</em> 21 no total, derivado por curva ROC no estudo original, para rastrear TOC (Foa et al., 2002). É o corte que o sistema usa. A versão brasileira não propõe corte.',
         '<em>Leitura:</em> o total diz se o conjunto passa do corte; as seis partes dizem onde os sintomas pesam, o que orienta a exposição com prevenção de resposta.',
+        '<em>Replicação clínica:</em> em 167 pacientes com TOC e 155 com outros transtornos de ansiedade, a análise fatorial confirmatória manteve os seis fatores e o inventário discriminou o TOC dos demais transtornos (Abramowitz & Deacon, 2006).',
         '<em>Cuidados:</em> a dimensão acumulação tende a se comportar de modo diferente das outras (Huppert et al., 2007); na amostra brasileira, acumulação e ordenação não separaram o TOC dos outros grupos, e a sensibilidade à mudança foi demonstrada só para o total, não para as subescalas (Souza et al., 2011).'
       ],
       desenvolvedores: 'Edna B. Foa, Jonathan D. Huppert e colaboradores (2002), University of Pennsylvania. Uso livre com citação. Versão brasileira: Fernanda Pasquoto de Souza e colaboradores (2008, 2011), UFRGS.',
       validacaoBr: 'Sim. Souza et al. (2008): tradução por dois psiquiatras bilíngues, retrotradução independente, ajuste com 15 pacientes e aprovação da autora original. Souza et al. (2011): 260 participantes (64 com TOC, 33 com fobia social, 33 com pânico e 130 sem transtorno); análise fatorial com rotação Varimax confirmou a estrutura de seis fatores, com todos os itens carregando no próprio fator (a chave de correção é a original); alfa de Cronbach do total de 0,70 (fobia social) a 0,94 (TOC), subescalas de moderadas a boas; teste-reteste de 7 dias em 64 pacientes com TOC, r = 0,98 no total e 0,95 a 0,99 nas subescalas; mediana do total caiu de 33,5 para 6,5 após 12 sessões de TCC em grupo; correlação com a Y-BOCS 0,5 antes e 0,7 depois do tratamento. Os autores não propõem corte e pedem estudos para estabelecê-lo.',
       referencias: [
+        'Abramowitz, J. S., & Deacon, B. J. (2006). Psychometric properties and construct validity of the Obsessive-Compulsive Inventory–Revised: Replication and extension with a clinical sample. <em>Journal of Anxiety Disorders, 20</em>(8), 1016–1035. https://doi.org/10.1016/j.janxdis.2006.03.001',
         'Foa, E. B., Huppert, J. D., Leiberg, S., Langner, R., Kichic, R., Hajcak, G., & Salkovskis, P. M. (2002). The Obsessive-Compulsive Inventory: Development and validation of a short version. <em>Psychological Assessment, 14</em>(4), 485–496.',
         'Huppert, J. D., Walther, M. R., Hajcak, G., Yadin, E., Foa, E. B., Simpson, H. B., & Liebowitz, M. R. (2007). The OCI-R: Validation of the subscales in a clinical sample. <em>Journal of Anxiety Disorders, 21</em>(3), 394–406. https://doi.org/10.1016/j.janxdis.2006.05.006',
         'Souza, F. P., Foa, E. B., Meyer, E., Niederauer, K. G., & Cordioli, A. V. (2011). Psychometric properties of the Brazilian Portuguese version of the Obsessive-Compulsive Inventory – Revised (OCI-R). <em>Revista Brasileira de Psiquiatria, 33</em>(2), 137–143. https://doi.org/10.1590/s1516-44462011000200008',
