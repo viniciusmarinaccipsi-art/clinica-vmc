@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — nome original, tradução, ficha e tags nas 20 escalas; referências fechadas (manual Beck, GAAPCC, BSS em adolescentes, edição Pearson 2023) — Pacote 17.4.2 (20/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — lote B da HumanTrack: PANAS, SPIN, OCI-R, ASRS-18 e SCS (25 escalas) — Pacote 17.5 (21/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -3386,6 +3386,15 @@ button.cab-no-item{cursor:pointer;}
 /* 17.2 — URICA: 4 subescalas + prontidão, azulejos mais estreitos */
 .esch-aplic-tri.urica { background:var(--c-urica-tint); }
 .esch-aplic-tri.urica .esch-aplic-tri-val { color:var(--c-urica-ink); }
+/* 17.5 — lote B: famílias já existentes nos cartões, agora também nos azulejos das subescalas */
+.esch-aplic-tri.bemestar { background:var(--c-bemestar-tint); }
+.esch-aplic-tri.bemestar .esch-aplic-tri-val { color:var(--c-bemestar-ink); }
+.esch-aplic-tri.processo { background:var(--c-processo-tint); }
+.esch-aplic-tri.processo .esch-aplic-tri-val { color:var(--c-processo-ink); }
+.esch-aplic-tri.purple { background:var(--c-dass21-tint); }
+.esch-aplic-tri.purple .esch-aplic-tri-val { color:var(--c-dass21-ink); }
+.esch-aplic-tri.teal { background:var(--c-srq20-tint); }
+.esch-aplic-tri.teal .esch-aplic-tri-val { color:var(--c-srq20-ink); }
 .esch-aplic-tris.cinco { gap: 4px; padding: 0 4px; }
 .esch-aplic-tris.cinco .esch-aplic-tri { min-width: 34px; padding: 4px 3px; }
 
@@ -3565,6 +3574,11 @@ button.cab-no-item{cursor:pointer;}
 /* 17.2 — URICA: 4 boxes (2×2 no celular) + prontidão em largura inteira */
 .rr-subescalas-grid.quatro { grid-template-columns: repeat(4, 1fr); }
 .rr-sub-box.urica { background:var(--c-urica-tint); border-color:var(--c-urica-tint); }
+/* 17.5 — lote B */
+.rr-sub-box.bemestar { background:var(--c-bemestar-tint); border-color:var(--c-bemestar-tint); }
+.rr-sub-box.processo { background:var(--c-processo-tint); border-color:var(--c-processo-tint); }
+.rr-sub-box.purple { background:var(--c-dass21-tint); border-color:var(--c-dass21-tint); }
+.rr-sub-box.teal { background:var(--c-srq20-tint); border-color:var(--c-srq20-tint); }
 .rr-sub-box.rr-sub-composto { grid-column: 1 / -1; }
 .rr-sub-media { font:var(--t-body-sm); color:var(--c-ink-3); margin-top: 6px; }
 .rr-sub-icone { font-size: 20px; display: block; margin-bottom: 4px; }
@@ -3580,6 +3594,10 @@ button.cab-no-item{cursor:pointer;}
 .rr-sub-box.amber .rr-sub-nome { color:var(--c-warn-ink); }
 .rr-sub-box.green .rr-sub-nome { color:var(--c-pos-ink); }
 .rr-sub-box.urica .rr-sub-nome { color:var(--c-urica-ink); }
+.rr-sub-box.bemestar .rr-sub-nome, .rr-sub-box.bemestar .rr-sub-escore { color:var(--c-bemestar-ink); }
+.rr-sub-box.processo .rr-sub-nome, .rr-sub-box.processo .rr-sub-escore { color:var(--c-processo-ink); }
+.rr-sub-box.purple .rr-sub-nome, .rr-sub-box.purple .rr-sub-escore { color:var(--c-dass21-ink); }
+.rr-sub-box.teal .rr-sub-nome, .rr-sub-box.teal .rr-sub-escore { color:var(--c-srq20-ink); }
 .rr-sub-escore {
   font-family:var(--f-title);
   font-size: 30px;
@@ -7363,6 +7381,62 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <div class="esc-card-desc">Como você lida com pensamentos que não quer ter</div>
         <div class="esc-card-meta">
           <span>15 itens</span><span>3-5 min</span><span>Em geral</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <!-- Pacote 17.5 — lote B da HumanTrack: cinco escalas por liberação do profissional. -->
+      <button class="esc-card bemestar hidden" id="escCardPANAS" type="button" onclick="escClicarCardEscala('PANAS')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-sun"/></svg></span>
+        <div class="esc-card-title">Positive and Negative Affect Schedule (PANAS)</div>
+        <div class="esc-card-trad">Escala de Afetos Positivos e Negativos</div>
+        <div class="esc-card-desc">Sentimentos e emoções, como você se sente em geral</div>
+        <div class="esc-card-meta">
+          <span>19 itens</span><span>3-5 min</span><span>Em geral</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card amber hidden" id="escCardSPIN" type="button" onclick="escClicarCardEscala('SPIN')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg></span>
+        <div class="esc-card-title">Social Phobia Inventory (SPIN)</div>
+        <div class="esc-card-trad">Inventário de Fobia Social</div>
+        <div class="esc-card-desc">Medo, evitação e desconforto em situações sociais, na última semana</div>
+        <div class="esc-card-meta">
+          <span>17 itens</span><span>3-5 min</span><span>Última semana</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card purple hidden" id="escCardOCIR" type="button" onclick="escClicarCardEscala('OCI-R')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-check-square"/></svg></span>
+        <div class="esc-card-title">Obsessive-Compulsive Inventory-Revised (OCI-R)</div>
+        <div class="esc-card-trad">Inventário de Obsessões e Compulsões-Revisado</div>
+        <div class="esc-card-desc">Pensamentos e rituais que incomodaram no último mês</div>
+        <div class="esc-card-meta">
+          <span>18 itens</span><span>3-5 min</span><span>Último mês</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card teal hidden" id="escCardASRS" type="button" onclick="escClicarCardEscala('ASRS-18')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-pointer"/></svg></span>
+        <div class="esc-card-title">Adult ADHD Self-Report Scale (ASRS-18)</div>
+        <div class="esc-card-trad">Escala de Autorrelato de TDAH em Adultos</div>
+        <div class="esc-card-desc">Atenção, inquietação e impulsividade nos últimos seis meses</div>
+        <div class="esc-card-meta">
+          <span>18 itens</span><span>5-8 min</span><span>Seis meses</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card bemestar hidden" id="escCardSCS" type="button" onclick="escClicarCardEscala('SCS')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg></span>
+        <div class="esc-card-title">Self-Compassion Scale (SCS)</div>
+        <div class="esc-card-trad">Escala de Autocompaixão</div>
+        <div class="esc-card-desc">Como você se trata nos momentos difíceis</div>
+        <div class="esc-card-meta">
+          <span>26 itens</span><span>5-8 min</span><span>Em geral</span>
         </div>
         <span class="esc-card-arrow">›</span>
       </button>
@@ -16250,7 +16324,8 @@ var ESC_LIBERADOS = null;   // null = ainda nao perguntou ao servidor; [] = nenh
 var ESC_CARTOES_POR_INSTRUMENTO = { phq9: 'escCardPHQ9', gad7: 'escCardGAD7', pss10: 'escCardPSS10', dass21: 'escCardDASS21', srq20: 'escCardSRQ20', // 17.3.1: as cinco do 12.x também são por liberação
   bdi2: 'escCardBDI2', bai: 'escCardBAI', bhs: 'escCardBHS', bsi: 'escCardBSS', // 17.1: + BHS e BSS
   urica_alcool: 'escCardURICA_A', urica_drogas: 'escCardURICA_D', urica_tabaco: 'escCardURICA_T', urica_alimentar: 'escCardURICA_HA', // 17.2
-  pcl5: 'escCardPCL5', pswq: 'escCardPSWQ', ear: 'escCardEAR', aaq2: 'escCardAAQ2', swls: 'escCardSWLS', maas: 'escCardMAAS', wbsi: 'escCardWBSI' }; // 17.3
+  pcl5: 'escCardPCL5', pswq: 'escCardPSWQ', ear: 'escCardEAR', aaq2: 'escCardAAQ2', swls: 'escCardSWLS', maas: 'escCardMAAS', wbsi: 'escCardWBSI', // 17.3
+  panas: 'escCardPANAS', spin: 'escCardSPIN', ocir: 'escCardOCIR', asrs: 'escCardASRS', scs: 'escCardSCS' }; // 17.5
 
 // Valor numerico de uma resposta. Nas escalas do 12.x ja e numero; no BDI-II os
 // itens 16 e 18 guardam o codigo da folha ('2b'), e ali so o digito pontua.
@@ -17843,9 +17918,217 @@ const ESC_ESCALAS = {
       '<strong>15-75</strong> — quanto maior, maior a tendência a suprimir pensamentos indesejados',
       '<em style="color:var(--c-ink-3);">Sem pontos de corte validados: a versão brasileira é uma adaptação transcultural (Talask et al., 2018). Leitura pela evolução e em conjunto com a entrevista.</em>'
     ]
+  },
+
+  // ---- Pacote 17.5 — lote B da HumanTrack: PANAS, SPIN, OCI-R, ASRS-18 e SCS ----
+  // Textos (itens, instrução, âncoras) na aba privada Itens_Instrumentos (carga a partir da captura HumanTrack de
+  // 08/10/2026). Todas por liberação do profissional. Motor: 'subMedia' = casas decimais da média por subescala (SCS);
+  // 'composto.dividir' = média das médias (SCS: total de 1 a 5); escala com subescalas E corte no total (OCI-R) mostra
+  // a faixa do total antes das subescalas. Faixas só com fonte (regra de 19/11/2026).
+  // Referências:
+  //   PANAS — Watson, Clark & Tellegen (1988). J. Pers. Soc. Psychol., 54(6), 1063–1070; Carvalho et al. (2013). Rev.
+  //     Bras. Psiquiatr., 35(2), 169–172 (versão brasileira de 19 itens: um item do afeto positivo não carregou e saiu;
+  //     alfa AP 0,88 e AN 0,87; 3.728 pessoas de SP e RJ). Somas por subescala (AP 9–45, AN 10–50); sem corte.
+  //   SPIN — Connor et al. (2000). Br. J. Psychiatry, 176, 379–386 (corte 19); Osório, Crippa & Loureiro (2009). Rev.
+  //     Bras. Psiquiatr., 31(1), 25–29 (versão brasileira; 2.314 universitários; consistência 0,71–0,90). Sem corte brasileiro.
+  //   OCI-R — Foa et al. (2002). Psychol. Assess., 14(4), 485–496 (18 itens, 6 subescalas, corte 21); Souza et al. (2008).
+  //     Rev. Bras. Psiquiatr., 30(1), 42–46 (tradução); Souza et al. (2011). Rev. Bras. Psiquiatr., 33(2), 137–143
+  //     (260 participantes; estrutura original replicada). Sem corte brasileiro.
+  //   ASRS-18 — Kessler et al. (2005). Psychol. Med., 35(2), 245–256; Mattos et al. (2006). Rev. Psiquiatr. Clín., 33(4),
+  //     188–194 (adaptação transcultural). Somas por domínio; sem corte brasileiro. A captura ordena os itens por domínio
+  //     (1–9 desatenção, 10–18 hiperatividade/impulsividade), não na ordem da folha original com Parte A e Parte B.
+  //   SCS — Neff (2003). Self and Identity, 2(3), 223–250; Souza & Hutz (2016). Temas em Psicologia, 24(1), 159–172
+  //     (versão brasileira; seis fatores; consistência 0,92). Negativos invertidos; média por subescala; total = média das
+  //     seis médias (Neff, 2003). Sem corte.
+  'PANAS': {
+    nomeCompleto: 'Positive and Negative Affect Schedule (PANAS)',
+    nomeTraducao: 'Escala de Afetos Positivos e Negativos',
+    nomeCurto: 'PANAS',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-sun></use></svg>',
+    corPrefix: 'bemestar',
+    instrumentoId: 'panas',
+    textoDaAba: true,
+    multiSubescalas: true,
+    multSub: 1,
+    valorMin: 1,
+    valorMax: 5,
+    subtitulo: '19 itens · 3 a 5 minutos · Pensando em <strong>como você se sente em geral</strong>',
+    escoreMax: 50, // por subescala: AN 10 itens × 5; AP tem 9 itens (9–45)
+    itens: [
+      { id: 1, subescala: 'afeto_positivo' }, { id: 2, subescala: 'afeto_positivo' }, { id: 3, subescala: 'afeto_positivo' }, { id: 4, subescala: 'afeto_positivo' }, { id: 5, subescala: 'afeto_positivo' }, { id: 6, subescala: 'afeto_positivo' },
+      { id: 7, subescala: 'afeto_positivo' }, { id: 8, subescala: 'afeto_positivo' }, { id: 9, subescala: 'afeto_positivo' }, { id: 10, subescala: 'afeto_negativo' }, { id: 11, subescala: 'afeto_negativo' }, { id: 12, subescala: 'afeto_negativo' },
+      { id: 13, subescala: 'afeto_negativo' }, { id: 14, subescala: 'afeto_negativo' }, { id: 15, subescala: 'afeto_negativo' }, { id: 16, subescala: 'afeto_negativo' }, { id: 17, subescala: 'afeto_negativo' }, { id: 18, subescala: 'afeto_negativo' },
+      { id: 19, subescala: 'afeto_negativo' }
+    ],
+    subescalasMeta: {
+      afeto_positivo: { sigla: 'AP', tri: 'est', nome: 'Afeto positivo', icone: '<svg class=ico aria-hidden=true><use href=#i-sun></use></svg>', corPrefix: 'green' },
+      afeto_negativo: { sigla: 'AN', tri: 'dep', nome: 'Afeto negativo', icone: '<svg class=ico aria-hidden=true><use href=#i-cloud-rain></use></svg>', corPrefix: 'coral' }
+    },
+    eduGeralTitulo: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg>' + ' Como ler',
+    eduGeralDesc: 'A PANAS tem duas partes independentes: afeto positivo (9 itens, de 9 a 45) e afeto negativo (10 itens, de 10 a 50). Não há ponto de corte: os dois números mostram quanto você tem sentido de cada lado, e o que importa é como eles mudam ao longo do acompanhamento.',
+    eduGeralSugestao: 'Traga este resultado para a sessão: os sentimentos que você marcou com mais força dizem mais do que a soma.',
+    faixasLista: [
+      '<strong>Afeto positivo 9-45</strong> — quanto maior, mais entusiasmo, energia e interesse',
+      '<strong>Afeto negativo 10-50</strong> — quanto maior, mais sofrimento subjetivo (medo, culpa, nervosismo)',
+      '<em style="color:var(--c-ink-3);">Sem pontos de corte (Watson, Clark & Tellegen, 1988; Carvalho et al., 2013). A versão brasileira tem 19 itens: um item do afeto positivo não carregou em nenhum fator e saiu (Carvalho et al., 2013).</em>'
+    ]
+  },
+
+  'SPIN': {
+    nomeCompleto: 'Social Phobia Inventory (SPIN)',
+    nomeTraducao: 'Inventário de Fobia Social',
+    nomeCurto: 'SPIN',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-user></use></svg>',
+    corPrefix: 'amber',
+    instrumentoId: 'spin',
+    textoDaAba: true,
+    valorMin: 0,
+    valorMax: 4,
+    subtitulo: '17 itens · 3 a 5 minutos · Pensando na <strong>última semana</strong>',
+    escoreMax: 68,
+    itens: [
+      { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }, { id: 8 }, { id: 9 },
+      { id: 10 }, { id: 11 }, { id: 12 }, { id: 13 }, { id: 14 }, { id: 15 }, { id: 16 }, { id: 17 }
+    ],
+    faixas: [
+      { min: 19, max: 68, rotulo: 'Sugestivo de ansiedade social', cor: 'laranja',
+        titulo: '<svg class=ico&#32;ico-risk2 aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore está <strong>acima do ponto de corte</strong> para ansiedade social na última semana. Isso não é um diagnóstico: é um sinal de que o medo e a evitação de situações sociais merecem atenção.',
+        sugestao: 'Converse com seu terapeuta sobre este resultado. Ele vai avaliar com você quais situações pesam mais e como trabalhar isso.' },
+      { min: 0, max: 18, rotulo: 'Abaixo do ponto de corte', cor: 'verde',
+        titulo: '<svg class=ico&#32;ico-pos aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore está <strong>abaixo do ponto de corte</strong> na última semana. Algum desconforto em situações sociais pode existir sem chegar a esse nível.',
+        sugestao: 'Traga este resultado para a sessão: as situações que você marcou dizem mais do que o número.' }
+    ],
+    faixasLista: [
+      '<strong>0-18</strong> — Abaixo do ponto de corte',
+      '<strong>19-68</strong> — Sugestivo de ansiedade social',
+      '<em style="color:var(--c-ink-3);">Corte 19 do estudo original (Connor et al., 2000). A versão brasileira (Osório, Crippa & Loureiro, 2009) não tem corte próprio. Triagem — não substitui a entrevista clínica.</em>'
+    ]
+  },
+
+  'OCI-R': {
+    nomeCompleto: 'Obsessive-Compulsive Inventory-Revised (OCI-R)',
+    nomeTraducao: 'Inventário de Obsessões e Compulsões-Revisado',
+    nomeCurto: 'OCI-R',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-check-square></use></svg>',
+    corPrefix: 'purple',
+    instrumentoId: 'ocir',
+    textoDaAba: true,
+    multiSubescalas: true,
+    multSub: 1,
+    valorMin: 0,
+    valorMax: 4,
+    subtitulo: '18 itens · 3 a 5 minutos · Pensando no <strong>último mês</strong>',
+    escoreMax: 72,
+    itens: [
+      { id: 1, subescala: 'acumulacao' }, { id: 2, subescala: 'verificacao' }, { id: 3, subescala: 'ordenacao' }, { id: 4, subescala: 'neutralizacao' }, { id: 5, subescala: 'lavagem' }, { id: 6, subescala: 'obsessoes' },
+      { id: 7, subescala: 'acumulacao' }, { id: 8, subescala: 'verificacao' }, { id: 9, subescala: 'ordenacao' }, { id: 10, subescala: 'neutralizacao' }, { id: 11, subescala: 'lavagem' }, { id: 12, subescala: 'obsessoes' },
+      { id: 13, subescala: 'acumulacao' }, { id: 14, subescala: 'verificacao' }, { id: 15, subescala: 'ordenacao' }, { id: 16, subescala: 'neutralizacao' }, { id: 17, subescala: 'lavagem' }, { id: 18, subescala: 'obsessoes' }
+    ],
+    subescalasMeta: {
+      verificacao:   { sigla: 'Ver', tri: 'purple', nome: 'Verificação',   icone: '<svg class=ico aria-hidden=true><use href=#i-check-square></use></svg>',   corPrefix: 'purple' },
+      lavagem:       { sigla: 'Lav', tri: 'purple', nome: 'Lavagem',       icone: '<svg class=ico aria-hidden=true><use href=#i-refresh></use></svg>', corPrefix: 'purple' },
+      ordenacao:     { sigla: 'Ord', tri: 'purple', nome: 'Ordenação',     icone: '<svg class=ico aria-hidden=true><use href=#i-layers></use></svg>',  corPrefix: 'purple' },
+      acumulacao:    { sigla: 'Acu', tri: 'purple', nome: 'Acumulação',    icone: '<svg class=ico aria-hidden=true><use href=#i-archive></use></svg>', corPrefix: 'purple' },
+      obsessoes:     { sigla: 'Obs', tri: 'purple', nome: 'Obsessões',     icone: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg>',   corPrefix: 'purple' },
+      neutralizacao: { sigla: 'Neu', tri: 'purple', nome: 'Neutralização', icone: '<svg class=ico aria-hidden=true><use href=#i-target></use></svg>',  corPrefix: 'purple' }
+    },
+    faixas: [
+      { min: 21, max: 72, rotulo: 'Sugestivo de TOC', cor: 'laranja',
+        titulo: '<svg class=ico&#32;ico-risk2 aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore total está <strong>acima do ponto de corte</strong> para sintomas obsessivo-compulsivos no último mês. Isso não é um diagnóstico: é um sinal de que esses sintomas merecem avaliação cuidadosa. As seis partes mostram em que área eles pesam mais.',
+        sugestao: 'Converse com seu terapeuta sobre este resultado. Ele vai avaliar com você o que está acontecendo e os próximos passos.' },
+      { min: 0, max: 20, rotulo: 'Abaixo do ponto de corte', cor: 'verde',
+        titulo: '<svg class=ico&#32;ico-pos aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore total está <strong>abaixo do ponto de corte</strong> no último mês. Alguma preocupação ou ritual pode existir sem chegar a esse nível; as seis partes mostram onde.',
+        sugestao: 'Traga este resultado para a sessão: as partes com escore mais alto dizem mais do que o total.' }
+    ],
+    faixasLista: [
+      '<strong>Total 0-20</strong> — Abaixo do ponto de corte',
+      '<strong>Total 21-72</strong> — Sugestivo de TOC',
+      '<strong>Subescalas 0-12</strong> — Verificação, Lavagem, Ordenação, Acumulação, Obsessões e Neutralização (3 itens cada)',
+      '<em style="color:var(--c-ink-3);">Corte 21 no total do estudo original (Foa et al., 2002). A versão brasileira (Souza et al., 2011) replicou as seis subescalas e não propõe corte próprio. Triagem — não substitui a entrevista clínica.</em>'
+    ]
+  },
+
+  'ASRS-18': {
+    nomeCompleto: 'Adult ADHD Self-Report Scale (ASRS-18)',
+    nomeTraducao: 'Escala de Autorrelato de TDAH em Adultos',
+    nomeCurto: 'ASRS-18',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-pointer></use></svg>',
+    corPrefix: 'teal',
+    instrumentoId: 'asrs',
+    textoDaAba: true,
+    multiSubescalas: true,
+    multSub: 1,
+    valorMin: 0,
+    valorMax: 4,
+    subtitulo: '18 itens · 5 a 8 minutos · Pensando nos <strong>últimos seis meses</strong>',
+    escoreMax: 36, // por subescala (9 itens × 4)
+    itens: [
+      { id: 1, subescala: 'desatencao' }, { id: 2, subescala: 'desatencao' }, { id: 3, subescala: 'desatencao' }, { id: 4, subescala: 'desatencao' }, { id: 5, subescala: 'desatencao' }, { id: 6, subescala: 'desatencao' },
+      { id: 7, subescala: 'desatencao' }, { id: 8, subescala: 'desatencao' }, { id: 9, subescala: 'desatencao' }, { id: 10, subescala: 'hiperatividade' }, { id: 11, subescala: 'hiperatividade' }, { id: 12, subescala: 'hiperatividade' },
+      { id: 13, subescala: 'hiperatividade' }, { id: 14, subescala: 'hiperatividade' }, { id: 15, subescala: 'hiperatividade' }, { id: 16, subescala: 'hiperatividade' }, { id: 17, subescala: 'hiperatividade' }, { id: 18, subescala: 'hiperatividade' }
+    ],
+    subescalasMeta: {
+      desatencao:     { sigla: 'Des', tri: 'teal', nome: 'Desatenção',                     icone: '<svg class=ico aria-hidden=true><use href=#i-compass></use></svg>', corPrefix: 'teal' },
+      hiperatividade: { sigla: 'Hip', tri: 'teal', nome: 'Hiperatividade e impulsividade', icone: '<svg class=ico aria-hidden=true><use href=#i-zap></use></svg>',     corPrefix: 'teal' }
+    },
+    eduGeralTitulo: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg>' + ' Como ler',
+    eduGeralDesc: 'A ASRS-18 soma dois grupos de nove perguntas: desatenção e hiperatividade/impulsividade, cada um de 0 a 36. Não há ponto de corte validado no Brasil: a escala é uma triagem, e o que ela indica precisa ser conversado e confirmado na avaliação clínica.',
+    eduGeralSugestao: 'Traga este resultado para a sessão: as situações em que você marcou "frequentemente" ou "muito frequentemente" são o ponto de partida da conversa.',
+    faixasLista: [
+      '<strong>Desatenção 0-36</strong> — itens 1 a 9',
+      '<strong>Hiperatividade/impulsividade 0-36</strong> — itens 10 a 18',
+      '<em style="color:var(--c-ink-3);">Sem ponto de corte brasileiro (Mattos et al., 2006). A versão original usa a contagem de sintomas frequentes, não a soma (Kessler et al., 2005). Triagem — não substitui a avaliação diagnóstica.</em>'
+    ]
+  },
+
+  'SCS': {
+    nomeCompleto: 'Self-Compassion Scale (SCS)',
+    nomeTraducao: 'Escala de Autocompaixão',
+    nomeCurto: 'SCS',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-heart></use></svg>',
+    corPrefix: 'bemestar',
+    instrumentoId: 'scs',
+    textoDaAba: true,
+    multiSubescalas: true,
+    multSub: 1,
+    subMedia: 2, // 17.5: cada subescala é a MÉDIA dos itens (1–5), com duas casas
+    valorMin: 1,
+    valorMax: 5,
+    subtitulo: '26 itens · 5 a 8 minutos · Pensando em <strong>como você se trata nos momentos difíceis</strong>',
+    escoreMax: 5, // por subescala (média de 1 a 5); a soma dos 26 (26–130) é gravada em escore_total e não aparece
+    // Itens negativos (invertidos): 1, 2, 4, 6, 8, 11, 13, 16, 18, 20, 21, 24, 25 (Neff, 2003)
+    itens: [
+      { id: 1, subescala: 'autocritica', reverso: true }, { id: 2, subescala: 'sobreidentificacao', reverso: true }, { id: 3, subescala: 'humanidade' }, { id: 4, subescala: 'isolamento', reverso: true }, { id: 5, subescala: 'bondade' },
+      { id: 6, subescala: 'sobreidentificacao', reverso: true }, { id: 7, subescala: 'humanidade' }, { id: 8, subescala: 'autocritica', reverso: true }, { id: 9, subescala: 'mindfulness' }, { id: 10, subescala: 'humanidade' },
+      { id: 11, subescala: 'autocritica', reverso: true }, { id: 12, subescala: 'bondade' }, { id: 13, subescala: 'isolamento', reverso: true }, { id: 14, subescala: 'mindfulness' }, { id: 15, subescala: 'humanidade' },
+      { id: 16, subescala: 'autocritica', reverso: true }, { id: 17, subescala: 'mindfulness' }, { id: 18, subescala: 'isolamento', reverso: true }, { id: 19, subescala: 'bondade' }, { id: 20, subescala: 'sobreidentificacao', reverso: true },
+      { id: 21, subescala: 'autocritica', reverso: true }, { id: 22, subescala: 'mindfulness' }, { id: 23, subescala: 'bondade' }, { id: 24, subescala: 'sobreidentificacao', reverso: true }, { id: 25, subescala: 'isolamento', reverso: true },
+      { id: 26, subescala: 'bondade' }
+    ],
+    subescalasMeta: {
+      bondade:            { sigla: 'Bon', tri: 'bemestar', nome: 'Bondade consigo',    icone: '<svg class=ico aria-hidden=true><use href=#i-heart></use></svg>',  corPrefix: 'bemestar' },
+      autocritica:        { sigla: 'Auc', tri: 'bemestar', nome: 'Autocrítica',        icone: '<svg class=ico aria-hidden=true><use href=#i-alert></use></svg>',  corPrefix: 'bemestar' },
+      humanidade:         { sigla: 'Hum', tri: 'bemestar', nome: 'Humanidade comum',   icone: '<svg class=ico aria-hidden=true><use href=#i-user></use></svg>',   corPrefix: 'bemestar' },
+      isolamento:         { sigla: 'Iso', tri: 'bemestar', nome: 'Isolamento',         icone: '<svg class=ico aria-hidden=true><use href=#i-pin></use></svg>',    corPrefix: 'bemestar' },
+      mindfulness:        { sigla: 'Min', tri: 'bemestar', nome: 'Mindfulness',        icone: '<svg class=ico aria-hidden=true><use href=#i-leaf></use></svg>',   corPrefix: 'bemestar' },
+      sobreidentificacao: { sigla: 'Sob', tri: 'bemestar', nome: 'Sobreidentificação', icone: '<svg class=ico aria-hidden=true><use href=#i-layers></use></svg>', corPrefix: 'bemestar' }
+    },
+    composto: { chave: 'autocompaixao', sigla: 'Total', nome: 'Autocompaixão', legenda: 'média das seis médias · de 1 a 5 · itens negativos invertidos', mais: ['bondade', 'autocritica', 'humanidade', 'isolamento', 'mindfulness', 'sobreidentificacao'], menos: [], dividir: 6, casas: 2 },
+    eduGeralTitulo: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg>' + ' Como ler',
+    eduGeralDesc: 'A escala descreve seis maneiras de você se tratar nos momentos difíceis, cada uma com uma média de 1 a 5. Nas três partes negativas (autocrítica, isolamento, sobreidentificação) a conta já está invertida: em todas, quanto maior, mais autocompaixão. O total é a média das seis.',
+    eduGeralSugestao: 'Traga este resultado para a sessão: as partes com média mais baixa mostram por onde começar.',
+    faixasLista: [
+      '<strong>Subescalas 1-5</strong> — Bondade consigo, Autocrítica, Humanidade comum, Isolamento, Mindfulness e Sobreidentificação (negativas já invertidas: maior = mais autocompaixão)',
+      '<strong>Total 1-5</strong> — média das seis médias',
+      '<em style="color:var(--c-ink-3);">Sem pontos de corte validados (Neff, 2003; Souza & Hutz, 2016). Leitura pelo perfil e pela evolução do próprio paciente.</em>'
+    ]
   }
 
-  // Módulo 4: 5 escalas do 12.x + BDI-II e BAI (17.0) + BHS e BSS (17.1) + as quatro URICA (17.2) + lote A (17.3)
+  // Módulo 4: 5 escalas do 12.x + BDI-II e BAI (17.0) + BHS e BSS (17.1) + as quatro URICA (17.2) + lote A (17.3) + lote B (17.5)
 };
 
 // ============================================================
@@ -18280,7 +18563,8 @@ function escCalcularEscoreEAlerta(codigoEscala, respostas) {
     const ordem = def.subescalasMeta ? Object.keys(def.subescalasMeta) : Object.keys(subescalasSomas);
     ordem.forEach(k => {
       const soma = subescalasSomas[k] || 0;
-      const escoreSub = soma * (def.multSub || 1);
+      // 17.5: subMedia = casas decimais da MÉDIA dos itens da subescala (SCS); senão a soma vezes multSub (DASS-21: ×2)
+      const escoreSub = def.subMedia ? Math.round(soma / nItens[k] * Math.pow(10, def.subMedia)) / Math.pow(10, def.subMedia) : soma * (def.multSub || 1);
       const listaFaixas = (def.faixasSubescalas && def.faixasSubescalas[k]) || [];
       const faixaSub = listaFaixas.length
         ? (listaFaixas.find(f => escoreSub >= f.min && escoreSub <= f.max) || listaFaixas[listaFaixas.length - 1])
@@ -18293,6 +18577,7 @@ function escCalcularEscoreEAlerta(codigoEscala, respostas) {
       let valor = 0;
       def.composto.mais.forEach(k => { valor += (subescalasSomas[k] || 0) / nItens[k]; });
       def.composto.menos.forEach(k => { valor -= (subescalasSomas[k] || 0) / nItens[k]; });
+      if (def.composto.dividir) valor = valor / def.composto.dividir; // 17.5: SCS = média das seis médias
       const fator = Math.pow(10, def.composto.casas || 0);
       composto = { chave: def.composto.chave, sigla: def.composto.sigla, nome: def.composto.nome, valor: Math.round(valor * fator) / fator };
     }
@@ -18576,10 +18861,11 @@ function escCamposSubescalas_(def, calc) {
   if (!calc.subescalas) { campos.faixa = calc.faixa ? calc.faixa.rotulo : ''; return campos; }
   const meta = (def && def.subescalasMeta) || {};
   const partes = [];
+  if (calc.faixa) partes.push('Total:' + calc.faixa.rotulo); // 17.5: OCI-R tem corte no total além das subescalas
   Object.keys(calc.subescalas).forEach(function (k) {
     const s = calc.subescalas[k];
     campos['escore_' + k] = s.escore;
-    partes.push(((meta[k] && meta[k].sigla) || k) + ':' + (s.faixa ? s.faixa.rotulo : String(s.escore)));
+    partes.push(((meta[k] && meta[k].sigla) || k) + ':' + (s.faixa ? s.faixa.rotulo : String(s.escore).replace('.', ',')));
   });
   if (calc.composto) {
     campos['escore_' + calc.composto.chave] = calc.composto.valor;
@@ -18813,8 +19099,8 @@ function escRrBlocoSubescalasDass(reg, def) {
     html +=   '<div class="rr-sub-escore">' + escapeHtmlAuto(String(escoreDisp)) + '</div>';
     if (faixaRot) {
       html +=   '<div class="rr-sub-faixa esch-faixa ' + faixaCor + '">' + escapeHtmlAuto(faixaRot) + '</div>';
-    } else if (def.composto && temValor(escore) && nPor[k]) {
-      // Sem faixa: a média dos itens (é dela que sai o composto)
+    } else if (def.composto && !def.subMedia && temValor(escore) && nPor[k]) {
+      // Sem faixa: a média dos itens (é dela que sai o composto); 17.5: com subMedia o escore já é a média
       html +=   '<div class="rr-sub-media">média ' + escapeHtmlAuto(String(Math.round(Number(escore) / nPor[k] * 10) / 10).replace('.', ',')) + '</div>';
     }
     html += '</div>';
@@ -19265,7 +19551,8 @@ var ESC_HIST_STATE = {
 // Pacote 17.0: sem BDI-II e BAI aqui, o registro é gravado e fica invisível —
 // esta lista alimenta o histórico do paciente E o card Escalas do profissional.
 var ESC_HIST_ORDEM = ['PHQ-9', 'GAD-7', 'PSS-10', 'DASS-21', 'SRQ-20', 'BDI-II', 'BAI', 'BHS', 'BSS', 'URICA-A', 'URICA-D', 'URICA-T', 'URICA-HA', // 17.1: + BHS e BSS; 17.2: + URICA
-  'PCL-5', 'PSWQ', 'EAR', 'AAQ-II', 'SWLS', 'MAAS', 'WBSI']; // 17.3: lote A da HumanTrack
+  'PCL-5', 'PSWQ', 'EAR', 'AAQ-II', 'SWLS', 'MAAS', 'WBSI', // 17.3: lote A da HumanTrack
+  'PANAS', 'SPIN', 'OCI-R', 'ASRS-18', 'SCS']; // 17.5: lote B
 
 function escHistInvalidarCache() {
   ESC_HIST_STATE.invalidado = true;

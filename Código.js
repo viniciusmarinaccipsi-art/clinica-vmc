@@ -56,7 +56,7 @@
 // na hora de mostrar (05/10/2026)
 // Rodada DOCS_2026-10-07 — index-dev.html e o index oficial: SITE_URL aponta para ele; texto do aviso de backup
 // com falha alinhado ao backup sob demanda (07/10/2026)
-var VERSAO_PACOTE = '17.3.1';
+var VERSAO_PACOTE = '17.5';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -157,10 +157,15 @@ var HEADERS_ESCALAS = [
   'item_11', 'item_12', 'item_13', 'item_14', 'item_15',
   'item_16', 'item_17', 'item_18', 'item_19', 'item_20', 'item_21',
   'item_22', 'item_23', 'item_24', // 17.2: URICA tem 24 itens
+  'item_25', 'item_26', // 17.5: SCS tem 26 itens
   'item_funcional', 'item_funcional_texto',
   'escore_total', 'escore_depressao', 'escore_ansiedade', 'escore_estresse',
   // 17.2: subescalas da URICA (soma de 6 itens, 6-30) e prontidao (medias: C + A + M - PC)
   'escore_precontemplacao', 'escore_contemplacao', 'escore_acao', 'escore_manutencao', 'escore_prontidao',
+  // 17.5: subescalas do lote B — PANAS (somas), OCI-R (somas), ASRS-18 (somas), SCS (medias) + autocompaixao (media das medias)
+  'escore_afeto_positivo', 'escore_afeto_negativo', 'escore_verificacao', 'escore_lavagem', 'escore_ordenacao', 'escore_acumulacao',
+  'escore_obsessoes', 'escore_neutralizacao', 'escore_desatencao', 'escore_hiperatividade', 'escore_bondade', 'escore_autocritica',
+  'escore_humanidade', 'escore_isolamento', 'escore_mindfulness', 'escore_sobreidentificacao', 'escore_autocompaixao',
   'faixa',
   'alerta_risco_flag', 'alerta_risco_item', 'alerta_risco_valor',
   'observacoes', 'tempo_preenchimento_seg',
@@ -2851,8 +2856,12 @@ var COLUNAS_LEITURA_ESCALAS = [
   'item_01', 'item_02', 'item_03', 'item_04', 'item_05', 'item_06', 'item_07', 'item_08', 'item_09', 'item_10',
   'item_11', 'item_12', 'item_13', 'item_14', 'item_15', 'item_16', 'item_17', 'item_18', 'item_19', 'item_20', 'item_21',
   'item_22', 'item_23', 'item_24', // 17.2
+  'item_25', 'item_26', // 17.5
   'item_funcional', 'item_funcional_texto', 'escore_total', 'escore_depressao', 'escore_ansiedade', 'escore_estresse',
   'escore_precontemplacao', 'escore_contemplacao', 'escore_acao', 'escore_manutencao', 'escore_prontidao', // 17.2
+  'escore_afeto_positivo', 'escore_afeto_negativo', 'escore_verificacao', 'escore_lavagem', 'escore_ordenacao', 'escore_acumulacao', // 17.5
+  'escore_obsessoes', 'escore_neutralizacao', 'escore_desatencao', 'escore_hiperatividade', 'escore_bondade', 'escore_autocritica',
+  'escore_humanidade', 'escore_isolamento', 'escore_mindfulness', 'escore_sobreidentificacao', 'escore_autocompaixao',
   'faixa', 'alerta_risco_flag', 'alerta_risco_item', 'alerta_risco_valor', 'observacoes', 'tempo_preenchimento_seg',
   'editado_por', 'editado_em', 'criado_por', 'autoria_campos', 'criado_por_nome'
 ];
@@ -3063,7 +3072,8 @@ function lerEscalas(sigla, antes, limite) {
 //   4. A acao nao grava nada (fica FORA de VMC_ACOES_GRAVACAO no frontend).
 
 var INSTRUMENTOS_VALIDOS = ['bdi2', 'bai', 'bhs', 'bsi', 'urica_alcool', 'urica_drogas', 'urica_tabaco', 'urica_alimentar', // 17.1: + BHS e BSS (id tecnico 'bsi'); 17.2: + as quatro URICA
-  'pcl5', 'pswq', 'ear', 'aaq2', 'swls', 'maas', 'wbsi']; // 17.3: lote A da HumanTrack (PCL-5, PSWQ, EAR, AAQ-II, SWLS, MAAS, WBSI)
+  'pcl5', 'pswq', 'ear', 'aaq2', 'swls', 'maas', 'wbsi', // 17.3: lote A da HumanTrack (PCL-5, PSWQ, EAR, AAQ-II, SWLS, MAAS, WBSI)
+  'panas', 'spin', 'ocir', 'asrs', 'scs']; // 17.5: lote B (PANAS, SPIN, OCI-R, ASRS-18, SCS)
 
 // 17.1.2 (decisao do usuario, 19/11/2026): instrumentos que o paciente so ve quando o profissional
 // libera para ele - lista em 'escalas_liberadas' na linha do paciente na Controle (coluna criada no
@@ -3076,7 +3086,8 @@ var INSTRUMENTOS_VALIDOS = ['bdi2', 'bai', 'bhs', 'bsi', 'urica_alcool', 'urica_
 var ESCALAS_MENU = { 'PHQ-9': 'phq9', 'GAD-7': 'gad7', 'PSS-10': 'pss10', 'DASS-21': 'dass21', 'SRQ-20': 'srq20',
   'BDI-II': 'bdi2', 'BAI': 'bai', 'BHS': 'bhs', 'BSS': 'bsi',
   'URICA-A': 'urica_alcool', 'URICA-D': 'urica_drogas', 'URICA-T': 'urica_tabaco', 'URICA-HA': 'urica_alimentar',
-  'PCL-5': 'pcl5', 'PSWQ': 'pswq', 'EAR': 'ear', 'AAQ-II': 'aaq2', 'SWLS': 'swls', 'MAAS': 'maas', 'WBSI': 'wbsi' };
+  'PCL-5': 'pcl5', 'PSWQ': 'pswq', 'EAR': 'ear', 'AAQ-II': 'aaq2', 'SWLS': 'swls', 'MAAS': 'maas', 'WBSI': 'wbsi',
+  'PANAS': 'panas', 'SPIN': 'spin', 'OCI-R': 'ocir', 'ASRS-18': 'asrs', 'SCS': 'scs' }; // 17.5: lote B
 var INSTRUMENTOS_SO_PROFISSIONAL = Object.keys(ESCALAS_MENU).map(function (c) { return ESCALAS_MENU[c]; });
 
 /** Id de liberacao de uma escala pelo codigo do catalogo ('' se desconhecido). */
@@ -4073,7 +4084,16 @@ var ESCALAS_CALCULO = {
   'AAQ-II':{n:7,min:1,max:7},
   'SWLS':{n:5,min:1,max:7,faixas:[[30,35,'Satisfação muito alta'],[25,29,'Satisfação alta'],[20,24,'Satisfação média'],[15,19,'Um pouco abaixo da média'],[10,14,'Insatisfeito'],[5,9,'Extremamente insatisfeito']]},
   'MAAS':{n:15,min:1,max:6},
-  'WBSI':{n:15,min:1,max:5}
+  'WBSI':{n:15,min:1,max:5},
+  // 17.5 - lote B da HumanTrack. PANAS: 19 itens da versao brasileira (Carvalho et al., 2013), somas por subescala
+  // (AP 9-45, AN 10-50); SPIN: corte 19 (Connor et al., 2000); OCI-R: 6 subescalas x 3 itens e corte 21 no total
+  // (Foa et al., 2002); ASRS-18: somas por dominio, sem corte brasileiro; SCS: itens negativos invertidos, media
+  // por subescala (subMedia: casas) e total = media das seis medias (composto com dividir: 6) (Neff, 2003).
+  'PANAS':{n:19,min:1,max:5,sub:{afeto_positivo:[1,2,3,4,5,6,7,8,9],afeto_negativo:[10,11,12,13,14,15,16,17,18,19]},multi:true,siglaSub:{afeto_positivo:'AP',afeto_negativo:'AN'}},
+  'SPIN':{n:17,max:4,faixas:[[19,68,'Sugestivo de ansiedade social'],[0,18,'Abaixo do ponto de corte']]},
+  'OCI-R':{n:18,max:4,sub:{verificacao:[2,8,14],lavagem:[5,11,17],ordenacao:[3,9,15],acumulacao:[1,7,13],obsessoes:[6,12,18],neutralizacao:[4,10,16]},multi:true,siglaSub:{verificacao:'Ver',lavagem:'Lav',ordenacao:'Ord',acumulacao:'Acu',obsessoes:'Obs',neutralizacao:'Neu'},faixas:[[21,72,'Sugestivo de TOC'],[0,20,'Abaixo do ponto de corte']]},
+  'ASRS-18':{n:18,max:4,sub:{desatencao:[1,2,3,4,5,6,7,8,9],hiperatividade:[10,11,12,13,14,15,16,17,18]},multi:true,siglaSub:{desatencao:'Des',hiperatividade:'Hip'}},
+  'SCS':{n:26,min:1,max:5,rev:[1,2,4,6,8,11,13,16,18,20,21,24,25],sub:{bondade:[5,12,19,23,26],autocritica:[1,8,11,16,21],humanidade:[3,7,10,15],isolamento:[4,13,18,25],mindfulness:[9,14,17,22],sobreidentificacao:[2,6,20,24]},multi:true,subMedia:2,siglaSub:{bondade:'Bon',autocritica:'Auc',humanidade:'Hum',isolamento:'Iso',mindfulness:'Min',sobreidentificacao:'Sob'},composto:{chave:'autocompaixao',sigla:'Total',mais:['bondade','autocritica','humanidade','isolamento','mindfulness','sobreidentificacao'],menos:[],dividir:6,casas:2}}
 };
 
 /**
@@ -4123,10 +4143,13 @@ function _escoresDaEscala_(instrumento, lerColuna) {
   if (t.multi) {
     // 17.2: generico - uma parte do resumo por subescala, na ordem de 'sub'; faixa quando houver, senao o escore.
     var partes = [];
+    if (t.faixas) partes.push('Total:' + achar(t.faixas, total, 'primeira')); // 17.5: OCI-R tem corte no total alem das subescalas
     Object.keys(t.sub).forEach(function (sub) {
-      var escore = (somas[sub] || 0) * (t.multSub || 1); // DASS-21: x2 (de 21 para 42 itens)
+      // 17.5: subMedia = casas decimais da MEDIA dos itens da subescala (SCS); senao a soma vezes multSub (DASS-21: x2)
+      var escore = t.subMedia ? Math.round((somas[sub] || 0) / t.sub[sub].length * Math.pow(10, t.subMedia)) / Math.pow(10, t.subMedia)
+                              : (somas[sub] || 0) * (t.multSub || 1);
       campos['escore_' + sub] = escore;
-      var rotulo = (t.faixasSub && t.faixasSub[sub]) ? achar(t.faixasSub[sub], escore, 'ultima') : String(escore);
+      var rotulo = (t.faixasSub && t.faixasSub[sub]) ? achar(t.faixasSub[sub], escore, 'ultima') : String(escore).replace('.', ',');
       partes.push((t.siglaSub && t.siglaSub[sub] ? t.siglaSub[sub] : sub) + ':' + rotulo);
     });
     if (t.composto) {
@@ -4134,6 +4157,7 @@ function _escoresDaEscala_(instrumento, lerColuna) {
       var comp = 0;
       t.composto.mais.forEach(function (k) { comp += (somas[k] || 0) / t.sub[k].length; });
       t.composto.menos.forEach(function (k) { comp -= (somas[k] || 0) / t.sub[k].length; });
+      if (t.composto.dividir) comp = comp / t.composto.dividir; // 17.5: SCS = media das seis medias
       var fator = Math.pow(10, t.composto.casas || 0);
       comp = Math.round(comp * fator) / fator;
       campos['escore_' + t.composto.chave] = comp;
