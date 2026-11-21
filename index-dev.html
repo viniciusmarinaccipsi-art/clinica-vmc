@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — SPIN (corte 19 com sensibilidade e especificidade do Connor 2000) e OCI-R (Abramowitz & Deacon 2006) fechados pelo modelo da captura — Pacote 17.5.3 (20/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — lote E da HumanTrack (dependências): AUDIT, FTND, G-SAS, EAAD e ESTUD (30 escalas); opções por item na carga — Pacote 17.6 (21/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -7437,6 +7437,62 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <div class="esc-card-desc">Como você se trata nos momentos difíceis</div>
         <div class="esc-card-meta">
           <span>26 itens</span><span>5-8 min</span><span>Em geral</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <!-- Pacote 17.6 — lote E da HumanTrack (dependências): cinco escalas por liberação do profissional. -->
+      <button class="esc-card amber hidden" id="escCardAUDIT" type="button" onclick="escClicarCardEscala('AUDIT')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-thermometer"/></svg></span>
+        <div class="esc-card-title">Alcohol Use Disorders Identification Test (AUDIT)</div>
+        <div class="esc-card-trad">Teste de Identificação de Transtornos pelo Uso de Álcool</div>
+        <div class="esc-card-desc">Seu padrão de uso de álcool no último ano</div>
+        <div class="esc-card-meta">
+          <span>10 itens</span><span>2-4 min</span><span>Último ano</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card teal hidden" id="escCardFTND" type="button" onclick="escClicarCardEscala('FTND')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-zap"/></svg></span>
+        <div class="esc-card-title">Fagerström Test for Nicotine Dependence (FTND)</div>
+        <div class="esc-card-trad">Teste de Fagerström para Dependência de Nicotina</div>
+        <div class="esc-card-desc">Quanto o seu corpo depende do cigarro</div>
+        <div class="esc-card-meta">
+          <span>6 itens</span><span>1-2 min</span><span>Hoje</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card purple hidden" id="escCardGSAS" type="button" onclick="escClicarCardEscala('G-SAS')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-target"/></svg></span>
+        <div class="esc-card-title">Gambling Symptom Assessment Scale (G-SAS)</div>
+        <div class="esc-card-trad">Escala de Avaliação de Sintomas de Jogo</div>
+        <div class="esc-card-desc">Vontade, pensamentos e tempo com jogo nos últimos sete dias</div>
+        <div class="esc-card-meta">
+          <span>12 itens</span><span>3-5 min</span><span>Sete dias</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card processo hidden" id="escCardEAAD" type="button" onclick="escClicarCardEscala('EAAD')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg></span>
+        <div class="esc-card-title">Escala de Autoeficácia para Abstinência de Drogas (EAAD)</div>
+        <div class="esc-card-trad">Versão brasileira da AASE, parte da confiança</div>
+        <div class="esc-card-desc">Quanto você confia em não usar em cada situação</div>
+        <div class="esc-card-meta">
+          <span>24 itens</span><span>5-8 min</span><span>Em geral</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card processo hidden" id="escCardESTUD" type="button" onclick="escClicarCardEscala('ESTUD')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-alert"/></svg></span>
+        <div class="esc-card-title">Escala de Situações Tentadoras para o Uso de Drogas (ESTUD)</div>
+        <div class="esc-card-trad">Versão brasileira da AASE, parte da tentação</div>
+        <div class="esc-card-desc">Quanto você se sente tentado a usar em cada situação</div>
+        <div class="esc-card-meta">
+          <span>24 itens</span><span>5-8 min</span><span>Em geral</span>
         </div>
         <span class="esc-card-arrow">›</span>
       </button>
@@ -16325,7 +16381,8 @@ var ESC_CARTOES_POR_INSTRUMENTO = { phq9: 'escCardPHQ9', gad7: 'escCardGAD7', ps
   bdi2: 'escCardBDI2', bai: 'escCardBAI', bhs: 'escCardBHS', bsi: 'escCardBSS', // 17.1: + BHS e BSS
   urica_alcool: 'escCardURICA_A', urica_drogas: 'escCardURICA_D', urica_tabaco: 'escCardURICA_T', urica_alimentar: 'escCardURICA_HA', // 17.2
   pcl5: 'escCardPCL5', pswq: 'escCardPSWQ', ear: 'escCardEAR', aaq2: 'escCardAAQ2', swls: 'escCardSWLS', maas: 'escCardMAAS', wbsi: 'escCardWBSI', // 17.3
-  panas: 'escCardPANAS', spin: 'escCardSPIN', ocir: 'escCardOCIR', asrs: 'escCardASRS', scs: 'escCardSCS' }; // 17.5
+  panas: 'escCardPANAS', spin: 'escCardSPIN', ocir: 'escCardOCIR', asrs: 'escCardASRS', scs: 'escCardSCS', // 17.5
+  audit: 'escCardAUDIT', ftnd: 'escCardFTND', gsas: 'escCardGSAS', eaad: 'escCardEAAD', estud: 'escCardESTUD' }; // 17.6
 
 // Valor numerico de uma resposta. Nas escalas do 12.x ja e numero; no BDI-II os
 // itens 16 e 18 guardam o codigo da folha ('2b'), e ali so o digito pontua.
@@ -18252,9 +18309,251 @@ const ESC_ESCALAS = {
       '<strong>Total 1-5</strong> — média das seis médias',
       '<em style="color:var(--c-ink-3);">Sem pontos de corte validados (Neff, 2003; Souza & Hutz, 2016). Leitura pelo perfil e pela evolução do próprio paciente.</em>'
     ]
+  },
+
+  // ---- Pacote 17.6 — lote E da HumanTrack (dependências): AUDIT, FTND, G-SAS, EAAD e ESTUD ----
+  // Textos na aba privada Itens_Instrumentos (carga a partir da captura HumanTrack de 08/10/2026). Todas por liberação.
+  // AUDIT, FTND e G-SAS têm opções próprias por item ('opcoesPorItem', como o BDI-II): o código da opção é o peso.
+  // Motor: 'composto.mediaItens' = média dos itens pontuados (EAAD/ESTUD: escala global da folha). Faixas só com fonte.
+  // Referências:
+  //   AUDIT — Babor, Higgins-Biddle, Saunders & Monteiro (2001). AUDIT: Guidelines for use in primary care (2nd ed.). WHO
+  //     (zonas 0–7, 8–15, 16–19, 20–40); Lima et al. (2005). Alcohol Alcohol., 40(6), 584–589 (corte brasileiro 7/8,
+  //     sensibilidade 100%, especificidade 76%, CIDI/CID-10). Itens 9 e 10 valem 0, 2 ou 4.
+  //   FTND — Heatherton, Kozlowski, Frecker & Fagerström (1991). Br. J. Addict., 86(9), 1119–1127; níveis 0–2, 3–4, 5, 6–7,
+  //     8–10 da chave de correção do autor (Wilcox et al., 2014, MedEdPORTAL); Meneses-Gaya et al. (2009). Nicotine Tob. Res.,
+  //     11(10), 1160–1165 (versão brasileira: alfa 0,83, reteste 0,92, dois fatores). Fatores: matinal (3, 5) e padrão (1, 2, 4, 6).
+  //   G-SAS — Kim, Grant, Potenza, Blanco & Hollander (2009). Psychiatry Res., 166(1), 76–84 (0–48: leve 8–20, moderado 21–30,
+  //     severo 31–40, extremo 41–48; alfa 0,87). Sem validação brasileira publicada em revista (Galetti, 2006, tese).
+  //   EAAD e ESTUD — DiClemente, Carbonari, Montgomery & Hughes (1994). J. Stud. Alcohol, 55(2), 141–148 (AASE: confiança e
+  //     tentação em 20 situações, quatro fatores); Freire (2009), dissertação PUCRS (versões brasileiras de 24 itens). Média por
+  //     subescala e média geral; sem corte.
+  'AUDIT': {
+    nomeCompleto: 'Alcohol Use Disorders Identification Test (AUDIT)',
+    nomeTraducao: 'Teste de Identificação de Transtornos pelo Uso de Álcool',
+    nomeCurto: 'AUDIT',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-thermometer></use></svg>',
+    corPrefix: 'amber',
+    instrumentoId: 'audit',
+    textoDaAba: true,
+    opcoesPorItem: true, // 17.6: cada item tem as suas opções; os itens 9 e 10 valem 0, 2 ou 4
+    valorMin: 0,
+    valorMax: 4,
+    subtitulo: '10 itens · 2 a 4 minutos · Pensando no <strong>último ano</strong>',
+    escoreMax: 40,
+    itens: [
+      { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }, { id: 8 }, { id: 9 }, { id: 10 }
+    ],
+    faixas: [
+      { min: 20, max: 40, rotulo: 'Provável dependência', cor: 'vermelho',
+        titulo: '<svg class=ico&#32;ico-risk aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore está na <strong>zona mais alta</strong> do AUDIT: o padrão de uso de álcool no último ano sugere dependência. Isso não é um diagnóstico, mas é um sinal de que você precisa de uma avaliação específica e de apoio para mudar.',
+        sugestao: 'Converse com seu terapeuta sobre este resultado. Ele vai avaliar com você o que está acontecendo e os próximos passos.' },
+      { min: 16, max: 19, rotulo: 'Uso nocivo', cor: 'laranja',
+        titulo: '<svg class=ico&#32;ico-risk2 aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>uso nocivo</strong>: o álcool já traz prejuízos à sua saúde ou à sua vida no último ano. Isso não é um diagnóstico, mas merece atenção e um plano de mudança.',
+        sugestao: 'Converse com seu terapeuta sobre este resultado. Ele vai avaliar com você o que está acontecendo e os próximos passos.' },
+      { min: 8, max: 15, rotulo: 'Uso de risco', cor: 'amarelo',
+        titulo: '<svg class=ico&#32;ico-warn aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore está <strong>acima do ponto de corte</strong>: o padrão de uso no último ano aumenta o risco de problemas, mesmo sem prejuízos claros ainda. Uma conversa sobre o seu consumo pode ajudar.',
+        sugestao: 'Converse com seu terapeuta sobre este resultado: uma orientação breve costuma bastar nesta faixa.' },
+      { min: 0, max: 7, rotulo: 'Uso de baixo risco', cor: 'verde',
+        titulo: '<svg class=ico&#32;ico-pos aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore está <strong>abaixo do ponto de corte</strong>: o padrão de uso de álcool no último ano é de baixo risco, ou você não bebe.',
+        sugestao: 'Traga este resultado para a sessão: as respostas que você marcou dizem mais do que o número.' }
+    ],
+    faixasLista: [
+      '<strong>0-7</strong> — Uso de baixo risco',
+      '<strong>8-15</strong> — Uso de risco',
+      '<strong>16-19</strong> — Uso nocivo',
+      '<strong>20-40</strong> — Provável dependência',
+      '<em style="color:var(--c-ink-3);">Zonas da OMS (Babor et al., 2001). No Brasil, o corte 7/8 teve sensibilidade 100% e especificidade 76% frente à CID-10 (Lima et al., 2005). Rastreamento — não substitui a avaliação clínica.</em>'
+    ]
+  },
+
+  'FTND': {
+    nomeCompleto: 'Fagerström Test for Nicotine Dependence (FTND)',
+    nomeTraducao: 'Teste de Fagerström para Dependência de Nicotina',
+    nomeCurto: 'FTND',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-zap></use></svg>',
+    corPrefix: 'teal',
+    instrumentoId: 'ftnd',
+    textoDaAba: true,
+    opcoesPorItem: true, // 17.6: itens com 2 ou 4 opções, pesos próprios (item 1: 3, 2, 1, 0)
+    multiSubescalas: true,
+    multSub: 1,
+    valorMin: 0,
+    valorMax: 3,
+    subtitulo: '6 itens · 1 a 2 minutos · Sobre o <strong>seu jeito de fumar hoje</strong>',
+    escoreMax: 10,
+    itens: [
+      { id: 1, subescala: 'padrao' }, { id: 2, subescala: 'padrao' }, { id: 3, subescala: 'matinal' }, { id: 4, subescala: 'padrao' }, { id: 5, subescala: 'matinal' },
+      { id: 6, subescala: 'padrao' }
+    ],
+    subescalasMeta: {
+      matinal: { sigla: 'Mat', tri: 'teal', nome: 'Tabagismo matinal', icone: '<svg class=ico aria-hidden=true><use href=#i-sun></use></svg>',   corPrefix: 'teal' },
+      padrao:  { sigla: 'Pad', tri: 'teal', nome: 'Padrão de tabagismo', icone: '<svg class=ico aria-hidden=true><use href=#i-clock></use></svg>', corPrefix: 'teal' }
+    },
+    faixas: [
+      { min: 8, max: 10, rotulo: 'Dependência muito elevada', cor: 'vermelho',
+        titulo: '<svg class=ico&#32;ico-risk aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>dependência física de nicotina muito elevada</strong>: fumar logo ao acordar, muitos cigarros por dia e dificuldade de ficar sem fumar pesam no resultado. Parar de fumar costuma exigir apoio e, muitas vezes, medicação.',
+        sugestao: 'Converse com seu terapeuta sobre este resultado. Ele vai avaliar com você o que está acontecendo e os próximos passos.' },
+      { min: 6, max: 7, rotulo: 'Dependência elevada', cor: 'laranja',
+        titulo: '<svg class=ico&#32;ico-risk2 aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>dependência elevada</strong> de nicotina. Tratamento com apoio profissional aumenta muito a chance de parar.',
+        sugestao: 'Converse com seu terapeuta sobre este resultado. Ele vai avaliar com você o que está acontecendo e os próximos passos.' },
+      { min: 5, max: 5, rotulo: 'Dependência média', cor: 'amarelo',
+        titulo: '<svg class=ico&#32;ico-warn aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>dependência média</strong> de nicotina.',
+        sugestao: 'Converse com seu terapeuta sobre este resultado e sobre o que torna mais difícil ficar sem fumar.' },
+      { min: 3, max: 4, rotulo: 'Dependência baixa', cor: 'verde',
+        titulo: '<svg class=ico&#32;ico-pos aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>dependência baixa</strong> de nicotina.',
+        sugestao: 'Traga este resultado para a sessão: as respostas que você marcou dizem mais do que o número.' },
+      { min: 0, max: 2, rotulo: 'Dependência muito baixa', cor: 'verde',
+        titulo: '<svg class=ico&#32;ico-pos aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore indica <strong>dependência muito baixa</strong> de nicotina.',
+        sugestao: 'Traga este resultado para a sessão: as respostas que você marcou dizem mais do que o número.' }
+    ],
+    faixasLista: [
+      '<strong>Total 0-2</strong> — Dependência muito baixa',
+      '<strong>Total 3-4</strong> — Dependência baixa',
+      '<strong>Total 5</strong> — Dependência média',
+      '<strong>Total 6-7</strong> — Dependência elevada',
+      '<strong>Total 8-10</strong> — Dependência muito elevada',
+      '<strong>Fatores</strong> — Tabagismo matinal (itens 3 e 5, 0-2) e Padrão de tabagismo (itens 1, 2, 4 e 6, 0-8)',
+      '<em style="color:var(--c-ink-3);">Níveis da chave de correção do autor (Heatherton et al., 1991; Wilcox et al., 2014). Versão brasileira: Meneses-Gaya et al. (2009), dois fatores. Mede dependência física — não substitui a avaliação clínica.</em>'
+    ]
+  },
+
+  'G-SAS': {
+    nomeCompleto: 'Gambling Symptom Assessment Scale (G-SAS)',
+    nomeTraducao: 'Escala de Avaliação de Sintomas de Jogo',
+    nomeCurto: 'G-SAS',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-target></use></svg>',
+    corPrefix: 'purple',
+    instrumentoId: 'gsas',
+    textoDaAba: true,
+    opcoesPorItem: true, // 17.6: as âncoras de cada item são frases próprias (0 a 4)
+    valorMin: 0,
+    valorMax: 4,
+    subtitulo: '12 itens · 3 a 5 minutos · Pensando nos <strong>últimos sete dias</strong>',
+    escoreMax: 48,
+    itens: [
+      { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }, { id: 8 }, { id: 9 }, { id: 10 },
+      { id: 11 }, { id: 12 }
+    ],
+    faixas: [
+      { min: 41, max: 48, rotulo: 'Extremo', cor: 'vermelho',
+        titulo: '<svg class=ico&#32;ico-risk aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seus sintomas de jogo nos últimos sete dias estão na faixa <strong>extrema</strong>: vontade, pensamentos e tempo gastos com jogo e o sofrimento que eles causam estão no nível mais alto da escala.',
+        sugestao: 'Converse com seu terapeuta sobre este resultado. Ele vai avaliar com você o que está acontecendo e os próximos passos.' },
+      { min: 31, max: 40, rotulo: 'Severo', cor: 'laranja',
+        titulo: '<svg class=ico&#32;ico-risk2 aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seus sintomas de jogo nos últimos sete dias estão na faixa <strong>severa</strong>.',
+        sugestao: 'Converse com seu terapeuta sobre este resultado. Ele vai avaliar com você o que está acontecendo e os próximos passos.' },
+      { min: 21, max: 30, rotulo: 'Moderado', cor: 'amarelo',
+        titulo: '<svg class=ico&#32;ico-warn aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seus sintomas de jogo nos últimos sete dias estão na faixa <strong>moderada</strong>.',
+        sugestao: 'Converse com seu terapeuta sobre este resultado: a escala serve para acompanhar como os sintomas mudam ao longo do tratamento.' },
+      { min: 8, max: 20, rotulo: 'Leve', cor: 'verde',
+        titulo: '<svg class=ico&#32;ico-pos aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seus sintomas de jogo nos últimos sete dias estão na faixa <strong>leve</strong>.',
+        sugestao: 'Traga este resultado para a sessão: as respostas que você marcou dizem mais do que o número.' },
+      { min: 0, max: 7, rotulo: 'Abaixo da faixa leve', cor: 'verde',
+        titulo: '<svg class=ico&#32;ico-pos aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seus sintomas de jogo nos últimos sete dias ficaram <strong>abaixo da faixa leve</strong> da escala.',
+        sugestao: 'Traga este resultado para a sessão: as respostas que você marcou dizem mais do que o número.' }
+    ],
+    faixasLista: [
+      '<strong>0-7</strong> — Abaixo da faixa leve',
+      '<strong>8-20</strong> — Leve',
+      '<strong>21-30</strong> — Moderado',
+      '<strong>31-40</strong> — Severo',
+      '<strong>41-48</strong> — Extremo',
+      '<em style="color:var(--c-ink-3);">Faixas dos autores (Kim et al., 2009). Mede gravidade e mudança dos sintomas de jogo — não é instrumento de rastreamento nem de diagnóstico.</em>'
+    ]
+  },
+
+  'EAAD': {
+    nomeCompleto: 'Escala de Autoeficácia para Abstinência de Drogas (EAAD)',
+    nomeTraducao: 'Versão brasileira da Alcohol Abstinence Self-Efficacy Scale (AASE), parte da confiança',
+    nomeCurto: 'EAAD',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-check></use></svg>',
+    corPrefix: 'processo',
+    instrumentoId: 'eaad',
+    textoDaAba: true,
+    multiSubescalas: true,
+    multSub: 1,
+    subMedia: 2, // 17.6: cada subescala é a MÉDIA dos itens (1–5), com duas casas
+    valorMin: 1,
+    valorMax: 5,
+    subtitulo: '24 itens · 5 a 8 minutos · Pensando em <strong>quanto você confia em não usar</strong> em cada situação',
+    escoreMax: 5, // por subescala (média de 1 a 5); a soma dos 24 (24–120) é gravada em escore_total e não aparece
+    itens: [
+      { id: 1, subescala: 'abstinencia_impulsos' }, { id: 2, subescala: 'preocupacoes' }, { id: 3, subescala: 'emocoes_negativas' }, { id: 4, subescala: 'social_positivo' }, { id: 5, subescala: 'preocupacoes' },
+      { id: 6, subescala: 'emocoes_negativas' }, { id: 7, subescala: 'abstinencia_impulsos' }, { id: 8, subescala: 'social_positivo' }, { id: 9, subescala: 'preocupacoes' }, { id: 10, subescala: 'abstinencia_impulsos' },
+      { id: 11, subescala: 'abstinencia_impulsos' }, { id: 12, subescala: 'preocupacoes' }, { id: 13, subescala: 'preocupacoes' }, { id: 14, subescala: 'emocoes_negativas' }, { id: 15, subescala: 'social_positivo' },
+      { id: 16, subescala: 'emocoes_negativas' }, { id: 17, subescala: 'social_positivo' }, { id: 18, subescala: 'emocoes_negativas' }, { id: 19, subescala: 'abstinencia_impulsos' }, { id: 20, subescala: 'social_positivo' },
+      { id: 21, subescala: 'social_positivo' }, { id: 22, subescala: 'social_positivo' }, { id: 23, subescala: 'emocoes_negativas' }, { id: 24, subescala: 'emocoes_negativas' }
+    ],
+    subescalasMeta: {
+      emocoes_negativas:    { sigla: 'Emo', tri: 'processo', nome: 'Emoções negativas',      icone: '<svg class=ico aria-hidden=true><use href=#i-cloud-rain></use></svg>',  corPrefix: 'processo' },
+      social_positivo:      { sigla: 'Soc', tri: 'processo', nome: 'Social e positivo',      icone: '<svg class=ico aria-hidden=true><use href=#i-sun></use></svg>',   corPrefix: 'processo' },
+      preocupacoes:         { sigla: 'Pre', tri: 'processo', nome: 'Preocupações',           icone: '<svg class=ico aria-hidden=true><use href=#i-alert-circle></use></svg>', corPrefix: 'processo' },
+      abstinencia_impulsos: { sigla: 'Abs', tri: 'processo', nome: 'Abstinência e impulsos', icone: '<svg class=ico aria-hidden=true><use href=#i-zap></use></svg>',   corPrefix: 'processo' }
+    },
+    composto: { chave: 'media_geral', sigla: 'Média', nome: 'Média geral', legenda: 'média dos 24 itens · de 1 a 5', mais: [], menos: [], mediaItens: true, casas: 2 }, // 17.6: escala global da folha = média de todas as questões
+    eduGeralTitulo: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg>' + ' Como ler',
+    eduGeralDesc: 'A EAAD mede quanto você confia em ficar sem usar em 24 situações do dia a dia. Cada uma das quatro partes é a média dos seus itens, de 1 a 5, e a média geral junta os 24. Não há ponto de corte: o que importa é o perfil (em que situações a nota é mais baixa ou mais alta) e como ele muda ao longo do tratamento.',
+    eduGeralSugestao: 'Traga este resultado para a sessão: as situações com nota mais preocupante mostram por onde começar o plano de prevenção de recaída.',
+    faixasLista: [
+      '<strong>Subescalas 1-5</strong> — Emoções negativas (7 itens), Social e positivo (7), Preocupações (5), Abstinência e impulsos (5), cada uma pela média dos itens',
+      '<strong>Média geral 1-5</strong> — média dos 24 itens',
+      '<em style="color:var(--c-ink-3);">Sem pontos de corte (DiClemente et al., 1994; Freire, 2009). Leitura pelo perfil e pela evolução do próprio paciente.</em>'
+    ]
+  },
+
+  'ESTUD': {
+    nomeCompleto: 'Escala de Situações Tentadoras para o Uso de Drogas (ESTUD)',
+    nomeTraducao: 'Versão brasileira da Alcohol Abstinence Self-Efficacy Scale (AASE), parte da tentação',
+    nomeCurto: 'ESTUD',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-alert></use></svg>',
+    corPrefix: 'processo',
+    instrumentoId: 'estud',
+    textoDaAba: true,
+    multiSubescalas: true,
+    multSub: 1,
+    subMedia: 2, // 17.6: cada subescala é a MÉDIA dos itens (1–5), com duas casas
+    valorMin: 1,
+    valorMax: 5,
+    subtitulo: '24 itens · 5 a 8 minutos · Pensando em <strong>quanto você se sente tentado a usar</strong> em cada situação',
+    escoreMax: 5, // por subescala (média de 1 a 5); a soma dos 24 (24–120) é gravada em escore_total e não aparece
+    itens: [
+      { id: 1, subescala: 'abstinencia_impulsos' }, { id: 2, subescala: 'preocupacoes' }, { id: 3, subescala: 'emocoes_negativas' }, { id: 4, subescala: 'social_positivo' }, { id: 5, subescala: 'preocupacoes' },
+      { id: 6, subescala: 'emocoes_negativas' }, { id: 7, subescala: 'abstinencia_impulsos' }, { id: 8, subescala: 'social_positivo' }, { id: 9, subescala: 'preocupacoes' }, { id: 10, subescala: 'abstinencia_impulsos' },
+      { id: 11, subescala: 'abstinencia_impulsos' }, { id: 12, subescala: 'preocupacoes' }, { id: 13, subescala: 'preocupacoes' }, { id: 14, subescala: 'emocoes_negativas' }, { id: 15, subescala: 'social_positivo' },
+      { id: 16, subescala: 'emocoes_negativas' }, { id: 17, subescala: 'social_positivo' }, { id: 18, subescala: 'emocoes_negativas' }, { id: 19, subescala: 'abstinencia_impulsos' }, { id: 20, subescala: 'social_positivo' },
+      { id: 21, subescala: 'social_positivo' }, { id: 22, subescala: 'social_positivo' }, { id: 23, subescala: 'emocoes_negativas' }, { id: 24, subescala: 'emocoes_negativas' }
+    ],
+    subescalasMeta: {
+      emocoes_negativas:    { sigla: 'Emo', tri: 'processo', nome: 'Emoções negativas',      icone: '<svg class=ico aria-hidden=true><use href=#i-cloud-rain></use></svg>',  corPrefix: 'processo' },
+      social_positivo:      { sigla: 'Soc', tri: 'processo', nome: 'Social e positivo',      icone: '<svg class=ico aria-hidden=true><use href=#i-sun></use></svg>',   corPrefix: 'processo' },
+      preocupacoes:         { sigla: 'Pre', tri: 'processo', nome: 'Preocupações',           icone: '<svg class=ico aria-hidden=true><use href=#i-alert-circle></use></svg>', corPrefix: 'processo' },
+      abstinencia_impulsos: { sigla: 'Abs', tri: 'processo', nome: 'Abstinência e impulsos', icone: '<svg class=ico aria-hidden=true><use href=#i-zap></use></svg>',   corPrefix: 'processo' }
+    },
+    composto: { chave: 'media_geral', sigla: 'Média', nome: 'Média geral', legenda: 'média dos 24 itens · de 1 a 5', mais: [], menos: [], mediaItens: true, casas: 2 }, // 17.6: escala global da folha = média de todas as questões
+    eduGeralTitulo: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg>' + ' Como ler',
+    eduGeralDesc: 'A ESTUD mede quanto você se sente tentado a usar em 24 situações do dia a dia. Cada uma das quatro partes é a média dos seus itens, de 1 a 5, e a média geral junta os 24. Não há ponto de corte: o que importa é o perfil (em que situações a nota é mais baixa ou mais alta) e como ele muda ao longo do tratamento.',
+    eduGeralSugestao: 'Traga este resultado para a sessão: as situações com nota mais preocupante mostram por onde começar o plano de prevenção de recaída.',
+    faixasLista: [
+      '<strong>Subescalas 1-5</strong> — Emoções negativas (7 itens), Social e positivo (7), Preocupações (5), Abstinência e impulsos (5), cada uma pela média dos itens',
+      '<strong>Média geral 1-5</strong> — média dos 24 itens',
+      '<em style="color:var(--c-ink-3);">Sem pontos de corte (DiClemente et al., 1994; Freire, 2009). Leitura pelo perfil e pela evolução do próprio paciente.</em>'
+    ]
   }
 
-  // Módulo 4: 5 escalas do 12.x + BDI-II e BAI (17.0) + BHS e BSS (17.1) + as quatro URICA (17.2) + lote A (17.3) + lote B (17.5)
+  // Módulo 4: 5 escalas do 12.x + BDI-II e BAI (17.0) + BHS e BSS (17.1) + as quatro URICA (17.2) + lote A (17.3) + lote B (17.5) + lote E (17.6)
 };
 
 // ============================================================
@@ -18703,6 +19002,7 @@ function escCalcularEscoreEAlerta(codigoEscala, respostas) {
       let valor = 0;
       def.composto.mais.forEach(k => { valor += (subescalasSomas[k] || 0) / nItens[k]; });
       def.composto.menos.forEach(k => { valor -= (subescalasSomas[k] || 0) / nItens[k]; });
+      if (def.composto.mediaItens) valor = escoreTotal / def.itens.filter(i => !i.naoPontua).length; // 17.6: EAAD/ESTUD = média dos itens
       if (def.composto.dividir) valor = valor / def.composto.dividir; // 17.5: SCS = média das seis médias
       const fator = Math.pow(10, def.composto.casas || 0);
       composto = { chave: def.composto.chave, sigla: def.composto.sigla, nome: def.composto.nome, valor: Math.round(valor * fator) / fator };
@@ -19678,7 +19978,8 @@ var ESC_HIST_STATE = {
 // esta lista alimenta o histórico do paciente E o card Escalas do profissional.
 var ESC_HIST_ORDEM = ['PHQ-9', 'GAD-7', 'PSS-10', 'DASS-21', 'SRQ-20', 'BDI-II', 'BAI', 'BHS', 'BSS', 'URICA-A', 'URICA-D', 'URICA-T', 'URICA-HA', // 17.1: + BHS e BSS; 17.2: + URICA
   'PCL-5', 'PSWQ', 'EAR', 'AAQ-II', 'SWLS', 'MAAS', 'WBSI', // 17.3: lote A da HumanTrack
-  'PANAS', 'SPIN', 'OCI-R', 'ASRS-18', 'SCS']; // 17.5: lote B
+  'PANAS', 'SPIN', 'OCI-R', 'ASRS-18', 'SCS', // 17.5: lote B
+  'AUDIT', 'FTND', 'G-SAS', 'EAAD', 'ESTUD']; // 17.6: lote E
 
 function escHistInvalidarCache() {
   ESC_HIST_STATE.invalidado = true;

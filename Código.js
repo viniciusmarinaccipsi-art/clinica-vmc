@@ -56,7 +56,7 @@
 // na hora de mostrar (05/10/2026)
 // Rodada DOCS_2026-10-07 — index-dev.html e o index oficial: SITE_URL aponta para ele; texto do aviso de backup
 // com falha alinhado ao backup sob demanda (07/10/2026)
-var VERSAO_PACOTE = '17.5';
+var VERSAO_PACOTE = '17.6';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -166,6 +166,8 @@ var HEADERS_ESCALAS = [
   'escore_afeto_positivo', 'escore_afeto_negativo', 'escore_verificacao', 'escore_lavagem', 'escore_ordenacao', 'escore_acumulacao',
   'escore_obsessoes', 'escore_neutralizacao', 'escore_desatencao', 'escore_hiperatividade', 'escore_bondade', 'escore_autocritica',
   'escore_humanidade', 'escore_isolamento', 'escore_mindfulness', 'escore_sobreidentificacao', 'escore_autocompaixao',
+  // 17.6: lote E - FTND (somas: matinal, padrao), EAAD/ESTUD (medias das 4 subescalas + media geral dos 24 itens)
+  'escore_matinal', 'escore_padrao', 'escore_emocoes_negativas', 'escore_social_positivo', 'escore_preocupacoes', 'escore_abstinencia_impulsos', 'escore_media_geral',
   'faixa',
   'alerta_risco_flag', 'alerta_risco_item', 'alerta_risco_valor',
   'observacoes', 'tempo_preenchimento_seg',
@@ -2862,6 +2864,8 @@ var COLUNAS_LEITURA_ESCALAS = [
   'escore_afeto_positivo', 'escore_afeto_negativo', 'escore_verificacao', 'escore_lavagem', 'escore_ordenacao', 'escore_acumulacao', // 17.5
   'escore_obsessoes', 'escore_neutralizacao', 'escore_desatencao', 'escore_hiperatividade', 'escore_bondade', 'escore_autocritica',
   'escore_humanidade', 'escore_isolamento', 'escore_mindfulness', 'escore_sobreidentificacao', 'escore_autocompaixao',
+  // 17.6: lote E - FTND (somas: matinal, padrao), EAAD/ESTUD (medias das 4 subescalas + media geral dos 24 itens)
+  'escore_matinal', 'escore_padrao', 'escore_emocoes_negativas', 'escore_social_positivo', 'escore_preocupacoes', 'escore_abstinencia_impulsos', 'escore_media_geral',
   'faixa', 'alerta_risco_flag', 'alerta_risco_item', 'alerta_risco_valor', 'observacoes', 'tempo_preenchimento_seg',
   'editado_por', 'editado_em', 'criado_por', 'autoria_campos', 'criado_por_nome'
 ];
@@ -3073,7 +3077,8 @@ function lerEscalas(sigla, antes, limite) {
 
 var INSTRUMENTOS_VALIDOS = ['bdi2', 'bai', 'bhs', 'bsi', 'urica_alcool', 'urica_drogas', 'urica_tabaco', 'urica_alimentar', // 17.1: + BHS e BSS (id tecnico 'bsi'); 17.2: + as quatro URICA
   'pcl5', 'pswq', 'ear', 'aaq2', 'swls', 'maas', 'wbsi', // 17.3: lote A da HumanTrack (PCL-5, PSWQ, EAR, AAQ-II, SWLS, MAAS, WBSI)
-  'panas', 'spin', 'ocir', 'asrs', 'scs']; // 17.5: lote B (PANAS, SPIN, OCI-R, ASRS-18, SCS)
+  'panas', 'spin', 'ocir', 'asrs', 'scs', // 17.5: lote B (PANAS, SPIN, OCI-R, ASRS-18, SCS)
+  'audit', 'ftnd', 'gsas', 'eaad', 'estud']; // 17.6: lote E, dependencias (AUDIT, FTND, G-SAS, EAAD, ESTUD)
 
 // 17.1.2 (decisao do usuario, 19/11/2026): instrumentos que o paciente so ve quando o profissional
 // libera para ele - lista em 'escalas_liberadas' na linha do paciente na Controle (coluna criada no
@@ -3087,7 +3092,8 @@ var ESCALAS_MENU = { 'PHQ-9': 'phq9', 'GAD-7': 'gad7', 'PSS-10': 'pss10', 'DASS-
   'BDI-II': 'bdi2', 'BAI': 'bai', 'BHS': 'bhs', 'BSS': 'bsi',
   'URICA-A': 'urica_alcool', 'URICA-D': 'urica_drogas', 'URICA-T': 'urica_tabaco', 'URICA-HA': 'urica_alimentar',
   'PCL-5': 'pcl5', 'PSWQ': 'pswq', 'EAR': 'ear', 'AAQ-II': 'aaq2', 'SWLS': 'swls', 'MAAS': 'maas', 'WBSI': 'wbsi',
-  'PANAS': 'panas', 'SPIN': 'spin', 'OCI-R': 'ocir', 'ASRS-18': 'asrs', 'SCS': 'scs' }; // 17.5: lote B
+  'PANAS': 'panas', 'SPIN': 'spin', 'OCI-R': 'ocir', 'ASRS-18': 'asrs', 'SCS': 'scs', // 17.5: lote B
+  'AUDIT': 'audit', 'FTND': 'ftnd', 'G-SAS': 'gsas', 'EAAD': 'eaad', 'ESTUD': 'estud' }; // 17.6: lote E
 var INSTRUMENTOS_SO_PROFISSIONAL = Object.keys(ESCALAS_MENU).map(function (c) { return ESCALAS_MENU[c]; });
 
 /** Id de liberacao de uma escala pelo codigo do catalogo ('' se desconhecido). */
@@ -4093,7 +4099,17 @@ var ESCALAS_CALCULO = {
   'SPIN':{n:17,max:4,faixas:[[19,68,'Sugestivo de ansiedade social'],[0,18,'Abaixo do ponto de corte']]},
   'OCI-R':{n:18,max:4,sub:{verificacao:[2,8,14],lavagem:[5,11,17],ordenacao:[3,9,15],acumulacao:[1,7,13],obsessoes:[6,12,18],neutralizacao:[4,10,16]},multi:true,siglaSub:{verificacao:'Ver',lavagem:'Lav',ordenacao:'Ord',acumulacao:'Acu',obsessoes:'Obs',neutralizacao:'Neu'},faixas:[[21,72,'Sugestivo de TOC'],[0,20,'Abaixo do ponto de corte']]},
   'ASRS-18':{n:18,max:4,sub:{desatencao:[1,2,3,4,5,6,7,8,9],hiperatividade:[10,11,12,13,14,15,16,17,18]},multi:true,siglaSub:{desatencao:'Des',hiperatividade:'Hip'}},
-  'SCS':{n:26,min:1,max:5,rev:[1,2,4,6,8,11,13,16,18,20,21,24,25],sub:{bondade:[5,12,19,23,26],autocritica:[1,8,11,16,21],humanidade:[3,7,10,15],isolamento:[4,13,18,25],mindfulness:[9,14,17,22],sobreidentificacao:[2,6,20,24]},multi:true,subMedia:2,siglaSub:{bondade:'Bon',autocritica:'Auc',humanidade:'Hum',isolamento:'Iso',mindfulness:'Min',sobreidentificacao:'Sob'},composto:{chave:'autocompaixao',sigla:'Total',mais:['bondade','autocritica','humanidade','isolamento','mindfulness','sobreidentificacao'],menos:[],dividir:6,casas:2}}
+  'SCS':{n:26,min:1,max:5,rev:[1,2,4,6,8,11,13,16,18,20,21,24,25],sub:{bondade:[5,12,19,23,26],autocritica:[1,8,11,16,21],humanidade:[3,7,10,15],isolamento:[4,13,18,25],mindfulness:[9,14,17,22],sobreidentificacao:[2,6,20,24]},multi:true,subMedia:2,siglaSub:{bondade:'Bon',autocritica:'Auc',humanidade:'Hum',isolamento:'Iso',mindfulness:'Min',sobreidentificacao:'Sob'},composto:{chave:'autocompaixao',sigla:'Total',mais:['bondade','autocritica','humanidade','isolamento','mindfulness','sobreidentificacao'],menos:[],dividir:6,casas:2}},
+  // 17.6 - lote E (dependencias). AUDIT: soma 0-40, zonas da OMS (Babor et al., 2001; corte brasileiro 7/8, Lima et al., 2005);
+  // itens 9 e 10 valem 0, 2 ou 4 (opcoes por item). FTND: soma 0-10, niveis da chave de correcao de Fagerstrom (Wilcox et al.,
+  // 2014; versao brasileira Meneses-Gaya et al., 2009); dois fatores: tabagismo matinal (3, 5) e padrao (1, 2, 4, 6). G-SAS: soma
+  // 0-48, faixas de Kim et al. (2009). EAAD e ESTUD: media por subescala (subMedia) e media geral dos 24 itens (composto.mediaItens);
+  // sem corte (Freire, 2009). Lote E e por liberacao do profissional, como todas.
+  'AUDIT':{n:10,max:4,faixas:[[20,40,'Provável dependência'],[16,19,'Uso nocivo'],[8,15,'Uso de risco'],[0,7,'Uso de baixo risco']]},
+  'FTND':{n:6,max:3,sub:{matinal:[3,5],padrao:[1,2,4,6]},multi:true,siglaSub:{matinal:'Mat',padrao:'Pad'},faixas:[[8,10,'Dependência muito elevada'],[6,7,'Dependência elevada'],[5,5,'Dependência média'],[3,4,'Dependência baixa'],[0,2,'Dependência muito baixa']]},
+  'G-SAS':{n:12,max:4,faixas:[[41,48,'Extremo'],[31,40,'Severo'],[21,30,'Moderado'],[8,20,'Leve'],[0,7,'Abaixo da faixa leve']]},
+  'EAAD':{n:24,min:1,max:5,sub:{emocoes_negativas:[3,6,14,16,18,23,24],social_positivo:[4,8,15,17,20,21,22],preocupacoes:[2,5,9,12,13],abstinencia_impulsos:[1,7,10,11,19]},multi:true,subMedia:2,siglaSub:{emocoes_negativas:'Emo',social_positivo:'Soc',preocupacoes:'Pre',abstinencia_impulsos:'Abs'},composto:{chave:'media_geral',sigla:'Média',mais:[],menos:[],mediaItens:true,casas:2}},
+  'ESTUD':{n:24,min:1,max:5,sub:{emocoes_negativas:[3,6,14,16,18,23,24],social_positivo:[4,8,15,17,20,21,22],preocupacoes:[2,5,9,12,13],abstinencia_impulsos:[1,7,10,11,19]},multi:true,subMedia:2,siglaSub:{emocoes_negativas:'Emo',social_positivo:'Soc',preocupacoes:'Pre',abstinencia_impulsos:'Abs'},composto:{chave:'media_geral',sigla:'Média',mais:[],menos:[],mediaItens:true,casas:2}}
 };
 
 /**
@@ -4157,6 +4173,7 @@ function _escoresDaEscala_(instrumento, lerColuna) {
       var comp = 0;
       t.composto.mais.forEach(function (k) { comp += (somas[k] || 0) / t.sub[k].length; });
       t.composto.menos.forEach(function (k) { comp -= (somas[k] || 0) / t.sub[k].length; });
+      if (t.composto.mediaItens) comp = total / t.n; // 17.6: EAAD/ESTUD = media dos itens (escala global da folha)
       if (t.composto.dividir) comp = comp / t.composto.dividir; // 17.5: SCS = media das seis medias
       var fator = Math.pow(10, t.composto.casas || 0);
       comp = Math.round(comp * fator) / fator;

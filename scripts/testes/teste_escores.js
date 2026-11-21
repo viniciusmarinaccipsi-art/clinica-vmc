@@ -59,8 +59,8 @@ function caso(cod, nome, respostas, esperado) {
 }
 
 console.log('0. Catálogo');
-const ESPERADAS = ['AAQ-II', 'ASRS-18', 'BAI', 'BDI-II', 'BHS', 'BSS', 'DASS-21', 'EAR', 'GAD-7', 'MAAS', 'OCI-R', 'PANAS', 'PCL-5', 'PHQ-9', 'PSS-10', 'PSWQ', 'SCS', 'SPIN', 'SRQ-20', 'SWLS', 'URICA-A', 'URICA-D', 'URICA-HA', 'URICA-T', 'WBSI']; // 17.3: + lote A; 17.5: + lote B
-ok('servidor e frontend têm as mesmas 25 escalas do gabarito', Object.keys(servidor.tabela).sort().join() === ESPERADAS.join() && Object.keys(cliente.catalogo).sort().join() === ESPERADAS.join(), [Object.keys(servidor.tabela), Object.keys(cliente.catalogo)]);
+const ESPERADAS = ['AAQ-II', 'ASRS-18', 'AUDIT', 'BAI', 'BDI-II', 'BHS', 'BSS', 'DASS-21', 'EAAD', 'EAR', 'ESTUD', 'FTND', 'G-SAS', 'GAD-7', 'MAAS', 'OCI-R', 'PANAS', 'PCL-5', 'PHQ-9', 'PSS-10', 'PSWQ', 'SCS', 'SPIN', 'SRQ-20', 'SWLS', 'URICA-A', 'URICA-D', 'URICA-HA', 'URICA-T', 'WBSI']; // 17.3: + lote A; 17.5: + lote B; 17.6: + lote E
+ok('servidor e frontend têm as mesmas 30 escalas do gabarito', Object.keys(servidor.tabela).sort().join() === ESPERADAS.join() && Object.keys(cliente.catalogo).sort().join() === ESPERADAS.join(), [Object.keys(servidor.tabela), Object.keys(cliente.catalogo)]);
 
 console.log('1. PHQ-9 (0–27; cortes 5, 10, 15, 20; risco: item 9 ≥ 1)');
 [[0, 'Sintomas mínimos ou ausentes'], [4, 'Sintomas mínimos ou ausentes'], [5, 'Depressão leve'], [9, 'Depressão leve'], [10, 'Depressão moderada'], [14, 'Depressão moderada'],
@@ -206,6 +206,35 @@ caso('SCS', 'positivos em 1 e negativos em 5 (invertem para 1): mínimo 1', scs(
 caso('SCS', 'tudo 5 cru: negativos viram 1 → médias 5 e 1, total 3', tudo(26, 5), { total: 78, faixa: 'Bon:5 | Auc:1 | Hum:5 | Iso:1 | Min:5 | Sob:1 | Total: 3', alerta: 'NAO', sub: { escore_autocritica: 1, escore_autocompaixao: 3 } });
 caso('SCS', 'decimal: bondade 5,4,4,4,4 (média 4,2) e o resto 3 → total (4,2 + 15) / 6 = 3,2', com(tudo(26, 3), { 5: 5, 12: 4, 19: 4, 23: 4, 26: 4 }),
   { total: 84, faixa: 'Bon:4,2 | Auc:3 | Hum:3 | Iso:3 | Min:3 | Sob:3 | Total: 3,2', alerta: 'NAO', sub: { escore_bondade: 4.2, escore_autocompaixao: 3.2 } });
+
+console.log('14. Lote E (17.6): AUDIT (zonas da OMS; itens 9 e 10 valem 0/2/4), FTND (níveis + 2 fatores), G-SAS (faixas de Kim 2009), EAAD/ESTUD (médias + média geral)');
+caso('AUDIT', 'tudo 0: baixo risco', tudo(10, 0), { total: 0, faixa: 'Uso de baixo risco', alerta: 'NAO', item: '' });
+caso('AUDIT', '7: último de baixo risco', somando(10, 4, 7), { total: 7, faixa: 'Uso de baixo risco', alerta: 'NAO' });
+caso('AUDIT', '8: primeiro de uso de risco (corte brasileiro 7/8)', somando(10, 4, 8), { total: 8, faixa: 'Uso de risco', alerta: 'NAO' });
+caso('AUDIT', '16: uso nocivo', somando(10, 4, 16), { total: 16, faixa: 'Uso nocivo', alerta: 'NAO' });
+caso('AUDIT', '20: provável dependência', somando(10, 4, 20), { total: 20, faixa: 'Provável dependência', alerta: 'NAO' });
+caso('AUDIT', 'itens 9 e 10 em 4 e o resto 0: 8 = uso de risco', com(tudo(10, 0), { 9: 4, 10: 4 }), { total: 8, faixa: 'Uso de risco', alerta: 'NAO' });
+caso('AUDIT', 'tudo 4: máximo 40', tudo(10, 4), { total: 40, faixa: 'Provável dependência', alerta: 'NAO' });
+caso('FTND', 'tudo 0: muito baixa', tudo(6, 0), { total: 0, faixa: 'Total:Dependência muito baixa | Mat:0 | Pad:0', alerta: 'NAO', item: '', sub: { escore_matinal: 0, escore_padrao: 0 } });
+caso('FTND', 'item 1 = 3 (primeiro cigarro em 5 min): 3 = baixa', com(tudo(6, 0), { 1: 3 }), { total: 3, faixa: 'Total:Dependência baixa | Mat:0 | Pad:3', alerta: 'NAO', sub: { escore_padrao: 3 } });
+caso('FTND', 'item 1 = 3, itens 3 e 5 = 1: 5 = média, matinal 2', com(tudo(6, 0), { 1: 3, 3: 1, 5: 1 }), { total: 5, faixa: 'Total:Dependência média | Mat:2 | Pad:3', alerta: 'NAO', sub: { escore_matinal: 2, escore_padrao: 3 } });
+caso('FTND', 'itens 1 e 4 = 3: 6 = elevada', com(tudo(6, 0), { 1: 3, 4: 3 }), { total: 6, faixa: 'Total:Dependência elevada | Mat:0 | Pad:6', alerta: 'NAO' });
+caso('FTND', 'máximo 10: muito elevada (matinal 2, padrão 8)', { 1: 3, 2: 1, 3: 1, 4: 3, 5: 1, 6: 1 }, { total: 10, faixa: 'Total:Dependência muito elevada | Mat:2 | Pad:8', alerta: 'NAO', sub: { escore_matinal: 2, escore_padrao: 8 } });
+caso('G-SAS', 'tudo 0: abaixo da faixa leve', tudo(12, 0), { total: 0, faixa: 'Abaixo da faixa leve', alerta: 'NAO', item: '' });
+caso('G-SAS', '7: último abaixo de leve', somando(12, 4, 7), { total: 7, faixa: 'Abaixo da faixa leve', alerta: 'NAO' });
+caso('G-SAS', '8: leve', somando(12, 4, 8), { total: 8, faixa: 'Leve', alerta: 'NAO' });
+caso('G-SAS', '21: moderado', somando(12, 4, 21), { total: 21, faixa: 'Moderado', alerta: 'NAO' });
+caso('G-SAS', '31: severo', somando(12, 4, 31), { total: 31, faixa: 'Severo', alerta: 'NAO' });
+caso('G-SAS', '41: extremo', somando(12, 4, 41), { total: 41, faixa: 'Extremo', alerta: 'NAO' });
+caso('G-SAS', 'tudo 4: máximo 48', tudo(12, 4), { total: 48, faixa: 'Extremo', alerta: 'NAO' });
+caso('EAAD', 'tudo 3: médias 3 e média geral 3', tudo(24, 3), { total: 72, faixa: 'Emo:3 | Soc:3 | Pre:3 | Abs:3 | Média: 3', alerta: 'NAO', item: '',
+  sub: { escore_emocoes_negativas: 3, escore_social_positivo: 3, escore_preocupacoes: 3, escore_abstinencia_impulsos: 3, escore_media_geral: 3 } });
+caso('EAAD', 'tudo 5: máximo', tudo(24, 5), { total: 120, faixa: 'Emo:5 | Soc:5 | Pre:5 | Abs:5 | Média: 5', alerta: 'NAO', sub: { escore_media_geral: 5 } });
+caso('EAAD', 'decimal: item 1 = 5 e o resto 3 → Abs (5+3+3+3+3)/5 = 3,4; média geral 74/24 = 3,08', com(tudo(24, 3), { 1: 5 }),
+  { total: 74, faixa: 'Emo:3 | Soc:3 | Pre:3 | Abs:3,4 | Média: 3,08', alerta: 'NAO', sub: { escore_abstinencia_impulsos: 3.4, escore_media_geral: 3.08 } });
+caso('ESTUD', 'tudo 1: mínimo', tudo(24, 1), { total: 24, faixa: 'Emo:1 | Soc:1 | Pre:1 | Abs:1 | Média: 1', alerta: 'NAO', item: '', sub: { escore_media_geral: 1 } });
+caso('ESTUD', 'emoções negativas em 5 (itens 3,6,14,16,18,23,24) e o resto 1: Emo 5, média geral (35+17)/24 = 2,17', com(tudo(24, 1), { 3: 5, 6: 5, 14: 5, 16: 5, 18: 5, 23: 5, 24: 5 }),
+  { total: 52, faixa: 'Emo:5 | Soc:1 | Pre:1 | Abs:1 | Média: 2,17', alerta: 'NAO', sub: { escore_emocoes_negativas: 5, escore_media_geral: 2.17 } });
 ok('PSWQ: resposta 0 recusada (mínimo é 1)', servidor.calc('PSWQ', c => (c === 'item_02' ? 0 : 3)).ok === false);
 ok('PSWQ: resposta 6 recusada (máximo é 5)', servidor.calc('PSWQ', c => (c === 'item_02' ? 6 : 3)).ok === false);
 ok('EAR: resposta 5 recusada (máximo é 4)', servidor.calc('EAR', c => (c === 'item_01' ? 5 : 2)).ok === false);
