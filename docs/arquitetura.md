@@ -185,6 +185,16 @@ nova entra com `nomeTraducao`, `ficha` (com validação brasileira e
 referências) e `tags`. A lupa "Minhas respostas" carrega os textos da aba
 antes de montar a lista (`rrGarantirTextos_`) e mostra o rótulo da opção.
 
+**Lote B e motor de subescalas (17.5, 20/11/2026):** 25 escalas. Além de `sub`/`multi`/`multSub`/`composto`
+(17.2), `ESCALAS_CALCULO` (servidor) e `ESC_ESCALAS` (cliente) aceitam `subMedia: <casas>` (a subescala é a
+média dos itens, arredondada — SCS), `composto.dividir` (média das médias — SCS: total de 1 a 5) e `faixas` numa
+escala `multi` (OCI-R: a faixa do total entra como `Total:…` antes das subescalas no resumo gravado em `faixa`).
+Decimais no resumo com vírgula nos dois lados. Colunas por subescala (`escore_<chave>`) e `item_25`/`item_26`
+são aditivas (`_garantirColunas_`). Escala nova de escore simples ou com subescalas entra pelo mesmo caminho do
+lote A: `ESCALAS_SIMPLES` nos dois scripts Python (modelo + carga), `INSTRUMENTOS_VALIDOS` + `ESCALAS_MENU` +
+`ESCALAS_CALCULO` no servidor, catálogo + cartão estático + `ESC_CARTOES_POR_INSTRUMENTO` + `ESC_HIST_ORDEM` no
+cliente, casos no gabarito e listas das suítes (20 → 25).
+
 ### Renderer unificado de resultado (Pacote 12.7.2)
 `escRenderizarConteudoResultado(modo)` serve a tela imediata E o modal
 do histórico — 1 função, 2 modos. Mudança na tela de resultado é feita
