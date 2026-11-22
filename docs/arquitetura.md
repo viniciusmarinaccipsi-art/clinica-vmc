@@ -1736,3 +1736,70 @@ fuso local e em UTC). O arnês de `backend_18_10a.js` passou a retipar data sem 
 meia-noite **local** (era UTC — débito 8.93). Roteiro `..\PACOTE_19_2_1_fluxo.js` (59 provas por
 viewport) e prova real `..\PACOTE_19_2_1_real.js`; funções temporárias da prova no servidor em
 `..\PACOTE_19_2_1_temp.js`.
+
+## Painel das Escalas (Pacote 19.0 — publicado em 22/11/2026, só frontend)
+
+Gráfico de cada escala respondida, no molde do automonitoramento (histórico de um lado, painel do
+outro). **Uma tela (`#sec-escalas-painel`, contêiner `#escpConteudo`) e uma função
+(`escPainelRenderizar`) para os dois perfis**; nenhuma ação nova no servidor.
+
+**Entradas.** Paciente: cartão `#escCardPainel` no hub `#sec-escalas`, logo depois de "Meu Histórico
+de Escalas" → `escAbrirPainel()`. Profissional: botão "Painel das Escalas" ao lado de "Nova escala"
+no módulo `#profMod-esc` do paciente aberto → `profAbrirPainelEscalas()`. A barra (`data-barra-voltar`)
+chama `escPainelVoltar()` — está na lista de `vmcAcaoDaBarra_` —, que devolve para
+`ESCP_STATE.origem` (`sec-escalas` ou `sec-prof-paciente`).
+
+**Dados.** Os registros são os de `ESC_HIST_STATE.registros`. Paciente: `escHistObter_(aoCarregar)` —
+a carga com o cache de 30 s que o histórico já tinha, agora numa função só, usada por
+`escRenderHistorico` e pelo painel (devolve `{ lista }` ou `{ erro: 'sessao' | 'servidor' |
+'conexao' }`); com mais de 60 aplicações, `escHistCarregarTudo_()` traz as páginas anteriores em
+silêncio e o painel se redesenha. Profissional: o que veio em `profLerDadosPaciente` (todas as
+aplicações), já na memória — abrir o painel não chama o servidor. Quem abre marca
+`ESC_HIST_STATE.visaoProfissional`; com ela falsa, a escala `escoreOculto` (BSS) fica fora, e o
+estado vazio do paciente não a cita.
+
+**O que se desenha, só pelas propriedades do catálogo** (`escPainelGraficos_`; o motor não cita
+escala pelo nome):
+
+| Catálogo | Gráfico |
+|---|---|
+| `escore_total` com `faixas` | "Escore total" com as faixas como bandas; eixo da menor à maior faixa (teto em `escoreMax`) |
+| `escore_total` sem `faixas` | "Escore total", só a linha, de zero a `escoreMax` |
+| `composto` | um gráfico com `composto.nome`, lendo `escore_<composto.chave>` |
+| subescala com `faixasSubescalas[chave]` | um gráfico para ela, com as bandas dela (hoje só a DASS-21) |
+| demais subescalas (`subescalasMeta`) | um gráfico "Subescalas", uma linha por subescala (régua própria, separada da do total) |
+
+Das 40 escalas, 18 têm `faixas` no total; as que não têm faixa com fonte aparecem só com a linha.
+Um cartão `.escp-cartao` por escala com aplicação no período, na ordem de `ESC_HIST_ORDEM`:
+título e tradução, "N aplicações · última em dd/mm/aaaa", os gráficos (`.escp-graf`, canvas em
+`.escp-canvas`), a legenda (`.escp-legenda`: amostra `.escp-amostra.<cor>` por faixa; traço
+`.escp-traco` por subescala) e a nota.
+
+**Tempo.** `escPainelDia_(r)` devolve o dia civil de `data_aplicacao` como número (dias, pelo
+calendário local), com a hora do `timestamp` como fração quando é do mesmo dia — nunca
+`new Date('AAAA-MM-DD')`. O eixo X é linear nesses dias (distância proporcional ao tempo, sem
+adaptador de datas); as datas mostradas são as das aplicações (primeira e última sempre, as do meio
+quando cabem — `afterBuildTicks`). O filtro é o do Painel de Evolução (`pevMontarSeletor`,
+`pevBindSeletor(raiz, aoEscolher)`, `pevFiltrarPorPeriodo(registros, periodo, campo)` — o terceiro
+parâmetro, novo, diz a coluna da data; padrão `data_registro`), abre em "Tudo" e vale para a tela
+inteira (`ESCP_STATE.periodo`).
+
+**Cores.** Lidas dos tokens ao desenhar (`vmcTok`): a linha do total usa a tinta da escala
+(`escPainelTokEscala_`: `--c-<prefixo>-ink`, com o mapa `ESCP_TOK_ESCALA` para os cinco prefixos
+antigos); cada subescala tem cor (`ESCP_TOK_SERIES`), traço (`ESCP_TRACOS`) e marcador
+(`ESCP_PONTOS`) próprios. As bandas saem de um plugin do próprio gráfico (`beforeDatasetsDraw`,
+nenhuma biblioteca nova): `ESCP_TOK_FAIXA` dá o fundo de cada cor de faixa e, para laranja e
+vermelho, uma tinta por cima com opacidade (`globalAlpha`) — nenhuma cor fixa no código. A borda do
+cartão e a cor dos traços da legenda vão pelo estilo do elemento (`var(--token)`), sem regra de CSS
+por escala. Trocar o tema zera o cache de tokens e chama `escPainelRenderizar()` quando a tela ativa
+é o painel.
+
+**Estado e sigilo.** `ESCP_STATE = { periodo, origem, charts }`; os `Chart` são destruídos a cada
+desenho, no Voltar e em `descartarCachesPaciente_()` (os dois logouts), que também esvazia
+`#escpConteudo`. No profissional, cada abertura parte do paciente aberto e do período "Tudo".
+
+**Teste.** `..\PACOTE_19_0_fluxo.js` (65 provas por viewport, servidor = `Código.js` real em Node,
+relógio fixo): confere o que cada gráfico desenha lendo o `Chart` vivo de cada canvas e a cor do
+pixel das bandas contra o token, nos dois temas. A troca de tema é esperada por condição, não por
+tempo: numa janela que não está pintando quadros, o evento de `prefers-color-scheme` só chega no
+quadro seguinte.
