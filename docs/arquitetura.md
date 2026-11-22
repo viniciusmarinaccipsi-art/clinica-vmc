@@ -1922,3 +1922,40 @@ passada e em feriado (com aviso); o paciente só vê horário livre da grade.
 
 **Rollback.** `git revert` dos commits + `clasp push` + `clasp deploy` na mesma implantação. As
 quatro abas ficam na Controle sem uso; nada se perde. O gatilho continua o mesmo (`enviarLembretes_`).
+
+## Agenda: confirmação por link, eventos e avisos na hora (Pacote 14.4 — 22/11/2026)
+
+**Link de confirmação.** `_ageTokenConfirmar_(profId, sessaoId)` = `b64url("conf|profissional|sessao")` + `.` + 32 hex do
+HMAC com o segredo da sessão (`_segredoSessao_`). `confirmarSessaoPorLink` é a quinta ação de `ACOES_PUBLICAS` (sem
+crachá) e está em `ACOES_COM_TRAVA`: token inválido nem abre planilha; válido, só grava `confirmada_em` e devolve
+`{ ok, ja_confirmada, data, hora, modalidade }` — nenhum nome. O token não tem validade própria: vence pelo estado da
+sessão (cancelada, com situação marcada ou já iniciada). Remarcar zera `confirmada_em`, e o mesmo link confirma a data
+nova. A sessão lida pelo profissional traz `link_confirmar` (`ctx.profId` vem de `_ageResposta_(alvo, …)`); o e-mail
+de confirmação e os lembretes usam o link no botão "Confirmar presença" (`montarEmailSessao`, `p.link`; sessão já
+confirmada volta ao botão do sistema). Na página, `?confirmar=` é lido no `DOMContentLoaded`, sai do endereço na hora
+e abre a tela do login em modo aviso (`ageConfirmarPorLink_`).
+
+**Eventos da agenda.** `_ageEventos_(ctx, pacs, agora)` deriva das colunas que já existiam, sem aba nova: `agendou`
+(`origem = paciente`), `confirmou` (`confirmada_em`), `cancelou` (`cancelada_por = paciente`), `remarcar` e `repor`
+(`Pedidos_Agenda`; o de remarcação mostra o horário pedido). Janela de `AGENDA_EVENTOS_DIAS` (30). Vão em
+`profLerAgenda` (`eventos`, `eventos_vistos_ate`) e na lista do login (`eventos_agenda` por paciente, `_ageInicio_`,
+que substituiu `_agePedidosDoInicio_`). `profMarcarEventosVistos` grava `agenda_vistos_ate` na `Config_Agenda`
+(`_ageConfigGravar_`); o sino conta os eventos mais novos que essa marca.
+
+**Lembretes.** Dois, pelo mesmo gatilho (`enviarAvisosSessao_`): 48 horas antes (janela de 48 a 24 horas; caixa
+`lembrete48`; marca `lembrete48_em`) e 24 horas antes (caixa `lembrete`; marca `ultimo_aviso_em`). Sessão que nasce
+ou é remarcada para dentro do prazo de um lembrete recebe a marca `dispensado` (`_ageMarcasLembrete_`,
+`_ageNovaSessao_`). As quatro caixas: `confirmacao`, `lembrete48`, `lembrete`, `cancelamento` (mudança ou
+cancelamento — é a caixa que governa o e-mail automático de remarcação).
+
+**E-mail na hora.** `profAvisarSessao(s, id, { tipo, anterior })` manda o e-mail da sessão com `forcar: true`
+(`_ageAvisarPaciente_` ignora a chave geral e a caixa; continuam valendo paciente ativo, e-mail no cadastro e cota).
+Sessão cancelada só recebe o tipo `cancelamento`. Toda gravação do profissional devolve `aviso` ('' = enviado;
+`desligado`, `caixa`, `sem_email`, `cota`…), que o cartão "Avisar o paciente" mostra.
+
+**Tela.** Vista nova `avisar` no `#ageModal` (`ageAbrirAviso_`, `ageRenderAvisar_`, `ageEmailAgora_`); sino
+`#calSino` + `#calSinoPainel` (`ageSinoRender_`); bloco `profRenderEventosAgenda_` no Início; `ageAtualizarSozinha_`
+(`visibilitychange` e `setInterval` de 2 min; no máximo uma leitura por minuto; nunca com o painel aberto);
+`.cal-ev-presencial` em lilás e `.cal-ev-online` em verde.
+
+**Testes.** `scripts/testes/backend_14_4.js` (52 provas) e `..\PACOTE_14_4_fluxo.js` (82 por largura).
