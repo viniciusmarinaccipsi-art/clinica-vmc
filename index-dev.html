@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — plano de lembretes: botões WhatsApp e E-mail em cada lembrete do paciente; tela de login do 18.12 e Painel das Escalas do 19.0 dentro (40 escalas, todas com ficha) — Pacote 19.2.3 (22/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — plano de lembretes: WhatsApp e E-mail dentro do Editar de cada lembrete, e-mail automático em até 5 minutos; tela de login do 18.12 e Painel das Escalas do 19.0 dentro (40 escalas, todas com ficha) — Pacote 19.2.3 (22/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -789,6 +789,8 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .prof-lem-regra{font:var(--t-body-sm);color:var(--c-ink-2);overflow-wrap:anywhere;}
 .prof-lem-estado{font:var(--t-body-sm);color:var(--c-ink-3);}
 .prof-lem-botoes{display:flex;gap:var(--s-2);flex-wrap:wrap;}
+.prof-lem-enviar{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s-2);margin:var(--s-3) 0;text-align:left;}
+.prof-lem-enviar-rotulo{flex-basis:100%;font:var(--t-label);color:var(--c-ink-2);}
 .prof-lem-btn{display:inline-flex;align-items:center;justify-content:center;min-height:var(--hit-min);padding:0 var(--s-3);border:1px solid var(--c-line-strong);border-radius:var(--r-field);background:var(--c-surface);color:var(--c-ink);font:var(--t-action);text-decoration:none;cursor:pointer;}
 .prof-lem-btn:hover{background:var(--c-surface-sub);}
 .prof-lem-btn:focus-visible{outline:2px solid var(--c-action);outline-offset:2px;}
@@ -9984,8 +9986,6 @@ function profLemItemHtml_(l) {
       '<div class="prof-lem-regra">' + esc(quando) + '</div>' +
       (estado ? '<div class="prof-lem-estado">' + esc(estado) + '</div>' : '') + '</div>' +
     (encerrado ? '' : '<div class="prof-lem-botoes">' +
-      lemBotaoWhats_(PROF_PACIENTE_SEL && PROF_PACIENTE_SEL.contato && PROF_PACIENTE_SEL.contato.telefone, l, PROF_PACIENTE_SEL && PROF_PACIENTE_SEL.nome, 'WhatsApp') +
-      '<button type="button" class="prof-lem-btn" data-id="' + esc(l.id) + '" data-lem-email="1" onclick="profLemEnviarEmail_(this)">E-mail</button>' +
       (l.recorrencia === 'agora' ? '' : '<button type="button" class="prof-lem-btn" data-id="' + esc(l.id) + '" onclick="profLemAbrirForm_(this.dataset.id)">Editar</button>') +
       '<button type="button" class="prof-lem-btn" data-id="' + esc(l.id) + '" onclick="profLemPedirEncerrar_(this.dataset.id)">Encerrar</button></div>') +
   '</div>';
@@ -10024,7 +10024,8 @@ function profLemFormHtml_() {
     campo('Data', 'Data de início', '<input type="date" id="profLemData">') +
     campo('Hora', 'Horário do e-mail', '<input type="time" id="profLemHora">') +
     campo('Termino', 'Data de término (opcional)', '<input type="date" id="profLemTermino">') +
-    '<p class="prof-lem-ajuda" id="profLemNota">O e-mail sai sozinho no horário escolhido (em até 5 minutos). O WhatsApp é enviado por você, pelo botão.</p>' +
+    '<p class="prof-lem-ajuda" id="profLemNota">O e-mail sai sozinho no horário escolhido (em até 5 minutos). O WhatsApp é enviado por você, pelo botão no Início ou em Editar.</p>' +
+    '<div id="profLemEnviarBox"></div>' +
     '<div class="prof-cad-erro" id="profLemErro" role="alert"></div>' +
     '<div class="prof-lem-acoes"><button class="p5-btn p5-btn-primary" type="button" id="profLemBtnSalvar" onclick="profLemSalvar_()">Salvar lembrete</button>' +
       '<button class="p5-btn p5-btn-secondary" type="button" onclick="profLemFecharForm_()">Cancelar</button></div>' +
@@ -10055,6 +10056,10 @@ function profLemAbrirForm_(id) {
   });
   el('profLemSemEmail').classList.toggle('hidden', !!(PROF_PACIENTE_SEL.contato && PROF_PACIENTE_SEL.contato.email));
   el('profLemAviso').textContent = '';
+  // 19.2.3: na edição, as duas formas de enviar este lembrete agora (o item como está gravado)
+  if (l) el('profLemEnviarBox').innerHTML = '<div class="prof-lem-enviar" id="profLemEnviar"><span class="prof-lem-enviar-rotulo">Enviar agora</span>' +
+    lemBotaoWhats_(PROF_PACIENTE_SEL.contato && PROF_PACIENTE_SEL.contato.telefone, l, PROF_PACIENTE_SEL.nome, 'WhatsApp') +
+    '<button type="button" class="prof-lem-btn" data-id="' + esc(l.id) + '" data-lem-email="1" onclick="profLemEnviarEmail_(this)">E-mail</button></div>';
   profLemAjustarForm_();
   el('profLemOque').focus();
 }
@@ -10135,7 +10140,7 @@ function profLemAvisoEmail_(resp) {
     : (resp.motivo === 'sem_email' ? 'Este paciente não tem e-mail no cadastro: o lembrete só poderá ir por WhatsApp.'
                                    : 'Não foi possível enviar o e-mail agora. Você pode enviar pelo WhatsApp.');
 }
-/* 19.2.3 — botão "E-mail" de um item do plano: o servidor manda agora o e-mail daquele item (nenhum item novo) e marca o envio */
+/* 19.2.3 — botão "E-mail" dentro do Editar: o servidor manda agora o e-mail daquele item (nenhum item novo) e marca o envio */
 async function profLemEnviarEmail_(btn) {
   var sigla = PROF_PACIENTE_SEL && PROF_PACIENTE_SEL.sigla;
   if (!sigla || btn.disabled) return;
@@ -10145,8 +10150,8 @@ async function profLemEnviarEmail_(btn) {
   if (!PROF_PACIENTE_SEL || PROF_PACIENTE_SEL.sigla !== sigla) return; // saiu do paciente enquanto enviava
   if (!resp || !resp.ok) {
     if (document.body.contains(btn)) { btn.disabled = false; btn.textContent = rotulo; }
-    var aviso = document.getElementById('profLemAviso');
-    if (aviso) aviso.textContent = (resp && resp.erro) || 'Tente novamente.';
+    var erro = document.getElementById('profLemErro');
+    if (erro) { erro.textContent = (resp && resp.erro) || 'Tente novamente.'; erro.classList.add('visivel'); }
     return;
   }
   profLemAplicar_(sigla, resp, [profLemAvisoEmail_(resp)], null);
