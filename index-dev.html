@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — lote E da HumanTrack (dependências): AUDIT, FTND, G-SAS, EAAD e ESTUD (30 escalas); opções por item na carga — Pacote 17.6 (21/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — lote E da HumanTrack (dependências): AUDIT, FTND, G-SAS, EAAD e ESTUD (30 escalas, todas com ficha); opções por item na carga — Pacote 17.6 (21/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -7478,10 +7478,10 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <button class="esc-card processo hidden" id="escCardEAAD" type="button" onclick="escClicarCardEscala('EAAD')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg></span>
         <div class="esc-card-title">Escala de Autoeficácia para Abstinência de Drogas (EAAD)</div>
-        <div class="esc-card-trad">Versão brasileira da AASE, parte da confiança</div>
+        <div class="esc-card-trad">Adaptação brasileira para drogas ilícitas da Alcohol Abstinence Self-Efficacy Scale (DiClemente et al., 1994)</div>
         <div class="esc-card-desc">Quanto você confia em não usar em cada situação</div>
         <div class="esc-card-meta">
-          <span>24 itens</span><span>5-8 min</span><span>Em geral</span>
+          <span>24 itens</span><span>5-8 min</span><span>Última semana</span>
         </div>
         <span class="esc-card-arrow">›</span>
       </button>
@@ -7489,10 +7489,10 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <button class="esc-card processo hidden" id="escCardESTUD" type="button" onclick="escClicarCardEscala('ESTUD')">
         <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-alert"/></svg></span>
         <div class="esc-card-title">Escala de Situações Tentadoras para o Uso de Drogas (ESTUD)</div>
-        <div class="esc-card-trad">Versão brasileira da AASE, parte da tentação</div>
+        <div class="esc-card-trad">Adaptação brasileira para drogas ilícitas da escala de tentação de DiClemente et al. (1994)</div>
         <div class="esc-card-desc">Quanto você se sente tentado a usar em cada situação</div>
         <div class="esc-card-meta">
-          <span>24 itens</span><span>5-8 min</span><span>Em geral</span>
+          <span>24 itens</span><span>5-8 min</span><span>Última semana</span>
         </div>
         <span class="esc-card-arrow">›</span>
       </button>
@@ -18330,6 +18330,32 @@ const ESC_ESCALAS = {
   'AUDIT': {
     nomeCompleto: 'Alcohol Use Disorders Identification Test (AUDIT)',
     nomeTraducao: 'Teste de Identificação de Transtornos pelo Uso de Álcool',
+    ficha: { // 17.6: ficha da escala (Informações), conteúdo original do Code; referências conferidas em 21/11/2026
+      tags: [
+        'Álcool',
+        'Dependência',
+        'Rastreamento',
+        'Mensuração'
+      ],
+      descricao: 'Questionário de rastreamento desenvolvido pela Organização Mundial da Saúde num projeto colaborativo em seis países para identificar o uso de risco e o uso nocivo de álcool na atenção primária. Os dez itens cobrem três domínios: consumo (itens 1 a 3), comportamento de dependência (4 a 6) e problemas relacionados ao álcool (7 a 10), pensando no último ano (Saunders, Aasland, Babor, de la Fuente & Grant, 1993).',
+      tempo: '2 a 4 minutos.',
+      populacao: 'Adultos, na atenção primária, em serviços de saúde mental e na população geral. No Brasil: amostra urbana de clientes de um plano de saúde (Lima et al., 2005) e usuários da atenção primária de Minas Gerais (Magnabosco, Formigoni & Ronzani, 2007).',
+      usos: 'Rastreamento do uso de risco, do uso nocivo e da provável dependência; escolha do nível de intervenção (orientação breve, intervenção breve, encaminhamento); linha de base e reaplicação ao longo do acompanhamento. Não substitui a avaliação diagnóstica (OMS, 2001).',
+      interpretacao: [
+        '<em>Estrutura:</em> 10 itens; os itens 1 a 8 valem 0 a 4 e os itens 9 e 10 valem 0, 2 ou 4; escore total de 0 a 40 pela soma. O sistema carrega as opções próprias de cada item.',
+        '<em>Zonas da OMS (manual, 2001):</em> 0–7 uso de baixo risco; 8–15 uso de risco; 16–19 uso nocivo; 20–40 provável dependência. São as faixas que o sistema usa.',
+        '<em>Ponto de corte 8:</em> no estudo original, 92% das pessoas com uso de risco ou nocivo pontuaram 8 ou mais e 94% das sem uso de risco pontuaram abaixo de 8 (Saunders et al., 1993). No Brasil, o corte 7/8 teve sensibilidade 100% e especificidade 76% para transtornos por uso de álcool pela CID-10, com estrutura de dois fatores (consumo e problemas) (Lima et al., 2005).',
+        '<em>Cuidados:</em> as doses dos itens 2 e 3 dependem da conversão em doses-padrão; o escore mede padrão de consumo, não diagnostica. Em população jovem e em mulheres os cortes podem precisar de ajuste.'
+      ],
+      desenvolvedores: 'Organização Mundial da Saúde; estudo original coordenado por John B. Saunders e Thomas F. Babor (1993). Domínio público, uso livre.',
+      validacaoBr: 'Sim. Lima et al. (2005): 166 adultos de uma amostra urbana, entrevista CIDI como padrão; corte 7/8 com sensibilidade 100% e especificidade 76%; análise fatorial confirmatória com dois fatores. Magnabosco et al. (2007): aplicação em serviços de atenção primária de Juiz de Fora e Rio Pomba, com treinamento de profissionais para uso do AUDIT.',
+      referencias: [
+        'Lima, C. T., Freire, A. C. C., Silva, A. P. B., Teixeira, R. M., Farrell, M., & Prince, M. (2005). Concurrent and construct validity of the AUDIT in an urban Brazilian sample. <em>Alcohol and Alcoholism, 40</em>(6), 584–589. https://doi.org/10.1093/alcalc/agh202',
+        'Magnabosco, M. L. O., Formigoni, M. L. O. S., & Ronzani, T. M. (2007). Avaliação dos padrões de uso de álcool em usuários de serviços de Atenção Primária à Saúde de Juiz de Fora e Rio Pomba (MG). <em>Revista Brasileira de Epidemiologia, 10</em>(4), 637–647. https://doi.org/10.1590/s1415-790x2007000400021',
+        'Saunders, J. B., Aasland, O. G., Babor, T. F., de la Fuente, J. R., & Grant, M. (1993). Development of the Alcohol Use Disorders Identification Test (AUDIT): WHO collaborative project on early detection of persons with harmful alcohol consumption – II. <em>Addiction, 88</em>(6), 791–804. https://doi.org/10.1111/j.1360-0443.1993.tb02093.x',
+        'World Health Organization. (2001). <em>AUDIT: The Alcohol Use Disorders Identification Test: Guidelines for use in primary health care</em> (2nd ed.; WHO/MSD/MSB/01.6a). World Health Organization.'
+      ]
+    },
     nomeCurto: 'AUDIT',
     emoji: '<svg class=ico aria-hidden=true><use href=#i-thermometer></use></svg>',
     corPrefix: 'amber',
@@ -18373,6 +18399,33 @@ const ESC_ESCALAS = {
   'FTND': {
     nomeCompleto: 'Fagerström Test for Nicotine Dependence (FTND)',
     nomeTraducao: 'Teste de Fagerström para Dependência de Nicotina',
+    ficha: { // 17.6: ficha da escala (Informações), conteúdo original do Code; referências conferidas em 21/11/2026
+      tags: [
+        'Tabaco',
+        'Dependência',
+        'Rastreamento',
+        'Mensuração'
+      ],
+      descricao: 'Teste breve de seis itens que mede a dependência física de nicotina pelo padrão de consumo: tempo até o primeiro cigarro do dia, dificuldade de não fumar onde é proibido, cigarro mais difícil de abandonar, número de cigarros por dia, fumar mais nas primeiras horas do dia e fumar mesmo doente. É a revisão do Questionário de Tolerância de Fagerström (Heatherton, Kozlowski, Frecker & Fagerström, 1991).',
+      tempo: '1 a 2 minutos.',
+      populacao: 'Fumantes adultos, em população geral e clínica. No Brasil: universitários fumantes, pacientes de um CAPS-AD e de uma emergência (Meneses-Gaya et al., 2009).',
+      usos: 'Graduar a dependência física para planejar a cessação (necessidade de apoio farmacológico e intensidade do acompanhamento); monitoramento; pesquisa. Não é instrumento diagnóstico de transtorno por uso de tabaco.',
+      interpretacao: [
+        '<em>Estrutura:</em> 6 itens; os itens 1 e 4 valem 0 a 3 e os demais 0 ou 1; escore total de 0 a 10 pela soma. O sistema carrega as opções próprias de cada item.',
+        '<em>Níveis (chave de correção do autor):</em> 0–2 dependência muito baixa; 3–4 baixa; 5 média; 6–7 elevada; 8–10 muito elevada (Wilcox & Redmond, 2014; a revisão brasileira lista os mesmos níveis: Meneses-Gaya et al., 2009, J Bras Pneumol). São os níveis que o sistema usa.',
+        '<em>Fatores:</em> a versão brasileira encontrou dois fatores, confirmados por análise confirmatória (Meneses-Gaya et al., 2009, Nicotine & Tobacco Research). O sistema soma dois grupos: tabagismo matinal (itens 3 e 5, de 0 a 2) e padrão de tabagismo (itens 1, 2, 4 e 6, de 0 a 8).',
+        '<em>Ponto de corte:</em> a revisão brasileira encontrou um só estudo de sensibilidade e especificidade (corte 5: 0,75 e 0,80, em pacientes com câncer no Japão) e conclui que faltam estudos de corte por população (Meneses-Gaya et al., 2009, J Bras Pneumol). O sistema não usa corte, só os níveis.',
+        '<em>Cuidados:</em> a consistência interna é moderada (0,55 a 0,74 nos estudos revisados); o teste mede dependência física e correlaciona-se fraca a moderadamente com marcadores biológicos; não substitui a avaliação clínica.'
+      ],
+      desenvolvedores: 'Karl O. Fagerström (questionário original, 1978); revisão por Todd F. Heatherton, Lynn T. Kozlowski, Richard C. Frecker e Karl O. Fagerström (1991). Uso livre com citação.',
+      validacaoBr: 'Sim. Meneses-Gaya, Zuardi, Azevedo Marques, Souza, Loureiro e Crippa (2009): teste-reteste em 61 universitários fumantes (15 dias), r = 0,92; concordância entre avaliadores em 30 pacientes de um CAPS-AD, 0,99; 271 fumantes de uma emergência e do CAPS-AD, com a SCID (DSM-IV) como padrão: alfa de Cronbach 0,83; dois fatores por análise exploratória, confirmados por análise confirmatória; sensibilidade e especificidade altas. A revisão sistemática dos mesmos autores (26 estudos até 2007) resume as propriedades do teste em várias línguas.',
+      referencias: [
+        'Heatherton, T. F., Kozlowski, L. T., Frecker, R. C., & Fagerström, K. O. (1991). The Fagerström Test for Nicotine Dependence: A revision of the Fagerström Tolerance Questionnaire. <em>British Journal of Addiction, 86</em>(9), 1119–1127. https://doi.org/10.1111/j.1360-0443.1991.tb01879.x',
+        'Meneses-Gaya, I. C., Zuardi, A. W., Loureiro, S. R., & Crippa, J. A. S. (2009). As propriedades psicométricas do Teste de Fagerström para Dependência de Nicotina. <em>Jornal Brasileiro de Pneumologia, 35</em>(1), 73–82. https://doi.org/10.1590/S1806-37132009000100011',
+        'Meneses-Gaya, C., Zuardi, A. W., Azevedo Marques, J. M., Souza, R. M., Loureiro, S. R., & Crippa, J. A. S. (2009). Psychometric qualities of the Brazilian versions of the Fagerström Test for Nicotine Dependence and the Heaviness of Smoking Index. <em>Nicotine & Tobacco Research, 11</em>(10), 1160–1165. https://doi.org/10.1093/ntr/ntp114',
+        'Wilcox, S. L., & Redmond, S. (2014). Critical Synthesis Package: Fagerstrom Test for Nicotine Dependence. <em>MedEdPORTAL, 10</em>, 9802. https://doi.org/10.15766/mep_2374-8265.9802'
+      ]
+    },
     nomeCurto: 'FTND',
     emoji: '<svg class=ico aria-hidden=true><use href=#i-zap></use></svg>',
     corPrefix: 'teal',
@@ -18429,6 +18482,30 @@ const ESC_ESCALAS = {
   'G-SAS': {
     nomeCompleto: 'Gambling Symptom Assessment Scale (G-SAS)',
     nomeTraducao: 'Escala de Avaliação de Sintomas de Jogo',
+    ficha: { // 17.6: ficha da escala (Informações), conteúdo original do Code; referências conferidas em 21/11/2026
+      tags: [
+        'Jogo',
+        'Dependência',
+        'Mensuração'
+      ],
+      descricao: 'Escala de autorrelato com 12 itens que mede a gravidade dos sintomas de jogo nos últimos sete dias e a sua mudança durante o tratamento: vontade de jogar (itens 1 a 4: intensidade, frequência, duração e controle), pensamentos sobre jogo (5 a 7), tempo gasto, excitação antes de jogar, prazer ao ganhar, sofrimento emocional e problemas pessoais causados pelo jogo (8 a 12). Cada item vai de 0 a 4 com âncoras próprias (Kim, Grant, Potenza, Blanco & Hollander, 2009).',
+      tempo: '3 a 5 minutos.',
+      populacao: 'Adultos com transtorno do jogo em avaliação ou tratamento. Não é instrumento de rastreamento nem de diagnóstico (Kim et al., 2009).',
+      usos: 'Medida de gravidade e de resposta ao tratamento, com reaplicação semanal ou quinzenal; leitura por domínios (vontade, pensamentos, comportamento e impacto); pesquisa. Foi a medida de desfecho em ensaios com paroxetina (Kim, Grant, Adson, Shin & Zaninelli, 2002) e naltrexona (Grant, Kim & Hartman, 2008).',
+      interpretacao: [
+        '<em>Estrutura:</em> 12 itens, 0 a 4, sete dias de referência; escore total de 0 a 48 pela soma.',
+        '<em>Faixas dos autores (Kim et al., 2009):</em> 8–20 leve; 21–30 moderado; 31–40 severo; 41–48 extremo. Escores de 0 a 7 ficam abaixo da faixa leve. São as faixas que o sistema usa.',
+        '<em>Confiabilidade original:</em> alfa de Cronbach 0,87 em 207 pacientes; teste-reteste de uma semana 0,56 (0,78 sem cinco casos atípicos); correlação 0,51 com a PG-YBOCS na linha de base e 0,81 entre as mudanças das duas escalas durante o tratamento (Kim et al., 2009).',
+        '<em>Cuidados:</em> os autores apontam menor sensibilidade em jogadores crônicos com pouca vontade ou excitação e em quem joga para escapar de humor deprimido, solidão ou estresse; convém conferir a compreensão dos itens nas primeiras aplicações.'
+      ],
+      desenvolvedores: 'Suck Won Kim e Jon E. Grant (University of Minnesota), com Marc N. Potenza, Carlos Blanco e Eric Hollander (2009). Uso livre com citação.',
+      validacaoBr: 'Não. Não foi localizado estudo brasileiro de validação da G-SAS (PubMed, OpenAlex, BDTD, 21/11/2026). As propriedades acima são do estudo original; a versão em português usada no sistema não tem estudo psicométrico publicado.',
+      referencias: [
+        'Grant, J. E., Kim, S. W., & Hartman, B. K. (2008). A double-blind, placebo-controlled study of the opiate antagonist naltrexone in the treatment of pathological gambling urges. <em>Journal of Clinical Psychiatry, 69</em>(5), 783–789. https://doi.org/10.4088/jcp.v69n0511',
+        'Kim, S. W., Grant, J. E., Adson, D. E., Shin, Y. C., & Zaninelli, R. (2002). A double-blind placebo-controlled study of the efficacy and safety of paroxetine in the treatment of pathological gambling. <em>Journal of Clinical Psychiatry, 63</em>(6), 501–507. https://doi.org/10.4088/jcp.v63n0606',
+        'Kim, S. W., Grant, J. E., Potenza, M. N., Blanco, C., & Hollander, E. (2009). The Gambling Symptom Assessment Scale (G-SAS): A reliability and validity study. <em>Psychiatry Research, 166</em>(1), 76–84. https://doi.org/10.1016/j.psychres.2007.11.008'
+      ]
+    },
     nomeCurto: 'G-SAS',
     emoji: '<svg class=ico aria-hidden=true><use href=#i-target></use></svg>',
     corPrefix: 'purple',
@@ -18477,7 +18554,34 @@ const ESC_ESCALAS = {
 
   'EAAD': {
     nomeCompleto: 'Escala de Autoeficácia para Abstinência de Drogas (EAAD)',
-    nomeTraducao: 'Versão brasileira da Alcohol Abstinence Self-Efficacy Scale (AASE), parte da confiança',
+    nomeTraducao: 'Adaptação brasileira para drogas ilícitas da Alcohol Abstinence Self-Efficacy Scale (DiClemente et al., 1994)',
+    ficha: { // 17.6: ficha da escala (Informações), conteúdo original do Code; referências conferidas em 21/11/2026
+      tags: [
+        'Drogas',
+        'Dependência',
+        'Prevenção de recaída',
+        'Autoeficácia'
+      ],
+      descricao: 'Escala de autorrelato com 24 situações de risco em que a pessoa indica quanto confia em não usar drogas ilícitas, de 1 a 5. Aplica o construto de autoeficácia de Bandura à abstinência, no modelo cognitivo-comportamental de recaída: quatro tipos de precipitantes, emoções negativas, situações sociais e estados positivos, preocupações e mal-estar físico, e abstinência e impulsos (DiClemente, Carbonari, Montgomery & Hughes, 1994). A versão brasileira adaptou para drogas ilícitas a escala de DiClemente et al. (1994) e acrescentou quatro itens, chegando a 24 (Freire et al., 2017).',
+      tempo: '5 a 8 minutos.',
+      populacao: 'Adultos com dependência de cocaína e crack, internados ou em tratamento ambulatorial (Freire et al., 2017).',
+      usos: 'Formulação de caso e plano de prevenção de recaída (em que situações a confiança é menor); monitoramento ao longo do tratamento; par da ESTUD, que mede a tentação nas mesmas situações; pesquisa. Não é instrumento diagnóstico.',
+      interpretacao: [
+        '<em>Estrutura:</em> 24 itens, 1 (nada confiante) a 5 (extremamente confiante), pensando na última semana (folha oficial do GAAPCC); cada subescala é a média dos seus itens (emoções negativas 3, 6, 14, 16, 18, 23, 24; social e positivo 4, 8, 15, 17, 20, 21, 22; preocupações 2, 5, 9, 12, 13; abstinência e impulsos 1, 7, 10, 11, 19; Freire et al., 2017); a média geral é a média dos 24 itens. Quanto maior, mais confiança em não usar.',
+        '<em>Pontos de corte:</em> não há (Freire et al., 2017). Leitura pelo perfil: a subescala com média mais baixa indica as situações de maior risco.',
+        '<em>Relação com a tentação:</em> as duas escalas correlacionam-se inversamente (r = −0,74 na amostra brasileira; Freire, 2009): confiança baixa com tentação alta na mesma situação é o alvo prioritário.',
+        '<em>Cuidados:</em> validada em homens internados; autorrelato em internação pode superestimar a confiança; reaplicar perto da alta e no seguimento.'
+      ],
+      desenvolvedores: 'Carlo C. DiClemente e colaboradores (1994), University of Houston. Versão brasileira: Suzana Dias Freire e Margareth da Silva Oliveira (GAAPCC, PUCRS), a partir da dissertação de Freire (2009), publicada em Freire et al. (2017); a folha oficial do grupo traz a adaptação como Oliveira e Freire (2010).',
+      validacaoBr: 'Sim. Freire, Silva, Ávila, DiClemente e Oliveira (2017), Paidéia: 300 homens de 18 a 56 anos (média 27,96; DP 7,28) internados por dependência de cocaína (25%) e crack (75%) no Rio Grande do Sul, com pelo menos sete dias de abstinência; tradução, discussão item a item com psicólogos e estudantes, aplicação-piloto em 10 pessoas e retrotradução; quatro itens acrescentados aos 20 originais; alfa de Cronbach 0,920 no total da EAAD e 0,927 no total da ESTUD, de 0,718 a 0,927 entre as subescalas das duas escalas; análise fatorial exploratória (Varimax) com quatro fatores que explicaram 54% da variância na EAAD e 56% na ESTUD, correspondentes às quatro subescalas. A dissertação de origem (Freire, 2009) reporta correlação inversa entre as duas escalas (r = −0,736). Sem ponto de corte nem normas.',
+      referencias: [
+        'DiClemente, C. C., Carbonari, J. P., Montgomery, R. P. G., & Hughes, S. O. (1994). The Alcohol Abstinence Self-Efficacy scale. <em>Journal of Studies on Alcohol, 55</em>(2), 141–148. https://doi.org/10.15288/jsa.1994.55.141',
+        'Freire, S. D., Silva, D. C., Ávila, A. C., DiClemente, C., & Oliveira, M. S. (2017). Adaptation and validation of the Brazilian DASE and TUD scales for cocaine/crack users. <em>Paidéia (Ribeirão Preto), 27</em>(67), 93–99. https://doi.org/10.1590/1982-43272767201711',
+        'Freire, S. D., & Oliveira, M. S. (2011). Auto-eficácia para abstinência e tentação para uso de drogas ilícitas: Uma revisão sistemática. <em>Psicologia: Teoria e Pesquisa, 27</em>(4), 527–536. https://doi.org/10.1590/S0102-37722011000400018',
+        'Freire, S. D. (2009). <em>Evidências de validade da "Escala de Auto-Eficácia para Abstinência de Drogas" (EAAD) e da "Escala de Tentação para Uso de Drogas" (ESTUD) em dependentes de cocaína e crack internados</em> [Dissertação de mestrado, Pontifícia Universidade Católica do Rio Grande do Sul]. Repositório PUCRS. http://tede2.pucrs.br/tede2/handle/tede/710',
+        'Grupo de Avaliação e Acompanhamento Psicológico em Contextos Clínicos. (s.d.). <em>Questionários</em> [folhas oficiais das escalas]. PUCRS. https://www.gaapcc.com/questionarios'
+      ]
+    },
     nomeCurto: 'EAAD',
     emoji: '<svg class=ico aria-hidden=true><use href=#i-check></use></svg>',
     corPrefix: 'processo',
@@ -18488,7 +18592,7 @@ const ESC_ESCALAS = {
     subMedia: 2, // 17.6: cada subescala é a MÉDIA dos itens (1–5), com duas casas
     valorMin: 1,
     valorMax: 5,
-    subtitulo: '24 itens · 5 a 8 minutos · Pensando em <strong>quanto você confia em não usar</strong> em cada situação',
+    subtitulo: '24 itens · 5 a 8 minutos · Pensando na <strong>última semana</strong>: quanto você confia em não usar em cada situação',
     escoreMax: 5, // por subescala (média de 1 a 5); a soma dos 24 (24–120) é gravada em escore_total e não aparece
     itens: [
       { id: 1, subescala: 'abstinencia_impulsos' }, { id: 2, subescala: 'preocupacoes' }, { id: 3, subescala: 'emocoes_negativas' }, { id: 4, subescala: 'social_positivo' }, { id: 5, subescala: 'preocupacoes' },
@@ -18516,7 +18620,34 @@ const ESC_ESCALAS = {
 
   'ESTUD': {
     nomeCompleto: 'Escala de Situações Tentadoras para o Uso de Drogas (ESTUD)',
-    nomeTraducao: 'Versão brasileira da Alcohol Abstinence Self-Efficacy Scale (AASE), parte da tentação',
+    nomeTraducao: 'Adaptação brasileira para drogas ilícitas da escala de tentação de DiClemente et al. (1994)',
+    ficha: { // 17.6: ficha da escala (Informações), conteúdo original do Code; referências conferidas em 21/11/2026
+      tags: [
+        'Drogas',
+        'Dependência',
+        'Prevenção de recaída',
+        'Tentação'
+      ],
+      descricao: 'Escala de autorrelato com as mesmas 24 situações da EAAD, em que a pessoa indica quanto se sente tentada a usar drogas ilícitas, de 1 a 5. É a face da tentação do modelo de DiClemente: tentação e autoeficácia são construtos distintos e inversamente relacionados, e a diferença entre eles em cada situação orienta a prevenção de recaída (DiClemente et al., 1994; Freire et al., 2017).',
+      tempo: '5 a 8 minutos.',
+      populacao: 'Adultos com dependência de cocaína e crack, internados ou em tratamento ambulatorial (Freire et al., 2017).',
+      usos: 'Mapa de gatilhos de recaída; formulação de caso; monitoramento da fissura situacional ao longo do tratamento; leitura junto com a EAAD; pesquisa. Não é instrumento diagnóstico.',
+      interpretacao: [
+        '<em>Estrutura:</em> 24 itens, 1 (nada tentado) a 5 (extremamente tentado), pensando na última semana (folha oficial do GAAPCC); mesmas quatro subescalas da EAAD, cada uma pela média dos itens (Freire et al., 2017); média geral dos 24. Quanto maior, mais tentação.',
+        '<em>Pontos de corte:</em> não há (Freire et al., 2017). Leitura pelo perfil: a subescala com média mais alta indica os gatilhos a trabalhar primeiro.',
+        '<em>Relação com a autoeficácia:</em> correlação inversa com a EAAD (r = −0,74; Freire, 2009).',
+        '<em>Cuidados:</em> validada em homens internados; responder sobre tentação pode ativar fissura em quem está em abstinência recente; aplicar com acompanhamento e combinar com a avaliação de risco. A folha oficial pede marcar a substância (crack ou cocaína); no sistema essa informação fica no prontuário do profissional.'
+      ],
+      desenvolvedores: 'Carlo C. DiClemente e colaboradores (1994). Versão brasileira: Suzana Dias Freire e Margareth da Silva Oliveira (GAAPCC, PUCRS), a partir da dissertação de Freire (2009), publicada em Freire et al. (2017).',
+      validacaoBr: 'Sim, no mesmo estudo da EAAD. Freire, Silva, Ávila, DiClemente e Oliveira (2017), Paidéia: 300 homens de 18 a 56 anos (média 27,96; DP 7,28) internados por dependência de cocaína (25%) e crack (75%) no Rio Grande do Sul, com pelo menos sete dias de abstinência; tradução, discussão item a item com psicólogos e estudantes, aplicação-piloto em 10 pessoas e retrotradução; quatro itens acrescentados aos 20 originais; alfa de Cronbach 0,920 no total da EAAD e 0,927 no total da ESTUD, de 0,718 a 0,927 entre as subescalas das duas escalas; análise fatorial exploratória (Varimax) com quatro fatores que explicaram 54% da variância na EAAD e 56% na ESTUD, correspondentes às quatro subescalas. A dissertação de origem (Freire, 2009) reporta correlação inversa entre as duas escalas (r = −0,736). Sem ponto de corte nem normas.',
+      referencias: [
+        'DiClemente, C. C., Carbonari, J. P., Montgomery, R. P. G., & Hughes, S. O. (1994). The Alcohol Abstinence Self-Efficacy scale. <em>Journal of Studies on Alcohol, 55</em>(2), 141–148. https://doi.org/10.15288/jsa.1994.55.141',
+        'Freire, S. D., Silva, D. C., Ávila, A. C., DiClemente, C., & Oliveira, M. S. (2017). Adaptation and validation of the Brazilian DASE and TUD scales for cocaine/crack users. <em>Paidéia (Ribeirão Preto), 27</em>(67), 93–99. https://doi.org/10.1590/1982-43272767201711',
+        'Freire, S. D., & Oliveira, M. S. (2011). Auto-eficácia para abstinência e tentação para uso de drogas ilícitas: Uma revisão sistemática. <em>Psicologia: Teoria e Pesquisa, 27</em>(4), 527–536. https://doi.org/10.1590/S0102-37722011000400018',
+        'Freire, S. D. (2009). <em>Evidências de validade da "Escala de Auto-Eficácia para Abstinência de Drogas" (EAAD) e da "Escala de Tentação para Uso de Drogas" (ESTUD) em dependentes de cocaína e crack internados</em> [Dissertação de mestrado, Pontifícia Universidade Católica do Rio Grande do Sul]. Repositório PUCRS. http://tede2.pucrs.br/tede2/handle/tede/710',
+        'Grupo de Avaliação e Acompanhamento Psicológico em Contextos Clínicos. (s.d.). <em>Questionários</em> [folhas oficiais das escalas]. PUCRS. https://www.gaapcc.com/questionarios'
+      ]
+    },
     nomeCurto: 'ESTUD',
     emoji: '<svg class=ico aria-hidden=true><use href=#i-alert></use></svg>',
     corPrefix: 'processo',
@@ -18527,7 +18658,7 @@ const ESC_ESCALAS = {
     subMedia: 2, // 17.6: cada subescala é a MÉDIA dos itens (1–5), com duas casas
     valorMin: 1,
     valorMax: 5,
-    subtitulo: '24 itens · 5 a 8 minutos · Pensando em <strong>quanto você se sente tentado a usar</strong> em cada situação',
+    subtitulo: '24 itens · 5 a 8 minutos · Pensando na <strong>última semana</strong>: quanto você se sente tentado a usar em cada situação',
     escoreMax: 5, // por subescala (média de 1 a 5); a soma dos 24 (24–120) é gravada em escore_total e não aparece
     itens: [
       { id: 1, subescala: 'abstinencia_impulsos' }, { id: 2, subescala: 'preocupacoes' }, { id: 3, subescala: 'emocoes_negativas' }, { id: 4, subescala: 'social_positivo' }, { id: 5, subescala: 'preocupacoes' },
