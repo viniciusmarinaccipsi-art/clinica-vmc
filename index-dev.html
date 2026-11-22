@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — lote E da HumanTrack (dependências): AUDIT, FTND, G-SAS, EAAD e ESTUD (30 escalas, todas com ficha); opções por item na carga — Pacote 17.6 (21/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — lote F da HumanTrack (dependências e compulsões): DUDIT, SAST, EPM, PIUQ-SF-9 e SAS-LV (35 escalas, todas com ficha) — Pacote 17.7 (22/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -7493,6 +7493,62 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <div class="esc-card-desc">Quanto você se sente tentado a usar em cada situação</div>
         <div class="esc-card-meta">
           <span>24 itens</span><span>5-8 min</span><span>Última semana</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <!-- Pacote 17.7 — lote F da HumanTrack (dependências e compulsões): cinco escalas por liberação do profissional. -->
+      <button class="esc-card orange hidden" id="escCardDUDIT" type="button" onclick="escClicarCardEscala('DUDIT')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-alert-circle"/></svg></span>
+        <div class="esc-card-title">Drug Use Disorders Identification Test (DUDIT)</div>
+        <div class="esc-card-trad">Teste de Identificação de Transtornos pelo Uso de Drogas</div>
+        <div class="esc-card-desc">Seu padrão de uso de drogas, sem contar o álcool</div>
+        <div class="esc-card-meta">
+          <span>11 itens</span><span>5-10 min</span><span>Exceto álcool</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card coral hidden" id="escCardSAST" type="button" onclick="escClicarCardEscala('SAST')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-heart"/></svg></span>
+        <div class="esc-card-title">Sexual Addiction Screening Test (SAST)</div>
+        <div class="esc-card-trad">Escala de Rastreamento para Dependência de Sexo</div>
+        <div class="esc-card-desc">Como o comportamento sexual vem afetando sua vida</div>
+        <div class="esc-card-meta">
+          <span>25 itens</span><span>10-15 min</span><span>12 meses</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card urica hidden" id="escCardEPM" type="button" onclick="escClicarCardEscala('EPM')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-refresh"/></svg></span>
+        <div class="esc-card-title">Escala de Processos de Mudança (EPM)</div>
+        <div class="esc-card-trad">Adaptação brasileira do Processes of Change Questionnaire (Prochaska, Velicer, DiClemente & Fava, 1988)</div>
+        <div class="esc-card-desc">O que você pensou e fez na semana passada para não usar drogas</div>
+        <div class="esc-card-meta">
+          <span>20 itens</span><span>5-10 min</span><span>Semana passada</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card teal hidden" id="escCardPIUQ" type="button" onclick="escClicarCardEscala('PIUQ-SF-9')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-monitor"/></svg></span>
+        <div class="esc-card-title">Problematic Internet Use Questionnaire – Short Form-9 (PIUQ-SF-9)</div>
+        <div class="esc-card-trad">Questionário de Uso Problemático da Internet, forma curta de 9 itens</div>
+        <div class="esc-card-desc">Seu uso da internet nos últimos 6 meses, fora do trabalho e do estudo</div>
+        <div class="esc-card-meta">
+          <span>9 itens</span><span>3-5 min</span><span>6 meses</span>
+        </div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
+      <button class="esc-card purple hidden" id="escCardSASLV" type="button" onclick="escClicarCardEscala('SAS-LV')">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-phone"/></svg></span>
+        <div class="esc-card-title">Smartphone Addiction Scale – Long Version (SAS-LV)</div>
+        <div class="esc-card-trad">Escala de Dependência de Smartphone, versão longa</div>
+        <div class="esc-card-desc">Como o celular entra no seu dia a dia</div>
+        <div class="esc-card-meta">
+          <span>33 itens</span><span>10 min</span><span>Em geral</span>
         </div>
         <span class="esc-card-arrow">›</span>
       </button>
@@ -16382,7 +16438,8 @@ var ESC_CARTOES_POR_INSTRUMENTO = { phq9: 'escCardPHQ9', gad7: 'escCardGAD7', ps
   urica_alcool: 'escCardURICA_A', urica_drogas: 'escCardURICA_D', urica_tabaco: 'escCardURICA_T', urica_alimentar: 'escCardURICA_HA', // 17.2
   pcl5: 'escCardPCL5', pswq: 'escCardPSWQ', ear: 'escCardEAR', aaq2: 'escCardAAQ2', swls: 'escCardSWLS', maas: 'escCardMAAS', wbsi: 'escCardWBSI', // 17.3
   panas: 'escCardPANAS', spin: 'escCardSPIN', ocir: 'escCardOCIR', asrs: 'escCardASRS', scs: 'escCardSCS', // 17.5
-  audit: 'escCardAUDIT', ftnd: 'escCardFTND', gsas: 'escCardGSAS', eaad: 'escCardEAAD', estud: 'escCardESTUD' }; // 17.6
+  audit: 'escCardAUDIT', ftnd: 'escCardFTND', gsas: 'escCardGSAS', eaad: 'escCardEAAD', estud: 'escCardESTUD', // 17.6
+  dudit: 'escCardDUDIT', sast: 'escCardSAST', epm: 'escCardEPM', piuq: 'escCardPIUQ', saslv: 'escCardSASLV' }; // 17.7
 
 // Valor numerico de uma resposta. Nas escalas do 12.x ja e numero; no BDI-II os
 // itens 16 e 18 guardam o codigo da folha ('2b'), e ali so o digito pontua.
@@ -18682,9 +18739,303 @@ const ESC_ESCALAS = {
       '<strong>Média geral 1-5</strong> — média dos 24 itens',
       '<em style="color:var(--c-ink-3);">Sem pontos de corte (DiClemente et al., 1994; Freire, 2009). Leitura pelo perfil e pela evolução do próprio paciente.</em>'
     ]
+  },
+
+  // ---- Pacote 17.7 — lote F da HumanTrack (dependências e compulsões): DUDIT, SAST, EPM, PIUQ-SF-9 e SAS-LV ----
+  // Textos na aba privada Itens_Instrumentos (carga a partir da captura HumanTrack de 08/10/2026, já salva no Drive). Todas por liberação.
+  // DUDIT tem opções próprias por item ('opcoesPorItem'); EPM tem dois fatores por soma e total pelo novo 'composto.somaItens';
+  // PIUQ-SF-9 e SAS-LV mostram só o total (molde da MAAS). Faixas só com fonte lida; o resto fica na ficha.
+  // Referências (todas conferidas em 21–22/11/2026; detalhes nas fichas): Berman et al. (2005) e Pape et al. (2022) — DUDIT;
+  //   Silveira et al. (2000) — SAST; Prochaska et al. (1988) e Szupszynski (2012, tese PUCRS lida) — EPM; Spritzer et al. (2021,
+  //   texto integral) — PIUQ-SF-9; Kwon et al. (2013, texto integral) e Andrade et al. (2020, resumo) — SAS-LV.
+  'DUDIT': {
+    nomeCompleto: 'Drug Use Disorders Identification Test (DUDIT)',
+    nomeTraducao: 'Teste de Identificação de Transtornos pelo Uso de Drogas',
+    ficha: { // 17.7: ficha da escala (Informações), conteúdo original do Code; referências conferidas em 21–22/11/2026
+      tags: [
+        'Drogas',
+        'Dependência',
+        'Rastreamento',
+        'Mensuração'
+      ],
+      descricao: 'Questionário breve de rastreamento, irmão do AUDIT, para identificar padrões problemáticos de uso de drogas ilícitas e de medicamentos usados fora da prescrição. Os 11 itens cobrem frequência e intensidade do uso (itens 1 a 4), sinais de dependência (5 a 9) e consequências (10 e 11); o álcool fica de fora (Berman, Bergman, Palmstierna & Schlyter, 2005).',
+      tempo: '5 a 10 minutos.',
+      populacao: 'Adolescentes a partir de 16 anos e adultos, em serviços de saúde, justiça criminal e população geral. Não há estudo brasileiro; o estudo original foi feito na Suécia com usuários pesados de drogas em prisões, liberdade condicional e desintoxicação e com uma amostra populacional (Berman et al., 2005).',
+      usos: 'Rastreamento de problemas relacionados a drogas e de provável dependência; escolha do nível de avaliação e intervenção; linha de base e reaplicação ao longo do acompanhamento; par do AUDIT quando há uso de álcool. Não substitui a entrevista diagnóstica.',
+      interpretacao: [
+        '<em>Estrutura:</em> 11 itens; os itens 1 a 9 valem 0 a 4 e os itens 10 e 11 valem 0, 2 ou 4; escore total de 0 a 44 pela soma. O sistema carrega as opções próprias de cada item.',
+        '<em>Pontos de corte:</em> 6 ou mais indica provável problema relacionado a drogas e 25 ou mais, provável dependência; são os cortes do manual do DUDIT (Berman et al., 2005), usados nos estudos publicados com o instrumento (Pape, Lobmaier & Bukten, 2022). São as faixas que o sistema usa.',
+        '<em>Propriedades originais:</em> sensibilidade de 90% para dependência pelo DSM-IV e pela CID-10, com especificidade de 78% e 88%; alfa de Cronbach 0,80 (Berman et al., 2005). A revisão de 18 estudos encontrou alfa em geral acima de 0,90, sensibilidade de 0,85 a 1,00 e especificidade de 0,75 a 0,92 em várias populações, com estrutura fatorial ainda discutida (Hildebrand, 2015).',
+        '<em>Cuidados:</em> cortes de outro país, sem validação brasileira; viés de desejabilidade social em contextos judiciais ou de trabalho; o texto carregado no sistema vem do seu mapeamento HumanTrack e tem marcas do português europeu. Complementar com entrevista, histórico de uso e, quando couber, exame toxicológico.'
+      ],
+      desenvolvedores: 'Anne H. Berman, Hans Bergman, Tom Palmstierna e Frans Schlyter (2005), Karolinska Institutet, Suécia. Uso livre.',
+      validacaoBr: 'Não. Não foi localizado estudo brasileiro de validação do DUDIT (PubMed, Consensus, OpenAlex, Crossref, 21/11/2026). As propriedades e os cortes acima vêm do estudo original sueco e da revisão internacional.',
+      referencias: [
+        'Berman, A. H., Bergman, H., Palmstierna, T., & Schlyter, F. (2005). Evaluation of the Drug Use Disorders Identification Test (DUDIT) in criminal justice and detoxification settings and in a Swedish population sample. <em>European Addiction Research, 11</em>(1), 22–31. https://doi.org/10.1159/000081413',
+        'Hildebrand, M. (2015). The psychometric properties of the Drug Use Disorders Identification Test (DUDIT): A review of recent research. <em>Journal of Substance Abuse Treatment, 53</em>, 52–59. https://doi.org/10.1016/j.jsat.2015.01.008',
+        'Pape, H., Lobmaier, P., & Bukten, A. (2022). An evaluation of eight short versions of the Drug Use Disorder Identification Test (DUDIT): A prison population study. <em>Drug and Alcohol Dependence Reports, 3</em>, 100043. https://doi.org/10.1016/j.dadr.2022.100043'
+      ]
+    },
+    nomeCurto: 'DUDIT',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-alert-circle></use></svg>',
+    corPrefix: 'orange',
+    instrumentoId: 'dudit',
+    textoDaAba: true,
+    opcoesPorItem: true, // 17.7: cada item tem as suas opções; os itens 10 e 11 valem 0, 2 ou 4
+    valorMin: 0,
+    valorMax: 4,
+    subtitulo: '11 itens · 5 a 10 minutos · Sobre o <strong>seu uso de drogas</strong>, sem contar o álcool',
+    escoreMax: 44,
+    itens: [
+      { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }, { id: 8 }, { id: 9 }, { id: 10 },
+      { id: 11 }
+    ],
+    faixas: [
+      { min: 25, max: 44, rotulo: 'Provável dependência', cor: 'vermelho',
+        titulo: '<svg class=ico&#32;ico-risk aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore está na <strong>faixa mais alta</strong> do DUDIT: o padrão de uso de drogas que você descreveu sugere dependência. Isso não é um diagnóstico, mas é um sinal de que você precisa de uma avaliação específica e de apoio para mudar.',
+        sugestao: 'Converse com seu terapeuta sobre este resultado. Ele vai avaliar com você o que está acontecendo e os próximos passos.' },
+      { min: 6, max: 24, rotulo: 'Provável problema com drogas', cor: 'laranja',
+        titulo: '<svg class=ico&#32;ico-risk2 aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore está <strong>acima do ponto de corte</strong>: o padrão de uso que você descreveu indica provável problema relacionado a drogas, mesmo sem dependência. Isso não é um diagnóstico, mas merece atenção e uma conversa sobre o seu uso.',
+        sugestao: 'Converse com seu terapeuta sobre este resultado. Ele vai avaliar com você o que está acontecendo e os próximos passos.' },
+      { min: 0, max: 5, rotulo: 'Abaixo do ponto de corte', cor: 'verde',
+        titulo: '<svg class=ico&#32;ico-pos aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore está <strong>abaixo do ponto de corte</strong>: as respostas não indicam problema relacionado ao uso de drogas, ou você não usa.',
+        sugestao: 'Traga este resultado para a sessão: as respostas que você marcou dizem mais do que o número.' }
+    ],
+    faixasLista: [
+      '<strong>0-5</strong> — Abaixo do ponto de corte',
+      '<strong>6-24</strong> — Provável problema com drogas',
+      '<strong>25-44</strong> — Provável dependência',
+      '<em style="color:var(--c-ink-3);">Cortes do manual do DUDIT (Berman et al., 2005), como usados nos estudos publicados (Pape et al., 2022). Sem validação brasileira. Rastreamento — não substitui a avaliação clínica.</em>'
+    ]
+  },
+
+  'SAST': {
+    nomeCompleto: 'Sexual Addiction Screening Test (SAST)',
+    nomeTraducao: 'Escala de Rastreamento para Dependência de Sexo',
+    ficha: { // 17.7: ficha da escala (Informações), conteúdo original do Code; referências conferidas em 21–22/11/2026
+      tags: [
+        'Sexualidade',
+        'Dependência',
+        'Rastreamento'
+      ],
+      descricao: 'Questionário de rastreamento com 25 perguntas de sim ou não sobre comportamento sexual aditivo: preocupação persistente, dificuldade de parar, culpa, segredo, uso do sexo para lidar com problemas e prejuízos à família, ao trabalho e à lei. Foi criado por Patrick Carnes (1989) e adaptado no Brasil por Silveira, Vieira, Palomo e Silveira (2000).',
+      tempo: '10 a 15 minutos.',
+      populacao: 'Adultos em contextos clínicos e não clínicos. No Brasil, pacientes de um programa para dependentes e acompanhantes voluntários, de 17 a 58 anos, em São Paulo (Silveira et al., 2000).',
+      usos: 'Rastreamento inicial de dependência de sexo em serviços clínicos; apoio à formulação de caso (funções do comportamento, gatilhos, prejuízos); monitoramento exploratório. O diagnóstico depende de entrevista e de critérios clínicos.',
+      interpretacao: [
+        '<em>Estrutura:</em> 25 itens, sim (1) ou não (0); escore total de 0 a 25 pela soma; pensando nos últimos 12 meses.',
+        '<em>Ponto de corte brasileiro:</em> 6 ou mais, com sensibilidade 0,83, especificidade 0,75, valor preditivo positivo 0,54 e negativo 0,93 frente aos critérios provisórios de Goodman (1990); o corte original norte-americano, 13, teve sensibilidade de só 0,33 na amostra brasileira (Silveira et al., 2000). O sistema usa o corte 6.',
+        '<em>Confiabilidade:</em> alfa de Cronbach 0,89 nos 25 itens (Silveira et al., 2000). Área sob a curva ROC 0,72.',
+        '<em>Cuidados:</em> amostra pequena (71 pessoas) e não pareada; sem análise fatorial nem teste-reteste; itens sensíveis (ilegalidade, menores) exigem manejo ético cuidadoso; homens pontuaram mais que mulheres e pessoas com mais escolaridade pontuaram menos (Silveira et al., 2000).'
+      ],
+      desenvolvedores: 'Patrick Carnes (1989), Sexual Addiction Screening Test. Versão brasileira: Dartiu Xavier da Silveira, Aderbal C. Vieira, Victor Palomo e Evelyn D. Silveira (2000), PROAD, Universidade Federal de São Paulo.',
+      validacaoBr: 'Sim. Silveira et al. (2000): 71 participantes (33 pacientes do PROAD e 38 voluntários; 41 homens e 30 mulheres; 17 a 58 anos), entrevista psiquiátrica pelos critérios de Goodman como padrão; corte 6 com sensibilidade 0,83 e especificidade 0,75; alfa 0,89; área sob a curva 0,72. Sem análise fatorial e sem teste-reteste.',
+      referencias: [
+        'Carnes, P. (1989). <em>Contrary to love: Helping the sexual addict</em>. CompCare Publishers.',
+        'Silveira, D. X., Vieira, A. C., Palomo, V., & Silveira, E. D. (2000). Validade de critério e confiabilidade da versão brasileira de uma escala de rastreamento para dependência de sexo. <em>Revista Brasileira de Psiquiatria, 22</em>(1), 4–10. https://doi.org/10.1590/S1516-44462000000100003'
+      ]
+    },
+    nomeCurto: 'SAST',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-heart></use></svg>',
+    corPrefix: 'coral',
+    instrumentoId: 'sast',
+    textoDaAba: true,
+    valorMin: 0,
+    valorMax: 1,
+    subtitulo: '25 itens · 10 a 15 minutos · Pensando nos <strong>últimos 12 meses</strong>',
+    escoreMax: 25,
+    itens: [
+      { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }, { id: 8 }, { id: 9 }, { id: 10 },
+      { id: 11 }, { id: 12 }, { id: 13 }, { id: 14 }, { id: 15 }, { id: 16 }, { id: 17 }, { id: 18 }, { id: 19 }, { id: 20 },
+      { id: 21 }, { id: 22 }, { id: 23 }, { id: 24 }, { id: 25 }
+    ],
+    faixas: [
+      { min: 6, max: 25, rotulo: 'Triagem positiva', cor: 'laranja',
+        titulo: '<svg class=ico&#32;ico-risk2 aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore está <strong>no ponto de corte ou acima</strong> da versão brasileira: vale olhar com cuidado, junto com seu terapeuta, como o comportamento sexual vem afetando a sua vida. Isso não é um diagnóstico: é um sinal para avaliar.',
+        sugestao: 'Converse com seu terapeuta sobre este resultado. Ele vai avaliar com você o que está acontecendo e os próximos passos.' },
+      { min: 0, max: 5, rotulo: 'Abaixo do ponto de corte', cor: 'verde',
+        titulo: '<svg class=ico&#32;ico-pos aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
+        descricao: 'Seu escore está <strong>abaixo do ponto de corte</strong>: as respostas não indicam padrão de dependência de sexo.',
+        sugestao: 'Traga este resultado para a sessão: as respostas que você marcou dizem mais do que o número.' }
+    ],
+    faixasLista: [
+      '<strong>0-5</strong> — Abaixo do ponto de corte',
+      '<strong>6-25</strong> — Triagem positiva',
+      '<em style="color:var(--c-ink-3);">Corte 6 da validação brasileira (Silveira et al., 2000: sensibilidade 0,83, especificidade 0,75; alfa 0,89). Rastreamento — não substitui a avaliação clínica.</em>'
+    ]
+  },
+
+  'EPM': {
+    nomeCompleto: 'Escala de Processos de Mudança (EPM)',
+    nomeTraducao: 'Adaptação brasileira do Processes of Change Questionnaire (Prochaska, Velicer, DiClemente & Fava, 1988)',
+    ficha: { // 17.7: ficha da escala (Informações), conteúdo original do Code; referências conferidas em 21–22/11/2026
+      tags: [
+        'Drogas',
+        'Dependência',
+        'Motivação',
+        'Processo'
+      ],
+      descricao: 'Inventário de autorrelato com 20 itens que mede com que frequência a pessoa usa os dez processos de mudança do Modelo Transteórico para não usar drogas: cinco cognitivos ou experienciais (ampliação da consciência, alívio emocional, reavaliação do ambiente, deliberação social e autorreavaliação) e cinco comportamentais (autodeliberação, controle de estímulos, contracondicionamento, gerenciamento de reforço e relações de ajuda). É a versão breve do Processes of Change Questionnaire (Prochaska, Velicer, DiClemente & Fava, 1988), adaptada para usuários de drogas ilícitas na PUCRS (Szupszynski, 2012).',
+      tempo: '5 a 10 minutos.',
+      populacao: 'Adultos usuários de drogas ilícitas em tratamento ambulatorial ou internação (Szupszynski, 2012).',
+      usos: 'Formulação de caso e planejamento no Modelo Transteórico (que processos a pessoa já usa e quais faltam para o estágio em que está); monitoramento a cada reaplicação; leitura junto com a URICA, a EAAD e a ESTUD; pesquisa. Não é instrumento diagnóstico.',
+      interpretacao: [
+        '<em>Estrutura:</em> 20 itens, de 1 (nunca) a 5 (repetidamente), pensando na semana passada (folha oficial do GAAPCC); dois fatores pela soma: processos cognitivos (itens 3, 4, 5, 7, 8, 9, 12, 14, 15 e 20, de 10 a 50) e processos comportamentais (itens 1, 2, 6, 10, 11, 13, 16, 17, 18 e 19, de 10 a 50); total de 20 a 100. A versão brasileira manteve a composição original dos fatores (Szupszynski, 2012).',
+        '<em>Pontos de corte:</em> não há (Szupszynski, 2012). Leitura pelo perfil: processos cognitivos altos com comportamentais baixos sugerem contemplação; os dois altos, ação; os dois baixos, pré-contemplação (Prochaska & DiClemente, 1982).',
+        '<em>Confiabilidade brasileira:</em> alfa de Cronbach 0,78 no total, 0,72 nos processos comportamentais e 0,54 nos cognitivos; os dois fatores explicaram 29,9% da variância (KMO 0,81); correlação de 0,34 entre processos comportamentais e o estágio de ação da URICA (Szupszynski, 2012).',
+        '<em>Cuidados:</em> o fator cognitivo tem consistência baixa; ler os dois fatores em conjunto e junto com o estágio de mudança. A folha oficial chama o instrumento de Questionário de Processos de Mudança; a tese, de Escala de Processos de Mudança (EPM).'
+      ],
+      desenvolvedores: 'James O. Prochaska, Wayne F. Velicer, Carlo C. DiClemente e Joseph Fava (1988). Versão brasileira para usuários de drogas ilícitas: Karen Priscila Del Rio Szupszynski, sob orientação de Margareth da Silva Oliveira (GAAPCC, PUCRS), tese de doutorado de 2012; folha oficial no site do grupo.',
+      validacaoBr: 'Sim. Szupszynski (2012), Seção II da tese: tradução, retrotradução, comitê de três juízes (89% de concordância) e estudo-piloto com 10 pessoas; 328 usuários de drogas ilícitas em tratamento em Porto Alegre e região (93,6% homens; média de idade 30,1 anos; 81% internados); alfa 0,775 no total (0,786 padronizado), 0,721 nos processos comportamentais e 0,535 nos cognitivos; análise fatorial com dois fatores fixados, 29,9% da variância, KMO 0,811; validade convergente com a subescala Ação da URICA (r = 0,342). Os itens foram mantidos na estrutura original.',
+      referencias: [
+        'Grupo de Avaliação e Acompanhamento Psicológico em Contextos Clínicos. (s.d.). <em>Questionários</em> [folha oficial do Questionário de Processos de Mudança]. PUCRS. https://www.gaapcc.com/questionarios',
+        'Prochaska, J. O., & DiClemente, C. C. (1982). Transtheoretical therapy: Toward a more integrative model of change. <em>Psychotherapy: Theory, Research & Practice, 19</em>(3), 276–288. https://doi.org/10.1037/h0088437',
+        'Prochaska, J. O., Velicer, W. F., DiClemente, C. C., & Fava, J. (1988). Measuring processes of change: Applications to the cessation of smoking. <em>Journal of Consulting and Clinical Psychology, 56</em>(4), 520–528. https://doi.org/10.1037/0022-006X.56.4.520',
+        'Szupszynski, K. P. D. R. (2012). <em>Estudo dos processos de mudança em usuários de substâncias psicoativas ilícitas</em> [Tese de doutorado, Pontifícia Universidade Católica do Rio Grande do Sul]. Repositório PUCRS. https://repositorio.pucrs.br/dspace/handle/10923/4899',
+        'Szupszynski, K. P. D. R., Sartes, L. M. A., Andretta, I., & Oliveira, M. S. (2014). Processos de mudança cognitivos e comportamentais em usuários de crack em tratamento. <em>Revista Brasileira de Terapias Cognitivas, 10</em>(1), 11–18. https://doi.org/10.5935/1808-5687.20140003'
+      ]
+    },
+    nomeCurto: 'EPM',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-refresh></use></svg>',
+    corPrefix: 'urica',
+    instrumentoId: 'epm',
+    textoDaAba: true,
+    multiSubescalas: true,
+    multSub: 1,
+    valorMin: 1,
+    valorMax: 5,
+    subtitulo: '20 itens · 5 a 10 minutos · Pensando na <strong>semana passada</strong>: o que ajuda você a não usar drogas',
+    escoreMax: 50, // por fator (10 itens × 5); o total dos 20 (20–100) aparece como composto
+    itens: [
+      { id: 1, subescala: 'comportamentais' }, { id: 2, subescala: 'comportamentais' }, { id: 3, subescala: 'cognitivos' }, { id: 4, subescala: 'cognitivos' }, { id: 5, subescala: 'cognitivos' },
+      { id: 6, subescala: 'comportamentais' }, { id: 7, subescala: 'cognitivos' }, { id: 8, subescala: 'cognitivos' }, { id: 9, subescala: 'cognitivos' }, { id: 10, subescala: 'comportamentais' },
+      { id: 11, subescala: 'comportamentais' }, { id: 12, subescala: 'cognitivos' }, { id: 13, subescala: 'comportamentais' }, { id: 14, subescala: 'cognitivos' }, { id: 15, subescala: 'cognitivos' },
+      { id: 16, subescala: 'comportamentais' }, { id: 17, subescala: 'comportamentais' }, { id: 18, subescala: 'comportamentais' }, { id: 19, subescala: 'comportamentais' }, { id: 20, subescala: 'cognitivos' }
+    ],
+    subescalasMeta: {
+      cognitivos:      { sigla: 'Cog', tri: 'processo', nome: 'Processos cognitivos',      icone: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg>',   corPrefix: 'urica' },
+      comportamentais: { sigla: 'Com', tri: 'processo', nome: 'Processos comportamentais', icone: '<svg class=ico aria-hidden=true><use href=#i-pointer></use></svg>', corPrefix: 'urica' }
+    },
+    composto: { chave: 'total_processos', sigla: 'Total', nome: 'Total dos processos', legenda: 'soma dos 20 itens · de 20 a 100', mais: [], menos: [], somaItens: true, casas: 0 }, // 17.7: total pela soma
+    eduGeralTitulo: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg>' + ' Como ler',
+    eduGeralDesc: 'A EPM mede com que frequência, na semana passada, você usou pensamentos e ações que ajudam a não usar drogas. Os processos cognitivos (10 itens, de 10 a 50) são os de refletir, sentir e reavaliar; os comportamentais (10 itens, de 10 a 50) são os de agir: evitar gatilhos, substituir hábitos, buscar apoio. O total soma os 20 itens (20 a 100). Não há ponto de corte: o que importa é o perfil e como ele muda ao longo do tratamento.',
+    eduGeralSugestao: 'Traga este resultado para a sessão: o fator mais baixo mostra que tipo de estratégia ainda falta no seu plano.',
+    faixasLista: [
+      '<strong>Processos cognitivos 10-50</strong> — itens 3, 4, 5, 7, 8, 9, 12, 14, 15 e 20',
+      '<strong>Processos comportamentais 10-50</strong> — itens 1, 2, 6, 10, 11, 13, 16, 17, 18 e 19',
+      '<strong>Total 20-100</strong> — soma dos 20 itens',
+      '<em style="color:var(--c-ink-3);">Sem pontos de corte. Modelo transteórico (Prochaska & DiClemente, 1982; Prochaska et al., 1988); versão brasileira para usuários de drogas ilícitas (Szupszynski, 2012, PUCRS: alfa 0,78 no total). Leitura pelo perfil e pela evolução.</em>'
+    ]
+  },
+
+  'PIUQ-SF-9': {
+    nomeCompleto: 'Problematic Internet Use Questionnaire – Short Form-9 (PIUQ-SF-9)',
+    nomeTraducao: 'Questionário de Uso Problemático da Internet, forma curta de 9 itens',
+    ficha: { // 17.7: ficha da escala (Informações), conteúdo original do Code; referências conferidas em 21–22/11/2026
+      tags: [
+        'Internet',
+        'Dependência',
+        'Rastreamento',
+        'Mensuração'
+      ],
+      descricao: 'Questionário breve de rastreamento do uso problemático da internet, com 9 itens em três dimensões de três itens: obsessão (preocupação e sintomas de abstinência), negligência (de atividades e necessidades) e descontrole (dificuldade de controlar o uso). É a forma curta do PIUQ de 18 itens (Demetrovics, Szeredi & Rózsa, 2008; Koronczai et al., 2011).',
+      tempo: '3 a 5 minutos.',
+      populacao: 'Adultos a partir de 18 anos, população geral. No Brasil, 1.525 usuários de internet de 18 a 89 anos, recrutados on-line (Spritzer et al., 2021).',
+      usos: 'Rastreamento do risco de uso problemático da internet; hipóteses iniciais sobre perda de controle e prejuízos, sempre com entrevista; monitoramento ao longo do tempo; pesquisa. Não é instrumento diagnóstico.',
+      interpretacao: [
+        '<em>Estrutura:</em> 9 itens, de 1 (nunca) a 5 (sempre ou quase sempre), pensando nos últimos 6 meses e excluindo o uso para trabalho ou estudo; escore total de 9 a 45 pela soma. Dimensões: negligência (itens 1, 3 e 9), obsessão (5, 7 e 8) e descontrole (2, 4 e 6).',
+        '<em>Pontos de corte:</em> não há corte validado no Brasil; o estudo brasileiro produziu uma tabela normativa e recomenda ler pelo escore total, porque as três dimensões têm pouca confiabilidade própria depois de descontado o fator geral (Spritzer et al., 2021). O sistema mostra só o total.',
+        '<em>Confiabilidade brasileira:</em> alfa de Cronbach 0,91 no total (0,73 a 0,88 nas dimensões); ômega hierárquico 0,76 no fator geral; teste-reteste 0,73 em cerca de seis meses (Spritzer et al., 2021).',
+        '<em>Cuidados:</em> amostra de conveniência, com escolaridade alta; sem estudo em amostra clínica nem em adolescentes; uso intenso pode ser funcional (trabalho, estudo): o foco clínico é perda de controle, prejuízo e sofrimento.'
+      ],
+      desenvolvedores: 'Zsolt Demetrovics, Beatrix Szeredi e Sándor Rózsa (2008), Eötvös Loránd University, Hungria; forma curta de 9 itens por Koronczai et al. (2011). Uso livre com citação. Versão brasileira: Daniel Tornaim Spritzer, Wagner de Lara Machado, Mariana Boeira Yates e colaboradores (2021), Hospital de Clínicas de Porto Alegre.',
+      validacaoBr: 'Sim. Spritzer et al. (2021): tradução por seis tradutores, comitê de 15 especialistas, retrotradução avaliada pelos autores originais e pré-teste; 1.525 adultos (72,7% mulheres; média de idade 38,7 anos) e reteste em 237; modelo bifatorial (fator geral + obsessão, negligência e descontrole) com melhor ajuste (CFI 0,99, RMSEA 0,048); alfa 0,91; ômega hierárquico 0,76; CCI 0,73; validade de construto por modelo MIMIC (idade, tempo on-line, autopercepção de uso problemático e sintomas depressivos). Sem ponto de corte.',
+      referencias: [
+        'Demetrovics, Z., Szeredi, B., & Rózsa, S. (2008). The three-factor model of Internet addiction: The development of the Problematic Internet Use Questionnaire. <em>Behavior Research Methods, 40</em>(2), 563–574. https://doi.org/10.3758/brm.40.2.563',
+        'Koronczai, B., Urbán, R., Kökönyei, G., Paksi, B., Papp, K., Kun, B., Arnold, P., Kállai, J., & Demetrovics, Z. (2011). Confirmation of the three-factor model of problematic internet use on off-line adolescent and adult samples. <em>Cyberpsychology, Behavior, and Social Networking, 14</em>(11), 657–664. https://doi.org/10.1089/cyber.2010.0345',
+        'Spritzer, D. T., Machado, W. L., Yates, M. B., Astolfi, V. R., Laskoski, P., Pessi, C., Laconi, S., Kaliszewska-Czeremska, K., Demetrovics, Z., Király, O., Passos, I. C., & Hauck, S. (2021). Psychometric properties of the nine-item Problematic Internet Use Questionnaire in a Brazilian general population sample. <em>Frontiers in Psychiatry, 12</em>, 660186. https://doi.org/10.3389/fpsyt.2021.660186'
+      ]
+    },
+    nomeCurto: 'PIUQ-SF-9',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-monitor></use></svg>',
+    corPrefix: 'teal',
+    instrumentoId: 'piuq',
+    textoDaAba: true,
+    valorMin: 1,
+    valorMax: 5,
+    subtitulo: '9 itens · 3 a 5 minutos · Pensando nos <strong>últimos 6 meses</strong>, fora do uso para trabalho ou estudo',
+    escoreMax: 45,
+    itens: [
+      { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }, { id: 8 }, { id: 9 }
+    ],
+    eduGeralTitulo: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg>' + ' Como ler',
+    eduGeralDesc: 'O escore vai de 9 a 45: quanto maior, mais sinais de uso problemático da internet (preocupação e abstinência, negligência de atividades, dificuldade de controlar o uso). Não há ponto de corte validado no Brasil: a leitura é pela comparação com você mesmo ao longo do tempo.',
+    eduGeralSugestao: 'Traga este resultado para a sessão e comente em que situações o uso sai do controle.',
+    faixasLista: [
+      '<strong>9-45</strong> — soma dos 9 itens; quanto maior, mais uso problemático',
+      '<strong>Dimensões</strong> — negligência (itens 1, 3 e 9), obsessão (5, 7 e 8) e descontrole (2, 4 e 6); o estudo brasileiro recomenda ler pelo total',
+      '<em style="color:var(--c-ink-3);">Sem ponto de corte (Spritzer et al., 2021: modelo bifatorial, alfa 0,91, reteste 0,73). Rastreamento — não é instrumento diagnóstico.</em>'
+    ]
+  },
+
+  'SAS-LV': {
+    nomeCompleto: 'Smartphone Addiction Scale – Long Version (SAS-LV)',
+    nomeTraducao: 'Escala de Dependência de Smartphone, versão longa',
+    ficha: { // 17.7: ficha da escala (Informações), conteúdo original do Code; referências conferidas em 21–22/11/2026
+      tags: [
+        'Smartphone',
+        'Dependência',
+        'Rastreamento',
+        'Mensuração'
+      ],
+      descricao: 'Escala de autorrelato com 33 afirmações sobre o uso do smartphone, de 1 (discordo totalmente) a 6 (concordo totalmente), que mede o uso problemático pelos componentes típicos das adições comportamentais: perturbação da vida diária, antecipação positiva, abstinência, relações orientadas ao ciberespaço, uso excessivo e tolerância (Kwon et al., 2013).',
+      tempo: 'Cerca de 10 minutos.',
+      populacao: 'Adultos da população geral. No Brasil, universitários (504; média 21,7 anos) e adultos (578; média 37,8 anos) (Andrade et al., 2020).',
+      usos: 'Rastreamento do uso problemático de smartphone, para indicar avaliação complementar; linha de base e monitoramento descritivo; pesquisa. Não é instrumento diagnóstico.',
+      interpretacao: [
+        '<em>Estrutura:</em> 33 itens, de 1 a 6, sem itens invertidos; escore total de 33 a 198 pela soma (Kwon et al., 2013). O sistema mostra o total e a média por item (1 a 6).',
+        '<em>Pontos de corte:</em> não há, nem no estudo original nem no brasileiro (Kwon et al., 2013; Andrade et al., 2020). A leitura é pela evolução do próprio paciente.',
+        '<em>Fatores:</em> o original tem seis fatores (Kwon et al., 2013); a versão brasileira encontrou cinco por análise de componentes principais, com 55,2% da variância, e manteve os 33 itens (Andrade et al., 2020). O sistema mostra só o total: a composição dos cinco fatores por item não foi lida no artigo brasileiro, que não está em acesso aberto, e por isso não entrou.',
+        '<em>Cuidados:</em> a análise fatorial confirmatória da versão brasileira não teve ajuste adequado; sem teste-reteste nem convergência no estudo brasileiro; uso alto pode ser funcional: o foco é perda de controle, prejuízo e sofrimento.'
+      ],
+      desenvolvedores: 'Min Kwon e colaboradores (2013), Catholic University of Korea. Uso livre com citação. Versão brasileira: André Luiz Monezi Andrade e colaboradores (2020), PUC-Campinas e Universidade Federal de São Paulo.',
+      validacaoBr: 'Sim. Andrade, Kim, Scatena, Enes, Enumo e De Micheli (2020): adaptação transcultural com comitê de especialistas; 504 universitários e 578 adultos; análise fatorial confirmatória sem ajuste adequado, análise de componentes principais com cinco fatores (55,2% da variância) e análise de rede; todos os itens mantidos (cargas acima de 0,3); alfa 0,93. Dados do resumo e da ficha do artigo; o texto integral é de acesso restrito e não foi lido.',
+      referencias: [
+        'Andrade, A. L. M., Kim, D.-J., Scatena, A., Enes, C. C., Enumo, S. R. F., & De Micheli, D. (2020). Validity and reliability of the Brazilian version of the Smartphone Addiction Scale-Long Version (SAS-LV). <em>Trends in Psychology, 29</em>(2), 302–319. https://doi.org/10.1007/s43076-020-00046-y',
+        'Kwon, M., Lee, J.-Y., Won, W.-Y., Park, J.-W., Min, J.-A., Hahn, C., Gu, X., Choi, J.-H., & Kim, D.-J. (2013). Development and validation of a Smartphone Addiction Scale (SAS). <em>PLoS ONE, 8</em>(2), e56936. https://doi.org/10.1371/journal.pone.0056936',
+        'Lin, Y.-H., Chiang, C.-L., Lin, P.-H., Chang, L.-R., Ko, C.-H., Lee, Y.-H., & Lin, S.-H. (2016). Proposed diagnostic criteria for smartphone addiction. <em>PLoS ONE, 11</em>(11), e0163010. https://doi.org/10.1371/journal.pone.0163010'
+      ]
+    },
+    nomeCurto: 'SAS-LV',
+    emoji: '<svg class=ico aria-hidden=true><use href=#i-phone></use></svg>',
+    corPrefix: 'purple',
+    instrumentoId: 'saslv',
+    textoDaAba: true,
+    valorMin: 1,
+    valorMax: 6,
+    mediaPor: 33, // 17.7: lida também pela média dos 33 itens (1–6); o total (33–198) é o que se grava
+    subtitulo: '33 itens · cerca de 10 minutos · Sobre <strong>como você usa o celular</strong>',
+    escoreMax: 198,
+    itens: [
+      { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }, { id: 8 }, { id: 9 }, { id: 10 },
+      { id: 11 }, { id: 12 }, { id: 13 }, { id: 14 }, { id: 15 }, { id: 16 }, { id: 17 }, { id: 18 }, { id: 19 }, { id: 20 },
+      { id: 21 }, { id: 22 }, { id: 23 }, { id: 24 }, { id: 25 }, { id: 26 }, { id: 27 }, { id: 28 }, { id: 29 }, { id: 30 },
+      { id: 31 }, { id: 32 }, { id: 33 }
+    ],
+    eduGeralTitulo: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg>' + ' Como ler',
+    eduGeralDesc: 'A escala vai de 33 a 198 (média de 1 a 6): quanto maior, mais o uso do celular se parece com uma dependência (atrapalha o dia a dia, alivia tensão, gera inquietação quando falta, toma mais tempo do que você queria). Não há ponto de corte: a leitura é pela comparação com você mesmo ao longo do tempo.',
+    eduGeralSugestao: 'Traga este resultado para a sessão e comente em que momentos o celular toma mais espaço do que você gostaria.',
+    faixasLista: [
+      '<strong>33-198</strong> (média 1-6) — soma dos 33 itens; quanto maior, mais uso problemático',
+      '<em style="color:var(--c-ink-3);">Sem pontos de corte (Kwon et al., 2013; Andrade et al., 2020: alfa 0,93). A versão brasileira tem cinco fatores; a composição por item não foi lida (artigo de acesso restrito) e o sistema mostra só o total. Rastreamento — não é instrumento diagnóstico.</em>'
+    ]
   }
 
-  // Módulo 4: 5 escalas do 12.x + BDI-II e BAI (17.0) + BHS e BSS (17.1) + as quatro URICA (17.2) + lote A (17.3) + lote B (17.5) + lote E (17.6)
+  // Módulo 4: 5 escalas do 12.x + BDI-II e BAI (17.0) + BHS e BSS (17.1) + as quatro URICA (17.2) + lote A (17.3) + lote B (17.5) + lote E (17.6) + lote F (17.7)
 };
 
 // ============================================================
@@ -19134,6 +19485,7 @@ function escCalcularEscoreEAlerta(codigoEscala, respostas) {
       def.composto.mais.forEach(k => { valor += (subescalasSomas[k] || 0) / nItens[k]; });
       def.composto.menos.forEach(k => { valor -= (subescalasSomas[k] || 0) / nItens[k]; });
       if (def.composto.mediaItens) valor = escoreTotal / def.itens.filter(i => !i.naoPontua).length; // 17.6: EAAD/ESTUD = média dos itens
+      if (def.composto.somaItens) valor = escoreTotal; // 17.7: EPM = soma dos 20 itens (20–100)
       if (def.composto.dividir) valor = valor / def.composto.dividir; // 17.5: SCS = média das seis médias
       const fator = Math.pow(10, def.composto.casas || 0);
       composto = { chave: def.composto.chave, sigla: def.composto.sigla, nome: def.composto.nome, valor: Math.round(valor * fator) / fator };
@@ -20110,7 +20462,8 @@ var ESC_HIST_STATE = {
 var ESC_HIST_ORDEM = ['PHQ-9', 'GAD-7', 'PSS-10', 'DASS-21', 'SRQ-20', 'BDI-II', 'BAI', 'BHS', 'BSS', 'URICA-A', 'URICA-D', 'URICA-T', 'URICA-HA', // 17.1: + BHS e BSS; 17.2: + URICA
   'PCL-5', 'PSWQ', 'EAR', 'AAQ-II', 'SWLS', 'MAAS', 'WBSI', // 17.3: lote A da HumanTrack
   'PANAS', 'SPIN', 'OCI-R', 'ASRS-18', 'SCS', // 17.5: lote B
-  'AUDIT', 'FTND', 'G-SAS', 'EAAD', 'ESTUD']; // 17.6: lote E
+  'AUDIT', 'FTND', 'G-SAS', 'EAAD', 'ESTUD', // 17.6: lote E
+  'DUDIT', 'SAST', 'EPM', 'PIUQ-SF-9', 'SAS-LV']; // 17.7: lote F
 
 function escHistInvalidarCache() {
   ESC_HIST_STATE.invalidado = true;
