@@ -6884,7 +6884,10 @@ function _ageEventos_(ctx, pacs, agora) {
   });
   ctx.pedidos.forEach(function (p) {
     var x = ctx.sessoes.filter(function (y) { return y.id === p.sessao_id; })[0];
-    if (x) ev(p.tipo === 'repor' ? 'repor' : 'remarcar', x, p.criado_em);
+    if (!x) return;
+    // remarcacao: o evento mostra o horario PEDIDO (depois de aprovado, a sessao ja esta nele e a data antiga nao existe mais)
+    if (p.tipo === 'repor') ev('repor', x, p.criado_em);
+    else ev('remarcar', { sigla: x.sigla, data: p.data, hora_inicio: p.hora }, p.criado_em);
   });
   return lista.sort(function (a, b) { return a.em < b.em ? 1 : (a.em > b.em ? -1 : 0); }).slice(0, 60);
 }

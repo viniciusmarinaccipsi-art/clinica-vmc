@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda completa: sessões, repetição, remarcar, cancelar, bloqueio, situação e reposição na Agenda do profissional; Minhas sessões no paciente; avisos de sessão desligados por padrão; resultado das escalas do 19.0.1, lembretes do 19.2.3 e login do 18.12 dentro (40 escalas, todas com ficha) — Pacote 14.3 (22/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: confirmação de presença por link, sino com os últimos eventos, lembretes de 48 e 24 horas, cartão "Avisar o paciente" com e-mail na hora e WhatsApp, atualização automática; presencial em lilás e on-line em verde (40 escalas, todas com ficha) — Pacote 14.4 (22/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -4232,9 +4232,23 @@ button.cab-no-item{cursor:pointer;}
 .cal-ev .cal-ev-nome{font-weight:700;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;}
 /* Pacote 14.3 — Agenda completa: sessões reais na grade, bloqueio, feriado, painel da consulta, pedidos e Minhas sessões */
 .cal-dia-col{cursor:pointer;}
-.cal-ev-presencial,.cal-ev-online{border:0;border-left:4px solid var(--c-pos);width:calc(100% - 6px);text-align:left;color:var(--c-ink);font-family:var(--f-text);display:block;z-index:3;}
-.cal-ev-presencial{background:var(--cal-ev-verde);}
-.cal-ev-online{background:var(--cal-ev-lilas);border-left-color:var(--c-dass21-ink);}
+.cal-ev-presencial,.cal-ev-online{border:0;border-left:4px solid var(--c-dass21-ink);width:calc(100% - 6px);text-align:left;color:var(--c-ink);font-family:var(--f-text);display:block;z-index:3;}
+.cal-ev-presencial{background:var(--cal-ev-lilas);} /* 14.4: presencial em lilás, on-line em verde (decisão do usuário, 22/11/2026) */
+.cal-ev-online{background:var(--cal-ev-verde);border-left-color:var(--c-pos);}
+/* Pacote 14.4 — sino da Agenda e cartão "Avisar o paciente" */
+.cal-sino{position:relative;}
+.cal-sino-num{position:absolute;top:2px;right:2px;min-width:18px;height:18px;padding:0 4px;border-radius:var(--r-chip);background:var(--c-risk);color:var(--c-ink-inv);font:var(--t-label);line-height:18px;text-align:center;}
+.cal-sino-painel{background:var(--c-surface);border:1px solid var(--c-line);border-radius:var(--r-card);box-shadow:var(--sh-2);padding:14px 16px;margin:0 0 12px;text-align:left;}
+.cal-sino-topo{display:flex;align-items:center;justify-content:space-between;gap:var(--s-2);flex-wrap:wrap;margin-bottom:var(--s-2);}
+.cal-sino-topo h3{font:600 16px/1.3 var(--f-title);color:var(--c-ink);margin:0;}
+.age-evs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--s-2);max-height:320px;overflow-y:auto;}
+.age-ev{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px var(--s-2);align-items:start;font:var(--t-body);color:var(--c-ink);padding:8px 10px;border:1px solid var(--c-line);border-radius:var(--r-field);background:var(--c-surface);}
+.age-ev .ico{color:var(--c-pos);margin-top:2px;}
+.age-ev-cancelou .ico{color:var(--c-risk);}
+.age-ev-novo{border-left:4px solid var(--c-action);}
+.age-ev-quando{grid-column:2;font:var(--t-body-sm);color:var(--c-ink-3);}
+.age-aviso-acoes{display:flex;gap:var(--s-2);flex-wrap:wrap;margin-top:var(--s-3);}
+.age-aviso-estado{font:var(--t-body);color:var(--c-ink-2);margin:0 0 var(--s-2);}
 .cal-ev-realizada{opacity:.72;}
 .cal-ev-falta{border-left-color:var(--c-risk);}
 .cal-ev .cal-ev-hora,.cal-ev .cal-ev-nome{display:block;}
@@ -4349,6 +4363,7 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
   <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
   <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></symbol>
   <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></symbol>
   <symbol id="i-video" viewBox="0 0 24 24"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-3v10l-6-3z"/></symbol>
   <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M4 4l16 16"/></symbol>
@@ -4629,8 +4644,11 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
     <div class="gra-topo">
       <button class="gra-voltar" onclick="abrirSecao('sec-prof-dashboard')">← Voltar</button>
       <h2 class="gra-titulo"><svg class="ico" aria-hidden="true"><use href="#i-calendar"/></svg> Agenda</h2>
-      <button class="cal-btn" style="margin-left:auto;" onclick="graAbrirTela()"><svg class="ico" aria-hidden="true"><use href="#i-settings"/></svg> Grade de Atendimento</button>
+      <!-- Pacote 14.4: sino com os últimos eventos dos pacientes (confirmou, agendou, cancelou, pediu) -->
+      <button class="cal-btn cal-sino" id="calSino" type="button" style="margin-left:auto;" aria-label="Últimos eventos" aria-expanded="false" onclick="ageSinoAlternar_()"><svg class="ico" aria-hidden="true"><use href="#i-bell"/></svg><span class="cal-sino-num hidden" id="calSinoNum"></span></button>
+      <button class="cal-btn" onclick="graAbrirTela()"><svg class="ico" aria-hidden="true"><use href="#i-settings"/></svg> Grade de Atendimento</button>
     </div>
+    <div class="cal-sino-painel hidden" id="calSinoPainel"></div>
 
     <div class="cal-vazio-aviso" id="calAvisoGrade" style="display:none;">
       Você ainda não definiu seus horários de atendimento.
@@ -4653,15 +4671,15 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <div class="cal-legenda">
           <b>Legenda</b>
           <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-disp);border:1px solid var(--c-action);"></span> Horário aberto p/ atendimento</div>
-          <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-ev-verde);border:1px solid var(--c-pos);"></span> Sessão presencial</div>
-          <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-ev-lilas);border:1px solid var(--c-dass21-ink);"></span> Sessão on-line</div>
+          <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-ev-lilas);border:1px solid var(--c-dass21-ink);"></span> Sessão presencial</div>
+          <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-ev-verde);border:1px solid var(--c-pos);"></span> Sessão on-line</div>
           <div class="cal-leg-item"><span><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg></span> Confirmada pelo paciente</div>
           <div class="cal-leg-item"><span><svg class="ico" aria-hidden="true"><use href="#i-repeat"/></svg></span> Série</div>
           <div class="cal-leg-item"><span class="cal-ev-marca">Reposição</span></div>
           <div class="cal-leg-item"><span><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg></span> Bloqueado</div>
           <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--c-warn-tint);border:1px solid var(--c-warn);"></span> Feriado</div>
-          <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-ev-verde);border:1px solid var(--c-pos);opacity:.72;"></span> Consulta realizada</div>
-          <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-ev-verde);border:1px solid var(--c-risk);border-left-width:4px;"></span> Não compareceu</div>
+          <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-ev-lilas);border:1px solid var(--c-dass21-ink);opacity:.72;"></span> Consulta realizada</div>
+          <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-ev-lilas);border:1px solid var(--c-risk);border-left-width:4px;"></span> Não compareceu</div>
         </div>
       </div>
       <div class="cal-main">
@@ -8354,6 +8372,7 @@ var VMC_ACOES_GRAVACAO = [
   'profSalvarLembrete', 'profEncerrarLembrete', 'profLembrarAgora', // 19.2.1
   'profSalvarSessao', 'profEditarSerie', 'profCancelarSessao', 'profMarcarSituacao', 'profSalvarBloqueio', 'profApagarBloqueio', 'profDecidirPedido', // 14.3
   'pacienteAgendarSessao', 'pacienteConfirmarSessao', 'pacienteCancelarSessao', 'pacientePedirAgenda', // 14.3
+  'confirmarSessaoPorLink', 'profMarcarEventosVistos', 'profAvisarSessao', // 14.4
   'profDesativarPaciente', 'profReativarPaciente', 'profExcluirPaciente', 'profAlterarSenhaPaciente',
   'admCadastrarProfissional', 'admAtualizarProfissional', 'admTrocarSenhaProfissional',
   'admDesativarProfissional', 'admReativarProfissional',
@@ -8361,7 +8380,7 @@ var VMC_ACOES_GRAVACAO = [
   'definirSenha', 'profEnviarConvite', 'admEnviarConvite', 'pedirRedefinicao'
 ];
 // Pacote 18.1: as únicas ações sem crachá de sessão; todas as outras levam `token` (chamarServidor).
-var VMC_ACOES_PUBLICAS = ['ping', 'autenticar', 'pedirRedefinicao', 'definirSenha'];
+var VMC_ACOES_PUBLICAS = ['ping', 'autenticar', 'pedirRedefinicao', 'definirSenha', 'confirmarSessaoPorLink']; // 14.4: o link de confirmação da sessão
 // Pacote 16.4.3: leituras pesadas do profissional. Medido no Playwright (Chrome, aba
 // visível) em 23/09/2026 — números no relatório do pacote. São as únicas leituras que
 // varrem mais de uma planilha, e as únicas que perdem a repetição automática.
@@ -9923,7 +9942,7 @@ function profRenderInicio_() {
   var ativos = pacientes.filter(function(p){ return String(p.ativo||'Sim').trim().toLowerCase() !== 'nao'; });
 
   // 19.2.1: Lembretes de hoje e Atrasados entre os alertas e as atualizações
-  container.innerHTML = atalhos + profRenderAlertas_(ativos) + profRenderPedidos_(ativos) + profRenderLembretesHoje_(ativos) + profRenderAtrasados_(ativos) + profRenderAtualizacoes_(ativos);
+  container.innerHTML = atalhos + profRenderAlertas_(ativos) + profRenderPedidos_(ativos) + profRenderEventosAgenda_(ativos) + profRenderLembretesHoje_(ativos) + profRenderAtrasados_(ativos) + profRenderAtualizacoes_(ativos);
 }
 
 function profSemPacientesHtml_() {
@@ -14019,9 +14038,15 @@ window.addEventListener('DOMContentLoaded', () => {
     limparSessao();
     loginAbrirAtivacao(ativar);
   }
+  // Pacote 14.4: link de confirmação de presença (e-mail e WhatsApp) — o token sai da URL na hora
+  const confirmar = new URLSearchParams(location.search).get('confirmar');
+  if (confirmar) history.replaceState(null, '', location.pathname);
   const paciente = carregarSessao();
   if (ativar) {
     // a tela "Crie sua senha" já foi aberta
+  } else if (confirmar) {
+    abrirSecao('sec-login');
+    ageConfirmarPorLink_(confirmar);
   } else if (paciente && paciente.token) {
     atualizarBadgeUsuario();
     atualizarMenuConformeSessao();
@@ -23356,7 +23381,7 @@ function calMiniNavegar(direcao) {
 var AGE = { agenda: null, carregando: false, p: null, vista: '', sim: null, ocupado: false };
 var AGE_DIAS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 var AGE_DIAS_CURTOS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']; // ordem da Grade: 1 = segunda ... 7 = domingo
-var AGE_AVISOS = [['confirmacao', 'Confirmação do agendamento'], ['lembrete', 'Lembrete 24 horas antes'], ['cancelamento', 'Aviso de cancelamento']];
+var AGE_AVISOS = [['confirmacao', 'Confirmação do agendamento'], ['lembrete48', 'Lembrete 48 horas antes'], ['lembrete', 'Lembrete 24 horas antes'], ['cancelamento', 'Aviso de mudança ou cancelamento']]; // 14.4
 
 /* ---------- datas e formatos ---------- */
 function ageIso_(d) { var p = function (n) { return ('0' + n).slice(-2); }; return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); }
@@ -23388,14 +23413,14 @@ function ageDentro_() {
   var seg = calSegundaDaSemana_(calDataRef), fim = new Date(seg); fim.setDate(seg.getDate() + 6);
   return ageIso_(seg) >= AGE.agenda.de && ageIso_(fim) <= AGE.agenda.ate;
 }
-async function ageCarregar_(forcar) {
+async function ageCarregar_(forcar, quieto) {
   if (!PROF_SESSAO || AGE.carregando || (!forcar && ageDentro_())) return;
   var geracao = VMC_GERACAO_SESSAO;
   AGE.carregando = true;
   var r = await chamarServidor('profLerAgenda', agePeriodo_());
   AGE.carregando = false;
   if (geracao !== VMC_GERACAO_SESSAO) return;
-  if (!r || !r.ok) { ageMsg_((r && r.erro) || 'Não foi possível ler a agenda agora.', true); return; }
+  if (!r || !r.ok) { if (!quieto) ageMsg_((r && r.erro) || 'Não foi possível ler a agenda agora.', true); return; }
   ageAplicar_({ agenda: r });
 }
 /* A agenda que veio numa resposta passa a ser a da tela; os pedidos da lista do Início acompanham */
@@ -23406,8 +23431,13 @@ function ageAplicar_(resp) {
   var porSigla = {};
   (resp.agenda.pedidos || []).forEach(function (p) { (porSigla[p.sigla] = porSigla[p.sigla] || []).push(p); });
   PROF_LISTA.forEach(function (p) { p.pedidos_agenda = porSigla[p.sigla] || []; });
+  var evPorSigla = {}; // 14.4
+  (resp.agenda.eventos || []).forEach(function (e) { (evPorSigla[e.sigla] = evPorSigla[e.sigla] || []).push(e); });
+  PROF_LISTA.forEach(function (p) { p.eventos_agenda = evPorSigla[p.sigla] || []; });
+  AGE.lidoEm = Date.now();
   if (document.getElementById('calGrid')) calRender();
   agePedidosRender_();
+  ageSinoRender_();
   profRenderInicio_();
 }
 function ageMsg_(texto, erro, linkHtml) {
@@ -23518,10 +23548,11 @@ function ageWhatsLink_(tipo, s, anterior) {
   var artigo = (PROF_SESSAO && PROF_SESSAO.genero === 'F') ? 'a' : 'o';
   var pac = iniPrimeiroNome(s.nome);
   var quando = ageDiaNome_(s.data, true) + ', ' + lemDataBR_(s.data, true) + ', às ' + s.hora + ' (' + ageModNome_(s.modalidade) + ')';
-  var corpo = tipo === 'lembrete' ? 'Lembrete da nossa sessão: ' + quando + '.'
+  var confirmar = ' Para confirmar a presença, toque aqui: ' + (s.link_confirmar || VMC_SITE_URL); // 14.4
+  var corpo = tipo === 'lembrete' ? 'Lembrete da nossa sessão: ' + quando + '.' + confirmar
     : (tipo === 'cancelamento' ? 'A sessão de ' + lemDataBR_(s.data, true) + ' às ' + s.hora + ' foi cancelada. Para marcar outra data: ' + VMC_SITE_URL
     : (tipo === 'remarcacao' ? 'Nossa sessão passou de ' + lemDataBR_(anterior.data, true) + ' às ' + anterior.hora + ' para ' + lemDataBR_(s.data, true) + ' às ' + s.hora + ' (' + ageModNome_(s.modalidade) + ').'
-    : 'Sua sessão está marcada para ' + quando + '. Você pode confirmar a presença no COGNIATIVO: ' + VMC_SITE_URL));
+    : 'Sua sessão está marcada para ' + quando + '.' + confirmar));
   var msg = 'Olá' + (pac ? ', ' + pac : '') + '! ' + (quem ? 'Aqui é ' + artigo + ' ' + quem + '. ' : '') + corpo;
   return 'https://wa.me/55' + String(s.telefone || '').replace(/\D/g, '') + '?text=' + encodeURIComponent(msg);
 }
@@ -23534,7 +23565,7 @@ function ageWhatsBotao_(tipo, s, anterior) {
 function agePainelNovo_(iso, hora) {
   var cfg = (AGE.agenda && AGE.agenda.config) || {};
   return { modo: 'novo', aba: 'consulta', id: vmcNovoIdEnvio_(), sigla: '', nome: '', busca: '', data: iso, hora: hora, dur: cfg.duracao_slot_min || 60,
-    modalidade: 'presencial', valor: '', notas: '', avisos: { confirmacao: true, lembrete: true, cancelamento: true }, repLigada: false, rep: null,
+    modalidade: 'presencial', valor: '', notas: '', avisos: { confirmacao: true, lembrete48: true, lembrete: true, cancelamento: true }, repLigada: false, rep: null,
     reposicao_de: '', sessao: null, escopo: 'esta', erro: '',
     bloq: { id: vmcNovoIdEnvio_(), existente: false, data_inicio: iso, hora_inicio: hora, data_fim: iso, hora_fim: ageHora_(Math.min(ageMin_(hora) + 60, 1439)), dia_todo: false, nome: '' },
     canc: { quem: 'profissional', escopo: 'esta', avisar: true } };
@@ -23559,7 +23590,7 @@ function ageAbrirSessao_(id) {
   var p = agePainelNovo_(s.data, s.hora);
   p.modo = 'editar'; p.id = s.id; p.sigla = s.sigla; p.nome = s.nome; p.dur = s.duracao_min; p.modalidade = s.modalidade;
   p.valor = s.valor || ''; p.notas = s.notas || ''; p.sessao = s;
-  p.avisos = { confirmacao: s.avisos.indexOf('confirmacao') !== -1, lembrete: s.avisos.indexOf('lembrete') !== -1, cancelamento: s.avisos.indexOf('cancelamento') !== -1 };
+  p.avisos = {}; AGE_AVISOS.forEach(function (a) { p.avisos[a[0]] = s.avisos.indexOf(a[0]) !== -1; });
   p.repLigada = !!s.serie_id;
   p.rep = (s.serie_id && AGE.agenda.series[s.serie_id]) ? JSON.parse(JSON.stringify(AGE.agenda.series[s.serie_id])) : null;
   p.canc.avisar = p.avisos.cancelamento;
@@ -23589,7 +23620,8 @@ function ageFecharDeVez_() {
 function ageFechar() {
   if (!AGE.p) return;
   if (AGE.vista === 'painel') { ageLer_(); if (ageFoto_(AGE.p) !== AGE.p.foto) { AGE.vista = 'sair'; ageRender_(); return; } }
-  else if (AGE.vista !== 'sair') { AGE.vista = 'painel'; ageRender_(); return; }
+  else if (AGE.vista !== 'sair' && AGE.vista !== 'avisar') { AGE.vista = 'painel'; ageRender_(); return; }
+  if (AGE.vista === 'avisar' && AGE.p.aviso) ageMsg_(AGE.p.aviso.msg, false, AGE.p.aviso.repor ? '<button type="button" class="prof-lem-btn" id="ageBtnReporCancelada" onclick="ageReporCancelada_()">Criar reposição</button>' : '');
   ageFecharDeVez_();
 }
 document.addEventListener('keydown', function (e) {
@@ -23667,6 +23699,7 @@ function ageRender_() {
   if (!p) return;
   var titulo = document.getElementById('ageTitulo'), corpo = document.getElementById('ageCorpo'), acoes = document.getElementById('ageAcoes');
   var erro = '<div class="prof-cad-erro" id="ageErro" role="alert"></div>';
+  if (AGE.vista === 'avisar') { ageRenderAvisar_(titulo, corpo, acoes); return; }
   if (AGE.vista === 'sair') {
     titulo.textContent = 'Sair sem salvar?';
     corpo.innerHTML = '<p class="age-texto">As alterações desta consulta serão perdidas.</p>';
@@ -23738,7 +23771,7 @@ function ageRender_() {
     }).join('') + '</fieldset>' +
     ((s && s.serie_id) ? ageCampo_('Alterar', '<select id="ageEscopo"><option value="esta">Só esta consulta</option><option value="seguintes">Esta consulta e as seguintes</option></select>', 'ageEscopo') : '') +
     '<div id="ageAvisosBox"></div>' + erro +
-    ((s && s.estado === 'agendada' && ageMinutosAte_(s.data, s.hora) > 0) ? '<div class="age-whats">' + ageWhatsBotao_(ageMinutosAte_(s.data, s.hora) <= 2880 ? 'lembrete' : 'confirmacao', s) + '</div>' : '');
+    ((s && s.estado === 'agendada' && ageMinutosAte_(s.data, s.hora) > 0) ? '<div class="age-whats age-aviso-acoes"><button type="button" class="prof-lem-btn" id="ageBtnEmailAgora" onclick="ageEmailAgora_()">Enviar e-mail agora</button>' + ageWhatsBotao_(ageMinutosAte_(s.data, s.hora) <= 2880 ? 'lembrete' : 'confirmacao', s) + '</div><p class="age-dica hidden" id="ageEmailEstado" role="status"></p>' : '');
   document.getElementById('ageData').value = p.data; document.getElementById('ageHoraCampo').value = p.hora;
   document.getElementById('ageMod').value = p.modalidade; document.getElementById('ageDur').value = p.dur;
   document.getElementById('ageValor').value = p.valor; document.getElementById('ageNotas').value = p.notas;
@@ -23871,9 +23904,12 @@ async function ageCriarSerie_() {
   if (!r.ok) { ageErro_(r.erro || 'Não foi possível salvar agora.'); return; }
   var puladas = (r.simulacao && r.simulacao.puladas) || [];
   var n = p.modo === 'editar' ? ((r.simulacao && r.simulacao.datas.length) || 0) : r.criadas;
-  ageFecharDeVez_();
   ageAplicar_(r);
-  ageMsg_(n + ' sessões criadas.' + (puladas.length ? ' Puladas: ' + ageListaDatas_(puladas) + '.' : ''));
+  var msgSerie = n + ' sessões criadas.' + (puladas.length ? ' Puladas: ' + ageListaDatas_(puladas) + '.' : '');
+  var primeira = p.modo === 'editar' ? null : CAL_SESSOES.filter(function (x) { return x.id === p.id; })[0];
+  if (primeira && r.aviso !== undefined) { ageAbrirAviso_({ tipo: 'confirmacao', sessao: primeira, estado: r.aviso, msg: msgSerie }); return; }
+  ageFecharDeVez_();
+  ageMsg_(msgSerie);
 }
 
 /* ---------- salvar a consulta ---------- */
@@ -23894,11 +23930,15 @@ async function ageSalvar_() {
   if (!r.ok) { ageErro_(r.erro || 'Não foi possível salvar agora.'); return; }
   var antes = p.sessao ? { data: p.sessao.data, hora: p.sessao.hora } : null;
   var nova = { nome: p.nome, telefone: p.sessao ? p.sessao.telefone : ((PROF_LISTA.filter(function (x) { return x.sigla === p.sigla; })[0] || {}).telefone || ''), data: p.data, hora: p.hora, modalidade: p.modalidade };
-  ageFecharDeVez_();
   ageAplicar_(r);
-  var link = (r.remarcada && antes && (antes.data !== nova.data || antes.hora !== nova.hora) && nova.telefone) ? ageWhatsBotao_('remarcacao', nova, antes) : '';
   var extra = (r.nao_alteradas && r.nao_alteradas.length) ? ' Puladas: ' + ageListaDatas_(r.nao_alteradas) + '.' : '';
-  ageMsg_((p.modo === 'novo' ? 'Consulta criada.' : 'Consulta salva.') + extra, false, link);
+  var msg = (p.modo === 'novo' ? 'Consulta criada.' : 'Consulta salva.') + extra;
+  var mudou = !!(r.remarcada && antes && (antes.data !== nova.data || antes.hora !== nova.hora));
+  var gravada = CAL_SESSOES.filter(function (x) { return x.id === p.id; })[0] || Object.assign({ id: p.id }, nova);
+  // 14.4: criou ou mudou data e hora — cartão "Avisar o paciente" (estado do e-mail + e-mail na hora + WhatsApp)
+  if (r.aviso !== undefined && (p.modo === 'novo' || mudou)) { ageAbrirAviso_({ tipo: mudou ? 'remarcacao' : 'confirmacao', sessao: gravada, anterior: mudou ? antes : null, estado: r.aviso, msg: msg }); return; }
+  ageFecharDeVez_();
+  ageMsg_(msg);
 }
 /* Situação grava na hora (a marca aparece no bloco); o painel continua aberto para repor a falta */
 async function ageSituacao_() {
@@ -23951,12 +23991,9 @@ async function ageCancelar_() {
   var r = await chamarServidor('profCancelarSessao', { id: p.id, opcoes: p.canc, periodo: agePeriodo_() });
   ageOcupar_(false);
   if (!r.ok) { ageErro_(r.erro || 'Não foi possível salvar agora.'); return; }
-  ageFecharDeVez_();
   ageAplicar_(r);
   AGE.cobradaCancelada = cobrada ? s : null;
-  var link = (s.telefone ? ageWhatsBotao_('cancelamento', s) : '') +
-    (cobrada ? ' <button type="button" class="prof-lem-btn" id="ageBtnReporCancelada" onclick="ageReporCancelada_()">Criar reposição</button>' : '');
-  ageMsg_(r.canceladas > 1 ? r.canceladas + ' consultas canceladas.' : 'Consulta cancelada.', false, link);
+  ageAbrirAviso_({ tipo: 'cancelamento', sessao: s, estado: r.aviso, msg: r.canceladas > 1 ? r.canceladas + ' consultas canceladas.' : 'Consulta cancelada.', repor: cobrada });
 }
 function ageReporCancelada_() { if (AGE.cobradaCancelada) { ageMsg_(''); ageAbrirReposicao_(AGE.cobradaCancelada); } }
 
@@ -24137,6 +24174,152 @@ function sesEnviar_() {
   } else {
     sesEnviarAcao_('pacientePedirAgenda', { dados: { id: SES.idEnvio, tipo: SES.vista === 'repor' ? 'repor' : 'remarcar', sessao_id: SES.alvo, data: e.data, hora: e.hora } },
       'Pedido enviado. Você será avisado quando for respondido.');
+  }
+}
+
+
+/* ============================================================
+   PACOTE 14.4 — confirmação por link, sino, cartão "Avisar o paciente", atualização automática
+   Textos aprovados pelo usuário em 22/11/2026.
+   ============================================================ */
+
+/* ---------- cartão "Avisar o paciente" (depois de criar, mudar ou cancelar) ---------- */
+function ageAvisoEstadoTexto_(estado, hora) {
+  if (estado === '') return 'E-mail enviado às ' + hora + '.';
+  if (estado === 'desligado') return 'E-mail não enviado: avisos desligados na Grade de Atendimento.';
+  if (estado === 'sem_email') return 'E-mail não enviado: sem e-mail no cadastro.';
+  if (estado === 'caixa') return 'E-mail não enviado: a caixa deste aviso está desmarcada.';
+  if (estado === 'cota') return 'Limite de e-mails de hoje atingido.';
+  return 'E-mail não enviado.';
+}
+function ageAbrirAviso_(aviso) {
+  aviso.hora = (AGE.agenda && AGE.agenda.agora_hora) || '';
+  AGE.p = { modo: 'aviso', aviso: aviso };
+  AGE.vista = 'avisar'; AGE.sim = null;
+  document.getElementById('ageModal').classList.add('show');
+  ageRender_();
+}
+function ageRenderAvisar_(titulo, corpo, acoes) {
+  var a = AGE.p.aviso, s = a.sessao;
+  titulo.textContent = 'Avisar o paciente';
+  corpo.innerHTML = '<p class="age-texto" id="ageAvisoMsg">' + esc(a.msg) + '</p>' +
+    '<p class="age-texto"><strong>' + esc(s.nome) + '</strong> · ' + esc(ageQuandoCurto_(s.data, s.hora)) + '</p>' +
+    '<p class="age-aviso-estado" id="ageAvisoEstado" role="status">' + esc(ageAvisoEstadoTexto_(a.estado, a.hora)) + '</p>' +
+    '<div class="age-aviso-acoes"><button type="button" class="prof-lem-btn" id="ageBtnEmailAgora" onclick="ageEmailAgora_()">Enviar e-mail agora</button>' +
+    ageWhatsBotao_(a.tipo, s, a.anterior) +
+    (a.repor ? '<button type="button" class="prof-lem-btn" id="ageBtnReporCartao" onclick="ageReporCancelada_()">Criar reposição</button>' : '') + '</div>';
+  acoes.innerHTML = ageBtn_('Fechar', 'ageFechar()', true, 'ageBtnOk');
+}
+/* "Enviar e-mail agora": vale no cartão de aviso e dentro da consulta aberta; funciona com a chave geral desligada */
+async function ageEmailAgora_() {
+  var p = AGE.p, btn = document.getElementById('ageBtnEmailAgora');
+  if (!p || AGE.ocupado) return;
+  var noCartao = p.modo === 'aviso';
+  var s = noCartao ? p.aviso.sessao : p.sessao;
+  var dados = noCartao ? { tipo: p.aviso.tipo, anterior: p.aviso.anterior || null }
+    : { tipo: ageMinutosAte_(s.data, s.hora) <= 2880 ? 'lembrete' : 'confirmacao' };
+  AGE.ocupado = true; if (btn) btn.disabled = true;
+  var r = await chamarServidor('profAvisarSessao', { id: s.id, dados: dados });
+  AGE.ocupado = false; if (btn) btn.disabled = false;
+  var texto = !r.ok ? (r.erro || 'Não foi possível enviar agora.')
+    : (r.enviado ? 'E-mail enviado.' : (r.motivo === 'sem_email' ? 'Sem e-mail no cadastro.' : (r.motivo === 'cota' ? 'Limite de e-mails de hoje atingido.' : 'E-mail não enviado.')));
+  var el = document.getElementById(noCartao ? 'ageAvisoEstado' : 'ageEmailEstado');
+  if (el) { el.textContent = texto; el.classList.remove('hidden'); }
+}
+
+/* ---------- sino: últimos eventos dos pacientes ---------- */
+function ageHaQuanto_(em) {
+  var m = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})/.exec(String(em || ''));
+  if (!m) return '';
+  var min = Math.round((Date.now() - new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]).getTime()) / 60000);
+  if (min < 60) return 'agora há pouco';
+  if (min < 1440) { var h = Math.floor(min / 60); return 'há ' + h + (h === 1 ? ' hora' : ' horas'); }
+  var d = Math.floor(min / 1440);
+  return 'há ' + d + (d === 1 ? ' dia' : ' dias');
+}
+function ageEventoTexto_(e) {
+  var quando = esc(lemDataBR_(e.data, true)) + ' às ' + esc(e.hora);
+  var nome = '<strong>' + esc(e.nome) + '</strong>';
+  if (e.tipo === 'confirmou') return nome + ' confirmou a sessão de ' + quando + '.';
+  if (e.tipo === 'agendou') return nome + ' agendou uma sessão para ' + quando + '.';
+  if (e.tipo === 'cancelou') return nome + ' cancelou a sessão de ' + quando + '.';
+  if (e.tipo === 'repor') return nome + ' pediu reposição da sessão de ' + esc(lemDataBR_(e.data, true)) + '.';
+  return nome + ' pediu remarcação para ' + quando + '.';
+}
+function ageEventosHtml_(eventos, vistosAte) {
+  return eventos.map(function (e) {
+    var novo = vistosAte !== null && e.em > vistosAte;
+    return '<li class="age-ev' + (e.tipo === 'cancelou' ? ' age-ev-cancelou' : '') + (novo ? ' age-ev-novo' : '') + '" data-evento="' + e.tipo + '">' +
+      '<svg class="ico" aria-hidden="true"><use href="#' + (e.tipo === 'cancelou' ? 'i-x' : 'i-check') + '"/></svg><span>' + ageEventoTexto_(e) + '</span>' +
+      '<span class="age-ev-quando">' + esc(ageHaQuanto_(e.em)) + '</span></li>';
+  }).join('');
+}
+function ageSinoRender_() {
+  var num = document.getElementById('calSinoNum'), painel = document.getElementById('calSinoPainel');
+  if (!num || !painel) return;
+  var eventos = (AGE.agenda && AGE.agenda.eventos) || [], vistos = (AGE.agenda && AGE.agenda.eventos_vistos_ate) || '';
+  var novos = eventos.filter(function (e) { return e.em > vistos; }).length;
+  num.textContent = novos > 9 ? '9+' : String(novos);
+  num.classList.toggle('hidden', novos === 0);
+  painel.innerHTML = '<div class="cal-sino-topo"><h3>Últimos eventos</h3>' +
+    (novos ? '<button type="button" class="prof-lem-btn" id="calSinoVistos" onclick="ageSinoVistos_()">Marcar como vistos</button>' : '') + '</div>' +
+    (eventos.length ? '<ul class="age-evs" id="calSinoLista">' + ageEventosHtml_(eventos, vistos) + '</ul>' : '<p class="prof-bloco-vazio">Nenhum evento nos últimos 30 dias.</p>');
+}
+function ageSinoAlternar_() {
+  var painel = document.getElementById('calSinoPainel'), btn = document.getElementById('calSino');
+  var abrir = painel.classList.contains('hidden');
+  painel.classList.toggle('hidden', !abrir);
+  btn.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+}
+async function ageSinoVistos_() {
+  if (AGE.ocupado) return;
+  AGE.ocupado = true;
+  var r = await chamarServidor('profMarcarEventosVistos', { periodo: agePeriodo_() });
+  AGE.ocupado = false;
+  if (r && r.ok) ageAplicar_(r);
+}
+/* Bloco do Início do profissional: os eventos vêm na lista do login (eventos_agenda de cada paciente) */
+function profRenderEventosAgenda_(ativos) {
+  var eventos = [];
+  ativos.forEach(function (p) { (p.eventos_agenda || []).forEach(function (e) { eventos.push(Object.assign({}, e, { nome: e.nome && e.nome !== e.sigla ? e.nome : (p.nome_completo || p.sigla) })); }); });
+  eventos.sort(function (a, b) { return a.em < b.em ? 1 : (a.em > b.em ? -1 : 0); });
+  return '<section class="prof-bloco" id="profBlocoEventosAgenda"><h3 class="prof-bloco-titulo">Atualizações da agenda</h3>' +
+    (eventos.length ? '<ul class="age-evs">' + ageEventosHtml_(eventos.slice(0, 8), null) + '</ul>' : '<p class="prof-bloco-vazio">Nenhum evento nos últimos 30 dias.</p>') + '</section>';
+}
+
+/* ---------- atualização automática: ao voltar para a aba e, com a Agenda aberta, a cada 2 minutos ---------- */
+function ageAtualizarSozinha_(motivo) {
+  if (document.visibilityState !== 'visible') return;
+  var ativa = secaoAtivaId();
+  if (PROF_SESSAO) {
+    if (AGE.p || AGE.carregando || (ativa !== 'sec-prof-agenda-cal' && ativa !== 'sec-prof-dashboard')) return;
+    if (motivo === 'relogio' && ativa !== 'sec-prof-agenda-cal') return;
+    if (AGE.lidoEm && Date.now() - AGE.lidoEm < 60000) return;
+    if (!calDataRef) { calDataRef = new Date(); calDataRef.setHours(0, 0, 0, 0); }
+    ageCarregar_(true, true);
+  } else if (ativa === 'sec-sessoes' && SES.vista === 'lista' && !SES.ocupado) {
+    sesCarregar_();
+  }
+}
+document.addEventListener('visibilitychange', function () { ageAtualizarSozinha_('retorno'); });
+setInterval(function () { ageAtualizarSozinha_('relogio'); }, 120000);
+
+/* ---------- página do link de confirmação (?confirmar=) ---------- */
+async function ageConfirmarPorLink_(token) {
+  loginMostrar('invalido');
+  var titulo = document.getElementById('loginTitulo'), texto = document.getElementById('loginAvisoTexto'), link = document.getElementById('loginAvisoLink');
+  titulo.textContent = 'Confirmação de presença';
+  texto.textContent = 'Aguarde…';
+  link.textContent = 'Entrar no COGNIATIVO';
+  link.onclick = function () { location.href = location.pathname; };
+  var r = await chamarServidor('confirmarSessaoPorLink', { t: token });
+  if (r && r.ok) {
+    titulo.textContent = 'Presença confirmada';
+    texto.textContent = r.ja_confirmada ? 'Esta sessão já estava confirmada.'
+      : 'Sua sessão de ' + ageDiaNome_(r.data, true) + ', ' + lemDataBR_(r.data, true) + ' às ' + r.hora + ' está confirmada.';
+  } else {
+    titulo.textContent = 'Link inválido';
+    texto.textContent = 'Este link não vale mais. Entre no COGNIATIVO para ver suas sessões.';
   }
 }
 
