@@ -7934,6 +7934,33 @@ function rodarMonitorAgora() {
   return monitorarPing_();
 }
 
+// ---------- Pacote 14.5: Google Calendar (acesso pela API REST com o token do proprio script; escopo `calendar` no manifesto) ----------
+
+/** Chamada a API do Google Calendar. Devolve { codigo, corpo } — nunca lanca: quem chama decide o que fazer com a falha. */
+function _calApi_(metodo, caminho, corpo) {
+  try {
+    var opcoes = { method: metodo, headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }, muteHttpExceptions: true };
+    if (corpo !== undefined && corpo !== null) { opcoes.contentType = 'application/json'; opcoes.payload = JSON.stringify(corpo); }
+    var r = UrlFetchApp.fetch('https://www.googleapis.com/calendar/v3' + caminho, opcoes);
+    var texto = r.getContentText(), dados = null;
+    try { dados = texto ? JSON.parse(texto) : null; } catch (e) { dados = null; }
+    return { codigo: r.getResponseCode(), corpo: dados };
+  } catch (e) {
+    console.error('calendar: ' + String(e && e.message || e).slice(0, 160));
+    return { codigo: 0, corpo: null };
+  }
+}
+
+/**
+ * O script consegue falar com o Google Calendar do dono? E a funcao que se roda no editor para dar a
+ * autorizacao (Executar -> Revisar permissoes -> Permitir) e a que a Grade usa para dizer "Conectado".
+ * Devolve so { ok, codigo, agendas } — nenhum nome de agenda.
+ */
+function autorizarGoogleCalendar() {
+  var r = _calApi_('get', '/users/me/calendarList?maxResults=250&fields=items(id)');
+  return { ok: r.codigo === 200, codigo: r.codigo, agendas: (r.corpo && r.corpo.items) ? r.corpo.items.length : 0 };
+}
+
 /** 19.2.1: roda o gatilho dos lembretes a mao (clasp --user run run-function rodarLembretesAgora). Devolve so contagens. */
 function rodarLembretesAgora() {
   return enviarLembretes_();
