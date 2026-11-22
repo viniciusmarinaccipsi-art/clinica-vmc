@@ -270,7 +270,7 @@ tenta('C', () => {
   ok('C10 reenvio da mesma edição não duplica o histórico', linhasHist(H).length === antes + 1);
   const fonteLF = FONTE.replace(/\r\n/g, '\n');
   const acoes = (fonteLF.match(/^ *case '[A-Za-z0-9_]+':/gm) || []).length;
-  ok('C11 nenhuma ação de leitura nova do histórico: 67 ações no doPost (44 + as 4 do 18.8.1 + profLiberarEscala do 17.1.2 + as 4 do 19.2.1 + as 14 do 14.3); o histórico só é citado por quem grava', acoes === 67 && (fonteLF.match(/_historicoDaAnamnese_\(/g) || []).length === 2 && (fonteLF.match(/ABA_ANAMNESE_HISTORICO/g) || []).length === 3, acoes);
+  ok('C11 nenhuma ação de leitura nova do histórico: 70 ações no doPost (44 + as 4 do 18.8.1 + profLiberarEscala do 17.1.2 + as 4 do 19.2.1 + as 14 do 14.3 + as 3 do 14.4); o histórico só é citado por quem grava', acoes === 70 && (fonteLF.match(/_historicoDaAnamnese_\(/g) || []).length === 2 && (fonteLF.match(/ABA_ANAMNESE_HISTORICO/g) || []).length === 3, acoes);
   ok('C12 as três ações que gravam a anamnese estão na trava', ['salvarAnamnese', 'pacienteAtualizarAnamnese', 'profSalvarAnamnese'].every(a => ACOES_COM_TRAVA.indexOf(a) !== -1));
 });
 

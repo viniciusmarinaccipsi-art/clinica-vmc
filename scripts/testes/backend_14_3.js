@@ -344,9 +344,10 @@ tenta('Q', () => {
 console.log('V. Avisos e gatilho');
 tenta('V', () => {
   ok('V1 com a chave desligada, nada do que foi feito até aqui mandou e-mail', h.EMAILS.length === 0, h.EMAILS.map(e => e.subject));
-  irPara(2026, 11, 25, 14, 0);
+  irPara(2026, 11, 24, 9, 0); // 14.4: a sessão nasce a mais de 48 h (dentro do prazo, o lembrete é dispensado)
   const idL = uuid();
   sessao(P1, { id: idL, data: '2026-11-26', hora: '10:00' });
+  irPara(2026, 11, 25, 14, 0);
   let r = gatilho(quando(2026, 11, 25, 14, 30));
   ok('V2 gatilho com a chave desligada: a sessão que vence é contada como desligada e nenhum e-mail sai', r.sessoes && r.sessoes.desligados === 1 && r.sessoes.enviados === 0 && h.EMAILS.length === 0 && cel('Sessoes', idL, 'ultimo_aviso_em') === '', r.sessoes);
   r = prof('profSalvarGrade', { config: { duracao_slot_min: 60, antecedencia_min_horas: 24, avisos_sessao: 'Sim' }, grade: gradeSemana });
@@ -424,7 +425,7 @@ tenta('T', () => {
   ok('T3 sem crachá nenhuma ação da agenda responde', grava.concat(le).every(a => h.post({ acao: a, token: 'cracha-inventado', dados: {} }).ok === false));
   ok('T4 crachá de paciente não usa ação de profissional; crachá de profissional não usa ação de paciente', pac(P1, 'profLerAgenda', PER).ok === false && pac(P1, 'profSalvarSessao', { dados: { id: uuid(), sigla: P1, data: '2026-12-22', hora: '10:00' } }).ok === false && pac(P1, 'profCancelarSessao', { id: idA }).ok === false && prof('lerMinhasSessoes').ok === false && prof('pacienteAgendarSessao', { dados: { id: uuid(), data: '2026-12-22', hora: '10:00' } }).ok === false);
   ok('T5 o gatilho dos lembretes chama o das sessões dentro de try/catch e o invólucro continua o mesmo', /r\.sessoes = enviarAvisosSessao_\(quando\);/.test(fonteJs) && /function enviarAvisosSessao_\(/.test(fonteJs) && /function rodarLembretesAgora\(/.test(fonteJs));
-  ok('T6 VERSAO_PACOTE = 14.3', S('VERSAO_PACOTE') === '14.3', S('VERSAO_PACOTE'));
+  ok('T6 VERSAO_PACOTE do 14.3 em diante', /^14\.[3-9]/.test(S('VERSAO_PACOTE')), S('VERSAO_PACOTE'));
   const inesperados = logServidor.filter(l => !/^trava de gravacao: nao obtida/.test(l));
   ok('T7 o servidor não registrou nenhum erro além da trava ocupada provocada', inesperados.length === 0, inesperados.slice(0, 5));
 });
