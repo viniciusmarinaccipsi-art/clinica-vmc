@@ -14,7 +14,7 @@ Vinicius Marinacci, psicólogo clínico; não é programador, mas opera agentes 
 
 ## Como abrir
 
-PowerShell → `cd "C:\Users\cardi\Meu Drive\clinica-vmc\repo-github"` → `claude`. O caminho vai **entre aspas** por causa do espaço em "Meu Drive". A entrega do Design fica ao lado, em `..\VMC-offline\`; os prompts dos pacotes E3 e 18.x ficam em `..\prompts_18\` (Drive, fora do repositório, por decisão de 30/09 — registro da Fase 18); o método e os moldes das escalas ficam em `..\VMC-offline\METODO_INSERCAO_ESCALAS.md` e `..\scripts_escalas\`.
+Abrir o Code na pasta **`C:\Users\cardi\Meu Drive\clinica-vmc`** (app do Claude, aba Code; ou PowerShell → `cd "C:\Users\cardi\Meu Drive\clinica-vmc"` → `claude`; o caminho vai **entre aspas** por causa do espaço em "Meu Drive"). É nessa pasta que a memória do Code carrega, e o `CLAUDE.md` dela importa este arquivo; aberto direto em `repo-github\`, o Code usa outra pasta de memória, quase vazia (conferido em 22/11/2026). Git, `clasp` e scripts rodam aqui em `repo-github\`; os caminhos `..\` deste arquivo são relativos a esta pasta. A entrega do Design fica ao lado, em `..\VMC-offline\`; os prompts dos pacotes E3 e 18.x ficam em `..\prompts_18\` (Drive, fora do repositório, por decisão de 30/09 — registro da Fase 18); o método e os moldes das escalas ficam em `..\VMC-offline\METODO_INSERCAO_ESCALAS.md` e `..\scripts_escalas\`.
 
 ## Esta pasta
 
