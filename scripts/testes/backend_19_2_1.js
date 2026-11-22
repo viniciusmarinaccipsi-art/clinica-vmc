@@ -260,7 +260,7 @@ tenta('E', () => {
   h.EMAILS.length = 0;
   r = gatilho(quando(2026, 12, 10, 9, 30));
   ok('E16 item encerrado não manda mais e-mail (o de P3 continua)', r.enviados === 1 && h.EMAILS.length === 1 && h.EMAILS[0].to === 'p3@exemplo.test', r);
-  ok('E17 o resumo do gatilho só tem contagens (nenhuma sigla, nenhum e-mail)', Object.keys(r).every(k => typeof r[k] === 'number' || typeof r[k] === 'boolean' || k === 'data' || k === 'hora') && JSON.stringify(r).indexOf('@') === -1);
+  ok('E17 o resumo do gatilho só tem contagens (nenhuma sigla, nenhum e-mail)', Object.keys(r).every(k => typeof r[k] === 'number' || typeof r[k] === 'boolean' || k === 'data' || k === 'hora' || (k === 'sessoes' && Object.keys(r.sessoes).every(q => typeof r.sessoes[q] === 'number'))) && JSON.stringify(r).indexOf('@') === -1);
   ok('E18 o invólucro rodarLembretesAgora existe e roda o mesmo gatilho', (() => { h.memo(); const x = S('rodarLembretesAgora')(); return x.ok === true && typeof x.enviados === 'number'; })());
 });
 
@@ -368,7 +368,7 @@ tenta('T', () => {
   ok('T2 com a trava ocupada o item não é gravado e a resposta é "ocupado"', r.ok === false && r.codigo === 'ocupado' && abaLem().getLastRow() === linhas, r);
   ok('T3 sem crachá nenhuma das quatro ações responde; crachá de paciente não grava plano', ['profSalvarLembrete', 'profEncerrarLembrete', 'profLembrarAgora', 'lerMeusLembretes'].every(a => h.post({ acao: a, token: 'cracha-inventado', siglaPaciente: P1 }).ok === false) && pac(P1, 'profSalvarLembrete', { siglaPaciente: P1, dados: { id: uuid(), tipo: 'auto', recorrencia: 'uma_vez', data_inicio: '2026-12-20', hora: '10:00' } }).ok === false && abaLem().getLastRow() === linhas);
   ok('T4 o gatilho, o invólucro e a remoção do gatilho existem; instalarGatilhos cria o de hora em hora', /function enviarLembretes_\(/.test(fonteJs) && /function rodarLembretesAgora\(/.test(fonteJs) && /function removerGatilhoLembretes\(/.test(fonteJs) && /newTrigger\('enviarLembretes_'\)\s*\.timeBased\(\)\s*\.everyHours\(1\)/.test(fonteJs));
-  ok('T5 VERSAO_PACOTE do 19.2.1 em diante, ou pacote de escalas publicado depois dele (17.8+; o número exato é conferido em backend_16_11.js)', /^(19\.2\.[1-9]\d*|19\.[3-9]|[2-9]\d\.|17\.([89]|\d{2}))/.test(S('VERSAO_PACOTE')), S('VERSAO_PACOTE')); // 17.8: as séries 17.x (escalas) e 19.x (profissional) alternam no deploy
+  ok('T5 VERSAO_PACOTE do 19.2.1 em diante, ou pacote de escalas publicado depois dele (17.8+; o número exato é conferido em backend_16_11.js)', /^(19\.2\.[1-9]\d*|19\.[3-9]|[2-9]\d\.|17\.([89]|\d{2})|14\.[3-9])/.test(S('VERSAO_PACOTE')), S('VERSAO_PACOTE')); // 17.8: as séries 17.x (escalas) e 19.x (profissional) alternam no deploy
   const inesperados = logServidor.filter(l => !/^_enviarEmail_: servico fora/.test(l) && !/^trava de gravacao: nao obtida/.test(l));
   ok('T6 o servidor não registrou nenhum erro além dos dois provocados (envio que falha, trava ocupada)', inesperados.length === 0, inesperados.slice(0, 5));
 });
