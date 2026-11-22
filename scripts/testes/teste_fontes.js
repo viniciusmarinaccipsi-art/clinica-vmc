@@ -23,7 +23,7 @@ const noCodigo = Object.keys(codigo).sort(), noJson = Object.keys(json.escalas |
 ok('as mesmas escalas no código e no json (' + noCodigo.length + ')', igual(noCodigo, noJson), { soCodigo: noCodigo.filter(c => noJson.indexOf(c) < 0), soJson: noJson.filter(c => noCodigo.indexOf(c) < 0) });
 
 console.log('1. Estrutura escala a escala');
-const CAMPOS = ['itens', 'valor_min', 'valor_max', 'ancoras', 'reversos', 'nao_pontua', 'itens_com_letra', 'criticos', 'condicionais', 'subescalas', 'siglas_subescalas', 'subescala_media_casas', 'multiplicador_subescala', 'composto', 'item_funcional', 'faixas_subescalas', 'escore_max'];
+const CAMPOS = ['itens', 'valor_min', 'valor_max', 'ancoras', 'reversos', 'nao_pontua', 'itens_com_letra', 'criticos', 'condicionais', 'subescalas', 'siglas_subescalas', 'subescala_media_casas', 'multiplicador_subescala', 'composto', 'estagios', 'item_funcional', 'faixas_subescalas', 'escore_max'];
 noCodigo.forEach(cod => {
   const c = codigo[cod], j = json.escalas[cod];
   if (!j) return;
@@ -31,7 +31,7 @@ noCodigo.forEach(cod => {
   ok(cod + ' · estrutura igual (' + CAMPOS.length + ' campos)', !dif.length, { campos: dif, codigo: dif.map(k => c.estrutura[k]), json: dif.map(k => (j.estrutura || {})[k]) });
   const fxC = c.estrutura.faixas, fxJ = (j.faixas || []).map(f => ({ min: f.min, max: f.max, rotulo: f.rotulo }));
   ok(cod + ' · faixas iguais (' + fxC.length + ')', igual(fxC, fxJ), { codigo: fxC, json: fxJ });
-  if (!fxC.length && !c.estrutura.faixas_subescalas) ok(cod + ' · sem faixa: registro "sem_corte" com o que a fonte diz', j.corte && j.corte.status === 'sem_corte' && !!j.corte.fonte_diz, j.corte);
+  if (!fxC.length && !c.estrutura.faixas_subescalas) ok(cod + ' · sem faixa: registro "sem_corte" com o que a fonte diz', j.corte && j.corte.status === (c.estrutura.estagios ? 'regra_de_estagio' : 'sem_corte') && !!j.corte.fonte_diz, j.corte);
   // pesos por item: o json pode saber mais que o código (vem da carga); o código não pode contradizer o json
   if (j.estrutura && j.estrutura.ancoras_por_item) {
     const fora = Object.keys(j.estrutura.ancoras_por_item).filter(i => j.estrutura.ancoras_por_item[i].some(v => v < c.estrutura.valor_min || v > c.estrutura.valor_max));

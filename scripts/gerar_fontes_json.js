@@ -38,7 +38,7 @@ Object.keys(est).forEach(cod => {
     return Object.assign({}, f, { fonte: (velha && velha.fonte) || FONTE_VAZIA() });
   });
   const estrutura = Object.assign({}, x.estrutura); delete estrutura.faixas;
-  const blocos = ['ancoras'].concat(estrutura.ancoras_por_item ? ['ancoras_por_item'] : [], estrutura.reversos ? ['reversos'] : [], estrutura.subescalas ? ['subescalas'] : [], estrutura.composto ? ['composto'] : [], estrutura.faixas_subescalas ? ['faixas_subescalas'] : []);
+  const blocos = ['ancoras'].concat(estrutura.ancoras_por_item ? ['ancoras_por_item'] : [], estrutura.reversos ? ['reversos'] : [], estrutura.subescalas ? ['subescalas'] : [], estrutura.composto ? ['composto'] : [], estrutura.faixas_subescalas ? ['faixas_subescalas'] : [], estrutura.estagios ? ['estagios'] : []);
   const fontesEstrutura = {};
   blocos.forEach(b => { fontesEstrutura[b] = fonteAnterior(cod, b) || FONTE_VAZIA(); });
   const entrada = {
@@ -47,7 +47,10 @@ Object.keys(est).forEach(cod => {
     fontes_estrutura: fontesEstrutura,
     faixas
   };
-  if (!faixas.length && !estrutura.faixas_subescalas) {
+  if (estrutura.estagios) {
+    // 19.0.1: sem faixa no escore, mas com regra de estágio — o que a fonte diz é sempre a nota atual do catálogo
+    entrada.corte = { status: 'regra_de_estagio', fonte_diz: x.nota_faixas || null };
+  } else if (!faixas.length && !estrutura.faixas_subescalas) {
     entrada.corte = { status: 'sem_corte', fonte_diz: (a.corte && a.corte.fonte_diz) || x.nota_faixas || null };
   } else if (x.nota_faixas) entrada.nota_faixas = x.nota_faixas;
   if (x.comentario_codigo) entrada.comentario_codigo = x.comentario_codigo;
