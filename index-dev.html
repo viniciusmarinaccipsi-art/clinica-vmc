@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — lote C da HumanTrack (processos transdiagnósticos e resultado): CFQ-7, DERS, PTCI, CORE-OM e BIS-11 (40 escalas, todas com ficha; fontes com página) — Pacote 17.8 (22/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Painel das Escalas: o gráfico de cada escala respondida, na tela do paciente e na do profissional (40 escalas, todas com ficha) — Pacote 19.0 (22/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -2835,6 +2835,24 @@ button.cab-no-item{cursor:pointer;}
 .esc-card-title{font-family:var(--f-title);font-size:15px;font-weight:700;margin-bottom:3px;}
 .esc-card-trad{font:var(--t-label);font-weight:500;color:var(--c-ink-3);margin:-2px 0 4px;padding-right:90px;} /* 17.3.2: tradução do nome original */
 .esc-nome-trad{display:block;font:var(--t-label);font-weight:500;color:var(--c-ink-3);margin-top:2px;} /* 17.3.2: tradução abaixo do título (cabeçalho, resultado, histórico, cartão do profissional) */
+/* ===== Pacote 19.0 — Painel das Escalas (cartão por escala; título e subtítulo usam .pev-bloco-titulo/.pev-bloco-sub) ===== */
+.escp-paciente{font:var(--t-body-sm);font-weight:600;color:var(--c-ink-2);margin:0 0 12px;overflow-wrap:anywhere;}
+.escp-cartao{background:var(--c-surface);border-radius:14px;padding:18px 18px 14px;margin-bottom:14px;box-shadow:var(--sh-1);border-left:4px solid var(--c-action);min-width:0;}
+.escp-graf{margin-top:14px;}
+.escp-graf-titulo{font:var(--t-label);font-weight:600;color:var(--c-ink-2);margin-bottom:6px;}
+.escp-canvas{position:relative;height:210px;}
+.escp-legenda{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;}
+.escp-leg{display:inline-flex;align-items:center;gap:6px;font:var(--t-label);color:var(--c-ink-2);}
+.escp-amostra{position:relative;flex:none;width:14px;height:14px;border-radius:3px;border:1px solid var(--c-line);overflow:hidden;}
+.escp-amostra::after{content:'';position:absolute;inset:0;}
+.escp-amostra.verde{background:var(--c-pos-tint);}
+.escp-amostra.amarelo,.escp-amostra.laranja{background:var(--c-warn-tint);}
+.escp-amostra.laranja::after{background:var(--c-warn);opacity:.25;}
+.escp-amostra.vermelho{background:var(--c-risk-tint);}
+.escp-amostra.vermelho::after{background:var(--c-risk);opacity:.22;}
+.escp-amostra.cinza{background:var(--c-line);}
+.escp-traco{flex:none;width:28px;height:10px;fill:none;stroke:currentColor;stroke-width:2.5;}
+.escp-nota{font:var(--t-label);color:var(--c-ink-3);margin-top:8px;}
 .esc-card-desc{font:var(--t-body-sm);color:var(--c-ink-3);line-height:1.5;padding-right:90px;}
 .esc-card-meta{font:var(--t-body-sm);color:var(--c-ink-3);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;}
 .esc-card-meta span{background:var(--c-surface-sub);padding:2px 8px;border-radius:10px;}
@@ -7711,6 +7729,14 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <span class="esc-card-arrow">›</span>
       </button>
 
+      <!-- Pacote 19.0: Painel das Escalas (gráficos), ao lado do histórico (lista) -->
+      <button class="esc-card blue" id="escCardPainel" type="button" style="margin-top:8px;" onclick="escAbrirPainel()">
+        <span class="esc-card-icon"><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg></span>
+        <div class="esc-card-title">Painel das Escalas</div>
+        <div class="esc-card-desc">Veja em gráficos como seus resultados mudaram ao longo do tempo</div>
+        <span class="esc-card-arrow">›</span>
+      </button>
+
     </div>
   </div>
 
@@ -7725,6 +7751,11 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
     </div>
 
     <div id="eschConteudo"></div>
+  </div>
+
+  <!-- Pacote 19.0 — PAINEL DAS ESCALAS: a mesma tela para o paciente e para o profissional (escPainelRenderizar) -->
+  <div class="section" id="sec-escalas-painel" data-barra-titulo="Painel das Escalas" data-barra-voltar="escPainelVoltar()" data-barra-voltar-rotulo="Voltar">
+    <div id="escpConteudo"></div>
   </div>
 
   <!-- ============================================================ -->
@@ -7907,7 +7938,8 @@ function vmcTok(nome) {
 }
 if (window.matchMedia) {
   // 18.7 (C8): com o Painel de Evolução na tela, trocar o tema redesenha os gráficos com as cores novas
-  try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () { VMC_TOK_CACHE = {}; if (typeof pevRenderizar === 'function' && secaoAtivaId() === 'sec-auto-painel' && document.getElementById('pevChartHumor')) pevRenderizar(); }); } catch (e) {}
+  try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () { VMC_TOK_CACHE = {}; if (typeof pevRenderizar === 'function' && secaoAtivaId() === 'sec-auto-painel' && document.getElementById('pevChartHumor')) pevRenderizar();
+    if (typeof escPainelRenderizar === 'function' && secaoAtivaId() === 'sec-escalas-painel') escPainelRenderizar(); /* 19.0 */ }); } catch (e) {}
 }
 /* ============================================================
    SISTEMA CLÍNICO DIGITAL — v2
@@ -8461,7 +8493,7 @@ function loadingMensagem(txt) {
 // Função nova usada num desses atributos entra aqui.
 function vmcAcaoDaBarra_(codigo) {
   var acoes = { abrirSecao: abrirSecao, menuSalvarESair: menuSalvarESair, etapaSalvarESair: etapaSalvarESair,
-    autoVoltarEditarRevisar: autoVoltarEditarRevisar, escCancelarAplicacao: escCancelarAplicacao, voltarMenuAnamnese: voltarMenuAnamnese };
+    autoVoltarEditarRevisar: autoVoltarEditarRevisar, escCancelarAplicacao: escCancelarAplicacao, voltarMenuAnamnese: voltarMenuAnamnese, escPainelVoltar: escPainelVoltar };
   var m = /^([A-Za-z_$][\w$]*)\((?:'([^']*)')?\)$/.exec(String(codigo || '').trim());
   if (!m || !Object.prototype.hasOwnProperty.call(acoes, m[1])) { console.error('Ação da barra fora da lista: ' + codigo); return; }
   if (m[2] === undefined) acoes[m[1]](); else acoes[m[1]](m[2]);
@@ -10520,7 +10552,7 @@ function profRenderPaciente_(sigla, resp) {
   html += '<span class="prof-pv-mod-chevron">›</span>';
   html += '</div>';
   html += '<div class="prof-pv-mod-body" id="profModEscBody">';
-  html += '<div class="prof-acoes-mod"><button class="prof-btn-acao" type="button" onclick="profNovaEscala()"><svg class=ico aria-hidden=true><use href=#i-plus-circle></use></svg> Nova escala</button></div>'; // 18.5
+  html += '<div class="prof-acoes-mod"><button class="prof-btn-acao" type="button" onclick="profNovaEscala()"><svg class=ico aria-hidden=true><use href=#i-plus-circle></use></svg> Nova escala</button><button class="prof-btn-acao" type="button" onclick="profAbrirPainelEscalas()"><svg class=ico aria-hidden=true><use href=#i-chart></use></svg> Painel das Escalas</button></div>'; // 18.5
   html += '<div class="prof-acoes-mod" id="profNovaEscalaLista" hidden></div>';
   html += '<div class="prof-acoes-mod" id="profAvisoLiberacao"></div>'; // 17.3.1: âncora do aviso; o cadeado agora fica em cada cartão de escala
   html += profBuscaHtml_(); // 17.3.2: busca por nome, sigla ou tag (filtra os cartões e a lista "Nova escala")
@@ -11663,6 +11695,11 @@ function descartarCachesPaciente_() {
     ESC_HIST_STATE.invalidado = true;
     ESC_HIST_STATE.abertos = {};
     ESC_HIST_STATE.visaoProfissional = false;
+  }
+  if (typeof ESCP_STATE !== 'undefined') { // 19.0: Painel das Escalas
+    escPainelDestruir_();
+    ESCP_STATE.periodo = 'tudo'; ESCP_STATE.origem = 'sec-escalas';
+    var escp = document.getElementById('escpConteudo'); if (escp) escp.innerHTML = '';
   }
   if (typeof CHK_ENV !== 'undefined' && CHK_ENV.chart) { try { CHK_ENV.chart.destroy(); } catch (e) {} CHK_ENV.chart = null; }
   window._HIST_REGS = null; // Meus Registros (sem TTL; refeito a cada abertura, mas não fica em memória entre sessões)
@@ -16549,13 +16586,14 @@ async function pevAbrir() {
 }
 
 // ----- 5. FILTRAGEM POR PERÍODO -----
-function pevFiltrarPorPeriodo(registros, periodo) {
+// 19.0: `campo` = coluna da data (padrão data_registro; o Painel das Escalas passa data_aplicacao)
+function pevFiltrarPorPeriodo(registros, periodo, campo) {
   if (periodo === 'tudo') return registros.slice();
   const limite = new Date();
   limite.setHours(0, 0, 0, 0);
   limite.setDate(limite.getDate() - (periodo - 1));
   return registros.filter(r => {
-    const m = String(r.data_registro || '').match(/(\d{4})-(\d{2})-(\d{2})/);
+    const m = String(r[campo || 'data_registro'] || '').match(/(\d{4})-(\d{2})-(\d{2})/);
     if (!m) return false;
     const d = new Date(parseInt(m[1]), parseInt(m[2]) - 1, parseInt(m[3]));
     return d >= limite;
@@ -21535,58 +21573,47 @@ async function escAbrirHistorico() {
 // ============================================================
 // Renderização principal (com cache 30s estilo PEV)
 // ============================================================
-async function escRenderHistorico() {
-  const cont = document.getElementById('eschConteudo');
-  if (!cont) return;
-
+// 19.0: carga das escalas do paciente com o cache de 30 s — serve ao histórico e ao Painel das Escalas.
+// Devolve { lista } ou { erro: 'sessao' | 'servidor' | 'conexao', msg }; `aoCarregar` roda só quando vai ao servidor.
+async function escHistObter_(aoCarregar) {
   const agora = Date.now();
   const cacheValido = !ESC_HIST_STATE.invalidado
                       && ESC_HIST_STATE.carregadoEm > 0
                       && (agora - ESC_HIST_STATE.carregadoEm < ESC_HIST_STATE.cacheTtlMs);
-
-  if (cacheValido) {
-    escHistRenderBlocos(cont, ESC_HIST_STATE.registros);
-    return;
-  }
-
-  // Loading
-  cont.innerHTML = '<div class="esch-loading"><div class="esch-spin"></div>Carregando seu histórico...</div>';
-
+  if (cacheValido) return { lista: ESC_HIST_STATE.registros };
+  if (aoCarregar) aoCarregar();
   try {
     const paciente = carregarSessao();
-    if (!paciente || !paciente.sigla) {
-      cont.innerHTML = '<div class="esch-vazio">' +
-        '<span class="esch-vazio-icon"><svg class=ico aria-hidden=true><use href=#i-alert></use></svg></span>' +
-        '<div class="esch-vazio-titulo">Sessão expirada</div>' +
-        '<div class="esch-vazio-texto">Faça login novamente para ver seu histórico.</div>' +
-      '</div>';
-      return;
-    }
-
+    if (!paciente || !paciente.sigla) return { erro: 'sessao' };
     const resp = await chamarServidor('lerEscalas', { sigla: paciente.sigla });
-    if (!resp || !resp.ok) {
-      const msgErro = (resp && resp.erro) ? escapeHtmlAuto(String(resp.erro)) : 'Tente novamente em alguns instantes.';
-      cont.innerHTML = '<div class="esch-vazio">' +
-        '<span class="esch-vazio-icon"><svg class=ico aria-hidden=true><use href=#i-alert></use></svg></span>' +
-        '<div class="esch-vazio-titulo">Não foi possível carregar o histórico</div>' +
-        '<div class="esch-vazio-texto">' + msgErro + '</div>' +
-      '</div>';
-      return;
-    }
-
+    if (!resp || !resp.ok) return { erro: 'servidor', msg: (resp && resp.erro) ? String(resp.erro) : '' };
     // Shape esperado: { ok: true, total: N, tem_mais, escalas: [...] } (18.5: os 60 mais recentes).
-    const lista = escHistGuardar_(resp, agora);
-
-    escHistRenderBlocos(cont, lista);
-
+    return { lista: escHistGuardar_(resp, agora) };
   } catch (e) {
     console.error('[Hist Escalas] Erro ao carregar:', e);
+    return { erro: 'conexao' };
+  }
+}
+
+async function escRenderHistorico() {
+  const cont = document.getElementById('eschConteudo');
+  if (!cont) return;
+
+  const r = await escHistObter_(function () {
+    cont.innerHTML = '<div class="esch-loading"><div class="esch-spin"></div>Carregando seu histórico...</div>';
+  });
+  if (r.erro) {
+    const titulo = r.erro === 'sessao' ? 'Sessão expirada' : (r.erro === 'servidor' ? 'Não foi possível carregar o histórico' : 'Falha de conexão');
+    const texto = r.erro === 'sessao' ? 'Faça login novamente para ver seu histórico.'
+      : (r.erro === 'servidor' ? (r.msg ? escapeHtmlAuto(r.msg) : 'Tente novamente em alguns instantes.') : 'Verifique sua internet e tente novamente.');
     cont.innerHTML = '<div class="esch-vazio">' +
       '<span class="esch-vazio-icon"><svg class=ico aria-hidden=true><use href=#i-alert></use></svg></span>' +
-      '<div class="esch-vazio-titulo">Falha de conexão</div>' +
-      '<div class="esch-vazio-texto">Verifique sua internet e tente novamente.</div>' +
+      '<div class="esch-vazio-titulo">' + titulo + '</div>' +
+      '<div class="esch-vazio-texto">' + texto + '</div>' +
     '</div>';
+    return;
   }
+  escHistRenderBlocos(cont, r.lista);
 }
 
 // Chave temporal para ordenar (timestamp do servidor é preferido;
@@ -21844,6 +21871,300 @@ function escHistRotuloSubFaixa(def, subKey, escore) {
   if (isNaN(num)) return '';
   const f = def.faixasSubescalas[subKey].find(function(x){ return num >= x.min && num <= x.max; });
   return (f && f.rotulo) ? f.rotulo : '';
+}
+
+/* ============================================================
+   PACOTE 19.0 — PAINEL DAS ESCALAS (22/11/2026)
+   Um cartão por escala respondida, com o escore ao longo do tempo. A MESMA função desenha a tela do paciente
+   (Escalas e Inventários → Painel das Escalas; sem a escala 'escoreOculto') e a do profissional (paciente aberto →
+   módulo Escalas → Painel das Escalas; todas). Os registros são os de ESC_HIST_STATE — paciente: lerEscalas, com o
+   cache de 30 s do histórico (escHistObter_); profissional: o que veio em profLerDadosPaciente. Nenhuma ação nova.
+   O motor não cita escala pelo nome (lição 118): tudo sai das propriedades do catálogo — faixas, faixasSubescalas,
+   subescalasMeta, composto, escoreMax, escoreOculto, corPrefix. Escala sem faixa no catálogo desenha só a linha.
+   Cores lidas dos tokens ao desenhar (vmcTok); trocar o tema redesenha.
+   ============================================================ */
+var ESCP_STATE = { periodo: 'tudo', origem: 'sec-escalas', charts: [] };
+// corPrefix das cinco primeiras escalas → nome do token; as demais usam o próprio prefixo (--c-<prefixo>-ink)
+var ESCP_TOK_ESCALA = { coral: 'phq9', amber: 'gad7', orange: 'pss10', purple: 'dass21', teal: 'srq20' };
+// banda de cada cor de faixa do catálogo: [token do fundo, token da tinta por cima, opacidade da tinta]
+var ESCP_TOK_FAIXA = { verde: ['--c-pos-tint'], amarelo: ['--c-warn-tint'], laranja: ['--c-warn-tint', '--c-warn', 0.25], vermelho: ['--c-risk-tint', '--c-risk', 0.22] };
+// uma cor, um traço e um marcador por subescala (a cor nunca é a única pista)
+var ESCP_TOK_SERIES = ['--c-action', '--c-phq9-ink', '--c-srq20-ink', '--c-gad7-ink', '--c-trauma-ink', '--c-bemestar-ink', '--c-bdi2-ink', '--c-pss10-ink'];
+var ESCP_TRACOS = [[], [7, 4], [2, 3], [9, 3, 2, 3], [5, 2], [1, 4], [12, 4], [3, 6]];
+var ESCP_PONTOS = ['circle', 'rect', 'triangle', 'rectRot', 'circle', 'rect', 'triangle', 'rectRot'];
+
+function escPainelDestruir_() {
+  ESCP_STATE.charts.forEach(function (c) { try { c.destroy(); } catch (e) {} });
+  ESCP_STATE.charts = [];
+}
+
+// Dia civil da aplicação como número (dias desde 1970, pelo calendário local), com a hora como fração quando o
+// timestamp é do mesmo dia. Nunca new Date('AAAA-MM-DD') — isso é meia-noite UTC, um dia a menos em São Paulo.
+function escPainelDia_(r) {
+  var m = String(r.data_aplicacao || '').match(/(\d{4})-(\d{2})-(\d{2})/);
+  var t = r.timestamp ? new Date(r.timestamp) : null;
+  if (t && isNaN(t.getTime())) t = null;
+  if (!m && !t) return null;
+  var dia = m ? Date.UTC(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10)) : Date.UTC(t.getFullYear(), t.getMonth(), t.getDate());
+  var fracao = (t && Date.UTC(t.getFullYear(), t.getMonth(), t.getDate()) === dia) ? (t.getHours() * 60 + t.getMinutes()) / 1440 : 0;
+  return dia / 86400000 + fracao;
+}
+function escPainelDataBR_(dia, comAno) {
+  var d = new Date(Math.floor(dia + 1e-6) * 86400000);
+  var p = function (n) { return String(n).padStart(2, '0'); };
+  return p(d.getUTCDate()) + '/' + p(d.getUTCMonth() + 1) + (comAno ? '/' + d.getUTCFullYear() : '');
+}
+function escPainelNumero_(v) {
+  if (v === '' || v === null || v === undefined) return null;
+  var n = Number(String(v).replace(',', '.'));
+  return isNaN(n) ? null : n;
+}
+function escPainelValorTxt_(v) { return String(Math.round(v * 100) / 100).replace('.', ','); }
+function escPainelTokEscala_(def) {
+  var p = String(def.corPrefix || '');
+  return p ? '--c-' + (ESCP_TOK_ESCALA[p] || p) + '-ink' : '--c-action';
+}
+
+// Os gráficos de uma escala, a partir do catálogo: [{ titulo, series: [{ campo, nome }], faixas, max }].
+// Total (ou o composto da escala) com as faixas do total; subescala com faixas próprias ganha o seu gráfico, com
+// as bandas dela; as demais subescalas dividem um gráfico, uma linha cada (réguas diferentes da do total).
+function escPainelGraficos_(def, regs) {
+  var tem = function (campo) { return regs.some(function (r) { return escPainelNumero_(r[campo]) !== null; }); };
+  var meta = def.subescalasMeta || {};
+  var fxSub = def.faixasSubescalas || {};
+  var lista = [];
+  var campoTotal = def.composto ? 'escore_' + def.composto.chave : 'escore_total';
+  var nomeTotal = def.composto ? (def.composto.nome || def.composto.sigla) : 'Escore total';
+  var faixasTotal = (!def.composto && Array.isArray(def.faixas)) ? def.faixas : null;
+  if (tem(campoTotal)) lista.push({ titulo: nomeTotal, series: [{ campo: campoTotal, nome: nomeTotal }], faixas: faixasTotal,
+    max: (faixasTotal || (!def.composto && !def.multiSubescalas)) ? def.escoreMax : null });
+  var soltas = [];
+  Object.keys(meta).forEach(function (k) {
+    if (!tem('escore_' + k)) return;
+    var s = { campo: 'escore_' + k, nome: meta[k].nome || meta[k].sigla || k };
+    if (Array.isArray(fxSub[k])) lista.push({ titulo: s.nome, series: [s], faixas: fxSub[k], max: def.escoreMax });
+    else soltas.push(s);
+  });
+  if (soltas.length) lista.push({ titulo: 'Subescalas', series: soltas, faixas: null, max: null });
+  return lista;
+}
+
+// Legenda de um gráfico: as faixas (da menor para a maior) e, com mais de uma linha, as subescalas
+function escPainelLegendaHtml_(g) {
+  var h = '';
+  if (g.faixas) g.faixas.slice().sort(function (a, b) { return a.min - b.min; }).forEach(function (f) {
+    h += '<span class="escp-leg"><span class="escp-amostra ' + (ESCP_TOK_FAIXA[f.cor] ? f.cor : 'cinza') + '"></span>' + esc(f.rotulo) + '</span>';
+  });
+  if (g.series.length > 1) g.series.forEach(function (s, i) {
+    var traco = ESCP_TRACOS[i % ESCP_TRACOS.length];
+    h += '<span class="escp-leg"><svg class="escp-traco" viewBox="0 0 28 10" aria-hidden="true" data-escp-cor="' + ESCP_TOK_SERIES[i % ESCP_TOK_SERIES.length] + '">' +
+      '<line x1="1" y1="5" x2="27" y2="5"' + (traco.length ? ' stroke-dasharray="' + traco.join(' ') + '"' : '') + '></line></svg>' + esc(s.nome) + '</span>';
+  });
+  return h ? '<div class="escp-legenda">' + h + '</div>' : '';
+}
+
+// Cartão de uma escala. `regs` em ordem de data; cada gráfico entra em `fila` para ser desenhado depois do innerHTML.
+function escPainelCartaoHtml_(cod, def, regs, fila) {
+  var graficos = escPainelGraficos_(def, regs);
+  if (!graficos.length) return '';
+  var n = regs.length;
+  var primeira = escPainelDia_(regs[0]), ultima = escPainelDia_(regs[n - 1]);
+  var h = '<div class="escp-cartao" data-esc="' + esc(cod) + '" data-escp-borda="' + escPainelTokEscala_(def) + '">';
+  h += '<div class="pev-bloco-titulo">' + esc(def.nomeCompleto || cod) + escNomeTraducaoHtml_(def) + '</div>';
+  h += '<div class="pev-bloco-sub">' + (n === 1 ? '1 aplicação' : n + ' aplicações') + ' · última em ' + escPainelDataBR_(ultima, true) + '</div>';
+  graficos.forEach(function (g) {
+    var id = 'escpGraf' + fila.length;
+    fila.push({ id: id, def: def, g: g, regs: regs });
+    var rotulo = cod + ' · ' + g.titulo + ': ' + (n === 1 ? '1 aplicação em ' + escPainelDataBR_(ultima, true) : n + ' aplicações, de ' + escPainelDataBR_(primeira, true) + ' a ' + escPainelDataBR_(ultima, true));
+    h += '<div class="escp-graf">';
+    h += '<div class="escp-graf-titulo">' + esc(g.titulo) + '</div>';
+    h += '<div class="escp-canvas"><canvas id="' + id + '" role="img" aria-label="' + esc(rotulo) + '"></canvas></div>';
+    h += escPainelLegendaHtml_(g);
+    h += '<div class="escp-nota">' + (g.faixas ? 'Cada ponto é uma aplicação. As cores ao fundo são as faixas de interpretação da escala.' : 'Cada ponto é uma aplicação.') + '</div>';
+    h += '</div>';
+  });
+  h += '</div>';
+  return h;
+}
+
+// Desenha um gráfico da fila. Eixo do tempo proporcional (dias civis); bandas das faixas por um plugin do próprio
+// gráfico (nenhuma biblioteca nova). Devolve o Chart, ou null se não houver ponto.
+function escPainelDesenhar_(item) {
+  var canvas = document.getElementById(item.id);
+  if (!canvas || typeof Chart === 'undefined') return null;
+  var g = item.g;
+  var faixas = g.faixas ? g.faixas.slice().sort(function (a, b) { return a.min - b.min; }) : null;
+  var corEscala = vmcTok(escPainelTokEscala_(item.def));
+  var uma = g.series.length === 1;
+  var xs = [], ys = [];
+  var datasets = g.series.map(function (s, i) {
+    var pontos = [];
+    item.regs.forEach(function (r) {
+      var x = escPainelDia_(r), y = escPainelNumero_(r[s.campo]);
+      if (x === null || y === null) return;
+      pontos.push({ x: x, y: y }); xs.push(x); ys.push(y);
+    });
+    var cor = uma ? corEscala : vmcTok(ESCP_TOK_SERIES[i % ESCP_TOK_SERIES.length]);
+    return { label: s.nome, data: pontos, borderColor: cor, backgroundColor: cor, borderWidth: 2.5,
+      borderDash: uma ? [] : ESCP_TRACOS[i % ESCP_TRACOS.length], pointStyle: uma ? 'circle' : ESCP_PONTOS[i % ESCP_PONTOS.length],
+      pointRadius: 5, pointHoverRadius: 7, pointBackgroundColor: cor, pointBorderColor: vmcTok('--c-surface'), pointBorderWidth: 2, tension: 0, clip: 12 };
+  });
+  if (!xs.length) return null;
+  var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
+  var yMin = Math.min.apply(null, ys), yMax = Math.max.apply(null, ys);
+  var umDia = Math.floor(x0) === Math.floor(x1);
+  var folga = umDia ? 3.5 : Math.max((x1 - x0) * 0.05, 0.5);
+  var comAno = new Date(Math.floor(x0) * 86400000).getUTCFullYear() !== new Date(Math.floor(x1) * 86400000).getUTCFullYear();
+  var tinta = vmcTok('--c-ink-3');
+  var eixoY = { ticks: { font: { size: 11 }, color: tinta, maxTicksLimit: 6, callback: function (v) { return escPainelValorTxt_(v); } },
+    grid: { display: !faixas, color: vmcTok('--c-line-soft'), drawTicks: false } };
+  if (faixas) {
+    var topo = faixas[faixas.length - 1].max;
+    eixoY.min = Math.min(faixas[0].min, yMin);
+    eixoY.max = Math.max(g.max ? Math.min(topo, g.max) : topo, yMax);
+  } else {
+    // sem faixas: o eixo parte do zero (a folga do topo não desce abaixo dele) e vai até a régua da escala, quando o catálogo a tem
+    eixoY.beginAtZero = true;
+    if (g.max) eixoY.suggestedMax = g.max; else eixoY.grace = '8%';
+  }
+  var eixoX = { type: 'linear', min: x0 - folga, max: x1 + folga, grid: { display: false },
+    ticks: { font: { size: 11 }, color: tinta, maxRotation: 0, autoSkip: false, callback: function (v) { return escPainelDataBR_(v, comAno); } } };
+  // as datas do eixo são as das aplicações (primeira e última sempre), só as que cabem sem encostar uma na outra
+  eixoX.afterBuildTicks = function (eixo) {
+    var dias = [];
+    xs.forEach(function (x) { var dia = Math.floor(x); if (dias.indexOf(dia) === -1) dias.push(dia); });
+    dias.sort(function (a, b) { return a - b; });
+    var largura = Math.max(120, (eixo.maxWidth || 320) - 44), passo = comAno ? 84 : 54;
+    var px = function (v) { return (v - eixo.min) / (eixo.max - eixo.min) * largura; };
+    var escolhidos = [];
+    dias.forEach(function (dia) { if (!escolhidos.length || px(dia) - px(escolhidos[escolhidos.length - 1]) >= passo) escolhidos.push(dia); });
+    var ultimo = dias[dias.length - 1];
+    if (escolhidos[escolhidos.length - 1] !== ultimo) {
+      if (escolhidos.length > 1 && px(ultimo) - px(escolhidos[escolhidos.length - 1]) < passo) escolhidos.pop();
+      escolhidos.push(ultimo);
+    }
+    eixo.ticks = escolhidos.map(function (dia) { return { value: dia + 0.5 }; });
+  };
+  var bandas = { id: 'escpBandas', beforeDatasetsDraw: function (chart) {
+    if (!faixas) return;
+    var a = chart.chartArea, sy = chart.scales.y, c = chart.ctx, largura = a.right - a.left;
+    c.save();
+    faixas.forEach(function (f, i) {
+      // a fronteira entre duas faixas fica no meio do caminho entre o fim de uma e o começo da outra
+      var de = i === 0 ? sy.min : (faixas[i - 1].max + f.min) / 2;
+      var ate = i === faixas.length - 1 ? sy.max : (f.max + faixas[i + 1].min) / 2;
+      var yTopo = sy.getPixelForValue(Math.min(ate, sy.max)), yBase = sy.getPixelForValue(Math.max(de, sy.min));
+      if (yBase <= yTopo) return;
+      var tok = ESCP_TOK_FAIXA[f.cor] || ['--c-line'];
+      c.globalAlpha = 1; c.fillStyle = vmcTok(tok[0]); c.fillRect(a.left, yTopo, largura, yBase - yTopo);
+      if (tok[1]) { c.globalAlpha = tok[2]; c.fillStyle = vmcTok(tok[1]); c.fillRect(a.left, yTopo, largura, yBase - yTopo); c.globalAlpha = 1; }
+      if (i > 0) { c.fillStyle = vmcTok('--c-surface'); c.fillRect(a.left, yBase - 0.5, largura, 1); }
+    });
+    c.restore();
+  } };
+  return new Chart(canvas.getContext('2d'), {
+    type: 'line',
+    data: { datasets: datasets },
+    plugins: [bandas],
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      interaction: { mode: 'nearest', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: {
+          title: function (itens) { return escPainelDataBR_(itens[0].parsed.x, true); },
+          label: function (ctx) {
+            var v = ctx.parsed.y, txt = ctx.dataset.label + ': ' + escPainelValorTxt_(v);
+            var f = faixas ? faixas.find(function (x) { return v >= x.min && v <= x.max; }) : null;
+            return f ? txt + ' · ' + f.rotulo : txt;
+          }
+        } }
+      },
+      scales: { x: eixoX, y: eixoY }
+    }
+  });
+}
+
+function escPainelVazioHtml_(icone, titulo, texto) {
+  return '<div class="pev-vazio"><span class="pev-vazio-icon"><svg class=ico aria-hidden=true><use href=#' + icone + '></use></svg></span>' +
+    '<div class="pev-vazio-titulo">' + titulo + '</div>' + (texto ? '<div class="pev-vazio-texto">' + texto + '</div>' : '') + '</div>';
+}
+
+// Monta a tela a partir de ESC_HIST_STATE (quem abriu já marcou visaoProfissional) e do período escolhido.
+function escPainelRenderizar() {
+  var cont = document.getElementById('escpConteudo');
+  if (!cont) return;
+  escPainelDestruir_();
+  var prof = ESC_HIST_STATE.visaoProfissional === true;
+  // 17.3.1: a escala 'escoreOculto' não mostra resultado ao paciente — fica fora do painel dele; o profissional vê todas
+  var visiveis = (ESC_HIST_STATE.registros || []).filter(function (r) {
+    var def = ESC_ESCALAS[String(r.instrumento || '').trim()];
+    return !!def && (prof || !def.escoreOculto) && escPainelDia_(r) !== null;
+  });
+  var cab = (prof && PROF_PACIENTE_SEL) ? '<div class="escp-paciente">' + esc((PROF_PACIENTE_SEL.nome || '') + ' (' + (PROF_PACIENTE_SEL.sigla || '') + ')') + '</div>' : '';
+  if (!visiveis.length) {
+    cont.innerHTML = cab + (prof ? escPainelVazioHtml_('i-inbox', 'O paciente ainda não respondeu nenhuma escala.', '')
+      : escPainelVazioHtml_('i-inbox', 'Ainda não há gráficos para mostrar', 'Os gráficos aparecem aqui conforme você responde às escalas.'));
+    return;
+  }
+  var noPeriodo = pevFiltrarPorPeriodo(visiveis, ESCP_STATE.periodo, 'data_aplicacao');
+  var fila = [];
+  var html = cab + pevMontarSeletor(ESCP_STATE.periodo);
+  if (!noPeriodo.length) {
+    html += escPainelVazioHtml_('i-calendar', 'Nenhuma aplicação nesse período', 'Tente um período mais longo.');
+  } else {
+    ESC_HIST_ORDEM.forEach(function (cod) {
+      var regs = noPeriodo.filter(function (r) { return String(r.instrumento || '').trim() === cod; });
+      if (!regs.length) return;
+      regs.sort(function (a, b) { return (escPainelDia_(a) - escPainelDia_(b)) || (escHistChaveTemporal(a) - escHistChaveTemporal(b)); });
+      html += escPainelCartaoHtml_(cod, ESC_ESCALAS[cod], regs, fila);
+    });
+  }
+  cont.innerHTML = html;
+  pevBindSeletor(cont, function (periodo) { ESCP_STATE.periodo = periodo; escPainelRenderizar(); });
+  // cores por token, aplicadas pelo estilo do elemento: acompanham o tema sem regra de CSS por escala
+  cont.querySelectorAll('[data-escp-borda]').forEach(function (el) { el.style.borderLeftColor = 'var(' + el.dataset.escpBorda + ')'; });
+  cont.querySelectorAll('[data-escp-cor]').forEach(function (el) { el.style.color = 'var(' + el.dataset.escpCor + ')'; });
+  fila.forEach(function (item) { var c = escPainelDesenhar_(item); if (c) ESCP_STATE.charts.push(c); });
+}
+
+// Paciente: Escalas e Inventários → Painel das Escalas
+async function escAbrirPainel() {
+  ESCP_STATE.origem = 'sec-escalas';
+  ESCP_STATE.periodo = 'tudo';
+  abrirSecao('sec-escalas-painel');
+  var cont = document.getElementById('escpConteudo');
+  escPainelDestruir_();
+  var r = await escHistObter_(function () { cont.innerHTML = '<div class="pev-loading"><div class="pev-spin"></div><div>Carregando seu painel...</div></div>'; });
+  if (secaoAtivaId() !== 'sec-escalas-painel') return;
+  if (r.erro) {
+    cont.innerHTML = r.erro === 'sessao' ? escPainelVazioHtml_('i-alert', 'Sessão expirada', 'Faça login novamente para ver seu painel.')
+      : (r.erro === 'servidor' ? escPainelVazioHtml_('i-alert', 'Não foi possível carregar o painel', r.msg ? escapeHtmlAuto(r.msg) : 'Tente novamente em alguns instantes.')
+      : escPainelVazioHtml_('i-alert', 'Falha de conexão', 'Verifique sua internet e tente novamente.'));
+    return;
+  }
+  ESC_HIST_STATE.visaoProfissional = false;
+  escPainelRenderizar();
+  // 18.5 (8.87): lerEscalas traz as 60 aplicações mais recentes — as anteriores chegam em silêncio e o painel se redesenha
+  if (ESC_HIST_STATE.temMais) escHistCarregarTudo_().then(function () { if (secaoAtivaId() === 'sec-escalas-painel') escPainelRenderizar(); });
+}
+
+// Profissional: paciente aberto → módulo Escalas → Painel das Escalas (os registros já estão na memória)
+function profAbrirPainelEscalas() {
+  if (!PROF_SESSAO || !PROF_PACIENTE_SEL) return;
+  ESC_HIST_STATE.visaoProfissional = true;
+  ESCP_STATE.origem = 'sec-prof-paciente';
+  ESCP_STATE.periodo = 'tudo';
+  abrirSecao('sec-escalas-painel');
+  escPainelRenderizar();
+}
+
+// "Voltar" da barra: devolve para a tela de quem abriu (hub do paciente ou paciente aberto do profissional)
+function escPainelVoltar() {
+  escPainelDestruir_();
+  var cont = document.getElementById('escpConteudo');
+  if (cont) cont.innerHTML = '';
+  abrirSecao(ESCP_STATE.origem);
 }
 
 // ============================================================
