@@ -1602,3 +1602,45 @@ Agenda e a Grade de Atendimento; salvar a grade pede de novo.
 respondeu…" + "Tentar de novo" (mesma chamada, só no clique; sair desiste); botões da tabela por
 `data-adm-acao` com um ouvinte só; data de início normalizada para o campo e enviada só quando
 mexida; a saída limpa a tabela, o cabeçalho e os modais.
+
+## Início do profissional como dashboard e tela Pacientes (Pacote 19.2 — publicado em 22/11/2026, só frontend)
+
+Primeiro pacote da Fase 19 — Área do profissional. Nenhuma ação nova no servidor e nenhuma chamada
+nova: tudo sai da lista de pacientes que já vem na resposta do login (indicadores `ind_*` da
+Controle, 18.10/18.11).
+
+**Duas telas, uma lista em memória.** `profCarregarDashboard` continua carregando (lista do login
+ou `profListarPacientes`, erro com "Tentar novamente", pré-carregamento do 18.11.1) e guarda a
+lista em `PROF_LISTA` (só memória; `sairDoSistema` zera). Dela saem:
+
+- **Início (`#profDashboardConteudo`)** — nesta ordem: `.prof-atalhos` (quatro `.prof-atalho`:
+  Novo Paciente, Agenda, Pacientes, Escalas e Inventários — este `disabled`, com `#i-lock` e o selo
+  "Em breve", até o 19.3); `#profBlocoAlertas` (`profRenderAlertas_`: o alerta crítico mais recente
+  de cada paciente ativo, `ind_alertas[0]`; não expira); `#profBlocoAtualizacoes`
+  (`profRenderAtualizacoes_`: último registro e última escala de cada paciente ativo, só os dos
+  últimos `PROF_ATUALIZACOES_DIAS` = 7 dias). Sem paciente nenhum: atalhos + "Nenhum paciente
+  cadastrado".
+- **Pacientes (`#sec-prof-pacientes`, `#profPacientesConteudo`)** — `profRenderPacientes_`: os
+  cartões e a seção de desativados do 13.2.2/13.5, sem mudança (o roteiro prova HTML igual, cartão
+  a cartão), mais a busca (`.esc-busca*`, `profFiltrarPacientes_`).
+
+**Regras.** Os blocos do Início mostram só pacientes ativos. A lista traz datas `DD/MM/AAAA` sem
+hora: a ordem é data mais nova primeiro e, no mesmo dia, nome (`localeCompare` pt-BR), com registro
+antes de escala. Dias contados por data civil — `profDiasDesdeBR_` só converte para o formato de
+`iniDiasDesde`, e o texto é o de `iniTextoDias` ("hoje", "há N dias"). A lista não distingue
+registro completo de checagem de humor: o item diz "Automonitoramento". Cada item
+(`profEvHtml_`, `.prof-ev`) leva `data-sigla` e chama `profAbrirPaciente(this.dataset.sigla)`;
+nome, sigla, instrumento e faixa passam pelo escapador único.
+
+**Busca DOM-first.** `profFiltrarPacientes_` lê nome e sigla dos cartões que estão na tela
+(`.prof-pac-nome` + `data-sigla`), normaliza com `profNormalizar_` (o da busca das escalas) e
+alterna `.hidden`; resultado entre os desativados abre a seção deles (`p135ToggleInativos`).
+
+**Voltar com origem.** `profAbrirPaciente` anota em `PROF_ORIGEM_PACIENTE` a tela de onde o
+paciente foi aberto (Início ou Pacientes) e `profVoltarDashboard` devolve para ela. Excluir
+paciente e login continuam caindo no Início.
+
+**Teste.** O servidor dos roteiros da Fase 19 é o `Código.js` real em Node
+(`..\FASE_19_servidor_simulado.js`, sobre o arnês de `scripts/testes/backend_18_10a.js`), com
+relógio fixo igual ao da página (`page.clock.setFixedTime`); a página é servida do disco por
+`page.route`. Regras e provas da fase: `..\prompts_19\PROVAS_FASE_19.md`.
