@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — tela de login: botão de mostrar a senha, aviso de Caps Lock e formulário que o navegador reconhece para guardar a senha; Painel das Escalas do 19.0 dentro (40 escalas, todas com ficha) — Pacote 18.12 (22/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda completa: sessões, repetição, remarcar, cancelar, bloqueio, situação e reposição na Agenda do profissional; Minhas sessões no paciente; avisos de sessão desligados por padrão (40 escalas, todas com ficha) — Pacote 14.3 (22/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -4195,10 +4195,10 @@ button.cab-no-item{cursor:pointer;}
   width:32px;height:32px;line-height:32px;border-radius:50%;margin:2px auto 0;}
 .cal-col-head.cal-hoje-col .cal-dnum{background:var(--c-action);color:var(--c-ink-inv);}
 .cal-horas{position:relative;}
-.cal-hora-label{font:var(--t-body-sm);height:48px;color:var(--c-ink-3);text-align:right;
+.cal-hora-label{font:var(--t-body-sm);height:64px;color:var(--c-ink-3);text-align:right;
   padding-right:6px;transform:translateY(-6px);}
 .cal-dia-col{position:relative;border-left:1px solid var(--c-line);}
-.cal-hora-linha{height:48px;border-bottom:1px solid var(--c-line);}
+.cal-hora-linha{height:64px;border-bottom:1px solid var(--c-line);}
 .cal-disp-bloco{position:absolute;left:0;right:0;background:var(--cal-disp);pointer-events:none;}
 .cal-ev{font:var(--t-body-sm);position:absolute;left:3px;right:3px;border-radius:7px;padding:4px 6px;
   line-height:1.25;cursor:pointer;overflow:hidden;
@@ -4206,6 +4206,76 @@ button.cab-no-item{cursor:pointer;}
 .cal-ev:hover{filter:brightness(.97);}
 .cal-ev .cal-ev-hora{font:var(--t-body-sm);opacity:.75;display:flex;justify-content:space-between;align-items:center;}
 .cal-ev .cal-ev-nome{font-weight:700;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;}
+/* Pacote 14.3 — Agenda completa: sessões reais na grade, bloqueio, feriado, painel da consulta, pedidos e Minhas sessões */
+.cal-dia-col{cursor:pointer;}
+.cal-ev-presencial,.cal-ev-online{border:0;border-left:4px solid var(--c-pos);width:calc(100% - 6px);text-align:left;color:var(--c-ink);font-family:var(--f-text);display:block;z-index:3;}
+.cal-ev-presencial{background:var(--cal-ev-verde);}
+.cal-ev-online{background:var(--cal-ev-lilas);border-left-color:var(--c-dass21-ink);}
+.cal-ev-realizada{opacity:.72;}
+.cal-ev-falta{border-left-color:var(--c-risk);}
+.cal-ev .cal-ev-hora,.cal-ev .cal-ev-nome{display:block;}
+.cal-ev .cal-ev-hora{display:flex;gap:4px;white-space:nowrap;overflow:hidden;}
+.cal-ev .cal-ev-hora .ico{width:1.05em;height:1.05em;}
+.cal-ev .cal-ev-marca{padding:0 6px;margin-right:4px;}
+.cal-ev .cal-ev-sit{display:inline;}
+.cal-ev .cal-ev-linha{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cal-ev .cal-ev-sit{font:var(--t-body-sm);color:var(--c-ink-2);}
+.cal-ev-marca{display:inline-block;font:var(--t-label);border-radius:var(--r-chip);padding:2px 8px;background:var(--c-warn-tint);color:var(--c-warn-ink);}
+.cal-bloq{position:absolute;left:0;width:100%;border:1px dashed var(--c-ink-3);border-radius:6px;background:var(--c-surface-sub);color:var(--c-ink-2);
+  font:var(--t-body-sm);text-align:left;padding:4px 6px;overflow:hidden;cursor:pointer;z-index:2;}
+.cal-fer{font:var(--t-label);color:var(--c-warn-ink);background:var(--c-warn-tint);border-radius:6px;padding:2px 4px;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.age-msg{font:var(--t-body);background:var(--c-surface);border:1px solid var(--c-line);border-left:4px solid var(--c-pos);border-radius:var(--r-field);
+  padding:10px 14px;margin:0 0 12px;color:var(--c-ink);display:flex;align-items:center;gap:var(--s-2);flex-wrap:wrap;}
+.age-msg-erro{border-left-color:var(--c-risk);color:var(--c-risk-ink);}
+.age-card{max-width:480px;max-height:92vh;display:flex;flex-direction:column;}
+.age-card .p5-modal-body{overflow-y:auto;text-align:left;}
+.age-card .p5-modal-acoes{flex-wrap:wrap;}
+.age-card .p5-btn{min-height:var(--hit-min);}
+.age-card .prof-cad-field input,.age-card .prof-cad-field select,.age-card .prof-cad-field textarea{width:100%;min-height:var(--hit-min);padding:10px 12px;border:1.5px solid var(--c-line);
+  border-radius:8px;font:var(--t-body);background:var(--c-surface);color:var(--c-ink);box-sizing:border-box;}
+.age-linha{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.age-abas{display:flex;gap:var(--s-2);margin-bottom:var(--s-3);}
+.age-aba{flex:1;min-height:var(--hit-min);border:1.5px solid var(--c-line);border-radius:var(--r-field);background:var(--c-surface);color:var(--c-ink-2);font:var(--t-action);cursor:pointer;}
+.age-aba-ativa{background:var(--c-action);border-color:var(--c-action);color:var(--c-ink-inv);}
+.age-texto{font:var(--t-body);color:var(--c-ink);margin:0 0 var(--s-3);}
+.age-dica{font:var(--t-body-sm);color:var(--c-ink-3);margin:4px 0 var(--s-3);}
+.age-aviso{font:var(--t-body-sm);color:var(--c-warn-ink);background:var(--c-warn-tint);border-radius:8px;padding:8px 10px;margin:0 0 var(--s-2);}
+.age-marcas{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 var(--s-3);}
+.age-check{display:flex;align-items:center;gap:var(--s-2);min-height:var(--hit-min);font:var(--t-body);color:var(--c-ink);cursor:pointer;flex-wrap:wrap;}
+.age-check input[type="checkbox"],.age-check input[type="radio"]{width:20px;height:20px;flex-shrink:0;accent-color:var(--c-action);}
+.age-fieldset{border:1px solid var(--c-line);border-radius:var(--r-field);padding:8px 12px;margin:0 0 var(--s-3);}
+.age-fieldset legend{font:var(--t-body-sm);font-weight:700;color:var(--c-ink-2);padding:0 4px;}
+.age-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+.age-curto{width:84px;min-height:var(--hit-min);padding:8px;border:1.5px solid var(--c-line);border-radius:8px;font:var(--t-body);background:var(--c-surface);color:var(--c-ink);}
+.age-check input[type="date"]{min-height:var(--hit-min);padding:8px;border:1.5px solid var(--c-line);border-radius:8px;font:var(--t-body);background:var(--c-surface);color:var(--c-ink);}
+.age-rep{display:flex;gap:var(--s-2);}
+.age-rep select{flex:1;min-width:0;}
+.age-dias{display:flex;gap:6px;flex-wrap:wrap;}
+.age-res{display:flex;flex-direction:column;gap:6px;margin-top:6px;}
+.age-res-item{min-height:var(--hit-min);text-align:left;padding:8px 12px;border:1px solid var(--c-line);border-radius:var(--r-field);background:var(--c-surface);color:var(--c-ink);font:var(--t-body);cursor:pointer;}
+.age-res-item:hover{border-color:var(--c-action);}
+.age-pac{font:var(--t-body);color:var(--c-ink);min-height:var(--hit-min);display:flex;align-items:center;gap:var(--s-2);flex-wrap:wrap;}
+.age-link{background:none;border:0;padding:0 4px;min-height:var(--hit-min);color:var(--c-action);font:var(--t-action);text-decoration:underline;cursor:pointer;}
+.age-btn-largo{width:100%;margin-bottom:4px;}
+.age-datas{margin:0 0 var(--s-3);padding-left:20px;font:var(--t-body);color:var(--c-ink);max-height:220px;overflow-y:auto;}
+.age-whats{margin-top:var(--s-2);}
+.age-ped{display:flex;align-items:center;gap:var(--s-2);flex-wrap:wrap;border:1px solid var(--c-line);border-radius:var(--r-field);padding:10px 12px;background:var(--c-surface);}
+.age-ped-texto{flex:1 1 220px;font:var(--t-body);color:var(--c-ink);overflow-wrap:anywhere;}
+.age-ped-acoes{display:flex;gap:var(--s-2);}
+.age-ped-msg{font:var(--t-body-sm);color:var(--c-pos-ink);margin:var(--s-2) 0 0;}
+.ini-ses{display:flex;align-items:center;gap:var(--s-2);width:100%;min-height:var(--hit-min);text-align:left;background:var(--c-surface);border:1px solid var(--c-line);border-left:4px solid var(--c-pos);
+  border-radius:var(--r-card);padding:12px 16px;margin:4px 0 12px;font:var(--t-body);color:var(--c-ink);cursor:pointer;box-shadow:var(--sh-1);}
+.ses-lista{list-style:none;margin:0 0 var(--s-4);padding:0;display:flex;flex-direction:column;gap:var(--s-2);text-align:left;}
+.ses-item{border:1px solid var(--c-line);border-radius:var(--r-card);background:var(--c-surface);padding:12px 14px;}
+.ses-quando{font:var(--t-body);font-weight:600;color:var(--c-ink);margin-bottom:4px;}
+.ses-acoes{display:flex;gap:var(--s-2);flex-wrap:wrap;margin-top:var(--s-2);}
+.ses-titulo-ant{margin-top:var(--s-4);}
+.ses-dia{text-align:left;margin-bottom:var(--s-3);}
+.ses-horas{display:flex;gap:6px;flex-wrap:wrap;}
+.ses-hora{min-width:68px;}
+.ses-nav{display:flex;align-items:center;justify-content:space-between;gap:var(--s-2);margin:0 0 var(--s-3);font:var(--t-body);color:var(--c-ink);}
+#sec-sessoes{text-align:left;}
+@media(max-width:520px){.age-linha{grid-template-columns:1fr;}}
 
 .cal-vazio-aviso{padding:14px 16px;font-size:13px;color:var(--c-ink-3);background:var(--c-warn-tint);
   border-left:4px solid var(--c-warn);border-radius:8px;margin-bottom:12px;}
@@ -4255,6 +4325,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
   <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
   <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></symbol>
+  <symbol id="i-video" viewBox="0 0 24 24"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-3v10l-6-3z"/></symbol>
   <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M4 4l16 16"/></symbol>
   <symbol id="i-unlock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/></symbol>
   <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 5l2 2M14 8l2 2"/></symbol>
@@ -4540,6 +4612,9 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       Você ainda não definiu seus horários de atendimento.
       <a onclick="graAbrirTela()">Configurar a Grade de Atendimento</a>
     </div>
+    <!-- Pacote 14.3: resultado da última ação e pedidos pendentes dos pacientes -->
+    <p class="age-msg hidden" id="calMsg" role="status"></p>
+    <div id="calPedidos"></div>
 
     <div class="cal-wrap">
       <div class="cal-lateral">
@@ -4557,7 +4632,12 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
           <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-ev-verde);border:1px solid var(--c-pos);"></span> Sessão presencial</div>
           <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-ev-lilas);border:1px solid var(--c-dass21-ink);"></span> Sessão on-line</div>
           <div class="cal-leg-item"><span><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg></span> Confirmada pelo paciente</div>
-          <div class="cal-leg-item"><span><svg class="ico" aria-hidden="true"><use href="#i-hourglass"/></svg></span> Aguardando confirmação</div>
+          <div class="cal-leg-item"><span><svg class="ico" aria-hidden="true"><use href="#i-repeat"/></svg></span> Série</div>
+          <div class="cal-leg-item"><span class="cal-ev-marca">Reposição</span></div>
+          <div class="cal-leg-item"><span><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg></span> Bloqueado</div>
+          <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--c-warn-tint);border:1px solid var(--c-warn);"></span> Feriado</div>
+          <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-ev-verde);border:1px solid var(--c-pos);opacity:.72;"></span> Consulta realizada</div>
+          <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-ev-verde);border:1px solid var(--c-risk);border-left-width:4px;"></span> Não compareceu</div>
         </div>
       </div>
       <div class="cal-main">
@@ -4596,7 +4676,15 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
             <option value="24" selected>24 horas</option>
             <option value="48">48 horas</option>
           </select>
-          <div class="gra-hint">Impede agendamentos em cima da hora na futura página pública.</div>
+          <div class="gra-hint">O paciente só agenda, cancela ou pede remarcação com esta antecedência.</div>
+        </div>
+        <div class="gra-cfg-item">
+          <label for="graCfgAvisos">Avisos de sessão por e-mail</label>
+          <select id="graCfgAvisos">
+            <option value="Nao" selected>Desligado</option>
+            <option value="Sim">Ligado</option>
+          </select>
+          <div class="gra-hint">Desligado, nenhum e-mail de sessão é enviado, mesmo com as caixas marcadas na consulta.</div>
         </div>
       </div>
     </div>
@@ -4611,6 +4699,23 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <button class="gra-btn-salvar" id="graBtnSalvar" onclick="graSalvar()"><svg class="ico" aria-hidden="true"><use href="#i-save"/></svg> Salvar grade</button>
       <div class="gra-ok" id="graOk"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg> Grade de atendimento salva com sucesso!</div>
     </div>
+  </div>
+
+  <!-- Pacote 14.3: painel da consulta (abas Consulta e Bloqueio; repetição, cancelar e "Sair sem salvar?" são vistas do mesmo painel) -->
+  <div class="p5-modal-overlay" id="ageModal" onclick="if(event.target===this)ageFechar()">
+    <div class="p5-modal-card age-card" role="dialog" aria-modal="true" aria-labelledby="ageTitulo">
+      <div class="p5-modal-head">
+        <span class="p5-modal-icone"><svg class="ico" aria-hidden="true"><use href="#i-calendar"/></svg></span>
+        <div class="p5-modal-titulo" id="ageTitulo"></div>
+      </div>
+      <div class="p5-modal-body" id="ageCorpo"></div>
+      <div class="p5-modal-acoes" id="ageAcoes"></div>
+    </div>
+  </div>
+
+  <!-- Pacote 14.3: Minhas sessões (paciente) -->
+  <div class="section" id="sec-sessoes" data-barra-titulo="Minhas sessões">
+    <div id="sesConteudo"></div>
   </div>
 
   <!-- PACOTE 13.3.1: VISUALIZAÇÃO INDIVIDUAL DO PACIENTE (read-only, visão profissional) -->
@@ -4883,6 +4988,10 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
     </div>
 
     <!-- Pacote 19.2.1: o que está combinado para a semana (plano de lembretes do profissional), só leitura — texto aprovado em 22/11/2026 -->
+    <!-- Pacote 14.3: próxima sessão agendada (vem junto na leitura do combinado da semana) -->
+    <button class="ini-ses hidden" id="iniProxSessao" type="button" onclick="sesAbrirTela()">
+      <svg class="ico" aria-hidden="true"><use href="#i-calendar"/></svg><span id="iniProxSessaoTexto"></span>
+    </button>
     <div class="ini-lem" id="iniLembretes" hidden>
       <div class="ini-lem-titulo"><svg class="ico" aria-hidden="true"><use href="#i-calendar"/></svg><span>Combinado para esta semana</span></div>
       <ul class="ini-lem-lista" id="iniLembretesLista"></ul>
@@ -4911,6 +5020,14 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <div class="card-desc">Histórico dos registros, painel de evolução e "Como Usar Este Registro"</div>
         <span class="card-arrow">›</span>
         <span class="card-lock-badge"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg> Bloqueado</span>
+      </button>
+
+      <!-- Pacote 14.3 -->
+      <button class="card card-blue" id="cardSessoes" onclick="sesAbrirTela()">
+        <span class="card-icon"><svg class="ico ico-lg" aria-hidden="true"><use href="#i-calendar"/></svg></span>
+        <div class="card-title">Minhas sessões</div>
+        <div class="card-desc">Veja, confirme e agende suas sessões.</div>
+        <span class="card-arrow">›</span>
       </button>
 
       <button class="card card-green" id="cardEscalas" onclick="abrirModulo('escalas')">
@@ -8211,6 +8328,8 @@ var VMC_ACOES_GRAVACAO = [
   'profMarcarEditandoAuto', 'profLimparEditandoAuto', 'profEditarAutomonitoramento',
   'profCriarAutomonitoramento', 'profCriarEscala', 'profEditarEscala', // 18.5
   'profSalvarLembrete', 'profEncerrarLembrete', 'profLembrarAgora', // 19.2.1
+  'profSalvarSessao', 'profEditarSerie', 'profCancelarSessao', 'profMarcarSituacao', 'profSalvarBloqueio', 'profApagarBloqueio', 'profDecidirPedido', // 14.3
+  'pacienteAgendarSessao', 'pacienteConfirmarSessao', 'pacienteCancelarSessao', 'pacientePedirAgenda', // 14.3
   'profDesativarPaciente', 'profReativarPaciente', 'profExcluirPaciente', 'profAlterarSenhaPaciente',
   'admCadastrarProfissional', 'admAtualizarProfissional', 'admTrocarSenhaProfissional',
   'admDesativarProfissional', 'admReativarProfissional',
@@ -9107,7 +9226,7 @@ function rascEsquecer_(tipo) {
 }
 /* Pacote 19.2.1 — combinado da semana no Início do paciente (plano de lembretes do profissional), só leitura.
    Uma leitura em segundo plano ao abrir o Início; a faixa some quando não há nada combinado. */
-var INI_LEM = { carregado: false, carregando: false, hoje: '', lista: [] }; // lista: [{ data, hora, tipo, instrumento, texto, recorrencia, periodicidade, dias_semana }]
+var INI_LEM = { carregado: false, carregando: false, hoje: '', lista: [], proxima: null }; // 14.3: proxima = { data, hora, modalidade } | lista: [{ data, hora, tipo, instrumento, texto, recorrencia, periodicidade, dias_semana }]
 async function iniLemCarregar_() {
   if (INI_LEM.carregado || INI_LEM.carregando || PROF_SESSAO || !carregarSessao()) return;
   const geracao = VMC_GERACAO_SESSAO;
@@ -9117,6 +9236,7 @@ async function iniLemCarregar_() {
   INI_LEM.carregando = false;
   if (!r || !r.ok || !Array.isArray(r.lembretes)) return; // sem resposta: tenta de novo na próxima vez que o Início abrir
   INI_LEM.lista = r.lembretes;
+  INI_LEM.proxima = r.proxima_sessao || null; // 14.3
   INI_LEM.hoje = String(r.hoje || '');
   INI_LEM.carregado = true;
   iniLemRender_();
@@ -9125,6 +9245,12 @@ function iniLemRender_() {
   const box = document.getElementById('iniLembretes'), ul = document.getElementById('iniLembretesLista');
   if (!box || !ul) return;
   box.hidden = !INI_LEM.lista.length;
+  // 14.3: faixa da próxima sessão
+  const ps = document.getElementById('iniProxSessao'), px = INI_LEM.proxima;
+  if (ps) {
+    ps.classList.toggle('hidden', !px);
+    if (px) document.getElementById('iniProxSessaoTexto').textContent = 'Próxima sessão: ' + ageDiaNome_(px.data, true) + ', ' + lemDataBR_(px.data, true) + ' às ' + px.hora + ' (' + ageModNome_(px.modalidade) + ').';
+  }
   ul.innerHTML = INI_LEM.lista.map(function (l) {
     const dia = l.data === INI_LEM.hoje ? 'Hoje' : LEM_DIAS[lemDiaDaSemana_(l.data)] + ', ' + lemDataBR_(l.data, true);
     const repete = l.recorrencia === 'recorrente' ? ' · ' + lemRegra_(l) : '';
@@ -9773,7 +9899,7 @@ function profRenderInicio_() {
   var ativos = pacientes.filter(function(p){ return String(p.ativo||'Sim').trim().toLowerCase() !== 'nao'; });
 
   // 19.2.1: Lembretes de hoje e Atrasados entre os alertas e as atualizações
-  container.innerHTML = atalhos + profRenderAlertas_(ativos) + profRenderLembretesHoje_(ativos) + profRenderAtrasados_(ativos) + profRenderAtualizacoes_(ativos);
+  container.innerHTML = atalhos + profRenderAlertas_(ativos) + profRenderPedidos_(ativos) + profRenderLembretesHoje_(ativos) + profRenderAtrasados_(ativos) + profRenderAtualizacoes_(ativos);
 }
 
 function profSemPacientesHtml_() {
@@ -10628,7 +10754,7 @@ async function profLiberarEscala_(instr, cod) {
   var liberar = lib.indexOf(instr) === -1;
   var box = document.getElementById('profAvisoLiberacao');
   var resp = await chamarServidor('profLiberarEscala', { siglaPaciente: PROF_PACIENTE_SEL.sigla, instrumento: instr, liberar: liberar });
-  if (!resp || !resp.ok) { vmcAvisoNaTela('Não foi possível gravar agora. Tente de novo.', box); return; }
+  if (!resp || !resp.ok) { vmcAvisoNaTela('Não foi possível salvar agora. Tente de novo.', box); return; }
   PROF_PACIENTE_SEL.escalasLiberadas = resp.escalas_liberadas || [];
   profAtualizarCadeados_();
   var nome = (ESC_ESCALAS[cod] && ESC_ESCALAS[cod].nomeCurto) || cod;
@@ -11759,6 +11885,7 @@ function sairDoSistema(opcoes) {
   PROF_LINK_POR_SIGLA = {}; // 18.1.2: links de convite são da sessão que os gerou
   PROF_CONVITE = { cad: { sigla: '', telefone: '', link: '' }, ed: { sigla: '', telefone: '', link: '' } };
   graEstado = null; graCarregando = false; CAL_GRADE_JANELAS = {}; CAL_SESSOES = [];
+  AGE = { agenda: null, carregando: false, p: null, vista: '', sim: null, ocupado: false }; document.getElementById('ageModal').classList.remove('show'); // 14.3
   document.getElementById('profNomeHeader').textContent = 'Olá, Profissional';
   document.getElementById('profSiglaHeader').textContent = 'Área do Psicólogo';
   profFecharMeusDados(true); // 18.8.1: a janela "Meus dados" sai com a sessão, sem nada digitado
@@ -11774,7 +11901,8 @@ function sairDoSistema(opcoes) {
   ANAM_STATE.dadosConsulta = null; ANAM_STATE.numPessoasConfianca = 1; ANAM_STATE.cepBuscado = ''; ANAM_STATE.cepAbertos = [];
   INI_STATE.carregado = false; INI_STATE.carregando = false; INI_STATE.invalido = true; INI_STATE.dados = null;
   RASC_SERVIDOR = { carregado: false, carregando: false, lista: [] }; iniRascunhoRender(); // 18.10b
-  INI_LEM = { carregado: false, carregando: false, hoje: '', lista: [] }; iniLemRender_(); PROF_LEM = { editando: '', idNovo: '', encerrar: '' }; // 19.2.1
+  INI_LEM = { carregado: false, carregando: false, hoje: '', lista: [], proxima: null }; iniLemRender_();
+  SES = { dados: null, carregando: false, vista: 'lista', alvo: '', livres: null, de: '', escolhido: null, msg: '', erro: '', idEnvio: '', ocupado: false }; // 14.3 PROF_LEM = { editando: '', idNovo: '', encerrar: '' }; // 19.2.1
   P136_ESTADO = { idx: null, tipo: null, sigla: null, timestamp: null };
   HIST_FILTRO = 'todos'; HIST_MESES_ABERTOS = {}; CHK_ENV.periodo = null;
   ['profDashboardConteudo', 'profPacientesConteudo', 'profPacienteConteudo', 'autoHistLista', 'pevConteudo', 'eschConteudo', 'anamConteudo', 'iniContinuidade', 'graDias'].forEach(function (id) {
@@ -22568,6 +22696,8 @@ async function graCarregar() {
     sel.value = String(cfg.antecedencia_min_horas);
   }
 
+  document.getElementById('graCfgAvisos').value = String(cfg.avisos_sessao || '').toLowerCase() === 'sim' ? 'Sim' : 'Nao'; // 14.3
+
   // Grade -> estado por dia (dia ativo se possui ao menos uma janela com ativo=sim)
   graEstado = graEstadoVazio_();
   (resp.grade || []).forEach(function(g){
@@ -22715,7 +22845,8 @@ async function graSalvar() {
   var resp = await chamarServidor('profSalvarGrade', {
     config: {
       duracao_slot_min: 60,
-      antecedencia_min_horas: Number(document.getElementById('graCfgAntecedencia').value)
+      antecedencia_min_horas: Number(document.getElementById('graCfgAntecedencia').value),
+      avisos_sessao: document.getElementById('graCfgAvisos').value // 14.3
     },
     grade: grade
   });
@@ -22727,6 +22858,7 @@ async function graSalvar() {
     return;
   }
   elOk.style.display = 'block';
+  AGE.agenda = null; // 14.3: a configuração mudou; a Agenda relê ao abrir
 }
 
 /* Fim do Pacote 14.1 — Grade de Atendimento */
@@ -22735,13 +22867,13 @@ async function graSalvar() {
    PACOTE 14.2 — AGENDA VISUAL (Módulo Consultório Digital)
    Namespace cal*. Calendário semanal/diário do profissional.
    Faixa fixa 06h–22h. Tintura = janelas da Grade de Atendimento
-   real (profLerGrade). Sessões: estrutura pronta, populada no
-   Pacote 14.3 (por ora CAL_SESSOES permanece vazio).
+   real (profLerGrade). Sessões, bloqueios e feriados: Pacote 14.3
+   (profLerAgenda; desenho em ageDesenharDia_).
    ============================================================ */
 
 var CAL_HORA_INI = 6;
 var CAL_HORA_FIM = 22;
-var CAL_ALT_HORA = 48;
+var CAL_ALT_HORA = 64; // 14.3: 64 px por hora (era 48) — o bloco de 1 hora mostra hora, nome e a marca da situação
 var CAL_DOW_ROTULOS = ['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
 var CAL_MESES_NOMES = ['janeiro','fevereiro','março','abril','maio','junho','julho',
                        'agosto','setembro','outubro','novembro','dezembro'];
@@ -22750,7 +22882,7 @@ var calDataRef = null;       // data de referência da visão
 var calVisao = 'semana';     // 'semana' | 'dia'
 var calMiniMes = null;       // primeiro dia do mês exibido no mini-calendário
 var CAL_GRADE_JANELAS = {};  // {1:[{inicio,fim,modalidade}], ...} — janelas ATIVAS da grade real
-var CAL_SESSOES = [];        // Pacote 14.3 populará com as sessões reais
+var CAL_SESSOES = [];        // 14.3: as sessões do período, como o servidor as devolve (ageAplicar_)
 
 /* Abre a tela da Agenda, carrega a grade real e renderiza */
 async function calAbrirTela() {
@@ -22778,7 +22910,10 @@ async function calAbrirTela() {
   }
   document.getElementById('calAvisoGrade').style.display = temJanela ? 'none' : 'block';
 
+  ageMsg_('');
   calRender();
+  agePedidosRender_();
+  ageCarregar_(true); // 14.3: sessões, bloqueios, feriados e pedidos numa chamada só
 }
 
 /* ---------- Utilitários de data ---------- */
@@ -22797,6 +22932,7 @@ function calFmtDia_(d) {
 
 /* ---------- Renderização da grade ---------- */
 function calRender() {
+  ageCarregar_(false); // 14.3: fora do período já lido, busca o novo (e redesenha quando chegar)
   var grid = document.getElementById('calGrid');
   grid.innerHTML = '';
   grid.className = 'cal-grid ' + (calVisao === 'semana' ? 'cal-semana' : 'cal-dia-view');
@@ -22824,7 +22960,8 @@ function calRender() {
     var h = document.createElement('div');
     h.className = 'cal-col-head' + (calMesmaData_(d, hoje) ? ' cal-hoje-col' : '');
     h.innerHTML = '<div class="cal-dow">' + CAL_DOW_ROTULOS[(d.getDay()+6)%7] + '</div>' +
-      '<div class="cal-dnum">' + d.getDate() + '</div>';
+      '<div class="cal-dnum">' + d.getDate() + '</div>' +
+      (ageFeriado_(ageIso_(d)) ? '<div class="cal-fer" title="' + esc(ageFeriado_(ageIso_(d))) + '">' + esc(ageFeriado_(ageIso_(d))) + '</div>' : ''); // 14.3
     grid.appendChild(h);
   });
 
@@ -22865,24 +23002,8 @@ function calRender() {
       col.appendChild(tint);
     });
 
-    // Sessões (Pacote 14.3): estrutura pronta, CAL_SESSOES ainda vazio
-    CAL_SESSOES.forEach(function(ev){
-      if (!calMesmaData_(new Date(ev.data + 'T00:00:00'), d)) return;
-      var hIni = parseInt(ev.inicio.split(':')[0],10);
-      var mIni = parseInt(ev.inicio.split(':')[1],10);
-      if (hIni < CAL_HORA_INI || hIni >= CAL_HORA_FIM) return;
-      var topo = (hIni - CAL_HORA_INI) * CAL_ALT_HORA + (mIni/60) * CAL_ALT_HORA;
-      var fimTxt = String(hIni+1).padStart(2,'0') + ':' + String(mIni).padStart(2,'0');
-      var bloco = document.createElement('div');
-      bloco.className = 'cal-ev cal-' + ev.modalidade;
-      bloco.style.top = topo + 'px';
-      bloco.style.height = (CAL_ALT_HORA - 4) + 'px';
-      bloco.innerHTML =
-        '<div class="cal-ev-hora"><span>' + esc(ev.inicio) + ' – ' + fimTxt + '</span>' +
-        '<span>' + (ev.confirmada ? '<svg class=ico aria-hidden=true><use href=#i-check></use></svg>' : '<svg class=ico aria-hidden=true><use href=#i-hourglass></use></svg>') + '</span></div>' +
-        '<div class="cal-ev-nome">' + esc(ev.nome) + '</div>';
-      col.appendChild(bloco);
-    });
+    // 14.3: bloqueios, sessões (duração real) e o clique no horário
+    ageDesenharDia_(col, ageIso_(d));
 
     grid.appendChild(col);
   });
@@ -22943,6 +23064,803 @@ function calMiniNavegar(direcao) {
 }
 
 /* Fim do Pacote 14.2 — Agenda Visual */
+
+/* ============================================================
+   PACOTE 14.3 — AGENDA COMPLETA
+   Namespace age* (profissional: painel da consulta, repetição, cancelar, bloqueio, pedidos)
+   e ses* (paciente: Minhas sessões). A grade é a do 14.2 (cal*), agora com as sessões do servidor.
+   Toda gravação devolve a agenda do período na própria resposta (ageAplicar_): nenhuma releitura.
+   Textos aprovados pelo usuário em 22/11/2026.
+   ============================================================ */
+
+var AGE = { agenda: null, carregando: false, p: null, vista: '', sim: null, ocupado: false };
+var AGE_DIAS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+var AGE_DIAS_CURTOS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']; // ordem da Grade: 1 = segunda ... 7 = domingo
+var AGE_AVISOS = [['confirmacao', 'Confirmação do agendamento'], ['lembrete', 'Lembrete 24 horas antes'], ['cancelamento', 'Aviso de cancelamento']];
+
+/* ---------- datas e formatos ---------- */
+function ageIso_(d) { var p = function (n) { return ('0' + n).slice(-2); }; return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); }
+function ageMin_(hora) { var m = /^(\d{1,2}):(\d{2})/.exec(String(hora || '')); return m ? parseInt(m[1], 10) * 60 + parseInt(m[2], 10) : 0; }
+function ageHora_(min) { return ('0' + Math.floor(min / 60)).slice(-2) + ':' + ('0' + (min % 60)).slice(-2); }
+function ageModNome_(m) { return m === 'online' ? 'On-line' : 'Presencial'; }
+function ageDiaNome_(iso, minusculo) { var n = AGE_DIAS[lemDiaDaSemana_(iso)]; return minusculo ? n.toLowerCase() : n; }
+/* "Quinta, 26/11 às 10:00" */
+function ageQuandoCurto_(iso, hora) { return ageDiaNome_(iso) + ', ' + lemDataBR_(iso, true) + ' às ' + hora; }
+function ageListaDatas_(lista) { return (lista || []).map(function (iso) { return lemDataBR_(iso, true); }).join(', '); }
+/* Minutos de agora até o início (negativo = já passou), pelo relógio do aparelho */
+function ageMinutosAte_(iso, hora) {
+  var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || ''));
+  if (!m) return 0;
+  var ini = new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10), 0, ageMin_(hora), 0);
+  return Math.round((ini.getTime() - Date.now()) / 60000);
+}
+function ageHoras_() { return (AGE.agenda && AGE.agenda.config && AGE.agenda.config.antecedencia_min_horas) || 24; }
+
+/* ---------- leitura do período ---------- */
+function agePeriodo_() {
+  var seg = calSegundaDaSemana_(calDataRef || new Date());
+  var de = new Date(seg); de.setDate(seg.getDate() - 14);
+  var ate = new Date(seg); ate.setDate(seg.getDate() + 48);
+  return { de: ageIso_(de), ate: ageIso_(ate) };
+}
+function ageDentro_() {
+  if (!AGE.agenda || !calDataRef) return false;
+  var seg = calSegundaDaSemana_(calDataRef), fim = new Date(seg); fim.setDate(seg.getDate() + 6);
+  return ageIso_(seg) >= AGE.agenda.de && ageIso_(fim) <= AGE.agenda.ate;
+}
+async function ageCarregar_(forcar) {
+  if (!PROF_SESSAO || AGE.carregando || (!forcar && ageDentro_())) return;
+  var geracao = VMC_GERACAO_SESSAO;
+  AGE.carregando = true;
+  var r = await chamarServidor('profLerAgenda', agePeriodo_());
+  AGE.carregando = false;
+  if (geracao !== VMC_GERACAO_SESSAO) return;
+  if (!r || !r.ok) { ageMsg_((r && r.erro) || 'Não foi possível ler a agenda agora.', true); return; }
+  ageAplicar_({ agenda: r });
+}
+/* A agenda que veio numa resposta passa a ser a da tela; os pedidos da lista do Início acompanham */
+function ageAplicar_(resp) {
+  if (!resp || !resp.agenda) return;
+  AGE.agenda = resp.agenda;
+  CAL_SESSOES = resp.agenda.sessoes || [];
+  var porSigla = {};
+  (resp.agenda.pedidos || []).forEach(function (p) { (porSigla[p.sigla] = porSigla[p.sigla] || []).push(p); });
+  PROF_LISTA.forEach(function (p) { p.pedidos_agenda = porSigla[p.sigla] || []; });
+  if (document.getElementById('calGrid')) calRender();
+  agePedidosRender_();
+  profRenderInicio_();
+}
+function ageMsg_(texto, erro, linkHtml) {
+  var el = document.getElementById('calMsg');
+  if (!el) return;
+  el.className = 'age-msg' + (erro ? ' age-msg-erro' : '') + (texto ? '' : ' hidden');
+  el.textContent = texto || '';
+  if (texto && linkHtml) el.insertAdjacentHTML('beforeend', ' ' + linkHtml);
+}
+
+/* ---------- o que a grade desenha além da tintura ---------- */
+function ageDesenharDia_(col, iso) {
+  if (!AGE.agenda) return;
+  (AGE.agenda.bloqueios || []).forEach(function (b) {
+    if (iso < b.data_inicio || iso > b.data_fim) return;
+    var ini = (b.dia_todo || iso > b.data_inicio) ? CAL_HORA_INI * 60 : Math.max(ageMin_(b.hora_inicio), CAL_HORA_INI * 60);
+    var fim = (b.dia_todo || iso < b.data_fim) ? CAL_HORA_FIM * 60 : Math.min(ageMin_(b.hora_fim), CAL_HORA_FIM * 60);
+    if (fim <= ini) return;
+    var el = document.createElement('button');
+    el.type = 'button'; el.className = 'cal-bloq'; el.dataset.bloqueio = b.id;
+    el.style.top = ((ini - CAL_HORA_INI * 60) / 60 * CAL_ALT_HORA) + 'px';
+    el.style.height = ((fim - ini) / 60 * CAL_ALT_HORA) + 'px';
+    el.innerHTML = '<svg class=ico aria-hidden=true><use href=#i-lock></use></svg> <span>Bloqueado' + (b.nome ? ' · ' + esc(b.nome) : '') + '</span>';
+    el.addEventListener('click', function (e) { e.stopPropagation(); ageAbrirBloqueio_(b.id); });
+    col.appendChild(el);
+  });
+  CAL_SESSOES.forEach(function (s) {
+    if (s.data !== iso) return;
+    var ini = ageMin_(s.hora), dur = s.duracao_min || 60;
+    if (ini + dur <= CAL_HORA_INI * 60 || ini >= CAL_HORA_FIM * 60) return;
+    var el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'cal-ev ' + (s.modalidade === 'online' ? 'cal-ev-online' : 'cal-ev-presencial') + (s.estado === 'realizada' ? ' cal-ev-realizada' : (s.estado === 'falta' ? ' cal-ev-falta' : ''));
+    el.dataset.sessao = s.id;
+    el.style.top = ((ini - CAL_HORA_INI * 60) / 60 * CAL_ALT_HORA) + 'px';
+    el.style.height = Math.max(dur / 60 * CAL_ALT_HORA - 4, 26) + 'px';
+    var sit = s.estado === 'realizada' ? 'Consulta realizada' : (s.estado === 'falta' ? 'Não compareceu' : '');
+    var icones = (s.modalidade === 'online' ? '<svg class=ico aria-hidden=true><use href=#i-video></use></svg>' : '') +
+      (s.serie_id ? '<svg class=ico aria-hidden=true><use href=#i-repeat></use></svg>' : '') +
+      (s.confirmada ? '<svg class=ico aria-hidden=true><use href=#i-check></use></svg>' : '');
+    el.title = s.hora + ' – ' + ageHora_(ini + dur) + ' · ' + s.nome + ' · ' + ageModNome_(s.modalidade) + (sit ? ' · ' + sit : '') +
+      (s.reposicao_de ? ' · Reposição' : '') + (s.reposta_em ? ' · Reposta em ' + lemDataBR_(s.reposta_em, true) : '') +
+      (s.confirmada ? ' · Confirmada pelo paciente' : '') + (s.serie_id ? ' · Série' : '');
+    el.innerHTML = '<span class="cal-ev-hora"><span>' + esc(s.hora) + ' – ' + ageHora_(ini + dur) + '</span><span>' + icones + '</span></span>' +
+      '<span class="cal-ev-nome">' + esc(s.nome) + '</span>' +
+      '<span class="cal-ev-linha">' + (s.reposicao_de ? '<span class="cal-ev-marca">Reposição</span>' : '') +
+      (sit ? '<span class="cal-ev-sit">' + sit + '</span>' : '') +
+      (s.reposta_em ? '<span class="cal-ev-sit"> · Reposta em ' + esc(lemDataBR_(s.reposta_em, true)) + '</span>' : '') + '</span>';
+    el.addEventListener('click', function (e) { e.stopPropagation(); ageAbrirSessao_(s.id); });
+    col.appendChild(el);
+  });
+  col.addEventListener('click', function (e) {
+    var y = e.clientY - col.getBoundingClientRect().top;
+    var min = CAL_HORA_INI * 60 + Math.max(0, Math.floor(y / CAL_ALT_HORA * 2)) * 30;
+    ageAbrirNovo_(iso, ageHora_(Math.min(min, CAL_HORA_FIM * 60 - 30)));
+  });
+}
+function ageFeriado_(iso) { return (AGE.agenda && AGE.agenda.feriados && AGE.agenda.feriados[iso]) || ''; }
+
+/* ---------- pedidos dos pacientes (Agenda e Início) ---------- */
+function agePedidoTexto_(p) {
+  return p.tipo === 'repor'
+    ? esc(p.nome) + ' pede reposição da sessão de ' + esc(lemDataBR_(p.sessao_data, true)) + ', em ' + esc(lemDataBR_(p.data, true)) + ' às ' + esc(p.hora) + '.'
+    : esc(p.nome) + ' pede remarcar a sessão de ' + esc(lemDataBR_(p.sessao_data, true)) + ' às ' + esc(p.sessao_hora) + ' para ' + esc(lemDataBR_(p.data, true)) + ' às ' + esc(p.hora) + '.';
+}
+function agePedidosHtml_(pedidos, id) {
+  var linhas = pedidos.map(function (p) {
+    return '<div class="age-ped" data-pedido="' + esc(p.id) + '"><span class="age-ped-texto">' + agePedidoTexto_(p) + '</span>' +
+      '<span class="age-ped-acoes"><button type="button" class="prof-lem-btn" data-decidir="sim" onclick="ageDecidir_(this)">Aprovar</button>' +
+      '<button type="button" class="prof-lem-btn" data-decidir="nao" onclick="ageDecidir_(this)">Recusar</button></span></div>';
+  }).join('');
+  return '<section class="prof-bloco" id="' + id + '"><h3 class="prof-bloco-titulo">Pedidos dos pacientes</h3>' +
+    (linhas ? '<div class="prof-bloco-lista">' + linhas + '</div>' : '<p class="prof-bloco-vazio">Nenhum pedido pendente.</p>') +
+    '<p class="age-ped-msg hidden" role="status"></p></section>';
+}
+function agePedidosRender_() {
+  var el = document.getElementById('calPedidos');
+  if (!el) return;
+  var pedidos = (AGE.agenda && AGE.agenda.pedidos) || [];
+  el.innerHTML = pedidos.length ? agePedidosHtml_(pedidos, 'calBlocoPedidos') : '';
+}
+/* Bloco do Início: os pedidos vêm na lista do login (pedidos_agenda de cada paciente) */
+function profRenderPedidos_(ativos) {
+  var pedidos = [];
+  ativos.forEach(function (p) { (p.pedidos_agenda || []).forEach(function (x) { pedidos.push(Object.assign({}, x, { nome: x.nome && x.nome !== x.sigla ? x.nome : (p.nome_completo || p.sigla) })); }); });
+  return agePedidosHtml_(pedidos, 'profBlocoPedidos');
+}
+async function ageDecidir_(btn) {
+  var linha = btn.closest('.age-ped'), bloco = btn.closest('.prof-bloco');
+  if (!linha || AGE.ocupado) return;
+  var aprovar = btn.dataset.decidir === 'sim', idBloco = bloco.id;
+  AGE.ocupado = true; btn.disabled = true;
+  if (!calDataRef) { calDataRef = new Date(); calDataRef.setHours(0, 0, 0, 0); }
+  var r = await chamarServidor('profDecidirPedido', { id: linha.dataset.pedido, aprovar: aprovar, periodo: agePeriodo_() });
+  AGE.ocupado = false;
+  var texto = !r.ok ? (r.erro || 'Não foi possível salvar agora.')
+    : (r.aprovado ? 'Pedido aprovado. Sessão marcada para ' + lemDataBR_(r.data, true) + ' às ' + r.hora + '.' : 'Pedido recusado.');
+  if (r.ok) ageAplicar_(r); else btn.disabled = false;
+  var alvo = document.getElementById(idBloco);
+  if (!alvo && idBloco === 'calBlocoPedidos') { ageMsg_(texto, !r.ok); return; }
+  var msg = alvo && alvo.querySelector('.age-ped-msg');
+  if (msg) { msg.textContent = texto; msg.classList.remove('hidden'); msg.classList.toggle('age-msg-erro', !r.ok); }
+}
+
+/* ---------- WhatsApp (mensagens aprovadas; quem envia é o profissional) ---------- */
+function ageWhatsLink_(tipo, s, anterior) {
+  var quem = iniPrimeiroNome(PROF_SESSAO && PROF_SESSAO.nome_completo);
+  var artigo = (PROF_SESSAO && PROF_SESSAO.genero === 'F') ? 'a' : 'o';
+  var pac = iniPrimeiroNome(s.nome);
+  var quando = ageDiaNome_(s.data, true) + ', ' + lemDataBR_(s.data, true) + ', às ' + s.hora + ' (' + ageModNome_(s.modalidade) + ')';
+  var corpo = tipo === 'lembrete' ? 'Lembrete da nossa sessão: ' + quando + '.'
+    : (tipo === 'cancelamento' ? 'A sessão de ' + lemDataBR_(s.data, true) + ' às ' + s.hora + ' foi cancelada. Para marcar outra data: ' + VMC_SITE_URL
+    : (tipo === 'remarcacao' ? 'Nossa sessão passou de ' + lemDataBR_(anterior.data, true) + ' às ' + anterior.hora + ' para ' + lemDataBR_(s.data, true) + ' às ' + s.hora + ' (' + ageModNome_(s.modalidade) + ').'
+    : 'Sua sessão está marcada para ' + quando + '. Você pode confirmar a presença no COGNIATIVO: ' + VMC_SITE_URL));
+  var msg = 'Olá' + (pac ? ', ' + pac : '') + '! ' + (quem ? 'Aqui é ' + artigo + ' ' + quem + '. ' : '') + corpo;
+  return 'https://wa.me/55' + String(s.telefone || '').replace(/\D/g, '') + '?text=' + encodeURIComponent(msg);
+}
+function ageWhatsBotao_(tipo, s, anterior) {
+  if (!String(s.telefone || '').replace(/\D/g, '')) return '<span class="prof-lem-sem">Sem telefone no cadastro</span>';
+  return '<a class="prof-lem-btn" data-age-whats="' + tipo + '" href="' + esc(ageWhatsLink_(tipo, s, anterior)) + '" target="_blank" rel="noopener">Avisar pelo WhatsApp</a>';
+}
+
+/* ---------- painel: abrir ---------- */
+function agePainelNovo_(iso, hora) {
+  var cfg = (AGE.agenda && AGE.agenda.config) || {};
+  return { modo: 'novo', aba: 'consulta', id: vmcNovoIdEnvio_(), sigla: '', nome: '', busca: '', data: iso, hora: hora, dur: cfg.duracao_slot_min || 60,
+    modalidade: 'presencial', valor: '', notas: '', avisos: { confirmacao: true, lembrete: true, cancelamento: true }, repLigada: false, rep: null,
+    reposicao_de: '', sessao: null, escopo: 'esta', erro: '',
+    bloq: { id: vmcNovoIdEnvio_(), existente: false, data_inicio: iso, hora_inicio: hora, data_fim: iso, hora_fim: ageHora_(Math.min(ageMin_(hora) + 60, 1439)), dia_todo: false, nome: '' },
+    canc: { quem: 'profissional', escopo: 'esta', avisar: true } };
+}
+function ageFoto_(p) { return JSON.stringify([p.aba, p.sigla, p.data, p.hora, p.dur, p.modalidade, p.valor, p.notas, p.avisos, p.repLigada, p.rep, p.bloq]); }
+function ageMostrar_(p, vista) {
+  AGE.p = p; AGE.vista = vista || 'painel'; AGE.sim = null;
+  p.foto = ageFoto_(p);
+  document.getElementById('ageModal').classList.add('show');
+  ageRender_();
+}
+function ageAbrirNovo_(iso, hora) {
+  var p = agePainelNovo_(iso, hora);
+  var janelas = CAL_GRADE_JANELAS[((lemDiaDaSemana_(iso) + 6) % 7) + 1] || [];
+  var j = janelas.filter(function (w) { return ageMin_(w.inicio) <= ageMin_(hora) && ageMin_(hora) < ageMin_(w.fim); })[0];
+  if (j && j.modalidade === 'online') p.modalidade = 'online';
+  ageMostrar_(p);
+}
+function ageAbrirSessao_(id) {
+  var s = CAL_SESSOES.filter(function (x) { return x.id === id; })[0];
+  if (!s) return;
+  var p = agePainelNovo_(s.data, s.hora);
+  p.modo = 'editar'; p.id = s.id; p.sigla = s.sigla; p.nome = s.nome; p.dur = s.duracao_min; p.modalidade = s.modalidade;
+  p.valor = s.valor || ''; p.notas = s.notas || ''; p.sessao = s;
+  p.avisos = { confirmacao: s.avisos.indexOf('confirmacao') !== -1, lembrete: s.avisos.indexOf('lembrete') !== -1, cancelamento: s.avisos.indexOf('cancelamento') !== -1 };
+  p.repLigada = !!s.serie_id;
+  p.rep = (s.serie_id && AGE.agenda.series[s.serie_id]) ? JSON.parse(JSON.stringify(AGE.agenda.series[s.serie_id])) : null;
+  p.canc.avisar = p.avisos.cancelamento;
+  ageMostrar_(p);
+}
+function ageAbrirBloqueio_(id) {
+  var b = ((AGE.agenda && AGE.agenda.bloqueios) || []).filter(function (x) { return x.id === id; })[0];
+  if (!b) return;
+  var p = agePainelNovo_(b.data_inicio, b.hora_inicio || '08:00');
+  p.modo = 'editar'; p.aba = 'bloqueio';
+  p.bloq = { id: b.id, existente: true, data_inicio: b.data_inicio, hora_inicio: b.hora_inicio || '08:00', data_fim: b.data_fim, hora_fim: b.hora_fim || '18:00', dia_todo: !!b.dia_todo, nome: b.nome || '' };
+  ageMostrar_(p);
+}
+/* Reposição: sessão nova ligada à sessão cobrada (o valor é o da original; não gera cobrança nova) */
+function ageAbrirReposicao_(orig) {
+  var hoje = lemHojeIso_();
+  var p = agePainelNovo_(hoje, orig.hora);
+  p.sigla = orig.sigla; p.nome = orig.nome; p.modalidade = orig.modalidade; p.dur = orig.duracao_min; p.valor = orig.valor || '';
+  p.reposicao_de = orig.id; p.repoeData = orig.data;
+  ageMostrar_(p);
+}
+function ageFecharDeVez_() {
+  document.getElementById('ageModal').classList.remove('show');
+  AGE.p = null; AGE.vista = ''; AGE.sim = null;
+}
+/* Fechar o painel: com alteração não salva, pede confirmação */
+function ageFechar() {
+  if (!AGE.p) return;
+  if (AGE.vista === 'painel') { ageLer_(); if (ageFoto_(AGE.p) !== AGE.p.foto) { AGE.vista = 'sair'; ageRender_(); return; } }
+  else if (AGE.vista !== 'sair') { AGE.vista = 'painel'; ageRender_(); return; }
+  ageFecharDeVez_();
+}
+document.addEventListener('keydown', function (e) {
+  if (e.key !== 'Escape' || !AGE.p) return;
+  e.stopPropagation(); e.preventDefault();
+  ageFechar();
+}, true);
+
+/* ---------- painel: ler o que está na tela ---------- */
+function ageLer_() {
+  var p = AGE.p, v = function (id) { var el = document.getElementById(id); return el ? el.value : null; };
+  var c = function (id) { var el = document.getElementById(id); return el ? el.checked : null; };
+  if (!p) return;
+  if (AGE.vista === 'painel' && p.aba === 'consulta') {
+    if (v('ageData') !== null) p.data = v('ageData');
+    if (v('ageHoraCampo') !== null) p.hora = v('ageHoraCampo');
+    if (v('ageDur') !== null) p.dur = parseInt(v('ageDur'), 10) || 60;
+    if (v('ageMod') !== null) p.modalidade = v('ageMod');
+    if (v('ageValor') !== null) p.valor = v('ageValor').trim();
+    if (v('ageNotas') !== null) p.notas = v('ageNotas').trim();
+    if (v('ageBusca') !== null) p.busca = v('ageBusca');
+    if (v('ageRepSel') !== null) p.repLigada = v('ageRepSel') === 'sim';
+    if (v('ageEscopo') !== null) p.escopo = v('ageEscopo');
+    AGE_AVISOS.forEach(function (a) { if (c('ageAv_' + a[0]) !== null) p.avisos[a[0]] = c('ageAv_' + a[0]); });
+  } else if (AGE.vista === 'painel') {
+    var b = p.bloq;
+    b.data_inicio = v('ageBIni') || b.data_inicio; b.data_fim = v('ageBFim') || b.data_fim;
+    b.hora_inicio = v('ageBHIni') || b.hora_inicio; b.hora_fim = v('ageBHFim') || b.hora_fim;
+    b.dia_todo = !!c('ageBTodo'); b.nome = (v('ageBNome') || '').trim();
+  } else if (AGE.vista === 'repeticao') {
+    var r = p.rep;
+    r.cada = Math.min(12, Math.max(1, parseInt(v('ageRCada'), 10) || 1)); r.unidade = v('ageRUnid');
+    r.modo_mes = v('ageRModoMes') || r.modo_mes;
+    r.fim_tipo = c('ageRFimData') ? 'data' : 'n';
+    r.fim_n = Math.max(1, parseInt(v('ageRFimN'), 10) || 1); r.fim_data = v('ageRFimDataCampo') || r.fim_data;
+  } else if (AGE.vista === 'cancelar') {
+    p.canc.quem = c('ageCQuemPac') ? 'paciente' : 'profissional';
+    if (c('ageCEscSeg') !== null) p.canc.escopo = c('ageCEscSeg') ? 'seguintes' : 'esta';
+    p.canc.avisar = !!c('ageCAvisar');
+  }
+}
+function ageRepPadrao_(p) {
+  return { cada: 1, unidade: 'semana', dias_semana: [((lemDiaDaSemana_(p.data) + 6) % 7) + 1], modo_mes: 'dia_mes', fim_tipo: 'n', fim_n: 4, fim_data: p.data, pular_feriado: false };
+}
+function ageRepResumo_(r) {
+  if (!r) return '';
+  var cada = r.unidade === 'mes' ? (r.cada > 1 ? 'A cada ' + r.cada + ' meses' : 'Todo mês') : (r.cada > 1 ? 'A cada ' + r.cada + ' semanas' : 'Toda semana');
+  var dias = r.unidade === 'semana' ? ' · ' + (r.dias_semana || []).map(function (d) { return AGE_DIAS_CURTOS[d - 1]; }).join(', ') : '';
+  var fim = r.fim_tipo === 'data' ? ' · até ' + lemDataBR_(r.fim_data) : ' · ' + r.fim_n + ' consultas';
+  return cada + dias + fim;
+}
+function ageDadosEnvio_(p) {
+  return { id: p.id, sigla: p.sigla, data: p.data, hora: p.hora, duracao_min: p.dur, modalidade: p.modalidade, valor: p.valor, notas: p.notas,
+    avisos: AGE_AVISOS.filter(function (a) { return p.avisos[a[0]]; }).map(function (a) { return a[0]; }) };
+}
+
+/* ---------- painel: desenhar ---------- */
+function ageCampo_(rotulo, html, id) { return '<div class="prof-cad-field"><label' + (id ? ' for="' + id + '"' : '') + '>' + rotulo + '</label>' + html + '</div>'; }
+function ageBtn_(texto, fn, primario, id) { return '<button type="button" class="p5-btn ' + (primario ? 'p5-btn-primary' : 'p5-btn-secondary') + '"' + (id ? ' id="' + id + '"' : '') + ' onclick="' + fn + '">' + texto + '</button>'; }
+function ageAvisosPainel_() {
+  var p = AGE.p, el = document.getElementById('ageAvisosBox');
+  if (!p || !el) return;
+  ageLer_();
+  var lista = [];
+  var ini = ageMin_(p.hora), dur = p.dur || 60;
+  var janelas = CAL_GRADE_JANELAS[((lemDiaDaSemana_(p.data) + 6) % 7) + 1] || [];
+  if (p.data && p.hora && !janelas.some(function (w) { return ageMin_(w.inicio) <= ini && ini + dur <= ageMin_(w.fim); })) lista.push('Este horário está fora da sua grade de atendimento.');
+  if (p.data && p.hora && ageMinutosAte_(p.data, p.hora) < 0) lista.push('Data passada: a sessão será lançada como já ocorrida e nenhum aviso é enviado.');
+  if (ageFeriado_(p.data)) lista.push('Esta data é feriado: ' + ageFeriado_(p.data) + '.');
+  if (AGE.agenda && AGE.agenda.config.avisos_sessao !== 'Sim') lista.push('Os avisos de sessão estão desligados na Grade de Atendimento. Nada é enviado.');
+  el.innerHTML = lista.map(function (t) { return '<p class="age-aviso">' + esc(t) + '</p>'; }).join('');
+}
+function ageRender_() {
+  var p = AGE.p;
+  if (!p) return;
+  var titulo = document.getElementById('ageTitulo'), corpo = document.getElementById('ageCorpo'), acoes = document.getElementById('ageAcoes');
+  var erro = '<div class="prof-cad-erro" id="ageErro" role="alert"></div>';
+  if (AGE.vista === 'sair') {
+    titulo.textContent = 'Sair sem salvar?';
+    corpo.innerHTML = '<p class="age-texto">As alterações desta consulta serão perdidas.</p>';
+    acoes.innerHTML = ageBtn_('Continuar editando', 'ageVoltarPainel_()', false) + ageBtn_('Sair', 'ageFecharDeVez_()', true);
+    return;
+  }
+  if (AGE.vista === 'apagar') {
+    titulo.textContent = 'Apagar bloqueio';
+    corpo.innerHTML = '<p class="age-texto">Apagar este bloqueio?</p>' + erro;
+    acoes.innerHTML = ageBtn_('Voltar', 'ageVoltarPainel_()', false) + ageBtn_('Apagar bloqueio', 'ageApagarBloqueio_()', true, 'ageBtnOk');
+    return;
+  }
+  if (AGE.vista === 'repeticao') { ageRenderRepeticao_(titulo, corpo, acoes, erro); return; }
+  if (AGE.vista === 'lista') { ageRenderLista_(titulo, corpo, acoes, erro); return; }
+  if (AGE.vista === 'cancelar') { ageRenderCancelar_(titulo, corpo, acoes, erro); return; }
+
+  var novo = p.modo === 'novo', s = p.sessao;
+  titulo.textContent = p.aba === 'bloqueio' ? 'Bloqueio' : (p.reposicao_de ? 'Reposição' : (novo ? 'Nova consulta' : 'Consulta'));
+  var abas = (novo && !p.reposicao_de) ? '<div class="age-abas" role="tablist">' +
+    '<button type="button" role="tab" class="age-aba' + (p.aba === 'consulta' ? ' age-aba-ativa' : '') + '" aria-selected="' + (p.aba === 'consulta') + '" onclick="ageTrocarAba_(\'consulta\')">Consulta</button>' +
+    '<button type="button" role="tab" class="age-aba' + (p.aba === 'bloqueio' ? ' age-aba-ativa' : '') + '" aria-selected="' + (p.aba === 'bloqueio') + '" onclick="ageTrocarAba_(\'bloqueio\')">Bloqueio</button></div>' : '';
+
+  if (p.aba === 'bloqueio') {
+    corpo.innerHTML = abas +
+      '<div class="age-linha">' + ageCampo_('Início', '<input type="date" id="ageBIni">', 'ageBIni') + ageCampo_('Fim', '<input type="date" id="ageBFim">', 'ageBFim') + '</div>' +
+      '<div class="age-linha" id="ageBHoras">' + ageCampo_('Início', '<input type="time" id="ageBHIni">', 'ageBHIni') + ageCampo_('Fim', '<input type="time" id="ageBHFim">', 'ageBHFim') + '</div>' +
+      '<label class="age-check"><input type="checkbox" id="ageBTodo" onchange="ageBloqTodo_()"> <span>Dia inteiro</span></label>' +
+      ageCampo_('Nome (opcional)', '<input type="text" id="ageBNome" maxlength="80" autocomplete="off">', 'ageBNome') + erro;
+    var b = p.bloq;
+    document.getElementById('ageBIni').value = b.data_inicio; document.getElementById('ageBFim').value = b.data_fim;
+    document.getElementById('ageBHIni').value = b.hora_inicio; document.getElementById('ageBHFim').value = b.hora_fim;
+    document.getElementById('ageBTodo').checked = b.dia_todo; document.getElementById('ageBNome').value = b.nome;
+    ageBloqTodo_();
+    acoes.innerHTML = ageBtn_('Fechar', 'ageFechar()', false) + (b.existente ? ageBtn_('Apagar bloqueio', 'ageVista_(\'apagar\')', false) : '') +
+      ageBtn_(b.existente ? 'Salvar' : 'Criar bloqueio', 'ageSalvarBloqueio_()', true, 'ageBtnOk');
+    return;
+  }
+
+  var paciente;
+  if (p.sigla) {
+    paciente = '<div class="age-pac"><strong>' + esc(p.nome) + '</strong> <span class="prof-ev-sigla">(' + esc(p.sigla) + ')</span>' +
+      ((novo && !p.reposicao_de) ? ' <button type="button" class="age-link" onclick="ageTrocarPaciente_()">Trocar</button>' : '') + '</div>';
+  } else {
+    paciente = '<input type="search" id="ageBusca" placeholder="Buscar por nome ou sigla" autocomplete="off" oninput="ageBuscar_()"><div class="age-res" id="ageRes"></div>';
+  }
+  var marcas = '';
+  if (s) {
+    marcas = [s.reposicao_de ? 'Reposição' : '', s.reposta_em ? 'Reposta em ' + lemDataBR_(s.reposta_em, true) : '', s.confirmada ? 'Confirmada pelo paciente' : '', s.serie_id ? 'Série' : '']
+      .filter(String).map(function (t) { return '<span class="cal-ev-marca">' + esc(t) + '</span>'; }).join(' ');
+  }
+  var situacao = s ? ageCampo_('Situação', '<select id="ageSit" onchange="ageSituacao_()"><option value="">Sem marcação</option><option value="realizada">Consulta realizada</option><option value="falta">Não compareceu</option></select>', 'ageSit') +
+    '<div id="ageSitBox">' + (s.estado === 'falta' ? '<p class="age-texto">Falta cobrada.</p>' : '') +
+    (s.pode_repor ? '<button type="button" class="p5-btn p5-btn-secondary age-btn-largo" id="ageBtnRepor" onclick="ageRepor_()">' + (s.estado === 'falta' ? 'Repor em outra data' : 'Criar reposição') + '</button><p class="age-dica">A reposição usa o valor desta sessão e não gera cobrança nova.</p>' : '') + '</div>' : '';
+  var repeticao = p.reposicao_de ? '' : ageCampo_('Repetição',
+    '<div class="age-rep"><select id="ageRepSel" onchange="ageRepMudou_()"><option value="nao">Não se repete</option><option value="sim">Repetição personalizada</option></select>' +
+    '<button type="button" class="p5-btn p5-btn-secondary" id="ageRepEditar" onclick="ageRepAbrir_()">Editar</button></div><p class="age-dica" id="ageRepResumo"></p>', 'ageRepSel');
+  corpo.innerHTML = abas +
+    ageCampo_('Paciente', paciente, p.sigla ? '' : 'ageBusca') +
+    (marcas ? '<div class="age-marcas">' + marcas + '</div>' : '') +
+    (p.reposicao_de ? '<p class="age-dica">A reposição usa o valor desta sessão e não gera cobrança nova.</p>' : '') +
+    '<div class="age-linha">' + ageCampo_('Data', '<input type="date" id="ageData" onchange="ageAvisosPainel_()">', 'ageData') + ageCampo_('Hora', '<input type="time" id="ageHoraCampo" onchange="ageAvisosPainel_()">', 'ageHoraCampo') + '</div>' +
+    repeticao + situacao +
+    '<div class="age-linha">' + ageCampo_('Modalidade', '<select id="ageMod"><option value="presencial">Presencial</option><option value="online">On-line</option></select>', 'ageMod') +
+      ageCampo_('Duração (min)', '<input type="number" id="ageDur" min="10" max="480" step="5" inputmode="numeric" onchange="ageAvisosPainel_()">', 'ageDur') + '</div>' +
+    ageCampo_('Valor (R$)', '<input type="text" id="ageValor" maxlength="12" inputmode="decimal" autocomplete="off">', 'ageValor') +
+    ageCampo_('Notas', '<textarea id="ageNotas" maxlength="500" rows="2"></textarea>', 'ageNotas') +
+    '<fieldset class="age-fieldset"><legend>Quais avisos enviamos?</legend>' + AGE_AVISOS.map(function (a) {
+      return '<label class="age-check"><input type="checkbox" id="ageAv_' + a[0] + '"> <span>' + a[1] + '</span></label>';
+    }).join('') + '</fieldset>' +
+    ((s && s.serie_id) ? ageCampo_('Alterar', '<select id="ageEscopo"><option value="esta">Só esta consulta</option><option value="seguintes">Esta consulta e as seguintes</option></select>', 'ageEscopo') : '') +
+    '<div id="ageAvisosBox"></div>' + erro +
+    ((s && s.estado === 'agendada' && ageMinutosAte_(s.data, s.hora) > 0) ? '<div class="age-whats">' + ageWhatsBotao_(ageMinutosAte_(s.data, s.hora) <= 2880 ? 'lembrete' : 'confirmacao', s) + '</div>' : '');
+  document.getElementById('ageData').value = p.data; document.getElementById('ageHoraCampo').value = p.hora;
+  document.getElementById('ageMod').value = p.modalidade; document.getElementById('ageDur').value = p.dur;
+  document.getElementById('ageValor').value = p.valor; document.getElementById('ageNotas').value = p.notas;
+  if (p.reposicao_de || (s && s.reposicao_de)) document.getElementById('ageValor').disabled = true;
+  AGE_AVISOS.forEach(function (a) { document.getElementById('ageAv_' + a[0]).checked = !!p.avisos[a[0]]; });
+  if (document.getElementById('ageRepSel')) { document.getElementById('ageRepSel').value = p.repLigada ? 'sim' : 'nao'; ageRepPintar_(); }
+  if (document.getElementById('ageSit')) document.getElementById('ageSit').value = s.estado === 'agendada' ? '' : s.estado;
+  if (document.getElementById('ageEscopo')) document.getElementById('ageEscopo').value = p.escopo;
+  if (document.getElementById('ageBusca')) { document.getElementById('ageBusca').value = p.busca; ageBuscar_(); }
+  ageAvisosPainel_();
+  acoes.innerHTML = ageBtn_('Fechar', 'ageFechar()', false) +
+    ((s && s.estado === 'agendada') ? ageBtn_('Cancelar consulta', 'ageVista_(\'cancelar\')', false, 'ageBtnCancelar') : '') +
+    ageBtn_(novo ? 'Criar consulta' : 'Salvar', 'ageSalvar_()', true, 'ageBtnOk');
+}
+function ageErro_(texto) { var el = document.getElementById('ageErro'); if (el) { el.textContent = texto || ''; el.style.display = texto ? 'block' : 'none'; } }
+function ageOcupar_(sim) { AGE.ocupado = sim; var b = document.getElementById('ageBtnOk'); if (b) b.disabled = sim; }
+function ageVista_(vista) { ageLer_(); AGE.vista = vista; ageRender_(); }
+function ageVoltarPainel_() { ageLer_(); AGE.vista = 'painel'; ageRender_(); }
+function ageTrocarAba_(aba) { ageLer_(); AGE.p.aba = aba; ageRender_(); }
+function ageBloqTodo_() { var t = document.getElementById('ageBTodo'), h = document.getElementById('ageBHoras'); if (t && h) h.classList.toggle('hidden', t.checked); }
+function ageTrocarPaciente_() { ageLer_(); AGE.p.sigla = ''; AGE.p.nome = ''; ageRender_(); }
+function ageBuscar_() {
+  var campo = document.getElementById('ageBusca'), box = document.getElementById('ageRes');
+  if (!campo || !box) return;
+  var q = profNormalizar_(campo.value.trim());
+  var ativos = PROF_LISTA.filter(function (x) { return String(x.ativo || 'Sim').trim().toLowerCase() !== 'nao'; });
+  var achados = (q ? ativos.filter(function (x) { return profNormalizar_((x.nome_completo || '') + ' ' + (x.sigla || '')).indexOf(q) !== -1; }) : ativos).slice(0, 6);
+  box.innerHTML = achados.map(function (x) {
+    return '<button type="button" class="age-res-item" data-sigla="' + esc(x.sigla) + '" onclick="ageEscolher_(this.dataset.sigla)">' + esc(x.nome_completo || x.sigla) + ' <span class="prof-ev-sigla">(' + esc(x.sigla) + ')</span></button>';
+  }).join('') || '<p class="age-dica">Nenhum paciente encontrado. <button type="button" class="age-link" onclick="ageNovoPaciente_()">Novo Paciente</button></p>';
+}
+function ageEscolher_(sigla) {
+  var x = PROF_LISTA.filter(function (y) { return y.sigla === sigla; })[0];
+  if (!x) return;
+  ageLer_(); AGE.p.sigla = x.sigla; AGE.p.nome = x.nome_completo || x.sigla; AGE.p.busca = ''; ageRender_();
+}
+function ageNovoPaciente_() { ageFecharDeVez_(); profAbrirModalCadastro(); }
+function ageRepPintar_() {
+  var p = AGE.p, sel = document.getElementById('ageRepSel'), ed = document.getElementById('ageRepEditar'), res = document.getElementById('ageRepResumo');
+  if (!sel) return;
+  var ligada = sel.value === 'sim';
+  ed.classList.toggle('hidden', !ligada);
+  res.textContent = ligada && p.rep ? ageRepResumo_(p.rep) : '';
+}
+function ageRepMudou_() {
+  var p = AGE.p; ageLer_();
+  if (p.repLigada && !p.rep) { p.rep = ageRepPadrao_(p); AGE.vista = 'repeticao'; ageRender_(); return; }
+  ageRepPintar_();
+}
+function ageRepAbrir_() { var p = AGE.p; ageLer_(); if (!p.rep) p.rep = ageRepPadrao_(p); AGE.vista = 'repeticao'; ageRender_(); }
+
+/* ---------- repetição ---------- */
+function ageRenderRepeticao_(titulo, corpo, acoes, erro) {
+  var p = AGE.p, r = p.rep;
+  var dom = parseInt(String(p.data).slice(8, 10), 10) || 1, ordem = Math.ceil(dom / 7);
+  titulo.textContent = 'Repetição';
+  corpo.innerHTML =
+    '<div class="age-linha">' + ageCampo_('Repetir a cada', '<input type="number" id="ageRCada" min="1" max="12" inputmode="numeric">', 'ageRCada') +
+      ageCampo_('&nbsp;', '<select id="ageRUnid" onchange="ageRepUnidade_()"><option value="semana">semana</option><option value="mes">mês</option></select>', 'ageRUnid') + '</div>' +
+    '<div id="ageRSemana">' + ageCampo_('Repetir em', '<div class="age-dias">' + AGE_DIAS_CURTOS.map(function (n, i) {
+      return '<button type="button" class="prof-lem-dia" data-dia="' + (i + 1) + '" aria-pressed="false" onclick="ageRepDia_(this)">' + n + '</button>';
+    }).join('') + '</div>') + '</div>' +
+    '<div id="ageRMes">' + ageCampo_('Repetir em', '<select id="ageRModoMes"><option value="dia_mes">No mesmo dia do mês (dia ' + dom + ')</option><option value="dia_semana">No mesmo dia da semana (' + ordem + 'ª ' + ageDiaNome_(p.data, true) + ')</option></select>', 'ageRModoMes') + '</div>' +
+    '<fieldset class="age-fieldset"><legend>Terminar</legend>' +
+      '<label class="age-check"><input type="radio" name="ageRFim" id="ageRFimN_"> <span>Após</span> <input type="number" id="ageRFimN" class="age-curto" min="1" max="60" inputmode="numeric" aria-label="Número de consultas"> <span>consultas</span></label>' +
+      '<label class="age-check"><input type="radio" name="ageRFim" id="ageRFimData"> <span>Em</span> <input type="date" id="ageRFimDataCampo" aria-label="Data final"></label>' +
+    '</fieldset>' +
+    '<p class="age-dica">Horário ocupado ou bloqueado: a data é pulada.</p>' + erro;
+  document.getElementById('ageRCada').value = r.cada; document.getElementById('ageRUnid').value = r.unidade;
+  document.getElementById('ageRModoMes').value = r.modo_mes; document.getElementById('ageRFimN').value = r.fim_n || 4;
+  document.getElementById('ageRFimDataCampo').value = r.fim_data || p.data; document.getElementById('ageRFimDataCampo').min = p.data;
+  document.getElementById(r.fim_tipo === 'data' ? 'ageRFimData' : 'ageRFimN_').checked = true;
+  corpo.querySelectorAll('.prof-lem-dia').forEach(function (b) { b.setAttribute('aria-pressed', r.dias_semana.indexOf(parseInt(b.dataset.dia, 10)) !== -1 ? 'true' : 'false'); });
+  ageRepUnidade_();
+  acoes.innerHTML = ageBtn_('Voltar', 'ageRepVoltar_()', false) + ageBtn_('Ver as datas', 'ageSimular_()', true, 'ageBtnOk');
+}
+function ageRepUnidade_() {
+  var mes = document.getElementById('ageRUnid').value === 'mes';
+  document.getElementById('ageRSemana').classList.toggle('hidden', mes);
+  document.getElementById('ageRMes').classList.toggle('hidden', !mes);
+}
+function ageRepDia_(btn) {
+  var r = AGE.p.rep, d = parseInt(btn.dataset.dia, 10), i = r.dias_semana.indexOf(d);
+  if (i === -1) r.dias_semana.push(d); else r.dias_semana.splice(i, 1);
+  r.dias_semana.sort();
+  btn.setAttribute('aria-pressed', i === -1 ? 'true' : 'false');
+}
+function ageRepVoltar_() {
+  ageLer_();
+  var p = AGE.p;
+  if (p.modo === 'editar' && p.sessao && !p.sessao.serie_id) { p.repLigada = false; p.rep = null; }
+  AGE.vista = 'painel'; ageRender_();
+}
+/* Antes de gravar a série: o servidor devolve as datas, as puladas e as que caem em feriado, sem gravar */
+async function ageSimular_() {
+  if (AGE.ocupado) return;
+  if (AGE.vista === 'repeticao') ageLer_();
+  var p = AGE.p;
+  if (!p.sigla) { AGE.vista = 'painel'; ageRender_(); ageErro_('Escolha o paciente.'); return; }
+  if (p.rep.unidade === 'semana' && !p.rep.dias_semana.length) { ageErro_('Escolha pelo menos um dia da semana.'); return; }
+  ageOcupar_(true);
+  var r;
+  if (p.modo === 'editar') r = await chamarServidor('profEditarSerie', { dados: { id: p.idSerie || (p.idSerie = vmcNovoIdEnvio_()), sessao_id: p.id, repeticao: p.rep, simular: true } });
+  else r = await chamarServidor('profSalvarSessao', { dados: Object.assign(ageDadosEnvio_(p), { repeticao: p.rep, simular: true }) });
+  ageOcupar_(false);
+  if (!r.ok) { ageErro_(r.erro || 'Não foi possível calcular as datas agora.'); return; }
+  AGE.sim = r.simulacao; AGE.vista = 'lista'; ageRender_();
+}
+function ageRenderLista_(titulo, corpo, acoes, erro) {
+  var p = AGE.p, s = AGE.sim || { datas: [], puladas: [], feriados: [], pulados_feriado: [] };
+  var emFeriado = (s.feriados || []).concat(s.pulados_feriado || []).sort();
+  titulo.textContent = 'Repetição';
+  corpo.innerHTML = '<p class="age-texto" id="ageListaTitulo">Serão criadas ' + s.datas.length + ' sessões:</p>' +
+    '<ul class="age-datas" id="ageListaDatas">' + s.datas.map(function (iso) { return '<li>' + esc(ageDiaNome_(iso) + ', ' + lemDataBR_(iso)) + ' às ' + esc(p.hora) + '</li>'; }).join('') + '</ul>' +
+    (s.puladas.length ? '<p class="age-aviso" id="ageListaPuladas">Puladas (horário ocupado): ' + esc(ageListaDatas_(s.puladas)) + '</p>' : '') +
+    (emFeriado.length ? '<p class="age-aviso" id="ageListaFeriados">Em feriado: ' + esc(ageListaDatas_(emFeriado)) + '</p>' +
+      '<label class="age-check"><input type="checkbox" id="ageRPularFer" onchange="agePularFeriado_()"> <span>Pular as datas em feriado</span></label>' : '') + erro;
+  if (document.getElementById('ageRPularFer')) document.getElementById('ageRPularFer').checked = !!p.rep.pular_feriado;
+  acoes.innerHTML = ageBtn_('Voltar', 'ageVista_(\'repeticao\')', false) + (s.datas.length ? ageBtn_('Criar ' + s.datas.length + ' sessões', 'ageCriarSerie_()', true, 'ageBtnOk') : '');
+}
+function agePularFeriado_() { AGE.p.rep.pular_feriado = document.getElementById('ageRPularFer').checked; ageSimular_(); }
+async function ageCriarSerie_() {
+  if (AGE.ocupado) return;
+  var p = AGE.p;
+  ageOcupar_(true);
+  var r;
+  if (p.modo === 'editar') r = await chamarServidor('profEditarSerie', { dados: { id: p.idSerie, sessao_id: p.id, repeticao: p.rep }, periodo: agePeriodo_() });
+  else r = await chamarServidor('profSalvarSessao', { dados: Object.assign(ageDadosEnvio_(p), { repeticao: p.rep }), periodo: agePeriodo_() });
+  ageOcupar_(false);
+  if (!r.ok) { ageErro_(r.erro || 'Não foi possível salvar agora.'); return; }
+  var puladas = (r.simulacao && r.simulacao.puladas) || [];
+  var n = p.modo === 'editar' ? ((r.simulacao && r.simulacao.datas.length) || 0) : r.criadas;
+  ageFecharDeVez_();
+  ageAplicar_(r);
+  ageMsg_(n + ' sessões criadas.' + (puladas.length ? ' Puladas: ' + ageListaDatas_(puladas) + '.' : ''));
+}
+
+/* ---------- salvar a consulta ---------- */
+async function ageSalvar_() {
+  if (AGE.ocupado) return;
+  ageLer_();
+  var p = AGE.p;
+  if (!p.sigla) { ageErro_('Escolha o paciente.'); return; }
+  if (!p.data) { ageErro_('Escolha a data.'); return; }
+  if (!p.hora) { ageErro_('Escolha o horário.'); return; }
+  if (p.modo === 'novo' && p.repLigada && !p.reposicao_de) { if (!p.rep) p.rep = ageRepPadrao_(p); ageSimular_(); return; }
+  var dados = ageDadosEnvio_(p);
+  if (p.reposicao_de) dados.reposicao_de = p.reposicao_de;
+  if (p.modo === 'editar' && p.sessao && p.sessao.serie_id) dados.escopo = p.escopo;
+  ageOcupar_(true);
+  var r = await chamarServidor('profSalvarSessao', { dados: dados, periodo: agePeriodo_() });
+  ageOcupar_(false);
+  if (!r.ok) { ageErro_(r.erro || 'Não foi possível salvar agora.'); return; }
+  var antes = p.sessao ? { data: p.sessao.data, hora: p.sessao.hora } : null;
+  var nova = { nome: p.nome, telefone: p.sessao ? p.sessao.telefone : ((PROF_LISTA.filter(function (x) { return x.sigla === p.sigla; })[0] || {}).telefone || ''), data: p.data, hora: p.hora, modalidade: p.modalidade };
+  ageFecharDeVez_();
+  ageAplicar_(r);
+  var link = (r.remarcada && antes && (antes.data !== nova.data || antes.hora !== nova.hora) && nova.telefone) ? ageWhatsBotao_('remarcacao', nova, antes) : '';
+  var extra = (r.nao_alteradas && r.nao_alteradas.length) ? ' Puladas: ' + ageListaDatas_(r.nao_alteradas) + '.' : '';
+  ageMsg_((p.modo === 'novo' ? 'Consulta criada.' : 'Consulta salva.') + extra, false, link);
+}
+/* Situação grava na hora (a marca aparece no bloco); o painel continua aberto para repor a falta */
+async function ageSituacao_() {
+  var p = AGE.p, sel = document.getElementById('ageSit');
+  if (!p || !sel || AGE.ocupado) return;
+  ageLer_();
+  ageOcupar_(true);
+  var r = await chamarServidor('profMarcarSituacao', { id: p.id, situacao: sel.value, periodo: agePeriodo_() });
+  ageOcupar_(false);
+  if (!r.ok) { ageErro_(r.erro || 'Não foi possível salvar agora.'); sel.value = p.sessao.estado === 'agendada' ? '' : p.sessao.estado; return; }
+  var guardado = { data: p.data, hora: p.hora, dur: p.dur, modalidade: p.modalidade, valor: p.valor, notas: p.notas, avisos: p.avisos };
+  ageAplicar_(r);
+  var s = CAL_SESSOES.filter(function (x) { return x.id === p.id; })[0];
+  if (!s) { ageFecharDeVez_(); return; }
+  p.sessao = s; Object.assign(p, guardado);
+  ageRender_();
+}
+function ageRepor_() { var s = AGE.p && AGE.p.sessao; if (s) ageAbrirReposicao_(s); }
+
+/* ---------- cancelar ---------- */
+function ageRenderCancelar_(titulo, corpo, acoes, erro) {
+  var p = AGE.p, s = p.sessao;
+  titulo.textContent = 'Cancelar consulta';
+  corpo.innerHTML = '<p class="age-texto"><strong>' + esc(s.nome) + '</strong> · ' + esc(ageQuandoCurto_(s.data, s.hora)) + '</p>' +
+    '<fieldset class="age-fieldset"><legend>Quem pediu o cancelamento?</legend>' +
+      '<label class="age-check"><input type="radio" name="ageCQuem" id="ageCQuemPac" onchange="ageCancPrazo_()"> <span>O paciente</span></label>' +
+      '<label class="age-check"><input type="radio" name="ageCQuem" id="ageCQuemEu" onchange="ageCancPrazo_()"> <span>Eu</span></label></fieldset>' +
+    (s.serie_id ? '<fieldset class="age-fieldset"><legend class="age-sr">Série</legend>' +
+      '<label class="age-check"><input type="radio" name="ageCEsc" id="ageCEscEsta"> <span>Só esta consulta</span></label>' +
+      '<label class="age-check"><input type="radio" name="ageCEsc" id="ageCEscSeg"> <span>Esta consulta e as seguintes</span></label></fieldset>' : '') +
+    '<p class="age-aviso hidden" id="ageCPrazo">Faltam menos de ' + ageHoras_() + ' horas: a sessão fica como cobrada.</p>' +
+    '<label class="age-check"><input type="checkbox" id="ageCAvisar"> <span>Avisar o paciente por e-mail</span></label>' + erro;
+  document.getElementById(p.canc.quem === 'paciente' ? 'ageCQuemPac' : 'ageCQuemEu').checked = true;
+  if (s.serie_id) document.getElementById(p.canc.escopo === 'seguintes' ? 'ageCEscSeg' : 'ageCEscEsta').checked = true;
+  document.getElementById('ageCAvisar').checked = !!p.canc.avisar;
+  ageCancPrazo_();
+  acoes.innerHTML = ageBtn_('Voltar', 'ageVoltarPainel_()', false) + ageBtn_('Cancelar consulta', 'ageCancelar_()', true, 'ageBtnOk');
+}
+function ageCancCobrada_() {
+  var s = AGE.p.sessao;
+  return document.getElementById('ageCQuemPac').checked && !s.reposicao_de && ageMinutosAte_(s.data, s.hora) < ageHoras_() * 60;
+}
+function ageCancPrazo_() { document.getElementById('ageCPrazo').classList.toggle('hidden', !ageCancCobrada_()); }
+async function ageCancelar_() {
+  if (AGE.ocupado) return;
+  var cobrada = ageCancCobrada_();
+  ageLer_();
+  var p = AGE.p, s = p.sessao;
+  ageOcupar_(true);
+  var r = await chamarServidor('profCancelarSessao', { id: p.id, opcoes: p.canc, periodo: agePeriodo_() });
+  ageOcupar_(false);
+  if (!r.ok) { ageErro_(r.erro || 'Não foi possível salvar agora.'); return; }
+  ageFecharDeVez_();
+  ageAplicar_(r);
+  AGE.cobradaCancelada = cobrada ? s : null;
+  var link = (s.telefone ? ageWhatsBotao_('cancelamento', s) : '') +
+    (cobrada ? ' <button type="button" class="prof-lem-btn" id="ageBtnReporCancelada" onclick="ageReporCancelada_()">Criar reposição</button>' : '');
+  ageMsg_(r.canceladas > 1 ? r.canceladas + ' consultas canceladas.' : 'Consulta cancelada.', false, link);
+}
+function ageReporCancelada_() { if (AGE.cobradaCancelada) { ageMsg_(''); ageAbrirReposicao_(AGE.cobradaCancelada); } }
+
+/* ---------- bloqueio ---------- */
+async function ageSalvarBloqueio_() {
+  if (AGE.ocupado) return;
+  ageLer_();
+  var b = AGE.p.bloq;
+  ageOcupar_(true);
+  var r = await chamarServidor('profSalvarBloqueio', { dados: { id: b.id, data_inicio: b.data_inicio, hora_inicio: b.hora_inicio, data_fim: b.data_fim, hora_fim: b.hora_fim, dia_todo: b.dia_todo, nome: b.nome }, periodo: agePeriodo_() });
+  ageOcupar_(false);
+  if (!r.ok) { ageErro_(r.erro || 'Não foi possível salvar agora.'); return; }
+  ageFecharDeVez_(); ageAplicar_(r); ageMsg_('Bloqueio criado.');
+}
+async function ageApagarBloqueio_() {
+  if (AGE.ocupado) return;
+  ageOcupar_(true);
+  var r = await chamarServidor('profApagarBloqueio', { id: AGE.p.bloq.id, periodo: agePeriodo_() });
+  ageOcupar_(false);
+  if (!r.ok) { ageErro_(r.erro || 'Não foi possível salvar agora.'); return; }
+  ageFecharDeVez_(); ageAplicar_(r); ageMsg_('Bloqueio apagado.');
+}
+
+/* ============================================================
+   Paciente — Minhas sessões (ses*)
+   ============================================================ */
+var SES = { dados: null, carregando: false, vista: 'lista', alvo: '', livres: null, de: '', escolhido: null, msg: '', erro: '', idEnvio: '', ocupado: false };
+
+function sesAbrirTela() {
+  if (PROF_SESSAO || !carregarSessao()) return;
+  abrirSecao('sec-sessoes');
+  SES.vista = 'lista'; SES.msg = ''; SES.erro = '';
+  sesRender_();
+  sesCarregar_();
+}
+async function sesCarregar_() {
+  if (SES.carregando) return;
+  var geracao = VMC_GERACAO_SESSAO;
+  SES.carregando = true;
+  var r = await chamarServidor('lerMinhasSessoes', {});
+  SES.carregando = false;
+  if (geracao !== VMC_GERACAO_SESSAO) return;
+  if (r && r.ok) SES.dados = r; else SES.erro = (r && r.erro) || 'Não foi possível ler suas sessões agora.';
+  sesRender_();
+}
+/* A resposta de toda gravação traz a lista atualizada; a faixa do Início acompanha */
+function sesAplicar_(r, msg) {
+  SES.dados = r; SES.vista = 'lista'; SES.msg = msg || ''; SES.erro = ''; SES.livres = null; SES.escolhido = null;
+  var prox = (r.sessoes || []).filter(function (x) { return x.estado === 'agendada' && x.futura; })[0];
+  INI_LEM.proxima = prox ? { data: prox.data, hora: prox.hora, modalidade: prox.modalidade } : null;
+  iniLemRender_();
+  sesRender_();
+}
+function sesProf_() { return (SES.dados && SES.dados.profissional) || 'seu profissional'; }
+function sesHoras_() { return (SES.dados && SES.dados.antecedencia_horas) || 24; }
+function sesLinha_(x, comAcoes) {
+  var sit = x.estado === 'realizada' ? 'Consulta realizada' : (x.estado === 'falta' ? 'Não compareceu' : (x.estado === 'cancelada' ? 'Cancelada' : ''));
+  var marcas = [x.confirmada && x.estado === 'agendada' ? 'Confirmada' : '', x.reposicao ? 'Reposição' : '', sit].filter(String)
+    .map(function (t) { return '<span class="cal-ev-marca">' + t + '</span>'; }).join(' ');
+  var ped = '';
+  if (x.pedido) {
+    var quando = esc(lemDataBR_(x.pedido.data, true)) + ' às ' + esc(x.pedido.hora);
+    ped = x.pedido.estado === 'pendente' ? (x.pedido.tipo === 'repor' ? 'Reposição pedida para ' + quando + ' — aguardando resposta' : 'Remarcação pedida para ' + quando + ' — aguardando resposta')
+      : (x.pedido.estado === 'aprovado' ? 'Pedido aprovado' : 'Pedido recusado');
+  }
+  var acoes = '';
+  if (comAcoes) {
+    acoes = (x.pode_confirmar ? '<button type="button" class="prof-lem-btn" data-ses="confirmar" onclick="sesConfirmar_(this)">Confirmar presença</button>' : '') +
+      (x.pode_remarcar ? '<button type="button" class="prof-lem-btn" data-ses="remarcar" onclick="sesEscolherHorario_(\'remarcar\', this)">Pedir remarcação</button>' : '') +
+      (x.pode_cancelar ? '<button type="button" class="prof-lem-btn" data-ses="cancelar" onclick="sesPedirCancelar_(this)">Cancelar</button>' : '');
+  }
+  if (x.pode_repor) acoes += '<button type="button" class="prof-lem-btn" data-ses="repor" onclick="sesEscolherHorario_(\'repor\', this)">Pedir reposição</button>';
+  return '<li class="ses-item" data-sessao="' + esc(x.id) + '"><div class="ses-quando">' + esc(ageQuandoCurto_(x.data, x.hora)) + ' · ' + ageModNome_(x.modalidade) + '</div>' +
+    (marcas ? '<div class="age-marcas">' + marcas + '</div>' : '') + (ped ? '<div class="age-dica">' + ped + '</div>' : '') +
+    (acoes ? '<div class="ses-acoes">' + acoes + '</div>' : '') + '</li>';
+}
+function sesRender_() {
+  var el = document.getElementById('sesConteudo');
+  if (!el) return;
+  var topo = (SES.msg ? '<p class="age-msg" id="sesMsg" role="status">' + esc(SES.msg) + '</p>' : '') + (SES.erro ? '<p class="age-msg age-msg-erro" id="sesErro" role="alert">' + esc(SES.erro) + '</p>' : '');
+  if (!SES.dados) { el.innerHTML = topo + (SES.erro ? '' : '<p class="age-dica">Carregando…</p>'); return; }
+  if (SES.vista === 'cancelar') { sesRenderCancelar_(el, topo); return; }
+  if (SES.vista !== 'lista') { sesRenderHorarios_(el, topo); return; }
+  var todas = SES.dados.sessoes || [];
+  var proximas = todas.filter(function (x) { return x.estado === 'agendada' && x.futura; });
+  var anteriores = todas.filter(function (x) { return !(x.estado === 'agendada' && x.futura); }).reverse().slice(0, 30);
+  el.innerHTML = topo +
+    '<button type="button" class="ini-novo" id="sesBtnAgendar" onclick="sesEscolherHorario_(\'agendar\')"><svg class="ico ico-lg" aria-hidden="true"><use href="#i-plus"/></svg> Agendar sessão</button>' +
+    '<p class="age-dica" id="sesRegra">' + esc('Cancelamento e remarcação pelo sistema só com ' + sesHoras_() + ' horas ou mais de antecedência. Com menos de ' + sesHoras_() + ' horas, fale diretamente com ' + sesProf_() + '; a sessão é cobrada.') + '</p>' +
+    '<h3 class="prof-bloco-titulo">Próximas</h3>' +
+    (proximas.length ? '<ul class="ses-lista" id="sesProximas">' + proximas.map(function (x) { return sesLinha_(x, true); }).join('') + '</ul>' : '<p class="prof-bloco-vazio" id="sesVazio">Você ainda não tem sessões marcadas.</p>') +
+    (anteriores.length ? '<h3 class="prof-bloco-titulo ses-titulo-ant">Anteriores</h3><ul class="ses-lista" id="sesAnteriores">' + anteriores.map(function (x) { return sesLinha_(x, false); }).join('') + '</ul>' : '');
+}
+function sesSessao_(btn) { var li = btn.closest('.ses-item'); return li ? (SES.dados.sessoes || []).filter(function (x) { return x.id === li.dataset.sessao; })[0] : null; }
+async function sesEnviarAcao_(acao, dados, msg) {
+  if (SES.ocupado) return;
+  SES.ocupado = true;
+  var r = await chamarServidor(acao, dados);
+  SES.ocupado = false;
+  if (!r || !r.ok) { SES.erro = (r && r.erro) || 'Não foi possível salvar agora.'; SES.msg = ''; sesRender_(); return; }
+  sesAplicar_(r, msg);
+}
+function sesConfirmar_(btn) { var x = sesSessao_(btn); if (x) sesEnviarAcao_('pacienteConfirmarSessao', { id: x.id }, 'Presença confirmada.'); }
+function sesPedirCancelar_(btn) { var x = sesSessao_(btn); if (!x) return; SES.alvo = x.id; SES.vista = 'cancelar'; SES.msg = ''; SES.erro = ''; sesRender_(); }
+function sesRenderCancelar_(el, topo) {
+  var x = (SES.dados.sessoes || []).filter(function (y) { return y.id === SES.alvo; })[0];
+  if (!x) { SES.vista = 'lista'; sesRender_(); return; }
+  el.innerHTML = topo + '<h3 class="prof-bloco-titulo">' + esc('Cancelar a sessão de ' + ageDiaNome_(x.data, true) + ', ' + lemDataBR_(x.data, true) + ' às ' + x.hora + '?') + '</h3>' +
+    '<p class="age-texto">' + esc('Você está cancelando com ' + sesHoras_() + ' horas ou mais de antecedência: a sessão não será cobrada.') + '</p>' +
+    '<div class="ses-acoes"><button type="button" class="p5-btn p5-btn-secondary" onclick="sesVoltar_()">Voltar</button>' +
+    '<button type="button" class="p5-btn p5-btn-primary" id="sesBtnCancelar" onclick="sesCancelar_()">Cancelar sessão</button></div>';
+}
+function sesCancelar_() { sesEnviarAcao_('pacienteCancelarSessao', { id: SES.alvo }, 'Sessão cancelada.'); }
+function sesVoltar_() { SES.vista = 'lista'; SES.erro = ''; SES.livres = null; SES.escolhido = null; sesRender_(); }
+/* Escolha de horário: agendar, pedir remarcação ou pedir reposição usam a mesma lista de horários livres */
+function sesEscolherHorario_(tipo, btn) {
+  var x = btn ? sesSessao_(btn) : null;
+  SES.vista = tipo; SES.alvo = x ? x.id : ''; SES.msg = ''; SES.erro = ''; SES.escolhido = null; SES.livres = null;
+  SES.de = (SES.dados && SES.dados.hoje) || lemHojeIso_(); SES.idEnvio = vmcNovoIdEnvio_();
+  sesRender_();
+  sesCarregarLivres_();
+}
+async function sesCarregarLivres_() {
+  var geracao = VMC_GERACAO_SESSAO, de = SES.de;
+  var r = await chamarServidor('lerHorariosLivres', { de: de });
+  if (geracao !== VMC_GERACAO_SESSAO || de !== SES.de || SES.vista === 'lista') return;
+  if (!r || !r.ok) { SES.erro = (r && r.erro) || 'Não foi possível ler os horários agora.'; SES.livres = []; }
+  else { SES.livres = r.livres || []; SES.de = r.de; }
+  sesRender_();
+}
+function sesSemana_(delta) {
+  var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(SES.de); if (!m) return;
+  var d = new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10) + delta * 7);
+  var iso = ageIso_(d), hoje = (SES.dados && SES.dados.hoje) || lemHojeIso_();
+  SES.de = iso < hoje ? hoje : iso; SES.livres = null; SES.escolhido = null; SES.erro = '';
+  sesRender_(); sesCarregarLivres_();
+}
+function sesRenderHorarios_(el, topo) {
+  var intro = SES.vista === 'remarcar' ? 'Escolha um novo horário. O pedido vai para ' + sesProf_() + '; a sessão só muda depois da aprovação.'
+    : (SES.vista === 'repor' ? 'A reposição não é garantida: fica a critério de ' + sesProf_() + '. Se aprovada, usa o valor da sessão já cobrada.' : 'Escolha o dia e o horário');
+  var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(SES.de), fim = m ? ageIso_(new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10) + 6)) : SES.de;
+  var corpo;
+  if (SES.livres === null) corpo = '<p class="age-dica">Carregando…</p>';
+  else if (!SES.livres.length) corpo = '<p class="prof-bloco-vazio" id="sesSemLivres">Nenhum horário livre nesta semana.</p>';
+  else {
+    var porDia = {}, ordem = [];
+    SES.livres.forEach(function (s) { if (!porDia[s.data]) { porDia[s.data] = []; ordem.push(s.data); } porDia[s.data].push(s); });
+    corpo = ordem.map(function (iso) {
+      return '<div class="ses-dia"><div class="ses-quando">' + esc(ageDiaNome_(iso) + ', ' + lemDataBR_(iso, true)) + '</div><div class="ses-horas">' + porDia[iso].map(function (s) {
+        var sel = SES.escolhido && SES.escolhido.data === s.data && SES.escolhido.hora === s.hora;
+        return '<button type="button" class="prof-lem-dia ses-hora" aria-pressed="' + (sel ? 'true' : 'false') + '" data-data="' + s.data + '" data-hora="' + s.hora + '" onclick="sesEscolher_(this)">' + s.hora + '</button>';
+      }).join('') + '</div></div>';
+    }).join('');
+  }
+  var e = SES.escolhido;
+  var mod = (SES.vista === 'agendar' && e && e.modalidades.length > 1)
+    ? '<div class="prof-cad-field"><label for="sesMod">Modalidade</label><select id="sesMod">' + e.modalidades.map(function (x) { return '<option value="' + x + '">' + ageModNome_(x) + '</option>'; }).join('') + '</select></div>' : '';
+  el.innerHTML = topo + '<h3 class="prof-bloco-titulo">' + (SES.vista === 'remarcar' ? 'Pedir remarcação' : (SES.vista === 'repor' ? 'Pedir reposição' : 'Agendar sessão')) + '</h3>' +
+    '<p class="age-texto">' + esc(intro) + '</p>' +
+    '<div class="ses-nav"><button type="button" class="cal-btn" id="sesSemAnt" aria-label="Semana anterior" onclick="sesSemana_(-1)">‹</button>' +
+    '<strong>Horários livres · ' + esc(lemDataBR_(SES.de, true) + ' – ' + lemDataBR_(fim, true)) + '</strong>' +
+    '<button type="button" class="cal-btn" id="sesSemProx" aria-label="Próxima semana" onclick="sesSemana_(1)">›</button></div>' +
+    corpo + mod +
+    '<div class="ses-acoes"><button type="button" class="p5-btn p5-btn-secondary" onclick="sesVoltar_()">Voltar</button>' +
+    (e ? '<button type="button" class="p5-btn p5-btn-primary" id="sesBtnEnviar" onclick="sesEnviar_()">' + (SES.vista === 'agendar' ? 'Agendar' : 'Enviar pedido') + '</button>' : '') + '</div>';
+}
+function sesEscolher_(btn) {
+  SES.escolhido = (SES.livres || []).filter(function (s) { return s.data === btn.dataset.data && s.hora === btn.dataset.hora; })[0] || null;
+  SES.erro = '';
+  sesRender_();
+}
+function sesEnviar_() {
+  var e = SES.escolhido; if (!e) return;
+  if (SES.vista === 'agendar') {
+    var sel = document.getElementById('sesMod');
+    sesEnviarAcao_('pacienteAgendarSessao', { dados: { id: SES.idEnvio, data: e.data, hora: e.hora, modalidade: sel ? sel.value : e.modalidades[0] } },
+      'Sessão agendada para ' + ageDiaNome_(e.data, true) + ', ' + lemDataBR_(e.data, true) + ' às ' + e.hora + '.');
+  } else {
+    sesEnviarAcao_('pacientePedirAgenda', { dados: { id: SES.idEnvio, tipo: SES.vista === 'repor' ? 'repor' : 'remarcar', sessao_id: SES.alvo, data: e.data, hora: e.hora } },
+      'Pedido enviado. Você será avisado quando for respondido.');
+  }
+}
+
+/* Fim do Pacote 14.3 — Agenda completa */
 
 </script>
 </body>

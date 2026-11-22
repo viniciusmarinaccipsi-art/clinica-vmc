@@ -352,14 +352,14 @@ tenta('V', () => {
   r = prof('profSalvarGrade', { config: { duracao_slot_min: 60, antecedencia_min_horas: 24, avisos_sessao: 'Sim' }, grade: gradeSemana });
   ok('V3 ligar a chave pela Grade', r.ok && prof('profLerAgenda', PER).config.avisos_sessao === 'Sim', r);
   r = gatilho(quando(2026, 11, 25, 14, 30));
-  ok('V4 gatilho com a chave ligada: lembrete da sessão que começa em menos de 24 h', r.sessoes.enviados === 1 && h.EMAILS.length === 1 && h.EMAILS[0].to === 'p1@exemplo.test' && h.EMAILS[0].subject === 'Lembrete de sessão — COGNIATIVO' && h.EMAILS[0].body.indexOf('quinta-feira, 26/11/2026, às 10:00 (Presencial)') !== -1 && cel('Sessoes', idL, 'ultimo_aviso_em') === '2026-11-25 14:30', [r.sessoes, h.EMAILS.map(e => e.subject)]);
+  ok('V4 gatilho com a chave ligada: lembrete da sessão que começa em menos de 24 h', r.sessoes.enviados === 1 && h.EMAILS.length === 1 && h.EMAILS[0].to === 'p1@exemplo.test' && h.EMAILS[0].subject === 'Lembrete de sessão — COGNIATIVO' && h.EMAILS[0].body.indexOf('quinta, 26/11/2026, às 10:00 (Presencial)') !== -1 && cel('Sessoes', idL, 'ultimo_aviso_em') === '2026-11-25 14:30', [r.sessoes, h.EMAILS.map(e => e.subject)]);
   r = gatilho(quando(2026, 11, 25, 15, 30));
   ok('V5 segunda rodada não manda de novo', r.sessoes.enviados === 0 && h.EMAILS.length === 1, r.sessoes);
   ok('V6 sessão a mais de 24 h e sessão sem a caixa do lembrete não recebem', (() => { const a = uuid(), b = uuid(); h.EMAILS.length = 0; sessao(P1, { id: a, data: '2026-11-27', hora: '16:00', avisos: [] }); sessao(P1, { id: b, data: '2026-11-26', hora: '17:00', avisos: ['confirmacao'] }); h.EMAILS.length = 0; const g = gatilho(quando(2026, 11, 25, 17, 30)); return g.sessoes.enviados === 0 && h.EMAILS.length === 0; })());
   h.EMAILS.length = 0;
   const idV = uuid();
   r = sessao(P1, { id: idV, data: '2026-12-08', hora: '10:00', modalidade: 'online' });
-  ok('V7 criar com a caixa marcada: confirmação ao paciente, com o prazo', r.ok && r.aviso === '' && h.EMAILS.length === 1 && h.EMAILS[0].to === 'p1@exemplo.test' && h.EMAILS[0].subject === 'Sessão agendada — COGNIATIVO' && h.EMAILS[0].body.indexOf('terça-feira, 08/12/2026, às 10:00 (On-line)') !== -1 && h.EMAILS[0].body.indexOf('com 24 horas ou mais de antecedência') !== -1, [r.aviso, h.EMAILS.map(e => e.subject)]);
+  ok('V7 criar com a caixa marcada: confirmação ao paciente, com o prazo', r.ok && r.aviso === '' && h.EMAILS.length === 1 && h.EMAILS[0].to === 'p1@exemplo.test' && h.EMAILS[0].subject === 'Sessão agendada — COGNIATIVO' && h.EMAILS[0].body.indexOf('terça, 08/12/2026, às 10:00 (On-line)') !== -1 && h.EMAILS[0].body.indexOf('com 24 horas ou mais de antecedência') !== -1, [r.aviso, h.EMAILS.map(e => e.subject)]);
   h.EMAILS.length = 0;
   r = sessao(P1, { data: '2026-12-08', hora: '11:00', avisos: ['lembrete'] });
   ok('V8 criar sem a caixa da confirmação: nenhum e-mail', r.ok && r.aviso === 'caixa' && h.EMAILS.length === 0, r.aviso);

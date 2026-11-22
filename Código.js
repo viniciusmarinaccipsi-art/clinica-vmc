@@ -6948,12 +6948,12 @@ function _ageValidarSessao_(d, cfg) {
 
 // ---------- e-mails de sessao ----------
 
-var AGE_DIAS_NOME = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+var AGE_DIAS_NOME = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 function _ageDataBR_(iso) { return String(iso).slice(8, 10) + '/' + String(iso).slice(5, 7) + '/' + String(iso).slice(0, 4); }
 function _ageDiaMes_(iso) { return String(iso).slice(8, 10) + '/' + String(iso).slice(5, 7); }
 function _ageDiaNome_(iso) { var n = _lemDia_(iso); return n === null ? '' : AGE_DIAS_NOME[_lemDiaDaSemana_(n)]; }
 function _ageModNome_(m) { return m === 'online' ? 'On-line' : 'Presencial'; }
-/** "quinta-feira, 26/11/2026, às 10:00 (On-line)" */
+/** "quinta, 26/11/2026, às 10:00 (On-line)" */
 function _ageQuando_(x) { return _ageDiaNome_(x.data) + ', ' + _ageDataBR_(x.data) + ', às ' + _lemHora_(x.hora_inicio || x.hora) + ' (' + _ageModNome_(x.modalidade) + ')'; }
 
 /**
