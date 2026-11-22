@@ -1695,10 +1695,17 @@ login) devolve em cada paciente `lembretes` — os itens de hoje e atrasados (`_
 devolve `lembretes` (o plano, `_lembretesDoPaciente_`). O paciente ganha uma leitura em segundo
 plano no Início (`lerMeusLembretes`).
 
-**E-mail.** `montarEmailLembrete(tipo, nome, assinatura)` usa `_layoutEmail_` (o dos convites) com
-a linha opcional `sobBotao`; textos em `EMAIL_LEMBRETE` (um conjunto por tipo), aprovados em
-22/11/2026. **Nenhum dado clínico:** o nome da escala e o texto do "Outro" nunca entram no e-mail
-nem na mensagem do WhatsApp. Cota própria: `_reservarEmail_('lembretes')`, `LEMBRETES_DIA_MAX` =
+**E-mail.** `montarEmailLembrete(tipo, nome, assinatura, detalhe)` usa `_layoutEmail_` (o dos
+convites) com a linha opcional `sobBotao`; textos em `EMAIL_LEMBRETE` (um conjunto por tipo),
+aprovados em 22/11/2026. **Desde o 19.2.2 (decisão do usuário, 22/11/2026) a sigla da escala e o
+texto do "Outro" aparecem na mensagem:** `_lembreteDetalhe_(item)` devolve a sigla (a chave de
+`ESCALAS_MENU`, só se for do catálogo — PHQ-9, URICA-A; nunca o nome por extenso) ou o texto
+digitado, e `EMAIL_LEMBRETE_COM_DETALHE` monta o parágrafo ("Há uma escala aberta para você:
+<sigla>. Quando puder, responda." / "Combinado de hoje: <texto>"). No HTML o parágrafo inteiro
+passa pelo escapador único; no texto puro vai como foi digitado. Sem sigla ou sem texto vale o
+parágrafo genérico. Assunto, título e prévia não levam o detalhe (o assunto aparece na tela
+bloqueada). No WhatsApp, `lemDetalhe_(l)` e `lemLinkWhats_(telefone, tipo, nome, detalhe)` fazem o
+mesmo, com o texto por `encodeURIComponent`. O Automonitoramento não mudou. Cota própria: `_reservarEmail_('lembretes')`, `LEMBRETES_DIA_MAX` =
 60 por dia (convites 20 e redefinições 10 ficam à parte).
 
 **Gatilho.** `enviarLembretes_` roda de hora em hora (`instalarGatilhos` cria os dois gatilhos:
