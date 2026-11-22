@@ -250,8 +250,8 @@ tenta('T', () => {
   const r = pub({ t: tokenDe(linkL) });
   h.TRAVA.ocupada = false;
   ok('T2 com a trava ocupada a confirmação por link recusa ("ocupado") em vez de gravar', r.ok === false && r.codigo === 'ocupado', r);
-  ok('T3 as quatro caixas de aviso e a coluna nova', S('AGENDA_AVISOS').join(',') === 'confirmacao,lembrete48,lembrete,cancelamento' && S('COLUNAS_SESSOES').indexOf('lembrete48_em') === S('COLUNAS_SESSOES').length - 1 && h.cab(aba('Sessoes')).indexOf('lembrete48_em') !== -1);
-  ok('T4 VERSAO_PACOTE = 14.4', S('VERSAO_PACOTE') === '14.4', S('VERSAO_PACOTE'));
+  ok('T3 as quatro caixas de aviso e a coluna nova', S('AGENDA_AVISOS').join(',') === 'confirmacao,lembrete48,lembrete,cancelamento' && S('COLUNAS_SESSOES').indexOf('lembrete48_em') === 21 && h.cab(aba('Sessoes')).indexOf('lembrete48_em') !== -1);
+  ok('T4 VERSAO_PACOTE = 14.5 (o 14.4 segue dentro)', S('VERSAO_PACOTE') === '14.5', S('VERSAO_PACOTE'));
   const inesperados = logServidor.filter(l => !/^trava de gravacao: nao obtida/.test(l));
   ok('T5 o servidor não registrou nenhum erro além da trava ocupada provocada', inesperados.length === 0, inesperados.slice(0, 5));
 });

@@ -67,7 +67,7 @@
 // pacienteConfirmarSessao, pacienteCancelarSessao, pacientePedirAgenda); avisos de sessao por e-mail, desligados por padrao.
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.4';
+var VERSAO_PACOTE = '14.5';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -463,7 +463,7 @@ function _despachar_(acao, payload, s) {
         break;
 
       case 'profDecidirPedido':
-        resposta = profDecidirPedido(s, payload.id, payload.aprovar, payload.periodo);
+        resposta = profDecidirPedido(s, payload.id, payload.aprovar, payload.periodo, payload.quando);
         break;
 
       // Pacote 14.3 - Agenda completa (paciente: so as proprias sessoes)
@@ -473,6 +473,10 @@ function _despachar_(acao, payload, s) {
 
       case 'lerHorariosLivres':
         resposta = _exigir_(s, 'paciente') || lerHorariosLivres(s.sigla, payload.de);
+        break;
+
+      case 'profLerHorariosLivres': // 14.5
+        resposta = profLerHorariosLivres(s, payload.de);
         break;
 
       case 'pacienteAgendarSessao':
@@ -581,7 +585,8 @@ function _memoZerar_(ativo) {
 var ACOES_SO_LEITURA = ['lerHistorico', 'lerEscalas', 'lerRascunhos', 'lerEditandoAuto',
   'profListarPacientes', 'profLerDadosPaciente', 'profLerGrade', 'admListarProfissionais', 'profLerMeusDados',
   'lerMeusLembretes', // 19.2.1
-  'profLerAgenda', 'lerMinhasSessoes', 'lerHorariosLivres']; // 14.3
+  'profLerAgenda', 'lerMinhasSessoes', 'lerHorariosLivres', // 14.3
+  'profLerHorariosLivres']; // 14.5
 
 // ---------- 18.11: cache do script (CacheService) ----------
 // Tres coisas moram no cache do script, para a chamada comum nao abrir a Sistema_VMC:
@@ -1337,7 +1342,10 @@ function _layoutEmail_(p) {
     linhas.push(esp(12));
     linhas.push('<tr><td><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="#E7E6F5" style="background-color:#E7E6F5;border-radius:16px;padding:7px 12px;' + F + 'font-size:13px;line-height:18px;font-weight:600;color:#3D3A6B;">' + _escHtml_(p.acompanhamento) + '</td></tr></table></td></tr>');
   }
-  linhas.push(esp(14), par(_escHtml_(p.ola), 15, 23, '#3F3C52'), esp(10), par(_escHtml_(p.paragrafo), 15, 23, '#3F3C52'), esp(22));
+  linhas.push(esp(14), par(_escHtml_(p.ola), 15, 23, '#3F3C52'), esp(10), par(_escHtml_(p.paragrafo), 15, 23, '#3F3C52'));
+  // 14.5: segundo link do e-mail de sessao (endereco no mapa ou sala do Meet)
+  if (p.linkExtra && p.linkExtra.url) linhas.push(esp(10), par('<a href="' + _escHtml_(p.linkExtra.url) + '" target="_blank" style="color:#4C4A8F;text-decoration:underline;font-weight:600;">' + _escHtml_(p.linkExtra.rotulo) + '</a>', 15, 23, '#3F3C52'));
+  linhas.push(esp(22));
   linhas.push('<tr><td><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="#4C4A8F" style="background-color:#4C4A8F;border-radius:999px;"><a href="' + link + '" target="_blank" style="display:block;' + F + 'font-size:15px;line-height:16px;font-weight:600;color:#FFFFFF;text-decoration:none;padding:14px 26px;border-radius:999px;">' + _escHtml_(p.botao) + '</a></td></tr></table></td></tr>');
   if (p.sobBotao) linhas.push(esp(12), par(_escHtml_(p.sobBotao), 13, 20, '#5E5B73')); // 19.2.1: linha sob o botao (lembrete)
   linhas.push(esp(18), par(_escHtml_(EMAIL_LINK_RESERVA) + '<br><a href="' + link + '" target="_blank" style="color:#4C4A8F;text-decoration:underline;word-break:break-all;">' + link + '</a>', 13, 20, '#5E5B73'));
@@ -2128,6 +2136,10 @@ function _enviarEmail_(para, email) {
     var msg = { to: para, subject: email.assunto, body: email.texto, htmlBody: email.html, name: 'COGNIATIVO' };
     var logo = _logoEmailBlob_();
     if (logo) msg.inlineImages = { logo: logo };
+    // 14.5: evento da sessao em anexo (.ics) — o paciente abre e guarda na agenda dele (Google, Outlook, Apple)
+    if (email.anexo && email.anexo.texto) {
+      try { msg.attachments = [Utilities.newBlob(email.anexo.texto, 'text/calendar', email.anexo.nome || 'sessao.ics')]; } catch (erroAnexo) { /* sem o anexo o e-mail sai assim mesmo */ }
+    }
     MailApp.sendEmail(msg);
     return true;
   } catch (e) {
@@ -5237,7 +5249,7 @@ function lerGradeAtendimento(s) {
     }
   }
 
-  return { ok: true, config: config, grade: grade };
+  return { ok: true, config: config, grade: grade, calendar_disponivel: _calDoDono_(profissionalId) }; // 14.5
 }
 
 /**
@@ -5298,14 +5310,27 @@ function salvarGradeAtendimento(s, config, grade) {
   }
   // 14.3: chave geral dos avisos de sessao (so muda quando a tela a manda; nasce 'Nao')
   if (config.avisos_sessao !== undefined) cfgGravar.avisos_sessao = String(config.avisos_sessao).toLowerCase() === 'sim' ? 'Sim' : 'Nao';
+  // 14.5: endereco do consultorio e espelho no Google Calendar (so mudam quando a tela os manda)
+  var txtEnd = function (v) { return String(v === undefined || v === null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, AGENDA_ENDERECO_MAX); };
+  if (config.endereco !== undefined) cfgGravar.endereco = txtEnd(config.endereco);
+  if (config.endereco_novo !== undefined) cfgGravar.endereco_novo = txtEnd(config.endereco_novo);
+  if (config.endereco_novo_desde !== undefined) cfgGravar.endereco_novo_desde = _lemDia_(config.endereco_novo_desde) === null ? '' : String(config.endereco_novo_desde).trim();
+  var ligouCalendar = false;
+  if (config.google_calendar !== undefined) {
+    var querCal = String(config.google_calendar).toLowerCase() === 'sim' && _calDoDono_(profissionalId);
+    cfgGravar.google_calendar = querCal ? 'Sim' : 'Nao';
+    ligouCalendar = querCal;
+  }
   for (var chave in cfgGravar) {
-    var valorTxt = _celulaSegura_(String(cfgGravar[chave])); // 18.2
+    var valorTxt = (chave === 'endereco' || chave === 'endereco_novo' || chave === 'endereco_novo_desde') ? _lemCelula_(cfgGravar[chave]) : _celulaSegura_(String(cfgGravar[chave])); // 18.2; 14.5: endereco e texto literal
     if (chavesExistentes[chave]) {
       abaCfg.getRange(chavesExistentes[chave], 2).setValue(valorTxt);
     } else {
       abaCfg.appendRow([chave, valorTxt]);
     }
   }
+
+  if (ligouCalendar) _calMarcarFuturas_(controle); // 14.5
 
   // 4. Gravar Grade_Horarios (substitui linhas de dados pelo estado atual)
   var abaGrade = _gradeObterOuCriarAba_(controle, GRADE_ABA_HORARIOS,
@@ -6573,11 +6598,13 @@ var ABA_PEDIDOS_AGENDA = 'Pedidos_Agenda';
 var COLUNAS_SESSOES = ['id', 'sigla', 'data', 'hora_inicio', 'duracao_min', 'modalidade', 'valor', 'notas', 'serie_id',
   'estado', 'cobrada', 'reposicao_de', 'origem', 'confirmada_em', 'cancelada_em', 'cancelada_por', 'avisos',
   'ultimo_aviso_em', 'criado_em', 'criado_por', 'atualizado_em',
-  'lembrete48_em']; // 14.4: marca do lembrete de 48 h (ultimo_aviso_em e a do de 24 h); 'dispensado' = a sessao nasceu ja dentro do prazo
+  'lembrete48_em', // 14.4: marca do lembrete de 48 h (ultimo_aviso_em e a do de 24 h); 'dispensado' = a sessao nasceu ja dentro do prazo
+  'gcal_evento', 'gcal_sinc', 'meet_link']; // 14.5: id do evento no Google Calendar, 'pendente' enquanto o espelho nao foi feito, link do Meet da sessao on-line
 var COLUNAS_SERIES = ['id', 'sigla', 'cada', 'unidade', 'dias_semana', 'modo_mes', 'fim_tipo', 'fim_n', 'fim_data',
   'ocupado', 'criada_em', 'encerrada_em'];
 var COLUNAS_BLOQUEIOS = ['id', 'data_inicio', 'hora_inicio', 'data_fim', 'hora_fim', 'dia_todo', 'nome'];
-var COLUNAS_PEDIDOS_AGENDA = ['id', 'sigla', 'tipo', 'sessao_id', 'data', 'hora', 'estado', 'criado_em', 'decidido_em'];
+var COLUNAS_PEDIDOS_AGENDA = ['id', 'sigla', 'tipo', 'sessao_id', 'data', 'hora', 'estado', 'criado_em', 'decidido_em',
+  'sugestao']; // 14.5: "horario ideal" escrito pelo paciente quando nenhum horario livre serve (data e hora ficam vazias)
 var AGENDA_SERIE_MAX = 60;        // sessoes por repeticao
 var AGENDA_SERIE_DIAS = 366;      // 12 meses a partir da primeira data
 var AGENDA_LEITURA_DIAS = 100;    // periodo maximo de uma leitura da agenda
@@ -6585,6 +6612,12 @@ var AGENDA_NOTAS_MAX = 500;
 var AGENDA_AVISOS = ['confirmacao', 'lembrete48', 'lembrete', 'cancelamento']; // lembrete = 24 h antes; cancelamento = mudanca ou cancelamento
 var AGENDA_EVENTOS_DIAS = 30;    // janela dos eventos da agenda (sino)
 var SESSOES_EMAIL_DIA_MAX = 60;   // e-mails de sessao por dia (cota propria)
+var AGENDA_ENDERECO_MAX = 200;
+var AGENDA_SUGESTAO_MAX = 200;
+var CAL_NOME_PADRAO = 'Cogniativo: Agenda Consultório'; // 14.5: agenda do Google que recebe o espelho (decisao do usuario de 22/11/2026)
+var CAL_COR = { presencial: '1', online: '2' };         // cores do Google Calendar: 1 = lavanda (lilas), 2 = salvia (verde)
+var CAL_SINC_RODADA = 20;         // eventos espelhados por rodada do gatilho, por profissional
+var CAL_LIVRES_DIAS_PROF = 14;    // dias da lista de horarios livres do profissional
 
 // Mensagens de tela (aprovadas pelo usuario em 22/11/2026)
 var MSG_AGE_OCUPADO = 'Este horário já está ocupado. Escolha outro.';
@@ -6783,6 +6816,8 @@ function _ageAba_(controle, nome, colunas, criar) {
 
 /** Grava `campos` pelo nome do cabecalho: linha nova (`linha` = 0) ou so as colunas dadas. */
 function _ageGravar_(aba, colunas, linha, campos) {
+  if (colunas === COLUNAS_SESSOES && campos.gcal_sinc === undefined && (!linha || campos.data !== undefined || campos.hora_inicio !== undefined ||
+      campos.duracao_min !== undefined || campos.modalidade !== undefined || campos.estado === 'cancelada')) campos.gcal_sinc = 'pendente'; // 14.5
   var header = _garantirColunas_(aba, colunas);
   if (!linha) {
     aba.appendRow(header.map(function (col) { return campos[col] !== undefined ? _lemCelula_(campos[col]) : ''; }));
@@ -6806,6 +6841,9 @@ function _ageConfig_(controle) {
     if (chave === 'antecedencia_min_horas' && parseInt(valor, 10) >= 0 && valor !== '') cfg.antecedencia_min_horas = parseInt(valor, 10);
     if (chave === 'avisos_sessao') cfg.avisos_sessao = valor.toLowerCase() === 'sim' ? 'Sim' : 'Nao';
     if (chave === 'agenda_vistos_ate') cfg.agenda_vistos_ate = valor; // 14.4: 'AAAA-MM-DD HH:mm' do ultimo "Marcar como vistos"
+    // 14.5: endereco do consultorio (o atual e o que passa a valer numa data) e o espelho no Google Calendar (nasce 'Nao')
+    if (chave === 'endereco' || chave === 'endereco_novo' || chave === 'endereco_novo_desde' || chave === 'gcal_id' || chave === 'gcal_nome') cfg[chave] = valor;
+    if (chave === 'google_calendar') cfg.google_calendar = valor.toLowerCase() === 'sim' ? 'Sim' : 'Nao';
   }
   return cfg;
 }
@@ -6874,7 +6912,9 @@ function _ageEventos_(ctx, pacs, agora) {
   var nome = function (sigla) { var p = pacs[_siglaChave_(sigla)]; return p ? p.nome : sigla; };
   var ev = function (tipo, x, em) {
     if (!em || em.slice(0, 10) < corte) return;
-    lista.push({ tipo: tipo, sigla: x.sigla, nome: nome(x.sigla), data: x.data, hora: _lemHora_(x.hora_inicio), em: em });
+    var e = { tipo: tipo, sigla: x.sigla, nome: nome(x.sigla), data: x.data, hora: _lemHora_(x.hora_inicio), em: em };
+    lista.push(e);
+    return e;
   };
   ctx.sessoes.forEach(function (x) {
     if (x.cancelada_por === 'edicao_serie') return;
@@ -6887,7 +6927,10 @@ function _ageEventos_(ctx, pacs, agora) {
     if (!x) return;
     // remarcacao: o evento mostra o horario PEDIDO (depois de aprovado, a sessao ja esta nele e a data antiga nao existe mais)
     if (p.tipo === 'repor') ev('repor', x, p.criado_em);
-    else ev('remarcar', { sigla: x.sigla, data: p.data, hora_inicio: p.hora }, p.criado_em);
+    else { // 14.5: pedido com "horario ideal" (sem horario ate o profissional escolher) leva a sugestao
+      var e = ev('remarcar', p.data ? { sigla: x.sigla, data: p.data, hora_inicio: p.hora } : x, p.criado_em);
+      if (e && p.sugestao) { e.sugestao = p.sugestao; e.sem_horario = !p.data; }
+    }
   });
   return lista.sort(function (a, b) { return a.em < b.em ? 1 : (a.em > b.em ? -1 : 0); }).slice(0, 60);
 }
@@ -7013,6 +7056,8 @@ function _ageSessaoProf_(ctx, x, pacs) {
     reposicao_de: x.reposicao_de, reposta_em: _ageRepostaEm_(ctx, x.id), pode_repor: _agePodeRepor_(ctx, x), origem: x.origem || 'profissional',
     confirmada: !!x.confirmada_em, avisos: _ageAvisosLista_(x.avisos), cancelada_por: x.cancelada_por,
     link_confirmar: ((x.estado === 'agendada' || x.estado === '') && ctx.profId) ? _ageLinkConfirmar_(ctx.profId, x.id) : '', // 14.4
+    meet_link: x.modalidade === 'online' ? (x.meet_link || '') : '', endereco: x.modalidade === 'online' ? '' : _ageEndereco_(ctx.cfg, x.data), // 14.5
+    mapa: x.modalidade === 'online' ? '' : _ageMapa_(_ageEndereco_(ctx.cfg, x.data)), no_calendar: !!x.gcal_evento,
     telefone: p.telefone, tem_email: !!p.email };
 }
 
@@ -7022,7 +7067,7 @@ function _agePedidosPendentes_(ctx, pacs) {
     var x = ctx.sessoes.filter(function (y) { return y.id === p.sessao_id; })[0] || {};
     var pac = pacs[_siglaChave_(p.sigla)] || { nome: p.sigla };
     return { id: p.id, sigla: p.sigla, nome: pac.nome, tipo: p.tipo, sessao_id: p.sessao_id, sessao_data: x.data || '',
-      sessao_hora: _lemHora_(x.hora_inicio), data: p.data, hora: _lemHora_(p.hora), criado_em: p.criado_em };
+      sessao_hora: _lemHora_(x.hora_inicio), data: p.data, hora: _lemHora_(p.hora), criado_em: p.criado_em, sugestao: p.sugestao || '' }; // 14.5
   });
 }
 
@@ -7063,6 +7108,7 @@ function _ageProf_(s) {
 /** Fecha a resposta de uma acao do profissional que gravou: a agenda do periodo que a tela esta mostrando vai junto (sem chamada nova). */
 function _ageResposta_(alvo, resp, periodo, agora) {
   var p = periodo && typeof periodo === 'object' ? periodo : {};
+  _calSincronizar_(alvo.controle, alvo.profissionalId, { max: 3, agora: agora }); // 14.5: o espelho no Calendar (nunca derruba a acao)
   var ctx = _ageCtx_(alvo.controle, false);
   ctx.profId = alvo.profissionalId; // 14.4: o link de confirmacao de cada sessao
   resp.agenda = _ageLeitura_(ctx, p.de, p.ate, _agePacientes_(alvo.controle), agora);
@@ -7129,11 +7175,18 @@ function montarEmailSessao(tipo, p) {
   if (t.confirma && p.confirmada) { t.paragrafo += ' Sua presença já está confirmada.'; t.botao = 'Ver minhas sessões'; }
   else if (t.confirma && p.link) { link = p.link; sob = t.sob; }
   else if (t.confirma) { t.botao = 'Ver minhas sessões'; }
+  // 14.5: onde a sessao acontece — endereco (com link do mapa) na presencial, sala do Meet na on-line
+  var extra = null;
+  if (['confirmacao', 'serie', 'lembrete48', 'lembrete', 'remarcacao', 'pedido_aprovado'].indexOf(tipo) !== -1) {
+    if (x.modalidade === 'online' && p.meet) { t.paragrafo += ' A sessão acontece pelo Google Meet.'; extra = { rotulo: 'Entrar na sessão on-line', url: p.meet }; }
+    else if (x.modalidade !== 'online' && p.endereco) { t.paragrafo += ' Endereço: ' + p.endereco + '.'; extra = { rotulo: 'Abrir o endereço no mapa', url: _ageMapa_(p.endereco) }; }
+  }
+  if (tipo === 'pedido_recusado' && !x.data) t.paragrafo = prof + ' não pôde atender ao horário que você sugeriu. Veja outros horários em Minhas sessões ou fale diretamente com ' + prof + '.';
   var ola = p.nome ? 'Olá, ' + p.nome + '.' : 'Olá.';
   var ass = p.assinatura || [];
-  var texto = [EMAIL_DESTAQUE, '', ola, '', t.paragrafo, '', link, ''].concat(link !== SITE_URL ? [sob, ''] : []).concat(t.aviso ? [t.aviso, ''] : []).concat(ass).join('\n');
+  var texto = [EMAIL_DESTAQUE, '', ola, '', t.paragrafo, ''].concat(extra ? [extra.rotulo + ': ' + extra.url, ''] : []).concat([link, '']).concat(link !== SITE_URL ? [sob, ''] : []).concat(t.aviso ? [t.aviso, ''] : []).concat(ass).join('\n');
   var html = _layoutEmail_({ previa: t.titulo, titulo: t.titulo, acompanhamento: '', ola: ola, paragrafo: t.paragrafo, botao: t.botao,
-    sobBotao: sob, link: link, aviso: t.aviso, assinatura: ass });
+    sobBotao: sob, link: link, aviso: t.aviso, assinatura: ass, linkExtra: extra });
   return { assunto: t.assunto, texto: texto, html: html };
 }
 
@@ -7153,7 +7206,20 @@ function _ageAvisarPaciente_(ctx, profId, pac, tipo, sessao, caixa, extra) {
   var p = { nome: pac.primeiro, profissional: String(prof.nome_completo || '').trim(), sessao: sessao, horas: ctx.cfg.antecedencia_min_horas,
     assinatura: _assinaturaDoProfissional_(profId), link: _ageLinkConfirmar_(profId, sessao.id), confirmada: !!sessao.confirmada_em };
   for (var k in (extra || {})) p[k] = extra[k];
-  return _enviarEmail_(pac.email, montarEmailSessao(tipo, p)) ? '' : 'falha';
+  // 14.5: endereco (presencial), sala do Meet (on-line: espelha a sessao agora se ainda nao ha link) e o evento em anexo
+  if (sessao.modalidade === 'online') {
+    if (!sessao.meet_link && sessao.id && ctx.controle && tipo !== 'cancelamento' && tipo !== 'pedido_recusado') sessao.meet_link = _calSincronizar_(ctx.controle, profId, { ids: [sessao.id], max: 1 })[sessao.id] || '';
+    p.meet = sessao.meet_link || '';
+  } else if (sessao.data) {
+    p.endereco = _ageEndereco_(ctx.cfg, sessao.data);
+  }
+  var email = montarEmailSessao(tipo, p);
+  var icsDe = { confirmacao: 'PUBLISH', serie: 'PUBLISH', remarcacao: 'PUBLISH', pedido_aprovado: 'PUBLISH', cancelamento: 'CANCEL' }[tipo];
+  if (icsDe && sessao.id && sessao.data) {
+    var lista = (p.sessoes && p.sessoes.length) ? p.sessoes : [sessao];
+    email.anexo = { nome: 'sessao.ics', metodo: icsDe, texto: _ageIcs_(lista, p.profissional, ctx.cfg, icsDe, _ageAgoraUtc_()) };
+  }
+  return _enviarEmail_(pac.email, email) ? '' : 'falha';
 }
 
 /** Avisa o PROFISSIONAL de um movimento feito pelo paciente (mesma chave geral). Nunca derruba a acao que chamou. */
@@ -7235,7 +7301,7 @@ function profSalvarSessao(s, dados, periodo) {
     }
     var resp = { ok: true, editada: true, remarcada: mudouQuando, nao_alteradas: naoAlteradas };
     if (mudouQuando && (existente.data !== v.data || _lemHora_(existente.hora_inicio) !== v.hora)) {
-      resp.aviso = _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, 'remarcacao', { id: id, data: v.data, hora_inicio: v.hora, modalidade: v.modalidade, avisos: v.avisos }, 'cancelamento', { anterior: anterior }); // 14.4: caixa "mudanca ou cancelamento"
+      resp.aviso = _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, 'remarcacao', { id: id, data: v.data, hora_inicio: v.hora, modalidade: v.modalidade, avisos: v.avisos, duracao_min: String(v.dur) }, 'cancelamento', { anterior: anterior }); // 14.4: caixa "mudanca ou cancelamento"
     }
     return _ageResposta_(alvo, resp, periodo, agora);
   }
@@ -7270,7 +7336,8 @@ function profSalvarSessao(s, dados, periodo) {
     });
     var respS = { ok: true, criadas: serie.datas.length, simulacao: sim };
     respS.aviso = _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, serie.datas.length > 1 ? 'serie' : 'confirmacao',
-      { id: id, data: serie.datas[0], hora_inicio: v.hora, modalidade: v.modalidade, avisos: v.avisos }, 'confirmacao', { n: serie.datas.length });
+      { id: id, data: serie.datas[0], hora_inicio: v.hora, modalidade: v.modalidade, avisos: v.avisos, duracao_min: String(v.dur) }, 'confirmacao',
+      { n: serie.datas.length, sessoes: serie.datas.map(function (iso, i) { return { id: i === 0 ? id : id.slice(0, 58) + '-' + (i + 1), data: iso, hora_inicio: v.hora, modalidade: v.modalidade, duracao_min: String(v.dur) }; }) }); // 14.5: o anexo leva todas as datas
     return _ageResposta_(alvo, respS, periodo, agora);
   }
 
@@ -7280,7 +7347,7 @@ function profSalvarSessao(s, dados, periodo) {
   base.id = id; base.data = v.data;
   _ageNovaSessao_(ctx, agora, base);
   var respN = { ok: true, criadas: 1 };
-  if (_ageMinutosAte_(v.data, v.hora, agora) >= 0) respN.aviso = _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, 'confirmacao', { id: id, data: v.data, hora_inicio: v.hora, modalidade: v.modalidade, avisos: v.avisos }, 'confirmacao');
+  if (_ageMinutosAte_(v.data, v.hora, agora) >= 0) respN.aviso = _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, 'confirmacao', { id: id, data: v.data, hora_inicio: v.hora, modalidade: v.modalidade, avisos: v.avisos, duracao_min: String(v.dur) }, 'confirmacao');
   return _ageResposta_(alvo, respN, periodo, agora);
 }
 
@@ -7420,7 +7487,7 @@ function profApagarBloqueio(s, id, periodo) {
 }
 
 /** Aprova (a sessao muda ou a reposicao nasce) ou recusa um pedido do paciente. */
-function profDecidirPedido(s, id, aprovar, periodo) {
+function profDecidirPedido(s, id, aprovar, periodo, quando) {
   var alvo = _ageProf_(s);
   if (!alvo.ok) return alvo;
   var ctx = _ageCtx_(alvo.controle, false);
@@ -7430,13 +7497,18 @@ function profDecidirPedido(s, id, aprovar, periodo) {
   if (p.estado !== 'pendente') return _ageResposta_(alvo, { ok: true, duplicado: true }, periodo, agora);
   var x = ctx.sessoes.filter(function (y) { return y.id === p.sessao_id; })[0];
   var pac = _agePacientes_(alvo.controle)[_siglaChave_(p.sigla)];
-  var hora = _lemHora_(p.hora);
+  // 14.5: `quando` { data, hora } = o horario que o profissional escolheu (obrigatorio quando o paciente so escreveu o horario ideal)
+  var q = quando && typeof quando === 'object' ? quando : {};
+  var escolheu = _lemDia_(q.data) !== null && !!_lemHora_(q.hora);
+  var dataPed = escolheu ? String(q.data).trim() : p.data;
+  var hora = escolheu ? _lemHora_(q.hora) : _lemHora_(p.hora);
   if (aprovar !== true) {
     _ageGravar_(ctx.abaP, COLUNAS_PEDIDOS_AGENDA, p.__linha, { estado: 'recusado', decidido_em: agora.carimbo });
     var av = _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, 'pedido_recusado', { data: p.data, hora_inicio: hora, modalidade: x ? x.modalidade : '', avisos: '' }, '');
     return _ageResposta_(alvo, { ok: true, aprovado: false, aviso: av }, periodo, agora);
   }
   if (!x) return { ok: false, erro: MSG_AGE_NAO_ACHEI };
+  if (_lemDia_(dataPed) === null || !hora) return { ok: false, codigo: 'sem_horario', erro: 'Escolha o horário.' };
   var dur = _ageDur_(x.duracao_min, ctx.cfg.duracao_slot_min);
   var fora = {};
   if (p.tipo === 'remarcar') {
@@ -7445,18 +7517,18 @@ function profDecidirPedido(s, id, aprovar, periodo) {
   } else if (!_agePodeRepor_(ctx, x)) {
     return { ok: false, erro: 'Esta sessão não pode ser reposta.' };
   }
-  if (_ageOcupado_(ctx, p.data, hora, dur, fora)) return { ok: false, codigo: 'ocupado', erro: MSG_AGE_PEDIDO_OCUPADO };
+  if (_ageOcupado_(ctx, dataPed, hora, dur, fora)) return { ok: false, codigo: 'ocupado', erro: MSG_AGE_PEDIDO_OCUPADO };
   if (p.tipo === 'remarcar') {
-    var marcasPed = _ageMarcasLembrete_(p.data, hora, agora);
-    _ageGravar_(ctx.abaS, COLUNAS_SESSOES, x.__linha, { data: p.data, hora_inicio: hora, confirmada_em: '', ultimo_aviso_em: marcasPed.ultimo_aviso_em, lembrete48_em: marcasPed.lembrete48_em, atualizado_em: agora.carimbo });
+    var marcasPed = _ageMarcasLembrete_(dataPed, hora, agora);
+    _ageGravar_(ctx.abaS, COLUNAS_SESSOES, x.__linha, { data: dataPed, hora_inicio: hora, confirmada_em: '', ultimo_aviso_em: marcasPed.ultimo_aviso_em, lembrete48_em: marcasPed.lembrete48_em, atualizado_em: agora.carimbo });
   } else {
-    _ageNovaSessao_(ctx, agora, { id: 'rep-' + p.id.slice(0, 56), sigla: x.sigla, data: p.data, hora_inicio: hora, duracao_min: String(dur), modalidade: x.modalidade,
+    _ageNovaSessao_(ctx, agora, { id: 'rep-' + p.id.slice(0, 56), sigla: x.sigla, data: dataPed, hora_inicio: hora, duracao_min: String(dur), modalidade: x.modalidade,
       valor: x.valor, notas: '', estado: 'agendada', cobrada: 'Nao', reposicao_de: x.id, origem: 'paciente', avisos: x.avisos,
       criado_em: agora.carimbo, criado_por: String(alvo.nome || ''), atualizado_em: agora.carimbo });
   }
-  _ageGravar_(ctx.abaP, COLUNAS_PEDIDOS_AGENDA, p.__linha, { estado: 'aprovado', decidido_em: agora.carimbo });
-  var avA = _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, 'pedido_aprovado', { data: p.data, hora_inicio: hora, modalidade: x.modalidade, avisos: '' }, '');
-  return _ageResposta_(alvo, { ok: true, aprovado: true, data: p.data, hora: hora, aviso: avA }, periodo, agora);
+  _ageGravar_(ctx.abaP, COLUNAS_PEDIDOS_AGENDA, p.__linha, escolheu ? { estado: 'aprovado', decidido_em: agora.carimbo, data: dataPed, hora: hora } : { estado: 'aprovado', decidido_em: agora.carimbo });
+  var avA = _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, 'pedido_aprovado', { id: p.tipo === 'remarcar' ? x.id : 'rep-' + p.id.slice(0, 56), data: dataPed, hora_inicio: hora, modalidade: x.modalidade, avisos: '', duracao_min: String(dur) }, '');
+  return _ageResposta_(alvo, { ok: true, aprovado: true, data: dataPed, hora: hora, aviso: avA }, periodo, agora);
 }
 
 /** 14.4: zera o contador do sino (guarda o instante em que os eventos foram vistos). */
@@ -7519,7 +7591,10 @@ function _ageMinhas_(ctx, alvo, agora) {
       reposta_em: _ageRepostaEm_(ctx, x.id), confirmada: !!x.confirmada_em, futura: futura,
       pode_confirmar: agendada && futura && !x.confirmada_em, pode_cancelar: agendada && noPrazo, pode_remarcar: agendada && noPrazo && !pend,
       pode_repor: _agePodeRepor_(ctx, x) && !pend,
-      pedido: ultimo ? { tipo: ultimo.tipo, estado: ultimo.estado, data: ultimo.data, hora: _lemHora_(ultimo.hora) } : null };
+      meet_link: (agendada && futura && x.modalidade === 'online') ? (x.meet_link || '') : '', // 14.5
+      endereco: (agendada && futura && x.modalidade !== 'online') ? _ageEndereco_(ctx.cfg, x.data) : '',
+      mapa: (agendada && futura && x.modalidade !== 'online') ? _ageMapa_(_ageEndereco_(ctx.cfg, x.data)) : '',
+      pedido: ultimo ? { tipo: ultimo.tipo, estado: ultimo.estado, data: ultimo.data, hora: _lemHora_(ultimo.hora), sugestao: ultimo.sugestao || '' } : null };
   }).sort(function (a, b) { var p = a.data + ' ' + a.hora, q = b.data + ' ' + b.hora; return p < q ? -1 : (p > q ? 1 : 0); });
   return { ok: true, hoje: agora.data, agora_hora: agora.hora, antecedencia_horas: horas, profissional: alvo.profissional, sessoes: sessoes };
 }
@@ -7544,9 +7619,11 @@ function lerMinhasSessoes(sigla) {
  * `duracao_slot_min` em `duracao_slot_min`, menos sessoes, bloqueios, feriados e o que esta a menos
  * que a antecedencia combinada. Saida: [ { data, hora, modalidades: ['presencial', 'online'] } ].
  */
-function _ageLivres_(ctx, janelas, deIso, dias, agora) {
+function _ageLivres_(ctx, janelas, deIso, dias, agora, horas) {
   var ini = _lemDia_(deIso), dur = ctx.cfg.duracao_slot_min, mapa = {}, lista = [];
   if (ini === null) return lista;
+  var prazo = horas === undefined ? ctx.cfg.antecedencia_min_horas : horas; // 14.5: o profissional ve os livres sem o prazo do paciente
+  var externos = ctx.externos || [];                                        // 14.5: ocupado na agenda pessoal do Google
   for (var k = 0; k < dias; k++) {
     var iso = _lemIso_(ini + k), dow = _ageDow_(ini + k);
     if (_ageFeriadoEm_(iso)) continue;
@@ -7554,8 +7631,10 @@ function _ageLivres_(ctx, janelas, deIso, dias, agora) {
       if (j.dia_semana !== dow) return;
       for (var t = j.ini; t + dur <= j.fim; t += dur) {
         var hora = ('0' + Math.floor(t / 60)).slice(-2) + ':' + ('0' + (t % 60)).slice(-2);
-        if (!_ageNoPrazo_(iso, hora, agora, ctx.cfg.antecedencia_min_horas)) continue;
+        if (!_ageNoPrazo_(iso, hora, agora, prazo)) continue;
         if (_ageOcupado_(ctx, iso, hora, dur, null)) continue;
+        var abs = (ini + k) * 1440 + t;
+        if (externos.some(function (e) { return abs < e.fim && e.ini < abs + dur; })) continue;
         var mods = j.modalidade === 'ambas' ? ['presencial', 'online'] : [j.modalidade === 'online' ? 'online' : 'presencial'];
         var chave = iso + ' ' + hora;
         if (!mapa[chave]) { mapa[chave] = { data: iso, hora: hora, modalidades: [] }; lista.push(mapa[chave]); }
@@ -7573,11 +7652,24 @@ function lerHorariosLivres(sigla, de) {
   var agora = _lemAgora_();
   var deIso = _lemDia_(de) === null || String(de) < agora.data ? agora.data : String(de);
   var ctx = _ageCtx_(alvo.controle, false);
+  ctx.externos = _calOcupados_(alvo.profissionalId, ctx.cfg, deIso, 7);
   return { ok: true, de: deIso, hoje: agora.data, livres: _ageLivres_(ctx, _ageJanelas_(alvo.controle), deIso, 7, agora) };
+}
+
+/** 14.5: horarios livres para o PROFISSIONAL repor ou remarcar (14 dias a partir de `de`; sem o prazo do paciente). */
+function profLerHorariosLivres(s, de) {
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  var agora = _lemAgora_();
+  var deIso = _lemDia_(de) === null || String(de) < agora.data ? agora.data : String(de);
+  var ctx = _ageCtx_(alvo.controle, false);
+  ctx.externos = _calOcupados_(alvo.profissionalId, ctx.cfg, deIso, CAL_LIVRES_DIAS_PROF);
+  return { ok: true, de: deIso, hoje: agora.data, dias: CAL_LIVRES_DIAS_PROF, livres: _ageLivres_(ctx, _ageJanelas_(alvo.controle), deIso, CAL_LIVRES_DIAS_PROF, agora, 0) };
 }
 
 /** O horario (data, hora) esta entre os livres do paciente? Devolve o slot ou null. */
 function _ageSlotLivre_(ctx, controle, data, hora, agora) {
+  if (ctx.profId && !ctx.externos) ctx.externos = _calOcupados_(ctx.profId, ctx.cfg, data, 1); // 14.5
   return _ageLivres_(ctx, _ageJanelas_(controle), data, 1, agora).filter(function (x) { return x.hora === hora; })[0] || null;
 }
 
@@ -7589,6 +7681,7 @@ function pacienteAgendarSessao(sigla, dados) {
   if (!_ageIdValido_(d.id)) return { ok: false, erro: 'Parametros incompletos' };
   var id = String(d.id).trim(), agora = _lemAgora_();
   var ctx = _ageCtx_(alvo.controle, true);
+  ctx.profId = alvo.profissionalId; // 14.5: o ocupado do Google entra na conferencia do horario
   var ja = ctx.sessoes.filter(function (x) { return x.id === id; })[0];
   if (ja) {
     if (_siglaChave_(ja.sigla) !== _siglaChave_(alvo.sigla)) return { ok: false, erro: 'Parametros incompletos' };
@@ -7603,6 +7696,7 @@ function pacienteAgendarSessao(sigla, dados) {
   _ageNovaSessao_(ctx, agora, nova);
   _ageAvisarPaciente_(ctx, alvo.profissionalId, _agePacientes_(alvo.controle)[_siglaChave_(alvo.sigla)], 'confirmacao', nova, 'confirmacao');
   _ageAvisarProfissional_(ctx, alvo.profissionalId, alvo.nome + ' agendou uma sessão para ' + _ageDiaMes_(data) + ' às ' + hora + '.');
+  _calSincronizar_(alvo.controle, alvo.profissionalId, { max: 2, agora: agora }); // 14.5
   return _ageMinhas_(_ageCtx_(alvo.controle, false), alvo, agora);
 }
 
@@ -7640,6 +7734,7 @@ function pacienteCancelarSessao(sigla, id) {
   _ageGravar_(ctx.abaS, COLUNAS_SESSOES, x.__linha, { estado: 'cancelada', cancelada_em: agora.carimbo, cancelada_por: 'paciente', cobrada: _ageCobrada_('cancel_paciente', true, !!x.reposicao_de), atualizado_em: agora.carimbo });
   _agePedidosFechar_(ctx, x.id, agora);
   _ageAvisarProfissional_(ctx, alvo.profissionalId, alvo.nome + ' cancelou a sessão de ' + _ageDiaMes_(x.data) + ' às ' + _lemHora_(x.hora_inicio) + '.');
+  _calSincronizar_(alvo.controle, alvo.profissionalId, { max: 2, agora: agora }); // 14.5
   return _ageMinhas_(_ageCtx_(alvo.controle, false), alvo, agora);
 }
 
@@ -7654,6 +7749,7 @@ function pacientePedirAgenda(sigla, dados) {
   if (!_ageIdValido_(d.id)) return { ok: false, erro: 'Parametros incompletos' };
   var id = String(d.id).trim(), agora = _lemAgora_();
   var ctx = _ageCtx_(alvo.controle, true);
+  ctx.profId = alvo.profissionalId; // 14.5
   if (ctx.pedidos.some(function (p) { return p.id === id; })) { var rd = _ageMinhas_(ctx, alvo, agora); rd.duplicado = true; return rd; }
   var tipo = d.tipo === 'repor' ? 'repor' : 'remarcar';
   var x = _ageDoPaciente_(ctx, alvo, d.sessao_id);
@@ -7666,6 +7762,14 @@ function pacientePedirAgenda(sigla, dados) {
     return { ok: false, erro: 'Esta sessão não pode ser reposta.' };
   }
   var data = String(d.data || '').trim(), hora = _lemHora_(d.hora);
+  // 14.5: nenhum horario livre serve -> o paciente escreve o horario ideal; o profissional escolhe o horario ao aprovar
+  var sugestao = String(d.sugestao === undefined || d.sugestao === null ? '' : d.sugestao).replace(/\s+/g, ' ').trim().slice(0, AGENDA_SUGESTAO_MAX);
+  if (sugestao && !data) {
+    _ageGravar_(ctx.abaP, COLUNAS_PEDIDOS_AGENDA, 0, { id: id, sigla: alvo.sigla, tipo: tipo, sessao_id: x.id, data: '', hora: '', estado: 'pendente', criado_em: agora.carimbo, sugestao: sugestao });
+    _ageAvisarProfissional_(ctx, alvo.profissionalId, alvo.nome + (tipo === 'remarcar' ? ' pediu remarcação da sessão de ' : ' pediu reposição da sessão de ') +
+      _ageDiaMes_(x.data) + (tipo === 'remarcar' ? ' às ' + _lemHora_(x.hora_inicio) : '') + ' e sugeriu: ' + sugestao);
+    return _ageMinhas_(_ageCtx_(alvo.controle, false), alvo, agora);
+  }
   if (_lemDia_(data) === null || !hora || !_ageSlotLivre_(ctx, alvo.controle, data, hora, agora)) return { ok: false, codigo: 'ocupado', erro: MSG_AGE_ACABOU };
   _ageGravar_(ctx.abaP, COLUNAS_PEDIDOS_AGENDA, 0, { id: id, sigla: alvo.sigla, tipo: tipo, sessao_id: x.id, data: data, hora: hora, estado: 'pendente', criado_em: agora.carimbo });
   _ageAvisarProfissional_(ctx, alvo.profissionalId, tipo === 'remarcar'
@@ -7704,12 +7808,13 @@ function _agendaApagarDoPaciente_(controle, sigla) {
  */
 function enviarAvisosSessao_(quando) {
   var agora = _lemAgora_(quando);
-  var r = { profissionais: 0, sessoes: 0, vencendo: 0, enviados: 0, ja_enviados: 0, desligados: 0, sem_email: 0, inativos: 0, sem_cota: 0, falhas: 0 };
+  var r = { profissionais: 0, sessoes: 0, vencendo: 0, enviados: 0, ja_enviados: 0, desligados: 0, sem_email: 0, inativos: 0, sem_cota: 0, falhas: 0, calendar: 0 };
   lerAbaComoObjetos(_abrirPlanilha_(SISTEMA_VMC_ID), ABA_PROFISSIONAIS).forEach(function (prof) {
     try {
       if (!prof.profissional_id || !_estaAtivo_(prof.ativo)) return;
       var controle = abrirControleDoProfissional(prof.profissional_id);
       var aba = _ageAba_(controle, ABA_SESSOES, COLUNAS_SESSOES, false);
+      r.calendar += Object.keys(_calSincronizar_(controle, prof.profissional_id, { max: CAL_SINC_RODADA, agora: agora, contar: true })).length; // 14.5: series e o que ficou pendente
       var sessoes = _lembretesLer_(aba);
       if (!sessoes.length) return;
       r.profissionais++;
@@ -7934,7 +8039,63 @@ function rodarMonitorAgora() {
   return monitorarPing_();
 }
 
-// ---------- Pacote 14.5: Google Calendar (acesso pela API REST com o token do proprio script; escopo `calendar` no manifesto) ----------
+// ---------- Pacote 14.5: endereco do consultorio, evento em anexo (.ics) e Google Calendar ----------
+// O espelho e de MAO UNICA (do COGNIATIVO para o Google) e nunca bloqueia a agenda: toda gravacao que muda o que o
+// Calendar mostra marca a sessao com gcal_sinc = 'pendente' (_ageGravar_), e _calSincronizar_ cria, muda ou apaga o
+// evento — na propria acao (ate 3) e no gatilho de 5 minutos (series e o que falhou). So existe para a conta do
+// profissional que e o dono do script (o Calendar e o da conta Google que roda o servidor) e com a chave
+// `google_calendar` = Sim na Config_Agenda (nasce 'Nao'). Acesso pela API REST com o token do proprio script.
+
+function _age2_(n) { return ('0' + Math.floor(n)).slice(-2); }
+
+/** Endereco do consultorio que vale na data da sessao (o novo a partir de `endereco_novo_desde`). */
+function _ageEndereco_(cfg, dataIso) {
+  var c = cfg || {};
+  if (c.endereco_novo && c.endereco_novo_desde && String(dataIso || '') >= c.endereco_novo_desde) return c.endereco_novo;
+  return c.endereco || '';
+}
+
+/** Link que abre o endereco no mapa do aparelho (Google Maps). */
+function _ageMapa_(endereco) {
+  return endereco ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(endereco) : '';
+}
+
+/** Instante de agora em UTC, no formato do .ics, e um numero de sequencia que so cresce (minutos). */
+function _ageAgoraUtc_() {
+  var d = new Date();
+  return { carimbo: d.getUTCFullYear() + _age2_(d.getUTCMonth() + 1) + _age2_(d.getUTCDate()) + 'T' + _age2_(d.getUTCHours()) + _age2_(d.getUTCMinutes()) + _age2_(d.getUTCSeconds()) + 'Z',
+    seq: Math.floor(d.getTime() / 60000) - 29000000 };
+}
+
+/** Data civil de Sao Paulo + minutos -> instante UTC do .ics (Sao Paulo = UTC-3, sem horario de verao desde 2019). */
+function _ageIcsUtc_(iso, minLocal) {
+  var t = minLocal + 180, m = t % 1440;
+  return _lemIso_(_lemDia_(iso) + Math.floor(t / 1440)).replace(/-/g, '') + 'T' + _age2_(m / 60) + _age2_(m % 60) + '00Z';
+}
+
+/**
+ * Evento(s) da sessao no formato iCalendar, para o anexo do e-mail. Titulo neutro ("Sessao com <profissional>"):
+ * e o que aparece na agenda do paciente. Mesmo UID a cada envio: abrir o anexo de uma remarcacao atualiza o evento
+ * guardado; o de cancelamento (METHOD:CANCEL) o retira.
+ */
+function _ageIcs_(sessoes, profissional, cfg, metodo, utc) {
+  var icsTexto = function (t) { return String(t === undefined || t === null ? '' : t).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); };
+  var dobra = function (linha) { var partes = []; for (var i = 0; i < linha.length; i += 60) partes.push((i ? ' ' : '') + linha.slice(i, i + 60)); return partes.join('\r\n'); };
+  var L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//COGNIATIVO//Agenda//PT-BR', 'CALSCALE:GREGORIAN', 'METHOD:' + metodo];
+  (sessoes || []).forEach(function (x) {
+    var ini = _ageMin_(_lemHora_(x.hora_inicio || x.hora));
+    if (ini === null || _lemDia_(x.data) === null || !x.id) return;
+    var dur = _ageDur_(x.duracao_min, cfg.duracao_slot_min), online = x.modalidade === 'online';
+    var local = online ? (x.meet_link || 'On-line') : _ageEndereco_(cfg, x.data);
+    L.push('BEGIN:VEVENT', 'UID:' + x.id + '@cogniativo', 'DTSTAMP:' + utc.carimbo, 'SEQUENCE:' + utc.seq,
+      'DTSTART:' + _ageIcsUtc_(x.data, ini), 'DTEND:' + _ageIcsUtc_(x.data, ini + dur), 'SUMMARY:' + icsTexto('Sessão com ' + profissional));
+    if (local) L.push('LOCATION:' + icsTexto(local));
+    L.push('DESCRIPTION:' + icsTexto(online ? ('Sessão on-line.' + (x.meet_link ? ' ' + x.meet_link : '')) : 'Sessão presencial.'),
+      'STATUS:' + (metodo === 'CANCEL' ? 'CANCELLED' : 'CONFIRMED'), 'TRANSP:OPAQUE', 'END:VEVENT');
+  });
+  L.push('END:VCALENDAR');
+  return L.map(dobra).join('\r\n') + '\r\n';
+}
 
 /** Chamada a API do Google Calendar. Devolve { codigo, corpo } — nunca lanca: quem chama decide o que fazer com a falha. */
 function _calApi_(metodo, caminho, corpo) {
@@ -7952,13 +8113,163 @@ function _calApi_(metodo, caminho, corpo) {
 }
 
 /**
- * O script consegue falar com o Google Calendar do dono? E a funcao que se roda no editor para dar a
- * autorizacao (Executar -> Revisar permissoes -> Permitir) e a que a Grade usa para dizer "Conectado".
- * Devolve so { ok, codigo, agendas } — nenhum nome de agenda.
+ * O script consegue falar com o Google Calendar do dono? E a funcao que se roda no EDITOR para dar a autorizacao
+ * (pelo `clasp run` o token e o de quem chama, sem o escopo do Calendar: la a resposta e 403).
+ * Devolve so { ok, codigo, agendas, motivo } — nenhum nome de agenda.
  */
 function autorizarGoogleCalendar() {
   var r = _calApi_('get', '/users/me/calendarList?maxResults=250&fields=items(id)');
-  return { ok: r.codigo === 200, codigo: r.codigo, agendas: (r.corpo && r.corpo.items) ? r.corpo.items.length : 0 };
+  var erro = (r.corpo && r.corpo.error) || {};
+  var motivo = (erro.errors && erro.errors[0] && erro.errors[0].reason) || erro.status || '';
+  var saida = { ok: r.codigo === 200, codigo: r.codigo, agendas: (r.corpo && r.corpo.items) ? r.corpo.items.length : 0, motivo: String(motivo).slice(0, 60) };
+  console.log('calendar: ' + JSON.stringify(saida));
+  return saida;
+}
+
+/** O profissional e o dono do script? (o e-mail do cadastro, sem o "+marcador", e o da conta que roda o servidor) */
+function _calDoDono_(profId) {
+  try {
+    var prof = buscarProfissional(profId) || {};
+    var dono = normalizarEmail(Session.getEffectiveUser().getEmail());
+    return !!dono && normalizarEmail(prof.email).replace(/\+[^@]*@/, '@') === dono;
+  } catch (e) {
+    return false;
+  }
+}
+
+/** Id da agenda do Google que recebe o espelho: a de nome `gcal_nome` (padrao CAL_NOME_PADRAO); nasce se nao existir. '' se nao deu. */
+function _calAgendaId_(controle, cfg) {
+  if (cfg.gcal_id) return cfg.gcal_id;
+  var nome = cfg.gcal_nome || CAL_NOME_PADRAO;
+  var r = _calApi_('get', '/users/me/calendarList?maxResults=250&fields=items(id,summary)');
+  if (r.codigo !== 200 || !r.corpo) return '';
+  var achada = (r.corpo.items || []).filter(function (c) { return c.summary === nome; })[0];
+  var id = achada ? achada.id : '';
+  if (!id) {
+    var nova = _calApi_('post', '/calendars', { summary: nome, timeZone: 'America/Sao_Paulo' });
+    if (nova.codigo !== 200 || !nova.corpo || !nova.corpo.id) return '';
+    id = nova.corpo.id;
+  }
+  _comTravaSeDer_(function () { _ageConfigGravar_(controle, 'gcal_id', id); });
+  cfg.gcal_id = id;
+  return id;
+}
+
+/** 'AAAA-MM-DD' + minutos desde 00:00 -> 'AAAA-MM-DDTHH:mm:00' (hora local; o fuso vai ao lado). */
+function _calQuando_(iso, min) {
+  var m = min % 1440;
+  return _lemIso_(_lemDia_(iso) + Math.floor(min / 1440)) + 'T' + _age2_(m / 60) + ':' + _age2_(m % 60) + ':00';
+}
+
+/** A sessao como evento do Google Calendar: nome do paciente no titulo, cor pela modalidade, endereco ou sala do Meet. */
+function _calEvento_(x, pac, cfg) {
+  var ini = _ageMin_(_lemHora_(x.hora_inicio)), dur = _ageDur_(x.duracao_min, cfg.duracao_slot_min), online = x.modalidade === 'online';
+  var ev = { summary: 'Sessão de Psicoterapia — ' + (pac ? pac.nome : x.sigla),
+    start: { dateTime: _calQuando_(x.data, ini), timeZone: 'America/Sao_Paulo' }, end: { dateTime: _calQuando_(x.data, ini + dur), timeZone: 'America/Sao_Paulo' },
+    colorId: CAL_COR[online ? 'online' : 'presencial'], location: online ? '' : _ageEndereco_(cfg, x.data),
+    description: 'Criado pelo COGNIATIVO.' + (x.reposicao_de ? ' Reposição.' : ''), extendedProperties: { 'private': { cogniativo: x.id } } };
+  // um link do Meet por sessao on-line, nunca o mesmo: cada evento pede a sua propria sala
+  if (online && !x.meet_link) ev.conferenceData = { createRequest: { requestId: ('cg' + x.id + x.data + ini).replace(/[^A-Za-z0-9]/g, '').slice(-60), conferenceSolutionKey: { type: 'hangoutsMeet' } } };
+  if (!online && x.meet_link) ev.conferenceData = null;
+  return ev;
+}
+
+/**
+ * Espelha no Google Calendar as sessoes marcadas como pendentes. `o`: { ids (so estas), max, agora }.
+ * Devolve { id da sessao: link do Meet ('' se nao ha) } do que foi espelhado. Nunca lanca e nunca bloqueia:
+ * o que falhar continua 'pendente' e volta na rodada seguinte do gatilho.
+ */
+function _calSincronizar_(controle, profId, o) {
+  var feitos = {}, op = o || {};
+  try {
+    if (!controle) return feitos;
+    var cfg = _ageConfig_(controle);
+    if (cfg.google_calendar !== 'Sim' || !_calDoDono_(profId)) return feitos;
+    var aba = _ageAba_(controle, ABA_SESSOES, COLUNAS_SESSOES, false);
+    if (!aba) return feitos;
+    var so = null;
+    if (op.ids) { so = {}; op.ids.forEach(function (i) { so[i] = true; }); }
+    var pend = _lembretesLer_(aba).filter(function (x) { return x.gcal_sinc === 'pendente' && (!so || so[x.id]); });
+    if (!pend.length) return feitos;
+    var hoje = (op.agora || _lemAgora_()).data, max = op.max || 1, n = 0, calId = null, pacs = null;
+    var colId = _garantirColunas_(aba, COLUNAS_SESSOES).indexOf('id') + 1;
+    var gravar = function (x, campos) {
+      _comTravaSeDer_(function () {
+        if (String(aba.getRange(x.__linha, colId).getDisplayValues()[0][0]).trim() === x.id) _ageGravar_(aba, COLUNAS_SESSOES, x.__linha, campos);
+      });
+    };
+    for (var i = 0; i < pend.length; i++) {
+      var x = pend[i], ativa = x.estado !== 'cancelada';
+      if (!x.gcal_evento && (!ativa || x.data < hoje)) { gravar(x, { gcal_sinc: '' }); continue; } // nada a espelhar (cancelada sem evento, ou sessao lancada no passado)
+      if (n >= max) break;
+      n++;
+      if (calId === null) calId = _calAgendaId_(controle, cfg);
+      if (!calId) break;
+      var base = '/calendars/' + encodeURIComponent(calId) + '/events';
+      if (!ativa) {
+        var ap = _calApi_('delete', base + '/' + encodeURIComponent(x.gcal_evento));
+        if ([200, 204, 404, 410].indexOf(ap.codigo) !== -1) { gravar(x, { gcal_evento: '', gcal_sinc: '', meet_link: '' }); feitos[x.id] = ''; }
+        continue;
+      }
+      if (!pacs) pacs = _agePacientes_(controle);
+      var corpo = _calEvento_(x, pacs[_siglaChave_(x.sigla)], cfg);
+      var r = x.gcal_evento ? _calApi_('patch', base + '/' + encodeURIComponent(x.gcal_evento) + '?conferenceDataVersion=1', corpo) : null;
+      if (!r || r.codigo === 404 || r.codigo === 410) r = _calApi_('post', base + '?conferenceDataVersion=1', corpo);
+      if (r.codigo === 200 && r.corpo && r.corpo.id) {
+        var meet = x.modalidade === 'online' ? String(r.corpo.hangoutLink || x.meet_link || '') : '';
+        gravar(x, { gcal_evento: r.corpo.id, gcal_sinc: '', meet_link: meet });
+        feitos[x.id] = meet;
+      } else if (r.codigo === 404) { // a agenda foi apagada no Google: esquece o id e tenta de novo na proxima rodada
+        _comTravaSeDer_(function () { _ageConfigGravar_(controle, 'gcal_id', ''); });
+        break;
+      }
+    }
+  } catch (e) {
+    console.error('calendar: ' + String(e && e.message || e).slice(0, 160));
+  }
+  return feitos;
+}
+
+/** Ao ligar o espelho: as sessoes agendadas de hoje em diante que ainda nao tem evento entram na fila. */
+function _calMarcarFuturas_(controle) {
+  var aba = _ageAba_(controle, ABA_SESSOES, COLUNAS_SESSOES, false);
+  if (!aba) return;
+  var hoje = _lemAgora_().data;
+  _lembretesLer_(aba).forEach(function (x) {
+    if ((x.estado === 'agendada' || x.estado === '') && x.data >= hoje && !x.gcal_evento && x.gcal_sinc !== 'pendente') _ageGravar_(aba, COLUNAS_SESSOES, x.__linha, { gcal_sinc: 'pendente' });
+  });
+}
+
+/** Instante do Google ('2026-11-26T13:00:00Z') -> minutos absolutos de Sao Paulo (dia * 1440 + minutos); null se nao der. */
+function _calAbs_(rfc) {
+  var t = Date.parse(rfc);
+  if (isNaN(t)) return null;
+  var loc = new Date(t - 3 * 3600000);
+  var dia = _lemDia_(loc.getUTCFullYear() + '-' + _age2_(loc.getUTCMonth() + 1) + '-' + _age2_(loc.getUTCDate()));
+  return dia === null ? null : dia * 1440 + loc.getUTCHours() * 60 + loc.getUTCMinutes();
+}
+
+/**
+ * Horarios ocupados na agenda PESSOAL do Google do profissional (a principal), em `dias` dias a partir de `deIso`:
+ * [ { ini, fim } ] em minutos absolutos. So tira horarios da lista de livres; nunca impede o profissional de marcar.
+ * As sessoes do COGNIATIVO ficam em outra agenda e nao entram aqui. 5 minutos no cache; falha = lista vazia.
+ */
+function _calOcupados_(profId, cfg, deIso, dias) {
+  try {
+    var d0 = _lemDia_(deIso);
+    if (d0 === null || !cfg || cfg.google_calendar !== 'Sim' || !_calDoDono_(profId)) return [];
+    var chave = 'calocup:' + profId + ':' + deIso + ':' + dias;
+    var guardado = _cacheLer_(chave);
+    if (guardado) { try { return JSON.parse(guardado); } catch (e) { /* le de novo */ } }
+    var r = _calApi_('post', '/freeBusy', { timeMin: deIso + 'T00:00:00-03:00', timeMax: _lemIso_(d0 + dias) + 'T00:00:00-03:00', items: [{ id: 'primary' }] });
+    if (r.codigo !== 200 || !r.corpo || !r.corpo.calendars || !r.corpo.calendars.primary) return [];
+    var lista = (r.corpo.calendars.primary.busy || []).map(function (b) { return { ini: _calAbs_(b.start), fim: _calAbs_(b.end) }; })
+      .filter(function (b) { return b.ini !== null && b.fim !== null && b.fim > b.ini; });
+    _cacheGuardar_(chave, JSON.stringify(lista), 300);
+    return lista;
+  } catch (e) {
+    return [];
+  }
 }
 
 /** 19.2.1: roda o gatilho dos lembretes a mao (clasp --user run run-function rodarLembretesAgora). Devolve so contagens. */
