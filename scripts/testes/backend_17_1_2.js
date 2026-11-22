@@ -33,7 +33,7 @@ const ok = (n, c, x) => { total++; if (c) console.log('  ok   ' + n); else { fal
 /* ---- aba Itens_Instrumentos de teste: 1 linha de conteúdo por instrumento + controle com o hash real ---- */
 G(`
   var __LINHAS = [];
-  ['bdi2', 'bai', 'bhs', 'bsi', 'urica_alcool', 'urica_drogas', 'urica_tabaco', 'urica_alimentar', 'pcl5', 'pswq', 'ear', 'aaq2', 'swls', 'maas', 'wbsi', 'panas', 'spin', 'ocir', 'asrs', 'scs', 'audit', 'ftnd', 'gsas', 'eaad', 'estud', 'dudit', 'sast', 'epm', 'piuq', 'saslv'].forEach(function (ins) { // 17.2: + URICA; 17.3: + lote A
+  ['bdi2', 'bai', 'bhs', 'bsi', 'urica_alcool', 'urica_drogas', 'urica_tabaco', 'urica_alimentar', 'pcl5', 'pswq', 'ear', 'aaq2', 'swls', 'maas', 'wbsi', 'panas', 'spin', 'ocir', 'asrs', 'scs', 'audit', 'ftnd', 'gsas', 'eaad', 'estud', 'dudit', 'sast', 'epm', 'piuq', 'saslv', 'cfq7', 'ders', 'ptci', 'coreom', 'bis11'].forEach(function (ins) { // 17.2: + URICA; 17.3: + lote A
     var conteudo = [{ instrumento: ins, tipo: 'instrucao', item: '', opcao: '', texto: 'Instrucao de teste ' + ins, ativo: '' },
                     { instrumento: ins, tipo: 'item', item: 1, opcao: '', texto: 'Item de teste 1 ' + ins, ativo: '' }];
     __LINHAS = __LINHAS.concat(conteudo, [{ instrumento: ins, tipo: 'controle', item: '', opcao: '', texto: _itensHashConteudo_(conteudo), ativo: 'SIM' }]);
@@ -45,7 +45,7 @@ G(`
 `);
 
 console.log('A. lerItensInstrumento — lista de liberados');
-const TODOS = ['bdi2', 'bai', 'bhs', 'bsi', 'urica_alcool', 'urica_drogas', 'urica_tabaco', 'urica_alimentar', 'pcl5', 'pswq', 'ear', 'aaq2', 'swls', 'maas', 'wbsi', 'panas', 'spin', 'ocir', 'asrs', 'scs', 'audit', 'ftnd', 'gsas', 'eaad', 'estud', 'dudit', 'sast', 'epm', 'piuq', 'saslv']; // 17.2; 17.3: + lote A
+const TODOS = ['bdi2', 'bai', 'bhs', 'bsi', 'urica_alcool', 'urica_drogas', 'urica_tabaco', 'urica_alimentar', 'pcl5', 'pswq', 'ear', 'aaq2', 'swls', 'maas', 'wbsi', 'panas', 'spin', 'ocir', 'asrs', 'scs', 'audit', 'ftnd', 'gsas', 'eaad', 'estud', 'dudit', 'sast', 'epm', 'piuq', 'saslv', 'cfq7', 'ders', 'ptci', 'coreom', 'bis11']; // 17.2; 17.3: + lote A
 ok('A1 (17.3.1) paciente sem liberação: nenhuma escala — toda escala é por liberação', JSON.stringify(G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'ABC' }).liberados")) === JSON.stringify([]), G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'ABC' })"));
 ok('A2 paciente com a BSS liberada: só bsi', JSON.stringify(G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'DEF' }).liberados")) === JSON.stringify(['bsi']));
 ok('A2b (17.3.1) paciente com phq9, bdi2 e um id inválido em escalas_liberadas: phq9 (sem aba) e bdi2 (aba liberada); o inválido cai', (() => { G("__PAC.MNO = { sigla: 'MNO', escalas_liberadas: 'phq9, bdi2, xyz' }"); return JSON.stringify(G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'MNO' }).liberados")) === JSON.stringify(['phq9', 'bdi2']); })(), G("lerItensInstrumento({}, { tipo: 'paciente', sigla: 'MNO' })"));
@@ -74,7 +74,7 @@ ok('C1 liberar bsi para ABC: lista ["bsi"], gravada em escalas_liberadas pela si
 ok('C2 retirar bsi de DEF: lista vazia gravada como texto vazio', G("JSON.stringify(profLiberarEscala(" + S + ", 'DEF', 'bsi', false))") === JSON.stringify({ ok: true, escalas_liberadas: [] }) && G("__GRAVADO.campos.escalas_liberadas") === '');
 ok('C3 liberar de novo para DEF não duplica', G("JSON.stringify(profLiberarEscala(" + S + ", 'DEF', 'BSI', 'true').escalas_liberadas)") === JSON.stringify(['bsi']));
 ok('C4 (17.3.1) qualquer das 20 é aceita (bhs, phq9); id desconhecido (xyz) recusa', G("profLiberarEscala(" + S + ", 'ABC', 'bhs', true).ok") === true && JSON.stringify(G("profLiberarEscala(" + S + ", 'ABC', 'PHQ9', true).escalas_liberadas")) === JSON.stringify(['phq9']) && G("profLiberarEscala(" + S + ", 'ABC', 'xyz', true).ok") === false);
-ok('C4b ESCALAS_MENU tem 35 códigos e INSTRUMENTOS_SO_PROFISSIONAL os 35 ids; _idDaEscala_ traduz código → id', G("Object.keys(ESCALAS_MENU).length") === 35 && G("INSTRUMENTOS_SO_PROFISSIONAL.length") === 35 && G("_idDaEscala_('URICA-HA')") === 'urica_alimentar' && G("_idDaEscala_('XYZ')") === '');
+ok('C4b ESCALAS_MENU tem 40 códigos e INSTRUMENTOS_SO_PROFISSIONAL os 40 ids; _idDaEscala_ traduz código → id', G("Object.keys(ESCALAS_MENU).length") === 40 && G("INSTRUMENTOS_SO_PROFISSIONAL.length") === 40 && G("_idDaEscala_('URICA-HA')") === 'urica_alimentar' && G("_idDaEscala_('XYZ')") === '');
 ok('C5 paciente de outro profissional: recusa', G("profLiberarEscala(" + S + ", 'XYZ', 'bsi', true).ok") === false);
 ok('C6 crachá de paciente: recusa', G("profLiberarEscala({ tipo: 'paciente', sigla: 'ABC' }, 'ABC', 'bsi', true).ok") === false);
 ok('C7 a ação está na trava de gravação e na lista do roteador', G("ACOES_COM_TRAVA.indexOf('profLiberarEscala') !== -1") && /case 'profLiberarEscala'/.test(fs.readFileSync(path.join(__dirname, '..', '..', 'Código.js'), 'utf8')));

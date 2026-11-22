@@ -61,7 +61,7 @@
 // do profissional; ind_total_auto sem as checagens sozinhas (22/11/2026)
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '19.2.2';
+var VERSAO_PACOTE = '17.8';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -177,6 +177,11 @@ var HEADERS_ESCALAS = [
   'escore_cognitivos', 'escore_comportamentais', 'escore_total_processos',
   // 17.7 (fechamento): SAS-LV (medias dos cinco fatores + total dos 33 itens)
   'escore_perturbacao', 'escore_antecipacao', 'escore_abstinencia', 'escore_ciberespaco', 'escore_uso_excessivo', 'escore_total_sas',
+  // 17.8: lote C - DERS (seis somas + total), PTCI (tres medias + total), CORE-OM (quatro medias + escore clinico), BIS-11 (duas somas)
+  'escore_nao_aceitacao', 'escore_objetivos', 'escore_impulsos', 'escore_consciencia', 'escore_estrategias', 'escore_clareza', 'escore_total_ders',
+  'escore_self', 'escore_mundo', 'escore_autoculpa', 'escore_total_ptci',
+  'escore_bem_estar', 'escore_problemas', 'escore_funcionamento', 'escore_risco', 'escore_clinico',
+  'escore_controle_inibitorio', 'escore_nao_planejamento',
   'faixa',
   'alerta_risco_flag', 'alerta_risco_item', 'alerta_risco_valor',
   'observacoes', 'tempo_preenchimento_seg',
@@ -2933,6 +2938,11 @@ var COLUNAS_LEITURA_ESCALAS = [
   'escore_cognitivos', 'escore_comportamentais', 'escore_total_processos',
   // 17.7 (fechamento): SAS-LV (medias dos cinco fatores + total dos 33 itens)
   'escore_perturbacao', 'escore_antecipacao', 'escore_abstinencia', 'escore_ciberespaco', 'escore_uso_excessivo', 'escore_total_sas',
+  // 17.8: lote C - DERS (seis somas + total), PTCI (tres medias + total), CORE-OM (quatro medias + escore clinico), BIS-11 (duas somas)
+  'escore_nao_aceitacao', 'escore_objetivos', 'escore_impulsos', 'escore_consciencia', 'escore_estrategias', 'escore_clareza', 'escore_total_ders',
+  'escore_self', 'escore_mundo', 'escore_autoculpa', 'escore_total_ptci',
+  'escore_bem_estar', 'escore_problemas', 'escore_funcionamento', 'escore_risco', 'escore_clinico',
+  'escore_controle_inibitorio', 'escore_nao_planejamento',
   'faixa', 'alerta_risco_flag', 'alerta_risco_item', 'alerta_risco_valor', 'observacoes', 'tempo_preenchimento_seg',
   'editado_por', 'editado_em', 'criado_por', 'autoria_campos', 'criado_por_nome'
 ];
@@ -3147,7 +3157,8 @@ var INSTRUMENTOS_VALIDOS = ['bdi2', 'bai', 'bhs', 'bsi', 'urica_alcool', 'urica_
   'pcl5', 'pswq', 'ear', 'aaq2', 'swls', 'maas', 'wbsi', // 17.3: lote A da HumanTrack (PCL-5, PSWQ, EAR, AAQ-II, SWLS, MAAS, WBSI)
   'panas', 'spin', 'ocir', 'asrs', 'scs', // 17.5: lote B (PANAS, SPIN, OCI-R, ASRS-18, SCS)
   'audit', 'ftnd', 'gsas', 'eaad', 'estud', // 17.6: lote E, dependencias (AUDIT, FTND, G-SAS, EAAD, ESTUD)
-  'dudit', 'sast', 'epm', 'piuq', 'saslv']; // 17.7: lote F (DUDIT, SAST, EPM, PIUQ-SF-9, SAS-LV)
+  'dudit', 'sast', 'epm', 'piuq', 'saslv', // 17.7: lote F (DUDIT, SAST, EPM, PIUQ-SF-9, SAS-LV)
+  'cfq7', 'ders', 'ptci', 'coreom', 'bis11']; // 17.8: lote C (CFQ-7, DERS, PTCI, CORE-OM, BIS-11)
 
 // 17.1.2 (decisao do usuario, 19/11/2026): instrumentos que o paciente so ve quando o profissional
 // libera para ele - lista em 'escalas_liberadas' na linha do paciente na Controle (coluna criada no
@@ -3163,7 +3174,8 @@ var ESCALAS_MENU = { 'PHQ-9': 'phq9', 'GAD-7': 'gad7', 'PSS-10': 'pss10', 'DASS-
   'PCL-5': 'pcl5', 'PSWQ': 'pswq', 'EAR': 'ear', 'AAQ-II': 'aaq2', 'SWLS': 'swls', 'MAAS': 'maas', 'WBSI': 'wbsi',
   'PANAS': 'panas', 'SPIN': 'spin', 'OCI-R': 'ocir', 'ASRS-18': 'asrs', 'SCS': 'scs', // 17.5: lote B
   'AUDIT': 'audit', 'FTND': 'ftnd', 'G-SAS': 'gsas', 'EAAD': 'eaad', 'ESTUD': 'estud', // 17.6: lote E
-  'DUDIT': 'dudit', 'SAST': 'sast', 'EPM': 'epm', 'PIUQ-SF-9': 'piuq', 'SAS-LV': 'saslv' }; // 17.7: lote F
+  'DUDIT': 'dudit', 'SAST': 'sast', 'EPM': 'epm', 'PIUQ-SF-9': 'piuq', 'SAS-LV': 'saslv', // 17.7: lote F
+  'CFQ-7': 'cfq7', 'DERS': 'ders', 'PTCI': 'ptci', 'CORE-OM': 'coreom', 'BIS-11': 'bis11' }; // 17.8: lote C
 var INSTRUMENTOS_SO_PROFISSIONAL = Object.keys(ESCALAS_MENU).map(function (c) { return ESCALAS_MENU[c]; });
 
 /** Id de liberacao de uma escala pelo codigo do catalogo ('' se desconhecido). */
@@ -4190,7 +4202,21 @@ var ESCALAS_CALCULO = {
   'SAST':{n:25,max:1,faixas:[[6,25,'Triagem positiva'],[0,5,'Abaixo do ponto de corte']]},
   'EPM':{n:20,min:1,max:5,sub:{cognitivos:[3,4,5,7,8,9,12,14,15,20],comportamentais:[1,2,6,10,11,13,16,17,18,19]},multi:true,siglaSub:{cognitivos:'Cog',comportamentais:'Com'},composto:{chave:'total_processos',sigla:'Total',mais:[],menos:[],somaItens:true,casas:0}},
   'PIUQ-SF-9':{n:9,min:1,max:5},
-  'SAS-LV':{n:33,min:1,max:6,sub:{perturbacao:[3,4,5],antecipacao:[6,7,8,9],abstinencia:[10,11,12,13,14,15,17,18],ciberespaco:[20,21,22,23,26],uso_excessivo:[1,2,16,19,24,25,27,28,29,30,31,32,33]},multi:true,subMedia:2,siglaSub:{perturbacao:'Per',antecipacao:'Ant',abstinencia:'Abs',ciberespaco:'Cib',uso_excessivo:'Uso'},composto:{chave:'total_sas',sigla:'Total',mais:[],menos:[],somaItens:true,casas:0}} // 17.7 (fechamento): cinco fatores da versao brasileira (Andrade et al., 2020, Tabela 3; item 18 em abstinencia) + total pela soma
+  'SAS-LV':{n:33,min:1,max:6,sub:{perturbacao:[3,4,5],antecipacao:[6,7,8,9],abstinencia:[10,11,12,13,14,15,17,18],ciberespaco:[20,21,22,23,26],uso_excessivo:[1,2,16,19,24,25,27,28,29,30,31,32,33]},multi:true,subMedia:2,siglaSub:{perturbacao:'Per',antecipacao:'Ant',abstinencia:'Abs',ciberespaco:'Cib',uso_excessivo:'Uso'},composto:{chave:'total_sas',sigla:'Total',mais:[],menos:[],somaItens:true,casas:0}}, // 17.7 (fechamento): cinco fatores da versao brasileira (Andrade et al., 2020, Tabela 3; item 18 em abstinencia) + total pela soma
+  // 17.8 - lote C (fontes com pagina em docs/escalas/fontes.json). CFQ-7: soma 7-49, sem corte (Gillanders et al., 2014;
+  // Peixoto et al., 2019). DERS: 36 itens 1-5, 11 invertidos, seis fatores e total por SOMA como no estudo brasileiro
+  // (Cancian et al., 2019, Tabela 6); sem corte. PTCI: 33 itens 1-7 (os 33 pontuados do original de 36), tres fatores por
+  // MEDIA e total = soma das tres medias (Foa et al., 1999, Apendice B); sem corte. CORE-OM: 34 itens 0-4, 8 positivos
+  // invertidos (formulario do CORE System Trust; Evans et al., 2002, Tabela 9), quatro dominios por media, escore clinico =
+  // media geral x 10 (composto.multiplicar); itens de risco 9, 16, 24 e 34 disparam o alerta; sem corte brasileiro
+  // (Santana et al., 2015). BIS-11: 30 itens 1-4, 11 invertidos (Malloy-Diniz et al., 2010), dois fatores brasileiros por
+  // soma (Vasconcelos et al., 2015, Tabela 1; itens 15 e 29 so no total) e faixas por percentil da tabela corrigida de
+  // normas (Malloy-Diniz et al., 2015; corrigendum 2019): P5 = 47, P25 = 55, P75 = 68, P95 = 80.
+  'CFQ-7':{n:7,min:1,max:7},
+  'DERS':{n:36,min:1,max:5,rev:[1,2,6,7,8,10,17,20,22,24,34],sub:{nao_aceitacao:[11,12,21,23,25,29],objetivos:[13,18,20,26,33],impulsos:[3,14,19,24,27,32],consciencia:[2,6,8,10,17,34],estrategias:[15,16,22,28,30,31,35,36],clareza:[1,4,5,7,9]},multi:true,siglaSub:{nao_aceitacao:'NAc',objetivos:'Obj',impulsos:'Imp',consciencia:'Con',estrategias:'Est',clareza:'Cla'},composto:{chave:'total_ders',sigla:'Total',mais:[],menos:[],somaItens:true,casas:0}},
+  'PTCI':{n:33,min:1,max:7,sub:{self:[2,3,4,5,6,9,12,13,15,16,19,20,23,24,25,27,28,29,31,32,33],mundo:[7,8,10,11,17,22,26],autoculpa:[1,14,18,21,30]},multi:true,subMedia:2,siglaSub:{self:'Self',mundo:'Mun',autoculpa:'Cul'},composto:{chave:'total_ptci',sigla:'Total',mais:['self','mundo','autoculpa'],menos:[],casas:2}},
+  'CORE-OM':{n:34,max:4,rev:[3,4,7,12,19,21,31,32],crit:[[9,1,'COREOM_item9'],[16,1,'COREOM_item16'],[24,1,'COREOM_item24'],[34,1,'COREOM_item34']],sub:{bem_estar:[4,14,17,31],problemas:[2,5,8,11,13,15,18,20,23,27,28,30],funcionamento:[1,3,7,10,12,19,21,25,26,29,32,33],risco:[6,9,16,22,24,34]},multi:true,subMedia:2,siglaSub:{bem_estar:'Bem',problemas:'Pro',funcionamento:'Fun',risco:'Ris'},composto:{chave:'clinico',sigla:'Clínico',mais:[],menos:[],mediaItens:true,multiplicar:10,casas:1}},
+  'BIS-11':{n:30,min:1,max:4,rev:[1,7,8,9,10,12,13,15,20,29,30],sub:{controle_inibitorio:[2,3,5,6,8,9,11,14,16,17,18,19,20,21,22,23,24,25,26,28],nao_planejamento:[1,4,7,10,12,13,27,30]},multi:true,siglaSub:{controle_inibitorio:'CI',nao_planejamento:'NP'},faixas:[[80,120,'Acima do percentil 95'],[68,79,'Percentil 75 a 94'],[55,67,'Percentil 25 a 74'],[47,54,'Percentil 5 a 24'],[30,46,'Abaixo do percentil 5']]}
 };
 
 /**
@@ -4256,6 +4282,7 @@ function _escoresDaEscala_(instrumento, lerColuna) {
       t.composto.menos.forEach(function (k) { comp -= (somas[k] || 0) / t.sub[k].length; });
       if (t.composto.mediaItens) comp = total / t.n; // 17.6: EAAD/ESTUD = media dos itens (escala global da folha)
       if (t.composto.somaItens) comp = total; // 17.7: EPM = soma dos 20 itens (20-100)
+      if (t.composto.multiplicar) comp = comp * t.composto.multiplicar; // 17.8: CORE-OM = media geral x 10 (escore clinico)
       if (t.composto.dividir) comp = comp / t.composto.dividir; // 17.5: SCS = media das seis medias
       var fator = Math.pow(10, t.composto.casas || 0);
       comp = Math.round(comp * fator) / fator;

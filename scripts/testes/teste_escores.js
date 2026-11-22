@@ -59,8 +59,8 @@ function caso(cod, nome, respostas, esperado) {
 }
 
 console.log('0. Catálogo');
-const ESPERADAS = ['AAQ-II', 'ASRS-18', 'AUDIT', 'BAI', 'BDI-II', 'BHS', 'BSS', 'DASS-21', 'DUDIT', 'EAAD', 'EAR', 'EPM', 'ESTUD', 'FTND', 'G-SAS', 'GAD-7', 'MAAS', 'OCI-R', 'PANAS', 'PCL-5', 'PHQ-9', 'PIUQ-SF-9', 'PSS-10', 'PSWQ', 'SAS-LV', 'SAST', 'SCS', 'SPIN', 'SRQ-20', 'SWLS', 'URICA-A', 'URICA-D', 'URICA-HA', 'URICA-T', 'WBSI']; // 17.3: + lote A; 17.5: + lote B; 17.6: + lote E; 17.7: + lote F
-ok('servidor e frontend têm as mesmas 35 escalas do gabarito', Object.keys(servidor.tabela).sort().join() === ESPERADAS.join() && Object.keys(cliente.catalogo).sort().join() === ESPERADAS.join(), [Object.keys(servidor.tabela), Object.keys(cliente.catalogo)]);
+const ESPERADAS = ['AAQ-II', 'ASRS-18', 'AUDIT', 'BAI', 'BDI-II', 'BHS', 'BIS-11', 'BSS', 'CFQ-7', 'CORE-OM', 'DASS-21', 'DERS', 'DUDIT', 'EAAD', 'EAR', 'EPM', 'ESTUD', 'FTND', 'G-SAS', 'GAD-7', 'MAAS', 'OCI-R', 'PANAS', 'PCL-5', 'PHQ-9', 'PIUQ-SF-9', 'PSS-10', 'PSWQ', 'PTCI', 'SAS-LV', 'SAST', 'SCS', 'SPIN', 'SRQ-20', 'SWLS', 'URICA-A', 'URICA-D', 'URICA-HA', 'URICA-T', 'WBSI']; // 17.3: + lote A; 17.5: + lote B; 17.6: + lote E; 17.7: + lote F; 17.8: + lote C
+ok('servidor e frontend têm as mesmas 40 escalas do gabarito', Object.keys(servidor.tabela).sort().join() === ESPERADAS.join() && Object.keys(cliente.catalogo).sort().join() === ESPERADAS.join(), [Object.keys(servidor.tabela), Object.keys(cliente.catalogo)]);
 
 console.log('1. PHQ-9 (0–27; cortes 5, 10, 15, 20; risco: item 9 ≥ 1)');
 [[0, 'Sintomas mínimos ou ausentes'], [4, 'Sintomas mínimos ou ausentes'], [5, 'Depressão leve'], [9, 'Depressão leve'], [10, 'Depressão moderada'], [14, 'Depressão moderada'],
@@ -261,6 +261,30 @@ caso('SAS-LV', 'tudo 1: mínimo (fatores 1, total 33)', tudo(33, 1), { total: 33
 caso('SAS-LV', 'tudo 6: máximo (fatores 6, total 198)', tudo(33, 6), { total: 198, faixa: 'Per:6 | Ant:6 | Abs:6 | Cib:6 | Uso:6 | Total: 198', alerta: 'NAO', sub: { escore_abstinencia: 6, escore_total_sas: 198 } });
 caso('SAS-LV', 'item 1 = 6 e o resto 1: Uso (6 + 12)/13 = 1,38; total 38', com(tudo(33, 1), { 1: 6 }), { total: 38, faixa: 'Per:1 | Ant:1 | Abs:1 | Cib:1 | Uso:1,38 | Total: 38', alerta: 'NAO', sub: { escore_uso_excessivo: 1.38, escore_total_sas: 38 } });
 caso('SAS-LV', 'item 18 em 6 e o resto 1: Abs (6 + 7)/8 = 1,63 (item 18 pertence à abstinência)', com(tudo(33, 1), { 18: 6 }), { total: 38, faixa: 'Per:1 | Ant:1 | Abs:1,63 | Cib:1 | Uso:1 | Total: 38', alerta: 'NAO', sub: { escore_abstinencia: 1.63 } });
+
+console.log('16. Lote C (17.8): CFQ-7 (soma), DERS (6 somas + total; 11 invertidos), PTCI (3 médias + total), CORE-OM (4 médias + clínico ×10; 8 invertidos; risco 9/16/24/34), BIS-11 (2 somas; 11 invertidos; faixas por percentil)');
+caso('CFQ-7', 'tudo 1: mínimo 7, sem faixa', tudo(7, 1), { total: 7, faixa: '', alerta: 'NAO', item: '' });
+caso('CFQ-7', 'tudo 7: máximo 49', tudo(7, 7), { total: 49, faixa: '', alerta: 'NAO' });
+caso('CFQ-7', 'item 3 = 7 e o resto 1: 13', com(tudo(7, 1), { 3: 7 }), { total: 13, faixa: '', alerta: 'NAO' });
+caso('DERS', 'tudo 1: os 11 invertidos valem 5 → 80; Con 30 (todos invertidos)', tudo(36, 1), { total: 80, faixa: 'NAc:6 | Obj:9 | Imp:10 | Con:30 | Est:12 | Cla:13 | Total: 80', alerta: 'NAO', item: '', sub: { escore_nao_aceitacao: 6, escore_consciencia: 30, escore_clareza: 13, escore_total_ders: 80 } });
+caso('DERS', 'tudo 5: os 11 invertidos valem 1 → 136', tudo(36, 5), { total: 136, faixa: 'NAc:30 | Obj:21 | Imp:26 | Con:6 | Est:36 | Cla:17 | Total: 136', alerta: 'NAO', sub: { escore_estrategias: 36, escore_total_ders: 136 } });
+caso('DERS', 'tudo 3: 108; cada subescala 3 × n', tudo(36, 3), { total: 108, faixa: 'NAc:18 | Obj:15 | Imp:18 | Con:18 | Est:24 | Cla:15 | Total: 108', alerta: 'NAO', sub: { escore_objetivos: 15, escore_impulsos: 18 } });
+caso('PTCI', 'tudo 1: médias 1, total 3', tudo(33, 1), { total: 33, faixa: 'Self:1 | Mun:1 | Cul:1 | Total: 3', alerta: 'NAO', item: '', sub: { escore_self: 1, escore_mundo: 1, escore_autoculpa: 1, escore_total_ptci: 3 } });
+caso('PTCI', 'tudo 7: médias 7, total 21', tudo(33, 7), { total: 231, faixa: 'Self:7 | Mun:7 | Cul:7 | Total: 21', alerta: 'NAO', sub: { escore_total_ptci: 21 } });
+caso('PTCI', 'mundo (7,8,10,11,17,22,26) em 7 e o resto 1: Mun 7, total 9', com(tudo(33, 1), { 7: 7, 8: 7, 10: 7, 11: 7, 17: 7, 22: 7, 26: 7 }), { total: 75, faixa: 'Self:1 | Mun:7 | Cul:1 | Total: 9', alerta: 'NAO', sub: { escore_mundo: 7, escore_total_ptci: 9 } });
+caso('CORE-OM', 'tudo 0: os 8 positivos valem 4 → 32; Bem 2, Fun 2, clínico 9,4; sem alerta', tudo(34, 0), { total: 32, faixa: 'Bem:2 | Pro:0 | Fun:2 | Ris:0 | Clínico: 9,4', alerta: 'NAO', item: '', sub: { escore_bem_estar: 2, escore_funcionamento: 2, escore_risco: 0, escore_clinico: 9.4 } });
+caso('CORE-OM', 'tudo 4: os 8 positivos valem 0 → 104; clínico 30,6; alerta pelo item 34', tudo(34, 4), { total: 104, faixa: 'Bem:2 | Pro:4 | Fun:2 | Ris:4 | Clínico: 30,6', alerta: 'SIM', item: 'COREOM_item34', sub: { escore_problemas: 4, escore_risco: 4, escore_clinico: 30.6 } });
+caso('CORE-OM', 'só o item 16 = 1: alerta mesmo com escore baixo; Ris 0,17; clínico 9,7', com(tudo(34, 0), { 16: 1 }), { total: 33, faixa: 'Bem:2 | Pro:0 | Fun:2 | Ris:0,17 | Clínico: 9,7', alerta: 'SIM', item: 'COREOM_item16', sub: { escore_risco: 0.17, escore_clinico: 9.7 } });
+caso('CORE-OM', 'só o item 24 = 2: alerta pelo item 24', com(tudo(34, 0), { 24: 2 }), { total: 34, faixa: 'Bem:2 | Pro:0 | Fun:2 | Ris:0,33 | Clínico: 10', alerta: 'SIM', item: 'COREOM_item24' });
+const bisBase = com(tudo(30, 1), { 1: 4, 7: 4, 8: 4, 9: 4, 10: 4, 12: 4, 13: 4, 15: 4, 20: 4, 29: 4, 30: 4 }); // os 11 invertidos marcados em 4 valem 1: mínimo 30
+caso('BIS-11', 'mínimo 30 (invertidos em 4): abaixo do percentil 5; CI 20, NP 8', bisBase, { total: 30, faixa: 'Total:Abaixo do percentil 5 | CI:20 | NP:8', alerta: 'NAO', item: '', sub: { escore_controle_inibitorio: 20, escore_nao_planejamento: 8 } });
+caso('BIS-11', '46: último abaixo do percentil 5', com(bisBase, { 2: 3, 3: 3, 5: 3, 6: 3, 11: 3, 14: 3, 16: 3, 17: 3 }), { total: 46, faixa: 'Total:Abaixo do percentil 5 | CI:36 | NP:8', alerta: 'NAO' });
+caso('BIS-11', '47 (P5 da tabela corrigida): percentil 5 a 24', com(bisBase, { 2: 3, 3: 3, 5: 3, 6: 3, 11: 3, 14: 3, 16: 3, 17: 3, 4: 2 }), { total: 47, faixa: 'Total:Percentil 5 a 24 | CI:36 | NP:9', alerta: 'NAO' });
+caso('BIS-11', '55 (P25): percentil 25 a 74', com(bisBase, { 2: 3, 3: 3, 5: 3, 6: 3, 11: 3, 14: 3, 16: 3, 17: 3, 18: 3, 19: 3, 21: 3, 22: 3, 4: 2 }), { total: 55, faixa: 'Total:Percentil 25 a 74 | CI:44 | NP:9', alerta: 'NAO' });
+caso('BIS-11', 'tudo 1 (invertidos valem 4): 63, percentil 25 a 74; CI 29, NP 26', tudo(30, 1), { total: 63, faixa: 'Total:Percentil 25 a 74 | CI:29 | NP:26', alerta: 'NAO', sub: { escore_controle_inibitorio: 29, escore_nao_planejamento: 26 } });
+caso('BIS-11', 'tudo 2 (invertidos valem 3): 71, percentil 75 a 94', tudo(30, 2), { total: 71, faixa: 'Total:Percentil 75 a 94 | CI:43 | NP:22', alerta: 'NAO' });
+caso('BIS-11', '80 (P95): acima do percentil 95', com(tudo(30, 4), { 2: 3, 3: 3, 5: 3, 6: 3, 11: 3, 14: 3, 16: 3 }), { total: 80, faixa: 'Total:Acima do percentil 95 | CI:64 | NP:14', alerta: 'NAO' });
+caso('BIS-11', 'tudo 4 (invertidos valem 1): 87, acima do percentil 95; CI 71, NP 14', tudo(30, 4), { total: 87, faixa: 'Total:Acima do percentil 95 | CI:71 | NP:14', alerta: 'NAO', sub: { escore_controle_inibitorio: 71, escore_nao_planejamento: 14 } });
 ok('PSWQ: resposta 0 recusada (mínimo é 1)', servidor.calc('PSWQ', c => (c === 'item_02' ? 0 : 3)).ok === false);
 ok('PSWQ: resposta 6 recusada (máximo é 5)', servidor.calc('PSWQ', c => (c === 'item_02' ? 6 : 3)).ok === false);
 ok('EAR: resposta 5 recusada (máximo é 4)', servidor.calc('EAR', c => (c === 'item_01' ? 5 : 2)).ok === false);

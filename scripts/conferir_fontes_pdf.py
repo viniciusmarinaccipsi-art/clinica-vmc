@@ -37,6 +37,12 @@ _cache_pdf = {}
 
 def texto_pagina(caminho, pagina):
     chave = (caminho, pagina)
+    if caminho.lower().endswith(('.html', '.htm')):  # 17.8: página web guardada no cache (CORE System Trust); 'pagina' é ignorada
+        if chave not in _cache_pdf:
+            s = open(caminho, encoding='utf-8', errors='ignore').read()
+            s = re.sub(r'<script.*?</script>|<style.*?</style>', '', s, flags=re.S)
+            _cache_pdf[chave] = norm(re.sub(r'<[^>]+>', ' ', s))
+        return _cache_pdf[chave]
     if chave not in _cache_pdf:
         doc = pymupdf.open(caminho)
         if pagina < 1 or pagina > doc.page_count:

@@ -3683,6 +3683,694 @@
      "doi": "10.1371/journal.pone.0163010"
     }
    ]
+  },
+  "CFQ-7": {
+   "exige_pagina": true,
+   "estrutura": {
+    "itens": 7,
+    "valor_min": 1,
+    "valor_max": 7,
+    "ancoras": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "escore_max": 49
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": "peixoto2019",
+     "arquivo": "CFQ-7_Peixoto2019_Psico.pdf",
+     "pagina": 4,
+     "tabela": null,
+     "trecho": "sete itens respondidos em uma escala Likert de 7 pontos",
+     "conferido_por": "texto"
+    }
+   },
+   "faixas": [],
+   "corte": {
+    "status": "sem_corte",
+    "fonte_diz": "Sem ponto de corte no estudo original (Gillanders et al., 2014) nem nos brasileiros (Lucena-Santos et al., 2017; Peixoto et al., 2019): escore de 7 a 49, leitura pela evolução."
+   },
+   "referencias": [
+    {
+     "id": "gillanders2014",
+     "citacao": "Gillanders, D. T., Bolderston, H., Bond, F. W., Dempster, M., Flaxman, P. E., Campbell, L., Kerr, S., Tansey, L., Noel, P., Ferenbach, C., Masley, S., Roach, L., Lloyd, J., May, L., Clarke, S., & Remington, B. (2014)",
+     "doi": "10.1016/j.beth.2013.09.001"
+    },
+    {
+     "id": "lucenasantos2017",
+     "citacao": "Lucena-Santos, P., Carvalho, S. A., Pinto-Gouveia, J., Gillanders, D., & Oliveira, M. S. (2017)",
+     "doi": "10.1016/j.jcbs.2017.02.004"
+    },
+    {
+     "id": "peixoto2019",
+     "citacao": "Peixoto, E. M., Lucena-Santos, P., Pimentel, R. H. R., Ferreira, J. E. A., & Peixoto, J. L. B. (2019)",
+     "doi": "10.15448/1980-8623.2019.1.27851",
+     "arquivo": "CFQ-7_Peixoto2019_Psico.pdf"
+    }
+   ]
+  },
+  "DERS": {
+   "exige_pagina": true,
+   "estrutura": {
+    "itens": 36,
+    "valor_min": 1,
+    "valor_max": 5,
+    "ancoras": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "reversos": [
+     1,
+     2,
+     6,
+     7,
+     8,
+     10,
+     17,
+     20,
+     22,
+     24,
+     34
+    ],
+    "subescalas": {
+     "nao_aceitacao": [
+      11,
+      12,
+      21,
+      23,
+      25,
+      29
+     ],
+     "objetivos": [
+      13,
+      18,
+      20,
+      26,
+      33
+     ],
+     "impulsos": [
+      3,
+      14,
+      19,
+      24,
+      27,
+      32
+     ],
+     "consciencia": [
+      2,
+      6,
+      8,
+      10,
+      17,
+      34
+     ],
+     "estrategias": [
+      15,
+      16,
+      22,
+      28,
+      30,
+      31,
+      35,
+      36
+     ],
+     "clareza": [
+      1,
+      4,
+      5,
+      7,
+      9
+     ]
+    },
+    "siglas_subescalas": {
+     "nao_aceitacao": "NAc",
+     "objetivos": "Obj",
+     "impulsos": "Imp",
+     "consciencia": "Con",
+     "estrategias": "Est",
+     "clareza": "Cla"
+    },
+    "composto": {
+     "chave": "total_ders",
+     "sigla": "Total",
+     "mais": [],
+     "menos": [],
+     "somaItens": true,
+     "casas": 0
+    },
+    "escore_max": 180
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": "cancian2019",
+     "arquivo": "DERS_Cancian2019_TrendsPsychiatry.pdf",
+     "pagina": 3,
+     "tabela": null,
+     "trecho": "5-point Likert scale ranging from almost never to almost always",
+     "conferido_por": "texto"
+    },
+    "reversos": {
+     "ref": "gratz2004",
+     "arquivo": "DERS_SAP_NCT03659929_pontuacao.pdf",
+     "pagina": 24,
+     "tabela": "§ 7.2.6 (chave de correção item a item, conforme Gratz & Roemer, 2004; o artigo original é de acesso restrito)",
+     "trecho": "DERS clarity subscale score (sum of items 1r",
+     "conferido_por": "texto"
+    },
+    "subescalas": {
+     "ref": "cancian2019",
+     "arquivo": "DERS_Cancian2019_suplemento.pdf",
+     "pagina": 2,
+     "tabela": "Apêndice 2 (diagrama)",
+     "trecho": "Appendix 2 — Original intercorrelated first-order six-factor model",
+     "conferido_por": "imagem",
+     "imagem": "DERS_Cancian2019_suplemento_Apendice2.png"
+    },
+    "composto": {
+     "ref": "cancian2019",
+     "arquivo": "DERS_Cancian2019_TrendsPsychiatry.pdf",
+     "pagina": 6,
+     "tabela": "Table 6",
+     "trecho": "means and standard errors for DERS total scores",
+     "conferido_por": "texto"
+    }
+   },
+   "faixas": [],
+   "corte": {
+    "status": "sem_corte",
+    "fonte_diz": "Sem ponto de corte (Gratz & Roemer, 2004; Cancian et al., 2019); no Brasil os totais sobem com a gravidade no DASS-21 (Tabela 6: ~71–75 na faixa normal, 107–112 na extremamente severa)."
+   },
+   "referencias": [
+    {
+     "id": "cancian2019",
+     "citacao": "Cancian, A. C. M., Souza, L. A. S., Silva, V. H. P., Machado, W. L., & Oliveira, M. S. (2019)",
+     "doi": "10.1590/2237-6089-2017-0128",
+     "arquivo": "DERS_Cancian2019_TrendsPsychiatry.pdf"
+    },
+    {
+     "id": "gratz2004",
+     "citacao": "Gratz, K. L., & Roemer, L. (2004)",
+     "doi": "10.1023/B:JOBA.0000007455.08539.94"
+    },
+    {
+     "id": "miguel2017",
+     "citacao": "Miguel, F. K., Giromini, L., Colombarolli, M. S., Zuanazzi, A. C., & Zennaro, A. (2017)",
+     "doi": "10.1002/jclp.22404"
+    }
+   ]
+  },
+  "PTCI": {
+   "exige_pagina": true,
+   "estrutura": {
+    "itens": 33,
+    "valor_min": 1,
+    "valor_max": 7,
+    "ancoras": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "subescalas": {
+     "self": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      9,
+      12,
+      13,
+      15,
+      16,
+      19,
+      20,
+      23,
+      24,
+      25,
+      27,
+      28,
+      29,
+      31,
+      32,
+      33
+     ],
+     "mundo": [
+      7,
+      8,
+      10,
+      11,
+      17,
+      22,
+      26
+     ],
+     "autoculpa": [
+      1,
+      14,
+      18,
+      21,
+      30
+     ]
+    },
+    "siglas_subescalas": {
+     "self": "Self",
+     "mundo": "Mun",
+     "autoculpa": "Cul"
+    },
+    "subescala_media_casas": 2,
+    "composto": {
+     "chave": "total_ptci",
+     "sigla": "Total",
+     "mais": [
+      "self",
+      "mundo",
+      "autoculpa"
+     ],
+     "menos": [],
+     "casas": 2
+    },
+    "escore_max": 7
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": "sbardelloto2013",
+     "arquivo": "PTCI_Sbardelloto2013_RSP.pdf",
+     "pagina": 3,
+     "tabela": null,
+     "trecho": "variando de 1 (discordo totalmente) a 7 (concordo totalmente)",
+     "conferido_por": "texto"
+    },
+    "subescalas": {
+     "ref": "foa1999",
+     "arquivo": "PTCI_Foa1999_PsychAssess.pdf",
+     "pagina": 12,
+     "tabela": "Appendix B (numeração original de 36; o sistema carrega os 33 pontuados renumerados: 13, 32 e 34 experimentais fora)",
+     "trecho": "Scoring Key for the Posttraumatic Cognitions Inventory",
+     "conferido_por": "texto"
+    },
+    "composto": {
+     "ref": "foa1999",
+     "arquivo": "PTCI_Foa1999_PsychAssess.pdf",
+     "pagina": 12,
+     "tabela": "Appendix B",
+     "trecho": "sum of A, B, C",
+     "conferido_por": "texto"
+    }
+   },
+   "faixas": [],
+   "corte": {
+    "status": "sem_corte",
+    "fonte_diz": "Sem ponto de corte (Foa et al., 1999: as três escalas classificaram 86% com/sem TEPT; Sbardelloto et al., 2013: só adaptação de conteúdo no Brasil)."
+   },
+   "referencias": [
+    {
+     "id": "beck2004",
+     "citacao": "Beck, J. G., Coffey, S. F., Palyo, S. A., Gudmundsdottir, B., Miller, L. M., & Colder, C. R. (2004)",
+     "doi": "10.1037/1040-3590.16.3.289"
+    },
+    {
+     "id": "foa1999",
+     "citacao": "Foa, E. B., Ehlers, A., Clark, D. M., Tolin, D. F., & Orsillo, S. M. (1999)",
+     "doi": "10.1037/1040-3590.11.3.303",
+     "arquivo": "PTCI_Foa1999_PsychAssess.pdf"
+    },
+    {
+     "id": "sbardelloto2013",
+     "citacao": "Sbardelloto, G., Schaefer, L. S., Justo, A. R., Lobo, B. O. M., & Kristensen, C. H. (2013)",
+     "doi": "10.1590/S0034-8910.2013047003474",
+     "arquivo": "PTCI_Sbardelloto2013_RSP.pdf"
+    }
+   ]
+  },
+  "CORE-OM": {
+   "exige_pagina": true,
+   "estrutura": {
+    "itens": 34,
+    "valor_min": 0,
+    "valor_max": 4,
+    "ancoras": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "reversos": [
+     3,
+     4,
+     7,
+     12,
+     19,
+     21,
+     31,
+     32
+    ],
+    "criticos": [
+     {
+      "item": 9,
+      "a_partir_de": 1,
+      "chave": "COREOM_item9"
+     },
+     {
+      "item": 16,
+      "a_partir_de": 1,
+      "chave": "COREOM_item16"
+     },
+     {
+      "item": 24,
+      "a_partir_de": 1,
+      "chave": "COREOM_item24"
+     },
+     {
+      "item": 34,
+      "a_partir_de": 1,
+      "chave": "COREOM_item34"
+     }
+    ],
+    "subescalas": {
+     "bem_estar": [
+      4,
+      14,
+      17,
+      31
+     ],
+     "problemas": [
+      2,
+      5,
+      8,
+      11,
+      13,
+      15,
+      18,
+      20,
+      23,
+      27,
+      28,
+      30
+     ],
+     "funcionamento": [
+      1,
+      3,
+      7,
+      10,
+      12,
+      19,
+      21,
+      25,
+      26,
+      29,
+      32,
+      33
+     ],
+     "risco": [
+      6,
+      9,
+      16,
+      22,
+      24,
+      34
+     ]
+    },
+    "siglas_subescalas": {
+     "bem_estar": "Bem",
+     "problemas": "Pro",
+     "funcionamento": "Fun",
+     "risco": "Ris"
+    },
+    "subescala_media_casas": 2,
+    "composto": {
+     "chave": "clinico",
+     "sigla": "Clínico",
+     "mais": [],
+     "menos": [],
+     "mediaItens": true,
+     "multiplicar": 10,
+     "casas": 1
+    },
+    "escore_max": 4
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": "santana2015",
+     "arquivo": "CORE-OM_Santana2015_TrendsPsychiatry.pdf",
+     "pagina": 3,
+     "tabela": null,
+     "trecho": "answered on a five-point scale, ranging from never to always",
+     "conferido_por": "texto"
+    },
+    "reversos": {
+     "ref": "evans2002",
+     "arquivo": "CORE-OM_formulario_CST.pdf",
+     "pagina": 1,
+     "tabela": "formulário oficial do CORE System Trust",
+     "trecho": "itens positivos com a fileira 4 3 2 1 0 (3, 4, 7, 12 na p. 1; 19, 21, 31, 32 na p. 2)",
+     "conferido_por": "imagem",
+     "imagem": "CORE-OM_formulario_CST_p1.png"
+    },
+    "subescalas": {
+     "ref": "evans2002",
+     "arquivo": "CORE-OM_Evans2002_BJP.pdf",
+     "pagina": 6,
+     "tabela": "Table 9",
+     "trecho": "Table 9 — domínio (W/P/F/R) de cada item",
+     "conferido_por": "imagem",
+     "imagem": "CORE-OM_Evans2002_Tabela9_pag6.png"
+    },
+    "composto": {
+     "ref": "core",
+     "arquivo": "CORE-OM_CST_scoring_page.html",
+     "pagina": 1,
+     "tabela": "página \"Scoring the CORE-OM\" do CORE System Trust (HTML no cache)",
+     "trecho": "the mean scores multiplied by ten",
+     "conferido_por": "texto"
+    }
+   },
+   "faixas": [],
+   "corte": {
+    "status": "sem_corte",
+    "fonte_diz": "Sem corte brasileiro (Santana et al., 2015). Cortes britânicos na média de todos os itens: 1,19 homens / 1,29 mulheres (Evans et al., 2002, Tabela 12, conferida por imagem: CORE-OM_Evans2002_Tabela12_pag8.png)."
+   },
+   "referencias": [
+    {
+     "id": "core",
+     "citacao": "CORE System Trust. (s.d.). Scoring the CORE-OM. https://www.coresystemtrust.org.",
+     "arquivo": "CORE-OM_CST_scoring_page.html"
+    },
+    {
+     "id": "evans2002",
+     "citacao": "Evans, C., Connell, J., Barkham, M., Margison, F., McGrath, G., Mellor-Clark, J., & Audin, K. (2002)",
+     "doi": "10.1192/bjp.180.1.51",
+     "arquivo": "CORE-OM_Evans2002_BJP.pdf"
+    },
+    {
+     "id": "evans2000",
+     "citacao": "Evans, C., Mellor-Clark, J., Margison, F., Barkham, M., Audin, K., Connell, J., & McGrath, G. (2000)",
+     "doi": "10.1080/jmh.9.3.247.255"
+    },
+    {
+     "id": "santana2015",
+     "citacao": "Santana, M. R. M., Silva, M. M., Moraes, D. S., Fukuda, C. C., Freitas, L. H., Ramos, M. E. C., Fleury, H. J., & Evans, C. (2015)",
+     "doi": "10.1590/2237-6089-2015-0002",
+     "arquivo": "CORE-OM_Santana2015_TrendsPsychiatry.pdf"
+    }
+   ]
+  },
+  "BIS-11": {
+   "exige_pagina": true,
+   "estrutura": {
+    "itens": 30,
+    "valor_min": 1,
+    "valor_max": 4,
+    "ancoras": [
+     1,
+     2,
+     3,
+     4
+    ],
+    "reversos": [
+     1,
+     7,
+     8,
+     9,
+     10,
+     12,
+     13,
+     15,
+     20,
+     29,
+     30
+    ],
+    "subescalas": {
+     "controle_inibitorio": [
+      2,
+      3,
+      5,
+      6,
+      8,
+      9,
+      11,
+      14,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      28
+     ],
+     "nao_planejamento": [
+      1,
+      4,
+      7,
+      10,
+      12,
+      13,
+      27,
+      30
+     ]
+    },
+    "siglas_subescalas": {
+     "controle_inibitorio": "CI",
+     "nao_planejamento": "NP"
+    },
+    "escore_max": 120
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": "malloydiniz2010",
+     "arquivo": "BIS-11_Malloy-Diniz2010_JBP.pdf",
+     "pagina": 3,
+     "tabela": null,
+     "trecho": "1 = raramente ou nunca; 2 = de vez em quando; 3 = com frequência; 4 = quase sempre/sempre",
+     "conferido_por": "texto"
+    },
+    "reversos": {
+     "ref": "malloydiniz2010",
+     "arquivo": "BIS-11_Malloy-Diniz2010_JBP.pdf",
+     "pagina": 3,
+     "tabela": null,
+     "trecho": "os itens marcados com o sinal * recebem escore inverso",
+     "conferido_por": "texto"
+    },
+    "subescalas": {
+     "ref": "vasconcelos2015",
+     "arquivo": "BIS-11_Malloy-Diniz2015_PRC_dois-fatores.pdf",
+     "pagina": 5,
+     "tabela": "Table 1",
+     "trecho": "BIS-11 items organization based on content and EFA analysis",
+     "conferido_por": "texto"
+    }
+   },
+   "faixas": [
+    {
+     "min": 80,
+     "max": 120,
+     "rotulo": "Acima do percentil 95",
+     "fonte": {
+      "ref": "malloydiniz2015",
+      "arquivo": "BIS-11_Malloy-Diniz2019_RBP_corrigendum.pdf",
+      "pagina": 1,
+      "tabela": "Table 1 corrigida (coluna total)",
+      "trecho": "percentile 95 80 54 25",
+      "conferido_por": "texto"
+     }
+    },
+    {
+     "min": 68,
+     "max": 79,
+     "rotulo": "Percentil 75 a 94",
+     "fonte": {
+      "ref": "malloydiniz2015",
+      "arquivo": "BIS-11_Malloy-Diniz2019_RBP_corrigendum.pdf",
+      "pagina": 1,
+      "tabela": "Table 1 corrigida (coluna total)",
+      "trecho": "percentile 75 68 43 21",
+      "conferido_por": "texto"
+     }
+    },
+    {
+     "min": 55,
+     "max": 67,
+     "rotulo": "Percentil 25 a 74",
+     "fonte": {
+      "ref": "malloydiniz2015",
+      "arquivo": "BIS-11_Malloy-Diniz2019_RBP_corrigendum.pdf",
+      "pagina": 1,
+      "tabela": "Table 1 corrigida (coluna total)",
+      "trecho": "percentile 25 55 33 15",
+      "conferido_por": "texto"
+     }
+    },
+    {
+     "min": 47,
+     "max": 54,
+     "rotulo": "Percentil 5 a 24",
+     "fonte": {
+      "ref": "malloydiniz2015",
+      "arquivo": "BIS-11_Malloy-Diniz2019_RBP_corrigendum.pdf",
+      "pagina": 1,
+      "tabela": "Table 1 corrigida (coluna total)",
+      "trecho": "percentile 5 47 27 11",
+      "conferido_por": "texto"
+     }
+    },
+    {
+     "min": 30,
+     "max": 46,
+     "rotulo": "Abaixo do percentil 5",
+     "fonte": {
+      "ref": "malloydiniz2015",
+      "arquivo": "BIS-11_Malloy-Diniz2019_RBP_corrigendum.pdf",
+      "pagina": 1,
+      "tabela": "Table 1 corrigida (coluna total)",
+      "trecho": "percentile 5 47 27 11",
+      "conferido_por": "texto"
+     }
+    }
+   ],
+   "nota_faixas": "Percentis das normas brasileiras (Malloy-Diniz et al., 2015; tabela corrigida em 2019; n = 3.053); dois fatores de Vasconcelos et al. (2015); itens 15 e 29 só no total. Posição na amostra, não corte clínico.",
+   "referencias": [
+    {
+     "id": "malloydiniz2010",
+     "citacao": "Malloy-Diniz, L. F., Mattos, P., Leite, W. B., Abreu, N., Coutinho, G., de Paula, J. J., Tavares, H., Vasconcelos, A. G., & Fuentes, D. (2010)",
+     "doi": "10.1590/S0047-20852010000200004",
+     "arquivo": "BIS-11_Malloy-Diniz2010_JBP.pdf"
+    },
+    {
+     "id": "malloydiniz2015",
+     "citacao": "Malloy-Diniz, L. F., de Paula, J. J., Vasconcelos, A. G., de Almondes, K. M., Pessoa, R., Faria, L., Coutinho, G., Costa, D. S., Duran, V., Coutinho, T. V., Correa, H., Fuentes, D., Abreu, N., & Mattos, P. (2015)",
+     "doi": "10.1590/1516-4446-2014-1599",
+     "arquivo": "BIS-11_Malloy-Diniz2015_RBP_normas.pdf"
+    },
+    {
+     "id": "patton1995",
+     "citacao": "Patton, J. H., Stanford, M. S., & Barratt, E. S. (1995)",
+     "doi": "10.1002/1097-4679(199511)51:63.0.CO;2-1"
+    },
+    {
+     "id": "vasconcelos2015",
+     "citacao": "Vasconcelos, A. G., Teodoro, M. L. M., Malloy-Diniz, L., & Correa, H. (2015)",
+     "doi": "10.1590/1678-7153.201528111",
+     "arquivo": "BIS-11_Malloy-Diniz2015_PRC_dois-fatores.pdf"
+    }
+   ]
   }
  }
 }
