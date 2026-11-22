@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — lote F da HumanTrack (dependências e compulsões): DUDIT, SAST, EPM, PIUQ-SF-9 e SAS-LV (35 escalas, todas com ficha; SAS-LV com cinco fatores) — Pacote 17.7 (22/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Início do profissional como dashboard: atalhos, alertas de risco, atualizações recentes e tela Pacientes com busca — Pacote 19.2 (22/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -732,16 +732,41 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 }
 .prof-pv-mod-vazio span{font-size:28px;display:block;margin-bottom:8px;}
 
-/* Pacote 13.4: Botao + Novo Paciente e modal de cadastro */
-.prof-btn-novo{
-  display:flex;align-items:center;gap:6px;justify-content:center;
-  width:100%;padding:12px 16px;margin-bottom:14px;
-  background:var(--c-pos);color:var(--c-ink-inv);border:none;border-radius:10px;
-  font-family:var(--f-text);font-size:14px;font-weight:700;
-  cursor:pointer;transition:background .2s;
+/* Pacote 19.2 — Início como dashboard: atalhos, blocos (alertas de risco, atualizações recentes) e tela Pacientes.
+   Os botões antigos "+ Novo Paciente" (13.4) e "Agenda" (14.1) viraram atalhos do mesmo componente. */
+.prof-atalhos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s-2);margin-bottom:var(--s-5);}
+.prof-atalho{
+  display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:var(--s-1);
+  min-height:64px;padding:var(--s-3);border:1px solid var(--c-line);border-radius:var(--r-card);
+  background:var(--c-surface);color:var(--c-action);font:var(--t-action);text-align:left;cursor:pointer;box-shadow:var(--sh-1);
 }
-.prof-btn-novo:hover{background:var(--c-pos);}
-.prof-btn-novo span{font-size:18px;}
+.prof-atalho .ico{width:22px;height:22px;}
+.prof-atalho:hover{border-color:var(--c-action);background:var(--c-action-tint);}
+.prof-atalho:focus-visible{outline:2px solid var(--c-action);outline-offset:2px;}
+.prof-atalho:disabled,.prof-atalho:disabled:hover{color:var(--c-ink-3);background:var(--c-surface-sub);border-color:var(--c-line);cursor:not-allowed;box-shadow:none;}
+.prof-atalho-selo{font:var(--t-label);color:var(--c-ink-3);}
+@media (min-width:700px){ .prof-atalhos{grid-template-columns:repeat(4,minmax(0,1fr));} }
+.prof-bloco{margin-bottom:var(--s-5);text-align:left;}
+.prof-bloco-titulo{font:600 16px/1.3 var(--f-title);color:var(--c-ink);margin:0 0 var(--s-2);display:flex;align-items:baseline;gap:var(--s-2);flex-wrap:wrap;}
+.prof-bloco-sub{font:var(--t-body-sm);color:var(--c-ink-3);}
+.prof-bloco-lista{display:flex;flex-direction:column;gap:var(--s-2);}
+.prof-bloco-vazio{font:var(--t-body-sm);color:var(--c-ink-3);margin:0;padding:var(--s-3);border:1px dashed var(--c-line);border-radius:var(--r-field);}
+.prof-ev{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:var(--s-3);row-gap:2px;align-items:center;
+  width:100%;min-height:var(--hit-min);padding:var(--s-2) var(--s-3);border:1px solid var(--c-line);border-radius:var(--r-field);
+  background:var(--c-surface);color:var(--c-ink);font:var(--t-body-sm);text-align:left;cursor:pointer;
+}
+.prof-ev:hover{border-color:var(--c-action);}
+.prof-ev:focus-visible{outline:2px solid var(--c-action);outline-offset:2px;}
+.prof-ev-nome{font-weight:600;overflow-wrap:anywhere;}
+.prof-ev-sigla{font-weight:400;color:var(--c-ink-3);}
+.prof-ev-texto{grid-column:1;color:var(--c-ink-2);overflow-wrap:anywhere;}
+.prof-ev-texto .ico{vertical-align:-.15em;}
+.prof-ev-quando{grid-column:2;grid-row:1 / span 2;color:var(--c-ink-3);text-align:right;}
+.prof-ev-risco{background:var(--c-risk-tint);border-color:var(--c-risk-tint);}
+.prof-ev-risco .prof-ev-texto,.prof-ev-risco .prof-ev-quando{color:var(--c-risk-ink);}
+.prof-voltar{min-height:var(--hit-min);}
+/* Pacote 13.4: modal de cadastro de novo paciente */
 .prof-cad-field{margin:0 0 14px;}
 .prof-cad-field label{
   font:var(--t-body-sm);display:block;font-weight:700;color:var(--c-ink-2);
@@ -4055,10 +4080,6 @@ button.cab-no-item{cursor:pointer;}
 .gra-btn-salvar:disabled{opacity:.55;cursor:not-allowed;}
 .gra-ok{display:none;background:var(--c-pos-tint);border-left:4px solid var(--c-pos);
   color:var(--c-pos-ink);border-radius:8px;padding:10px 14px;font-size:13.5px;flex:1;min-width:220px;}
-.prof-btn-agenda{display:inline-flex;align-items:center;gap:8px;background:var(--c-action);color:var(--c-ink-inv);
-  border:none;border-radius:10px;padding:10px 18px;font-family:var(--f-text);font-weight:700;
-  font-size:14px;cursor:pointer;margin:0 0 16px 10px;box-shadow:var(--sh-3);}
-.prof-btn-agenda:hover{filter:brightness(1.08);}
 /* ============================================================
    PACOTE 14.2 — AGENDA VISUAL (Módulo Consultório Digital)
    Namespace cal* — calendário semanal/diário do profissional
@@ -4420,6 +4441,15 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <p>A lista de pacientes será implementada no Pacote 13.2.2.</p>
       <p style="margin-top:12px;font-size:13px;">Login realizado com sucesso como profissional.</p>
     </div>
+  </div>
+
+  <!-- Pacote 19.2: tela Pacientes — busca por nome e sigla + a lista que ficava no Início (populada por profRenderPacientes_) -->
+  <div class="section" id="sec-prof-pacientes">
+    <div class="gra-topo">
+      <button class="gra-voltar prof-voltar" type="button" onclick="abrirSecao('sec-prof-dashboard')">← Voltar</button>
+      <h2 class="gra-titulo"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg> Pacientes</h2>
+    </div>
+    <div class="prof-placeholder" id="profPacientesConteudo"></div>
   </div>
 
   <!-- ============================================================
@@ -9510,31 +9540,153 @@ async function profCarregarDashboard(pacientesProntos) {
   }
 
   var pacientes = resp.pacientes || [];
+  PROF_LISTA = pacientes; // 19.2: a mesma lista em memória serve ao Início e à tela Pacientes
+  profRenderPacientes_();
 
-  // Pacote 13.4: botao + Novo Paciente (sempre visivel)
-  // Pacote 14.1: botao Agenda (abre a Grade de Atendimento)
-  var btnNovo = '<button class="prof-btn-novo" onclick="profAbrirModalCadastro()">' +
-    '<span>＋</span> Novo Paciente</button>' +
-    '<button class="prof-btn-agenda" onclick="calAbrirTela()"><svg class=ico aria-hidden=true><use href=#i-calendar></use></svg> Agenda</button>';
+  // Pacote 19.2: atalhos. Novo Paciente é do 13.4 e Agenda do 14.1; Escalas e Inventários ganha destino no 19.3
+  var atalhos = '<div class="prof-atalhos">' +
+    '<button type="button" class="prof-atalho" id="profAtalhoNovo" onclick="profAbrirModalCadastro()"><svg class=ico aria-hidden=true><use href=#i-plus-circle></use></svg><span>Novo Paciente</span></button>' +
+    '<button type="button" class="prof-atalho" id="profAtalhoAgenda" onclick="calAbrirTela()"><svg class=ico aria-hidden=true><use href=#i-calendar></use></svg><span>Agenda</span></button>' +
+    '<button type="button" class="prof-atalho" id="profAtalhoPacientes" onclick="profAbrirPacientes()"><svg class=ico aria-hidden=true><use href=#i-user></use></svg><span>Pacientes</span></button>' +
+    '<button type="button" class="prof-atalho" id="profAtalhoEscalas" disabled><svg class=ico aria-hidden=true><use href=#i-lock></use></svg><span>Escalas e Inventários</span><span class="prof-atalho-selo">Em breve</span></button>' +
+  '</div>';
 
   if (pacientes.length === 0) {
-    container.innerHTML = btnNovo +
-      '<div class="prof-pac-empty">' +
-        '<span><svg class=ico aria-hidden=true><use href=#i-clipboard></use></svg></span>' +
-        '<p style="font-weight:700;color:var(--c-ink);margin-bottom:6px;">Nenhum paciente cadastrado</p>' +
-        '<p>Seus pacientes aparecerão aqui após o cadastro.</p>' +
-      '</div>';
+    container.innerHTML = atalhos + profSemPacientesHtml_();
     return;
   }
 
-  // Renderizar lista
-  var html = btnNovo;
+  // Pacote 13.5: os desativados ficam fora dos blocos do Início (continuam na tela Pacientes, recolhidos)
+  var ativos = pacientes.filter(function(p){ return String(p.ativo||'Sim').trim().toLowerCase() !== 'nao'; });
+
+  profPreCarregar_(ativos); // 18.11.1: só depois de a lista estar na tela, em segundo plano
+
+  container.innerHTML = atalhos + profRenderAlertas_(ativos) + profRenderAtualizacoes_(ativos);
+}
+
+function profSemPacientesHtml_() {
+  return '<div class="prof-pac-empty">' +
+    '<span><svg class=ico aria-hidden=true><use href=#i-clipboard></use></svg></span>' +
+    '<p style="font-weight:700;color:var(--c-ink);margin-bottom:6px;">Nenhum paciente cadastrado</p>' +
+    '<p>Seus pacientes aparecerão aqui após o cadastro.</p>' +
+  '</div>';
+}
+
+/* ============================================================
+   Pacote 19.2: Início como dashboard — alertas de risco e atualizações recentes.
+   Tudo sai da lista que veio do login (indicadores ind_* da Controle, 18.10/18.11): nenhuma chamada nova.
+   ============================================================ */
+var PROF_LISTA = [];                              // lista de pacientes em memória (some ao sair)
+var PROF_ORIGEM_PACIENTE = 'sec-prof-dashboard';  // tela de onde o paciente foi aberto: é para lá que o Voltar devolve
+var PROF_ATUALIZACOES_DIAS = 7;                   // janela do bloco "Atualizações recentes" (decisão do usuário, 22/11/2026)
+
+/** Dias civis desde uma data 'DD/MM/AAAA' da lista (null se não for data) — a conta é a do Início do paciente. */
+function profDiasDesdeBR_(texto) {
+  var m = String(texto || '').match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  return m ? iniDiasDesde(m[3] + '-' + m[2] + '-' + m[1]) : null;
+}
+
+/** Um item clicável de bloco. `texto` chega pronto (já escapado, pode trazer ícone); nome, sigla e `quando` são escapados aqui. */
+function profEvHtml_(p, tipo, texto, quando, risco) {
+  var sigla = p.sigla || '—';
+  return '<button type="button" class="prof-ev' + (risco ? ' prof-ev-risco' : '') + '" data-sigla="' + esc(sigla) + '" data-tipo="' + tipo + '" onclick="profAbrirPaciente(this.dataset.sigla)">' +
+    '<span class="prof-ev-nome">' + esc(p.nome_completo || sigla) + ' <span class="prof-ev-sigla">(' + esc(sigla) + ')</span></span>' +
+    '<span class="prof-ev-texto">' + texto + '</span>' +
+    '<span class="prof-ev-quando">' + esc(quando) + '</span>' +
+  '</button>';
+}
+
+/* data mais nova primeiro; no mesmo dia (a lista não traz hora), nome; para o mesmo paciente, registro antes de escala */
+function profOrdenarEv_(a, b) {
+  if (a.dias !== b.dias) return a.dias - b.dias;
+  var n = String(a.nome).localeCompare(String(b.nome), 'pt-BR');
+  return n !== 0 ? n : a.ordem - b.ordem;
+}
+
+function profBlocoHtml_(id, titulo, itens, vazio) {
+  itens.sort(profOrdenarEv_);
+  return '<section class="prof-bloco" id="' + id + '"><h3 class="prof-bloco-titulo">' + titulo + '</h3>' +
+    (itens.length ? '<div class="prof-bloco-lista">' + itens.map(function (i) { return i.html; }).join('') + '</div>'
+                  : '<p class="prof-bloco-vazio">' + vazio + '</p>') +
+  '</section>';
+}
+
+/* O alerta crítico mais recente de cada paciente ativo (o servidor guarda um por paciente; ele não expira) */
+function profRenderAlertas_(ativos) {
+  var itens = [];
+  ativos.forEach(function (p) {
+    var a = p.ind_alertas && p.ind_alertas[0];
+    if (!a) return;
+    var dias = profDiasDesdeBR_(a.data);
+    var item = vmcNumeroDoItem_(a.item);
+    var texto = '<svg class=ico aria-hidden=true><use href=#i-alert></use></svg> ' + esc(a.instrumento) + (item ? ' · item ' + esc(item) : '');
+    var quando = [a.data, iniTextoDias(dias)].filter(Boolean).join(' · ');
+    itens.push({ dias: dias === null ? 99999 : dias, nome: p.nome_completo || p.sigla || '', ordem: 0, html: profEvHtml_(p, 'alerta', texto, quando, true) });
+  });
+  return profBlocoHtml_('profBlocoAlertas', 'Alertas de risco', itens, 'Nenhum alerta de risco registrado.');
+}
+
+/* Último registro e última escala de cada paciente ativo, só os dos últimos PROF_ATUALIZACOES_DIAS dias */
+function profRenderAtualizacoes_(ativos) {
+  var itens = [];
+  var naJanela = function (d) { return d !== null && d >= 0 && d <= PROF_ATUALIZACOES_DIAS; };
+  ativos.forEach(function (p) {
+    var nome = p.nome_completo || p.sigla || '';
+    var dReg = profDiasDesdeBR_(p.ind_ultimo_auto_data);
+    if (naJanela(dReg)) {
+      var humor = p.ind_ultimo_humor ? ' · ' + vmcHumorIcone(p.ind_ultimo_humor) + ' Humor ' + esc(p.ind_ultimo_humor) + '/5' : '';
+      itens.push({ dias: dReg, nome: nome, ordem: 0, html: profEvHtml_(p, 'registro', 'Automonitoramento' + humor, iniTextoDias(dReg), false) });
+    }
+    var dEsc = p.ind_ultima_escala_nome ? profDiasDesdeBR_(p.ind_ultima_escala_data) : null;
+    if (naJanela(dEsc)) {
+      var faixa = p.ind_ultima_escala_faixa ? ': ' + esc(p.ind_ultima_escala_faixa) : '';
+      itens.push({ dias: dEsc, nome: nome, ordem: 1, html: profEvHtml_(p, 'escala', 'Escala respondida · ' + esc(p.ind_ultima_escala_nome) + faixa, iniTextoDias(dEsc), false) });
+    }
+  });
+  return profBlocoHtml_('profBlocoAtualizacoes', 'Atualizações recentes <span class="prof-bloco-sub">Últimos ' + PROF_ATUALIZACOES_DIAS + ' dias</span>', itens,
+    'Nenhum registro ou escala nos últimos ' + PROF_ATUALIZACOES_DIAS + ' dias.');
+}
+
+/* ============================================================
+   Pacote 19.2: tela Pacientes — a lista do 13.2.2 (cartões e desativados, sem mudança) com busca por nome e sigla
+   ============================================================ */
+function profAbrirPacientes() {
+  abrirSecao('sec-prof-pacientes');
+  setTimeout(function () { var c = document.getElementById('profPacBuscaCampo'); if (c) c.focus(); }, 60); // depois do foco no título (18.7)
+}
+
+/* Filtra pelos cartões que estão na tela (nome e sigla vêm do DOM); resultado entre os desativados abre a seção deles */
+function profFiltrarPacientes_() {
+  var campo = document.getElementById('profPacBuscaCampo');
+  if (!campo) return;
+  var texto = profNormalizar_(campo.value).trim();
+  var visiveis = 0, achouDesativado = false;
+  document.querySelectorAll('#profPacientesConteudo .prof-pac-card[data-sigla]').forEach(function (el) {
+    var nome = el.querySelector('.prof-pac-nome');
+    var mostra = !texto || profNormalizar_((nome ? nome.textContent : '') + ' ' + el.dataset.sigla).indexOf(texto) !== -1;
+    el.classList.toggle('hidden', !mostra);
+    if (mostra) { visiveis++; if (texto && el.closest('#p135InatLista')) achouDesativado = true; }
+  });
+  var lista = document.getElementById('p135InatLista');
+  if (achouDesativado && lista && !lista.classList.contains('visivel')) p135ToggleInativos();
+  var vazio = document.getElementById('profPacBuscaVazio');
+  if (vazio) vazio.classList.toggle('hidden', visiveis > 0);
+}
+
+function profRenderPacientes_() {
+  var container = document.getElementById('profPacientesConteudo');
+  if (!container) return;
+  var pacientes = PROF_LISTA || [];
+  if (pacientes.length === 0) { container.innerHTML = profSemPacientesHtml_(); return; }
+
+  var html = '<div class="esc-busca" id="profPacBusca">' +
+    '<input type="search" class="esc-busca-campo" id="profPacBuscaCampo" placeholder="Buscar paciente por nome ou sigla" aria-label="Buscar paciente" oninput="profFiltrarPacientes_()">' +
+    '<div class="esc-busca-vazio hidden" id="profPacBuscaVazio">Nenhum paciente corresponde à busca.</div>' +
+  '</div>';
 
   // Pacote 13.5: separar ativos e inativos
   var ativos   = pacientes.filter(function(p){ return String(p.ativo||'Sim').trim().toLowerCase() !== 'nao'; });
   var inativos = pacientes.filter(function(p){ return String(p.ativo||'Sim').trim().toLowerCase() === 'nao'; });
-
-  profPreCarregar_(ativos); // 18.11.1: só depois de a lista estar na tela, em segundo plano
 
   html += '<p class="prof-pac-count">Pacientes ativos (' + ativos.length + ')</p>';
   html += '<div class="prof-pac-list">';
@@ -9665,6 +9817,10 @@ var PROF_PACIENTE_SEL = null;
  */
 async function profAbrirPaciente(sigla) {
   if (!PROF_SESSAO) return;
+
+  // 19.2: o paciente abre do Início (alertas, atualizações) ou da tela Pacientes; o Voltar devolve para a mesma tela
+  var origem = secaoAtivaId();
+  if (origem === 'sec-prof-dashboard' || origem === 'sec-prof-pacientes') PROF_ORIGEM_PACIENTE = origem;
 
   PROF_PACIENTE_SEL = { sigla: sigla };
   var iniciais = sigla.charAt(0);
@@ -10512,7 +10668,7 @@ function p135ToggleInativos() {
 function profVoltarDashboard() {
   PROF_PACIENTE_SEL = null;
   window._HIST_REGS = null;
-  abrirSecao('sec-prof-dashboard');
+  abrirSecao(PROF_ORIGEM_PACIENTE); // 19.2: Início ou tela Pacientes, de onde o paciente foi aberto
 }
 
 /* ============================================================
@@ -11051,6 +11207,7 @@ function sairDoSistema(opcoes) {
   PROF_FLUXO = null; // 18.5
   PROF_PACIENTE_SEL = null;
   PROF_PACIENTES_MEM = {}; PROF_GRADE_MEM = null; // 18.11
+  PROF_LISTA = []; PROF_ORIGEM_PACIENTE = 'sec-prof-dashboard'; // 19.2
   PROF_PRE.rodada++; PROF_PRE.andamento = {}; PROF_PRE.versaoTudo++; // 18.11.1
   PROF_LINK_POR_SIGLA = {}; // 18.1.2: links de convite são da sessão que os gerou
   PROF_CONVITE = { cad: { sigla: '', telefone: '', link: '' }, ed: { sigla: '', telefone: '', link: '' } };
@@ -11072,7 +11229,7 @@ function sairDoSistema(opcoes) {
   RASC_SERVIDOR = { carregado: false, carregando: false, lista: [] }; iniRascunhoRender(); // 18.10b
   P136_ESTADO = { idx: null, tipo: null, sigla: null, timestamp: null };
   HIST_FILTRO = 'todos'; HIST_MESES_ABERTOS = {}; CHK_ENV.periodo = null;
-  ['profDashboardConteudo', 'profPacienteConteudo', 'autoHistLista', 'pevConteudo', 'eschConteudo', 'anamConteudo', 'iniContinuidade', 'graDias'].forEach(function (id) {
+  ['profDashboardConteudo', 'profPacientesConteudo', 'profPacienteConteudo', 'autoHistLista', 'pevConteudo', 'eschConteudo', 'anamConteudo', 'iniContinuidade', 'graDias'].forEach(function (id) {
     const el = document.getElementById(id); if (el) el.innerHTML = '';
   });
   // barra: crachá, menu do paciente
