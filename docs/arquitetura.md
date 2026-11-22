@@ -1644,3 +1644,88 @@ paciente e login continuam caindo no Início.
 (`..\FASE_19_servidor_simulado.js`, sobre o arnês de `scripts/testes/backend_18_10a.js`), com
 relógio fixo igual ao da página (`page.clock.setFixedTime`); a página é servida do disco por
 `page.route`. Regras e provas da fase: `..\prompts_19\PROVAS_FASE_19.md`.
+
+## Plano de lembretes (Pacote 19.2.1 — publicado em 22/11/2026)
+
+Segundo pacote da Fase 19. Absorve o cartão G1 e os débitos 8.5, 8.23 e 8.93. Backend + frontend,
+um deploy.
+
+**Aba `Lembretes` (Controle do profissional).** Uma linha por item do plano de um paciente; nasce
+no primeiro item gravado, só pelo cabeçalho (`COLUNAS_LEMBRETES`, 18 colunas: `id`, `sigla`,
+`tipo` (`auto` | `escala` | `outro`), `instrumento`, `texto`, `recorrencia` (`agora` | `uma_vez` |
+`recorrente`), `periodicidade` (`diaria` | `semanal` | `quinzenal` | `mensal` | `dias_semana`),
+`dias_semana`, `data_inicio`, `data_termino`, `hora`, `ativo`, `encerrado_em`, `criado_em`,
+`criado_por`, `atualizado_em`, `ultimo_email_em`, `ultimo_cumprido_em`). **Toda célula é texto
+literal** (`_lemCelula_` põe o apóstrofo) e a leitura é por `getDisplayValues` (`_lembretesLer_`):
+o Sheets não retipa data nem hora (lição 105, conferido no servidor real) e a regra trabalha só
+com `AAAA-MM-DD` e `HH:mm`. Não há coluna de canal: WhatsApp e e-mail valem sempre. Leitura nunca
+cria a aba. Excluir o paciente apaga os itens dele (`_lembretesApagarDoPaciente_`), porque a sigla
+pode voltar a ser usada.
+
+**Regra de datas — funções puras, o "agora" entra por parâmetro.** `_lembreteOcorre_(item, iso)`
+(início, término inclusive e periodicidade; mensal em mês mais curto = último dia do mês),
+`_lembreteUltimaAntes_`, `_lembreteSituacao_(item, hojeIso)` → `{ hoje, atrasado, respondido_hoje,
+email_hoje }`, `_lembreteEmailVence_(item, hojeIso, horaAgora)`. **Vence hoje:** o item ativo
+ocorre hoje. **Atrasado:** a última data prevista antes de hoje ficou sem resposta
+(`ultimo_cumprido_em` anterior a ela); "Outro" nunca fica atrasado; item de data única ou já
+terminado sai depois de `LEMBRETE_ATRASO_DIAS` (7). **E-mail vence:** ocorre hoje, a hora do item
+já passou, ainda não foi enviado hoje e o paciente ainda não respondeu hoje. Só `_lemAgora_` lê o
+relógio (fuso do consultório) — o teste passa datas fixas.
+
+**Respondido.** `salvarAutomonitoramento` e `profCriarAutomonitoramento` (só registro completo —
+`_registroCompleto_`: `neg_preenchido` ou `pos_preenchido` = `sim`; a checagem de humor sozinha não
+conta) e `salvarEscala`/`profCriarEscala` (mesmo `instrumento`) chamam `_lembretesCumprir_`, que
+grava `ultimo_cumprido_em` = hoje nos itens ativos daquele instrumento, na mesma trava. Erro ali
+nunca derruba a gravação do paciente.
+
+**Ações (crachá; as três primeiras em `ACOES_COM_TRAVA` e `VMC_ACOES_GRAVACAO`).**
+`profSalvarLembrete(siglaPaciente, dados)` — cria ou edita (o `id` vem da tela: o mesmo `id` de
+novo regrava as colunas do plano, nunca duplica; item encerrado não se edita);
+`profEncerrarLembrete(siglaPaciente, id)`; `profLembrarAgora(siglaPaciente, dados)` — grava o item
+(`recorrencia: agora`) e manda o e-mail na hora (`email_enviado`, `motivo`); `lerMeusLembretes`
+(paciente, só leitura, em `ACOES_SO_LEITURA`) — uma linha por item ativo com a próxima data nos 7
+dias seguintes; item respondido hoje passa para a data seguinte. As três que gravam devolvem
+`lembretes` (o plano do paciente, itens vigentes) e `inicio` (os itens de hoje e atrasados dele +
+`telefone` e `tem_email`) — a tela atualiza o Início sem nova chamada. Lembrete de escala abre a
+escala para o paciente (`_abrirEscalaParaPaciente_`; `escala_aberta`). São 53 ações no `doPost`.
+
+**Leituras sem chamada nova para o profissional.** `listarPacientesDoProfissional` (e, por ela, o
+login) devolve em cada paciente `lembretes` — os itens de hoje e atrasados (`_lembretesDoInicio_`)
+— e, só quando há itens e o paciente está ativo, `telefone` e `tem_email`. `lerDadosPaciente`
+devolve `lembretes` (o plano, `_lembretesDoPaciente_`). O paciente ganha uma leitura em segundo
+plano no Início (`lerMeusLembretes`).
+
+**E-mail.** `montarEmailLembrete(tipo, nome, assinatura)` usa `_layoutEmail_` (o dos convites) com
+a linha opcional `sobBotao`; textos em `EMAIL_LEMBRETE` (um conjunto por tipo), aprovados em
+22/11/2026. **Nenhum dado clínico:** o nome da escala e o texto do "Outro" nunca entram no e-mail
+nem na mensagem do WhatsApp. Cota própria: `_reservarEmail_('lembretes')`, `LEMBRETES_DIA_MAX` =
+60 por dia (convites 20 e redefinições 10 ficam à parte).
+
+**Gatilho.** `enviarLembretes_` roda de hora em hora (`instalarGatilhos` cria os dois gatilhos:
+`monitorarPing_` diário e `enviarLembretes_` horário). Percorre a aba `Lembretes` de cada
+profissional ativo; para cada item com e-mail vencendo, **grava `ultimo_email_em` antes de enviar,
+dentro da trava e relendo a célula** — duas rodadas no mesmo dia nunca mandam o mesmo item duas
+vezes; se o envio falha, a marca volta ao valor anterior e a rodada seguinte tenta de novo.
+Devolve só contagens. À mão: `clasp --user run run-function rodarLembretesAgora`. Rollback do
+pacote: `removerGatilhoLembretes` antes do `git revert` (gatilho apontando para função que não
+existe dá erro toda hora).
+
+**8.23.** `_calcularIndicadores_` conta em `ind_total_auto` só os registros completos; o "último"
+(`ind_ultimo_auto`) continua sendo a última linha, checagem ou não.
+
+**Frontend.** Início do profissional: `profRenderInicio_` (refaz o Início a partir de `PROF_LISTA`,
+também depois de gravar um lembrete) com `#profBlocoLembretesHoje` e `#profBlocoAtrasados` entre os
+alertas e as atualizações; cada linha (`.prof-lem-linha`) é o item clicável do bloco (`profEvHtml_`)
+mais o botão WhatsApp (`lemBotaoWhats_`, `wa.me` com o telefone do cadastro e a mensagem aprovada)
+ou "Sem telefone no cadastro". Paciente aberto: módulo `#profMod-lem` "Plano de lembretes"
+(`profLemCorpoHtml_`, formulário `profLemFormHtml_` com os valores postos por `.value`, obrigatórios
+avisados na tela, confirmação de encerrar em `.p5-modal-*`); depois de gravar, `profLemAplicar_`
+atualiza o plano, os cadeados das escalas (`profAtualizarCadeados_`) e o Início. Início do
+paciente: faixa `#iniLembretes` "Combinado para esta semana" (`iniLemCarregar_`/`iniLemRender_`),
+só leitura, some quando não há nada.
+
+**Teste.** `scripts/testes/backend_19_2_1.js` (94 provas; relógio fixo por `Date` injetado; passa no
+fuso local e em UTC). O arnês de `backend_18_10a.js` passou a retipar data sem hora como
+meia-noite **local** (era UTC — débito 8.93). Roteiro `..\PACOTE_19_2_1_fluxo.js` (59 provas por
+viewport) e prova real `..\PACOTE_19_2_1_real.js`; funções temporárias da prova no servidor em
+`..\PACOTE_19_2_1_temp.js`.
