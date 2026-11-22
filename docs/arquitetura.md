@@ -1803,3 +1803,62 @@ relógio fixo): confere o que cada gráfico desenha lendo o `Chart` vivo de cada
 pixel das bandas contra o token, nos dois temas. A troca de tema é esperada por condição, não por
 tempo: numa janela que não está pintando quadros, o evento de `prefers-color-scheme` só chega no
 quadro seguinte.
+
+## Agenda completa (Pacote 14.3 — 22/11/2026)
+
+**O que é.** A Agenda do profissional deixa de ser só a grade: clicar num horário abre o painel da
+consulta (abas Consulta e Bloqueio), as sessões aparecem na grade com a duração real, e o paciente
+tem a tela "Minhas sessões". Decisões do usuário: horário ocupado ou bloqueado nunca recebe sessão
+(na série a data é pulada e listada); paciente cancela e pede remarcação só com
+`antecedencia_min_horas` ou mais; reposição é sempre decisão do profissional e nunca gera cobrança.
+
+**Dados (Controle do profissional).** Quatro abas, criadas no primeiro uso, tudo texto literal
+(`_lemCelula_`) e lido por `getDisplayValues` (`_lembretesLer_`), como os lembretes:
+`Sessoes` (21 colunas; `estado` agendada | realizada | falta | cancelada; `cobrada` Sim | Nao | vazio;
+`reposicao_de` = id da sessão cobrada que esta repõe; `cancelada_por` paciente | profissional |
+edicao_serie), `Series` (a regra; `dias_semana` no padrão da Grade, 1 = segunda), `Bloqueios` e
+`Pedidos_Agenda` (remarcar | repor; pendente | aprovado | recusado). `Config_Agenda` ganhou a chave
+`avisos_sessao` (nasce `Nao`; `salvarGradeAtendimento` só a grava quando a tela a manda).
+
+**Regra de datas (funções puras, "agora" por parâmetro).** `_ageSerie_(regra, inicio, ocupada)`:
+semanal ou mensal (dia do mês ou n-ésimo dia da semana), fim "após N" (N = sessões criadas) ou "em
+data" (incluída), pula o que `ocupada(iso)` disser, aponta feriados (`_ageFeriados_`: nacionais +
+Carnaval e Corpus Christi pela Páscoa) e recusa acima de 60 sessões ou 12 meses (`codigo: 'teto'`).
+`_ageSobrepoe_` (encostar não é conflito), `_ageNoPrazo_` e `_ageCobrada_` (a tabela de cobrança).
+Reusa `_lemDia_`, `_lemIso_`, `_lemDiaDaSemana_`, `_lemHora_` e `_lemAgora_`.
+
+**Ações (14; o `doPost` passa a ter 67).** Profissional: `profLerAgenda` (sessões, séries, bloqueios,
+feriados, pedidos e config numa chamada), `profSalvarSessao` (cria, edita, remarca, cria série e
+reposição; `simular: true` devolve as datas sem gravar), `profEditarSerie`, `profCancelarSessao`,
+`profMarcarSituacao`, `profSalvarBloqueio`, `profApagarBloqueio`, `profDecidirPedido`. Paciente:
+`lerMinhasSessoes`, `lerHorariosLivres`, `pacienteAgendarSessao`, `pacienteConfirmarSessao`,
+`pacienteCancelarSessao`, `pacientePedirAgenda`. As 11 que gravam estão em `ACOES_COM_TRAVA` e em
+`VMC_ACOES_GRAVACAO`; o conflito é conferido dentro da trava (`_ageOcupado_`). O `id` vem do cliente:
+repetir o pedido edita ou responde `duplicado`. Toda gravação do profissional devolve a agenda do
+período pedido em `periodo` (`_ageResposta_`), e a do paciente devolve a lista dele: a tela nunca relê.
+
+**Sem chamada nova no Início.** Os pedidos pendentes vão na lista do login (`pedidos_agenda` por
+paciente, `_agePedidosDoInicio_`) e a próxima sessão do paciente vai em `lerMeusLembretes`
+(`proxima_sessao`). Excluir paciente apaga sessões, séries e pedidos dele (`_agendaApagarDoPaciente_`).
+
+**Avisos.** `montarEmailSessao` (confirmação, série, lembrete, cancelamento, remarcação, pedido
+aprovado ou recusado e aviso ao profissional) no `_layoutEmail_`; cota própria `sessoes` (60 por dia).
+Só saem com `avisos_sessao = Sim` e, para confirmação, lembrete e cancelamento, com a caixa da sessão
+marcada (`_ageAvisarPaciente_` devolve o motivo quando não envia). O lembrete sai na primeira rodada
+do gatilho depois de faltarem 24 horas: `enviarAvisosSessao_` é chamada no fim de `enviarLembretes_`,
+dentro de `try/catch`, com a marca `ultimo_aviso_em` gravada antes do envio, na trava. WhatsApp é
+botão `wa.me` com o texto pronto (`ageWhatsLink_`).
+
+**Tela.** Namespace `age*` (profissional) e `ses*` (paciente), depois do bloco `cal*`. Um único modal
+(`#ageModal`, `.p5-modal-*`) com vistas: painel, repetição, lista de datas, cancelar, apagar bloqueio
+e "Sair sem salvar?". `ageDesenharDia_` desenha bloqueios, sessões e o clique no horário em cada
+coluna; `CAL_ALT_HORA` passou de 48 para 64 px. `ageAplicar_(resp)` troca a agenda da tela pela que
+veio na resposta e atualiza os pedidos do Início. O profissional pode marcar fora da grade, em data
+passada e em feriado (com aviso); o paciente só vê horário livre da grade.
+
+**Testes.** `scripts/testes/backend_14_3.js` (130 provas, relógio fixo, passa em qualquer fuso) e
+`..\PACOTE_14_3_fluxo.js` (62 provas por largura, `Código.js` real em Node pelo
+`FASE_19_servidor_simulado.js` com `VMC_REPO` apontando para a pasta do pacote).
+
+**Rollback.** `git revert` dos commits + `clasp push` + `clasp deploy` na mesma implantação. As
+quatro abas ficam na Controle sem uso; nada se perde. O gatilho continua o mesmo (`enviarLembretes_`).
