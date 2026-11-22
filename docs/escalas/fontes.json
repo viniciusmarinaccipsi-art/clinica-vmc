@@ -1,0 +1,3688 @@
+{
+ "_sobre": "Fontes das escalas do COGNIATIVO. Estrutura gerada do código (scripts/gerar_fontes_json.js); `fonte` anotada à mão: arquivo do PDF no cache local VMC-offline/fontes_escalas/<SIGLA>/ (fora do repositório), página, tabela e um trecho curto de como o número aparece. `exige_pagina` = toda faixa e bloco de estrutura precisa de fonte com página (Lote C em diante). Conferido por scripts/testes/teste_fontes.js (portão) e scripts/conferir_fontes_pdf.py (PC). Sem texto de item ou de âncora.",
+ "gerado_em": "2026-11-22",
+ "escalas": {
+  "PHQ-9": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 9,
+    "valor_min": 0,
+    "valor_max": 3,
+    "ancoras": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "criticos": [
+     {
+      "item": 9,
+      "a_partir_de": 1,
+      "chave": "PHQ9_item9"
+     }
+    ],
+    "item_funcional": 4,
+    "escore_max": 27
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [
+    {
+     "min": 20,
+     "max": 27,
+     "rotulo": "Depressão grave",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 15,
+     "max": 19,
+     "rotulo": "Depressão moderadamente grave",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 10,
+     "max": 14,
+     "rotulo": "Depressão moderada",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 5,
+     "max": 9,
+     "rotulo": "Depressão leve",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 0,
+     "max": 4,
+     "rotulo": "Sintomas mínimos ou ausentes",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    }
+   ],
+   "referencias": [
+    {
+     "id": "kroenke2001",
+     "citacao": "Kroenke, K., Spitzer, R. L., & Williams, J. B. W. (2001)",
+     "doi": "10.1046/j.1525-1497.2001.016009606.x"
+    },
+    {
+     "id": "lowe2004",
+     "citacao": "Löwe, B., Unützer, J., Callahan, C. M., Perkins, A. J., & Kroenke, K. (2004)",
+     "doi": "10.1097/00005650-200412000-00006"
+    },
+    {
+     "id": "osorio2009",
+     "citacao": "Osório, F. L., Mendes, A. V., Crippa, J. A., & Loureiro, S. R. (2009)",
+     "doi": "10.1111/j.1744-6163.2009.00224.x"
+    },
+    {
+     "id": "santos2013",
+     "citacao": "Santos, I. S., Tavares, B. F., Munhoz, T. N., Almeida, L. S. P., Silva, N. T. B., Tams, B. D., Patella, A. M., & Matijasevich, A. (2013)",
+     "doi": "10.1590/0102-311X00144612"
+    }
+   ]
+  },
+  "GAD-7": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 7,
+    "valor_min": 0,
+    "valor_max": 3,
+    "ancoras": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "item_funcional": 4,
+    "escore_max": 21
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [
+    {
+     "min": 15,
+     "max": 21,
+     "rotulo": "Ansiedade grave",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 10,
+     "max": 14,
+     "rotulo": "Ansiedade moderada",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 5,
+     "max": 9,
+     "rotulo": "Ansiedade leve",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 0,
+     "max": 4,
+     "rotulo": "Ansiedade mínima",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    }
+   ],
+   "referencias": [
+    {
+     "id": "kroenke2007",
+     "citacao": "Kroenke, K., Spitzer, R. L., Williams, J. B. W., Monahan, P. O., & Löwe, B. (2007)",
+     "doi": "10.7326/0003-4819-146-5-200703060-00004"
+    },
+    {
+     "id": "lowe2008",
+     "citacao": "Löwe, B., Decker, O., Müller, S., Brähler, E., Schellberg, D., Herzog, W., & Herzberg, P. Y. (2008)",
+     "doi": "10.1097/MLR.0b013e318160d093"
+    },
+    {
+     "id": "monteiro2020",
+     "citacao": "Monteiro, R. P., Nascimento, B. S., Monteiro, T. M. C., Silva, P. D. G., & Ferreira, A. J. C. (2020)",
+     "doi": "10.1007/s11469-020-00423-9"
+    },
+    {
+     "id": "moreno2016",
+     "citacao": "Moreno, A. L., DeSousa, D. A., Souza, A. M. F. L. P., Manfro, G. G., Salum, G. A., Koller, S. H., Osório, F. L., & Crippa, J. A. S. (2016)"
+    },
+    {
+     "id": "spitzer2006",
+     "citacao": "Spitzer, R. L., Kroenke, K., Williams, J. B. W., & Löwe, B. (2006)",
+     "doi": "10.1001/archinte.166.10.1092"
+    }
+   ]
+  },
+  "PSS-10": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 10,
+    "valor_min": 0,
+    "valor_max": 4,
+    "ancoras": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "reversos": [
+     4,
+     5,
+     7,
+     8
+    ],
+    "escore_max": 40
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "reversos": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [
+    {
+     "min": 27,
+     "max": 40,
+     "rotulo": "Estresse alto",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 14,
+     "max": 26,
+     "rotulo": "Estresse moderado",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 0,
+     "max": 13,
+     "rotulo": "Estresse baixo",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    }
+   ],
+   "nota_faixas": "O PSS-10 é uma medida dimensional — o valor do escore importa mais do que a faixa isolada. O acompanhamento ao longo do tempo mostra a direção da sua trajetória.",
+   "referencias": [
+    {
+     "id": "cohen1983",
+     "citacao": "Cohen, S., Kamarck, T., & Mermelstein, R. (1983)",
+     "doi": "10.2307/2136404"
+    },
+    {
+     "id": "cohen1988",
+     "citacao": "Cohen, S., & Williamson, G. (1988)"
+    },
+    {
+     "id": "luft2007",
+     "citacao": "Luft, C. D. B., Sanches, S. O., Mazo, G. Z., & Andrade, A. (2007)",
+     "doi": "10.1590/s0034-89102007000400015"
+    },
+    {
+     "id": "reis2010",
+     "citacao": "Reis, R. S., Hino, A. A. F., & Añez, C. R. R. (2010)",
+     "doi": "10.1177/1359105309346343"
+    }
+   ]
+  },
+  "DASS-21": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 21,
+    "valor_min": 0,
+    "valor_max": 3,
+    "ancoras": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "criticos": [
+     {
+      "item": 21,
+      "a_partir_de": 2,
+      "chave": "DASS21_item21"
+     }
+    ],
+    "subescalas": {
+     "depressao": [
+      3,
+      5,
+      10,
+      13,
+      16,
+      17,
+      21
+     ],
+     "ansiedade": [
+      2,
+      4,
+      7,
+      9,
+      15,
+      19,
+      20
+     ],
+     "estresse": [
+      1,
+      6,
+      8,
+      11,
+      12,
+      14,
+      18
+     ]
+    },
+    "siglas_subescalas": {
+     "depressao": "Dep",
+     "ansiedade": "Ans",
+     "estresse": "Est"
+    },
+    "multiplicador_subescala": 2,
+    "faixas_subescalas": {
+     "depressao": [
+      {
+       "min": 28,
+       "max": 99,
+       "rotulo": "Extremamente severo"
+      },
+      {
+       "min": 21,
+       "max": 27,
+       "rotulo": "Severo"
+      },
+      {
+       "min": 14,
+       "max": 20,
+       "rotulo": "Moderado"
+      },
+      {
+       "min": 10,
+       "max": 13,
+       "rotulo": "Leve"
+      },
+      {
+       "min": 0,
+       "max": 9,
+       "rotulo": "Normal"
+      }
+     ],
+     "ansiedade": [
+      {
+       "min": 20,
+       "max": 99,
+       "rotulo": "Extremamente severo"
+      },
+      {
+       "min": 15,
+       "max": 19,
+       "rotulo": "Severo"
+      },
+      {
+       "min": 10,
+       "max": 14,
+       "rotulo": "Moderado"
+      },
+      {
+       "min": 8,
+       "max": 9,
+       "rotulo": "Leve"
+      },
+      {
+       "min": 0,
+       "max": 7,
+       "rotulo": "Normal"
+      }
+     ],
+     "estresse": [
+      {
+       "min": 34,
+       "max": 99,
+       "rotulo": "Extremamente severo"
+      },
+      {
+       "min": 26,
+       "max": 33,
+       "rotulo": "Severo"
+      },
+      {
+       "min": 19,
+       "max": 25,
+       "rotulo": "Moderado"
+      },
+      {
+       "min": 15,
+       "max": 18,
+       "rotulo": "Leve"
+      },
+      {
+       "min": 0,
+       "max": 14,
+       "rotulo": "Normal"
+      }
+     ]
+    },
+    "escore_max": 42
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "subescalas": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "faixas_subescalas": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [],
+   "referencias": [
+    {
+     "id": "henry2005",
+     "citacao": "Henry, J. D., & Crawford, J. R. (2005)",
+     "doi": "10.1348/014466505X29657"
+    },
+    {
+     "id": "lovibond1995",
+     "citacao": "Lovibond, P. F., & Lovibond, S. H. (1995)",
+     "doi": "10.1016/0005-7967(94)00075-U"
+    },
+    {
+     "id": "lovibond1995_2",
+     "citacao": "Lovibond, S. H., & Lovibond, P. F. (1995)"
+    },
+    {
+     "id": "patias2016",
+     "citacao": "Patias, N. D., Machado, W. L., Bandeira, D. R., & Dell'Aglio, D. D. (2016)",
+     "doi": "10.1590/1413-82712016210302"
+    },
+    {
+     "id": "vignola2014",
+     "citacao": "Vignola, R. C. B., & Tucci, A. M. (2014)",
+     "doi": "10.1016/j.jad.2013.10.031"
+    }
+   ]
+  },
+  "SRQ-20": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 20,
+    "valor_min": 0,
+    "valor_max": 1,
+    "ancoras": [
+     0,
+     1
+    ],
+    "criticos": [
+     {
+      "item": 17,
+      "a_partir_de": 1,
+      "chave": "SRQ20_item17"
+     }
+    ],
+    "escore_max": 20
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [
+    {
+     "min": 7,
+     "max": 20,
+     "rotulo": "Suspeita de transtorno mental comum",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 0,
+     "max": 6,
+     "rotulo": "Baixa probabilidade de TMC",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    }
+   ],
+   "nota_faixas": "Ponto de corte brasileiro validado (Gonçalves, Stein & Kapczinski, 2008) — sensibilidade 86,3%, especificidade 89,3%.",
+   "referencias": [
+    {
+     "id": "beusenberg1994",
+     "citacao": "Beusenberg, M., & Orley, J. (1994)"
+    },
+    {
+     "id": "goncalves2008",
+     "citacao": "Gonçalves, D. M., Stein, A. T., & Kapczinski, F. (2008)",
+     "doi": "10.1590/s0102-311x2008000200017"
+    },
+    {
+     "id": "harding1980",
+     "citacao": "Harding, T. W., de Arango, M. V., Baltazar, J., Climent, C. E., Ibrahim, H. H. A., Ladrido-Ignacio, L., Murthy, R. S., & Wig, N. N. (1980)",
+     "doi": "10.1017/S0033291700043993"
+    },
+    {
+     "id": "mari1986",
+     "citacao": "Mari, J. J., & Williams, P. (1986)",
+     "doi": "10.1192/bjp.148.1.23"
+    }
+   ]
+  },
+  "BDI-II": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 21,
+    "valor_min": 0,
+    "valor_max": 3,
+    "ancoras": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "itens_com_letra": [
+     16,
+     18
+    ],
+    "criticos": [
+     {
+      "item": 9,
+      "a_partir_de": 1,
+      "chave": "BDI2_item9"
+     }
+    ],
+    "escore_max": 63
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [
+    {
+     "min": 29,
+     "max": 63,
+     "rotulo": "Grave",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 20,
+     "max": 28,
+     "rotulo": "Moderado",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 14,
+     "max": 19,
+     "rotulo": "Leve",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 0,
+     "max": 13,
+     "rotulo": "Mínimo",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    }
+   ],
+   "nota_faixas": "Pontos de corte sugeridos no manual para pacientes com diagnóstico de depressão maior.",
+   "referencias": [
+    {
+     "id": "beck1996",
+     "citacao": "Beck, A. T., Steer, R. A., & Brown, G. K. (1996)"
+    },
+    {
+     "id": "gomesoliveira2012",
+     "citacao": "Gomes-Oliveira, M. H., Gorenstein, C., Lotufo Neto, F., Andrade, L. H., & Wang, Y. P. (2012)",
+     "doi": "10.1016/j.rbp.2012.03.005"
+    },
+    {
+     "id": "beck2017",
+     "citacao": "Beck, A. T., Steer, R. A., & Brown, G. K. (2017)"
+    },
+    {
+     "id": "gorenstein2011",
+     "citacao": "Gorenstein, C., Pang, W. Y., Argimon, I. L., & Werlang, B. S. G. (2011)"
+    },
+    {
+     "id": "wang2013",
+     "citacao": "Wang, Y. P., & Gorenstein, C. (2013)",
+     "doi": "10.1590/1516-4446-2012-1048"
+    }
+   ]
+  },
+  "BAI": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 21,
+    "valor_min": 0,
+    "valor_max": 3,
+    "ancoras": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "escore_max": 63
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [
+    {
+     "min": 31,
+     "max": 63,
+     "rotulo": "Grave",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 20,
+     "max": 30,
+     "rotulo": "Moderado",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 11,
+     "max": 19,
+     "rotulo": "Leve",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 0,
+     "max": 10,
+     "rotulo": "Mínimo",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    }
+   ],
+   "nota_faixas": "Tabela 2 do manual brasileiro (pacientes psiquiátricos, versão em português). Os cortes dependem da amostra e do objetivo: em triagem tendem a ser baixados (menos falsos negativos); em pesquisa, elevados (menos falsos positivos). O sistema usa a Tabela 2 sem ajuste.",
+   "referencias": [
+    {
+     "id": "beck1988",
+     "citacao": "Beck, A. T., Epstein, N., Brown, G., & Steer, R. A. (1988)",
+     "doi": "10.1037/0022-006X.56.6.893"
+    },
+    {
+     "id": "beck1993",
+     "citacao": "Beck, A. T., & Steer, R. A. (1993)"
+    },
+    {
+     "id": "beck2023",
+     "citacao": "Beck, A. T., & Steer, R. A. (2023)"
+    },
+    {
+     "id": "cunha2001",
+     "citacao": "Cunha, J. A. (2001)"
+    },
+    {
+     "id": "osorio2011",
+     "citacao": "Osório, F. L., Crippa, J. A. S., & Loureiro, S. R. (2011)",
+     "doi": "10.3109/13651501.2011.605955"
+    },
+    {
+     "id": "quintao2013",
+     "citacao": "Quintão, S., Delgado, A. R., & Prieto, G. (2013)",
+     "doi": "10.1590/S0102-79722013000200010"
+    }
+   ]
+  },
+  "BHS": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 20,
+    "valor_min": 0,
+    "valor_max": 1,
+    "ancoras": [
+     1,
+     0
+    ],
+    "reversos": [
+     1,
+     3,
+     5,
+     6,
+     8,
+     10,
+     13,
+     15,
+     19
+    ],
+    "escore_max": 20
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "reversos": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [
+    {
+     "min": 14,
+     "max": 20,
+     "rotulo": "Grave",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 9,
+     "max": 13,
+     "rotulo": "Moderado",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 5,
+     "max": 8,
+     "rotulo": "Leve",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 0,
+     "max": 4,
+     "rotulo": "Mínimo",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    }
+   ],
+   "nota_faixas": "Níveis da versão brasileira (Cunha, 2001).",
+   "referencias": [
+    {
+     "id": "beck1990",
+     "citacao": "Beck, A. T., Brown, G., Berchick, R. J., Stewart, B. L., & Steer, R. A. (1990)",
+     "doi": "10.1176/ajp.147.2.190"
+    },
+    {
+     "id": "beck1988",
+     "citacao": "Beck, A. T., & Steer, R. A. (1988)"
+    },
+    {
+     "id": "beck2023",
+     "citacao": "Beck, A. T., & Steer, R. A. (2023)"
+    },
+    {
+     "id": "beck1985",
+     "citacao": "Beck, A. T., Steer, R. A., Kovacs, M., & Garrison, B. (1985)",
+     "doi": "10.1176/ajp.142.5.559"
+    },
+    {
+     "id": "beck1974",
+     "citacao": "Beck, A. T., Weissman, A., Lester, D., & Trexler, L. (1974)",
+     "doi": "10.1037/h0037562"
+    },
+    {
+     "id": "borges2006",
+     "citacao": "Borges, V. R., & Werlang, B. S. G. (2006)"
+    },
+    {
+     "id": "cunha2001",
+     "citacao": "Cunha, J. A. (2001)"
+    }
+   ]
+  },
+  "BSS": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 21,
+    "valor_min": 0,
+    "valor_max": 2,
+    "ancoras": [
+     0,
+     1,
+     2
+    ],
+    "nao_pontua": [
+     20,
+     21
+    ],
+    "criticos": [
+     {
+      "item": 4,
+      "a_partir_de": 1,
+      "chave": "BSS_item4"
+     },
+     {
+      "item": 5,
+      "a_partir_de": 1,
+      "chave": "BSS_item5"
+     }
+    ],
+    "condicionais": [
+     {
+      "itens": [
+       6,
+       7,
+       8,
+       9,
+       10,
+       11,
+       12,
+       13,
+       14,
+       15,
+       16,
+       17,
+       18,
+       19
+      ],
+      "se": [
+       4,
+       5
+      ]
+     },
+     {
+      "itens": [
+       21
+      ],
+      "se": [
+       20
+      ]
+     }
+    ],
+    "escore_max": 38
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [],
+   "corte": {
+    "status": "sem_corte",
+    "fonte_diz": "Sem pontos de corte no manual (Beck & Steer, 1991): qualquer escore acima de 0 indica ideação a avaliar clinicamente."
+   },
+   "referencias": [
+    {
+     "id": "beck1979",
+     "citacao": "Beck, A. T., Kovacs, M., & Weissman, A. (1979)",
+     "doi": "10.1037/0022-006X.47.2.343"
+    },
+    {
+     "id": "beck1991",
+     "citacao": "Beck, A. T., & Steer, R. A. (1991)"
+    },
+    {
+     "id": "beck2023",
+     "citacao": "Beck, A. T., & Steer, R. A. (2023)"
+    },
+    {
+     "id": "borges2006",
+     "citacao": "Borges, V. R., & Werlang, B. S. G. (2006)"
+    },
+    {
+     "id": "cunha2001",
+     "citacao": "Cunha, J. A. (2001)"
+    },
+    {
+     "id": "werlang2004",
+     "citacao": "Werlang, B. S. G., Borges, V. R., & Fensterseifer, L. (2004)"
+    }
+   ]
+  },
+  "URICA-A": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 24,
+    "valor_min": 1,
+    "valor_max": 5,
+    "ancoras": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "subescalas": {
+     "precontemplacao": [
+      1,
+      5,
+      7,
+      16,
+      19,
+      22
+     ],
+     "contemplacao": [
+      3,
+      6,
+      9,
+      13,
+      14,
+      17
+     ],
+     "acao": [
+      2,
+      4,
+      8,
+      11,
+      18,
+      23
+     ],
+     "manutencao": [
+      10,
+      12,
+      15,
+      20,
+      21,
+      24
+     ]
+    },
+    "siglas_subescalas": {
+     "precontemplacao": "PC",
+     "contemplacao": "C",
+     "acao": "A",
+     "manutencao": "M"
+    },
+    "composto": {
+     "chave": "prontidao",
+     "sigla": "Prontidão",
+     "mais": [
+      "contemplacao",
+      "acao",
+      "manutencao"
+     ],
+     "menos": [
+      "precontemplacao"
+     ],
+     "casas": 1
+    },
+    "escore_max": 30
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "subescalas": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "composto": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [],
+   "corte": {
+    "status": "sem_corte",
+    "fonte_diz": "Sem pontos de corte validados para a versão brasileira (Oliveira, Freire & Cazassa, 2007; McConnaughy, Prochaska & Velicer, 1983). Subescala = soma dos 6 itens (6–30); prontidão = média(C) + média(A) + média(M) − média(PC), de −4 a +14 (DiClemente & Hughes, 1990)."
+   },
+   "referencias": [
+    {
+     "id": "diclemente1990",
+     "citacao": "DiClemente, C. C., & Hughes, S. O. (1990)",
+     "doi": "10.1016/s0899-3289(05)80057-4"
+    },
+    {
+     "id": "mcconnaughy1983",
+     "citacao": "McConnaughy, E. A., Prochaska, J. O., & Velicer, W. F. (1983)",
+     "doi": "10.1037/h0090198"
+    },
+    {
+     "id": "oliveira2007",
+     "citacao": "Oliveira, M. S., Freire, S. F., & Cazassa, M. J. (2007)"
+    }
+   ]
+  },
+  "URICA-D": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 24,
+    "valor_min": 1,
+    "valor_max": 5,
+    "ancoras": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "subescalas": {
+     "precontemplacao": [
+      1,
+      5,
+      7,
+      16,
+      19,
+      22
+     ],
+     "contemplacao": [
+      3,
+      6,
+      9,
+      13,
+      14,
+      17
+     ],
+     "acao": [
+      2,
+      4,
+      8,
+      11,
+      18,
+      23
+     ],
+     "manutencao": [
+      10,
+      12,
+      15,
+      20,
+      21,
+      24
+     ]
+    },
+    "siglas_subescalas": {
+     "precontemplacao": "PC",
+     "contemplacao": "C",
+     "acao": "A",
+     "manutencao": "M"
+    },
+    "composto": {
+     "chave": "prontidao",
+     "sigla": "Prontidão",
+     "mais": [
+      "contemplacao",
+      "acao",
+      "manutencao"
+     ],
+     "menos": [
+      "precontemplacao"
+     ],
+     "casas": 1
+    },
+    "escore_max": 30
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "subescalas": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "composto": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [],
+   "corte": {
+    "status": "sem_corte",
+    "fonte_diz": "Sem pontos de corte validados para a versão brasileira (Szupszynski & Oliveira, 2008; McConnaughy, Prochaska & Velicer, 1983). Subescala = soma dos 6 itens (6–30); prontidão = média(C) + média(A) + média(M) − média(PC), de −4 a +14 (DiClemente & Hughes, 1990)."
+   },
+   "referencias": [
+    {
+     "id": "diclemente1990",
+     "citacao": "DiClemente, C. C., & Hughes, S. O. (1990)",
+     "doi": "10.1016/s0899-3289(05)80057-4"
+    },
+    {
+     "id": "mcconnaughy1983",
+     "citacao": "McConnaughy, E. A., Prochaska, J. O., & Velicer, W. F. (1983)",
+     "doi": "10.1037/h0090198"
+    },
+    {
+     "id": "szupszynski2008",
+     "citacao": "Szupszynski, K. P. D. R., & Oliveira, M. S. (2008)",
+     "doi": "10.1590/S1413-82712008000100005"
+    }
+   ]
+  },
+  "URICA-T": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 24,
+    "valor_min": 1,
+    "valor_max": 5,
+    "ancoras": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "subescalas": {
+     "precontemplacao": [
+      1,
+      5,
+      7,
+      16,
+      19,
+      22
+     ],
+     "contemplacao": [
+      3,
+      6,
+      9,
+      13,
+      14,
+      17
+     ],
+     "acao": [
+      2,
+      4,
+      8,
+      11,
+      18,
+      23
+     ],
+     "manutencao": [
+      10,
+      12,
+      15,
+      20,
+      21,
+      24
+     ]
+    },
+    "siglas_subescalas": {
+     "precontemplacao": "PC",
+     "contemplacao": "C",
+     "acao": "A",
+     "manutencao": "M"
+    },
+    "composto": {
+     "chave": "prontidao",
+     "sigla": "Prontidão",
+     "mais": [
+      "contemplacao",
+      "acao",
+      "manutencao"
+     ],
+     "menos": [
+      "precontemplacao"
+     ],
+     "casas": 1
+    },
+    "escore_max": 30
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "subescalas": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "composto": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [],
+   "corte": {
+    "status": "sem_corte",
+    "fonte_diz": "Sem pontos de corte validados para a versão brasileira (Oliveira et al., 2014; McConnaughy, Prochaska & Velicer, 1983). Subescala = soma dos 6 itens (6–30); prontidão = média(C) + média(A) + média(M) − média(PC), de −4 a +14 (DiClemente & Hughes, 1990). A subescala PC teve precisão baixa no estudo brasileiro."
+   },
+   "referencias": [
+    {
+     "id": "diclemente1990",
+     "citacao": "DiClemente, C. C., & Hughes, S. O. (1990)",
+     "doi": "10.1016/s0899-3289(05)80057-4"
+    },
+    {
+     "id": "mcconnaughy1983",
+     "citacao": "McConnaughy, E. A., Prochaska, J. O., & Velicer, W. F. (1983)",
+     "doi": "10.1037/h0090198"
+    },
+    {
+     "id": "oliveira2014",
+     "citacao": "Oliveira, M. S., Ludwig, M. W. B., Moraes, J. F. D., Rodrigues, V. S., & Fernandes, R. S. (2014)",
+     "doi": "10.24220/2318-0897v23n1a2410"
+    }
+   ]
+  },
+  "URICA-HA": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 24,
+    "valor_min": 1,
+    "valor_max": 5,
+    "ancoras": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "subescalas": {
+     "precontemplacao": [
+      1,
+      5,
+      7,
+      16,
+      19,
+      22
+     ],
+     "contemplacao": [
+      3,
+      6,
+      9,
+      13,
+      14,
+      17
+     ],
+     "acao": [
+      2,
+      4,
+      8,
+      11,
+      18,
+      23
+     ],
+     "manutencao": [
+      10,
+      12,
+      15,
+      20,
+      21,
+      24
+     ]
+    },
+    "siglas_subescalas": {
+     "precontemplacao": "PC",
+     "contemplacao": "C",
+     "acao": "A",
+     "manutencao": "M"
+    },
+    "composto": {
+     "chave": "prontidao",
+     "sigla": "Prontidão",
+     "mais": [
+      "contemplacao",
+      "acao",
+      "manutencao"
+     ],
+     "menos": [
+      "precontemplacao"
+     ],
+     "casas": 1
+    },
+    "escore_max": 30
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "subescalas": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "composto": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [],
+   "corte": {
+    "status": "sem_corte",
+    "fonte_diz": "Sem pontos de corte validados para a versão brasileira (Bittencourt et al., 2012; McConnaughy, Prochaska & Velicer, 1983). Subescala = soma dos 6 itens (6–30); prontidão = média(C) + média(A) + média(M) − média(PC), de −4 a +14 (DiClemente & Hughes, 1990)."
+   },
+   "referencias": [
+    {
+     "id": "bittencourt2012",
+     "citacao": "Bittencourt, S. A., Lucena-Santos, P., Moraes, J. F. D., & Oliveira, M. S. (2012)"
+    },
+    {
+     "id": "diclemente1990",
+     "citacao": "DiClemente, C. C., & Hughes, S. O. (1990)",
+     "doi": "10.1016/s0899-3289(05)80057-4"
+    },
+    {
+     "id": "mcconnaughy1983",
+     "citacao": "McConnaughy, E. A., Prochaska, J. O., & Velicer, W. F. (1983)",
+     "doi": "10.1037/h0090198"
+    }
+   ]
+  },
+  "PCL-5": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 20,
+    "valor_min": 0,
+    "valor_max": 4,
+    "ancoras": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "escore_max": 80
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [
+    {
+     "min": 36,
+     "max": 80,
+     "rotulo": "Sugestivo de TEPT",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 0,
+     "max": 35,
+     "rotulo": "Abaixo do ponto de corte",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    }
+   ],
+   "nota_faixas": "Corte ≥ 36 da versão brasileira (Pereira-Lima et al., 2019; eficiência geral 0,80); a original sugere 31–33 (Blevins et al., 2015). Triagem — não substitui a entrevista clínica.",
+   "referencias": [
+    {
+     "id": "blevins2015",
+     "citacao": "Blevins, C. A., Weathers, F. W., Davis, M. T., Witte, T. K., & Domino, J. L. (2015)",
+     "doi": "10.1002/jts.22059"
+    },
+    {
+     "id": "lima2016",
+     "citacao": "Lima, E. P., Vasconcelos, A. G., Berger, W., Kristensen, C. H., Nascimento, E., Figueira, I., & Mendlowicz, M. V. (2016)",
+     "doi": "10.1590/2237-6089-2015-0074"
+    },
+    {
+     "id": "osorio2017",
+     "citacao": "Osório, F. L., Silva, T. D. A., Santos, R. G., Chagas, M. H. N., Chagas, N. M. S., Sanches, R. F., & Crippa, J. A. S. (2017)",
+     "doi": "10.1590/0101-60830000000107"
+    },
+    {
+     "id": "pereiralima2019",
+     "citacao": "Pereira-Lima, K., Loureiro, S. R., Bolsoni, L. M., Silva, T. D. A., & Osório, F. L. (2019)",
+     "doi": "10.1080/20008198.2019.1581020"
+    },
+    {
+     "id": "weathers2013",
+     "citacao": "Weathers, F. W., Litz, B. T., Keane, T. M., Palmieri, P. A., Marx, B. P., & Schnurr, P. P. (2013)"
+    }
+   ]
+  },
+  "PSWQ": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 16,
+    "valor_min": 1,
+    "valor_max": 5,
+    "ancoras": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "reversos": [
+     1,
+     3,
+     8,
+     10,
+     11
+    ],
+    "escore_max": 80
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "reversos": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [
+    {
+     "min": 62,
+     "max": 80,
+     "rotulo": "Preocupação muito elevada",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 45,
+     "max": 61,
+     "rotulo": "Preocupação elevada",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 16,
+     "max": 44,
+     "rotulo": "Abaixo do corte clínico",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    }
+   ],
+   "nota_faixas": "Cortes de Behar et al. (2003): 45 separa pacientes com TAG de controles; 62 em universitários. Sem norma brasileira (Castillo et al., 2010).",
+   "referencias": [
+    {
+     "id": "behar2003",
+     "citacao": "Behar, E., Alcaine, O., Zuellig, A. R., & Borkovec, T. D. (2003)",
+     "doi": "10.1016/s0005-7916(03)00004-1"
+    },
+    {
+     "id": "castillo2010",
+     "citacao": "Castillo, C., Macrini, L., Cheniaux, E., & Landeira-Fernandez, J. (2010)",
+     "doi": "10.1017/s113874160000398x"
+    },
+    {
+     "id": "meyer1990",
+     "citacao": "Meyer, T. J., Miller, M. L., Metzger, R. L., & Borkovec, T. D. (1990)",
+     "doi": "10.1016/0005-7967(90)90135-6"
+    }
+   ]
+  },
+  "EAR": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 10,
+    "valor_min": 1,
+    "valor_max": 4,
+    "ancoras": [
+     1,
+     2,
+     3,
+     4
+    ],
+    "reversos": [
+     3,
+     5,
+     8,
+     9,
+     10
+    ],
+    "escore_max": 40
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "reversos": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [],
+   "corte": {
+    "status": "sem_corte",
+    "fonte_diz": "Sem pontos de corte validados: a leitura é pelas tabelas normativas por idade e sexo de Hutz & Zanon (2011) e pela evolução do próprio paciente."
+   },
+   "referencias": [
+    {
+     "id": "hutz2011",
+     "citacao": "Hutz, C. S., & Zanon, C. (2011)"
+    },
+    {
+     "id": "rosenberg1965",
+     "citacao": "Rosenberg, M. (1965)"
+    },
+    {
+     "id": "sbicigo2010",
+     "citacao": "Sbicigo, J. B., Bandeira, D. R., & Dell'Aglio, D. D. (2010)"
+    }
+   ]
+  },
+  "AAQ-II": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 7,
+    "valor_min": 1,
+    "valor_max": 7,
+    "ancoras": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "escore_max": 49
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [],
+   "corte": {
+    "status": "sem_corte",
+    "fonte_diz": "Sem pontos de corte validados (Barbosa & Murta, 2015; Bond et al., 2011). Sensível à mudança: acompanhe ao longo do tratamento."
+   },
+   "referencias": [
+    {
+     "id": "bertaotero2022",
+     "citacao": "Berta-Otero, T., Barceló-Soler, A., Montero-Marin, J., Maloney, S., Salvo, V., Pérez-Aranda, A., ... & Demarzo, M. (2022)",
+     "doi": "10.3390/ijerph20010225"
+    },
+    {
+     "id": "barbosa2015",
+     "citacao": "Barbosa, L. M., & Murta, S. G. (2015)",
+     "doi": "10.1590/1413-82712015200107"
+    },
+    {
+     "id": "bond2011",
+     "citacao": "Bond, F. W., Hayes, S. C., Baer, R. A., Carpenter, K. M., Guenole, N., Orcutt, H. K., Waltz, T., & Zettle, R. D. (2011)",
+     "doi": "10.1016/j.beth.2011.03.007"
+    },
+    {
+     "id": "hayes2012",
+     "citacao": "Hayes, S. C., Strosahl, K. D., & Wilson, K. G. (2012)"
+    },
+    {
+     "id": "tyndall2019",
+     "citacao": "Tyndall, I., Waldeck, D., Pancani, L., Whelan, R., Roche, B., & Dawson, D. L. (2019)"
+    },
+    {
+     "id": "wolgast2014",
+     "citacao": "Wolgast, M. (2014)",
+     "doi": "10.1016/j.beth.2014.07.002"
+    }
+   ]
+  },
+  "SWLS": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 5,
+    "valor_min": 1,
+    "valor_max": 7,
+    "ancoras": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "escore_max": 35
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [
+    {
+     "min": 30,
+     "max": 35,
+     "rotulo": "Satisfação muito alta",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 25,
+     "max": 29,
+     "rotulo": "Satisfação alta",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 20,
+     "max": 24,
+     "rotulo": "Satisfação média",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 15,
+     "max": 19,
+     "rotulo": "Um pouco abaixo da média",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 10,
+     "max": 14,
+     "rotulo": "Insatisfeito",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 5,
+     "max": 9,
+     "rotulo": "Extremamente insatisfeito",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    }
+   ],
+   "nota_faixas": "Faixas de Diener (2006) e Pavot & Diener (2008), não validadas no Brasil (Gouveia et al., 2009): guia auxiliar, não norma.",
+   "referencias": [
+    {
+     "id": "diener1985",
+     "citacao": "Diener, E., Emmons, R. A., Larsen, R. J., & Griffin, S. (1985)",
+     "doi": "10.1207/s15327752jpa4901_13"
+    },
+    {
+     "id": "gouveia2009",
+     "citacao": "Gouveia, V. V., Milfont, T. L., Fonseca, P. N., & Coelho, J. A. P. M. (2009)",
+     "doi": "10.1007/s11205-008-9257-0"
+    },
+    {
+     "id": "pavot2008",
+     "citacao": "Pavot, W., & Diener, E. (2008)",
+     "doi": "10.1080/17439760701756946"
+    },
+    {
+     "id": "zanon2014",
+     "citacao": "Zanon, C., Bardagi, M. P., Layous, K., & Hutz, C. S. (2014)",
+     "doi": "10.1007/s11205-013-0478-5"
+    }
+   ]
+  },
+  "MAAS": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 15,
+    "valor_min": 1,
+    "valor_max": 6,
+    "ancoras": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "escore_max": 90
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [],
+   "corte": {
+    "status": "sem_corte",
+    "fonte_diz": "Sem pontos de corte validados (Barros et al., 2015; Brown & Ryan, 2003). Adultos saudáveis costumam somar entre 58 e 65 nos estudos internacionais."
+   },
+   "referencias": [
+    {
+     "id": "barros2015",
+     "citacao": "Barros, V. V., Kozasa, E. H., Souza, I. C. W., & Ronzani, T. M. (2015)"
+    },
+    {
+     "id": "brown2003",
+     "citacao": "Brown, K. W., & Ryan, R. M. (2003)",
+     "doi": "10.1037/0022-3514.84.4.822"
+    }
+   ]
+  },
+  "WBSI": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 15,
+    "valor_min": 1,
+    "valor_max": 5,
+    "ancoras": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "escore_max": 75
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [],
+   "corte": {
+    "status": "sem_corte",
+    "fonte_diz": "Sem pontos de corte validados: a versão brasileira é uma adaptação transcultural (Talask et al., 2018). Leitura pela evolução e em conjunto com a entrevista."
+   },
+   "referencias": [
+    {
+     "id": "talask2018",
+     "citacao": "Talask, G., de Freitas, S. B., Rasmussen, M. E. W., Silva, M. S., da Costa, R. T., Dias, G. P., Nardi, A. E., & de Carvalho, M. R. (2018)",
+     "doi": "10.1590/2237-6089-2017-0082"
+    },
+    {
+     "id": "wegner1994",
+     "citacao": "Wegner, D. M., & Zanakos, S. (1994)",
+     "doi": "10.1111/j.1467-6494.1994.tb00311.x"
+    }
+   ]
+  },
+  "PANAS": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 19,
+    "valor_min": 1,
+    "valor_max": 5,
+    "ancoras": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "subescalas": {
+     "afeto_positivo": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+     ],
+     "afeto_negativo": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+     ]
+    },
+    "siglas_subescalas": {
+     "afeto_positivo": "AP",
+     "afeto_negativo": "AN"
+    },
+    "escore_max": 50
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "subescalas": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [],
+   "corte": {
+    "status": "sem_corte",
+    "fonte_diz": "Sem pontos de corte (Watson, Clark & Tellegen, 1988; Carvalho et al., 2013). A versão brasileira tem 19 itens: um item do afeto positivo não carregou em nenhum fator e saiu (Carvalho et al., 2013)."
+   },
+   "referencias": [
+    {
+     "id": "carvalho2013",
+     "citacao": "Carvalho, H. W., Andreoli, S. B., Lara, D. R., Patrick, C. J., Quintana, M. I., Bressan, R. A., Melo, M. F., Mari, J. J., & Jorge, M. R. (2013)",
+     "doi": "10.1590/1516-4446-2012-0957"
+    },
+    {
+     "id": "watson1988",
+     "citacao": "Watson, D., Clark, L. A., & Tellegen, A. (1988)",
+     "doi": "10.1037/0022-3514.54.6.1063"
+    }
+   ]
+  },
+  "SPIN": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 17,
+    "valor_min": 0,
+    "valor_max": 4,
+    "ancoras": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "escore_max": 68
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [
+    {
+     "min": 19,
+     "max": 68,
+     "rotulo": "Sugestivo de ansiedade social",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 0,
+     "max": 18,
+     "rotulo": "Abaixo do ponto de corte",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    }
+   ],
+   "nota_faixas": "Corte 19 do estudo original (Connor et al., 2000). A versão brasileira (Osório, Crippa & Loureiro, 2009) não tem corte próprio. Triagem — não substitui a entrevista clínica.",
+   "referencias": [
+    {
+     "id": "connor2000",
+     "citacao": "Connor, K. M., Davidson, J. R. T., Churchill, L. E., Sherwood, A., Foa, E., & Weisler, R. H. (2000)",
+     "doi": "10.1192/bjp.176.4.379"
+    },
+    {
+     "id": "osorio2009",
+     "citacao": "Osório, F. L., Crippa, J. A. S., & Loureiro, S. R. (2009)",
+     "doi": "10.1590/s1516-44462008005000018"
+    }
+   ]
+  },
+  "OCI-R": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 18,
+    "valor_min": 0,
+    "valor_max": 4,
+    "ancoras": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "subescalas": {
+     "verificacao": [
+      2,
+      8,
+      14
+     ],
+     "lavagem": [
+      5,
+      11,
+      17
+     ],
+     "ordenacao": [
+      3,
+      9,
+      15
+     ],
+     "acumulacao": [
+      1,
+      7,
+      13
+     ],
+     "obsessoes": [
+      6,
+      12,
+      18
+     ],
+     "neutralizacao": [
+      4,
+      10,
+      16
+     ]
+    },
+    "siglas_subescalas": {
+     "verificacao": "Ver",
+     "lavagem": "Lav",
+     "ordenacao": "Ord",
+     "acumulacao": "Acu",
+     "obsessoes": "Obs",
+     "neutralizacao": "Neu"
+    },
+    "escore_max": 72
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "subescalas": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [
+    {
+     "min": 21,
+     "max": 72,
+     "rotulo": "Sugestivo de TOC",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 0,
+     "max": 20,
+     "rotulo": "Abaixo do ponto de corte",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    }
+   ],
+   "nota_faixas": "Corte 21 no total do estudo original (Foa et al., 2002). A versão brasileira (Souza et al., 2011) replicou as seis subescalas e não propõe corte próprio. Triagem — não substitui a entrevista clínica.",
+   "referencias": [
+    {
+     "id": "abramowitz2006",
+     "citacao": "Abramowitz, J. S., & Deacon, B. J. (2006)",
+     "doi": "10.1016/j.janxdis.2006.03.001"
+    },
+    {
+     "id": "foa2002",
+     "citacao": "Foa, E. B., Huppert, J. D., Leiberg, S., Langner, R., Kichic, R., Hajcak, G., & Salkovskis, P. M. (2002)"
+    },
+    {
+     "id": "huppert2007",
+     "citacao": "Huppert, J. D., Walther, M. R., Hajcak, G., Yadin, E., Foa, E. B., Simpson, H. B., & Liebowitz, M. R. (2007)",
+     "doi": "10.1016/j.janxdis.2006.05.006"
+    },
+    {
+     "id": "souza2011",
+     "citacao": "Souza, F. P., Foa, E. B., Meyer, E., Niederauer, K. G., & Cordioli, A. V. (2011)",
+     "doi": "10.1590/s1516-44462011000200008"
+    },
+    {
+     "id": "souza2008",
+     "citacao": "Souza, F. P., Foa, E. B., Meyer, E., Niederauer, K. G., Raffin, A. L., & Cordioli, A. V. (2008)",
+     "doi": "10.1590/s1516-44462006005000065"
+    }
+   ]
+  },
+  "ASRS-18": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 18,
+    "valor_min": 0,
+    "valor_max": 4,
+    "ancoras": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "subescalas": {
+     "desatencao": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+     ],
+     "hiperatividade": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18
+     ]
+    },
+    "siglas_subescalas": {
+     "desatencao": "Des",
+     "hiperatividade": "Hip"
+    },
+    "escore_max": 36
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "subescalas": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [],
+   "corte": {
+    "status": "sem_corte",
+    "fonte_diz": "Sem ponto de corte brasileiro (Mattos et al., 2006). A versão original usa a contagem de sintomas frequentes, não a soma (Kessler et al., 2005). Triagem — não substitui a avaliação diagnóstica."
+   },
+   "referencias": [
+    {
+     "id": "costa2026",
+     "citacao": "Costa, I. M., Ballalai, M. E. S., Maia, L. M., & Taunay, T. C. D. (2026)",
+     "doi": "10.1080/23279095.2026.2735472"
+    },
+    {
+     "id": "kessler2005",
+     "citacao": "Kessler, R. C., Adler, L., Ames, M., Demler, O., Faraone, S., Hiripi, E., Howes, M. J., Jin, R., Secnik, K., Spencer, T., Ustun, T. B., & Walters, E. E. (2005)",
+     "doi": "10.1017/s0033291704002892"
+    },
+    {
+     "id": "mattos2006",
+     "citacao": "Mattos, P., Segenreich, D., Saboya, E., Louzã, M., Dias, G., & Romano, M. (2006)"
+    },
+    {
+     "id": "polanczyk2010",
+     "citacao": "Polanczyk, G., Laranjeira, R., Zaleski, M., Pinsky, I., Caetano, R., & Rohde, L. A. (2010)",
+     "doi": "10.1002/mpr.319"
+    }
+   ]
+  },
+  "SCS": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 26,
+    "valor_min": 1,
+    "valor_max": 5,
+    "ancoras": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "reversos": [
+     1,
+     2,
+     4,
+     6,
+     8,
+     11,
+     13,
+     16,
+     18,
+     20,
+     21,
+     24,
+     25
+    ],
+    "subescalas": {
+     "bondade": [
+      5,
+      12,
+      19,
+      23,
+      26
+     ],
+     "autocritica": [
+      1,
+      8,
+      11,
+      16,
+      21
+     ],
+     "humanidade": [
+      3,
+      7,
+      10,
+      15
+     ],
+     "isolamento": [
+      4,
+      13,
+      18,
+      25
+     ],
+     "mindfulness": [
+      9,
+      14,
+      17,
+      22
+     ],
+     "sobreidentificacao": [
+      2,
+      6,
+      20,
+      24
+     ]
+    },
+    "siglas_subescalas": {
+     "bondade": "Bon",
+     "autocritica": "Auc",
+     "humanidade": "Hum",
+     "isolamento": "Iso",
+     "mindfulness": "Min",
+     "sobreidentificacao": "Sob"
+    },
+    "subescala_media_casas": 2,
+    "composto": {
+     "chave": "autocompaixao",
+     "sigla": "Total",
+     "mais": [
+      "bondade",
+      "autocritica",
+      "humanidade",
+      "isolamento",
+      "mindfulness",
+      "sobreidentificacao"
+     ],
+     "menos": [],
+     "dividir": 6,
+     "casas": 2
+    },
+    "escore_max": 5
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "reversos": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "subescalas": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "composto": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [],
+   "corte": {
+    "status": "sem_corte",
+    "fonte_diz": "Sem pontos de corte validados (Neff, 2003; Souza & Hutz, 2016). Leitura pelo perfil e pela evolução do próprio paciente."
+   },
+   "referencias": [
+    {
+     "id": "neff2003",
+     "citacao": "Neff, K. D. (2003)"
+    },
+    {
+     "id": "neff2019",
+     "citacao": "Neff, K. D., Tóth-Király, I., Yarnell, L. M., Arimitsu, K., Castilho, P., Ghorbani, N., Guo, H. X., Hirsch, J. K., Hupfeld, J., Hutz, C. S., Kotsou, I., Lee, W. K., Montero-Marin, J., Sirois, F. M., de Souza, L. K., Svendsen, J. L., Wilkinson, R. B., & Mantzios, M. (2019)",
+     "doi": "10.1037/pas0000629"
+    },
+    {
+     "id": "souza2016",
+     "citacao": "Souza, L. K., & Hutz, C. S. (2016)"
+    }
+   ]
+  },
+  "AUDIT": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 10,
+    "valor_min": 0,
+    "valor_max": 4,
+    "ancoras": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "ancoras_por_item": {
+     "9": [
+      0,
+      2,
+      4
+     ],
+     "10": [
+      0,
+      2,
+      4
+     ]
+    },
+    "escore_max": 40
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "ancoras_por_item": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [
+    {
+     "min": 20,
+     "max": 40,
+     "rotulo": "Provável dependência",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 16,
+     "max": 19,
+     "rotulo": "Uso nocivo",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 8,
+     "max": 15,
+     "rotulo": "Uso de risco",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 0,
+     "max": 7,
+     "rotulo": "Uso de baixo risco",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    }
+   ],
+   "nota_faixas": "Zonas da OMS (Babor et al., 2001). No Brasil, o corte 7/8 teve sensibilidade 100% e especificidade 76% frente à CID-10 (Lima et al., 2005). Rastreamento — não substitui a avaliação clínica.",
+   "referencias": [
+    {
+     "id": "lima2005",
+     "citacao": "Lima, C. T., Freire, A. C. C., Silva, A. P. B., Teixeira, R. M., Farrell, M., & Prince, M. (2005)",
+     "doi": "10.1093/alcalc/agh202"
+    },
+    {
+     "id": "magnabosco2007",
+     "citacao": "Magnabosco, M. L. O., Formigoni, M. L. O. S., & Ronzani, T. M. (2007)",
+     "doi": "10.1590/s1415-790x2007000400021"
+    },
+    {
+     "id": "saunders1993",
+     "citacao": "Saunders, J. B., Aasland, O. G., Babor, T. F., de la Fuente, J. R., & Grant, M. (1993)",
+     "doi": "10.1111/j.1360-0443.1993.tb02093.x"
+    },
+    {
+     "id": "world2001",
+     "citacao": "World Health Organization. (2001)"
+    }
+   ]
+  },
+  "FTND": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 6,
+    "valor_min": 0,
+    "valor_max": 3,
+    "ancoras": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "ancoras_por_item": {
+     "1": [
+      3,
+      2,
+      1,
+      0
+     ],
+     "2": [
+      1,
+      0
+     ],
+     "3": [
+      1,
+      0
+     ],
+     "5": [
+      1,
+      0
+     ],
+     "6": [
+      1,
+      0
+     ]
+    },
+    "subescalas": {
+     "matinal": [
+      3,
+      5
+     ],
+     "padrao": [
+      1,
+      2,
+      4,
+      6
+     ]
+    },
+    "siglas_subescalas": {
+     "matinal": "Mat",
+     "padrao": "Pad"
+    },
+    "escore_max": 10
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "ancoras_por_item": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "subescalas": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [
+    {
+     "min": 8,
+     "max": 10,
+     "rotulo": "Dependência muito elevada",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 6,
+     "max": 7,
+     "rotulo": "Dependência elevada",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 5,
+     "max": 5,
+     "rotulo": "Dependência média",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 3,
+     "max": 4,
+     "rotulo": "Dependência baixa",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 0,
+     "max": 2,
+     "rotulo": "Dependência muito baixa",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    }
+   ],
+   "nota_faixas": "Níveis da chave de correção do autor (Heatherton et al., 1991; Wilcox et al., 2014). Versão brasileira: Meneses-Gaya et al. (2009), dois fatores. Mede dependência física — não substitui a avaliação clínica.",
+   "referencias": [
+    {
+     "id": "heatherton1991",
+     "citacao": "Heatherton, T. F., Kozlowski, L. T., Frecker, R. C., & Fagerström, K. O. (1991)",
+     "doi": "10.1111/j.1360-0443.1991.tb01879.x"
+    },
+    {
+     "id": "menesesgaya2009",
+     "citacao": "Meneses-Gaya, I. C., Zuardi, A. W., Loureiro, S. R., & Crippa, J. A. S. (2009)",
+     "doi": "10.1590/S1806-37132009000100011"
+    },
+    {
+     "id": "menesesgaya2009_2",
+     "citacao": "Meneses-Gaya, C., Zuardi, A. W., Azevedo Marques, J. M., Souza, R. M., Loureiro, S. R., & Crippa, J. A. S. (2009)",
+     "doi": "10.1093/ntr/ntp114"
+    },
+    {
+     "id": "wilcox2014",
+     "citacao": "Wilcox, S. L., & Redmond, S. (2014)",
+     "doi": "10.15766/mep_2374-8265.9802"
+    }
+   ]
+  },
+  "G-SAS": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 12,
+    "valor_min": 0,
+    "valor_max": 4,
+    "ancoras": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "escore_max": 48
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [
+    {
+     "min": 41,
+     "max": 48,
+     "rotulo": "Extremo",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 31,
+     "max": 40,
+     "rotulo": "Severo",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 21,
+     "max": 30,
+     "rotulo": "Moderado",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 8,
+     "max": 20,
+     "rotulo": "Leve",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    },
+    {
+     "min": 0,
+     "max": 7,
+     "rotulo": "Abaixo da faixa leve",
+     "fonte": {
+      "ref": null,
+      "arquivo": null,
+      "pagina": null,
+      "tabela": null,
+      "trecho": null,
+      "conferido_por": null
+     }
+    }
+   ],
+   "nota_faixas": "Faixas dos autores (Kim et al., 2009). Mede gravidade e mudança dos sintomas de jogo — não é instrumento de rastreamento nem de diagnóstico.",
+   "referencias": [
+    {
+     "id": "grant2008",
+     "citacao": "Grant, J. E., Kim, S. W., & Hartman, B. K. (2008)",
+     "doi": "10.4088/jcp.v69n0511"
+    },
+    {
+     "id": "kim2002",
+     "citacao": "Kim, S. W., Grant, J. E., Adson, D. E., Shin, Y. C., & Zaninelli, R. (2002)",
+     "doi": "10.4088/jcp.v63n0606"
+    },
+    {
+     "id": "kim2009",
+     "citacao": "Kim, S. W., Grant, J. E., Potenza, M. N., Blanco, C., & Hollander, E. (2009)",
+     "doi": "10.1016/j.psychres.2007.11.008"
+    }
+   ]
+  },
+  "EAAD": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 24,
+    "valor_min": 1,
+    "valor_max": 5,
+    "ancoras": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "subescalas": {
+     "emocoes_negativas": [
+      3,
+      6,
+      14,
+      16,
+      18,
+      23,
+      24
+     ],
+     "social_positivo": [
+      4,
+      8,
+      15,
+      17,
+      20,
+      21,
+      22
+     ],
+     "preocupacoes": [
+      2,
+      5,
+      9,
+      12,
+      13
+     ],
+     "abstinencia_impulsos": [
+      1,
+      7,
+      10,
+      11,
+      19
+     ]
+    },
+    "siglas_subescalas": {
+     "emocoes_negativas": "Emo",
+     "social_positivo": "Soc",
+     "preocupacoes": "Pre",
+     "abstinencia_impulsos": "Abs"
+    },
+    "subescala_media_casas": 2,
+    "composto": {
+     "chave": "media_geral",
+     "sigla": "Média",
+     "mais": [],
+     "menos": [],
+     "mediaItens": true,
+     "casas": 2
+    },
+    "escore_max": 5
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "subescalas": {
+     "ref": "freire2017",
+     "arquivo": "EAAD-ESTUD_Freire2017_Paideia.pdf",
+     "pagina": 4,
+     "tabela": "Table 2",
+     "trecho": "allocation in the factors (DASE 24)",
+     "conferido_por": "texto"
+    },
+    "composto": {
+     "ref": "freire2017",
+     "arquivo": "EAAD-ESTUD_Freire2017_Paideia.pdf",
+     "pagina": 3,
+     "tabela": null,
+     "trecho": "DASE 24 – total",
+     "conferido_por": "texto"
+    }
+   },
+   "faixas": [],
+   "corte": {
+    "status": "sem_corte",
+    "fonte_diz": "Sem pontos de corte (DiClemente et al., 1994; Freire, 2009). Leitura pelo perfil e pela evolução do próprio paciente."
+   },
+   "referencias": [
+    {
+     "id": "diclemente1994",
+     "citacao": "DiClemente, C. C., Carbonari, J. P., Montgomery, R. P. G., & Hughes, S. O. (1994)",
+     "doi": "10.15288/jsa.1994.55.141"
+    },
+    {
+     "id": "freire2017",
+     "citacao": "Freire, S. D., Silva, D. C., Ávila, A. C., DiClemente, C., & Oliveira, M. S. (2017)",
+     "doi": "10.1590/1982-43272767201711",
+     "arquivo": "EAAD-ESTUD_Freire2017_Paideia.pdf"
+    },
+    {
+     "id": "freire2011",
+     "citacao": "Freire, S. D., & Oliveira, M. S. (2011)",
+     "doi": "10.1590/S0102-37722011000400018"
+    },
+    {
+     "id": "freire2009",
+     "citacao": "Freire, S. D. (2009)"
+    },
+    {
+     "id": "grupo",
+     "citacao": "Grupo de Avaliação e Acompanhamento Psicológico em Contextos Clínicos. (s.d.). Q"
+    }
+   ]
+  },
+  "ESTUD": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 24,
+    "valor_min": 1,
+    "valor_max": 5,
+    "ancoras": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "subescalas": {
+     "emocoes_negativas": [
+      3,
+      6,
+      14,
+      16,
+      18,
+      23,
+      24
+     ],
+     "social_positivo": [
+      4,
+      8,
+      15,
+      17,
+      20,
+      21,
+      22
+     ],
+     "preocupacoes": [
+      2,
+      5,
+      9,
+      12,
+      13
+     ],
+     "abstinencia_impulsos": [
+      1,
+      7,
+      10,
+      11,
+      19
+     ]
+    },
+    "siglas_subescalas": {
+     "emocoes_negativas": "Emo",
+     "social_positivo": "Soc",
+     "preocupacoes": "Pre",
+     "abstinencia_impulsos": "Abs"
+    },
+    "subescala_media_casas": 2,
+    "composto": {
+     "chave": "media_geral",
+     "sigla": "Média",
+     "mais": [],
+     "menos": [],
+     "mediaItens": true,
+     "casas": 2
+    },
+    "escore_max": 5
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "subescalas": {
+     "ref": "freire2017",
+     "arquivo": "EAAD-ESTUD_Freire2017_Paideia.pdf",
+     "pagina": 4,
+     "tabela": "Table 3",
+     "trecho": "allocation in the factors (TUD 24)",
+     "conferido_por": "texto"
+    },
+    "composto": {
+     "ref": "freire2017",
+     "arquivo": "EAAD-ESTUD_Freire2017_Paideia.pdf",
+     "pagina": 3,
+     "tabela": null,
+     "trecho": "TUD 24 – total",
+     "conferido_por": "texto"
+    }
+   },
+   "faixas": [],
+   "corte": {
+    "status": "sem_corte",
+    "fonte_diz": "Sem pontos de corte (DiClemente et al., 1994; Freire, 2009). Leitura pelo perfil e pela evolução do próprio paciente."
+   },
+   "referencias": [
+    {
+     "id": "diclemente1994",
+     "citacao": "DiClemente, C. C., Carbonari, J. P., Montgomery, R. P. G., & Hughes, S. O. (1994)",
+     "doi": "10.15288/jsa.1994.55.141"
+    },
+    {
+     "id": "freire2017",
+     "citacao": "Freire, S. D., Silva, D. C., Ávila, A. C., DiClemente, C., & Oliveira, M. S. (2017)",
+     "doi": "10.1590/1982-43272767201711",
+     "arquivo": "EAAD-ESTUD_Freire2017_Paideia.pdf"
+    },
+    {
+     "id": "freire2011",
+     "citacao": "Freire, S. D., & Oliveira, M. S. (2011)",
+     "doi": "10.1590/S0102-37722011000400018"
+    },
+    {
+     "id": "freire2009",
+     "citacao": "Freire, S. D. (2009)"
+    },
+    {
+     "id": "grupo",
+     "citacao": "Grupo de Avaliação e Acompanhamento Psicológico em Contextos Clínicos. (s.d.). Q"
+    }
+   ]
+  },
+  "DUDIT": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 11,
+    "valor_min": 0,
+    "valor_max": 4,
+    "ancoras": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "ancoras_por_item": {
+     "10": [
+      0,
+      2,
+      4
+     ],
+     "11": [
+      0,
+      2,
+      4
+     ]
+    },
+    "escore_max": 44
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": "berman2022",
+     "arquivo": "DUDIT_Berman2022_AUDIT-DUDIT_Socialstyrelsen.pdf",
+     "pagina": 22,
+     "tabela": null,
+     "trecho": "frågorna ett till nio på DUDIT ger 0, 1, 2, 3 eller 4 poäng",
+     "conferido_por": "texto"
+    },
+    "ancoras_por_item": {
+     "ref": "berman2022",
+     "arquivo": "DUDIT_Berman2022_AUDIT-DUDIT_Socialstyrelsen.pdf",
+     "pagina": 22,
+     "tabela": null,
+     "trecho": "tio och elva ger 0, 2 eller 4 poäng",
+     "conferido_por": "texto"
+    }
+   },
+   "faixas": [
+    {
+     "min": 25,
+     "max": 44,
+     "rotulo": "Provável dependência",
+     "fonte": {
+      "ref": "berman2022",
+      "arquivo": "DUDIT_Berman2022_AUDIT-DUDIT_Socialstyrelsen.pdf",
+      "pagina": 24,
+      "tabela": null,
+      "trecho": "vid 25 poäng eller fler",
+      "conferido_por": "texto"
+     }
+    },
+    {
+     "min": 6,
+     "max": 24,
+     "rotulo": "Provável problema com drogas",
+     "fonte": {
+      "ref": "berman2022",
+      "arquivo": "DUDIT_Berman2022_AUDIT-DUDIT_Socialstyrelsen.pdf",
+      "pagina": 24,
+      "tabela": null,
+      "trecho": "6 poäng eller fler på DUDIT",
+      "conferido_por": "texto"
+     }
+    },
+    {
+     "min": 0,
+     "max": 5,
+     "rotulo": "Abaixo do ponto de corte",
+     "fonte": {
+      "ref": "berman2022",
+      "arquivo": "DUDIT_Berman2022_AUDIT-DUDIT_Socialstyrelsen.pdf",
+      "pagina": 24,
+      "tabela": null,
+      "trecho": "6 poäng eller fler på DUDIT",
+      "conferido_por": "texto"
+     }
+    }
+   ],
+   "nota_faixas": "Cortes do manual sueco do DUDIT (Berman, Wennberg & Källmén, 2022; Berman & Brisendal, 2011), como usados nos estudos publicados (Pape et al., 2022). Sem validação brasileira. Rastreamento — não substitui a avaliação clínica.",
+   "referencias": [
+    {
+     "id": "berman2005",
+     "citacao": "Berman, A. H., Bergman, H., Palmstierna, T., & Schlyter, F. (2005)",
+     "doi": "10.1159/000081413"
+    },
+    {
+     "id": "berman2022",
+     "citacao": "Berman, A. H., Wennberg, P., & Källmén, H. (2022)",
+     "arquivo": "DUDIT_Berman2022_AUDIT-DUDIT_Socialstyrelsen.pdf"
+    },
+    {
+     "id": "hildebrand2015",
+     "citacao": "Hildebrand, M. (2015)",
+     "doi": "10.1016/j.jsat.2015.01.008"
+    },
+    {
+     "id": "pape2022",
+     "citacao": "Pape, H., Lobmaier, P., & Bukten, A. (2022)",
+     "doi": "10.1016/j.dadr.2022.100043"
+    }
+   ],
+   "validacao_br": {
+    "status": "nao_encontrado",
+    "buscado_em": [
+     "PubMed",
+     "Consensus",
+     "OpenAlex",
+     "Crossref"
+    ],
+    "data": "2026-11-21"
+   }
+  },
+  "SAST": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 25,
+    "valor_min": 0,
+    "valor_max": 1,
+    "ancoras": [
+     0,
+     1
+    ],
+    "escore_max": 25
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    }
+   },
+   "faixas": [
+    {
+     "min": 6,
+     "max": 25,
+     "rotulo": "Triagem positiva",
+     "fonte": {
+      "ref": "silveira2000",
+      "arquivo": "SAST_Silveira2000_RBP.pdf",
+      "pagina": 1,
+      "tabela": null,
+      "trecho": "ponto de corte 6, para o qual a sensibilidade",
+      "conferido_por": "texto"
+     }
+    },
+    {
+     "min": 0,
+     "max": 5,
+     "rotulo": "Abaixo do ponto de corte",
+     "fonte": {
+      "ref": "silveira2000",
+      "arquivo": "SAST_Silveira2000_RBP.pdf",
+      "pagina": 1,
+      "tabela": null,
+      "trecho": "ponto de corte 6, para o qual a sensibilidade",
+      "conferido_por": "texto"
+     }
+    }
+   ],
+   "nota_faixas": "Corte 6 da validação brasileira (Silveira et al., 2000: sensibilidade 0,83, especificidade 0,75; alfa 0,89). Rastreamento — não substitui a avaliação clínica.",
+   "referencias": [
+    {
+     "id": "carnes1989",
+     "citacao": "Carnes, P. (1989)"
+    },
+    {
+     "id": "silveira2000",
+     "citacao": "Silveira, D. X., Vieira, A. C., Palomo, V., & Silveira, E. D. (2000)",
+     "doi": "10.1590/S1516-44462000000100003",
+     "arquivo": "SAST_Silveira2000_RBP.pdf"
+    }
+   ]
+  },
+  "EPM": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 20,
+    "valor_min": 1,
+    "valor_max": 5,
+    "ancoras": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "subescalas": {
+     "cognitivos": [
+      3,
+      4,
+      5,
+      7,
+      8,
+      9,
+      12,
+      14,
+      15,
+      20
+     ],
+     "comportamentais": [
+      1,
+      2,
+      6,
+      10,
+      11,
+      13,
+      16,
+      17,
+      18,
+      19
+     ]
+    },
+    "siglas_subescalas": {
+     "cognitivos": "Cog",
+     "comportamentais": "Com"
+    },
+    "composto": {
+     "chave": "total_processos",
+     "sigla": "Total",
+     "mais": [],
+     "menos": [],
+     "somaItens": true,
+     "casas": 0
+    },
+    "escore_max": 50
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": null,
+     "arquivo": null,
+     "pagina": null,
+     "tabela": null,
+     "trecho": null,
+     "conferido_por": null
+    },
+    "subescalas": {
+     "ref": "szupszynski2012",
+     "arquivo": "EPM_Szupszynski2012_tese_PUCRS.pdf",
+     "pagina": 67,
+     "tabela": "Quadro 3",
+     "trecho": "comparação dos itens da escala original com a versão brasileira",
+     "conferido_por": "texto"
+    },
+    "composto": {
+     "ref": "szupszynski2012",
+     "arquivo": "EPM_Szupszynski2012_tese_PUCRS.pdf",
+     "pagina": 62,
+     "tabela": null,
+     "trecho": "alpha de Cronbach da escala total",
+     "conferido_por": "texto"
+    }
+   },
+   "faixas": [],
+   "corte": {
+    "status": "sem_corte",
+    "fonte_diz": "Sem pontos de corte. Modelo transteórico (Prochaska & DiClemente, 1982; Prochaska et al., 1988); versão brasileira para usuários de drogas ilícitas (Szupszynski, 2012, PUCRS: alfa 0,78 no total). Leitura pelo perfil e pela evolução."
+   },
+   "referencias": [
+    {
+     "id": "grupo",
+     "citacao": "Grupo de Avaliação e Acompanhamento Psicológico em Contextos Clínicos. (s.d.). Q"
+    },
+    {
+     "id": "prochaska1982",
+     "citacao": "Prochaska, J. O., & DiClemente, C. C. (1982)",
+     "doi": "10.1037/h0088437"
+    },
+    {
+     "id": "prochaska1988",
+     "citacao": "Prochaska, J. O., Velicer, W. F., DiClemente, C. C., & Fava, J. (1988)",
+     "doi": "10.1037/0022-006X.56.4.520"
+    },
+    {
+     "id": "szupszynski2012",
+     "citacao": "Szupszynski, K. P. D. R. (2012)",
+     "arquivo": "EPM_Szupszynski2012_tese_PUCRS.pdf"
+    },
+    {
+     "id": "szupszynski2014",
+     "citacao": "Szupszynski, K. P. D. R., Sartes, L. M. A., Andretta, I., & Oliveira, M. S. (2014)",
+     "doi": "10.5935/1808-5687.20140003"
+    }
+   ]
+  },
+  "PIUQ-SF-9": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 9,
+    "valor_min": 1,
+    "valor_max": 5,
+    "ancoras": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "escore_max": 45
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": "spritzer2021",
+     "arquivo": "PIUQ-SF-9_Spritzer2021_FrontPsychiatry.pdf",
+     "pagina": 3,
+     "tabela": null,
+     "trecho": "five-point Likert-type answers, ranging from 1",
+     "conferido_por": "texto"
+    }
+   },
+   "faixas": [],
+   "corte": {
+    "status": "sem_corte",
+    "fonte_diz": "Sem ponto de corte (Spritzer et al., 2021: modelo bifatorial, alfa 0,91, reteste 0,73). Percentis calculados dos dados públicos dos autores com o script deles (Apêndice C do artigo). Rastreamento — não é instrumento diagnóstico."
+   },
+   "referencias": [
+    {
+     "id": "demetrovics2008",
+     "citacao": "Demetrovics, Z., Szeredi, B., & Rózsa, S. (2008)",
+     "doi": "10.3758/brm.40.2.563"
+    },
+    {
+     "id": "koronczai2011",
+     "citacao": "Koronczai, B., Urbán, R., Kökönyei, G., Paksi, B., Papp, K., Kun, B., Arnold, P., Kállai, J., & Demetrovics, Z. (2011)",
+     "doi": "10.1089/cyber.2010.0345"
+    },
+    {
+     "id": "spritzer2021",
+     "citacao": "Spritzer, D. T., Machado, W. L., Yates, M. B., Astolfi, V. R., Laskoski, P., Pessi, C., Laconi, S., Kaliszewska-Czeremska, K., Demetrovics, Z., Király, O., Passos, I. C., & Hauck, S. (2021)",
+     "doi": "10.3389/fpsyt.2021.660186",
+     "arquivo": "PIUQ-SF-9_Spritzer2021_FrontPsychiatry.pdf"
+    }
+   ]
+  },
+  "SAS-LV": {
+   "exige_pagina": false,
+   "estrutura": {
+    "itens": 33,
+    "valor_min": 1,
+    "valor_max": 6,
+    "ancoras": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "subescalas": {
+     "perturbacao": [
+      3,
+      4,
+      5
+     ],
+     "antecipacao": [
+      6,
+      7,
+      8,
+      9
+     ],
+     "abstinencia": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      17,
+      18
+     ],
+     "ciberespaco": [
+      20,
+      21,
+      22,
+      23,
+      26
+     ],
+     "uso_excessivo": [
+      1,
+      2,
+      16,
+      19,
+      24,
+      25,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33
+     ]
+    },
+    "siglas_subescalas": {
+     "perturbacao": "Per",
+     "antecipacao": "Ant",
+     "abstinencia": "Abs",
+     "ciberespaco": "Cib",
+     "uso_excessivo": "Uso"
+    },
+    "subescala_media_casas": 2,
+    "composto": {
+     "chave": "total_sas",
+     "sigla": "Total",
+     "mais": [],
+     "menos": [],
+     "somaItens": true,
+     "casas": 0
+    },
+    "escore_max": 6
+   },
+   "fontes_estrutura": {
+    "ancoras": {
+     "ref": "andrade2020",
+     "arquivo": "SAS-LV_Andrade2020_TrendsPsychol.pdf",
+     "pagina": 4,
+     "tabela": null,
+     "trecho": "scores ranging from 1 (strongly disagree) to 6 (strongly agree)",
+     "conferido_por": "texto"
+    },
+    "subescalas": {
+     "ref": "andrade2020",
+     "arquivo": "SAS-LV_Andrade2020_TrendsPsychol.pdf",
+     "pagina": 8,
+     "tabela": "Table 3",
+     "trecho": "Table 3 (rotated)",
+     "conferido_por": "imagem",
+     "imagem": "SAS-LV_Tabela3_pag8.png"
+    },
+    "composto": {
+     "ref": "andrade2020",
+     "arquivo": "SAS-LV_Andrade2020_TrendsPsychol.pdf",
+     "pagina": 4,
+     "tabela": null,
+     "trecho": "total score ranging from 33 to 198 points",
+     "conferido_por": "texto"
+    }
+   },
+   "faixas": [],
+   "corte": {
+    "status": "sem_corte",
+    "fonte_diz": "Sem pontos de corte (Kwon et al., 2013; Andrade et al., 2020: alfa 0,93; fatores de 0,66 a 0,90). Rastreamento — não é instrumento diagnóstico."
+   },
+   "comentario_codigo": "17.7 (fechamento): cinco fatores da versao brasileira (Andrade et al., 2020, Tabela 3; item 18 em abstinencia) + total pela soma",
+   "referencias": [
+    {
+     "id": "andrade2020",
+     "citacao": "Andrade, A. L. M., Kim, D.-J., Scatena, A., Enes, C. C., Enumo, S. R. F., & De Micheli, D. (2020)",
+     "doi": "10.1007/s43076-020-00046-y",
+     "arquivo": "SAS-LV_Andrade2020_TrendsPsychol.pdf"
+    },
+    {
+     "id": "kwon2013",
+     "citacao": "Kwon, M., Lee, J.-Y., Won, W.-Y., Park, J.-W., Min, J.-A., Hahn, C., Gu, X., Choi, J.-H., & Kim, D.-J. (2013)",
+     "doi": "10.1371/journal.pone.0056936"
+    },
+    {
+     "id": "lin2016",
+     "citacao": "Lin, Y.-H., Chiang, C.-L., Lin, P.-H., Chang, L.-R., Ko, C.-H., Lee, Y.-H., & Lin, S.-H. (2016)",
+     "doi": "10.1371/journal.pone.0163010"
+    }
+   ]
+  }
+ }
+}

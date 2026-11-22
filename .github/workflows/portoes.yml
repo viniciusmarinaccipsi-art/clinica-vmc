@@ -44,6 +44,10 @@ jobs:
         timeout-minutes: 3
         run: node scripts/testes/teste_escores.js
 
+      - name: Fontes das escalas (código = docs/escalas/fontes.json; página obrigatória onde exige_pagina)
+        timeout-minutes: 2
+        run: node scripts/testes/teste_fontes.js
+
       - name: Backend sobre planilhas simuladas (funções puras e regressões)
         timeout-minutes: 8
         run: |
