@@ -23621,7 +23621,7 @@ function ageFechar() {
   if (!AGE.p) return;
   if (AGE.vista === 'painel') { ageLer_(); if (ageFoto_(AGE.p) !== AGE.p.foto) { AGE.vista = 'sair'; ageRender_(); return; } }
   else if (AGE.vista !== 'sair' && AGE.vista !== 'avisar') { AGE.vista = 'painel'; ageRender_(); return; }
-  if (AGE.vista === 'avisar' && AGE.p.aviso) ageMsg_(AGE.p.aviso.msg, false, AGE.p.aviso.repor ? '<button type="button" class="prof-lem-btn" id="ageBtnReporCancelada" onclick="ageReporCancelada_()">Criar reposição</button>' : '');
+  if (AGE.vista === 'avisar' && AGE.p.aviso) ageMsg_(AGE.p.aviso.msg, false, AGE.p.aviso.repor ? '<button type="button" class="prof-lem-btn" id="ageBtnReporCancelada" onclick="ageReporCancelada_()">Agendar reposição</button>' : '');
   ageFecharDeVez_();
 }
 document.addEventListener('keydown', function (e) {
@@ -23752,7 +23752,7 @@ function ageRender_() {
   }
   var situacao = s ? ageCampo_('Situação', '<select id="ageSit" onchange="ageSituacao_()"><option value="">Sem marcação</option><option value="realizada">Consulta realizada</option><option value="falta">Não compareceu</option></select>', 'ageSit') +
     '<div id="ageSitBox">' + (s.estado === 'falta' ? '<p class="age-texto">Falta cobrada.</p>' : '') +
-    (s.pode_repor ? '<button type="button" class="p5-btn p5-btn-secondary age-btn-largo" id="ageBtnRepor" onclick="ageRepor_()">' + (s.estado === 'falta' ? 'Repor em outra data' : 'Criar reposição') + '</button><p class="age-dica">A reposição usa o valor desta sessão e não gera cobrança nova.</p>' : '') + '</div>' : '';
+    (s.pode_repor ? '<button type="button" class="p5-btn p5-btn-secondary age-btn-largo" id="ageBtnRepor" onclick="ageRepor_()">' + (s.estado === 'falta' ? 'Repor em outra data' : 'Agendar reposição') + '</button><p class="age-dica">A reposição usa o valor desta sessão e não gera cobrança nova.</p>' : '') + '</div>' : '';
   var repeticao = p.reposicao_de ? '' : ageCampo_('Repetição',
     '<div class="age-rep"><select id="ageRepSel" onchange="ageRepMudou_()"><option value="nao">Não se repete</option><option value="sim">Repetição personalizada</option></select>' +
     '<button type="button" class="p5-btn p5-btn-secondary" id="ageRepEditar" onclick="ageRepAbrir_()">Editar</button></div><p class="age-dica" id="ageRepResumo"></p>', 'ageRepSel');
@@ -24207,7 +24207,7 @@ function ageRenderAvisar_(titulo, corpo, acoes) {
     '<p class="age-aviso-estado" id="ageAvisoEstado" role="status">' + esc(ageAvisoEstadoTexto_(a.estado, a.hora)) + '</p>' +
     '<div class="age-aviso-acoes"><button type="button" class="prof-lem-btn" id="ageBtnEmailAgora" onclick="ageEmailAgora_()">Enviar e-mail agora</button>' +
     ageWhatsBotao_(a.tipo, s, a.anterior) +
-    (a.repor ? '<button type="button" class="prof-lem-btn" id="ageBtnReporCartao" onclick="ageReporCancelada_()">Criar reposição</button>' : '') + '</div>';
+    (a.repor ? '<button type="button" class="prof-lem-btn" id="ageBtnReporCartao" onclick="ageReporCancelada_()">Agendar reposição</button>' : '') + '</div>';
   acoes.innerHTML = ageBtn_('Fechar', 'ageFechar()', true, 'ageBtnOk');
 }
 /* "Enviar e-mail agora": vale no cartão de aviso e dentro da consulta aberta; funciona com a chave geral desligada */
