@@ -57,7 +57,7 @@
 // Rodada DOCS_2026-10-07 — index-dev.html e o index oficial: SITE_URL aponta para ele; texto do aviso de backup
 // com falha alinhado ao backup sob demanda (07/10/2026)
 // Pacote 19.2.1 — Plano de lembretes: aba Lembretes na Controle, acoes profSalvarLembrete, profEncerrarLembrete,
-// profLembrarAgora e lerMeusLembretes, gatilho de hora em hora enviarLembretes_ (e-mail), blocos do Inicio na lista
+// profLembrarAgora e lerMeusLembretes, gatilho enviarLembretes_ (e-mail; a cada 5 minutos desde o 19.2.3), blocos do Inicio na lista
 // do profissional; ind_total_auto sem as checagens sozinhas (22/11/2026)
 // Pacote 14.3 — Agenda completa: abas Sessoes, Series, Bloqueios e Pedidos_Agenda na Controle; acoes do profissional
 // (profLerAgenda, profSalvarSessao com simular, profEditarSerie, profCancelarSessao, profMarcarSituacao, profSalvarBloqueio,
@@ -6295,6 +6295,7 @@ function profEncerrarLembrete(s, siglaPaciente, id) {
 function profLembrarAgora(s, siglaPaciente, dados) {
   var alvo = _lembreteAlvo_(s, siglaPaciente);
   if (!alvo.ok) return alvo;
+  if (dados && dados.enviar_id) return _lembreteEnviarAgora_(alvo, dados.enviar_id);
   var v = _lembreteValidar_(dados, false);
   if (!v.ok) return v;
   var aba = _lembretesAba_(alvo.controle, true);
@@ -6310,18 +6311,38 @@ function profLembrarAgora(s, siglaPaciente, dados) {
   campos.recorrencia = 'agora'; campos.data_inicio = agora.data; campos.hora = agora.hora;
   campos.criado_em = agora.carimbo; campos.criado_por = String(alvo.nome || ''); campos.atualizado_em = agora.carimbo;
 
-  var email = normalizarEmail(alvo.paciente.email);
-  var motivo = '';
-  if (!_estaAtivo_(alvo.paciente.ativo)) motivo = 'inativo';
-  else if (!email) motivo = 'sem_email';
-  else if (!_reservarEmail_('lembretes')) motivo = 'cota';
-  else if (!_enviarEmail_(email, montarEmailLembrete(campos.tipo, _lemPrimeiroNome_(alvo.paciente), _assinaturaDoProfissional_(alvo.profissionalId), _lembreteDetalhe_(campos)))) motivo = 'falha';
+  var motivo = _lembreteMandarEmail_(alvo, campos);
   if (!motivo) campos.ultimo_email_em = agora.carimbo;
   _lembreteGravar_(aba, 0, campos);
 
   var resp = { ok: true, email_enviado: !motivo, motivo: motivo };
   _lembreteAbrirEscala_(alvo, v.campos, resp);
   return _lembreteResposta_(alvo, resp, agora.data);
+}
+
+/** Manda o e-mail de um item ao paciente do `alvo`. Devolve o motivo de nao ter ido ('' = enviado | inativo | sem_email | cota | falha). */
+function _lembreteMandarEmail_(alvo, item) {
+  var email = normalizarEmail(alvo.paciente.email);
+  if (!_estaAtivo_(alvo.paciente.ativo)) return 'inativo';
+  if (!email) return 'sem_email';
+  if (!_reservarEmail_('lembretes')) return 'cota';
+  if (!_enviarEmail_(email, montarEmailLembrete(item.tipo, _lemPrimeiroNome_(alvo.paciente), _assinaturaDoProfissional_(alvo.profissionalId), _lembreteDetalhe_(item)))) return 'falha';
+  return '';
+}
+
+/**
+ * 19.2.3 — botao "E-mail" de um item do plano (`dados.enviar_id` em profLembrarAgora): manda agora o e-mail de um
+ * item ativo que ja existe; nenhuma linha nova. A marca `ultimo_email_em` fica com a hora deste envio, entao o
+ * gatilho nao manda o mesmo item de novo no mesmo dia. Saida igual a do "Lembrar agora".
+ */
+function _lembreteEnviarAgora_(alvo, id) {
+  var aba = _lembretesAba_(alvo.controle, false);
+  var agora = _lemAgora_();
+  var item = _lembretesLer_(aba).filter(function (i) { return i.id === String(id || '').trim(); })[0];
+  if (!item || _siglaChave_(item.sigla) !== _siglaChave_(alvo.sigla) || !_lemAtivo_(item)) return { ok: false, erro: 'Lembrete não encontrado.' };
+  var motivo = _lembreteMandarEmail_(alvo, item);
+  if (!motivo) _lembreteGravar_(aba, item.__linha, { ultimo_email_em: agora.carimbo });
+  return _lembreteResposta_(alvo, { ok: true, email_enviado: !motivo, motivo: motivo }, agora.data);
 }
 
 // ---------- acao do paciente (so leitura) ----------
@@ -6431,7 +6452,7 @@ function montarEmailLembrete(tipo, nome, assinatura, detalhe) {
   return { assunto: t.assunto, texto: texto, html: html };
 }
 
-// ---------- gatilho de hora em hora ----------
+// ---------- gatilho (a cada 5 minutos desde o 19.2.3; de hora em hora antes) ----------
 
 /**
  * Percorre a aba Lembretes de cada profissional ativo e manda o e-mail dos itens que vencem
@@ -7695,16 +7716,17 @@ function instalarGatilhos() {
     .inTimezone('America/Sao_Paulo')
     .create();
 
-  // 19.2.1: lembretes por e-mail, de hora em hora (a hora de cada item e escolhida pelo profissional;
-  // o e-mail sai na primeira rodada depois dela)
+  // 19.2.1: lembretes por e-mail (a hora de cada item e escolhida pelo profissional; o e-mail sai na primeira
+  // rodada depois dela). 19.2.3: a rodada passou de hora em hora para a cada 5 minutos — com a rodada horaria o
+  // e-mail chegava ate uma hora depois do horario escolhido.
   ScriptApp.newTrigger('enviarLembretes_')
     .timeBased()
-    .everyHours(1)
+    .everyMinutes(5)
     .create();
 
   var msg = 'E3: ' + removidos + ' gatilho(s) antigo(s) removido(s). Criados: ' +
             'monitorarPing_ (diario, entre 7 h e 8 h, America/Sao_Paulo) e ' +
-            'enviarLembretes_ (de hora em hora). ' +
+            'enviarLembretes_ (a cada 5 minutos). ' +
             'Backup e sob demanda (rodarBackupAgora), sem gatilho.';
   Logger.log(msg);
   return msg;

@@ -1708,14 +1708,25 @@ bloqueada). No WhatsApp, `lemDetalhe_(l)` e `lemLinkWhats_(telefone, tipo, nome,
 mesmo, com o texto por `encodeURIComponent`. O Automonitoramento não mudou. Cota própria: `_reservarEmail_('lembretes')`, `LEMBRETES_DIA_MAX` =
 60 por dia (convites 20 e redefinições 10 ficam à parte).
 
-**Gatilho.** `enviarLembretes_` roda de hora em hora (`instalarGatilhos` cria os dois gatilhos:
-`monitorarPing_` diário e `enviarLembretes_` horário). Percorre a aba `Lembretes` de cada
+**Gatilho.** `enviarLembretes_` roda **a cada 5 minutos desde o 19.2.3** (`instalarGatilhos` cria os dois
+gatilhos: `monitorarPing_` diário e `enviarLembretes_` com `everyMinutes(5)`; até o 19.2.2 era de hora em
+hora e o e-mail chegava até uma hora depois do horário escolhido — o usuário criou um lembrete para dali a
+dois minutos e não recebeu). Percorre a aba `Lembretes` de cada
 profissional ativo; para cada item com e-mail vencendo, **grava `ultimo_email_em` antes de enviar,
 dentro da trava e relendo a célula** — duas rodadas no mesmo dia nunca mandam o mesmo item duas
 vezes; se o envio falha, a marca volta ao valor anterior e a rodada seguinte tenta de novo.
 Devolve só contagens. À mão: `clasp --user run run-function rodarLembretesAgora`. Rollback do
 pacote: `removerGatilhoLembretes` antes do `git revert` (gatilho apontando para função que não
 existe dá erro toda hora).
+
+**Enviar agora um item que já existe (19.2.3).** `profLembrarAgora` aceita `dados.enviar_id`: manda na hora
+o e-mail de um item ativo do plano (`_lembreteEnviarAgora_`), sem criar linha, e grava `ultimo_email_em` —
+o gatilho não repete o item no mesmo dia. Nenhuma ação nova (continuam 53); `_lembreteMandarEmail_` é o
+envio comum ao "Lembrar agora" e a este caminho (motivos `inativo`, `sem_email`, `cota`, `falha`). Na
+tela, as duas formas de enviar ficam **dentro do Editar** de cada lembrete (decisão do usuário de
+22/11/2026: a linha do lembrete tem só Editar e Encerrar): bloco `#profLemEnviar` "Enviar agora" com o
+botão WhatsApp (`lemBotaoWhats_`, o item como está gravado) e o botão E-mail (`profLemEnviarEmail_`); o
+erro do servidor aparece no próprio formulário.
 
 **8.23.** `_calcularIndicadores_` conta em `ind_total_auto` só os registros completos; o "último"
 (`ind_ultimo_auto`) continua sendo a última linha, checagem ou não.
