@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — resultado das escalas: estágio de mudança da URICA pela norma das fontes, bloco "Seu resultado" nas escalas sem corte, tom das sugestões, nome original sobre a tradução, botão Aplicar e resultado ao fim da aplicação pelo profissional (40 escalas) — Pacote 19.0.1 (22/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — resultado das escalas: estágio de mudança da URICA pela norma das fontes, bloco "Seu resultado" nas escalas sem corte, tom das sugestões, nome original sobre a tradução, botão Aplicar e resultado ao fim da aplicação pelo profissional; lembretes do 19.2.3 dentro (40 escalas) — Pacote 19.0.1 (22/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -789,6 +789,8 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .prof-lem-regra{font:var(--t-body-sm);color:var(--c-ink-2);overflow-wrap:anywhere;}
 .prof-lem-estado{font:var(--t-body-sm);color:var(--c-ink-3);}
 .prof-lem-botoes{display:flex;gap:var(--s-2);flex-wrap:wrap;}
+.prof-lem-enviar{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s-2);margin:var(--s-3) 0;text-align:left;}
+.prof-lem-enviar-rotulo{flex-basis:100%;font:var(--t-label);color:var(--c-ink-2);}
 .prof-lem-btn{display:inline-flex;align-items:center;justify-content:center;min-height:var(--hit-min);padding:0 var(--s-3);border:1px solid var(--c-line-strong);border-radius:var(--r-field);background:var(--c-surface);color:var(--c-ink);font:var(--t-action);text-decoration:none;cursor:pointer;}
 .prof-lem-btn:hover{background:var(--c-surface-sub);}
 .prof-lem-btn:focus-visible{outline:2px solid var(--c-action);outline-offset:2px;}
@@ -9886,7 +9888,7 @@ function profRenderAtualizacoes_(ativos) {
    - Início do profissional: blocos "Lembretes de hoje" e "Atrasados", com os itens que vêm na lista do login
      (`lembretes` de cada paciente; o servidor decide o que vence hoje e o que está atrasado) e o botão WhatsApp.
    - Paciente aberto: módulo "Plano de lembretes" (criar, editar, encerrar, lembrar agora).
-   O e-mail é do servidor (gatilho de hora em hora); o WhatsApp é enviado pelo profissional, pelo botão.
+   O e-mail é do servidor (gatilho a cada 5 minutos desde o 19.2.3) ou do botão "E-mail" de cada item; o WhatsApp é enviado pelo profissional, pelo botão.
    19.2.2 (decisão do usuário, 22/11/2026): a sigla da escala e o texto do "Outro" aparecem no e-mail e no WhatsApp.
    ============================================================ */
 var VMC_SITE_URL = 'https://viniciusmarinaccipsi-art.github.io/clinica-vmc/index-dev.html'; // o endereço que vai na mensagem do WhatsApp
@@ -10044,7 +10046,8 @@ function profLemFormHtml_() {
     campo('Data', 'Data de início', '<input type="date" id="profLemData">') +
     campo('Hora', 'Horário do e-mail', '<input type="time" id="profLemHora">') +
     campo('Termino', 'Data de término (opcional)', '<input type="date" id="profLemTermino">') +
-    '<p class="prof-lem-ajuda" id="profLemNota">O e-mail sai sozinho no horário escolhido (até uma hora depois). O WhatsApp é enviado por você, pelo botão no Início.</p>' +
+    '<p class="prof-lem-ajuda" id="profLemNota">O e-mail sai sozinho no horário escolhido (em até 5 minutos). O WhatsApp é enviado por você, pelo botão no Início ou em Editar.</p>' +
+    '<div id="profLemEnviarBox"></div>' +
     '<div class="prof-cad-erro" id="profLemErro" role="alert"></div>' +
     '<div class="prof-lem-acoes"><button class="p5-btn p5-btn-primary" type="button" id="profLemBtnSalvar" onclick="profLemSalvar_()">Salvar lembrete</button>' +
       '<button class="p5-btn p5-btn-secondary" type="button" onclick="profLemFecharForm_()">Cancelar</button></div>' +
@@ -10075,6 +10078,10 @@ function profLemAbrirForm_(id) {
   });
   el('profLemSemEmail').classList.toggle('hidden', !!(PROF_PACIENTE_SEL.contato && PROF_PACIENTE_SEL.contato.email));
   el('profLemAviso').textContent = '';
+  // 19.2.3: na edição, as duas formas de enviar este lembrete agora (o item como está gravado)
+  if (l) el('profLemEnviarBox').innerHTML = '<div class="prof-lem-enviar" id="profLemEnviar"><span class="prof-lem-enviar-rotulo">Enviar agora</span>' +
+    lemBotaoWhats_(PROF_PACIENTE_SEL.contato && PROF_PACIENTE_SEL.contato.telefone, l, PROF_PACIENTE_SEL.nome, 'WhatsApp') +
+    '<button type="button" class="prof-lem-btn" data-id="' + esc(l.id) + '" data-lem-email="1" onclick="profLemEnviarEmail_(this)">E-mail</button></div>';
   profLemAjustarForm_();
   el('profLemOque').focus();
 }
@@ -10145,13 +10152,31 @@ async function profLemSalvar_() {
     return;
   }
   var avisos = [];
-  if (agora) {
-    avisos.push(resp.email_enviado ? 'E-mail enviado para o paciente.'
-      : (resp.motivo === 'sem_email' ? 'Este paciente não tem e-mail no cadastro: o lembrete só poderá ir por WhatsApp.'
-                                     : 'Não foi possível enviar o e-mail agora. Você pode enviar pelo WhatsApp.'));
-  }
+  if (agora) avisos.push(profLemAvisoEmail_(resp));
   if (resp.escala_aberta) avisos.push('A escala foi aberta para o paciente responder.');
   profLemAplicar_(sigla, resp, avisos, agora ? dados : null);
+}
+/* O que dizer depois de pedir um e-mail ao servidor ("Lembrar agora" e o botão "E-mail" de um item) */
+function profLemAvisoEmail_(resp) {
+  return resp.email_enviado ? 'E-mail enviado para o paciente.'
+    : (resp.motivo === 'sem_email' ? 'Este paciente não tem e-mail no cadastro: o lembrete só poderá ir por WhatsApp.'
+                                   : 'Não foi possível enviar o e-mail agora. Você pode enviar pelo WhatsApp.');
+}
+/* 19.2.3 — botão "E-mail" dentro do Editar: o servidor manda agora o e-mail daquele item (nenhum item novo) e marca o envio */
+async function profLemEnviarEmail_(btn) {
+  var sigla = PROF_PACIENTE_SEL && PROF_PACIENTE_SEL.sigla;
+  if (!sigla || btn.disabled) return;
+  var rotulo = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Aguarde…';
+  var resp = await chamarServidor('profLembrarAgora', { siglaPaciente: sigla, dados: { enviar_id: btn.dataset.id } });
+  if (!PROF_PACIENTE_SEL || PROF_PACIENTE_SEL.sigla !== sigla) return; // saiu do paciente enquanto enviava
+  if (!resp || !resp.ok) {
+    if (document.body.contains(btn)) { btn.disabled = false; btn.textContent = rotulo; }
+    var erro = document.getElementById('profLemErro');
+    if (erro) { erro.textContent = (resp && resp.erro) || 'Tente novamente.'; erro.classList.add('visivel'); }
+    return;
+  }
+  profLemAplicar_(sigla, resp, [profLemAvisoEmail_(resp)], null);
 }
 /* Depois de gravar: o plano na tela, os blocos do Início (a resposta já traz os itens — nenhuma chamada nova) e o aviso.
    A memória do paciente aberto já foi esvaziada pelo chamarServidor (18.11: toda gravação do profissional). */

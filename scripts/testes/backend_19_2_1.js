@@ -355,6 +355,58 @@ tenta('N', () => {
   ok('N10 "lembrar agora" de escala: o e-mail sai na hora com a sigla', ag.ok && ag.email_enviado === true && h.EMAILS.length === 1 && h.EMAILS[0].body.indexOf('Há uma escala aberta para você: BSS. Quando puder, responda.') !== -1, ag);
 });
 
+/* ---------------------------------------------------------------- O */
+console.log('O. 19.2.3 — botão "E-mail" de um item do plano (enviar_id)');
+tenta('O', () => {
+  const para = e => h.EMAILS.filter(m => m.to === e);
+  irPara(2026, 12, 20, 8, 0);
+  const pO = novo('Paciente do Botão', 'botao@exemplo.test', '');
+  const pOutro = novo('Outro Paciente', 'outro@exemplo.test', '');
+  const idO = uuid(), idH = uuid(), idAlheio = uuid();
+  salvar(pO, { id: idO, tipo: 'escala', instrumento: 'URICA-A', recorrencia: 'uma_vez', data_inicio: '2026-12-23', hora: '18:00' }); // marcado para outro dia
+  salvar(pOutro, { id: idAlheio, tipo: 'auto', recorrencia: 'uma_vez', data_inicio: '2026-12-23', hora: '18:00' });
+  const linhasAntes = abaLem().getLastRow();
+  h.EMAILS.length = 0;
+  let r = prof('profLembrarAgora', { siglaPaciente: pO, dados: { enviar_id: idO } });
+  ok('O1 item marcado para outro dia: o e-mail sai agora, para o paciente, com a sigla da escala', r.ok && r.email_enviado === true && r.motivo === '' && h.EMAILS.length === 1 && h.EMAILS[0].to === 'botao@exemplo.test' && h.EMAILS[0].body.indexOf('Há uma escala aberta para você: URICA-A. Quando puder, responda.') !== -1, r);
+  ok('O2 nenhuma linha nova na aba; ultimo_email_em = agora, em texto', abaLem().getLastRow() === linhasAntes && celLem(idO, 'ultimo_email_em') === '2026-12-20 08:00' && celLem(idO, 'recorrencia') === 'uma_vez' && celLem(idO, 'data_inicio') === '2026-12-23', [abaLem().getLastRow(), linhasAntes, celLem(idO, 'ultimo_email_em')]);
+  const doPlano = (r.lembretes || []).filter(l => l.id === idO)[0];
+  ok('O3 a resposta traz o plano (com o último e-mail) e os itens do Início, como as outras ações', !!doPlano && doPlano.ultimo_email_em === '2026-12-20 08:00' && doPlano.ativo === 'Sim' && !!r.inicio && Array.isArray(r.inicio.lembretes) && r.inicio.tem_email === true, r);
+
+  salvar(pO, { id: idH, tipo: 'auto', recorrencia: 'uma_vez', data_inicio: '2026-12-20', hora: '09:00' }); // vence hoje, às 9h
+  h.EMAILS.length = 0;
+  r = prof('profLembrarAgora', { siglaPaciente: pO, dados: { enviar_id: idH } });
+  const g = gatilho(quando(2026, 12, 20, 9, 30));
+  ok('O4 enviado pelo botão, o gatilho do mesmo dia não manda de novo', r.email_enviado === true && para('botao@exemplo.test').length === 1 && celLem(idH, 'ultimo_email_em') === '2026-12-20 08:00', [r.motivo, g, para('botao@exemplo.test').length]);
+  h.EMAILS.length = 0;
+  const g2 = gatilho(quando(2026, 12, 23, 18, 30));
+  ok('O5 no dia marcado o gatilho manda normalmente (o envio pelo botão foi em outro dia)', para('botao@exemplo.test').length === 1 && celLem(idO, 'ultimo_email_em') === '2026-12-23 18:30', [g2, celLem(idO, 'ultimo_email_em')]);
+
+  irPara(2026, 12, 24, 8, 0);
+  h.EMAILS.length = 0;
+  const marcaAlheio = celLem(idAlheio, 'ultimo_email_em');
+  const nao = id => { const x = prof('profLembrarAgora', { siglaPaciente: pO, dados: { enviar_id: id } }); return x.ok === false && x.erro === 'Lembrete não encontrado.'; };
+  prof('profEncerrarLembrete', { siglaPaciente: pO, id: idH });
+  ok('O6 id que não existe, item de outro paciente e item encerrado: "Lembrete não encontrado." e nenhum e-mail', nao(uuid()) && nao(idAlheio) && nao(idH) && h.EMAILS.length === 0 && celLem(idAlheio, 'ultimo_email_em') === marcaAlheio);
+
+  const linhaO = h.linhaDe(h.abaPac, 'sigla', pO), colEmail = h.cab(h.abaPac).indexOf('email') + 1;
+  h.abaPac.getRange(linhaO, colEmail).setValue('');
+  h.memo();
+  r = prof('profLembrarAgora', { siglaPaciente: pO, dados: { enviar_id: idO } });
+  ok('O7 paciente sem e-mail no cadastro: não envia, motivo sem_email, a marca não muda', r.ok && r.email_enviado === false && r.motivo === 'sem_email' && h.EMAILS.length === 0 && celLem(idO, 'ultimo_email_em') === '2026-12-23 18:30', r);
+  h.abaPac.getRange(linhaO, colEmail).setValue("'botao@exemplo.test");
+  h.memo();
+  h.PROPS['lembretes:2026-12-24'] = String(S('LEMBRETES_DIA_MAX'));
+  r = prof('profLembrarAgora', { siglaPaciente: pO, dados: { enviar_id: idO } });
+  ok('O8 cota do dia esgotada: não envia, motivo cota, a marca não muda', r.ok && r.email_enviado === false && r.motivo === 'cota' && h.EMAILS.length === 0 && celLem(idO, 'ultimo_email_em') === '2026-12-23 18:30', r);
+  delete h.PROPS['lembretes:2026-12-24'];
+  r = prof('profLembrarAgora', { siglaPaciente: pO, dados: { enviar_id: idO } });
+  ok('O9 clicar de novo manda de novo (é um pedido do profissional) e a marca passa para agora', r.email_enviado === true && h.EMAILS.length === 1 && celLem(idO, 'ultimo_email_em') === '2026-12-24 08:00', r);
+  const id2 = uuid();
+  r = prof('profLembrarAgora', { siglaPaciente: pO, dados: { id: id2, tipo: 'auto' } });
+  ok('O10 o "Lembrar agora" de antes (sem enviar_id) continua criando o item e mandando o e-mail', r.ok && r.email_enviado === true && celLem(id2, 'recorrencia') === 'agora' && h.EMAILS.length === 2, r);
+});
+
 /* ---------------------------------------------------------------- T */
 console.log('T. Trava e crachá');
 tenta('T', () => {
@@ -367,7 +419,7 @@ tenta('T', () => {
   h.TRAVA.ocupada = false;
   ok('T2 com a trava ocupada o item não é gravado e a resposta é "ocupado"', r.ok === false && r.codigo === 'ocupado' && abaLem().getLastRow() === linhas, r);
   ok('T3 sem crachá nenhuma das quatro ações responde; crachá de paciente não grava plano', ['profSalvarLembrete', 'profEncerrarLembrete', 'profLembrarAgora', 'lerMeusLembretes'].every(a => h.post({ acao: a, token: 'cracha-inventado', siglaPaciente: P1 }).ok === false) && pac(P1, 'profSalvarLembrete', { siglaPaciente: P1, dados: { id: uuid(), tipo: 'auto', recorrencia: 'uma_vez', data_inicio: '2026-12-20', hora: '10:00' } }).ok === false && abaLem().getLastRow() === linhas);
-  ok('T4 o gatilho, o invólucro e a remoção do gatilho existem; instalarGatilhos cria o de hora em hora', /function enviarLembretes_\(/.test(fonteJs) && /function rodarLembretesAgora\(/.test(fonteJs) && /function removerGatilhoLembretes\(/.test(fonteJs) && /newTrigger\('enviarLembretes_'\)\s*\.timeBased\(\)\s*\.everyHours\(1\)/.test(fonteJs));
+  ok('T4 o gatilho, o invólucro e a remoção do gatilho existem; instalarGatilhos cria o de 5 em 5 minutos (19.2.3; era de hora em hora)', /function enviarLembretes_\(/.test(fonteJs) && /function rodarLembretesAgora\(/.test(fonteJs) && /function removerGatilhoLembretes\(/.test(fonteJs) && /newTrigger\('enviarLembretes_'\)\s*\.timeBased\(\)\s*\.everyMinutes\(5\)/.test(fonteJs) && !/everyHours/.test(fonteJs));
   ok('T5 VERSAO_PACOTE do 19.2.1 em diante, ou pacote de escalas publicado depois dele (17.8+; o número exato é conferido em backend_16_11.js)', /^(19\.2\.[1-9]\d*|19\.[3-9]|[2-9]\d\.|17\.([89]|\d{2}))/.test(S('VERSAO_PACOTE')), S('VERSAO_PACOTE')); // 17.8: as séries 17.x (escalas) e 19.x (profissional) alternam no deploy
   const inesperados = logServidor.filter(l => !/^_enviarEmail_: servico fora/.test(l) && !/^trava de gravacao: nao obtida/.test(l));
   ok('T6 o servidor não registrou nenhum erro além dos dois provocados (envio que falha, trava ocupada)', inesperados.length === 0, inesperados.slice(0, 5));
