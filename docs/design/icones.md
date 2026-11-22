@@ -99,3 +99,5 @@ Os nomes dos níveis seguem `HUMOR_NOMES` (16.5c, D6): Muito mal · Mal · Mais 
 | `#i-monitor` | 💻 | 1 |
 | `#i-refresh` | 🔄 | 1 |
 | `#i-pointer` | 👆 | 1 |
+
+**Pacote 18.12 (22/11/2026):** `#i-eye` e `#i-eye-off` — botão de mostrar e ocultar a senha (`vmcSenhaPreparar_`), sem emoji de origem. O sprite passa a ter 62 símbolos + `#i-marca`.

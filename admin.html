@@ -158,6 +158,18 @@ body {
   outline:none;
   border-color:var(--adm);
 }
+/* Pacote 18.12: olho da senha e aviso de Caps Lock (montado por admSenhaPreparar_) */
+.senha-campo { position:relative; display:block; }
+.senha-campo input { padding-right:48px; }
+.senha-olho {
+  position:absolute; top:0; right:0; width:44px; height:100%; min-height:44px;
+  display:flex; align-items:center; justify-content:center;
+  background:none; border:0; padding:0; color:var(--txt-m); cursor:pointer; border-radius:var(--rs);
+}
+.senha-olho:hover, .senha-olho[aria-pressed="true"] { color:var(--adm); }
+.senha-olho:focus-visible { outline:2px solid var(--adm); outline-offset:-2px; }
+.senha-olho svg { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.senha-caps { margin:6px 0 0; font-size:13px; font-weight:700; color:var(--txt-m); }
 .field .hint {
   font-size:11px;
   color:var(--txt-l);
@@ -593,6 +605,8 @@ a.btn-icon[aria-disabled="true"] { opacity:.5; cursor:not-allowed; }
 
       <!-- Pacote 18.1: login por e-mail; "Esqueci a senha" manda o link de redefinição (tela "Crie sua senha" no index-dev.html) -->
       <div id="admEntrar">
+        <!-- Pacote 18.12: formulário de verdade, para o gerenciador de senhas do navegador oferecer guardar e preencher -->
+        <form id="admFormLogin" novalidate onsubmit="admFazerLogin(); return false;">
         <div class="field">
           <label for="admEmail">E-mail</label>
           <input type="email" id="admEmail" autocomplete="username" inputmode="email" autocapitalize="off">
@@ -602,7 +616,8 @@ a.btn-icon[aria-disabled="true"] { opacity:.5; cursor:not-allowed; }
           <input type="password" id="admSenha" maxlength="128" autocomplete="current-password" placeholder="Sua senha">
         </div>
 
-        <button class="btn-primary" id="admBtnLogin" onclick="admFazerLogin()">Entrar</button>
+        <button class="btn-primary" id="admBtnLogin" type="submit">Entrar</button>
+        </form>
         <div class="adm-links"><button class="adm-link" type="button" onclick="admMostrarLogin('esqueci')">Esqueci a senha</button></div>
       </div>
       <div class="hidden" id="admEsqueci">
@@ -965,6 +980,7 @@ function admIrPara(idSecao) {
    LOGIN ADMIN
    ============================================================ */
 async function admFazerLogin() {
+  admSenhaOcultarTodas_(); // 18.12
   const email = document.getElementById('admEmail').value.trim().toLowerCase();
   const senha = document.getElementById('admSenha').value;
   const erroBox = document.getElementById('admLoginError');
@@ -1573,12 +1589,46 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// Enter no login dispara entrar
-['admEmail','admSenha'].forEach(id => {
-  document.getElementById(id).addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') admFazerLogin();
+// Pacote 18.12: o Enter no login envia pelo formulário (admFormLogin).
+// Olho da senha e aviso de Caps Lock em todo campo de senha; nada é guardado, o botão só troca o tipo do campo.
+var ADM_OLHO = '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>';
+function admSenhaMostrar_(campo, olho, mostrar) {
+  campo.type = mostrar ? 'text' : 'password';
+  olho.setAttribute('aria-pressed', mostrar ? 'true' : 'false');
+  olho.setAttribute('aria-label', mostrar ? 'Ocultar senha' : 'Mostrar senha');
+  olho.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + ADM_OLHO + (mostrar ? '<path d="M4 4l16 16"/>' : '') + '</svg>';
+}
+function admSenhaOcultarTodas_() {
+  document.querySelectorAll('.senha-campo').forEach(function (caixa) {
+    admSenhaMostrar_(caixa.querySelector('input'), caixa.querySelector('.senha-olho'), false);
   });
-});
+}
+(function admSenhaPreparar_() {
+  document.querySelectorAll('input[type="password"]').forEach(function (campo) {
+    var caixa = document.createElement('span');
+    caixa.className = 'senha-campo';
+    campo.parentNode.insertBefore(caixa, campo);
+    caixa.appendChild(campo);
+    var olho = document.createElement('button');
+    olho.type = 'button';
+    olho.className = 'senha-olho';
+    olho.addEventListener('click', function () { admSenhaMostrar_(campo, olho, campo.type === 'password'); });
+    caixa.appendChild(olho);
+    admSenhaMostrar_(campo, olho, false);
+    var caps = document.createElement('p');
+    caps.className = 'senha-caps hidden';
+    caps.setAttribute('role', 'status');
+    caps.textContent = 'Caps Lock ativado.';
+    caixa.parentNode.insertBefore(caps, caixa.nextSibling);
+    ['keydown', 'keyup'].forEach(function (ev) {
+      campo.addEventListener(ev, function (e) {
+        if (typeof e.getModifierState !== 'function') return;
+        caps.classList.toggle('hidden', !e.getModifierState('CapsLock'));
+      });
+    });
+    campo.addEventListener('blur', function () { caps.classList.add('hidden'); });
+  });
+})();
 
 </script>
 

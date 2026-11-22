@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — lote C da HumanTrack (processos transdiagnósticos e resultado): CFQ-7, DERS, PTCI, CORE-OM e BIS-11 (40 escalas, todas com ficha; fontes com página) — Pacote 17.8 (22/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — tela de login: botão de mostrar a senha, aviso de Caps Lock e formulário que o navegador reconhece para guardar a senha (40 escalas, todas com ficha) — Pacote 18.12 (22/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -1016,6 +1016,17 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .field select:disabled,
 .field textarea:disabled{background:var(--c-surface-sub);cursor:not-allowed;color:var(--c-ink-2);}
 .field textarea{min-height:80px;resize:vertical;font-family:var(--f-text);}
+/* Pacote 18.12: olho da senha e aviso de Caps Lock (todo campo de senha; montado por vmcSenhaPreparar_) */
+.senha-campo{position:relative;display:block;}
+.senha-campo input{padding-right:48px;}
+.senha-olho{
+  position:absolute;top:0;right:0;width:var(--hit-min);height:100%;min-height:var(--hit-min);
+  display:flex;align-items:center;justify-content:center;
+  background:none;border:0;padding:0;color:var(--c-ink-3);cursor:pointer;border-radius:var(--r-field);
+}
+.senha-olho:hover,.senha-olho[aria-pressed="true"]{color:var(--c-action);}
+.senha-olho:focus-visible{outline:2px solid var(--c-action);outline-offset:-2px;}
+.senha-caps{margin:6px 0 0;font:var(--t-body-sm);font-weight:600;color:var(--c-warn-ink);}
 .field-hint{font:var(--t-body-sm);color:var(--c-ink-3);margin-top:4px;}
 /* 18.7 (8.91): a dica "Preenchido automaticamente pelo CEP" acompanha só o campo travado; aberto para digitação, some */
 #f_estado:enabled ~ .field-hint,#f_cidade:enabled ~ .field-hint,#f_endereco_logradouro:enabled ~ .field-hint,#f_endereco_bairro:enabled ~ .field-hint{display:none;}
@@ -4225,6 +4236,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 <!-- Pacote 16.2 (T4): sprite de ícones (desenho próprio, grade 24, traço 1.75, currentColor). Uso: <svg class="ico"><use href="#i-nome"/></svg> -->
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
   <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M4 4l16 16"/></symbol>
   <symbol id="i-unlock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/></symbol>
   <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 5l2 2M14 8l2 2"/></symbol>
   <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2L12 3z"/><path d="M12 10v5M12 18h.01"/></symbol>
@@ -4389,6 +4402,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 
       <!-- Formulário aparece após seleção de tipo -->
       <div class="login-form-fields" id="loginFormFields">
+        <!-- Pacote 18.12: formulário de verdade, para o gerenciador de senhas do navegador oferecer guardar e preencher -->
+        <form id="formLogin" novalidate onsubmit="fazerLogin(); return false;">
         <div class="field">
           <label for="inputEmail">E-mail</label>
           <input type="email" id="inputEmail" autocomplete="username" inputmode="email" autocapitalize="off">
@@ -4398,7 +4413,8 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
           <input type="password" id="inputSenha" maxlength="128" placeholder="Sua senha" autocomplete="current-password">
         </div>
 
-        <button class="btn-primary" id="btnLogin" onclick="fazerLogin()">Entrar</button>
+        <button class="btn-primary" id="btnLogin" type="submit">Entrar</button>
+        </form>
         <div class="login-links"><button class="login-link" type="button" onclick="loginMostrar('esqueci')">Esqueci a senha</button></div>
       </div>
 
@@ -4688,11 +4704,11 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         </p>
         <div class="prof-cad-field">
           <label>Nova senha <span class="req">*</span></label>
-          <input type="password" id="p137SenhaInput1" maxlength="128" placeholder="Mínimo 8 caracteres">
+          <input type="password" id="p137SenhaInput1" maxlength="128" autocomplete="new-password" placeholder="Mínimo 8 caracteres">
         </div>
         <div class="prof-cad-field">
           <label>Confirmar nova senha <span class="req">*</span></label>
-          <input type="password" id="p137SenhaInput2" maxlength="128" placeholder="Digite a mesma senha de novo">
+          <input type="password" id="p137SenhaInput2" maxlength="128" autocomplete="new-password" placeholder="Digite a mesma senha de novo">
         </div>
       </div>
       <div class="p5-modal-acoes">
@@ -4810,15 +4826,15 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <div class="prof-cad-erro" id="pacSenhaErro"></div>
         <div class="prof-cad-field">
           <label>Senha atual <span class="req">*</span></label>
-          <input type="password" id="pacSenhaAtual" maxlength="128" placeholder="Digite sua senha atual">
+          <input type="password" id="pacSenhaAtual" maxlength="128" autocomplete="current-password" placeholder="Digite sua senha atual">
         </div>
         <div class="prof-cad-field">
           <label>Nova senha <span class="req">*</span></label>
-          <input type="password" id="pacSenhaNova" maxlength="128" placeholder="Mínimo 8 caracteres">
+          <input type="password" id="pacSenhaNova" maxlength="128" autocomplete="new-password" placeholder="Mínimo 8 caracteres">
         </div>
         <div class="prof-cad-field">
           <label>Confirmar nova senha <span class="req">*</span></label>
-          <input type="password" id="pacSenhaNova2" maxlength="128" placeholder="Repita a nova senha">
+          <input type="password" id="pacSenhaNova2" maxlength="128" autocomplete="new-password" placeholder="Repita a nova senha">
         </div>
       </div>
       <div class="p5-modal-acoes">
@@ -9195,6 +9211,7 @@ function selecionarTipoLogin(tipo) {
 }
 
 async function fazerLogin() {
+  vmcSenhaOcultarTodas_(); // 18.12
   const email = document.getElementById('inputEmail').value.trim().toLowerCase();
   const senha = document.getElementById('inputSenha').value;
   const erroBox = document.getElementById('loginError');
@@ -9497,6 +9514,7 @@ var LOGIN_ATIVAR_TIPO = '';
 var LOGIN_ATIVAR_EMAIL = '';
 
 async function loginSalvarSenha() {
+  vmcSenhaOcultarTodas_(); // 18.12
   var erroBox = document.getElementById('loginError');
   var s1 = document.getElementById('inputNovaSenha').value;
   var s2 = document.getElementById('inputNovaSenha2').value;
@@ -10980,6 +10998,7 @@ function p137FecharSenha() {
   document.getElementById('p137SenhaModal').classList.remove('show');
 }
 async function p137TrocarSenha() {
+  vmcSenhaOcultarTodas_(); // 18.12
   var s1 = document.getElementById('p137SenhaInput1').value.trim();
   var s2 = document.getElementById('p137SenhaInput2').value.trim();
   var erroEl = document.getElementById('p137SenhaErro');
@@ -11524,6 +11543,7 @@ function pacFecharModalSenha() {
 }
 
 async function pacAlterarSenha() {
+  vmcSenhaOcultarTodas_(); // 18.12
   var erroEl = document.getElementById('pacSenhaErro');
   erroEl.classList.remove('visivel');
 
@@ -13771,13 +13791,56 @@ window.addEventListener('DOMContentLoaded', () => {
   VMC_ATUALIZACAO.bloqueada = !!ativar; // 17.1.3: link de ativação (token de uso único) não é interrompido
   vmcConferirAtualizacao_('abertura'); // 17.1.3
 
-  document.getElementById('inputSenha').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') fazerLogin();
+  // Pacote 18.12: o Enter na senha envia pelo formulário (formLogin); no e-mail, com a senha vazia, leva à senha
+  document.getElementById('inputEmail').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !document.getElementById('inputSenha').value) {
+      e.preventDefault();
+      document.getElementById('inputSenha').focus();
+    }
   });
-  document.getElementById('inputEmail').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') document.getElementById('inputSenha').focus();
-  });
+  vmcSenhaPreparar_();
 });
+
+/* Pacote 18.12: olho da senha e aviso de Caps Lock em todo campo de senha da página.
+   Nada é guardado: o botão só troca o tipo do campo, e a senha volta a ficar oculta ao enviar. */
+function vmcSenhaPreparar_() {
+  document.querySelectorAll('input[type="password"]').forEach(function (campo) {
+    var caixa = document.createElement('span');
+    caixa.className = 'senha-campo';
+    campo.parentNode.insertBefore(caixa, campo);
+    caixa.appendChild(campo);
+    var olho = document.createElement('button');
+    olho.type = 'button';
+    olho.className = 'senha-olho';
+    olho.innerHTML = '<svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg>';
+    olho.addEventListener('click', function () { vmcSenhaMostrar_(campo, olho, campo.type === 'password'); });
+    caixa.appendChild(olho);
+    vmcSenhaMostrar_(campo, olho, false);
+    var caps = document.createElement('p');
+    caps.className = 'senha-caps hidden';
+    caps.setAttribute('role', 'status');
+    caps.textContent = 'Caps Lock ativado.';
+    caixa.parentNode.insertBefore(caps, caixa.nextSibling);
+    ['keydown', 'keyup'].forEach(function (ev) {
+      campo.addEventListener(ev, function (e) {
+        if (typeof e.getModifierState !== 'function') return;
+        caps.classList.toggle('hidden', !e.getModifierState('CapsLock'));
+      });
+    });
+    campo.addEventListener('blur', function () { caps.classList.add('hidden'); });
+  });
+}
+function vmcSenhaMostrar_(campo, olho, mostrar) {
+  campo.type = mostrar ? 'text' : 'password';
+  olho.setAttribute('aria-pressed', mostrar ? 'true' : 'false');
+  olho.setAttribute('aria-label', mostrar ? 'Ocultar senha' : 'Mostrar senha');
+  olho.querySelector('use').setAttribute('href', mostrar ? '#i-eye-off' : '#i-eye');
+}
+function vmcSenhaOcultarTodas_() {
+  document.querySelectorAll('.senha-campo').forEach(function (caixa) {
+    vmcSenhaMostrar_(caixa.querySelector('input'), caixa.querySelector('.senha-olho'), false);
+  });
+}
 
 /* ============================================================
    MÓDULO 2 v4 — JS
