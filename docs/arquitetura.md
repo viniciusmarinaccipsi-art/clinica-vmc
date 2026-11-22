@@ -1959,3 +1959,46 @@ Sessão cancelada só recebe o tipo `cancelamento`. Toda gravação do profissio
 `.cal-ev-presencial` em lilás e `.cal-ev-online` em verde.
 
 **Testes.** `scripts/testes/backend_14_4.js` (52 provas) e `..\PACOTE_14_4_fluxo.js` (82 por largura).
+
+## Agenda: endereço, Google Calendar, Meet e horários livres (Pacote 14.5 — 22/11/2026)
+
+**Espelho no Google Calendar (mão única).** O manifesto pede o escopo `calendar`; o acesso é pela API REST
+(`_calApi_`: `UrlFetchApp` + `ScriptApp.getOAuthToken()`), sem serviço avançado. `_ageGravar_` marca
+`gcal_sinc = pendente` em toda gravação de `Sessoes` que mude data, hora, duração, modalidade, crie a linha ou cancele.
+`_calSincronizar_(controle, profId, { ids, max, agora })` cria (`POST`), muda (`PATCH`, com queda para `POST` em 404) ou
+apaga (`DELETE`) o evento e grava `gcal_evento`, `meet_link` e a marca vazia; nunca lança. É chamada em `_ageResposta_`
+(até 3 por ação do profissional), nas gravações do paciente, em `_ageAvisarPaciente_` (para o link do Meet entrar no
+e-mail) e em `enviarAvisosSessao_` (até `CAL_SINC_RODADA` por profissional a cada 5 minutos: séries e o que falhou).
+Só roda com `google_calendar = Sim` na `Config_Agenda` e para o profissional que é o dono do script (`_calDoDono_`:
+o Calendar é o da conta Google que executa o servidor). A agenda (`gcal_nome`, padrão "Cogniativo: Agenda Consultório")
+é achada ou criada por `_calAgendaId_` e o id fica em `gcal_id`; agenda apagada no Google → o id é esquecido e ela
+renasce. Evento (`_calEvento_`): "Sessão de Psicoterapia — nome", `colorId` 1 (presencial) ou 2 (on-line), endereço da
+data em `location`, e, na on-line sem link, `conferenceData.createRequest` — um Meet por sessão. Sessão no passado ou
+cancelada sem evento só perde a marca. Ligar a chave marca as sessões futuras (`_calMarcarFuturas_`).
+
+**O `clasp run` não serve para o Calendar:** a função executa com o token de quem chama (credencial `run`), sem o
+escopo — a resposta é 403 `insufficientPermissions`. `autorizarGoogleCalendar` e qualquer prova com o Google de verdade
+rodam pelo editor (ou pelo gatilho e pelo Web App, que usam a autorização do dono).
+
+**Endereço.** Chaves `endereco`, `endereco_novo`, `endereco_novo_desde` (texto literal). `_ageEndereco_(cfg, data)`
+devolve o novo a partir da data; `_ageMapa_` monta o link do Google Maps. Vão na sessão lida (`endereco`, `mapa`), no
+e-mail (`linkExtra` do `_layoutEmail_`), no WhatsApp e no evento.
+
+**Evento em anexo.** `_ageIcs_` gera o iCalendar (horários em UTC, `UID` = id da sessão + `@cogniativo`, `SEQUENCE`
+crescente, título neutro "Sessão com <profissional>"); `_enviarEmail_` anexa `email.anexo` como `text/calendar`.
+Confirmação, série (todas as datas), remarcação e pedido aprovado: `METHOD:PUBLISH`; cancelamento: `METHOD:CANCEL`.
+
+**Horários livres.** `_calOcupados_` lê o `freeBusy` da agenda principal (5 min no cache do script) e `_ageLivres_`
+tira esses intervalos (`ctx.externos`), além do que já começou. `profLerHorariosLivres` (leitura, 14 dias, sem o prazo
+do paciente) alimenta "Ver horários livres" e "Escolher horário". O profissional pode marcar por cima do compromisso
+pessoal: `_ageOcupado_` não consulta o Google.
+
+**Horário ideal.** `pacientePedirAgenda` com `sugestao` e sem data grava o pedido sem horário; `profDecidirPedido`
+recebe `quando { data, hora }` (obrigatório nesse caso; opcional no pedido comum) e fecha o pedido com esse horário.
+
+**Tela.** `ageOndeHtml_`, `ageLivresHtml_`, `ageLivresRender_`, `ageLivresAbrir_`, `ageLivreEscolher_`,
+`agePedidoLivres_`, `sesIdealHtml_`, `sesIdealAbrir_`, `sesEnviarIdeal_`; cartão "Consultório e Google Calendar" na
+Grade (`graCfgEndereco`, `graCfgEnderecoNovo`, `graCfgEnderecoDesde`, `graCfgCalendar`).
+
+**Testes.** `scripts/testes/backend_14_5.js` (67 provas, com um Google Calendar simulado) e `..\PACOTE_14_5_fluxo.js`
+(35 por largura).
