@@ -7631,7 +7631,7 @@ function _ageLivres_(ctx, janelas, deIso, dias, agora, horas) {
       if (j.dia_semana !== dow) return;
       for (var t = j.ini; t + dur <= j.fim; t += dur) {
         var hora = ('0' + Math.floor(t / 60)).slice(-2) + ':' + ('0' + (t % 60)).slice(-2);
-        if (!_ageNoPrazo_(iso, hora, agora, prazo)) continue;
+        if (!_ageNoPrazo_(iso, hora, agora, prazo) || _ageMinutosAte_(iso, hora, agora) <= 0) continue; // 14.5: horario que ja comecou nunca e livre
         if (_ageOcupado_(ctx, iso, hora, dur, null)) continue;
         var abs = (ini + k) * 1440 + t;
         if (externos.some(function (e) { return abs < e.fim && e.ini < abs + dur; })) continue;

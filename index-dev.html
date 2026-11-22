@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: confirmação de presença por link, sino com os últimos eventos, lembretes de 48 e 24 horas, cartão "Avisar o paciente" com e-mail na hora e WhatsApp, atualização automática; presencial em lilás e on-line em verde (40 escalas, todas com ficha) — Pacote 14.4 (22/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) — Pacote 14.5 (22/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -4134,6 +4134,11 @@ button.cab-no-item{cursor:pointer;}
 .gra-cfg-item select{width:100%;padding:9px 10px;border:1.5px solid var(--c-line);border-radius:8px;
   font-family:var(--f-text);font-size:14px;background:var(--c-surface);}
 .gra-cfg-item select:focus{border-color:var(--c-action);}
+/* 14.5: endereço do consultório e Google Calendar */
+.gra-cfg-item input{width:100%;min-height:var(--hit-min);padding:9px 10px;border:1.5px solid var(--c-line);border-radius:8px;
+  font-family:var(--f-text);font-size:14px;background:var(--c-surface);color:var(--c-ink);}
+.gra-cfg-item input:focus{border-color:var(--c-action);}
+.gra-cfg-largo{grid-column:1/-1;}
 
 .gra-dia{border:1.5px solid var(--c-line);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:var(--c-surface);}
 .gra-dia.gra-off{background:var(--c-surface-sub);}
@@ -4311,6 +4316,13 @@ button.cab-no-item{cursor:pointer;}
 .ses-dia{text-align:left;margin-bottom:var(--s-3);}
 .ses-horas{display:flex;gap:6px;flex-wrap:wrap;}
 .ses-hora{min-width:68px;}
+/* 14.5: horários livres no painel do profissional, pedido com horário sugerido, onde a sessão acontece, horário ideal */
+.age-livres{margin:0 0 var(--s-3);}
+.age-livres-lista{max-height:260px;overflow-y:auto;border:1px solid var(--c-line);border-radius:var(--r-field);padding:10px 12px;margin-top:var(--s-2);background:var(--c-surface);}
+.age-onde{display:flex;align-items:center;gap:var(--s-2);flex-wrap:wrap;margin:0 0 var(--s-3);font:var(--t-body-sm);color:var(--c-ink-3);}
+.age-ped-livres{flex:1 1 100%;}
+.ses-ideal{margin:var(--s-3) 0;text-align:left;}
+.ses-ideal textarea{width:100%;min-height:72px;padding:9px 10px;border:1.5px solid var(--c-line);border-radius:8px;font:var(--t-body);background:var(--c-surface);color:var(--c-ink);}
 .ses-nav{display:flex;align-items:center;justify-content:space-between;gap:var(--s-2);margin:0 0 var(--s-3);font:var(--t-body);color:var(--c-ink);}
 #sec-sessoes{text-align:left;}
 @media(max-width:520px){.age-linha{grid-template-columns:1fr;}}
@@ -4727,6 +4739,34 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
             <option value="Sim">Ligado</option>
           </select>
           <div class="gra-hint">Desligado, nenhum e-mail de sessão é enviado, mesmo com as caixas marcadas na consulta.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gra-card">
+      <h3><svg class="ico" aria-hidden="true"><use href="#i-calendar"/></svg> Consultório e Google Calendar</h3>
+      <div class="gra-cfg-grid">
+        <div class="gra-cfg-item gra-cfg-largo">
+          <label for="graCfgEndereco">Endereço do consultório</label>
+          <input type="text" id="graCfgEndereco" maxlength="200" autocomplete="off">
+          <div class="gra-hint">Vai nas mensagens das sessões presenciais, com um link que abre no mapa.</div>
+        </div>
+        <div class="gra-cfg-item gra-cfg-largo">
+          <label for="graCfgEnderecoNovo">Novo endereço (se for mudar)</label>
+          <input type="text" id="graCfgEnderecoNovo" maxlength="200" autocomplete="off">
+        </div>
+        <div class="gra-cfg-item">
+          <label for="graCfgEnderecoDesde">Novo endereço vale a partir de</label>
+          <input type="date" id="graCfgEnderecoDesde">
+          <div class="gra-hint">As sessões desta data em diante usam o novo endereço.</div>
+        </div>
+        <div class="gra-cfg-item hidden" id="graCfgCalendarItem">
+          <label for="graCfgCalendar">Google Calendar</label>
+          <select id="graCfgCalendar">
+            <option value="Nao" selected>Desligado</option>
+            <option value="Sim">Ligado</option>
+          </select>
+          <div class="gra-hint">Ligado, cada sessão aparece na agenda "Cogniativo: Agenda Consultório" do seu Google e as sessões on-line ganham um link do Meet. Os compromissos da sua agenda pessoal deixam de ser oferecidos aos pacientes.</div>
         </div>
       </div>
     </div>
@@ -23002,6 +23042,12 @@ async function graCarregar() {
   }
 
   document.getElementById('graCfgAvisos').value = String(cfg.avisos_sessao || '').toLowerCase() === 'sim' ? 'Sim' : 'Nao'; // 14.3
+  // 14.5: endereço do consultório e espelho no Google Calendar (a chave só aparece para a conta que tem o Calendar)
+  document.getElementById('graCfgEndereco').value = String(cfg.endereco || '');
+  document.getElementById('graCfgEnderecoNovo').value = String(cfg.endereco_novo || '');
+  document.getElementById('graCfgEnderecoDesde').value = String(cfg.endereco_novo_desde || '');
+  document.getElementById('graCfgCalendar').value = String(cfg.google_calendar || '').toLowerCase() === 'sim' ? 'Sim' : 'Nao';
+  document.getElementById('graCfgCalendarItem').classList.toggle('hidden', resp.calendar_disponivel !== true);
 
   // Grade -> estado por dia (dia ativo se possui ao menos uma janela com ativo=sim)
   graEstado = graEstadoVazio_();
@@ -23151,7 +23197,11 @@ async function graSalvar() {
     config: {
       duracao_slot_min: 60,
       antecedencia_min_horas: Number(document.getElementById('graCfgAntecedencia').value),
-      avisos_sessao: document.getElementById('graCfgAvisos').value // 14.3
+      avisos_sessao: document.getElementById('graCfgAvisos').value, // 14.3
+      endereco: document.getElementById('graCfgEndereco').value, // 14.5
+      endereco_novo: document.getElementById('graCfgEnderecoNovo').value,
+      endereco_novo_desde: document.getElementById('graCfgEnderecoDesde').value,
+      google_calendar: document.getElementById('graCfgCalendarItem').classList.contains('hidden') ? undefined : document.getElementById('graCfgCalendar').value
     },
     grade: grade
   });
@@ -23499,6 +23549,8 @@ function ageFeriado_(iso) { return (AGE.agenda && AGE.agenda.feriados && AGE.age
 
 /* ---------- pedidos dos pacientes (Agenda e Início) ---------- */
 function agePedidoTexto_(p) {
+  if (!p.data) return esc(p.nome) + (p.tipo === 'repor' ? ' pede reposição da sessão de ' + esc(lemDataBR_(p.sessao_data, true)) : ' pede remarcar a sessão de ' + esc(lemDataBR_(p.sessao_data, true)) + ' às ' + esc(p.sessao_hora)) +
+    ' e sugere: “' + esc(p.sugestao || '') + '”'; // 14.5: nenhum horário livre serviu
   return p.tipo === 'repor'
     ? esc(p.nome) + ' pede reposição da sessão de ' + esc(lemDataBR_(p.sessao_data, true)) + ', em ' + esc(lemDataBR_(p.data, true)) + ' às ' + esc(p.hora) + '.'
     : esc(p.nome) + ' pede remarcar a sessão de ' + esc(lemDataBR_(p.sessao_data, true)) + ' às ' + esc(p.sessao_hora) + ' para ' + esc(lemDataBR_(p.data, true)) + ' às ' + esc(p.hora) + '.';
@@ -23506,7 +23558,7 @@ function agePedidoTexto_(p) {
 function agePedidosHtml_(pedidos, id) {
   var linhas = pedidos.map(function (p) {
     return '<div class="age-ped" data-pedido="' + esc(p.id) + '"><span class="age-ped-texto">' + agePedidoTexto_(p) + '</span>' +
-      '<span class="age-ped-acoes"><button type="button" class="prof-lem-btn" data-decidir="sim" onclick="ageDecidir_(this)">Aprovar</button>' +
+      '<span class="age-ped-acoes"><button type="button" class="prof-lem-btn" data-decidir="' + (p.data ? 'sim' : 'escolher') + '" onclick="ageDecidir_(this)">' + (p.data ? 'Aprovar' : 'Escolher horário') + '</button>' +
       '<button type="button" class="prof-lem-btn" data-decidir="nao" onclick="ageDecidir_(this)">Recusar</button></span></div>';
   }).join('');
   return '<section class="prof-bloco" id="' + id + '"><h3 class="prof-bloco-titulo">Pedidos dos pacientes</h3>' +
@@ -23528,10 +23580,12 @@ function profRenderPedidos_(ativos) {
 async function ageDecidir_(btn) {
   var linha = btn.closest('.age-ped'), bloco = btn.closest('.prof-bloco');
   if (!linha || AGE.ocupado) return;
-  var aprovar = btn.dataset.decidir === 'sim', idBloco = bloco.id;
+  if (btn.dataset.decidir === 'escolher') { agePedidoLivres_(linha); return; } // 14.5: o profissional escolhe o horário
+  var aprovar = btn.dataset.decidir !== 'nao', idBloco = bloco.id;
+  var quando = btn.dataset.data ? { data: btn.dataset.data, hora: btn.dataset.hora } : null;
   AGE.ocupado = true; btn.disabled = true;
   if (!calDataRef) { calDataRef = new Date(); calDataRef.setHours(0, 0, 0, 0); }
-  var r = await chamarServidor('profDecidirPedido', { id: linha.dataset.pedido, aprovar: aprovar, periodo: agePeriodo_() });
+  var r = await chamarServidor('profDecidirPedido', { id: linha.dataset.pedido, aprovar: aprovar, periodo: agePeriodo_(), quando: quando });
   AGE.ocupado = false;
   var texto = !r.ok ? (r.erro || 'Não foi possível salvar agora.')
     : (r.aprovado ? 'Pedido aprovado. Sessão marcada para ' + lemDataBR_(r.data, true) + ' às ' + r.hora + '.' : 'Pedido recusado.');
@@ -23549,10 +23603,12 @@ function ageWhatsLink_(tipo, s, anterior) {
   var pac = iniPrimeiroNome(s.nome);
   var quando = ageDiaNome_(s.data, true) + ', ' + lemDataBR_(s.data, true) + ', às ' + s.hora + ' (' + ageModNome_(s.modalidade) + ')';
   var confirmar = ' Para confirmar a presença, toque aqui: ' + (s.link_confirmar || VMC_SITE_URL); // 14.4
-  var corpo = tipo === 'lembrete' ? 'Lembrete da nossa sessão: ' + quando + '.' + confirmar
+  // 14.5: endereço com o link do mapa (presencial) ou a sala do Meet (on-line)
+  var onde = s.modalidade === 'online' ? (s.meet_link ? ' Link da sessão on-line: ' + s.meet_link : '') : (s.endereco ? ' Endereço: ' + s.endereco + ' (mapa: ' + s.mapa + ')' : '');
+  var corpo = tipo === 'lembrete' ? 'Lembrete da nossa sessão: ' + quando + '.' + onde + confirmar
     : (tipo === 'cancelamento' ? 'A sessão de ' + lemDataBR_(s.data, true) + ' às ' + s.hora + ' foi cancelada. Para marcar outra data: ' + VMC_SITE_URL
-    : (tipo === 'remarcacao' ? 'Nossa sessão passou de ' + lemDataBR_(anterior.data, true) + ' às ' + anterior.hora + ' para ' + lemDataBR_(s.data, true) + ' às ' + s.hora + ' (' + ageModNome_(s.modalidade) + ').'
-    : 'Sua sessão está marcada para ' + quando + '.' + confirmar));
+    : (tipo === 'remarcacao' ? 'Nossa sessão passou de ' + lemDataBR_(anterior.data, true) + ' às ' + anterior.hora + ' para ' + lemDataBR_(s.data, true) + ' às ' + s.hora + ' (' + ageModNome_(s.modalidade) + ').' + onde
+    : 'Sua sessão está marcada para ' + quando + '.' + onde + confirmar));
   var msg = 'Olá' + (pac ? ', ' + pac : '') + '! ' + (quem ? 'Aqui é ' + artigo + ' ' + quem + '. ' : '') + corpo;
   return 'https://wa.me/55' + String(s.telefone || '').replace(/\D/g, '') + '?text=' + encodeURIComponent(msg);
 }
@@ -23611,6 +23667,7 @@ function ageAbrirReposicao_(orig) {
   p.sigla = orig.sigla; p.nome = orig.nome; p.modalidade = orig.modalidade; p.dur = orig.duracao_min; p.valor = orig.valor || '';
   p.reposicao_de = orig.id; p.repoeData = orig.data;
   ageMostrar_(p);
+  ageLivresAbrir_(); // 14.5: a reposição começa pela lista de horários livres
 }
 function ageFecharDeVez_() {
   document.getElementById('ageModal').classList.remove('show');
@@ -23747,7 +23804,7 @@ function ageRender_() {
   }
   var marcas = '';
   if (s) {
-    marcas = [s.reposicao_de ? 'Reposição' : '', s.reposta_em ? 'Reposta em ' + lemDataBR_(s.reposta_em, true) : '', s.confirmada ? 'Confirmada pelo paciente' : '', s.serie_id ? 'Série' : '']
+    marcas = [s.reposicao_de ? 'Reposição' : '', s.reposta_em ? 'Reposta em ' + lemDataBR_(s.reposta_em, true) : '', s.confirmada ? 'Confirmada pelo paciente' : '', s.serie_id ? 'Série' : '', s.no_calendar ? 'No Google Calendar' : '']
       .filter(String).map(function (t) { return '<span class="cal-ev-marca">' + esc(t) + '</span>'; }).join(' ');
   }
   var situacao = s ? ageCampo_('Situação', '<select id="ageSit" onchange="ageSituacao_()"><option value="">Sem marcação</option><option value="realizada">Consulta realizada</option><option value="falta">Não compareceu</option></select>', 'ageSit') +
@@ -23758,9 +23815,10 @@ function ageRender_() {
     '<button type="button" class="p5-btn p5-btn-secondary" id="ageRepEditar" onclick="ageRepAbrir_()">Editar</button></div><p class="age-dica" id="ageRepResumo"></p>', 'ageRepSel');
   corpo.innerHTML = abas +
     ageCampo_('Paciente', paciente, p.sigla ? '' : 'ageBusca') +
-    (marcas ? '<div class="age-marcas">' + marcas + '</div>' : '') +
+    (marcas ? '<div class="age-marcas">' + marcas + '</div>' : '') + ageOndeHtml_(s) +
     (p.reposicao_de ? '<p class="age-dica">A reposição usa o valor desta sessão e não gera cobrança nova.</p>' : '') +
     '<div class="age-linha">' + ageCampo_('Data', '<input type="date" id="ageData" onchange="ageAvisosPainel_()">', 'ageData') + ageCampo_('Hora', '<input type="time" id="ageHoraCampo" onchange="ageAvisosPainel_()">', 'ageHoraCampo') + '</div>' +
+    ((novo || (s && s.estado === 'agendada')) ? '<div class="age-livres" id="ageLivresBox"></div>' : '') +
     repeticao + situacao +
     '<div class="age-linha">' + ageCampo_('Modalidade', '<select id="ageMod"><option value="presencial">Presencial</option><option value="online">On-line</option></select>', 'ageMod') +
       ageCampo_('Duração (min)', '<input type="number" id="ageDur" min="10" max="480" step="5" inputmode="numeric" onchange="ageAvisosPainel_()">', 'ageDur') + '</div>' +
@@ -23782,6 +23840,7 @@ function ageRender_() {
   if (document.getElementById('ageEscopo')) document.getElementById('ageEscopo').value = p.escopo;
   if (document.getElementById('ageBusca')) { document.getElementById('ageBusca').value = p.busca; ageBuscar_(); }
   ageAvisosPainel_();
+  ageLivresRender_();
   acoes.innerHTML = ageBtn_('Fechar', 'ageFechar()', false) +
     ((s && s.estado === 'agendada') ? ageBtn_('Cancelar consulta', 'ageVista_(\'cancelar\')', false, 'ageBtnCancelar') : '') +
     ageBtn_(novo ? 'Criar consulta' : 'Salvar', 'ageSalvar_()', true, 'ageBtnOk');
@@ -24056,7 +24115,8 @@ function sesLinha_(x, comAcoes) {
   var ped = '';
   if (x.pedido) {
     var quando = esc(lemDataBR_(x.pedido.data, true)) + ' às ' + esc(x.pedido.hora);
-    ped = x.pedido.estado === 'pendente' ? (x.pedido.tipo === 'repor' ? 'Reposição pedida para ' + quando + ' — aguardando resposta' : 'Remarcação pedida para ' + quando + ' — aguardando resposta')
+    ped = (x.pedido.estado === 'pendente' && !x.pedido.data) ? (x.pedido.tipo === 'repor' ? 'Reposição pedida' : 'Remarcação pedida') + ' com o horário que você sugeriu — aguardando resposta' // 14.5
+      : x.pedido.estado === 'pendente' ? (x.pedido.tipo === 'repor' ? 'Reposição pedida para ' + quando + ' — aguardando resposta' : 'Remarcação pedida para ' + quando + ' — aguardando resposta')
       : (x.pedido.estado === 'aprovado' ? 'Pedido aprovado' : 'Pedido recusado');
   }
   var acoes = '';
@@ -24066,8 +24126,11 @@ function sesLinha_(x, comAcoes) {
       (x.pode_cancelar ? '<button type="button" class="prof-lem-btn" data-ses="cancelar" onclick="sesPedirCancelar_(this)">Cancelar</button>' : '');
   }
   if (x.pode_repor) acoes += '<button type="button" class="prof-lem-btn" data-ses="repor" onclick="sesEscolherHorario_(\'repor\', this)">Pedir reposição</button>';
+  // 14.5: onde a sessão acontece — sala do Meet (on-line) ou endereço com o link do mapa (presencial)
+  if (comAcoes && x.meet_link) acoes = '<a class="prof-lem-btn" data-ses="meet" href="' + esc(x.meet_link) + '" target="_blank" rel="noopener">Entrar na sessão on-line</a>' + acoes;
+  if (comAcoes && x.mapa) acoes += '<a class="prof-lem-btn" data-ses="mapa" href="' + esc(x.mapa) + '" target="_blank" rel="noopener">Abrir no mapa</a>';
   return '<li class="ses-item" data-sessao="' + esc(x.id) + '"><div class="ses-quando">' + esc(ageQuandoCurto_(x.data, x.hora)) + ' · ' + ageModNome_(x.modalidade) + '</div>' +
-    (marcas ? '<div class="age-marcas">' + marcas + '</div>' : '') + (ped ? '<div class="age-dica">' + ped + '</div>' : '') +
+    (marcas ? '<div class="age-marcas">' + marcas + '</div>' : '') + ((comAcoes && x.endereco) ? '<div class="age-dica" data-ses="endereco">' + esc('Endereço: ' + x.endereco) + '</div>' : '') + (ped ? '<div class="age-dica">' + ped + '</div>' : '') +
     (acoes ? '<div class="ses-acoes">' + acoes + '</div>' : '') + '</li>';
 }
 function sesRender_() {
@@ -24076,7 +24139,7 @@ function sesRender_() {
   var topo = (SES.msg ? '<p class="age-msg" id="sesMsg" role="status">' + esc(SES.msg) + '</p>' : '') + (SES.erro ? '<p class="age-msg age-msg-erro" id="sesErro" role="alert">' + esc(SES.erro) + '</p>' : '');
   if (!SES.dados) { el.innerHTML = topo + (SES.erro ? '' : '<p class="age-dica">Carregando…</p>'); return; }
   if (SES.vista === 'cancelar') { sesRenderCancelar_(el, topo); return; }
-  if (SES.vista !== 'lista') { sesRenderHorarios_(el, topo); return; }
+  if (SES.vista !== 'lista') { sesRenderHorarios_(el, topo); var ti = document.getElementById('sesIdealTexto'); if (ti) ti.value = SES.idealTexto || ''; return; }
   var todas = SES.dados.sessoes || [];
   var proximas = todas.filter(function (x) { return x.estado === 'agendada' && x.futura; });
   var anteriores = todas.filter(function (x) { return !(x.estado === 'agendada' && x.futura); }).reverse().slice(0, 30);
@@ -24111,7 +24174,7 @@ function sesVoltar_() { SES.vista = 'lista'; SES.erro = ''; SES.livres = null; S
 /* Escolha de horário: agendar, pedir remarcação ou pedir reposição usam a mesma lista de horários livres */
 function sesEscolherHorario_(tipo, btn) {
   var x = btn ? sesSessao_(btn) : null;
-  SES.vista = tipo; SES.alvo = x ? x.id : ''; SES.msg = ''; SES.erro = ''; SES.escolhido = null; SES.livres = null;
+  SES.vista = tipo; SES.alvo = x ? x.id : ''; SES.msg = ''; SES.erro = ''; SES.escolhido = null; SES.livres = null; SES.ideal = false; SES.idealTexto = '';
   SES.de = (SES.dados && SES.dados.hoje) || lemHojeIso_(); SES.idEnvio = vmcNovoIdEnvio_();
   sesRender_();
   sesCarregarLivres_();
@@ -24156,7 +24219,7 @@ function sesRenderHorarios_(el, topo) {
     '<div class="ses-nav"><button type="button" class="cal-btn" id="sesSemAnt" aria-label="Semana anterior" onclick="sesSemana_(-1)">‹</button>' +
     '<strong>Horários livres · ' + esc(lemDataBR_(SES.de, true) + ' – ' + lemDataBR_(fim, true)) + '</strong>' +
     '<button type="button" class="cal-btn" id="sesSemProx" aria-label="Próxima semana" onclick="sesSemana_(1)">›</button></div>' +
-    corpo + mod +
+    corpo + mod + sesIdealHtml_() +
     '<div class="ses-acoes"><button type="button" class="p5-btn p5-btn-secondary" onclick="sesVoltar_()">Voltar</button>' +
     (e ? '<button type="button" class="p5-btn p5-btn-primary" id="sesBtnEnviar" onclick="sesEnviar_()">' + (SES.vista === 'agendar' ? 'Agendar' : 'Enviar pedido') + '</button>' : '') + '</div>';
 }
@@ -24227,6 +24290,95 @@ async function ageEmailAgora_() {
   if (el) { el.textContent = texto; el.classList.remove('hidden'); }
 }
 
+/* ============================================================
+   PACOTE 14.5 — onde a sessão acontece (Meet ou endereço), horários livres do profissional,
+   pedido com horário sugerido e horário ideal do paciente
+   ============================================================ */
+
+/* Consulta aberta: sala do Meet (on-line) ou endereço com o link do mapa (presencial) */
+function ageOndeHtml_(s) {
+  if (!s || s.estado !== 'agendada') return '';
+  if (s.meet_link) return '<div class="age-onde"><a class="prof-lem-btn" id="ageBtnMeet" href="' + esc(s.meet_link) + '" target="_blank" rel="noopener">Abrir o Meet</a></div>';
+  if (s.endereco) return '<div class="age-onde"><span>' + esc('Endereço: ' + s.endereco) + '</span><a class="prof-lem-btn" id="ageBtnMapa" href="' + esc(s.mapa) + '" target="_blank" rel="noopener">Abrir no mapa</a></div>';
+  return '';
+}
+
+/* Lista de horários livres agrupada por dia (a mesma aparência da tela do paciente); `fn` é o onclick de cada horário */
+function ageLivresHtml_(livres, fn, escolhido) {
+  var porDia = {}, ordem = [];
+  livres.forEach(function (x) { if (!porDia[x.data]) { porDia[x.data] = []; ordem.push(x.data); } porDia[x.data].push(x); });
+  return ordem.map(function (iso) {
+    return '<div class="ses-dia"><div class="ses-quando">' + esc(ageDiaNome_(iso) + ', ' + lemDataBR_(iso, true)) + '</div><div class="ses-horas">' + porDia[iso].map(function (x) {
+      var sel = escolhido && escolhido.data === x.data && escolhido.hora === x.hora;
+      return '<button type="button" class="prof-lem-dia ses-hora" aria-pressed="' + (sel ? 'true' : 'false') + '" data-data="' + x.data + '" data-hora="' + x.hora + '" data-mods="' + x.modalidades.join(',') + '" onclick="' + fn + '">' + x.hora + '</button>';
+    }).join('') + '</div></div>';
+  }).join('');
+}
+
+/* Painel da consulta: "Ver horários livres" preenche a data e a hora; para outro horário, os campos continuam valendo */
+function ageLivresRender_() {
+  var p = AGE.p, el = document.getElementById('ageLivresBox');
+  if (!p || !el) return;
+  if (!p.livresAberto) { el.innerHTML = '<button type="button" class="prof-lem-btn" id="ageBtnLivres" onclick="ageLivresAbrir_()">Ver horários livres</button>'; return; }
+  if (!p.livres) { el.innerHTML = '<p class="age-dica">Carregando…</p>'; return; }
+  el.innerHTML = '<p class="age-dica" id="ageLivresDica">' + (p.livres.length ? 'Toque num horário livre para preencher a data e a hora. Para outro horário, use os campos acima.' : 'Nenhum horário livre nos próximos 14 dias. Use os campos acima para escolher a data e a hora.') + '</p>' +
+    (p.livres.length ? '<div class="age-livres-lista" id="ageLivresLista">' + ageLivresHtml_(p.livres, 'ageLivreEscolher_(this)', { data: p.data, hora: p.hora }) + '</div>' : '');
+}
+async function ageLivresAbrir_() {
+  var p = AGE.p;
+  if (!p || p.livresAberto) return;
+  ageLer_();
+  p.livresAberto = true; p.livres = null;
+  ageLivresRender_();
+  var r = await chamarServidor('profLerHorariosLivres', { de: lemHojeIso_() });
+  if (AGE.p !== p) return;
+  p.livres = (r && r.ok && r.livres) || [];
+  if (AGE.vista === 'painel') ageLivresRender_();
+}
+function ageLivreEscolher_(btn) {
+  var p = AGE.p;
+  if (!p) return;
+  document.getElementById('ageData').value = btn.dataset.data;
+  document.getElementById('ageHoraCampo').value = btn.dataset.hora;
+  var mods = String(btn.dataset.mods || '').split(',');
+  if (mods.length === 1 && mods[0] && !p.sessao) document.getElementById('ageMod').value = mods[0];
+  ageAvisosPainel_();
+  ageLivresRender_();
+}
+
+/* Pedido com horário sugerido: "Escolher horário" abre os horários livres na própria linha; tocar num deles aprova nele */
+async function agePedidoLivres_(linha) {
+  var caixa = linha.querySelector('.age-ped-livres');
+  if (caixa) { caixa.remove(); return; }
+  caixa = document.createElement('div');
+  caixa.className = 'age-ped-livres';
+  caixa.innerHTML = '<p class="age-dica">Carregando…</p>';
+  linha.appendChild(caixa);
+  var r = await chamarServidor('profLerHorariosLivres', { de: lemHojeIso_() });
+  if (!caixa.isConnected) return;
+  var livres = (r && r.ok && r.livres) || [];
+  caixa.innerHTML = livres.length
+    ? '<p class="age-dica">Toque no horário para remarcar nele. O paciente é avisado.</p><div class="age-livres-lista">' + ageLivresHtml_(livres, 'ageDecidir_(this)', null) + '</div>'
+    : '<p class="age-dica">Nenhum horário livre nos próximos 14 dias.</p>';
+}
+
+/* Paciente: nenhum horário livre serve — escreve o horário ideal e o profissional responde com um horário */
+function sesIdealHtml_() {
+  if (SES.vista !== 'remarcar' && SES.vista !== 'repor') return '';
+  if (!SES.ideal) return '<div class="ses-ideal"><button type="button" class="age-link" id="sesBtnIdeal" onclick="sesIdealAbrir_()">Nenhum horário serve?</button></div>';
+  return '<div class="ses-ideal"><div class="prof-cad-field"><label for="sesIdealTexto">Qual seria o horário ideal para você?</label>' +
+    '<textarea id="sesIdealTexto" maxlength="200" rows="2" oninput="SES.idealTexto = this.value"></textarea></div>' +
+    '<p class="age-dica">' + esc(sesProf_() + ' recebe a sua sugestão e responde com um horário.') + '</p>' +
+    '<button type="button" class="p5-btn p5-btn-primary" id="sesBtnEnviarIdeal" onclick="sesEnviarIdeal_()">Enviar sugestão</button></div>';
+}
+function sesIdealAbrir_() { SES.ideal = true; SES.escolhido = null; SES.erro = ''; sesRender_(); var t = document.getElementById('sesIdealTexto'); if (t) t.focus(); }
+function sesEnviarIdeal_() {
+  var texto = String(SES.idealTexto || '').replace(/\s+/g, ' ').trim();
+  if (!texto) { SES.erro = 'Escreva o horário ideal.'; sesRender_(); return; }
+  sesEnviarAcao_('pacientePedirAgenda', { dados: { id: SES.idEnvio, tipo: SES.vista === 'repor' ? 'repor' : 'remarcar', sessao_id: SES.alvo, sugestao: texto } },
+    'Pedido enviado. Você será avisado quando for respondido.');
+}
+
 /* ---------- sino: últimos eventos dos pacientes ---------- */
 function ageHaQuanto_(em) {
   var m = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})/.exec(String(em || ''));
@@ -24244,6 +24396,7 @@ function ageEventoTexto_(e) {
   if (e.tipo === 'agendou') return nome + ' agendou uma sessão para ' + quando + '.';
   if (e.tipo === 'cancelou') return nome + ' cancelou a sessão de ' + quando + '.';
   if (e.tipo === 'repor') return nome + ' pediu reposição da sessão de ' + esc(lemDataBR_(e.data, true)) + '.';
+  if (e.sem_horario) return nome + ' pediu remarcação da sessão de ' + quando + ' e sugeriu um horário.'; // 14.5
   return nome + ' pediu remarcação para ' + quando + '.';
 }
 function ageEventosHtml_(eventos, vistosAte) {

@@ -252,7 +252,7 @@ tenta('O', () => {
   ok('O3 a consulta ao Google fica 5 minutos no cache', G.chamadas.filter(c => c.u === '/freeBusy').length === n);
   r = prof('profLerHorariosLivres', { de: '2026-11-25' });
   const hoje = r.livres.filter(x => x.data === '2026-11-25').map(x => x.hora), d16 = r.livres.filter(x => x.data === '2026-12-08').map(x => x.hora);
-  ok('O4 o profissional recebe 14 dias de horários livres, sem o prazo de 24 horas do paciente', r.ok === true && r.dias === 14 && hoje.indexOf('15:00') !== -1 && hoje.indexOf('13:00') === -1 && r.livres.every(x => x.data >= '2026-11-25' && x.data <= '2026-12-08'), hoje);
+  ok('O4 o profissional recebe 14 dias de horários livres, sem o prazo de 24 horas do paciente', r.ok === true && r.dias === 14 && hoje.indexOf('15:00') !== -1 && hoje.indexOf('14:00') === -1 && hoje.indexOf('13:00') === -1 && r.livres.every(x => x.data >= '2026-11-25' && x.data <= '2026-12-08'), hoje);
   ok('O5 a lista do profissional também tira sessões marcadas (terça 08/12 às 16:00 é da série)', d16.indexOf('16:00') === -1 && d16.indexOf('17:00') !== -1, d16);
   CACHE.clear();
   const idX = uuid();
