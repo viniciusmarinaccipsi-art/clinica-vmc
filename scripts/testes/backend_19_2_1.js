@@ -4,7 +4,8 @@
    em que a suíte roda (o portão do GitHub roda em UTC; as datas são montadas por componentes locais).
    Blocos: R regra de datas (pura, "agora" por parâmetro) · A aba e ações do profissional · C paciente respondeu ·
    I blocos do Início na lista · P leitura do paciente · E gatilho e e-mail (duas rodadas) · L lembrar agora ·
-   X exclusão · G 8.23 (ind_total_auto sem checagem sozinha) · T trava e crachá.
+   X exclusão · G 8.23 (ind_total_auto sem checagem sozinha) · N 19.2.2 (sigla da escala e texto do "Outro" no e-mail) ·
+   T trava e crachá.
    Uso: node scripts/testes/backend_19_2_1.js */
 'use strict';
 const fs = require('fs');
@@ -201,7 +202,8 @@ tenta('E', () => {
   const r3 = gatilho(quando(2026, 11, 27, 23, 55));
   ok('E5 segunda rodada no mesmo dia: ZERO e-mail (e a terceira também)', r.enviados === 0 && r3.enviados === 0 && h.EMAILS.length === 3, [r, r3]);
   const corpo = h.EMAILS.map(m => m.body + ' ' + m.htmlBody + ' ' + m.subject).join(' ');
-  ok('E6 nenhum dado clínico no e-mail: nem o texto do "Outro", nem nome de escala', corpo.indexOf('respiração') === -1 && corpo.indexOf('SOMA') === -1 && corpo.indexOf('PHQ') === -1 && corpo.indexOf('GAD') === -1);
+  // 19.2.2 (decisão do usuário, 22/11/2026): o texto do "Outro" passou a aparecer no corpo do e-mail; o assunto continua genérico
+  ok('E6 o texto do "Outro" aparece no corpo do e-mail dele e em nenhum assunto', corpo.indexOf('Combinado de hoje: =SOMA(1;2) treino de respiração') !== -1 && h.EMAILS.every(m => !/respira|SOMA|PHQ|GAD/.test(m.subject)));
   const m = h.EMAILS.filter(x => x.subject === 'Hora do seu registro no COGNIATIVO' && x.to === 'p1@exemplo.test')[0];
   ok('E7 texto aprovado, primeiro nome do paciente, assinatura do profissional, link do site e a linha sob o botão', m.body.indexOf('Olá, Paciente.') !== -1 && m.body.indexOf('Este é o lembrete que combinamos para hoje. Quando puder, registre como foi o seu dia: leva poucos minutos e ajuda a próxima sessão.') !== -1 && m.body.indexOf('Este lembrete faz parte do plano combinado nas sessões. Para mudar o horário ou parar de receber, é só avisar.') !== -1 && m.body.indexOf('Dra. Nova de Prova') !== -1 && m.body.indexOf(S('SITE_URL')) !== -1 && m.htmlBody.indexOf('Fazer o registro de hoje') !== -1 && m.htmlBody.indexOf('Abre o COGNIATIVO; se a sessão tiver expirado, é só entrar de novo.') !== -1 && m.name === 'COGNIATIVO', m.body);
   h.EMAILS.length = 0;
@@ -319,6 +321,40 @@ tenta('G', () => {
   ok('G5 recálculo direto (o que a função temporária do pacote roda em todos): 3 linhas na aba, total 2', calc.ind_total_auto === 2 && h.planilhaDe(s).getSheetByName('Automonitoramento').getLastRow() - 1 === 3, calc);
 });
 
+/* ---------------------------------------------------------------- N */
+console.log('N. 19.2.2 — a sigla da escala e o texto do "Outro" no e-mail');
+tenta('N', () => {
+  const montar = S('montarEmailLembrete'), detalhe = S('_lembreteDetalhe_');
+  const ass = ['Dra. Nova de Prova', 'Psicóloga — CRP 06/999999'];
+  const esc = montar('escala', 'Ana', ass, 'URICA-A');
+  ok('N1 escala: "Há uma escala aberta para você: URICA-A. Quando puder, responda." no texto e no HTML', esc.texto.indexOf('Este é o lembrete que combinamos para hoje. Há uma escala aberta para você: URICA-A. Quando puder, responda.') !== -1 && esc.html.indexOf('Há uma escala aberta para você: URICA-A. Quando puder, responda.') !== -1, esc.texto);
+  ok('N2 assunto, título e prévia da escala não mudaram (genéricos: é o que aparece na tela bloqueada)', esc.assunto === 'Há uma escala para você no COGNIATIVO' && esc.html.indexOf('>Uma escala para responder</h1>') !== -1 && esc.html.indexOf('Quando puder, responda à escala combinada.') !== -1 && esc.assunto.indexOf('URICA') === -1);
+  const cru = 'Chá & <b>pausa</b> "leve" d\'água';
+  const out = montar('outro', 'Ana', ass, cru);
+  ok('N3 "Outro": "Este é o lembrete que combinamos. Combinado de hoje: <texto>" — no texto puro vai como foi digitado', out.texto.indexOf('Este é o lembrete que combinamos. Combinado de hoje: ' + cru + '\n') !== -1, out.texto);
+  ok('N4 "Outro" no HTML: & < > " \' passam pelo escapador único (nenhuma marcação do texto digitado vira HTML)', out.html.indexOf('Combinado de hoje: Chá &amp; &lt;b&gt;pausa&lt;/b&gt; &quot;leve&quot; d&#39;água') !== -1 && out.html.indexOf('<b>pausa</b>') === -1 && out.html.indexOf(cru) === -1, out.html.slice(out.html.indexOf('Combinado de hoje'), out.html.indexOf('Combinado de hoje') + 120));
+  ok('N5 assunto, título e prévia do "Outro" não mudaram', out.assunto === 'Lembrete do COGNIATIVO' && out.html.indexOf('>Lembrete de hoje</h1>') !== -1 && out.html.indexOf('Há um combinado para hoje.') !== -1);
+  const auto = montar('auto', 'Ana', ass, 'qualquer coisa');
+  ok('N6 automonitoramento não muda (o detalhe é ignorado)', auto.texto.indexOf('Quando puder, registre como foi o seu dia: leva poucos minutos e ajuda a próxima sessão.') !== -1 && auto.texto.indexOf('qualquer coisa') === -1 && auto.assunto === 'Hora do seu registro no COGNIATIVO');
+  const vazios = [montar('escala', 'Ana', ass), montar('escala', 'Ana', ass, ''), montar('escala', 'Ana', ass, null), montar('outro', 'Ana', ass, '   '), montar('outro', 'Ana', ass, undefined)];
+  ok('N7 sem sigla ou sem texto: frase genérica de antes, sem "undefined" nem "null" na mensagem', vazios[0].texto.indexOf('Há uma escala aberta para você em Escalas e Inventários; quando puder, responda.') !== -1 && vazios[3].texto.indexOf('O que foi combinado está no Início do COGNIATIVO.') !== -1 && vazios.every(e => !/undefined|null|: \.|: $/m.test(e.texto) && !/undefined|null/.test(e.html)), vazios.map(e => e.texto.split('\n')[4]));
+  ok('N8 _lembreteDetalhe_: sigla só se for do catálogo; texto do "Outro" aparado; automonitoramento vazio', detalhe({ tipo: 'escala', instrumento: 'PHQ-9' }) === 'PHQ-9' && detalhe({ tipo: 'escala', instrumento: 'URICA-A' }) === 'URICA-A' && detalhe({ tipo: 'escala', instrumento: 'NAO-EXISTE' }) === '' && detalhe({ tipo: 'escala' }) === '' && detalhe({ tipo: 'outro', texto: '  x  ' }) === 'x' && detalhe({ tipo: 'outro' }) === '' && detalhe({ tipo: 'auto', texto: 'x', instrumento: 'PHQ-9' }) === '' && detalhe(null) === '');
+
+  // de ponta a ponta: o gatilho e o "lembrar agora" mandam o e-mail com o detalhe
+  irPara(2026, 12, 14, 6, 0);
+  const pN = novo('Paciente do Detalhe', 'detalhe@exemplo.test', '');
+  salvar(pN, { tipo: 'escala', instrumento: 'URICA-A', recorrencia: 'uma_vez', data_inicio: '2026-12-14', hora: '06:30' });
+  salvar(pN, { tipo: 'outro', texto: cru, recorrencia: 'uma_vez', data_inicio: '2026-12-14', hora: '06:30' });
+  h.EMAILS.length = 0;
+  const r = gatilho(quando(2026, 12, 14, 7, 0));
+  const meus = h.EMAILS.filter(m => m.to === 'detalhe@exemplo.test');
+  const mEsc = meus.filter(m => m.subject === 'Há uma escala para você no COGNIATIVO')[0], mOut = meus.filter(m => m.subject === 'Lembrete do COGNIATIVO')[0];
+  ok('N9 gatilho: o e-mail da escala leva a sigla e o do "Outro" leva o texto (cru no texto, escapado no HTML)', meus.length === 2 && !!mEsc && !!mOut && mEsc.body.indexOf('Há uma escala aberta para você: URICA-A. Quando puder, responda.') !== -1 && mOut.body.indexOf('Combinado de hoje: ' + cru) !== -1 && mOut.htmlBody.indexOf('d&#39;água') !== -1 && mOut.htmlBody.indexOf('<b>pausa</b>') === -1, [r, meus.map(m => m.subject)]);
+  h.EMAILS.length = 0;
+  const ag = prof('profLembrarAgora', { siglaPaciente: pN, dados: { id: uuid(), tipo: 'escala', instrumento: 'BSS' } });
+  ok('N10 "lembrar agora" de escala: o e-mail sai na hora com a sigla', ag.ok && ag.email_enviado === true && h.EMAILS.length === 1 && h.EMAILS[0].body.indexOf('Há uma escala aberta para você: BSS. Quando puder, responda.') !== -1, ag);
+});
+
 /* ---------------------------------------------------------------- T */
 console.log('T. Trava e crachá');
 tenta('T', () => {
@@ -332,7 +368,7 @@ tenta('T', () => {
   ok('T2 com a trava ocupada o item não é gravado e a resposta é "ocupado"', r.ok === false && r.codigo === 'ocupado' && abaLem().getLastRow() === linhas, r);
   ok('T3 sem crachá nenhuma das quatro ações responde; crachá de paciente não grava plano', ['profSalvarLembrete', 'profEncerrarLembrete', 'profLembrarAgora', 'lerMeusLembretes'].every(a => h.post({ acao: a, token: 'cracha-inventado', siglaPaciente: P1 }).ok === false) && pac(P1, 'profSalvarLembrete', { siglaPaciente: P1, dados: { id: uuid(), tipo: 'auto', recorrencia: 'uma_vez', data_inicio: '2026-12-20', hora: '10:00' } }).ok === false && abaLem().getLastRow() === linhas);
   ok('T4 o gatilho, o invólucro e a remoção do gatilho existem; instalarGatilhos cria o de hora em hora', /function enviarLembretes_\(/.test(fonteJs) && /function rodarLembretesAgora\(/.test(fonteJs) && /function removerGatilhoLembretes\(/.test(fonteJs) && /newTrigger\('enviarLembretes_'\)\s*\.timeBased\(\)\s*\.everyHours\(1\)/.test(fonteJs));
-  ok('T5 VERSAO_PACOTE = 19.2.1', S('VERSAO_PACOTE') === '19.2.1');
+  ok('T5 VERSAO_PACOTE do 19.2.1 em diante (o número exato é conferido em backend_16_11.js)', /^(19\.2\.[1-9]\d*|19\.[3-9]|[2-9]\d\.)/.test(S('VERSAO_PACOTE')), S('VERSAO_PACOTE'));
   const inesperados = logServidor.filter(l => !/^_enviarEmail_: servico fora/.test(l) && !/^trava de gravacao: nao obtida/.test(l));
   ok('T6 o servidor não registrou nenhum erro além dos dois provocados (envio que falha, trava ocupada)', inesperados.length === 0, inesperados.slice(0, 5));
 });

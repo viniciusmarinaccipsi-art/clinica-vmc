@@ -59,7 +59,9 @@
 // Pacote 19.2.1 — Plano de lembretes: aba Lembretes na Controle, acoes profSalvarLembrete, profEncerrarLembrete,
 // profLembrarAgora e lerMeusLembretes, gatilho de hora em hora enviarLembretes_ (e-mail), blocos do Inicio na lista
 // do profissional; ind_total_auto sem as checagens sozinhas (22/11/2026)
-var VERSAO_PACOTE = '19.2.1';
+// Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
+// (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
+var VERSAO_PACOTE = '19.2.2';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -5807,7 +5809,7 @@ function backupSobDemanda_() {
 //   sigla               paciente
 //   tipo                auto | escala | outro
 //   instrumento         codigo da escala (chave de ESCALAS_MENU), so em `escala`
-//   texto               texto livre, so em `outro` (nunca vai no e-mail nem no WhatsApp)
+//   texto               texto livre, so em `outro` (19.2.2: aparece no Inicio do paciente, no e-mail e no WhatsApp)
 //   recorrencia         agora | uma_vez | recorrente
 //   periodicidade       diaria | semanal | quinzenal | mensal | dias_semana (so em `recorrente`)
 //   dias_semana         '1,3,5' (0 = domingo), so em `dias_semana`
@@ -5826,8 +5828,10 @@ var LEMBRETES_DIA_MAX = 60;      // e-mails de lembrete por dia (cota propria; c
 var LEMBRETE_ATRASO_DIAS = 7;    // item de data unica ou ja terminado sai de "Atrasados" depois disto
 var LEMBRETE_TEXTO_MAX = 200;
 
-// Textos do e-mail de lembrete, aprovados pelo usuario em 22/11/2026. Nenhum dado clinico:
-// o nome da escala e o texto do "Outro" nao saem do sistema.
+// Textos do e-mail de lembrete, aprovados pelo usuario em 22/11/2026.
+// 19.2.2 (decisao do usuario, 22/11/2026): a SIGLA da escala (a chave do catalogo: PHQ-9, URICA-A...) e o texto do
+// "Outro" entram no paragrafo do e-mail (EMAIL_LEMBRETE_COM_DETALHE). Assunto, titulo e previa continuam genericos
+// (o assunto aparece na tela bloqueada). Sem sigla conhecida ou sem texto, vale o paragrafo generico de EMAIL_LEMBRETE.
 var EMAIL_LEMBRETE = {
   auto: { assunto: 'Hora do seu registro no COGNIATIVO', titulo: 'Hora do seu registro', previa: 'Quando puder, registre como foi o seu dia.',
     paragrafo: 'Este é o lembrete que combinamos para hoje. Quando puder, registre como foi o seu dia: leva poucos minutos e ajuda a próxima sessão.',
@@ -5838,6 +5842,11 @@ var EMAIL_LEMBRETE = {
   outro: { assunto: 'Lembrete do COGNIATIVO', titulo: 'Lembrete de hoje', previa: 'Há um combinado para hoje.',
     paragrafo: 'Este é o lembrete que combinamos para hoje. O que foi combinado está no Início do COGNIATIVO.',
     botao: 'Abrir o COGNIATIVO' }
+};
+// [antes do detalhe, depois do detalhe]
+var EMAIL_LEMBRETE_COM_DETALHE = {
+  escala: ['Este é o lembrete que combinamos para hoje. Há uma escala aberta para você: ', '. Quando puder, responda.'],
+  outro: ['Este é o lembrete que combinamos. Combinado de hoje: ', '']
 };
 var EMAIL_LEMBRETE_SOB_BOTAO = 'Abre o COGNIATIVO; se a sessão tiver expirado, é só entrar de novo.';
 var EMAIL_LEMBRETE_AVISO = 'Este lembrete faz parte do plano combinado nas sessões. Para mudar o horário ou parar de receber, é só avisar.';
@@ -6202,7 +6211,7 @@ function profLembrarAgora(s, siglaPaciente, dados) {
   if (!_estaAtivo_(alvo.paciente.ativo)) motivo = 'inativo';
   else if (!email) motivo = 'sem_email';
   else if (!_reservarEmail_('lembretes')) motivo = 'cota';
-  else if (!_enviarEmail_(email, montarEmailLembrete(campos.tipo, _lemPrimeiroNome_(alvo.paciente), _assinaturaDoProfissional_(alvo.profissionalId)))) motivo = 'falha';
+  else if (!_enviarEmail_(email, montarEmailLembrete(campos.tipo, _lemPrimeiroNome_(alvo.paciente), _assinaturaDoProfissional_(alvo.profissionalId), _lembreteDetalhe_(campos)))) motivo = 'falha';
   if (!motivo) campos.ultimo_email_em = agora.carimbo;
   _lembreteGravar_(aba, 0, campos);
 
@@ -6289,13 +6298,28 @@ function _lemPrimeiroNome_(paciente) {
   return nome ? nome.split(/\s+/)[0] : '';
 }
 
-/** E-mail de lembrete (texto puro e HTML no layout dos convites), com os textos aprovados; o link e o do site. */
-function montarEmailLembrete(tipo, nome, assinatura) {
+/** 19.2.2: o que o lembrete nomeia na mensagem — a sigla da escala (so se for do catalogo) ou o texto do "Outro"; '' = frase generica. */
+function _lembreteDetalhe_(item) {
+  if (!item) return '';
+  if (item.tipo === 'escala') return _idDaEscala_(item.instrumento) ? String(item.instrumento).trim() : '';
+  if (item.tipo === 'outro') return String(item.texto === undefined || item.texto === null ? '' : item.texto).trim();
+  return '';
+}
+
+/**
+ * E-mail de lembrete (texto puro e HTML no layout dos convites), com os textos aprovados; o link e o do site.
+ * 19.2.2: `detalhe` (opcional, _lembreteDetalhe_) entra no paragrafo da escala e do "Outro". No HTML ele passa
+ * pelo escapador unico (_layoutEmail_ escapa o paragrafo inteiro); na versao em texto vai como foi digitado.
+ */
+function montarEmailLembrete(tipo, nome, assinatura, detalhe) {
   var t = EMAIL_LEMBRETE[tipo] || EMAIL_LEMBRETE.outro;
   var linhasAssinatura = assinatura || [];
   var ola = nome ? 'Olá, ' + nome + '.' : 'Olá.';
-  var texto = [EMAIL_DESTAQUE, '', ola, '', t.paragrafo, '', SITE_URL, '', EMAIL_LEMBRETE_AVISO, ''].concat(linhasAssinatura).join('\n');
-  var html = _layoutEmail_({ previa: t.previa, titulo: t.titulo, acompanhamento: '', ola: ola, paragrafo: t.paragrafo,
+  var d = String(detalhe === undefined || detalhe === null ? '' : detalhe).trim();
+  var molde = EMAIL_LEMBRETE_COM_DETALHE[tipo];
+  var paragrafo = (d && molde) ? molde[0] + d + molde[1] : t.paragrafo;
+  var texto = [EMAIL_DESTAQUE, '', ola, '', paragrafo, '', SITE_URL, '', EMAIL_LEMBRETE_AVISO, ''].concat(linhasAssinatura).join('\n');
+  var html = _layoutEmail_({ previa: t.previa, titulo: t.titulo, acompanhamento: '', ola: ola, paragrafo: paragrafo,
     botao: t.botao, sobBotao: EMAIL_LEMBRETE_SOB_BOTAO, link: SITE_URL, aviso: EMAIL_LEMBRETE_AVISO, assinatura: linhasAssinatura });
   return { assunto: t.assunto, texto: texto, html: html };
 }
@@ -6354,7 +6378,7 @@ function enviarLembretes_(quando) {
         if (reserva === 'ja' || reserva === 'mudou') { r.ja_enviados++; return; }
         if (reserva === 'cota') { r.sem_cota++; return; }
         if (reserva !== 'ok') { r.falhas++; return; }
-        if (_enviarEmail_(email, montarEmailLembrete(item.tipo, _lemPrimeiroNome_(pac), assinatura))) { r.enviados++; return; }
+        if (_enviarEmail_(email, montarEmailLembrete(item.tipo, _lemPrimeiroNome_(pac), assinatura, _lembreteDetalhe_(item)))) { r.enviados++; return; }
         r.falhas++;
         _comTravaSeDer_(function () { aba.getRange(item.__linha, colEnvio).setValue(_lemCelula_(anterior)); });
       });

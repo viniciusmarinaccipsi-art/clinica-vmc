@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Plano de lembretes: módulo no paciente aberto, Lembretes de hoje e Atrasados no Início do profissional, combinado da semana no Início do paciente — Pacote 19.2.1 (22/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Lembretes: a sigla da escala e o texto do "Outro" aparecem no WhatsApp (e no e-mail, pelo servidor) — Pacote 19.2.2 (22/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -9759,7 +9759,7 @@ function profRenderAtualizacoes_(ativos) {
      (`lembretes` de cada paciente; o servidor decide o que vence hoje e o que está atrasado) e o botão WhatsApp.
    - Paciente aberto: módulo "Plano de lembretes" (criar, editar, encerrar, lembrar agora).
    O e-mail é do servidor (gatilho de hora em hora); o WhatsApp é enviado pelo profissional, pelo botão.
-   Nome de escala e texto do "Outro" nunca entram na mensagem (nenhum dado clínico fora do sistema).
+   19.2.2 (decisão do usuário, 22/11/2026): a sigla da escala e o texto do "Outro" aparecem no e-mail e no WhatsApp.
    ============================================================ */
 var VMC_SITE_URL = 'https://viniciusmarinaccipsi-art.github.io/clinica-vmc/index-dev.html'; // o endereço que vai na mensagem do WhatsApp
 var LEM_REPETIR = { diaria: 'Todo dia', semanal: 'Toda semana', quinzenal: 'A cada 15 dias', mensal: 'Todo mês', dias_semana: 'Dias da semana escolhidos' };
@@ -9797,27 +9797,40 @@ function lemRegra_(l) {
   if (l.periodicidade === 'dias_semana') return (l.dias_semana || []).map(function (d) { return LEM_DIAS[d]; }).filter(Boolean).join(', ');
   return LEM_REPETIR[l.periodicidade] || '';
 }
-/** Link do WhatsApp com a mensagem aprovada (uma por tipo; serve a "Lembretes de hoje", "Atrasados" e "Lembrar agora"). */
-function lemLinkWhats_(telefone, tipo, nomePaciente) {
+/** 19.2.2: o que o lembrete nomeia na mensagem — a sigla da escala (a chave do catálogo, só se existir nele) ou o texto do "Outro"; '' = frase genérica. */
+function lemDetalhe_(l) {
+  if (!l) return '';
+  if (l.tipo === 'escala') return ESC_ESCALAS[l.instrumento] ? String(l.instrumento) : '';
+  if (l.tipo === 'outro') return String(l.texto || '').trim();
+  return '';
+}
+/** Link do WhatsApp com a mensagem aprovada (uma por tipo; serve a "Lembretes de hoje", "Atrasados" e "Lembrar agora").
+    19.2.2: `detalhe` (lemDetalhe_) entra na mensagem da escala e do "Outro"; sem ele, vale a frase genérica. O texto digitado
+    vai inteiro por encodeURIComponent; o ponto final dele sai para não dobrar com o da frase. */
+function lemLinkWhats_(telefone, tipo, nomePaciente, detalhe) {
   var quem = iniPrimeiroNome(PROF_SESSAO && PROF_SESSAO.nome_completo);
   var artigo = (PROF_SESSAO && PROF_SESSAO.genero === 'F') ? 'a' : 'o';
   var pac = iniPrimeiroNome(nomePaciente);
+  var d = String(detalhe || '').trim().replace(/[.\s]+$/, '');
   var corpo = tipo === 'auto' ? 'Passando para lembrar do seu registro no COGNIATIVO. Quando puder: ' + VMC_SITE_URL
-    : (tipo === 'escala' ? 'Passando para lembrar que há uma escala para você responder no COGNIATIVO. Quando puder: ' + VMC_SITE_URL
-    : 'Passando para lembrar do que combinamos. Está no Início do COGNIATIVO: ' + VMC_SITE_URL);
+    : (tipo === 'escala'
+      ? (d ? 'Passando para lembrar que há uma escala aberta para você no COGNIATIVO: ' + d + '. Quando puder, responda: ' + VMC_SITE_URL
+           : 'Passando para lembrar que há uma escala para você responder no COGNIATIVO. Quando puder: ' + VMC_SITE_URL)
+      : (d ? 'Passando para lembrar do que combinamos: ' + d + '. Está no Início do COGNIATIVO: ' + VMC_SITE_URL
+           : 'Passando para lembrar do que combinamos. Está no Início do COGNIATIVO: ' + VMC_SITE_URL));
   var msg = 'Olá' + (pac ? ', ' + pac : '') + '! ' + (quem ? 'Aqui é ' + artigo + ' ' + quem + '. ' : '') + corpo;
   return 'https://wa.me/55' + String(telefone || '').replace(/\D/g, '') + '?text=' + encodeURIComponent(msg);
 }
-/** Botão WhatsApp (ou o aviso de cadastro sem telefone). `rotulo` é texto fixo da tela. */
-function lemBotaoWhats_(telefone, tipo, nomePaciente, rotulo) {
+/** Botão WhatsApp (ou o aviso de cadastro sem telefone). `l` = o lembrete ({ tipo, instrumento, texto }); `rotulo` é texto fixo da tela. */
+function lemBotaoWhats_(telefone, l, nomePaciente, rotulo) {
   if (!String(telefone || '').replace(/\D/g, '')) return '<span class="prof-lem-sem">Sem telefone no cadastro</span>';
-  return '<a class="prof-lem-btn" data-lem-whats="' + esc(tipo) + '" href="' + esc(lemLinkWhats_(telefone, tipo, nomePaciente)) + '" target="_blank" rel="noopener">' + rotulo + '</a>';
+  return '<a class="prof-lem-btn" data-lem-whats="' + esc(l.tipo) + '" href="' + esc(lemLinkWhats_(telefone, l.tipo, nomePaciente, lemDetalhe_(l))) + '" target="_blank" rel="noopener">' + rotulo + '</a>';
 }
 
 /* ---- Início do profissional: uma linha = o item clicável do bloco (abre o paciente) + o botão WhatsApp ---- */
 function profLemLinhaHtml_(p, l, texto, quando) {
   return '<div class="prof-lem-linha" data-lem-id="' + esc(l.id) + '">' + profEvHtml_(p, 'lembrete', texto, quando, false) +
-    lemBotaoWhats_(p.telefone, l.tipo, p.nome_completo, 'WhatsApp') + '</div>';
+    lemBotaoWhats_(p.telefone, l, p.nome_completo, 'WhatsApp') + '</div>';
 }
 /* O que o plano prevê para hoje, por hora; a marca diz em que pé está o e-mail */
 function profRenderLembretesHoje_(ativos) {
@@ -9896,7 +9909,7 @@ function profLemFormHtml_() {
   return '<div class="prof-lem-form" id="profLemForm">' +
     '<p class="prof-lem-ajuda hidden" id="profLemSemEmail">Este paciente não tem e-mail no cadastro: o lembrete só poderá ir por WhatsApp.</p>' +
     campo('Oque', 'O que lembrar', '<select id="profLemOque" onchange="profLemAjustarForm_()"><option value="auto">Automonitoramento</option><optgroup label="Escalas e Inventários">' + escalas + '</optgroup><option value="outro">Outro</option></select>') +
-    campo('Texto', 'Descreva o que foi combinado', '<input type="text" id="profLemTexto" maxlength="200" autocomplete="off">', '<p class="prof-lem-ajuda">Aparece para o paciente no Início. Não vai no e-mail nem no WhatsApp.</p>') +
+    campo('Texto', 'Descreva o que foi combinado', '<input type="text" id="profLemTexto" maxlength="200" autocomplete="off">', '<p class="prof-lem-ajuda">Aparece para o paciente no Início, no e-mail e no WhatsApp.</p>') +
     campo('Quando', 'Quando', '<select id="profLemQuando" onchange="profLemAjustarForm_()"><option value="agora">Lembrar agora</option><option value="uma_vez">Somente uma vez</option><option value="recorrente">Com recorrência</option></select>') +
     campo('Repetir', 'Repetir', '<select id="profLemRepetir" onchange="profLemAjustarForm_()">' + Object.keys(LEM_REPETIR).map(function (k) { return '<option value="' + k + '">' + LEM_REPETIR[k] + '</option>'; }).join('') + '</select>') +
     '<div class="prof-cad-field" id="profLemCampoDias"><div class="prof-lem-dias" id="profLemDias" role="group" aria-label="Dias da semana escolhidos">' + dias + '</div></div>' +
@@ -10010,11 +10023,11 @@ async function profLemSalvar_() {
                                      : 'Não foi possível enviar o e-mail agora. Você pode enviar pelo WhatsApp.'));
   }
   if (resp.escala_aberta) avisos.push('A escala foi aberta para o paciente responder.');
-  profLemAplicar_(sigla, resp, avisos, agora ? dados.tipo : '');
+  profLemAplicar_(sigla, resp, avisos, agora ? dados : null);
 }
 /* Depois de gravar: o plano na tela, os blocos do Início (a resposta já traz os itens — nenhuma chamada nova) e o aviso.
    A memória do paciente aberto já foi esvaziada pelo chamarServidor (18.11: toda gravação do profissional). */
-function profLemAplicar_(sigla, resp, avisos, tipoWhats) {
+function profLemAplicar_(sigla, resp, avisos, itemWhats) {
   if (resp.inicio) {
     PROF_LISTA.forEach(function (p) {
       if (p.sigla !== sigla) return;
@@ -10032,7 +10045,7 @@ function profLemAplicar_(sigla, resp, avisos, tipoWhats) {
   var aviso = document.getElementById('profLemAviso');
   if (!aviso) return;
   aviso.innerHTML = avisos.map(function (a) { return '<p>' + esc(a) + '</p>'; }).join('') +
-    (tipoWhats ? lemBotaoWhats_(PROF_PACIENTE_SEL.contato && PROF_PACIENTE_SEL.contato.telefone, tipoWhats, PROF_PACIENTE_SEL.nome, 'Enviar também por WhatsApp') : '');
+    (itemWhats ? lemBotaoWhats_(PROF_PACIENTE_SEL.contato && PROF_PACIENTE_SEL.contato.telefone, itemWhats, PROF_PACIENTE_SEL.nome, 'Enviar também por WhatsApp') : '');
 }
 function profLemPedirEncerrar_(id) {
   PROF_LEM.encerrar = id;
@@ -10054,7 +10067,7 @@ async function profLemConfirmarEncerrar_() {
   profLemFecharEncerrar_();
   PROF_LEM.encerrar = '';
   if (!PROF_PACIENTE_SEL || PROF_PACIENTE_SEL.sigla !== sigla) return;
-  profLemAplicar_(sigla, resp, [], '');
+  profLemAplicar_(sigla, resp, [], null);
 }
 
 /* ============================================================
