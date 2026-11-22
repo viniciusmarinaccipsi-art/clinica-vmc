@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — lote F da HumanTrack (dependências e compulsões): DUDIT, SAST, EPM, PIUQ-SF-9 e SAS-LV (35 escalas, todas com ficha) — Pacote 17.7 (22/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — lote F da HumanTrack (dependências e compulsões): DUDIT, SAST, EPM, PIUQ-SF-9 e SAS-LV (35 escalas, todas com ficha; SAS-LV com cinco fatores) — Pacote 17.7 (22/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -18764,7 +18764,7 @@ const ESC_ESCALAS = {
       usos: 'Rastreamento de problemas relacionados a drogas e de provável dependência; escolha do nível de avaliação e intervenção; linha de base e reaplicação ao longo do acompanhamento; par do AUDIT quando há uso de álcool. Não substitui a entrevista diagnóstica.',
       interpretacao: [
         '<em>Estrutura:</em> 11 itens; os itens 1 a 9 valem 0 a 4 e os itens 10 e 11 valem 0, 2 ou 4; escore total de 0 a 44 pela soma. O sistema carrega as opções próprias de cada item.',
-        '<em>Pontos de corte:</em> 6 ou mais indica provável problema relacionado a drogas e 25 ou mais, provável dependência; são os cortes do manual do DUDIT (Berman et al., 2005), usados nos estudos publicados com o instrumento (Pape, Lobmaier & Bukten, 2022). São as faixas que o sistema usa.',
+        '<em>Pontos de corte (manual sueco):</em> provável problema relacionado a drogas a partir de 6 pontos para homens (7 entre 16 e 25 anos) e de 2 pontos para mulheres (3 entre 16 e 25 anos); provável dependência a partir de 25 para todos (Berman, Wennberg & Källmén, 2022; Berman & Brisendal, 2011; usados nos estudos publicados: Pape, Lobmaier & Bukten, 2022). O sistema mostra as faixas pelo corte masculino 6 e avisa, na faixa abaixo do corte, que para mulheres o corte é 2.',
         '<em>Propriedades originais:</em> sensibilidade de 90% para dependência pelo DSM-IV e pela CID-10, com especificidade de 78% e 88%; alfa de Cronbach 0,80 (Berman et al., 2005). A revisão de 18 estudos encontrou alfa em geral acima de 0,90, sensibilidade de 0,85 a 1,00 e especificidade de 0,75 a 0,92 em várias populações, com estrutura fatorial ainda discutida (Hildebrand, 2015).',
         '<em>Cuidados:</em> cortes de outro país, sem validação brasileira; viés de desejabilidade social em contextos judiciais ou de trabalho; o texto carregado no sistema vem do seu mapeamento HumanTrack e tem marcas do português europeu. Complementar com entrevista, histórico de uso e, quando couber, exame toxicológico.'
       ],
@@ -18772,6 +18772,7 @@ const ESC_ESCALAS = {
       validacaoBr: 'Não. Não foi localizado estudo brasileiro de validação do DUDIT (PubMed, Consensus, OpenAlex, Crossref, 21/11/2026). As propriedades e os cortes acima vêm do estudo original sueco e da revisão internacional.',
       referencias: [
         'Berman, A. H., Bergman, H., Palmstierna, T., & Schlyter, F. (2005). Evaluation of the Drug Use Disorders Identification Test (DUDIT) in criminal justice and detoxification settings and in a Swedish population sample. <em>European Addiction Research, 11</em>(1), 22–31. https://doi.org/10.1159/000081413',
+        'Berman, A. H., Wennberg, P., & Källmén, H. (2022). <em>AUDIT & DUDIT: Identifiera problem med alkohol och droger</em>. Socialstyrelsen. https://www.socialstyrelsen.se/globalassets/sharepoint-dokument/dokument-webb/ovrigt/audit-dudit-identifiera-problem-med-alkohol-och-droger.pdf',
         'Hildebrand, M. (2015). The psychometric properties of the Drug Use Disorders Identification Test (DUDIT): A review of recent research. <em>Journal of Substance Abuse Treatment, 53</em>, 52–59. https://doi.org/10.1016/j.jsat.2015.01.008',
         'Pape, H., Lobmaier, P., & Bukten, A. (2022). An evaluation of eight short versions of the Drug Use Disorder Identification Test (DUDIT): A prison population study. <em>Drug and Alcohol Dependence Reports, 3</em>, 100043. https://doi.org/10.1016/j.dadr.2022.100043'
       ]
@@ -18801,14 +18802,15 @@ const ESC_ESCALAS = {
         sugestao: 'Converse com seu terapeuta sobre este resultado. Ele vai avaliar com você o que está acontecendo e os próximos passos.' },
       { min: 0, max: 5, rotulo: 'Abaixo do ponto de corte', cor: 'verde',
         titulo: '<svg class=ico&#32;ico-pos aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
-        descricao: 'Seu escore está <strong>abaixo do ponto de corte</strong>: as respostas não indicam problema relacionado ao uso de drogas, ou você não usa.',
+        descricao: 'Seu escore está <strong>abaixo do ponto de corte</strong> geral: as respostas não indicam problema relacionado ao uso de drogas, ou você não usa. Para mulheres, o manual usa um corte mais baixo, 2 pontos: se você marcou 2 ou mais, vale conversar sobre isso.',
         sugestao: 'Traga este resultado para a sessão: as respostas que você marcou dizem mais do que o número.' }
     ],
     faixasLista: [
       '<strong>0-5</strong> — Abaixo do ponto de corte',
       '<strong>6-24</strong> — Provável problema com drogas',
       '<strong>25-44</strong> — Provável dependência',
-      '<em style="color:var(--c-ink-3);">Cortes do manual do DUDIT (Berman et al., 2005), como usados nos estudos publicados (Pape et al., 2022). Sem validação brasileira. Rastreamento — não substitui a avaliação clínica.</em>'
+      '<strong>Mulheres</strong> — o corte do manual é 2 (3 entre 16 e 25 anos); homens de 16 a 25 anos, 7',
+      '<em style="color:var(--c-ink-3);">Cortes do manual sueco do DUDIT (Berman, Wennberg & Källmén, 2022; Berman & Brisendal, 2011), como usados nos estudos publicados (Pape et al., 2022). Sem validação brasileira. Rastreamento — não substitui a avaliação clínica.</em>'
     ]
   },
 
@@ -18890,7 +18892,7 @@ const ESC_ESCALAS = {
         '<em>Cuidados:</em> o fator cognitivo tem consistência baixa; ler os dois fatores em conjunto e junto com o estágio de mudança. A folha oficial chama o instrumento de Questionário de Processos de Mudança; a tese, de Escala de Processos de Mudança (EPM).'
       ],
       desenvolvedores: 'James O. Prochaska, Wayne F. Velicer, Carlo C. DiClemente e Joseph Fava (1988). Versão brasileira para usuários de drogas ilícitas: Karen Priscila Del Rio Szupszynski, sob orientação de Margareth da Silva Oliveira (GAAPCC, PUCRS), tese de doutorado de 2012; folha oficial no site do grupo.',
-      validacaoBr: 'Sim. Szupszynski (2012), Seção II da tese: tradução, retrotradução, comitê de três juízes (89% de concordância) e estudo-piloto com 10 pessoas; 328 usuários de drogas ilícitas em tratamento em Porto Alegre e região (93,6% homens; média de idade 30,1 anos; 81% internados); alfa 0,775 no total (0,786 padronizado), 0,721 nos processos comportamentais e 0,535 nos cognitivos; análise fatorial com dois fatores fixados, 29,9% da variância, KMO 0,811; validade convergente com a subescala Ação da URICA (r = 0,342). Os itens foram mantidos na estrutura original.',
+      validacaoBr: 'Sim. Szupszynski (2012), Seção II da tese: tradução, retrotradução, comitê de três juízes (89% de concordância) e estudo-piloto com 10 pessoas; 328 usuários de drogas ilícitas em tratamento em Porto Alegre e região (93,6% homens; média de idade 30,1 anos; 81% internados); alfa 0,775 no total (0,786 padronizado), 0,721 nos processos comportamentais e 0,535 nos cognitivos; análise fatorial com dois fatores fixados, 29,9% da variância, KMO 0,811; validade convergente com a subescala Ação da URICA (r = 0,342). Os itens foram mantidos na estrutura original. Szupszynski, Sartes, Andretta e Oliveira (2014): 395 usuários de crack internados em Porto Alegre e região (88,6% homens; média 29,8 anos), alfa 0,732; médias de 36,5 (DP 6,3) nos processos cognitivos e 35,2 (DP 7,5) nos comportamentais; o estágio de Ação e o tempo de abstinência explicaram os processos comportamentais.',
       referencias: [
         'Grupo de Avaliação e Acompanhamento Psicológico em Contextos Clínicos. (s.d.). <em>Questionários</em> [folha oficial do Questionário de Processos de Mudança]. PUCRS. https://www.gaapcc.com/questionarios',
         'Prochaska, J. O., & DiClemente, C. C. (1982). Transtheoretical therapy: Toward a more integrative model of change. <em>Psychotherapy: Theory, Research & Practice, 19</em>(3), 276–288. https://doi.org/10.1037/h0088437',
@@ -18948,7 +18950,7 @@ const ESC_ESCALAS = {
       usos: 'Rastreamento do risco de uso problemático da internet; hipóteses iniciais sobre perda de controle e prejuízos, sempre com entrevista; monitoramento ao longo do tempo; pesquisa. Não é instrumento diagnóstico.',
       interpretacao: [
         '<em>Estrutura:</em> 9 itens, de 1 (nunca) a 5 (sempre ou quase sempre), pensando nos últimos 6 meses e excluindo o uso para trabalho ou estudo; escore total de 9 a 45 pela soma. Dimensões: negligência (itens 1, 3 e 9), obsessão (5, 7 e 8) e descontrole (2, 4 e 6).',
-        '<em>Pontos de corte:</em> não há corte validado no Brasil; o estudo brasileiro produziu uma tabela normativa e recomenda ler pelo escore total, porque as três dimensões têm pouca confiabilidade própria depois de descontado o fator geral (Spritzer et al., 2021). O sistema mostra só o total.',
+        '<em>Pontos de corte:</em> não há corte validado no Brasil; o estudo brasileiro recomenda ler pelo escore total, porque as três dimensões têm pouca confiabilidade própria depois de descontado o fator geral (Spritzer et al., 2021). Percentis do total na amostra brasileira (n = 1.525), recalculados dos dados públicos dos autores com o script deles: P10 11, P20 13, P30 15, P40 17, P50 19, P60 21, P70 23, P80 25, P90 29 (média 19,6; DP 6,8). O sistema mostra o total e esta tabela.',
         '<em>Confiabilidade brasileira:</em> alfa de Cronbach 0,91 no total (0,73 a 0,88 nas dimensões); ômega hierárquico 0,76 no fator geral; teste-reteste 0,73 em cerca de seis meses (Spritzer et al., 2021).',
         '<em>Cuidados:</em> amostra de conveniência, com escolaridade alta; sem estudo em amostra clínica nem em adolescentes; uso intenso pode ser funcional (trabalho, estudo): o foco clínico é perda de controle, prejuízo e sofrimento.'
       ],
@@ -18973,12 +18975,13 @@ const ESC_ESCALAS = {
       { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }, { id: 8 }, { id: 9 }
     ],
     eduGeralTitulo: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg>' + ' Como ler',
-    eduGeralDesc: 'O escore vai de 9 a 45: quanto maior, mais sinais de uso problemático da internet (preocupação e abstinência, negligência de atividades, dificuldade de controlar o uso). Não há ponto de corte validado no Brasil: a leitura é pela comparação com você mesmo ao longo do tempo.',
+    eduGeralDesc: 'O escore vai de 9 a 45: quanto maior, mais sinais de uso problemático da internet (preocupação e abstinência, negligência de atividades, dificuldade de controlar o uso). Não há ponto de corte validado no Brasil. Na amostra brasileira de adultos, metade das pessoas ficou em 19 ou menos e 9 em cada 10 ficaram em 29 ou menos: acima disso, o uso pede uma conversa.',
     eduGeralSugestao: 'Traga este resultado para a sessão e comente em que situações o uso sai do controle.',
     faixasLista: [
       '<strong>9-45</strong> — soma dos 9 itens; quanto maior, mais uso problemático',
       '<strong>Dimensões</strong> — negligência (itens 1, 3 e 9), obsessão (5, 7 e 8) e descontrole (2, 4 e 6); o estudo brasileiro recomenda ler pelo total',
-      '<em style="color:var(--c-ink-3);">Sem ponto de corte (Spritzer et al., 2021: modelo bifatorial, alfa 0,91, reteste 0,73). Rastreamento — não é instrumento diagnóstico.</em>'
+      '<strong>Percentis brasileiros do total</strong> — P10 11 · P20 13 · P30 15 · P40 17 · P50 19 · P60 21 · P70 23 · P80 25 · P90 29 (n = 1.525; média 19,6, DP 6,8)',
+      '<em style="color:var(--c-ink-3);">Sem ponto de corte (Spritzer et al., 2021: modelo bifatorial, alfa 0,91, reteste 0,73). Percentis calculados dos dados públicos dos autores com o script deles (Apêndice C do artigo). Rastreamento — não é instrumento diagnóstico.</em>'
     ]
   },
 
@@ -18992,18 +18995,18 @@ const ESC_ESCALAS = {
         'Rastreamento',
         'Mensuração'
       ],
-      descricao: 'Escala de autorrelato com 33 afirmações sobre o uso do smartphone, de 1 (discordo totalmente) a 6 (concordo totalmente), que mede o uso problemático pelos componentes típicos das adições comportamentais: perturbação da vida diária, antecipação positiva, abstinência, relações orientadas ao ciberespaço, uso excessivo e tolerância (Kwon et al., 2013).',
+      descricao: 'Escala de autorrelato com 33 afirmações sobre o uso do smartphone, de 1 (discordo totalmente) a 6 (concordo totalmente), que mede o uso problemático pelos componentes típicos das adições comportamentais: perturbação da vida diária, antecipação positiva, abstinência, relações orientadas ao ciberespaço, uso excessivo e tolerância (Kwon et al., 2013). A versão brasileira reuniu uso excessivo e tolerância num só fator (Andrade et al., 2020).',
       tempo: 'Cerca de 10 minutos.',
       populacao: 'Adultos da população geral. No Brasil, universitários (504; média 21,7 anos) e adultos (578; média 37,8 anos) (Andrade et al., 2020).',
-      usos: 'Rastreamento do uso problemático de smartphone, para indicar avaliação complementar; linha de base e monitoramento descritivo; pesquisa. Não é instrumento diagnóstico.',
+      usos: 'Rastreamento do uso problemático de smartphone, para indicar avaliação complementar; leitura por fator (onde o uso pesa: prejuízo no dia a dia, alívio emocional, inquietação sem o aparelho, relações on-line, perda de controle); linha de base e monitoramento; pesquisa. Não é instrumento diagnóstico.',
       interpretacao: [
-        '<em>Estrutura:</em> 33 itens, de 1 a 6, sem itens invertidos; escore total de 33 a 198 pela soma (Kwon et al., 2013). O sistema mostra o total e a média por item (1 a 6).',
-        '<em>Pontos de corte:</em> não há, nem no estudo original nem no brasileiro (Kwon et al., 2013; Andrade et al., 2020). A leitura é pela evolução do próprio paciente.',
-        '<em>Fatores:</em> o original tem seis fatores (Kwon et al., 2013); a versão brasileira encontrou cinco por análise de componentes principais, com 55,2% da variância, e manteve os 33 itens (Andrade et al., 2020). O sistema mostra só o total: a composição dos cinco fatores por item não foi lida no artigo brasileiro, que não está em acesso aberto, e por isso não entrou.',
-        '<em>Cuidados:</em> a análise fatorial confirmatória da versão brasileira não teve ajuste adequado; sem teste-reteste nem convergência no estudo brasileiro; uso alto pode ser funcional: o foco é perda de controle, prejuízo e sofrimento.'
+        '<em>Estrutura:</em> 33 itens, de 1 a 6, sem itens invertidos; cinco fatores da versão brasileira, cada um lido pela média dos seus itens (1 a 6): perturbação da vida diária (itens 3, 4 e 5), antecipação positiva (6, 7, 8 e 9), abstinência (10, 11, 12, 13, 14, 15, 17 e 18), relações orientadas ao ciberespaço (20, 21, 22, 23 e 26) e uso excessivo e tolerância (1, 2, 16, 19, 24, 25, 27, 28, 29, 30, 31, 32 e 33) (Andrade et al., 2020, Tabela 3); total de 33 a 198 pela soma (Kwon et al., 2013).',
+        '<em>Pontos de corte:</em> não há, nem no estudo original nem no brasileiro (Kwon et al., 2013; Andrade et al., 2020). A leitura é pelo perfil dos fatores e pela evolução do próprio paciente.',
+        '<em>Confiabilidade brasileira:</em> alfa de Cronbach 0,93 no total; 0,90 em uso excessivo e tolerância, 0,87 em abstinência, 0,80 em relações no ciberespaço, 0,78 em antecipação positiva e 0,66 em perturbação da vida diária; cinco componentes com 55,2% da variância (KMO 0,94) (Andrade et al., 2020).',
+        '<em>Cuidados:</em> a análise fatorial confirmatória da versão brasileira não teve ajuste adequado e o fator perturbação da vida diária tem consistência mais baixa; sem teste-reteste nem convergência no estudo brasileiro; uso alto pode ser funcional: o foco é perda de controle, prejuízo e sofrimento.'
       ],
       desenvolvedores: 'Min Kwon e colaboradores (2013), Catholic University of Korea. Uso livre com citação. Versão brasileira: André Luiz Monezi Andrade e colaboradores (2020), PUC-Campinas e Universidade Federal de São Paulo.',
-      validacaoBr: 'Sim. Andrade, Kim, Scatena, Enes, Enumo e De Micheli (2020): adaptação transcultural com comitê de especialistas; 504 universitários e 578 adultos; análise fatorial confirmatória sem ajuste adequado, análise de componentes principais com cinco fatores (55,2% da variância) e análise de rede; todos os itens mantidos (cargas acima de 0,3); alfa 0,93. Dados do resumo e da ficha do artigo; o texto integral é de acesso restrito e não foi lido.',
+      validacaoBr: 'Sim. Andrade, Kim, Scatena, Enes, Enumo e De Micheli (2020): adaptação transcultural com comitê de especialistas; 504 universitários e 578 adultos; análise fatorial confirmatória sem ajuste adequado; análise de componentes principais com rotação oblimin e cinco fatores (55,2% da variância; KMO 0,94), todos os 33 itens mantidos com carga acima de 0,30; alfa 0,93 no total e de 0,66 a 0,90 nos fatores; análise de rede semelhante nas duas amostras. Sem ponto de corte. Artigo lido na íntegra (Tabela 3).',
       referencias: [
         'Andrade, A. L. M., Kim, D.-J., Scatena, A., Enes, C. C., Enumo, S. R. F., & De Micheli, D. (2020). Validity and reliability of the Brazilian version of the Smartphone Addiction Scale-Long Version (SAS-LV). <em>Trends in Psychology, 29</em>(2), 302–319. https://doi.org/10.1007/s43076-020-00046-y',
         'Kwon, M., Lee, J.-Y., Won, W.-Y., Park, J.-W., Min, J.-A., Hahn, C., Gu, X., Choi, J.-H., & Kim, D.-J. (2013). Development and validation of a Smartphone Addiction Scale (SAS). <em>PLoS ONE, 8</em>(2), e56936. https://doi.org/10.1371/journal.pone.0056936',
@@ -19015,23 +19018,37 @@ const ESC_ESCALAS = {
     corPrefix: 'purple',
     instrumentoId: 'saslv',
     textoDaAba: true,
+    multiSubescalas: true,
+    multSub: 1,
+    subMedia: 2, // 17.7: cada fator é a MÉDIA dos itens (1–6), com duas casas (Andrade et al., 2020, Tabela 3)
     valorMin: 1,
     valorMax: 6,
-    mediaPor: 33, // 17.7: lida também pela média dos 33 itens (1–6); o total (33–198) é o que se grava
     subtitulo: '33 itens · cerca de 10 minutos · Sobre <strong>como você usa o celular</strong>',
-    escoreMax: 198,
+    escoreMax: 6, // por fator (média de 1 a 6); a soma dos 33 (33–198) aparece como composto e é o que se grava em escore_total
     itens: [
-      { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }, { id: 8 }, { id: 9 }, { id: 10 },
-      { id: 11 }, { id: 12 }, { id: 13 }, { id: 14 }, { id: 15 }, { id: 16 }, { id: 17 }, { id: 18 }, { id: 19 }, { id: 20 },
-      { id: 21 }, { id: 22 }, { id: 23 }, { id: 24 }, { id: 25 }, { id: 26 }, { id: 27 }, { id: 28 }, { id: 29 }, { id: 30 },
-      { id: 31 }, { id: 32 }, { id: 33 }
+      { id: 1, subescala: 'uso_excessivo' }, { id: 2, subescala: 'uso_excessivo' }, { id: 3, subescala: 'perturbacao' }, { id: 4, subescala: 'perturbacao' }, { id: 5, subescala: 'perturbacao' },
+      { id: 6, subescala: 'antecipacao' }, { id: 7, subescala: 'antecipacao' }, { id: 8, subescala: 'antecipacao' }, { id: 9, subescala: 'antecipacao' }, { id: 10, subescala: 'abstinencia' },
+      { id: 11, subescala: 'abstinencia' }, { id: 12, subescala: 'abstinencia' }, { id: 13, subescala: 'abstinencia' }, { id: 14, subescala: 'abstinencia' }, { id: 15, subescala: 'abstinencia' },
+      { id: 16, subescala: 'uso_excessivo' }, { id: 17, subescala: 'abstinencia' }, { id: 18, subescala: 'abstinencia' }, { id: 19, subescala: 'uso_excessivo' }, { id: 20, subescala: 'ciberespaco' },
+      { id: 21, subescala: 'ciberespaco' }, { id: 22, subescala: 'ciberespaco' }, { id: 23, subescala: 'ciberespaco' }, { id: 24, subescala: 'uso_excessivo' }, { id: 25, subescala: 'uso_excessivo' },
+      { id: 26, subescala: 'ciberespaco' }, { id: 27, subescala: 'uso_excessivo' }, { id: 28, subescala: 'uso_excessivo' }, { id: 29, subescala: 'uso_excessivo' }, { id: 30, subescala: 'uso_excessivo' },
+      { id: 31, subescala: 'uso_excessivo' }, { id: 32, subescala: 'uso_excessivo' }, { id: 33, subescala: 'uso_excessivo' }
     ],
+    subescalasMeta: {
+      perturbacao:   { sigla: 'Per', tri: 'purple', nome: 'Perturbação da vida diária',     icone: '<svg class=ico aria-hidden=true><use href=#i-clock></use></svg>',  corPrefix: 'purple' },
+      antecipacao:   { sigla: 'Ant', tri: 'purple', nome: 'Antecipação positiva',           icone: '<svg class=ico aria-hidden=true><use href=#i-sun></use></svg>',    corPrefix: 'purple' },
+      abstinencia:   { sigla: 'Abs', tri: 'purple', nome: 'Abstinência',                    icone: '<svg class=ico aria-hidden=true><use href=#i-zap></use></svg>',    corPrefix: 'purple' },
+      ciberespaco:   { sigla: 'Cib', tri: 'purple', nome: 'Relações no ciberespaço',        icone: '<svg class=ico aria-hidden=true><use href=#i-message></use></svg>',    corPrefix: 'purple' },
+      uso_excessivo: { sigla: 'Uso', tri: 'purple', nome: 'Uso excessivo e tolerância',     icone: '<svg class=ico aria-hidden=true><use href=#i-phone></use></svg>',  corPrefix: 'purple' }
+    },
+    composto: { chave: 'total_sas', sigla: 'Total', nome: 'Total da escala', legenda: 'soma dos 33 itens · de 33 a 198', mais: [], menos: [], somaItens: true, casas: 0 }, // 17.7: total pela soma (Kwon et al., 2013)
     eduGeralTitulo: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg>' + ' Como ler',
-    eduGeralDesc: 'A escala vai de 33 a 198 (média de 1 a 6): quanto maior, mais o uso do celular se parece com uma dependência (atrapalha o dia a dia, alivia tensão, gera inquietação quando falta, toma mais tempo do que você queria). Não há ponto de corte: a leitura é pela comparação com você mesmo ao longo do tempo.',
+    eduGeralDesc: 'A SAS-LV mede o quanto o uso do celular se parece com uma dependência. Cada um dos cinco fatores é a média dos seus itens, de 1 a 6: perturbação da vida diária, antecipação positiva (alívio e prazer), abstinência (inquietação sem o aparelho), relações no ciberespaço e uso excessivo e tolerância (perda de controle). O total soma os 33 itens (33 a 198). Não há ponto de corte: o que importa é o perfil e como ele muda ao longo do tempo.',
     eduGeralSugestao: 'Traga este resultado para a sessão e comente em que momentos o celular toma mais espaço do que você gostaria.',
     faixasLista: [
-      '<strong>33-198</strong> (média 1-6) — soma dos 33 itens; quanto maior, mais uso problemático',
-      '<em style="color:var(--c-ink-3);">Sem pontos de corte (Kwon et al., 2013; Andrade et al., 2020: alfa 0,93). A versão brasileira tem cinco fatores; a composição por item não foi lida (artigo de acesso restrito) e o sistema mostra só o total. Rastreamento — não é instrumento diagnóstico.</em>'
+      '<strong>Fatores 1-6</strong> — Perturbação da vida diária (itens 3, 4, 5), Antecipação positiva (6-9), Abstinência (10-15, 17, 18), Relações no ciberespaço (20-23, 26), Uso excessivo e tolerância (1, 2, 16, 19, 24, 25, 27-33), cada um pela média dos itens',
+      '<strong>Total 33-198</strong> — soma dos 33 itens; quanto maior, mais uso problemático',
+      '<em style="color:var(--c-ink-3);">Sem pontos de corte (Kwon et al., 2013; Andrade et al., 2020: alfa 0,93; fatores de 0,66 a 0,90). Rastreamento — não é instrumento diagnóstico.</em>'
     ]
   }
 

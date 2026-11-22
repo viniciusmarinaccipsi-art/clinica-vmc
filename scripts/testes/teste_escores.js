@@ -257,9 +257,10 @@ caso('EPM', 'comportamentais (1,2,6,10,11,13,16,17,18,19) em 3 e o resto 2: Cog 
 caso('PIUQ-SF-9', 'tudo 1: mínimo 9, sem faixa', tudo(9, 1), { total: 9, faixa: '', alerta: 'NAO', item: '' });
 caso('PIUQ-SF-9', 'tudo 5: máximo 45', tudo(9, 5), { total: 45, faixa: '', alerta: 'NAO' });
 caso('PIUQ-SF-9', 'item 6 = 5 e o resto 1: 13', com(tudo(9, 1), { 6: 5 }), { total: 13, faixa: '', alerta: 'NAO' });
-caso('SAS-LV', 'tudo 1: mínimo 33, sem faixa', tudo(33, 1), { total: 33, faixa: '', alerta: 'NAO', item: '' });
-caso('SAS-LV', 'tudo 6: máximo 198', tudo(33, 6), { total: 198, faixa: '', alerta: 'NAO' });
-caso('SAS-LV', 'item 1 = 6 e o resto 1: 38', com(tudo(33, 1), { 1: 6 }), { total: 38, faixa: '', alerta: 'NAO' });
+caso('SAS-LV', 'tudo 1: mínimo (fatores 1, total 33)', tudo(33, 1), { total: 33, faixa: 'Per:1 | Ant:1 | Abs:1 | Cib:1 | Uso:1 | Total: 33', alerta: 'NAO', item: '', sub: { escore_perturbacao: 1, escore_uso_excessivo: 1, escore_total_sas: 33 } });
+caso('SAS-LV', 'tudo 6: máximo (fatores 6, total 198)', tudo(33, 6), { total: 198, faixa: 'Per:6 | Ant:6 | Abs:6 | Cib:6 | Uso:6 | Total: 198', alerta: 'NAO', sub: { escore_abstinencia: 6, escore_total_sas: 198 } });
+caso('SAS-LV', 'item 1 = 6 e o resto 1: Uso (6 + 12)/13 = 1,38; total 38', com(tudo(33, 1), { 1: 6 }), { total: 38, faixa: 'Per:1 | Ant:1 | Abs:1 | Cib:1 | Uso:1,38 | Total: 38', alerta: 'NAO', sub: { escore_uso_excessivo: 1.38, escore_total_sas: 38 } });
+caso('SAS-LV', 'item 18 em 6 e o resto 1: Abs (6 + 7)/8 = 1,63 (item 18 pertence à abstinência)', com(tudo(33, 1), { 18: 6 }), { total: 38, faixa: 'Per:1 | Ant:1 | Abs:1,63 | Cib:1 | Uso:1 | Total: 38', alerta: 'NAO', sub: { escore_abstinencia: 1.63 } });
 ok('PSWQ: resposta 0 recusada (mínimo é 1)', servidor.calc('PSWQ', c => (c === 'item_02' ? 0 : 3)).ok === false);
 ok('PSWQ: resposta 6 recusada (máximo é 5)', servidor.calc('PSWQ', c => (c === 'item_02' ? 6 : 3)).ok === false);
 ok('EAR: resposta 5 recusada (máximo é 4)', servidor.calc('EAR', c => (c === 'item_01' ? 5 : 2)).ok === false);

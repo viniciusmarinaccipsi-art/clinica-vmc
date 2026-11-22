@@ -170,6 +170,8 @@ var HEADERS_ESCALAS = [
   'escore_matinal', 'escore_padrao', 'escore_emocoes_negativas', 'escore_social_positivo', 'escore_preocupacoes', 'escore_abstinencia_impulsos', 'escore_media_geral',
   // 17.7: lote F - EPM (somas: processos cognitivos e comportamentais; total dos 20 itens)
   'escore_cognitivos', 'escore_comportamentais', 'escore_total_processos',
+  // 17.7 (fechamento): SAS-LV (medias dos cinco fatores + total dos 33 itens)
+  'escore_perturbacao', 'escore_antecipacao', 'escore_abstinencia', 'escore_ciberespaco', 'escore_uso_excessivo', 'escore_total_sas',
   'faixa',
   'alerta_risco_flag', 'alerta_risco_item', 'alerta_risco_valor',
   'observacoes', 'tempo_preenchimento_seg',
@@ -2870,6 +2872,8 @@ var COLUNAS_LEITURA_ESCALAS = [
   'escore_matinal', 'escore_padrao', 'escore_emocoes_negativas', 'escore_social_positivo', 'escore_preocupacoes', 'escore_abstinencia_impulsos', 'escore_media_geral',
   // 17.7: lote F - EPM (somas: processos cognitivos e comportamentais; total dos 20 itens)
   'escore_cognitivos', 'escore_comportamentais', 'escore_total_processos',
+  // 17.7 (fechamento): SAS-LV (medias dos cinco fatores + total dos 33 itens)
+  'escore_perturbacao', 'escore_antecipacao', 'escore_abstinencia', 'escore_ciberespaco', 'escore_uso_excessivo', 'escore_total_sas',
   'faixa', 'alerta_risco_flag', 'alerta_risco_item', 'alerta_risco_valor', 'observacoes', 'tempo_preenchimento_seg',
   'editado_por', 'editado_em', 'criado_por', 'autoria_campos', 'criado_por_nome'
 ];
@@ -4125,7 +4129,7 @@ var ESCALAS_CALCULO = {
   'SAST':{n:25,max:1,faixas:[[6,25,'Triagem positiva'],[0,5,'Abaixo do ponto de corte']]},
   'EPM':{n:20,min:1,max:5,sub:{cognitivos:[3,4,5,7,8,9,12,14,15,20],comportamentais:[1,2,6,10,11,13,16,17,18,19]},multi:true,siglaSub:{cognitivos:'Cog',comportamentais:'Com'},composto:{chave:'total_processos',sigla:'Total',mais:[],menos:[],somaItens:true,casas:0}},
   'PIUQ-SF-9':{n:9,min:1,max:5},
-  'SAS-LV':{n:33,min:1,max:6}
+  'SAS-LV':{n:33,min:1,max:6,sub:{perturbacao:[3,4,5],antecipacao:[6,7,8,9],abstinencia:[10,11,12,13,14,15,17,18],ciberespaco:[20,21,22,23,26],uso_excessivo:[1,2,16,19,24,25,27,28,29,30,31,32,33]},multi:true,subMedia:2,siglaSub:{perturbacao:'Per',antecipacao:'Ant',abstinencia:'Abs',ciberespaco:'Cib',uso_excessivo:'Uso'},composto:{chave:'total_sas',sigla:'Total',mais:[],menos:[],somaItens:true,casas:0}} // 17.7 (fechamento): cinco fatores da versao brasileira (Andrade et al., 2020, Tabela 3; item 18 em abstinencia) + total pela soma
 };
 
 /**
