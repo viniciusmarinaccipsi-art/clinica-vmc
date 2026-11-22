@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda completa: sessões, repetição, remarcar, cancelar, bloqueio, situação e reposição na Agenda do profissional; Minhas sessões no paciente; avisos de sessão desligados por padrão; lembretes do 19.2.3, login do 18.12 e Painel das Escalas do 19.0 dentro (40 escalas, todas com ficha) — Pacote 14.3 (22/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda completa: sessões, repetição, remarcar, cancelar, bloqueio, situação e reposição na Agenda do profissional; Minhas sessões no paciente; avisos de sessão desligados por padrão; resultado das escalas do 19.0.1, lembretes do 19.2.3 e login do 18.12 dentro (40 escalas, todas com ficha) — Pacote 14.3 (22/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -2847,7 +2847,29 @@ button.cab-no-item{cursor:pointer;}
 .esc-card-icon{font-size:28px;margin-bottom:6px;display:block;}
 .esc-card-title{font-family:var(--f-title);font-size:15px;font-weight:700;margin-bottom:3px;}
 .esc-card-trad{font:var(--t-label);font-weight:500;color:var(--c-ink-3);margin:-2px 0 4px;padding-right:90px;} /* 17.3.2: tradução do nome original */
-.esc-nome-trad{display:block;font:var(--t-label);font-weight:500;color:var(--c-ink-3);margin-top:2px;} /* 17.3.2: tradução abaixo do título (cabeçalho, resultado, histórico, cartão do profissional) */
+/* 19.0.1: nome da escala num bloco só — original em cima (maior), tradução embaixo, em outra cor; vale para cabeçalho, resultado, janela de detalhes, ficha, histórico, painel e cartão do profissional */
+.esc-nome{display:inline-flex;flex-direction:column;min-width:0;text-align:inherit;}
+.esc-nome-orig{display:block;}
+.esc-nome-trad{display:block;font:var(--t-body-sm);font-weight:500;color:var(--c-ink-2);margin-top:3px;}
+.rr-header .esc-nome{align-items:center;}
+.rr-header .esc-nome-trad,.p11-mhead .esc-nome-trad{color:var(--c-action-tint);}
+/* 19.0.1: estágio de mudança e "Seu resultado nesta aplicação" */
+.rr-estagio-linha{font:var(--t-body);}
+.rr-estagio-tabela{margin-top:10px;}
+.rr-estagio-tabela td{vertical-align:top;text-align:left;line-height:1.5;}
+.rr-estagio-tabela tr.atual{background:var(--c-action-tint);}
+.rr-estagio-marca{display:inline-block;margin-left:4px;padding:1px 8px;border-radius:20px;background:var(--c-action);color:var(--c-ink-inv);font:var(--t-label);font-weight:600;white-space:nowrap;}
+.rr-card p.rr-estagio-fonte{font:var(--t-label);font-weight:400;color:var(--c-ink-3);margin-top:10px;}
+.rr-regua{position:relative;height:10px;border-radius:5px;background:var(--c-line);margin:14px 6px 4px;}
+.rr-regua-marca{position:absolute;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:var(--c-action);border:2px solid var(--c-surface);box-shadow:var(--sh-1);}
+.rr-regua-pontas{display:flex;justify-content:space-between;font:var(--t-label);color:var(--c-ink-3);margin:0 2px 8px;}
+@media (max-width: 600px) {
+  .rr-estagio-tabela,.rr-estagio-tabela tbody,.rr-estagio-tabela tr,.rr-estagio-tabela td{display:block;}
+  .rr-estagio-tabela tr.rr-faixa-tabela-head{display:none;}
+  .rr-estagio-tabela tr{padding:8px;border-radius:8px;}
+  .rr-estagio-tabela td{padding:2px 0;}
+  .rr-estagio-tabela td.col-propor::before{content:'O que propor: ';font-weight:700;}
+}
 /* ===== Pacote 19.0 — Painel das Escalas (cartão por escala; título e subtítulo usam .pev-bloco-titulo/.pev-bloco-sub) ===== */
 .escp-paciente{font:var(--t-body-sm);font-weight:600;color:var(--c-ink-2);margin:0 0 12px;overflow-wrap:anywhere;}
 .escp-cartao{background:var(--c-surface);border-radius:14px;padding:18px 18px 14px;margin-bottom:14px;box-shadow:var(--sh-1);border-left:4px solid var(--c-action);min-width:0;}
@@ -3379,12 +3401,12 @@ button.cab-no-item{cursor:pointer;}
 .esch-bloco-cadeado:focus-visible { outline:2px solid var(--c-action); outline-offset:2px; }
 .esch-bloco-vazio { font:var(--t-body-sm); color:var(--c-ink-3); padding:12px 0 4px; }
 /* Pacote 17.3.2 — ficha da escala (Informações · Escalas · Questões) e busca por nome/tag, tela do profissional */
-.esch-bloco-ficha {
+.esch-bloco-ficha, .esch-bloco-aplicar { /* 19.0.1: + Aplicar */
   display:inline-flex; align-items:center; gap:6px; min-height:var(--hit-min); padding:0 var(--s-3);
   border:1px solid var(--c-line); border-radius:var(--r-field); background:var(--c-surface-sub);
   color:var(--c-ink-2); font:var(--t-body-sm); font-weight:600; cursor:pointer; white-space:nowrap;
 }
-.esch-bloco-ficha:hover, .esch-bloco-ficha:focus-visible { border-color:var(--c-action); color:var(--c-action); outline:none; }
+.esch-bloco-ficha:hover, .esch-bloco-ficha:focus-visible, .esch-bloco-aplicar:hover, .esch-bloco-aplicar:focus-visible { border-color:var(--c-action); color:var(--c-action); outline:none; }
 .ficha-abas { display:flex; gap:4px; padding:0 var(--s-4); border-bottom:1px solid var(--c-line); }
 .ficha-aba {
   min-height:var(--hit-min); padding:0 var(--s-3); border:none; border-bottom:2px solid transparent;
@@ -3423,7 +3445,7 @@ button.cab-no-item{cursor:pointer;}
   #profModEscBody .esch-bloco-titulo { flex: 1 1 0; min-width: 55%; }
   #profModEscBody .esch-bloco-contagem { order: 1; margin-left: auto; }
   #profModEscBody .esch-bloco-cadeado { order: 1; }
-  #profModEscBody .esch-bloco-ficha { order: 1; } /* 17.3.2 */
+  #profModEscBody .esch-bloco-ficha, #profModEscBody .esch-bloco-aplicar { order: 1; } /* 17.3.2; 19.0.1 */
 }
 .esc-menu-vazio { font:var(--t-body-sm); color:var(--c-ink-3); line-height:1.5; padding:4px 4px 8px; }
 
@@ -8561,7 +8583,7 @@ function profFluxoAdaptar_(acao, dados) {
   if (acao === 'lerMeusLembretes') return { resposta: { ok: true, hoje: '', lembretes: [] } }; // 19.2.1: a faixa do Início é só do paciente
   return null;
 }
-function profFluxoEncerrar_(msgOk) {
+function profFluxoEncerrar_(msgOk, resultado) { // 19.0.1: resultado = { cod, idEnvio } da escala recém-aplicada
   const sigla = PROF_FLUXO ? PROF_FLUXO.sigla : '';
   PROF_FLUXO = null;
   autoResetState();
@@ -8569,7 +8591,7 @@ function profFluxoEncerrar_(msgOk) {
   P5_STATE.verificado = false; P5_STATE.primeiraVez = false;
   descartarCachesPaciente_();
   if (!sigla || !PROF_SESSAO) return;
-  profAbrirPaciente(sigla).then(function () { if (msgOk) vmcAvisoOkNaTela(msgOk); });
+  profAbrirPaciente(sigla).then(function () { if (msgOk) vmcAvisoOkNaTela(msgOk); if (resultado) profAbrirResultadoRecente_(resultado); });
 }
 
 async function chamarServidor(acao, dados = {}) {
@@ -10785,6 +10807,34 @@ async function profLiberarEscala_(instr, cod) {
   var nome = (ESC_ESCALAS[cod] && ESC_ESCALAS[cod].nomeCurto) || cod;
   vmcAvisoNaTela(liberar ? nome + ' aberta: aparece no menu do paciente no próximo acesso dele.' : nome + ' fechada: sai do menu do paciente.', box);
 }
+// 19.0.1: aplicar a escala agora pelo próprio cartão — o mesmo fluxo de "Nova escala" (escala de texto protegido só
+// quando o servidor já liberou o texto dela)
+function profAplicarHtmlBotao_(cod) {
+  var d = ESC_ESCALAS[cod] || {};
+  return '<button type="button" class="esch-bloco-aplicar" data-esc="' + esc(cod) + '" onclick="event.stopPropagation(); profAplicarEscala_(this.dataset.esc)"' +
+    ' aria-label="' + esc('Aplicar ' + (d.nomeCurto || cod) + ' agora') + '" title="Preencher esta escala agora, com o paciente">' +
+    '<svg class=ico aria-hidden=true><use href=#i-pencil></use></svg> Aplicar</button>';
+}
+async function profAplicarEscala_(cod) {
+  if (!PROF_SESSAO || !PROF_PACIENTE_SEL) return;
+  const d = ESC_ESCALAS[cod];
+  if (!d) return;
+  if (d.textoDaAba) {
+    if (ESC_LIBERADOS === null) { PROF_FLUXO = { sigla: PROF_PACIENTE_SEL.sigla }; await escCarregarLiberados(); PROF_FLUXO = null; }
+    if ((ESC_LIBERADOS || []).indexOf(d.instrumentoId) === -1) { vmcAvisoNaTela('Esta escala ainda não está disponível para aplicação.', document.getElementById('profAvisoLiberacao')); return; }
+  }
+  profEscalaIniciar_(cod);
+}
+// 19.0.1: depois que o profissional aplica uma escala, o resultado dela abre na janela de detalhes — a aplicação é
+// achada pelo id do envio (nunca "a mais recente": se a lista não trouxer a nova, nada abre)
+function profAbrirResultadoRecente_(resultado) {
+  var regs = ESC_HIST_STATE.registros || [], idx = -1;
+  regs.forEach(function (r, i) { if (idx < 0 && resultado.idEnvio && String(r.id_envio || '') === String(resultado.idEnvio) && String(r.instrumento || '').trim() === resultado.cod) idx = i; });
+  if (idx < 0) return;
+  var mod = document.getElementById('profMod-esc');
+  if (mod) mod.classList.add('aberto');
+  escHistAbrirDetalhe(idx);
+}
 // "Nova escala": lista dos instrumentos (os de texto protegido só quando liberados pelo servidor)
 async function profNovaEscala() {
   const box = document.getElementById('profNovaEscalaLista');
@@ -11070,9 +11120,10 @@ function profRenderizarEscalas_(escalas) {
     html += '<div class="esch-bloco-head" onclick="escHistToggleBloco(this)">';
     // 16.4.1: def.emoji é HTML do sprite (literal do catálogo ESC_ESCALAS, nunca entrada do usuário) — não escapar
     html += '<span class="esch-bloco-icone">' + (def.emoji || '<svg class=ico aria-hidden=true><use href=#i-chart></use></svg>') + '</span>';
-    html += '<span class="esch-bloco-titulo">' + escapeHtmlAuto(def.nomeCompleto || cod) + escNomeTraducaoHtml_(def) + '</span>';
+    html += '<span class="esch-bloco-titulo">' + escNomeHtml_(def, cod) + '</span>';
     html += '<span class="esch-bloco-contagem">' + textoContagem + '</span>';
     html += fichaHtmlBotao_(cod); // 17.3.2: só quando a escala tem ficha
+    html += profAplicarHtmlBotao_(cod); // 19.0.1: aplicar agora, entre a ficha e o cadeado
     html += profCadeadoHtml_(cod, liberadas.indexOf(def.instrumentoId) !== -1);
     html += '<span class="esch-bloco-chevron">›</span>';
     html += '</div>';
@@ -17556,12 +17607,12 @@ const ESC_ESCALAS = {
     faixas: [
       { min: 20, max: 27, rotulo: 'Depressão grave', cor: 'vermelho',
         titulo: '<svg class=ico&#32;ico-risk aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
-        descricao: 'Seu escore indica <strong>sintomas depressivos graves</strong> nas últimas 2 semanas. Este resultado é um alerta importante que merece atenção imediata.',
-        sugestao: 'Entre em contato com seu terapeuta o quanto antes. Ele vai definir com você os próximos passos — que podem incluir intensificação do acompanhamento e avaliação médica.' },
+        descricao: 'Seu escore indica <strong>sintomas depressivos graves</strong> nas últimas 2 semanas. É um sinal importante de que este momento pede mais cuidado no acompanhamento.',
+        sugestao: 'Traga este resultado para sua próxima sessão. Seu terapeuta verá este resultado antes dela e vai avaliar com você os próximos passos, que podem incluir ajustes no acompanhamento e, se pertinente, avaliação médica.' },
       { min: 15, max: 19, rotulo: 'Depressão moderadamente grave', cor: 'laranja',
         titulo: '<svg class=ico&#32;ico-risk2 aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
         descricao: 'Seu escore indica <strong>sintomas depressivos moderadamente graves</strong> nas últimas 2 semanas. Este nível de sofrimento merece atenção clínica ampliada.',
-        sugestao: 'Informe seu terapeuta o mais breve possível. Ele pode considerar intensificação do acompanhamento e, se pertinente, avaliação médica complementar.' },
+        sugestao: 'Traga este resultado para sua próxima sessão. Seu terapeuta verá este resultado antes dela e vai avaliar com você os próximos passos, que podem incluir ajustes no acompanhamento e, se pertinente, avaliação médica.' },
       { min: 10, max: 14, rotulo: 'Depressão moderada', cor: 'laranja',
         titulo: '<svg class=ico&#32;ico-risk2 aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
         descricao: 'Seu escore indica <strong>sintomas depressivos moderados</strong> nas últimas 2 semanas. Este é um sinal importante de que o tratamento atual merece atenção especial.',
@@ -17647,8 +17698,8 @@ const ESC_ESCALAS = {
     faixas: [
       { min: 15, max: 21, rotulo: 'Ansiedade grave', cor: 'vermelho',
         titulo: '<svg class=ico&#32;ico-risk aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
-        descricao: 'Seu escore indica <strong>sintomas de ansiedade graves</strong> nas últimas 2 semanas. Este nível de sofrimento interfere significativamente no dia a dia e merece atenção imediata.',
-        sugestao: 'Entre em contato com seu terapeuta o quanto antes. Ele vai avaliar com você os próximos passos — que podem incluir intensificação do acompanhamento e, se pertinente, avaliação médica complementar.' },
+        descricao: 'Seu escore indica <strong>sintomas de ansiedade graves</strong> nas últimas 2 semanas. É um sinal importante de que este momento pede mais cuidado no acompanhamento.',
+        sugestao: 'Traga este resultado para sua próxima sessão. Seu terapeuta verá este resultado antes dela e vai avaliar com você os próximos passos, que podem incluir ajustes no acompanhamento e, se pertinente, avaliação médica.' },
       { min: 10, max: 14, rotulo: 'Ansiedade moderada', cor: 'laranja',
         titulo: '<svg class=ico&#32;ico-risk2 aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
         descricao: 'Seu escore indica <strong>sintomas de ansiedade moderados</strong> nas últimas 2 semanas. Este é um sinal importante de que vale a pena discutir com seu terapeuta estratégias específicas para lidar com a ansiedade.',
@@ -18000,8 +18051,8 @@ const ESC_ESCALAS = {
     faixas: [ // 17.3.1: textos ao paciente no molde do PHQ-9 (níveis de Cunha, 2001)
       { min: 29, max: 63, rotulo: 'Grave',    cor: 'vermelho',
         titulo: '<svg class=ico&#32;ico-risk aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
-        descricao: 'Seu escore indica <strong>sintomas depressivos graves</strong> nas duas últimas semanas. Este resultado é um alerta importante que merece atenção imediata.',
-        sugestao: 'Entre em contato com seu terapeuta o quanto antes. Ele vai definir com você os próximos passos — que podem incluir intensificação do acompanhamento e avaliação médica.' },
+        descricao: 'Seu escore indica <strong>sintomas depressivos graves</strong> nas duas últimas semanas. É um sinal importante de que este momento pede mais cuidado no acompanhamento.',
+        sugestao: 'Traga este resultado para sua próxima sessão. Seu terapeuta verá este resultado antes dela e vai avaliar com você os próximos passos, que podem incluir ajustes no acompanhamento e, se pertinente, avaliação médica.' },
       { min: 20, max: 28, rotulo: 'Moderado', cor: 'laranja',
         titulo: '<svg class=ico&#32;ico-risk2 aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
         descricao: 'Seu escore indica <strong>sintomas depressivos moderados</strong> nas duas últimas semanas. É um sinal importante de que o tratamento atual merece atenção especial.',
@@ -18071,8 +18122,8 @@ const ESC_ESCALAS = {
     faixas: [ // 17.3.1: textos ao paciente no molde do GAD-7 (níveis de Cunha, 2001)
       { min: 31, max: 63, rotulo: 'Grave',    cor: 'vermelho',
         titulo: '<svg class=ico&#32;ico-risk aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
-        descricao: 'Seu escore indica <strong>sintomas de ansiedade graves</strong> na última semana. Este nível de sofrimento interfere no dia a dia e merece atenção imediata.',
-        sugestao: 'Entre em contato com seu terapeuta o quanto antes. Ele vai avaliar com você os próximos passos — que podem incluir intensificação do acompanhamento e, se pertinente, avaliação médica.' },
+        descricao: 'Seu escore indica <strong>sintomas de ansiedade graves</strong> na última semana. É um sinal importante de que este momento pede mais cuidado no acompanhamento.',
+        sugestao: 'Traga este resultado para sua próxima sessão. Seu terapeuta verá este resultado antes dela e vai avaliar com você os próximos passos, que podem incluir ajustes no acompanhamento e, se pertinente, avaliação médica.' },
       { min: 20, max: 30, rotulo: 'Moderado', cor: 'laranja',
         titulo: '<svg class=ico&#32;ico-risk2 aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
         descricao: 'Seu escore indica <strong>sintomas de ansiedade moderados</strong> na última semana. Vale a pena discutir com seu terapeuta estratégias específicas para a ansiedade.',
@@ -18163,8 +18214,8 @@ const ESC_ESCALAS = {
     faixas: [ // 17.3.1: textos ao paciente (níveis de Cunha, 2001)
       { min: 14, max: 20, rotulo: 'Grave',    cor: 'vermelho',
         titulo: '<svg class=ico&#32;ico-risk aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
-        descricao: 'Seu escore indica <strong>desesperança grave</strong> na última semana: uma visão muito negativa do futuro. Este resultado merece atenção imediata.',
-        sugestao: 'Entre em contato com seu terapeuta o quanto antes. Ele vai conversar com você sobre o que está pesando e definir os próximos passos.' },
+        descricao: 'Seu escore indica <strong>desesperança grave</strong> na última semana: uma visão muito negativa do futuro. É um sinal importante de que este momento pede mais cuidado no acompanhamento.',
+        sugestao: 'Traga este resultado para sua próxima sessão. Seu terapeuta verá este resultado antes dela e vai conversar com você sobre o que está pesando.' },
       { min: 9,  max: 13, rotulo: 'Moderado', cor: 'laranja',
         titulo: '<svg class=ico&#32;ico-risk2 aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
         descricao: 'Seu escore indica <strong>desesperança moderada</strong> na última semana. O modo como você está vendo o futuro merece atenção clínica.',
@@ -18287,13 +18338,14 @@ const ESC_ESCALAS = {
         '<em>Estrutura:</em> 24 itens, escala de 1 (discordo totalmente) a 5 (concordo totalmente), sem itens invertidos; quatro subescalas de seis itens, cada uma somando 6 a 30. O sistema mostra as quatro subescalas e grava a soma dos 24 itens apenas como registro.',
         '<em>Prontidão para a mudança:</em> média(contemplação) + média(ação) + média(manutenção) − média(pré-contemplação), de −4 a +14 (DiClemente & Hughes, 1990). O sistema calcula com uma casa decimal.',
         '<em>Leitura:</em> pelo perfil, isto é, pela subescala mais alta e pelo desenho das quatro, mais do que por um número só. Em 224 pacientes ambulatoriais com alcoolismo, o perfil das subescalas formou cinco grupos (pré-contemplação, ambivalente, participação, não envolvido e contemplação), que diferiram no uso de álcool e nos resultados (DiClemente & Hughes, 1990).',
-        '<em>Pontos de corte:</em> não há corte validado para as versões brasileiras; duas delas oferecem escore T (normatização) na publicação original (Szupszynski & Oliveira, 2008; Oliveira et al., 2014), que o sistema não calcula. A folha de correção do GAAPCC classifica o estágio pela subescala de maior percentil e calcula a prontidão com os totais brutos em relação à média da própria amostra; o sistema usa a fórmula por médias de DiClemente e Hughes (1990), que não depende de amostra.',
+        '<em>Estágio:</em> pela prontidão (médias), com os cortes de DiClemente, Schlundt e Gemmell (2004), que o laboratório do autor aplica também à versão de 24 itens: até 8 pré-contemplação, de 8 a 11 contemplação, acima de 11 preparação ou ação. Não há norma brasileira publicada para a versão de álcool; os cortes são uma convenção e dependem da população. As versões de drogas ilícitas e de tabaco têm norma brasileira por escore T.',
         '<em>Cuidados:</em> a subescala de pré-contemplação costuma ter consistência interna mais baixa que as demais nas versões brasileiras; a motivação muda rápido e deve ser reavaliada ao longo do tratamento.'
       ],
       desenvolvedores: 'Eileen A. McConnaughy, James O. Prochaska e Wayne F. Velicer (1983); escore de prontidão de Carlo C. DiClemente e Sheryl O. Hughes (1990). Uso livre com citação. Versões brasileiras do grupo de Margareth da Silva Oliveira (PUCRS).',
       validacaoBr: 'Sim, pelo grupo que desenvolveu as versões brasileiras (GAAPCC, PUCRS): o instrumento oficial cita Oliveira, Freire e Cazassa (2007), validação apresentada no XIX Congresso da ABEAD, e a folha de correção do grupo usa a mesma chave de itens por subescala que o sistema aplica (PC 1, 5, 7, 16, 19, 22; C 3, 6, 9, 13, 14, 17; A 2, 4, 8, 11, 18, 23; M 10, 12, 15, 20, 21, 24). Os índices psicométricos dessa validação não foram publicados em artigo; as outras três versões (drogas ilícitas, tabaco, hábitos alimentares) têm estudos publicados. Não há corte validado.',
       referencias: [
         'DiClemente, C. C., & Hughes, S. O. (1990). Stages of change profiles in outpatient alcoholism treatment. <em>Journal of Substance Abuse, 2</em>(2), 217–235. https://doi.org/10.1016/s0899-3289(05)80057-4',
+        'DiClemente, C. C., Schlundt, D., & Gemmell, L. (2004). Readiness and stages of change in addiction treatment. <em>The American Journal on Addictions, 13</em>(2), 103–119. https://doi.org/10.1080/10550490490435777',
         'McConnaughy, E. A., Prochaska, J. O., & Velicer, W. F. (1983). Stages of change in psychotherapy: Measurement and sample profiles. <em>Psychotherapy: Theory, Research & Practice, 20</em>(3), 368–375. https://doi.org/10.1037/h0090198',
         'Oliveira, M. S., Freire, S. F., & Cazassa, M. J. (2007). <em>Validação da versão brasileira da escala URICA para abuso ou dependência de álcool</em>. Anais do XIX Congresso da ABEAD, Rio de Janeiro. (Referência do instrumento oficial do GAAPCC.)'
       ]
@@ -18324,10 +18376,15 @@ const ESC_ESCALAS = {
       manutencao:      { sigla: 'M',  nome: 'Manutenção',       icone: '<svg class=ico aria-hidden=true><use href=#i-target></use></svg>', corPrefix: 'urica' }
     },
     composto: { chave: 'prontidao', sigla: 'Prontidão', nome: 'Prontidão para a mudança', legenda: 'média de C + A + M − média de PC · de −4 a +14', mais: ['contemplacao', 'acao', 'manutencao'], menos: ['precontemplacao'], casas: 1 },
+    // 19.0.1: estágio pela prontidão (médias). Sem norma brasileira publicada para a versão de álcool; cortes de DiClemente, Schlundt & Gemmell (2004),
+    // que o laboratório do autor (UMBC) aplica à versão de 24 itens e o grupo da PUCRS usa em alcoolistas
+    estagios: { metodo: 'prontidao', cortes: [{ ate: 8, estagio: 'precontemplacao' }, { ate: 11, estagio: 'contemplacao' }, { estagio: 'acao', rotulo: 'Preparação ou ação' }],
+      fonte: 'Regra: cortes de prontidão de DiClemente, Schlundt e Gemmell (2004), aplicados pelo laboratório do autor também à versão de 24 itens. Não há norma brasileira publicada para a versão de álcool: os cortes são internacionais e dependem da população.' },
     eduGeralTitulo: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg> Como ler',
-    eduGeralDesc: 'A URICA descreve o perfil motivacional em quatro subescalas de 6 itens (6 a 30 cada): Pré-contemplação, Contemplação, Ação e Manutenção. Não há pontos de corte validados para a versão brasileira — a leitura é pelo perfil: qual subescala predomina e como ele muda ao longo do tratamento. A prontidão resume a disposição para a mudança; valores maiores indicam mais prontidão.',
+    eduGeralDesc: 'A URICA descreve o perfil motivacional em quatro subescalas de 6 itens (6 a 30 cada): Pré-contemplação, Contemplação, Ação e Manutenção. O bloco “Estágio de mudança” mostra em qual estágio este resultado se encaixa e por qual regra; o que mais importa é como ele muda ao longo do tratamento. A prontidão resume a disposição para a mudança; valores maiores indicam mais prontidão.',
+    eduGeralSugestao: 'Traga este resultado para sua próxima sessão. Seu terapeuta verá este resultado antes dela.',
     faixasLista: [
-      '<em style="color:var(--c-ink-3);">Sem pontos de corte validados para a versão brasileira (Oliveira, Freire & Cazassa, 2007; McConnaughy, Prochaska & Velicer, 1983). Subescala = soma dos 6 itens (6–30); prontidão = média(C) + média(A) + média(M) − média(PC), de −4 a +14 (DiClemente & Hughes, 1990).</em>'
+      '<em style="color:var(--c-ink-3);">Estágio pela prontidão, com os cortes de DiClemente, Schlundt & Gemmell (2004): até 8 pré-contemplação, de 8 a 11 contemplação, acima de 11 preparação ou ação. Não há norma brasileira publicada para a versão de álcool (Oliveira, Freire & Cazassa, 2007). Subescala = soma dos 6 itens (6–30); prontidão = média(C) + média(A) + média(M) − média(PC), de −4 a +14 (DiClemente & Hughes, 1990).</em>'
     ]
   },
 
@@ -18348,11 +18405,11 @@ const ESC_ESCALAS = {
         '<em>Estrutura:</em> 24 itens, escala de 1 (discordo totalmente) a 5 (concordo totalmente), sem itens invertidos; quatro subescalas de seis itens, cada uma somando 6 a 30. O sistema mostra as quatro subescalas e grava a soma dos 24 itens apenas como registro.',
         '<em>Prontidão para a mudança:</em> média(contemplação) + média(ação) + média(manutenção) − média(pré-contemplação), de −4 a +14 (DiClemente & Hughes, 1990). O sistema calcula com uma casa decimal.',
         '<em>Leitura:</em> pelo perfil, isto é, pela subescala mais alta e pelo desenho das quatro, mais do que por um número só. Em 224 pacientes ambulatoriais com alcoolismo, o perfil das subescalas formou cinco grupos (pré-contemplação, ambivalente, participação, não envolvido e contemplação), que diferiram no uso de álcool e nos resultados (DiClemente & Hughes, 1990).',
-        '<em>Pontos de corte:</em> não há corte validado para as versões brasileiras; duas delas oferecem escore T (normatização) na publicação original (Szupszynski & Oliveira, 2008; Oliveira et al., 2014), que o sistema não calcula. A folha de correção do GAAPCC classifica o estágio pela subescala de maior percentil e calcula a prontidão com os totais brutos em relação à média da própria amostra; o sistema usa a fórmula por médias de DiClemente e Hughes (1990), que não depende de amostra.',
+        '<em>Estágio:</em> a soma de cada subescala é convertida em escore T pela norma brasileira (Szupszynski & Oliveira, 2008, Tabela 5) e o estágio é o da subescala com o T mais alto, como manda a folha de correção do GAAPCC/PUCRS. Na amostra de validação, a prontidão pela soma (C + A + M − PC) teve média 61. A prontidão mostrada no resultado segue a fórmula por médias de DiClemente e Hughes (1990).',
         '<em>Cuidados:</em> a subescala de pré-contemplação costuma ter consistência interna mais baixa que as demais nas versões brasileiras; a motivação muda rápido e deve ser reavaliada ao longo do tratamento.'
       ],
       desenvolvedores: 'Eileen A. McConnaughy, James O. Prochaska e Wayne F. Velicer (1983); escore de prontidão de Carlo C. DiClemente e Sheryl O. Hughes (1990). Uso livre com citação. Versões brasileiras do grupo de Margareth da Silva Oliveira (PUCRS).',
-      validacaoBr: 'Sim. Szupszynski e Oliveira (2008): 214 usuários de substâncias ilícitas (194 homens), de 13 a 44 anos, em ambulatórios e internações de Porto Alegre; consistência interna da escala de 24 itens 0,657; normatização brasileira por escore T. Não há corte validado.',
+      validacaoBr: 'Sim. Szupszynski e Oliveira (2008): 214 usuários de substâncias ilícitas (194 homens), de 13 a 44 anos, em ambulatórios e internações de Porto Alegre; consistência interna da escala de 24 itens 0,657; normatização brasileira por escore T, que o sistema usa para classificar o estágio.',
       referencias: [
         'DiClemente, C. C., & Hughes, S. O. (1990). Stages of change profiles in outpatient alcoholism treatment. <em>Journal of Substance Abuse, 2</em>(2), 217–235. https://doi.org/10.1016/s0899-3289(05)80057-4',
         'McConnaughy, E. A., Prochaska, J. O., & Velicer, W. F. (1983). Stages of change in psychotherapy: Measurement and sample profiles. <em>Psychotherapy: Theory, Research & Practice, 20</em>(3), 368–375. https://doi.org/10.1037/h0090198',
@@ -18385,10 +18442,21 @@ const ESC_ESCALAS = {
       manutencao:      { sigla: 'M',  nome: 'Manutenção',       icone: '<svg class=ico aria-hidden=true><use href=#i-target></use></svg>', corPrefix: 'urica' }
     },
     composto: { chave: 'prontidao', sigla: 'Prontidão', nome: 'Prontidão para a mudança', legenda: 'média de C + A + M − média de PC · de −4 a +14', mais: ['contemplacao', 'acao', 'manutencao'], menos: ['precontemplacao'], casas: 1 },
+    // 19.0.1: estágio pelo maior escore T. Norma brasileira: Szupszynski & Oliveira (2008), Tabela 5 (p. 36; tabela inteira na folha de correção do GAAPCC/PUCRS).
+    // normas: [soma mínima, soma máxima, escore T] por subescala
+    estagios: { metodo: 'escoreT', prontidaoSomaMedia: 61,
+      normas: {
+        precontemplacao: [[6, 7, 35], [8, 10, 40], [11, 12, 45], [13, 14, 50], [15, 16, 55], [17, 19, 60], [20, 21, 65], [22, 23, 70], [24, 26, 75], [27, 28, 80], [29, 30, 85]],
+        contemplacao: [[6, 7, -5], [8, 9, 0], [10, 11, 5], [12, 13, 10], [14, 14, 15], [15, 16, 20], [17, 18, 25], [19, 20, 30], [21, 21, 35], [22, 23, 40], [24, 25, 45], [26, 26, 50], [27, 28, 55], [29, 30, 60]],
+        acao: [[6, 6, -5], [7, 8, 0], [9, 10, 5], [11, 12, 10], [13, 14, 15], [15, 15, 20], [16, 17, 25], [18, 19, 30], [20, 21, 35], [22, 23, 40], [24, 25, 45], [26, 26, 50], [27, 28, 55], [29, 30, 60]],
+        manutencao: [[6, 7, 15], [8, 10, 20], [11, 12, 25], [13, 14, 30], [15, 17, 35], [18, 19, 40], [20, 21, 45], [22, 24, 50], [25, 26, 55], [27, 29, 60], [30, 30, 65]]
+      },
+      fonte: 'Regra: norma brasileira por escore T (Szupszynski e Oliveira, 2008); o estágio é o da subescala com o escore T mais alto, como na folha de correção do grupo que validou a escala (GAAPCC, PUCRS).' },
     eduGeralTitulo: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg> Como ler',
-    eduGeralDesc: 'A URICA descreve o perfil motivacional em quatro subescalas de 6 itens (6 a 30 cada): Pré-contemplação, Contemplação, Ação e Manutenção. Não há pontos de corte validados para a versão brasileira — a leitura é pelo perfil: qual subescala predomina e como ele muda ao longo do tratamento. A prontidão resume a disposição para a mudança; valores maiores indicam mais prontidão.',
+    eduGeralDesc: 'A URICA descreve o perfil motivacional em quatro subescalas de 6 itens (6 a 30 cada): Pré-contemplação, Contemplação, Ação e Manutenção. O bloco “Estágio de mudança” mostra em qual estágio este resultado se encaixa e por qual regra; o que mais importa é como ele muda ao longo do tratamento. A prontidão resume a disposição para a mudança; valores maiores indicam mais prontidão.',
+    eduGeralSugestao: 'Traga este resultado para sua próxima sessão. Seu terapeuta verá este resultado antes dela.',
     faixasLista: [
-      '<em style="color:var(--c-ink-3);">Sem pontos de corte validados para a versão brasileira (Szupszynski & Oliveira, 2008; McConnaughy, Prochaska & Velicer, 1983). Subescala = soma dos 6 itens (6–30); prontidão = média(C) + média(A) + média(M) − média(PC), de −4 a +14 (DiClemente & Hughes, 1990).</em>'
+      '<em style="color:var(--c-ink-3);">Estágio pela norma brasileira em escore T (Szupszynski & Oliveira, 2008): cada soma vira um escore T e o estágio é o da subescala com o T mais alto (folha de correção do GAAPCC/PUCRS). Subescala = soma dos 6 itens (6–30); prontidão = média(C) + média(A) + média(M) − média(PC), de −4 a +14 (DiClemente & Hughes, 1990).</em>'
     ]
   },
 
@@ -18409,11 +18477,11 @@ const ESC_ESCALAS = {
         '<em>Estrutura:</em> 24 itens, escala de 1 (discordo totalmente) a 5 (concordo totalmente), sem itens invertidos; quatro subescalas de seis itens, cada uma somando 6 a 30. O sistema mostra as quatro subescalas e grava a soma dos 24 itens apenas como registro.',
         '<em>Prontidão para a mudança:</em> média(contemplação) + média(ação) + média(manutenção) − média(pré-contemplação), de −4 a +14 (DiClemente & Hughes, 1990). O sistema calcula com uma casa decimal.',
         '<em>Leitura:</em> pelo perfil, isto é, pela subescala mais alta e pelo desenho das quatro, mais do que por um número só. Em 224 pacientes ambulatoriais com alcoolismo, o perfil das subescalas formou cinco grupos (pré-contemplação, ambivalente, participação, não envolvido e contemplação), que diferiram no uso de álcool e nos resultados (DiClemente & Hughes, 1990).',
-        '<em>Pontos de corte:</em> não há corte validado para as versões brasileiras; duas delas oferecem escore T (normatização) na publicação original (Szupszynski & Oliveira, 2008; Oliveira et al., 2014), que o sistema não calcula. A folha de correção do GAAPCC classifica o estágio pela subescala de maior percentil e calcula a prontidão com os totais brutos em relação à média da própria amostra; o sistema usa a fórmula por médias de DiClemente e Hughes (1990), que não depende de amostra.',
+        '<em>Estágio:</em> a soma de cada subescala é convertida em escore T pela norma brasileira (Oliveira et al., 2014, Tabela 3) e o estágio é o da subescala com o T mais alto, como manda a folha de correção do GAAPCC/PUCRS. Na tabela publicada, a linha T 20 da subescala Ação repete o intervalo da coluna vizinha; o sistema usa 11–12, que é o que a sequência indica. A prontidão mostrada no resultado segue a fórmula por médias de DiClemente e Hughes (1990).',
         '<em>Cuidados:</em> a subescala de pré-contemplação costuma ter consistência interna mais baixa que as demais nas versões brasileiras; a motivação muda rápido e deve ser reavaliada ao longo do tratamento.'
       ],
       desenvolvedores: 'Eileen A. McConnaughy, James O. Prochaska e Wayne F. Velicer (1983); escore de prontidão de Carlo C. DiClemente e Sheryl O. Hughes (1990). Uso livre com citação. Versões brasileiras do grupo de Margareth da Silva Oliveira (PUCRS).',
-      validacaoBr: 'Sim. Oliveira et al. (2014): estudo instrumental com dependentes de tabaco; alfa de Cronbach 0,55 (pré-contemplação), 0,78 (contemplação), 0,81 (ação) e 0,80 (manutenção); validade concorrente com a régua de prontidão; normatização por escore T. Não há corte validado.',
+      validacaoBr: 'Sim. Oliveira et al. (2014): estudo instrumental com dependentes de tabaco; alfa de Cronbach 0,55 (pré-contemplação), 0,78 (contemplação), 0,81 (ação) e 0,80 (manutenção); validade concorrente com a régua de prontidão; normatização por escore T, que o sistema usa para classificar o estágio.',
       referencias: [
         'DiClemente, C. C., & Hughes, S. O. (1990). Stages of change profiles in outpatient alcoholism treatment. <em>Journal of Substance Abuse, 2</em>(2), 217–235. https://doi.org/10.1016/s0899-3289(05)80057-4',
         'McConnaughy, E. A., Prochaska, J. O., & Velicer, W. F. (1983). Stages of change in psychotherapy: Measurement and sample profiles. <em>Psychotherapy: Theory, Research & Practice, 20</em>(3), 368–375. https://doi.org/10.1037/h0090198',
@@ -18446,10 +18514,21 @@ const ESC_ESCALAS = {
       manutencao:      { sigla: 'M',  nome: 'Manutenção',       icone: '<svg class=ico aria-hidden=true><use href=#i-target></use></svg>', corPrefix: 'urica' }
     },
     composto: { chave: 'prontidao', sigla: 'Prontidão', nome: 'Prontidão para a mudança', legenda: 'média de C + A + M − média de PC · de −4 a +14', mais: ['contemplacao', 'acao', 'manutencao'], menos: ['precontemplacao'], casas: 1 },
+    // 19.0.1: estágio pelo maior escore T. Norma brasileira: Oliveira et al. (2014), Tabela 3 (p. 11). Na tabela publicada, a linha T 20 da Ação repete
+    // "16-17" da coluna vizinha; pela sequência (13-14 em T 25 e 9-10 em T 15) o intervalo é 11-12, que é o que entra aqui.
+    estagios: { metodo: 'escoreT',
+      normas: {
+        precontemplacao: [[6, 7, 35], [8, 8, 40], [9, 10, 45], [11, 11, 50], [12, 13, 55], [14, 15, 60], [16, 16, 65], [17, 18, 70], [19, 19, 75], [20, 21, 80], [22, 23, 85], [24, 24, 90], [25, 26, 95], [27, 27, 100], [28, 29, 105], [30, 30, 110]],
+        contemplacao: [[6, 6, -15], [7, 8, -10], [9, 9, -5], [10, 11, 0], [12, 12, 5], [13, 14, 10], [15, 15, 15], [16, 17, 20], [18, 18, 25], [19, 20, 30], [21, 21, 35], [22, 23, 40], [24, 24, 45], [25, 26, 50], [27, 27, 55], [28, 29, 60], [30, 30, 65]],
+        acao: [[6, 6, 5], [7, 8, 10], [9, 10, 15], [11, 12, 20], [13, 14, 25], [15, 16, 30], [17, 18, 35], [19, 20, 40], [21, 22, 45], [23, 24, 50], [25, 26, 55], [27, 28, 60], [29, 30, 65]],
+        manutencao: [[6, 8, 40], [9, 11, 45], [12, 14, 50], [15, 17, 55], [18, 20, 60], [21, 23, 65], [24, 26, 70], [27, 29, 75], [30, 30, 80]]
+      },
+      fonte: 'Regra: norma brasileira por escore T (Oliveira e colaboradores, 2014); o estágio é o da subescala com o escore T mais alto, como na folha de correção do grupo que validou a escala (GAAPCC, PUCRS).' },
     eduGeralTitulo: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg> Como ler',
-    eduGeralDesc: 'A URICA descreve o perfil motivacional em quatro subescalas de 6 itens (6 a 30 cada): Pré-contemplação, Contemplação, Ação e Manutenção. Não há pontos de corte validados para a versão brasileira — a leitura é pelo perfil: qual subescala predomina e como ele muda ao longo do tratamento. A prontidão resume a disposição para a mudança; valores maiores indicam mais prontidão. No estudo brasileiro da versão para tabaco a subescala Pré-contemplação teve precisão baixa: leia-a com cautela.',
+    eduGeralDesc: 'A URICA descreve o perfil motivacional em quatro subescalas de 6 itens (6 a 30 cada): Pré-contemplação, Contemplação, Ação e Manutenção. O bloco “Estágio de mudança” mostra em qual estágio este resultado se encaixa e por qual regra; o que mais importa é como ele muda ao longo do tratamento. A prontidão resume a disposição para a mudança; valores maiores indicam mais prontidão. No estudo brasileiro da versão para tabaco a subescala Pré-contemplação teve precisão baixa: leia-a com cautela.',
+    eduGeralSugestao: 'Traga este resultado para sua próxima sessão. Seu terapeuta verá este resultado antes dela.',
     faixasLista: [
-      '<em style="color:var(--c-ink-3);">Sem pontos de corte validados para a versão brasileira (Oliveira et al., 2014; McConnaughy, Prochaska & Velicer, 1983). Subescala = soma dos 6 itens (6–30); prontidão = média(C) + média(A) + média(M) − média(PC), de −4 a +14 (DiClemente & Hughes, 1990). A subescala PC teve precisão baixa no estudo brasileiro.</em>'
+      '<em style="color:var(--c-ink-3);">Estágio pela norma brasileira em escore T (Oliveira et al., 2014): cada soma vira um escore T e o estágio é o da subescala com o T mais alto (folha de correção do GAAPCC/PUCRS). Subescala = soma dos 6 itens (6–30); prontidão = média(C) + média(A) + média(M) − média(PC), de −4 a +14 (DiClemente & Hughes, 1990). A subescala PC teve precisão baixa no estudo brasileiro.</em>'
     ]
   },
 
@@ -18470,12 +18549,13 @@ const ESC_ESCALAS = {
         '<em>Estrutura:</em> 24 itens, escala de 1 (discordo totalmente) a 5 (concordo totalmente), sem itens invertidos; quatro subescalas de seis itens, cada uma somando 6 a 30. O sistema mostra as quatro subescalas e grava a soma dos 24 itens apenas como registro.',
         '<em>Prontidão para a mudança:</em> média(contemplação) + média(ação) + média(manutenção) − média(pré-contemplação), de −4 a +14 (DiClemente & Hughes, 1990). O sistema calcula com uma casa decimal.',
         '<em>Leitura:</em> pelo perfil, isto é, pela subescala mais alta e pelo desenho das quatro, mais do que por um número só. Em 224 pacientes ambulatoriais com alcoolismo, o perfil das subescalas formou cinco grupos (pré-contemplação, ambivalente, participação, não envolvido e contemplação), que diferiram no uso de álcool e nos resultados (DiClemente & Hughes, 1990).',
-        '<em>Pontos de corte:</em> não há corte validado para as versões brasileiras; duas delas oferecem escore T (normatização) na publicação original (Szupszynski & Oliveira, 2008; Oliveira et al., 2014), que o sistema não calcula. A folha de correção do GAAPCC classifica o estágio pela subescala de maior percentil e calcula a prontidão com os totais brutos em relação à média da própria amostra; o sistema usa a fórmula por médias de DiClemente e Hughes (1990), que não depende de amostra.',
+        '<em>Estágio:</em> pela prontidão (médias), com os cortes obtidos pela distribuição interquartil no estudo brasileiro de validação para o comer compulsivo (Bittencourt, 2009): até 8 pré-contemplação, de 8 a 10,33 contemplação, acima de 10,33 ação. Não há tabela de escore T para esta versão.',
         '<em>Cuidados:</em> a subescala de pré-contemplação costuma ter consistência interna mais baixa que as demais nas versões brasileiras; a motivação muda rápido e deve ser reavaliada ao longo do tratamento.'
       ],
       desenvolvedores: 'Eileen A. McConnaughy, James O. Prochaska e Wayne F. Velicer (1983); escore de prontidão de Carlo C. DiClemente e Sheryl O. Hughes (1990). Uso livre com citação. Versões brasileiras do grupo de Margareth da Silva Oliveira (PUCRS).',
-      validacaoBr: 'Sim. Bittencourt, Lucena-Santos, Moraes e Oliveira (2012): 175 participantes de programas de redução de peso do sul do Brasil; análise fatorial com quatro fatores correspondentes aos estágios; alfa total 0,842 (0,813 a 0,940 por domínio); redução de 32 para 24 itens. Não há corte validado.',
+      validacaoBr: 'Sim. Bittencourt, Lucena-Santos, Moraes e Oliveira (2012): 175 participantes de programas de redução de peso do sul do Brasil; análise fatorial com quatro fatores correspondentes aos estágios; alfa total 0,842 (0,813 a 0,940 por domínio); redução de 32 para 24 itens. Cortes de prontidão por estágio na tese de Bittencourt (2009).',
       referencias: [
+        'Bittencourt, S. A. (2009). <em>Motivação para a mudança: adaptação e validação da escala URICA (University of Rhode Island Change Assessment) para o comportamento de comer compulsivo</em> [Tese de doutorado, Pontifícia Universidade Católica do Rio Grande do Sul]. https://repositorio.pucrs.br/dspace/handle/10923/4779',
         'Bittencourt, S. A., Lucena-Santos, P., Moraes, J. F. D., & Oliveira, M. S. (2012). Motivação para mudança: Análise fatorial da URICA para hábitos alimentares. <em>Psico-USF, 17</em>(3), 497–505.',
         'DiClemente, C. C., & Hughes, S. O. (1990). Stages of change profiles in outpatient alcoholism treatment. <em>Journal of Substance Abuse, 2</em>(2), 217–235. https://doi.org/10.1016/s0899-3289(05)80057-4',
         'McConnaughy, E. A., Prochaska, J. O., & Velicer, W. F. (1983). Stages of change in psychotherapy: Measurement and sample profiles. <em>Psychotherapy: Theory, Research & Practice, 20</em>(3), 368–375. https://doi.org/10.1037/h0090198'
@@ -18507,10 +18587,14 @@ const ESC_ESCALAS = {
       manutencao:      { sigla: 'M',  nome: 'Manutenção',       icone: '<svg class=ico aria-hidden=true><use href=#i-target></use></svg>', corPrefix: 'urica' }
     },
     composto: { chave: 'prontidao', sigla: 'Prontidão', nome: 'Prontidão para a mudança', legenda: 'média de C + A + M − média de PC · de −4 a +14', mais: ['contemplacao', 'acao', 'manutencao'], menos: ['precontemplacao'], casas: 1 },
+    // 19.0.1: estágio pela prontidão (médias). Cortes brasileiros pela distribuição interquartil: Bittencourt (2009), tese da PUCRS, p. 52
+    estagios: { metodo: 'prontidao', cortes: [{ ate: 8, estagio: 'precontemplacao' }, { ate: 10.33, estagio: 'contemplacao' }, { estagio: 'acao' }],
+      fonte: 'Regra: cortes de prontidão do estudo brasileiro de validação para o comer compulsivo (Bittencourt, 2009). Não há tabela de escore T para esta versão.' },
     eduGeralTitulo: '<svg class=ico aria-hidden=true><use href=#i-brain></use></svg> Como ler',
-    eduGeralDesc: 'A URICA descreve o perfil motivacional em quatro subescalas de 6 itens (6 a 30 cada): Pré-contemplação, Contemplação, Ação e Manutenção. Não há pontos de corte validados para a versão brasileira — a leitura é pelo perfil: qual subescala predomina e como ele muda ao longo do tratamento. A prontidão resume a disposição para a mudança; valores maiores indicam mais prontidão.',
+    eduGeralDesc: 'A URICA descreve o perfil motivacional em quatro subescalas de 6 itens (6 a 30 cada): Pré-contemplação, Contemplação, Ação e Manutenção. O bloco “Estágio de mudança” mostra em qual estágio este resultado se encaixa e por qual regra; o que mais importa é como ele muda ao longo do tratamento. A prontidão resume a disposição para a mudança; valores maiores indicam mais prontidão.',
+    eduGeralSugestao: 'Traga este resultado para sua próxima sessão. Seu terapeuta verá este resultado antes dela.',
     faixasLista: [
-      '<em style="color:var(--c-ink-3);">Sem pontos de corte validados para a versão brasileira (Bittencourt et al., 2012; McConnaughy, Prochaska & Velicer, 1983). Subescala = soma dos 6 itens (6–30); prontidão = média(C) + média(A) + média(M) − média(PC), de −4 a +14 (DiClemente & Hughes, 1990).</em>'
+      '<em style="color:var(--c-ink-3);">Estágio pela prontidão, com os cortes brasileiros de Bittencourt (2009): até 8 pré-contemplação, de 8 a 10,33 contemplação, acima de 10,33 ação. Subescala = soma dos 6 itens (6–30); prontidão = média(C) + média(A) + média(M) − média(PC), de −4 a +14 (DiClemente & Hughes, 1990).</em>'
     ]
   },
 
@@ -18590,7 +18674,7 @@ const ESC_ESCALAS = {
       { min: 36, max: 80, rotulo: 'Sugestivo de TEPT',        cor: 'vermelho',
         titulo: '<svg class=ico&#32;ico-risk aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
         descricao: 'Seu escore está <strong>acima do ponto de corte</strong> para reações de estresse pós-traumático no último mês. Isso não é um diagnóstico: é um sinal de que essas reações merecem avaliação cuidadosa.',
-        sugestao: 'Converse com seu terapeuta o quanto antes sobre este resultado. Ele vai avaliar com você o que está acontecendo e os próximos passos.' },
+        sugestao: 'Traga este resultado para sua próxima sessão. Seu terapeuta verá este resultado antes dela e vai avaliar com você o que está acontecendo e os próximos passos.' },
       { min: 0,  max: 35, rotulo: 'Abaixo do ponto de corte', cor: 'verde',
         titulo: '<svg class=ico&#32;ico-pos aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
         descricao: 'Seu escore está <strong>abaixo do ponto de corte</strong> no último mês. Reações a um evento difícil podem existir sem chegar a esse nível.',
@@ -18827,7 +18911,7 @@ const ESC_ESCALAS = {
       { min: 5,  max: 9,  rotulo: 'Extremamente insatisfeito', cor: 'vermelho',
         titulo: '<svg class=ico&#32;ico-risk aria-hidden=true><use href=#i-circle></use></svg> O que isso significa?',
         descricao: 'Seu escore indica <strong>insatisfação extrema</strong> com a vida. Este resultado merece atenção.',
-        sugestao: 'Converse com seu terapeuta o quanto antes sobre como você está se sentindo.' }
+        sugestao: 'Traga este resultado para sua próxima sessão. Seu terapeuta verá este resultado antes dela e vai conversar com você sobre como você está se sentindo.' }
     ],
     faixasLista: [
       '<strong>5-9</strong> — Extremamente insatisfeito',
@@ -20453,7 +20537,7 @@ async function escIniciarAplicacao(codigoEscala) {
 
   // Preenche cabeçalho
   topbarDefinirTitulo('sec-escalas-aplicar', codigoEscala); // Pacote 16.1: título vai para a barra
-  document.getElementById('escAplicarHead').innerHTML = def.emoji + ' ' + def.nomeCompleto + escNomeTraducaoHtml_(def); // 17.3.2: tradução abaixo
+  document.getElementById('escAplicarHead').innerHTML = def.emoji + ' ' + escNomeHtml_(def, ''); // 17.3.2: tradução abaixo
   document.getElementById('escAplicarSub').innerHTML = def.subtitulo;
   // Pacote 17.0: a instrução do BDI-II e do BAI vem da aba, inteira e sem
   // reescrita (seção 0.1 item 2). textContent preserva o texto como digitado.
@@ -20872,7 +20956,7 @@ async function escEnviarEscala(event) {
     // 18.5: escala aplicada pelo profissional — volta à tela do paciente com a confirmação do servidor
     // 17.3.1: o servidor abriu a escala para o paciente; o cadeado do cartão acompanha sem recarregar
     if (PROF_FLUXO && PROF_PACIENTE_SEL && Array.isArray(resp.escalas_liberadas)) PROF_PACIENTE_SEL.escalasLiberadas = resp.escalas_liberadas;
-    if (PROF_FLUXO) { escLimparRascunho(); profFluxoEncerrar_(resp.mensagem); return; }
+    if (PROF_FLUXO) { escLimparRascunho(); profFluxoEncerrar_(resp.mensagem, { cod: codigo, idEnvio: dados.id_envio }); return; } // 19.0.1: e o resultado abre
 
     // Atualiza flag de veterano localmente (destrava cards)
     ESC_STATE.temEscalas = true;
@@ -20900,9 +20984,10 @@ async function escEnviarEscala(event) {
 // também serve o modal do histórico de escalas.
 // ============================================================
 
-// 17.3.2: tradução do nome original, em letra menor, abaixo do título (vazio quando a escala não tem)
-function escNomeTraducaoHtml_(def) {
-  return (def && def.nomeTraducao) ? '<span class="esc-nome-trad">' + escapeHtmlAuto(def.nomeTraducao) + '</span>' : '';
+// 19.0.1: nome da escala num bloco — original em cima, tradução embaixo (17.3.2: só quando a escala tem tradução)
+function escNomeHtml_(def, cod) {
+  return '<span class="esc-nome"><span class="esc-nome-orig">' + escapeHtmlAuto((def && def.nomeCompleto) || cod || '') + '</span>' +
+    ((def && def.nomeTraducao) ? '<span class="esc-nome-trad">' + escapeHtmlAuto(def.nomeTraducao) + '</span>' : '') + '</span>';
 }
 
 function escMostrarResultado(codigo, calc, respostas) {
@@ -21086,12 +21171,16 @@ function escRenderizarConteudoResultado(reg, def, modo, contexto) {
   if (eDass) {
     // DASS-21: cabeçalho enxuto + 3 boxes abaixo
     html += '<div class="rr-header">';
-    html +=   '<h2>' + (def.emoji || '') + ' ' + escapeHtmlAuto(def.nomeCompleto || cod) + escNomeTraducaoHtml_(def) + '</h2>'; // 16.4.1: emoji é HTML do sprite; 17.3.2: tradução
+    html +=   '<h2>' + (def.emoji || '') + ' ' + escNomeHtml_(def, cod) + '</h2>'; // 16.4.1: emoji é HTML do sprite; 17.3.2: tradução
     html += '</div>';
     html += escRrBlocoSubescalasDass(reg, def);
   } else {
     html += escRrBlocoHeaderEscore(reg, def);
   }
+
+  // ---- 3b. 19.0.1: onde o paciente está — estágio de mudança (escala com `estagios`) ou "Seu resultado" (escala sem corte) ----
+  html += escRrBlocoEstagio(def, reg, contexto);
+  html += escRrBlocoSeuResultado(cod, def, reg, contexto);
 
   // ---- 4. "O que isso significa?" ----
   html += escRrBlocoOQueSignifica(cod, def, reg);
@@ -21250,7 +21339,7 @@ function escRrBlocoHeaderEscore(reg, def) {
   const faixaRotulo = String(reg.faixa || '');
 
   return '<div class="rr-header">' +
-    '<h2>' + (def.emoji || '') + ' ' + escapeHtmlAuto(def.nomeCompleto || '') + escNomeTraducaoHtml_(def) + '</h2>' + // 16.4.1: emoji é HTML do sprite; 17.3.2: tradução
+    '<h2>' + (def.emoji || '') + ' ' + escNomeHtml_(def, '') + '</h2>' + // 16.4.1: emoji é HTML do sprite; 17.3.2: tradução
     '<div class="rr-header-escore">' + escapeHtmlAuto(String(escore)) +
       (escoreMax ? '<span class="rr-header-escore-max">/' + escapeHtmlAuto(String(escoreMax)) + '</span>' : '') +
     '</div>' +
@@ -21272,6 +21361,7 @@ function escRrBlocoSubescalasDass(reg, def) {
   const nPor = {};
   (def.itens || []).forEach(function (it) { if (it.subescala) nPor[it.subescala] = (nPor[it.subescala] || 0) + 1; });
 
+  const estagio = escEstagioDe_(def, reg); // 19.0.1: escore T de cada subescala, quando a escala tem norma
   let html = '<div class="rr-subescalas-grid' + (ordem.length === 4 ? ' quatro' : '') + '">';
   ordem.forEach(function(k){
     const m = meta[k] || { nome: k, icone: '', corPrefix: 'gray' };
@@ -21290,6 +21380,7 @@ function escRrBlocoSubescalasDass(reg, def) {
       // Sem faixa: a média dos itens (é dela que sai o composto); 17.5: com subMedia o escore já é a média
       html +=   '<div class="rr-sub-media">média ' + escapeHtmlAuto(String(Math.round(Number(escore) / nPor[k] * 10) / 10).replace('.', ',')) + '</div>';
     }
+    if (estagio && estagio.t && estagio.t[k] !== undefined) html += '<div class="rr-sub-media">escore T ' + estagio.t[k] + '</div>';
     html += '</div>';
   });
   if (def.composto) {
@@ -21303,6 +21394,169 @@ function escRrBlocoSubescalasDass(reg, def) {
   }
   html += '</div>';
   return html;
+}
+
+// ============================================================
+// PACOTE 19.0.1 — o resultado diz onde o paciente está (22/11/2026)
+// (1) Escala com `estagios` no catálogo (as quatro URICA): o estágio de mudança sai da regra da fonte — escore T
+//     da norma brasileira (o estágio é o da subescala com o T mais alto: folha de correção do GAAPCC/PUCRS) ou
+//     cortes sobre a prontidão — e vem com o quadro dos estágios. (2) Escala sem ponto de corte: o bloco "Seu
+//     resultado nesta aplicação" situa a pontuação só com o que os números dizem (régua, subescala mais alta e
+//     mais baixa, diferença para a aplicação anterior). O motor não cita escala pelo nome: lê o catálogo.
+// ============================================================
+// Quadro dos estágios de mudança (modelo transteórico: Prochaska & DiClemente, 1982; Prochaska, DiClemente & Norcross,
+// 1992; prevenção de recaída: Marlatt & Gordon, 1985; entrevista motivacional: Miller & Rollnick, 2013).
+// voce = o que o paciente lê quando está no estágio; descricao = linha do quadro; propor = só para o profissional.
+var ESC_QUADRO_ESTAGIOS = {
+  precontemplacao: { nome: 'Pré-contemplação', voce: 'Neste momento, mudar não aparece como necessidade para você.',
+    descricao: 'Mudar não aparece como necessidade; o comportamento ainda não é visto como problema.',
+    propor: 'Construir vínculo, informar e dar devolutiva sem confronto, explorar as consequências que ele mesmo percebe. Não propor plano de ação ainda.' },
+  contemplacao: { nome: 'Contemplação', voce: 'Você reconhece o problema e pensa em mudar, mas ainda pesa prós e contras.',
+    descricao: 'O problema é reconhecido e há intenção de mudar, mas com ambivalência entre prós e contras.',
+    propor: 'Explorar a ambivalência com a balança decisional, evocar as razões dele para mudar, fortalecer a confiança de que consegue.' },
+  acao: { nome: 'Ação', voce: 'Você já está mudando, com esforço recente e visível.',
+    descricao: 'A mudança já começou, com esforço recente e visível.',
+    propor: 'Plano e metas concretas, controle de estímulos, comportamentos substitutos, reforço dos ganhos, treino de enfrentamento, rede de apoio.' },
+  manutencao: { nome: 'Manutenção', voce: 'Você já mudou e trabalha para sustentar a mudança.',
+    descricao: 'A mudança já aconteceu e o trabalho é sustentá-la e evitar a recaída.',
+    propor: 'Prevenção de recaída: situações de risco, plano para lapsos, manutenção das estratégias e do apoio.' }
+};
+
+// Estágio de mudança de uma aplicação pelas regras do catálogo (def.estagios). null se faltar dado.
+// escoreT: { metodo, t: { subescala: T }, maiorT, estagios: [chaves empatadas no maior T], somaProntidao }
+// prontidao: { metodo, prontidao (exata, pelas somas), estagios: [chave], rotulo }
+function escEstagioDe_(def, reg) {
+  const e = def && def.estagios;
+  if (!e || !reg) return null;
+  const num = function (k) { return escPainelNumero_(reg['escore_' + k]); };
+  const nPor = {};
+  (def.itens || []).forEach(function (it) { if (it.subescala) nPor[it.subescala] = (nPor[it.subescala] || 0) + 1; });
+  const c = def.composto || {};
+  let soma = 0, media = 0, completo = !!def.composto;
+  (c.mais || []).forEach(function (k) { const v = num(k); if (v === null || !nPor[k]) completo = false; else { soma += v; media += v / nPor[k]; } });
+  (c.menos || []).forEach(function (k) { const v = num(k); if (v === null || !nPor[k]) completo = false; else { soma -= v; media -= v / nPor[k]; } });
+  if (e.metodo === 'escoreT') {
+    const t = {}; let maior = null;
+    Object.keys(e.normas || {}).forEach(function (k) {
+      const bruto = num(k); if (bruto === null) return;
+      const linha = e.normas[k].find(function (l) { return bruto >= l[0] && bruto <= l[1]; });
+      if (!linha) return;
+      t[k] = linha[2];
+      if (maior === null || linha[2] > maior) maior = linha[2];
+    });
+    if (maior === null || Object.keys(t).length !== Object.keys(e.normas).length) return null;
+    return { metodo: 'escoreT', t: t, maiorT: maior, estagios: Object.keys(t).filter(function (k) { return t[k] === maior; }), somaProntidao: completo ? soma : null };
+  }
+  if (e.metodo === 'prontidao' && completo) {
+    // os cortes da fonte têm duas casas (10,33 = 62/6): a comparação é com a prontidão arredondada a duas casas
+    const media2 = Math.round(media * 100) / 100;
+    const corte = (e.cortes || []).find(function (x) { return x.ate === undefined || media2 <= x.ate; });
+    if (!corte) return null;
+    return { metodo: 'prontidao', prontidao: media, estagios: [corte.estagio], rotulo: corte.rotulo || '' };
+  }
+  return null;
+}
+function escEstagioNomes_(est) {
+  return est.estagios.map(function (k) { return est.rotulo || (ESC_QUADRO_ESTAGIOS[k] ? ESC_QUADRO_ESTAGIOS[k].nome : k); }).join(' e ');
+}
+
+// Bloco "Estágio de mudança": o estágio, a regra que o definiu (com a fonte) e o quadro dos estágios.
+// A coluna "O que propor" só entra na tela do profissional.
+function escRrBlocoEstagio(def, reg, contexto) {
+  const est = escEstagioDe_(def, reg);
+  if (!est) return '';
+  const e = def.estagios, meta = def.subescalasMeta || {};
+  const prof = ESC_HIST_STATE.visaoProfissional === true;
+  const varios = est.estagios.length > 1;
+  let h = '<div class="rr-card rr-estagio">';
+  h += '<h3><svg class=ico aria-hidden=true><use href=#i-compass></use></svg> Estágio de mudança</h3>';
+  h += '<p class="rr-estagio-linha">' + (varios ? 'Estágios predominantes: ' : 'Estágio predominante: ') + '<strong>' + esc(escEstagioNomes_(est)) + '</strong></p>';
+  if (!prof && !varios && ESC_QUADRO_ESTAGIOS[est.estagios[0]]) h += '<p>' + esc(ESC_QUADRO_ESTAGIOS[est.estagios[0]].voce) + '</p>';
+  if (est.metodo === 'escoreT') {
+    h += '<p>' + (varios ? 'São as subescalas com o escore T mais alto (T ' : 'É a subescala com o escore T mais alto (T ') + est.maiorT + ') na norma brasileira. Escore T de cada uma: ' +
+      Object.keys(est.t).map(function (k) { return esc((meta[k] && meta[k].nome) || k) + ' ' + est.t[k]; }).join(' · ') + '.</p>';
+    if (est.somaProntidao !== null && e.prontidaoSomaMedia !== undefined) h += '<p>Prontidão pela soma das subescalas (C + A + M − PC): ' + est.somaProntidao + '. Na amostra de validação, a média foi ' + e.prontidaoSomaMedia + '.</p>';
+  } else {
+    let ant = null;
+    const regra = (e.cortes || []).map(function (x) {
+      const nome = (x.rotulo || ESC_QUADRO_ESTAGIOS[x.estagio].nome).toLowerCase();
+      const t = x.ate === undefined ? 'acima de ' + escPainelValorTxt_(ant) + ', ' + nome : (ant === null ? 'até ' + escPainelValorTxt_(x.ate) + ', ' + nome : 'de ' + escPainelValorTxt_(ant) + ' a ' + escPainelValorTxt_(x.ate) + ', ' + nome);
+      ant = x.ate; return t;
+    }).join('; ');
+    h += '<p>Prontidão para a mudança: ' + escPainelValorTxt_(Math.round(est.prontidao * 100) / 100) + '. Pela regra usada: ' + regra + '.</p>';
+  }
+  const antes = contexto && contexto.anterior ? escEstagioDe_(def, contexto.anterior) : null;
+  if (antes) h += '<p>Na aplicação anterior, em ' + escPainelDataBR_(escPainelDia_(contexto.anterior), true) + ': ' + esc(escEstagioNomes_(antes)) + '.</p>';
+  h += '<table class="rr-faixa-tabela rr-estagio-tabela"><tr class="rr-faixa-tabela-head"><td class="col-nivel">Estágio</td><td>Como costuma ser</td>' + (prof ? '<td>O que propor</td>' : '') + '</tr>';
+  Object.keys(ESC_QUADRO_ESTAGIOS).forEach(function (k) {
+    const q = ESC_QUADRO_ESTAGIOS[k], atual = est.estagios.indexOf(k) !== -1;
+    h += '<tr class="rr-faixa-tabela-body' + (atual ? ' atual' : '') + '"><td class="col-nivel">' + esc(q.nome) + (atual ? ' <span class="rr-estagio-marca">estágio atual</span>' : '') + '</td>' +
+      '<td>' + esc(q.descricao) + '</td>' + (prof ? '<td class="col-propor">' + esc(q.propor) + '</td>' : '') + '</tr>';
+  });
+  h += '</table>';
+  if (e.fonte) h += '<p class="rr-estagio-fonte">' + esc(e.fonte) + '</p>';
+  h += '</div>';
+  return h;
+}
+
+// Bloco "Seu resultado nesta aplicação" — só para escala sem faixa, sem faixa por subescala e sem estágio:
+// régua do escore único, subescala mais alta e mais baixa (três ou mais, na mesma régua) e diferença para a
+// aplicação anterior. Nenhum corte, nenhum juízo: o texto geral da escala diz o que "maior" significa.
+function escRrBlocoSeuResultado(cod, def, reg, contexto) {
+  if (!def || !reg || Array.isArray(def.faixas) || def.faixasSubescalas || def.estagios || def.escoreOculto) return '';
+  const num = escPainelNumero_, txt = function (v) { return escPainelValorTxt_(Math.round(v * 100) / 100); };
+  const meta = def.subescalasMeta || {}, chaves = Object.keys(meta);
+  const anterior = contexto && contexto.anterior ? contexto.anterior : null;
+  const dif = function (agora, antes) {
+    const d = Math.round((agora - antes) * 100) / 100;
+    return d === 0 ? 'igual' : txt(Math.abs(d)) + (Math.abs(d) === 1 ? ' ponto' : ' pontos') + (d > 0 ? ' a mais' : ' a menos');
+  };
+  let corpo = '';
+  if (!chaves.length) {
+    const total = num(reg.escore_total);
+    if (total === null) return '';
+    const max = Number(def.escoreMax), min = (def.valorMin !== undefined && def.itens) ? def.itens.length * def.valorMin : null;
+    if (min !== null && max > min) {
+      const pos = Math.max(0, Math.min(100, (total - min) / (max - min) * 100));
+      corpo += '<p>Seu escore: <strong>' + txt(total) + '</strong>, numa régua de ' + txt(min) + ' a ' + txt(max) + '.</p>' +
+        '<div class="rr-regua" role="img" aria-label="' + esc('Escore ' + txt(total) + ' numa régua de ' + txt(min) + ' a ' + txt(max)) + '"><span class="rr-regua-marca" style="left:' + pos.toFixed(1) + '%"></span></div>' +
+        '<div class="rr-regua-pontas"><span>' + txt(min) + '</span><span>' + txt(max) + '</span></div>';
+    } else {
+      corpo += '<p>Seu escore: <strong>' + txt(total) + '</strong>.</p>';
+    }
+    const antes = anterior ? num(anterior.escore_total) : null;
+    if (antes !== null) corpo += '<p>Na aplicação anterior, em ' + escPainelDataBR_(escPainelDia_(anterior), true) + ': ' + txt(antes) + ' (' + (dif(total, antes) === 'igual' ? 'igual agora' : dif(total, antes) + ' agora') + ').</p>';
+  } else {
+    const nPor = {};
+    (def.itens || []).forEach(function (it) { if (it.subescala) nPor[it.subescala] = (nPor[it.subescala] || 0) + 1; });
+    const contagens = chaves.map(function (k) { return nPor[k] || 0; });
+    const mesmaRegua = !!def.subMedia || contagens.every(function (n) { return n === contagens[0]; });
+    const porItem = !mesmaRegua && contagens.every(function (n) { return n > 0; });
+    const vals = [];
+    chaves.forEach(function (k) { const v = num(reg['escore_' + k]); if (v !== null) vals.push({ k: k, nome: meta[k].nome || meta[k].sigla || k, v: v, cmp: porItem ? v / nPor[k] : v }); });
+    if (!vals.length) return '';
+    if (vals.length >= 3 && (mesmaRegua || porItem)) {
+      const ordem = vals.slice().sort(function (a, b) { return b.cmp - a.cmp; });
+      const alta = ordem[0], baixa = ordem[ordem.length - 1];
+      if (alta.cmp !== baixa.cmp) {
+        const mostra = function (x) { return '<strong>' + esc(x.nome) + '</strong> (' + (porItem ? 'média ' + txt(x.cmp) : txt(x.v)) + ')'; };
+        corpo += '<p>Mais alta: ' + mostra(alta) + '. Mais baixa: ' + mostra(baixa) + '.' + (porItem ? ' Como as subescalas têm números diferentes de itens, a comparação é pela média por item.' : '') + '</p>';
+      }
+    }
+    if (anterior) {
+      const dataAnt = escPainelDataBR_(escPainelDia_(anterior), true);
+      if (def.composto) {
+        const agora = num(reg['escore_' + def.composto.chave]), antes = num(anterior['escore_' + def.composto.chave]);
+        if (agora !== null && antes !== null) corpo += '<p>' + esc(def.composto.nome || def.composto.sigla) + ' na aplicação anterior, em ' + dataAnt + ': ' + txt(antes) + ' (' + (dif(agora, antes) === 'igual' ? 'igual agora' : dif(agora, antes) + ' agora') + ').</p>';
+      } else {
+        const partes = [];
+        vals.forEach(function (x) { const antes = num(anterior['escore_' + x.k]); if (antes !== null) partes.push(esc(x.nome) + ': ' + dif(x.v, antes)); });
+        if (partes.length) corpo += '<p>Desde a aplicação anterior, em ' + dataAnt + ' — ' + partes.join(' · ') + '.</p>';
+      }
+    }
+  }
+  if (!corpo) return '';
+  return '<div class="rr-card rr-seu-resultado"><h3><svg class=ico aria-hidden=true><use href=#i-pointer></use></svg> Seu resultado nesta aplicação</h3>' + corpo + '</div>';
 }
 
 // --- "O que isso significa?" ---
@@ -21551,7 +21805,8 @@ function escCalcularContextoLongitudinal(codigo, regAtual) {
 
     return {
       ordinalTexto: 'Esta foi sua <strong>' + escOrdinalTexto(ordinal) + ' aplicação</strong> — ' + textoTempo,
-      total: ordinal
+      total: ordinal,
+      anterior: anteriores[0].reg // 19.0.1: a aplicação anterior, para o resultado comparar
     };
   } catch (e) {
     console.warn('[12.7.2.2] Erro ao calcular contexto longitudinal:', e);
@@ -21897,7 +22152,7 @@ function escHistRenderBlocos(cont, registros) {
     html +=   '<div class="esch-bloco-head" onclick="escHistToggleBloco(this)">';
     // 16.4.1: def.emoji é HTML do sprite (literal do catálogo ESC_ESCALAS, nunca entrada do usuário) — não escapar
     html +=     '<span class="esch-bloco-icone">' + (def.emoji || '<svg class=ico aria-hidden=true><use href=#i-chart></use></svg>') + '</span>';
-    html +=     '<span class="esch-bloco-titulo">' + escapeHtmlAuto(def.nomeCompleto || cod) + escNomeTraducaoHtml_(def) + '</span>';
+    html +=     '<span class="esch-bloco-titulo">' + escNomeHtml_(def, cod) + '</span>';
     html +=     '<span class="esch-bloco-contagem">' + textoContagem + '</span>';
     html +=     '<span class="esch-bloco-chevron">›</span>';
     html +=   '</div>';
@@ -22186,7 +22441,7 @@ function escPainelCartaoHtml_(cod, def, regs, fila) {
   var n = regs.length;
   var primeira = escPainelDia_(regs[0]), ultima = escPainelDia_(regs[n - 1]);
   var h = '<div class="escp-cartao" data-esc="' + esc(cod) + '" data-escp-borda="' + escPainelTokEscala_(def) + '">';
-  h += '<div class="pev-bloco-titulo">' + esc(def.nomeCompleto || cod) + escNomeTraducaoHtml_(def) + '</div>';
+  h += '<div class="pev-bloco-titulo">' + escNomeHtml_(def, cod) + '</div>';
   h += '<div class="pev-bloco-sub">' + (n === 1 ? '1 aplicação' : n + ' aplicações') + ' · última em ' + escPainelDataBR_(ultima, true) + '</div>';
   graficos.forEach(function (g) {
     var id = 'escpGraf' + fila.length;
@@ -22401,7 +22656,7 @@ function escHistAbrirDetalhe(idxGlobal) {
   if (titulo) {
     // 16.4.1: def.emoji é HTML do sprite (literal do catálogo ESC_ESCALAS, nunca entrada do usuário) — não escapar
     titulo.innerHTML = (def ? (def.emoji || '<svg class=ico aria-hidden=true><use href=#i-search></use></svg>') + ' ' : '<svg class=ico aria-hidden=true><use href=#i-search></use></svg> ') +
-                       escapeHtmlAuto(def ? def.nomeCompleto : cod) + escNomeTraducaoHtml_(def);
+                       escNomeHtml_(def, cod);
   }
 
   conteudo.innerHTML = escHistMontarHtmlDetalhe(cod, def, reg);
@@ -22436,7 +22691,7 @@ async function fichaAbrir_(cod) {
   var modal = document.getElementById('fichaModal');
   if (!def || !modal) return;
   FICHA_COD = cod;
-  document.getElementById('fichaTitulo').innerHTML = (def.emoji || '') + ' ' + escapeHtmlAuto(def.nomeCompleto || cod) + escNomeTraducaoHtml_(def);
+  document.getElementById('fichaTitulo').innerHTML = (def.emoji || '') + ' ' + escNomeHtml_(def, cod);
   document.getElementById('fichaPainel-info').innerHTML = fichaHtmlInfo_(def);
   document.getElementById('fichaPainel-escalas').innerHTML = fichaHtmlEscalas_(def);
   document.getElementById('fichaPainel-questoes').innerHTML = '<p class="ficha-vazio">Carregando os itens…</p>';

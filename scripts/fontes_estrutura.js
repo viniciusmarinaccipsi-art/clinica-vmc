@@ -83,6 +83,13 @@ function estruturaDe(cod, srv, cli, opcoesCarga) {
     Object.keys(srv.faixasSub).forEach(k => { e.faixas_subescalas[k] = srv.faixasSub[k].map(faixaSimples); });
   }
   if (cli.escoreMax !== undefined) e.escore_max = cli.escoreMax;
+  // 19.0.1: regra do estágio de mudança (URICA) — só número: método, norma por escore T ([soma mín., soma máx., T]) ou cortes da prontidão
+  if (cli.estagios) {
+    e.estagios = { metodo: cli.estagios.metodo };
+    if (cli.estagios.normas) e.estagios.normas = JSON.parse(JSON.stringify(cli.estagios.normas));
+    if (cli.estagios.cortes) e.estagios.cortes = cli.estagios.cortes.map(c => (c.ate !== undefined ? { ate: c.ate, estagio: c.estagio } : { estagio: c.estagio }));
+    if (cli.estagios.prontidaoSomaMedia !== undefined) e.estagios.prontidao_soma_media = cli.estagios.prontidaoSomaMedia;
+  }
   return e;
 }
 

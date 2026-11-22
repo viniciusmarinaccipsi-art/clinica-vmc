@@ -1815,6 +1815,55 @@ pixel das bandas contra o token, nos dois temas. A troca de tema é esperada por
 tempo: numa janela que não está pintando quadros, o evento de `prefers-color-scheme` só chega no
 quadro seguinte.
 
+## Resultado das escalas: estágio, "Seu resultado", tom e nomes (Pacote 19.0.1 — publicado em 22/11/2026, só frontend)
+
+O montador único do resultado (`escRenderizarConteudoResultado`, tela imediata e janela de detalhes) ganhou o
+passo **3b**, entre o cabeçalho com o escore e "O que isso significa": `escRrBlocoEstagio(def, reg, contexto)` e
+`escRrBlocoSeuResultado(cod, def, reg, contexto)`. Cada um devolve `''` quando a escala não é dele; o motor não
+cita escala pelo nome.
+
+**Estágio de mudança (escala com `estagios` no catálogo — hoje as quatro URICA).** `def.estagios` guarda só a
+regra e os números, dentro de `ESC_ESCALAS` (o bloco continua autocontido: os scripts o extraem sozinho):
+
+| `metodo` | Dados | Regra | Versão e fonte |
+|---|---|---|---|
+| `escoreT` | `normas[subescala] = [[soma mín., soma máx., T], …]`, `prontidaoSomaMedia` opcional | o estágio é o da subescala com o T mais alto (empate: os dois) | drogas ilícitas (Szupszynski & Oliveira, 2008, Tabela 5) e tabaco (Oliveira et al., 2014, Tabela 3) |
+| `prontidao` | `cortes = [{ ate, estagio }, …, { estagio, rotulo? }]` | prontidão exata pelas somas (médias de C + A + M − média de PC), arredondada a duas casas e comparada com `ate` | hábitos alimentares (Bittencourt, 2009: 8 e 10,33) e álcool (DiClemente, Schlundt & Gemmell, 2004: 8 e 11) |
+
+`escEstagioDe_(def, reg)` calcula; o bloco mostra o estágio, a regra aplicada (com os T ou com os cortes por
+extenso), a comparação com a aplicação anterior, o quadro dos quatro estágios (`ESC_QUADRO_ESTAGIOS`: `voce` =
+frase ao paciente, `descricao` = linha do quadro, `propor` = coluna só do profissional, por
+`ESC_HIST_STATE.visaoProfissional`) e a linha da fonte (`estagios.fonte`). As caixas das subescalas mostram
+"escore T n" quando há norma. A regra oficial de correção (maior escore T = estágio) é a da folha do GAAPCC/PUCRS;
+os arquivos-fonte ficam em `..\VMC-offline\fontes_escalas\URICA\` (índice `FONTES_URICA.md`) e o bloco `estagios`
+entrou em `docs/escalas/fontes.json` com arquivo e página (`scripts/fontes_estrutura.js`,
+`scripts/gerar_fontes_json.js`; status do corte `regra_de_estagio`).
+
+**"Seu resultado nesta aplicação" (escala sem `faixas`, sem `faixasSubescalas`, sem `estagios`, não oculta).**
+Só o que os números dizem: escore único → régua de `itens × valorMin` a `escoreMax` (`.rr-regua`); três ou mais
+subescalas → mais alta e mais baixa (pelo valor quando a régua é a mesma — `subMedia` ou mesmo número de itens —,
+pela média por item quando os números de itens diferem); diferença para a aplicação anterior (total, composto ou
+cada subescala). A aplicação anterior vem em `contexto.anterior`, campo novo de
+`escCalcularContextoLongitudinal`.
+
+**Tom das faixas.** Nenhuma faixa do catálogo usa "o quanto antes", "o mais breve possível" ou "atenção
+imediata": a sugestão das faixas altas é "Traga este resultado para sua próxima sessão. Seu terapeuta verá este
+resultado antes dela…". A orientação de crise continua no bloco de risco (`escRrBlocoAlerta`, CVV 188 e SAMU 192),
+que é acionado pelo item crítico e não mudou.
+
+**Nome da escala.** `escNomeHtml_(def, cod)` devolve um bloco `.esc-nome` com `.esc-nome-orig` em cima e
+`.esc-nome-trad` embaixo; substituiu `escNomeTraducaoHtml_` em todos os cabeçalhos (aplicação, resultado, janela
+de detalhes, ficha, histórico, Painel das Escalas, cartão do profissional). Em cabeçalho cheio (`.rr-header`,
+`.p11-mhead`) a tradução usa `--c-action-tint`.
+
+**Profissional.** Cartão da escala: `Ficha · Aplicar · cadeado` (`profAplicarHtmlBotao_` →
+`profAplicarEscala_` → `profEscalaIniciar_`, o mesmo fluxo de "Nova escala"; escala de texto protegido só quando
+o servidor já liberou o texto). Fim da aplicação: `profFluxoEncerrar_(msg, { cod, idEnvio })` reabre o paciente e
+`profAbrirResultadoRecente_` abre a janela de detalhes da aplicação com aquele `id_envio` — nunca "a mais
+recente". Nenhuma chamada nova ao servidor.
+
+**Teste.** `..\PACOTE_19_0_1_fluxo.js` (53 provas por viewport; `VMC_REPO` escolhe a pasta do `index-dev.html`).
+
 ## Agenda completa (Pacote 14.3 — 22/11/2026)
 
 **O que é.** A Agenda do profissional deixa de ser só a grade: clicar num horário abre o painel da
