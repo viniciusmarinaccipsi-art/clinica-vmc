@@ -56,7 +56,10 @@
 // na hora de mostrar (05/10/2026)
 // Rodada DOCS_2026-10-07 — index-dev.html e o index oficial: SITE_URL aponta para ele; texto do aviso de backup
 // com falha alinhado ao backup sob demanda (07/10/2026)
-var VERSAO_PACOTE = '17.7';
+// Pacote 19.2.1 — Plano de lembretes: aba Lembretes na Controle, acoes profSalvarLembrete, profEncerrarLembrete,
+// profLembrarAgora e lerMeusLembretes, gatilho de hora em hora enviarLembretes_ (e-mail), blocos do Inicio na lista
+// do profissional; ind_total_auto sem as checagens sozinhas (22/11/2026)
+var VERSAO_PACOTE = '19.2.1';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -400,6 +403,23 @@ function _despachar_(acao, payload, s) {
         resposta = profSalvarMeusDados(s, payload.dados);
         break;
 
+      // Pacote 19.2.1 - plano de lembretes (profissional grava; o paciente so le o dele)
+      case 'profSalvarLembrete':
+        resposta = profSalvarLembrete(s, payload.siglaPaciente, payload.dados);
+        break;
+
+      case 'profEncerrarLembrete':
+        resposta = profEncerrarLembrete(s, payload.siglaPaciente, payload.id);
+        break;
+
+      case 'profLembrarAgora':
+        resposta = profLembrarAgora(s, payload.siglaPaciente, payload.dados);
+        break;
+
+      case 'lerMeusLembretes':
+        resposta = _exigir_(s, 'paciente') || lerMeusLembretes(s.sigla);
+        break;
+
       // Acoes do admin (admin do cracha)
       case 'admListarProfissionais':
         resposta = listarProfissionais(s);
@@ -475,7 +495,8 @@ function _memoZerar_(ativo) {
 
 // 18.11: leituras em que a linha do paciente e a do profissional sao lidas uma vez por chamada
 var ACOES_SO_LEITURA = ['lerHistorico', 'lerEscalas', 'lerRascunhos', 'lerEditandoAuto',
-  'profListarPacientes', 'profLerDadosPaciente', 'profLerGrade', 'admListarProfissionais', 'profLerMeusDados'];
+  'profListarPacientes', 'profLerDadosPaciente', 'profLerGrade', 'admListarProfissionais', 'profLerMeusDados',
+  'lerMeusLembretes']; // 19.2.1
 
 // ---------- 18.11: cache do script (CacheService) ----------
 // Tres coisas moram no cache do script, para a chamada comum nao abrir a Sistema_VMC:
@@ -634,7 +655,8 @@ var ACOES_COM_TRAVA = [
   'profSalvarGrade',
   'admCadastrarProfissional', 'admAtualizarProfissional', 'admTrocarSenhaProfissional',
   'admDesativarProfissional', 'admReativarProfissional', 'admEnviarConvite',
-  'profSalvarMeusDados', 'admAprovarPedido', 'admRecusarPedido' // 18.8.1
+  'profSalvarMeusDados', 'admAprovarPedido', 'admRecusarPedido', // 18.8.1
+  'profSalvarLembrete', 'profEncerrarLembrete', 'profLembrarAgora' // 19.2.1
 ];
 
 
@@ -1228,6 +1250,7 @@ function _layoutEmail_(p) {
   }
   linhas.push(esp(14), par(_escHtml_(p.ola), 15, 23, '#3F3C52'), esp(10), par(_escHtml_(p.paragrafo), 15, 23, '#3F3C52'), esp(22));
   linhas.push('<tr><td><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="#4C4A8F" style="background-color:#4C4A8F;border-radius:999px;"><a href="' + link + '" target="_blank" style="display:block;' + F + 'font-size:15px;line-height:16px;font-weight:600;color:#FFFFFF;text-decoration:none;padding:14px 26px;border-radius:999px;">' + _escHtml_(p.botao) + '</a></td></tr></table></td></tr>');
+  if (p.sobBotao) linhas.push(esp(12), par(_escHtml_(p.sobBotao), 13, 20, '#5E5B73')); // 19.2.1: linha sob o botao (lembrete)
   linhas.push(esp(18), par(_escHtml_(EMAIL_LINK_RESERVA) + '<br><a href="' + link + '" target="_blank" style="color:#4C4A8F;text-decoration:underline;word-break:break-all;">' + link + '</a>', 13, 20, '#5E5B73'));
   linhas.push(esp(24), '<tr><td><div style="height:1px;line-height:1px;font-size:0;background-color:#E2E1EE;">&nbsp;</div></td></tr>', esp(24));
   linhas.push(par(_escHtml_(p.aviso), 13, 20, '#5E5B73'));
@@ -1994,8 +2017,9 @@ function aceitarPolitica(s) {
  */
 function _reservarEmail_(cota, quantos) {
   var n = quantos || 1;
-  var max = cota === 'redefinicoes' ? REDEFINICOES_DIA_MAX : EMAILS_DIA_MAX;
-  var prefixo = cota === 'redefinicoes' ? 'redefinicoes:' : 'emails:';
+  // 19.2.1: terceira cota, 'lembretes' (LEMBRETES_DIA_MAX), separada das outras duas
+  var max = cota === 'redefinicoes' ? REDEFINICOES_DIA_MAX : (cota === 'lembretes' ? LEMBRETES_DIA_MAX : EMAILS_DIA_MAX);
+  var prefixo = cota === 'redefinicoes' ? 'redefinicoes:' : (cota === 'lembretes' ? 'lembretes:' : 'emails:');
   // 18.10: a mesma trava das gravacoes (reentrante — nao solta a da acao que chamou)
   return _comTrava_(function () {
     var props = PropertiesService.getScriptProperties();
@@ -2203,6 +2227,16 @@ function listarPacientesDoProfissional(s) {
 
   var lista = [];
 
+  // 19.2.1: lembretes de hoje e atrasados de cada paciente ativo vao junto (blocos do Inicio) —
+  // uma leitura a mais na Controle que ja esta aberta, nenhuma chamada nova. Erro aqui nao derruba a lista.
+  var lembretesPorSigla = {};
+  try {
+    lembretesPorSigla = _lembretesDoInicio_(controle, _lemAgora_().data);
+  } catch (erroLem) {
+    console.error('listarPacientes: lembretes nao foram junto: ' + String(erroLem && erroLem.message || erroLem).slice(0, 120));
+  }
+  var idxEmailCad = col('email'), idxTelCad = col('telefone');
+
   for (var i = 1; i < dados.length; i++) {
     var row = dados[i];
     var siglaPac = String(row[idxSigla] || '').trim();
@@ -2244,8 +2278,16 @@ function listarPacientesDoProfissional(s) {
       ind_ultima_escala_nome: String(ultimaEscala.nome || ''),
       ind_ultima_escala_faixa: String(ultimaEscala.faixa || ''),
       ind_ultima_escala_data: String(ultimaEscala.data || ''),
-      ind_alertas: alerta.instrumento !== undefined ? [alerta] : []
+      ind_alertas: alerta.instrumento !== undefined ? [alerta] : [],
+      lembretes: [] // 19.2.1
     });
+    // 19.2.1: so paciente ativo e com lembrete de hoje ou atrasado leva os itens e o contato do botao WhatsApp
+    var lemDoPac = lembretesPorSigla[_siglaChave_(siglaPac)];
+    if (lemDoPac && lista[lista.length - 1].ativo === 'Sim') {
+      lista[lista.length - 1].lembretes = lemDoPac;
+      lista[lista.length - 1].telefone = idxTelCad >= 0 ? normalizarTelefone(row[idxTelCad]) : '';
+      lista[lista.length - 1].tem_email = idxEmailCad >= 0 ? !!normalizarEmail(row[idxEmailCad]) : false;
+    }
   }
 
   return { ok: true, pacientes: lista };
@@ -2306,8 +2348,21 @@ function _calcularIndicadores_(planilha) {
 
   var abaAuto = planilha.getSheetByName(ABA_AUTOMONITORAMENTO);
   if (abaAuto && abaAuto.getLastRow() >= 2) {
-    ind.ind_total_auto = abaAuto.getLastRow() - 1; // descontar cabecalho
     var cabAuto = abaAuto.getRange(1, 1, 1, abaAuto.getLastColumn()).getValues()[0];
+    // 19.2.1 (8.23): o total conta so registro completo (Negativo ou Positivo). A checagem de humor
+    // sozinha fica fora — a mesma regra do chip "Checagem de humor" de Meus Registros. O "ultimo"
+    // continua sendo a ultima linha, checagem ou nao.
+    var linhasAuto = abaAuto.getLastRow() - 1; // descontar cabecalho
+    var idxNegP = cabAuto.indexOf('neg_preenchido'), idxPosP = cabAuto.indexOf('pos_preenchido');
+    if (idxNegP === -1 && idxPosP === -1) {
+      ind.ind_total_auto = linhasAuto;
+    } else {
+      var colNegP = idxNegP >= 0 ? abaAuto.getRange(2, idxNegP + 1, linhasAuto, 1).getValues() : null;
+      var colPosP = idxPosP >= 0 ? abaAuto.getRange(2, idxPosP + 1, linhasAuto, 1).getValues() : null;
+      for (var la = 0; la < linhasAuto; la++) {
+        if (_registroCompleto_({ neg_preenchido: colNegP ? colNegP[la][0] : '', pos_preenchido: colPosP ? colPosP[la][0] : '' })) ind.ind_total_auto++;
+      }
+    }
     var ultLinha = abaAuto.getRange(abaAuto.getLastRow(), 1, 1, abaAuto.getLastColumn()).getValues()[0];
     var idxDataReg = cabAuto.indexOf('data_registro');
     var idxHumor = cabAuto.indexOf('humor_nivel');
@@ -2483,7 +2538,8 @@ function lerDadosPaciente(s, siglaPaciente) {
     // Pacote 18.1: contato do cadastro (Controle), unica fonte de e-mail e telefone
     contato: { email: normalizarEmail(paciente.email), telefone: normalizarTelefone(paciente.telefone) },
     nome_cadastro: String(paciente.nome || ''),
-    escalas_liberadas: _escalasLiberadasLista_(paciente.escalas_liberadas) // 17.1.2: BSS liberada por paciente
+    escalas_liberadas: _escalasLiberadasLista_(paciente.escalas_liberadas), // 17.1.2: BSS liberada por paciente
+    lembretes: _lembretesDoPaciente_(abrirControleDoProfissional(profissionalId), siglaPaciente, _lemAgora_().data) // 19.2.1: plano de lembretes
   };
 }
 
@@ -2752,6 +2808,7 @@ function salvarAutomonitoramento(sigla, dados) {
   var linha = montarLinha(aba, dados);
   aba.appendRow(linha);
   _indicadoresAposGravar_(paciente.__profissional_id, sigla, planilha);
+  if (_registroCompleto_(dados)) _lembretesCumprir_(paciente.__profissional_id, sigla, 'auto'); // 19.2.1: checagem sozinha nao conta
   _rascunhoEnviado_(planilha, _tiposDoRegistro_(dados)); // 18.10b
 
   return { ok: true, mensagem: 'Registro salvo com sucesso' };
@@ -3046,6 +3103,7 @@ function salvarEscala(sigla, dados) {
   var linha = montarLinha(aba, dados);
   aba.appendRow(linha);
   _indicadoresAposGravar_(paciente.__profissional_id, sigla, planilha);
+  _lembretesCumprir_(paciente.__profissional_id, sigla, 'escala', dados.instrumento); // 19.2.1
   _rascunhoEnviado_(planilha, [tipoRascunho]);
 
   return { ok: true, mensagem: 'Escala salva com sucesso' };
@@ -4064,6 +4122,7 @@ function profCriarAutomonitoramento(s, siglaPaciente, dados) {
   _garantirColunas_(aba, ['criado_por', 'autoria_campos', 'criado_por_nome']);
   aba.appendRow(montarLinha(aba, dados, _autoriaDeCriacao_(alvo.profissionalId)));
   _indicadoresAposGravar_(alvo.profissionalId, siglaPaciente, alvo.planilha);
+  if (_registroCompleto_(dados)) _lembretesCumprir_(alvo.profissionalId, siglaPaciente, 'auto'); // 19.2.1
   return { ok: true, mensagem: 'Registro salvo com sucesso' };
 }
 
@@ -4228,6 +4287,7 @@ function profCriarEscala(s, siglaPaciente, dados) {
   _garantirColunas_(aba, ['editado_por', 'editado_em', 'criado_por', 'autoria_campos', 'criado_por_nome']);
   aba.appendRow(montarLinha(aba, dados, _autoriaDeCriacao_(alvo.profissionalId)));
   _indicadoresAposGravar_(alvo.profissionalId, siglaPaciente, alvo.planilha);
+  _lembretesCumprir_(alvo.profissionalId, siglaPaciente, 'escala', dados.instrumento); // 19.2.1
   // 17.3.1: a escala que o profissional aplicou fica aberta no menu do paciente
   var liberadas = _abrirEscalaParaPaciente_(alvo.profissionalId, siglaPaciente, dados.instrumento);
   return { ok: true, mensagem: 'Escala salva com sucesso', escalas_liberadas: liberadas };
@@ -4445,6 +4505,7 @@ function profExcluirPaciente(s, siglaPaciente, confirmacaoSigla) {
           }
         }
       }
+      _lembretesApagarDoPaciente_(controle, siglaPaciente); // 19.2.1: o plano de lembretes sai com o paciente
     }
 
     // 3. Remover linha do Indice_Siglas
@@ -5734,6 +5795,579 @@ function backupSobDemanda_() {
 }
 
 
+// ============================================================
+// Pacote 19.2.1 — PLANO DE LEMBRETES (22/11/2026)
+// ============================================================
+// Aba `Lembretes` na Controle do profissional: uma linha por item do plano de um paciente
+// (o que lembrar, recorrencia, periodo, hora). Nasce no primeiro item gravado, so pelo
+// cabecalho. Toda celula e TEXTO LITERAL (apostrofo) e a leitura e por getDisplayValues:
+// o Sheets nao retipa data nem hora (licao 105), e a regra de datas trabalha so com
+// 'AAAA-MM-DD' e 'HH:mm' — nenhum Date de celula, nenhum fuso no caminho.
+//   id                  identificador do item (vem do cliente; salvar de novo o mesmo id = editar)
+//   sigla               paciente
+//   tipo                auto | escala | outro
+//   instrumento         codigo da escala (chave de ESCALAS_MENU), so em `escala`
+//   texto               texto livre, so em `outro` (nunca vai no e-mail nem no WhatsApp)
+//   recorrencia         agora | uma_vez | recorrente
+//   periodicidade       diaria | semanal | quinzenal | mensal | dias_semana (so em `recorrente`)
+//   dias_semana         '1,3,5' (0 = domingo), so em `dias_semana`
+//   data_inicio / data_termino / hora   'AAAA-MM-DD' / 'AAAA-MM-DD' ou vazio / 'HH:mm'
+//   ativo / encerrado_em                'Sim' | 'Nao' / 'AAAA-MM-DD HH:mm'
+//   criado_em / criado_por / atualizado_em
+//   ultimo_email_em     'AAAA-MM-DD HH:mm' do ultimo e-mail (um por item por dia)
+//   ultimo_cumprido_em  'AAAA-MM-DD' do ultimo dia em que o paciente respondeu
+// WhatsApp e e-mail valem sempre (decisao do usuario): nao ha coluna de canal.
+
+var ABA_LEMBRETES = 'Lembretes';
+var COLUNAS_LEMBRETES = ['id', 'sigla', 'tipo', 'instrumento', 'texto', 'recorrencia', 'periodicidade', 'dias_semana',
+  'data_inicio', 'data_termino', 'hora', 'ativo', 'encerrado_em', 'criado_em', 'criado_por', 'atualizado_em',
+  'ultimo_email_em', 'ultimo_cumprido_em'];
+var LEMBRETES_DIA_MAX = 60;      // e-mails de lembrete por dia (cota propria; convites 20 e redefinicoes 10 ficam a parte)
+var LEMBRETE_ATRASO_DIAS = 7;    // item de data unica ou ja terminado sai de "Atrasados" depois disto
+var LEMBRETE_TEXTO_MAX = 200;
+
+// Textos do e-mail de lembrete, aprovados pelo usuario em 22/11/2026. Nenhum dado clinico:
+// o nome da escala e o texto do "Outro" nao saem do sistema.
+var EMAIL_LEMBRETE = {
+  auto: { assunto: 'Hora do seu registro no COGNIATIVO', titulo: 'Hora do seu registro', previa: 'Quando puder, registre como foi o seu dia.',
+    paragrafo: 'Este é o lembrete que combinamos para hoje. Quando puder, registre como foi o seu dia: leva poucos minutos e ajuda a próxima sessão.',
+    botao: 'Fazer o registro de hoje' },
+  escala: { assunto: 'Há uma escala para você no COGNIATIVO', titulo: 'Uma escala para responder', previa: 'Quando puder, responda à escala combinada.',
+    paragrafo: 'Este é o lembrete que combinamos para hoje. Há uma escala aberta para você em Escalas e Inventários; quando puder, responda.',
+    botao: 'Abrir o COGNIATIVO' },
+  outro: { assunto: 'Lembrete do COGNIATIVO', titulo: 'Lembrete de hoje', previa: 'Há um combinado para hoje.',
+    paragrafo: 'Este é o lembrete que combinamos para hoje. O que foi combinado está no Início do COGNIATIVO.',
+    botao: 'Abrir o COGNIATIVO' }
+};
+var EMAIL_LEMBRETE_SOB_BOTAO = 'Abre o COGNIATIVO; se a sessão tiver expirado, é só entrar de novo.';
+var EMAIL_LEMBRETE_AVISO = 'Este lembrete faz parte do plano combinado nas sessões. Para mudar o horário ou parar de receber, é só avisar.';
+
+// ---------- regra de datas (funcoes puras: recebem a data, nunca leem o relogio) ----------
+
+/** 'AAAA-MM-DD' -> numero do dia (dias desde 01/01/1970); null se nao for uma data que existe. */
+function _lemDia_(iso) {
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso === undefined || iso === null ? '' : iso).trim());
+  if (!m) return null;
+  var ano = +m[1], mes = +m[2], dia = +m[3];
+  var n = Math.round(Date.UTC(ano, mes - 1, dia) / 86400000);
+  var d = new Date(n * 86400000);
+  return (d.getUTCFullYear() === ano && d.getUTCMonth() === mes - 1 && d.getUTCDate() === dia) ? n : null;
+}
+
+/** Numero do dia -> 'AAAA-MM-DD'. */
+function _lemIso_(n) {
+  var d = new Date(n * 86400000);
+  var p = function (x) { return ('0' + x).slice(-2); };
+  return d.getUTCFullYear() + '-' + p(d.getUTCMonth() + 1) + '-' + p(d.getUTCDate());
+}
+
+/** Dia da semana do numero do dia: 0 = domingo (01/01/1970 foi quinta-feira). */
+function _lemDiaDaSemana_(n) { return (((n + 4) % 7) + 7) % 7; }
+
+/** '1, 3,5' -> [1, 3, 5] (so 0..6, sem repeticao, em ordem). */
+function _lemDiasSemana_(v) {
+  var visto = {}, lista = [];
+  String(v === undefined || v === null ? '' : v).split(',').forEach(function (x) {
+    var t = String(x).trim();
+    if (!/^[0-6]$/.test(t) || visto[t]) return;
+    visto[t] = true; lista.push(parseInt(t, 10));
+  });
+  return lista.sort();
+}
+
+/** 'H:mm' ou 'HH:mm' -> 'HH:mm'; '' se nao for hora. */
+function _lemHora_(v) {
+  var m = /^(\d{1,2}):(\d{2})/.exec(String(v === undefined || v === null ? '' : v).trim());
+  if (!m || +m[1] > 23 || +m[2] > 59) return '';
+  return ('0' + m[1]).slice(-2) + ':' + m[2];
+}
+
+function _lemAtivo_(item) { return String(item.ativo === undefined || item.ativo === null ? '' : item.ativo).trim().toLowerCase() !== 'nao'; }
+
+/**
+ * O item esta previsto para o dia `iso`? Olha so inicio, termino (inclusive) e periodicidade;
+ * quem chama decide o que fazer com item encerrado.
+ *   agora / uma_vez  so na data de inicio
+ *   diaria           todo dia
+ *   semanal          a cada 7 dias a partir do inicio (mesmo dia da semana)
+ *   quinzenal        a cada 14 dias a partir do inicio
+ *   mensal           mesmo dia do mes do inicio; em mes mais curto, o ultimo dia do mes
+ *   dias_semana      nos dias da semana escolhidos
+ */
+function _lembreteOcorre_(item, iso) {
+  var d = _lemDia_(iso), ini = _lemDia_(item.data_inicio);
+  if (d === null || ini === null || d < ini) return false;
+  if (item.recorrencia !== 'recorrente') return d === ini;
+  var fim = _lemDia_(item.data_termino);
+  if (fim !== null && d > fim) return false;
+  if (item.periodicidade === 'diaria') return true;
+  if (item.periodicidade === 'semanal') return (d - ini) % 7 === 0;
+  if (item.periodicidade === 'quinzenal') return (d - ini) % 14 === 0;
+  if (item.periodicidade === 'mensal') {
+    var alvo = new Date(ini * 86400000).getUTCDate();
+    var dia = new Date(d * 86400000);
+    var ultimoDoMes = new Date(Date.UTC(dia.getUTCFullYear(), dia.getUTCMonth() + 1, 0)).getUTCDate();
+    return dia.getUTCDate() === Math.min(alvo, ultimoDoMes);
+  }
+  if (item.periodicidade === 'dias_semana') return _lemDiasSemana_(item.dias_semana).indexOf(_lemDiaDaSemana_(d)) !== -1;
+  return false;
+}
+
+/** Ultima data prevista ANTES de `hojeIso` ('' se nao houve nos ultimos 31 dias — o maior intervalo e o mensal). */
+function _lembreteUltimaAntes_(item, hojeIso) {
+  var h = _lemDia_(hojeIso);
+  if (h === null) return '';
+  for (var k = 1; k <= 31; k++) {
+    var iso = _lemIso_(h - k);
+    if (_lembreteOcorre_(item, iso)) return iso;
+  }
+  return '';
+}
+
+/**
+ * Situacao do item no dia `hojeIso`:
+ *   hoje             previsto para hoje
+ *   atrasado         '' ou a ultima data prevista antes de hoje que ficou sem resposta
+ *   respondido_hoje  o paciente ja respondeu hoje
+ *   email_hoje       '' ou 'HH:mm' do e-mail de hoje
+ * "Outro" nunca fica atrasado (o sistema nao sabe se foi feito). Item de data unica ou ja
+ * terminado sai dos atrasados depois de LEMBRETE_ATRASO_DIAS. Item encerrado nao aparece.
+ */
+function _lembreteSituacao_(item, hojeIso) {
+  var s = { hoje: false, atrasado: '', respondido_hoje: false, email_hoje: '' };
+  var h = _lemDia_(hojeIso);
+  if (h === null || !_lemAtivo_(item)) return s;
+  var cumprido = _lemDia_(String(item.ultimo_cumprido_em || '').slice(0, 10));
+  s.hoje = _lembreteOcorre_(item, hojeIso);
+  s.respondido_hoje = s.hoje && cumprido !== null && cumprido >= h;
+  var enviado = String(item.ultimo_email_em || '');
+  if (s.hoje && enviado.slice(0, 10) === hojeIso) s.email_hoje = _lemHora_(enviado.slice(11));
+  if (item.tipo === 'outro') return s;
+  var ultima = _lembreteUltimaAntes_(item, hojeIso);
+  if (!ultima) return s;
+  var u = _lemDia_(ultima);
+  if (cumprido !== null && cumprido >= u) return s;
+  var fim = _lemDia_(item.data_termino);
+  var semProxima = item.recorrencia !== 'recorrente' || (fim !== null && fim < h);
+  if (semProxima && h - u > LEMBRETE_ATRASO_DIAS) return s;
+  s.atrasado = ultima;
+  return s;
+}
+
+/** O e-mail do item vence agora? Previsto para hoje, hora ja passou, nao enviado hoje, paciente ainda nao respondeu hoje. */
+function _lembreteEmailVence_(item, hojeIso, horaAgora) {
+  if (!_lemAtivo_(item) || !_lembreteOcorre_(item, hojeIso)) return false;
+  var hora = _lemHora_(item.hora);
+  if (!hora || hora > horaAgora) return false;
+  if (String(item.ultimo_email_em || '').slice(0, 10) === hojeIso) return false;
+  if (String(item.ultimo_cumprido_em || '').slice(0, 10) === hojeIso) return false;
+  return true;
+}
+
+/** O item ainda interessa a tela do plano? Ativo com data por vir (ou ha ate 7 dias); encerrado ha ate 7 dias. */
+function _lembreteVigente_(item, hojeIso) {
+  var h = _lemDia_(hojeIso);
+  if (h === null) return true;
+  var ref;
+  if (!_lemAtivo_(item)) ref = _lemDia_(String(item.encerrado_em || '').slice(0, 10));
+  else if (item.recorrencia !== 'recorrente') ref = _lemDia_(item.data_inicio);
+  else { ref = _lemDia_(item.data_termino); if (ref === null) return true; }
+  return ref !== null && h - ref <= LEMBRETE_ATRASO_DIAS;
+}
+
+/**
+ * Confere o item que veio da tela e devolve so as colunas do plano. `comPlano` = false no
+ * "lembrar agora" (so o que lembrar). As mensagens sao as aprovadas para a tela.
+ */
+function _lembreteValidar_(dados, comPlano) {
+  var d = dados && typeof dados === 'object' ? dados : {};
+  var id = String(d.id === undefined || d.id === null ? '' : d.id).trim();
+  if (!/^[A-Za-z0-9-]{8,64}$/.test(id)) return { ok: false, erro: 'Parametros incompletos' };
+  var tipo = String(d.tipo || '').trim();
+  var campos = { tipo: tipo, instrumento: '', texto: '', recorrencia: '', periodicidade: '', dias_semana: '', data_inicio: '', data_termino: '', hora: '' };
+  if (tipo === 'escala') {
+    campos.instrumento = String(d.instrumento || '').trim();
+    if (!_idDaEscala_(campos.instrumento)) return { ok: false, erro: 'Escolha o que lembrar.' };
+  } else if (tipo === 'outro') {
+    campos.texto = String(d.texto === undefined || d.texto === null ? '' : d.texto).replace(/\s+/g, ' ').trim().slice(0, LEMBRETE_TEXTO_MAX);
+    if (!campos.texto) return { ok: false, erro: 'Escreva o que foi combinado.' };
+  } else if (tipo !== 'auto') {
+    return { ok: false, erro: 'Escolha o que lembrar.' };
+  }
+  if (!comPlano) return { ok: true, id: id, campos: campos };
+
+  campos.recorrencia = d.recorrencia === 'recorrente' ? 'recorrente' : 'uma_vez';
+  campos.data_inicio = String(d.data_inicio || '').trim();
+  if (_lemDia_(campos.data_inicio) === null) return { ok: false, erro: 'Escolha a data.' };
+  campos.hora = _lemHora_(d.hora);
+  if (!campos.hora) return { ok: false, erro: 'Escolha o horário.' };
+  if (campos.recorrencia === 'recorrente') {
+    campos.periodicidade = String(d.periodicidade || '').trim();
+    if (['diaria', 'semanal', 'quinzenal', 'mensal', 'dias_semana'].indexOf(campos.periodicidade) === -1) return { ok: false, erro: 'Parametros incompletos' };
+    if (campos.periodicidade === 'dias_semana') {
+      campos.dias_semana = _lemDiasSemana_(Array.isArray(d.dias_semana) ? d.dias_semana.join(',') : d.dias_semana).join(',');
+      if (!campos.dias_semana) return { ok: false, erro: 'Escolha pelo menos um dia da semana.' };
+    }
+    campos.data_termino = String(d.data_termino || '').trim();
+    if (campos.data_termino) {
+      var fim = _lemDia_(campos.data_termino);
+      if (fim === null || fim < _lemDia_(campos.data_inicio)) return { ok: false, erro: 'A data de término não pode ser antes do início.' };
+    }
+  }
+  return { ok: true, id: id, campos: campos };
+}
+
+// ---------- aba, leitura e gravacao ----------
+
+/** Data e hora de agora no fuso do consultorio: { data: 'AAAA-MM-DD', hora: 'HH:mm', carimbo: 'AAAA-MM-DD HH:mm' }. */
+function _lemAgora_(quando) {
+  var d = quando instanceof Date ? quando : new Date();
+  var data = Utilities.formatDate(d, 'America/Sao_Paulo', 'yyyy-MM-dd');
+  var hora = Utilities.formatDate(d, 'America/Sao_Paulo', 'HH:mm');
+  return { data: data, hora: hora, carimbo: data + ' ' + hora };
+}
+
+/** Aba Lembretes da Controle; com `criar`, nasce (e ganha as colunas) no primeiro uso. Leitura nunca cria. */
+function _lembretesAba_(controle, criar) {
+  if (!controle) return null;
+  var aba = controle.getSheetByName(ABA_LEMBRETES);
+  if (!aba && criar) aba = controle.insertSheet(ABA_LEMBRETES);
+  if (aba && criar) _garantirColunas_(aba, COLUNAS_LEMBRETES);
+  return aba;
+}
+
+/** Itens da aba como objetos de texto (o que a celula mostra), com `__linha`. */
+function _lembretesLer_(aba) {
+  if (!aba || aba.getLastRow() < 2) return [];
+  var dados = aba.getDataRange().getDisplayValues();
+  var cab = dados[0], itens = [];
+  for (var i = 1; i < dados.length; i++) {
+    var o = { __linha: i + 1 };
+    for (var j = 0; j < cab.length; j++) o[cab[j]] = String(dados[i][j] === undefined || dados[i][j] === null ? '' : dados[i][j]).trim();
+    if (o.id) itens.push(o);
+  }
+  return itens;
+}
+
+/** Texto literal: toda celula nao vazia vai com apostrofo (nem data, nem hora, nem formula). */
+function _lemCelula_(v) {
+  var t = String(v === undefined || v === null ? '' : v);
+  return t === '' ? '' : "'" + t;
+}
+
+/** Grava `campos` pelo nome do cabecalho: linha nova (`linha` = 0) ou so as colunas dadas de uma linha que existe. */
+function _lembreteGravar_(aba, linha, campos) {
+  var header = _garantirColunas_(aba, COLUNAS_LEMBRETES);
+  if (!linha) {
+    aba.appendRow(header.map(function (col) { return campos[col] !== undefined ? _lemCelula_(campos[col]) : ''; }));
+    return;
+  }
+  for (var col in campos) {
+    var i = header.indexOf(col);
+    if (i >= 0) aba.getRange(linha, i + 1).setValue(_lemCelula_(campos[col]));
+  }
+}
+
+/** Item como a tela do profissional o recebe. */
+function _lembreteParaCliente_(item) {
+  return { id: item.id, tipo: item.tipo, instrumento: item.instrumento, texto: item.texto,
+    recorrencia: item.recorrencia, periodicidade: item.periodicidade, dias_semana: _lemDiasSemana_(item.dias_semana),
+    data_inicio: item.data_inicio, data_termino: item.data_termino, hora: _lemHora_(item.hora),
+    ativo: _lemAtivo_(item) ? 'Sim' : 'Nao', encerrado_em: item.encerrado_em, ultimo_email_em: item.ultimo_email_em };
+}
+
+/** Plano de um paciente para a tela do profissional: os itens vigentes, ativos primeiro, por hora. */
+function _lembretesDoPaciente_(controle, sigla, hojeIso) {
+  var alvo = _siglaChave_(sigla);
+  return _lembretesLer_(_lembretesAba_(controle, false))
+    .filter(function (i) { return _siglaChave_(i.sigla) === alvo && _lembreteVigente_(i, hojeIso); })
+    .map(_lembreteParaCliente_)
+    .sort(function (a, b) {
+      if (a.ativo !== b.ativo) return a.ativo === 'Sim' ? -1 : 1;
+      return a.hora < b.hora ? -1 : (a.hora > b.hora ? 1 : 0);
+    });
+}
+
+/** Lembretes de hoje e atrasados de todos os pacientes da Controle, por sigla: { SIGLA: [ {...} ] }. */
+function _lembretesDoInicio_(controle, hojeIso) {
+  var mapa = {};
+  _lembretesLer_(_lembretesAba_(controle, false)).forEach(function (item) {
+    var s = _lembreteSituacao_(item, hojeIso);
+    if (!s.hoje && !s.atrasado) return;
+    var chave = _siglaChave_(item.sigla);
+    (mapa[chave] = mapa[chave] || []).push({ id: item.id, tipo: item.tipo, instrumento: item.instrumento, texto: item.texto,
+      hora: _lemHora_(item.hora), hoje: s.hoje, atrasado: s.atrasado, respondido_hoje: s.respondido_hoje, email_hoje: s.email_hoje });
+  });
+  return mapa;
+}
+
+/** Profissional do cracha + paciente dele + a Controle (sem abrir a planilha do paciente). */
+function _lembreteAlvo_(s, siglaPaciente) {
+  var auth = _authProfissional_(s);
+  if (!auth.ok) return auth;
+  var profId = auth.profissional.profissional_id;
+  if (!siglaPaciente) return { ok: false, erro: 'Sigla do paciente e obrigatoria' };
+  var paciente = buscarPaciente(siglaPaciente);
+  if (!paciente) return { ok: false, erro: 'Paciente nao encontrado' };
+  if (paciente.__profissional_id !== profId) return { ok: false, erro: 'Este paciente nao pertence a voce' };
+  var controle = abrirControleDoProfissional(profId);
+  if (!controle) return { ok: false, erro: 'Controle do profissional não encontrada.' };
+  return { ok: true, profissionalId: profId, paciente: paciente, controle: controle, sigla: String(paciente.sigla).trim(), nome: auth.profissional.nome_completo };
+}
+
+/**
+ * Fecha a resposta de uma acao que gravou: `lembretes` = o plano do paciente (tela do paciente aberto) e
+ * `inicio` = os itens de hoje e atrasados dele + o contato, como vao na lista do profissional — a tela
+ * atualiza os blocos do Inicio sem nova chamada.
+ */
+function _lembreteResposta_(alvo, resp, hojeIso) {
+  resp.lembretes = _lembretesDoPaciente_(alvo.controle, alvo.sigla, hojeIso);
+  var itens = _estaAtivo_(alvo.paciente.ativo) ? (_lembretesDoInicio_(alvo.controle, hojeIso)[_siglaChave_(alvo.sigla)] || []) : [];
+  resp.inicio = { lembretes: itens, telefone: normalizarTelefone(alvo.paciente.telefone), tem_email: !!normalizarEmail(alvo.paciente.email) };
+  return resp;
+}
+
+/** Lembrete de escala abre a escala para o paciente (o lembrete nao pode apontar para um cadeado). Acrescenta o resultado em `resp`. */
+function _lembreteAbrirEscala_(alvo, campos, resp) {
+  if (campos.tipo !== 'escala') return;
+  var estava = _escalasLiberadasLista_(alvo.paciente.escalas_liberadas).indexOf(_idDaEscala_(campos.instrumento)) !== -1;
+  resp.escalas_liberadas = _abrirEscalaParaPaciente_(alvo.profissionalId, alvo.sigla, campos.instrumento);
+  resp.escala_aberta = !estava;
+}
+
+// ---------- acoes do profissional ----------
+
+/** Cria ou edita um item do plano (o `id` vem da tela: salvar de novo o mesmo id regrava as colunas do plano, nunca duplica). */
+function profSalvarLembrete(s, siglaPaciente, dados) {
+  var alvo = _lembreteAlvo_(s, siglaPaciente);
+  if (!alvo.ok) return alvo;
+  var v = _lembreteValidar_(dados, true);
+  if (!v.ok) return v;
+  var aba = _lembretesAba_(alvo.controle, true);
+  var agora = _lemAgora_();
+  var existente = _lembretesLer_(aba).filter(function (i) { return i.id === v.id; })[0];
+  var campos = {};
+  for (var k in v.campos) campos[k] = v.campos[k];
+  campos.atualizado_em = agora.carimbo;
+  if (existente) {
+    if (_siglaChave_(existente.sigla) !== _siglaChave_(alvo.sigla) || !_lemAtivo_(existente)) return { ok: false, erro: 'Lembrete não encontrado.' };
+    _lembreteGravar_(aba, existente.__linha, campos);
+  } else {
+    campos.id = v.id; campos.sigla = alvo.sigla; campos.ativo = 'Sim';
+    campos.criado_em = agora.carimbo; campos.criado_por = String(alvo.nome || '');
+    _lembreteGravar_(aba, 0, campos);
+  }
+  var resp = { ok: true };
+  _lembreteAbrirEscala_(alvo, v.campos, resp);
+  return _lembreteResposta_(alvo, resp, agora.data);
+}
+
+/** Encerra um item: o paciente deixa de receber; a linha fica (o que ja foi enviado continua registrado). */
+function profEncerrarLembrete(s, siglaPaciente, id) {
+  var alvo = _lembreteAlvo_(s, siglaPaciente);
+  if (!alvo.ok) return alvo;
+  var aba = _lembretesAba_(alvo.controle, false);
+  var agora = _lemAgora_();
+  var item = _lembretesLer_(aba).filter(function (i) { return i.id === String(id || '').trim(); })[0];
+  if (!item || _siglaChave_(item.sigla) !== _siglaChave_(alvo.sigla)) return { ok: false, erro: 'Lembrete não encontrado.' };
+  if (_lemAtivo_(item)) _lembreteGravar_(aba, item.__linha, { ativo: 'Nao', encerrado_em: agora.carimbo, atualizado_em: agora.carimbo });
+  return _lembreteResposta_(alvo, { ok: true }, agora.data);
+}
+
+/**
+ * "Lembrar agora": grava o item (data de hoje, hora de agora) e manda o e-mail na hora.
+ * Saida: { ok, email_enviado, motivo ('' | sem_email | inativo | cota | falha), lembretes, inicio }.
+ * Repetir o mesmo id nao manda o e-mail de novo.
+ */
+function profLembrarAgora(s, siglaPaciente, dados) {
+  var alvo = _lembreteAlvo_(s, siglaPaciente);
+  if (!alvo.ok) return alvo;
+  var v = _lembreteValidar_(dados, false);
+  if (!v.ok) return v;
+  var aba = _lembretesAba_(alvo.controle, true);
+  var agora = _lemAgora_();
+  var existente = _lembretesLer_(aba).filter(function (i) { return i.id === v.id; })[0];
+  if (existente) {
+    if (_siglaChave_(existente.sigla) !== _siglaChave_(alvo.sigla)) return { ok: false, erro: 'Lembrete não encontrado.' };
+    return _lembreteResposta_(alvo, { ok: true, duplicado: true, email_enviado: !!existente.ultimo_email_em, motivo: existente.ultimo_email_em ? '' : 'falha' }, agora.data);
+  }
+  var campos = {};
+  for (var k in v.campos) campos[k] = v.campos[k];
+  campos.id = v.id; campos.sigla = alvo.sigla; campos.ativo = 'Sim';
+  campos.recorrencia = 'agora'; campos.data_inicio = agora.data; campos.hora = agora.hora;
+  campos.criado_em = agora.carimbo; campos.criado_por = String(alvo.nome || ''); campos.atualizado_em = agora.carimbo;
+
+  var email = normalizarEmail(alvo.paciente.email);
+  var motivo = '';
+  if (!_estaAtivo_(alvo.paciente.ativo)) motivo = 'inativo';
+  else if (!email) motivo = 'sem_email';
+  else if (!_reservarEmail_('lembretes')) motivo = 'cota';
+  else if (!_enviarEmail_(email, montarEmailLembrete(campos.tipo, _lemPrimeiroNome_(alvo.paciente), _assinaturaDoProfissional_(alvo.profissionalId)))) motivo = 'falha';
+  if (!motivo) campos.ultimo_email_em = agora.carimbo;
+  _lembreteGravar_(aba, 0, campos);
+
+  var resp = { ok: true, email_enviado: !motivo, motivo: motivo };
+  _lembreteAbrirEscala_(alvo, v.campos, resp);
+  return _lembreteResposta_(alvo, resp, agora.data);
+}
+
+// ---------- acao do paciente (so leitura) ----------
+
+/**
+ * O que esta combinado para os proximos 7 dias (hoje + 6): uma linha por item ativo, com a
+ * proxima data prevista. Item ja respondido hoje passa para a data seguinte.
+ * Saida: { ok, hoje, lembretes: [ { data, hora, tipo, instrumento, texto, recorrencia, periodicidade, dias_semana } ] }.
+ */
+function lerMeusLembretes(sigla) {
+  var paciente = buscarPaciente(sigla);
+  if (!paciente) return { ok: false, erro: 'Paciente nao encontrado' };
+  var controle = abrirControleDoProfissional(paciente.__profissional_id);
+  var hoje = _lemAgora_().data, h = _lemDia_(hoje), alvo = _siglaChave_(sigla);
+  var lista = [];
+  _lembretesLer_(_lembretesAba_(controle, false)).forEach(function (item) {
+    if (_siglaChave_(item.sigla) !== alvo || !_lemAtivo_(item)) return;
+    var feitoHoje = String(item.ultimo_cumprido_em || '').slice(0, 10) === hoje && item.tipo !== 'outro';
+    for (var k = feitoHoje ? 1 : 0; k < 7; k++) {
+      var iso = _lemIso_(h + k);
+      if (!_lembreteOcorre_(item, iso)) continue;
+      lista.push({ data: iso, hora: _lemHora_(item.hora), tipo: item.tipo, instrumento: item.instrumento, texto: item.texto,
+        recorrencia: item.recorrencia, periodicidade: item.periodicidade, dias_semana: _lemDiasSemana_(item.dias_semana) });
+      break;
+    }
+  });
+  lista.sort(function (a, b) {
+    var x = a.data + ' ' + a.hora, y = b.data + ' ' + b.hora;
+    return x < y ? -1 : (x > y ? 1 : 0);
+  });
+  return { ok: true, hoje: hoje, lembretes: lista };
+}
+
+// ---------- o paciente respondeu ----------
+
+/**
+ * Marca como respondidos hoje os itens ativos do paciente para aquele instrumento
+ * (`tipo` = 'auto' ou 'escala'; em escala, `instrumento` = codigo). Chamada pela gravacao
+ * do registro completo e da escala, na mesma trava. Nunca derruba a gravacao que a chamou.
+ */
+function _lembretesCumprir_(profissionalId, sigla, tipo, instrumento) {
+  try {
+    var aba = _lembretesAba_(abrirControleDoProfissional(profissionalId), false);
+    if (!aba) return;
+    var hoje = _lemAgora_().data, alvo = _siglaChave_(sigla), instr = String(instrumento || '').trim();
+    _lembretesLer_(aba).forEach(function (item) {
+      if (_siglaChave_(item.sigla) !== alvo || item.tipo !== tipo || !_lemAtivo_(item)) return;
+      if (tipo === 'escala' && item.instrumento !== instr) return;
+      if (item.ultimo_cumprido_em === hoje) return;
+      _lembreteGravar_(aba, item.__linha, { ultimo_cumprido_em: hoje });
+    });
+  } catch (e) {
+    console.error('lembretes: nao marquei como respondido: ' + String(e && e.message || e).slice(0, 160));
+  }
+}
+
+/** Registro completo (Negativo ou Positivo)? A checagem de humor sozinha nao conta (a regra do chip de Meus Registros). */
+function _registroCompleto_(dados) {
+  var sim = function (v) { return String(v === undefined || v === null ? '' : v).trim().toLowerCase() === 'sim'; };
+  return !!dados && (sim(dados.neg_preenchido) || sim(dados.pos_preenchido));
+}
+
+/** Paciente excluido: os itens dele saem da aba (a sigla pode voltar a ser usada por outro paciente). */
+function _lembretesApagarDoPaciente_(controle, sigla) {
+  var aba = _lembretesAba_(controle, false);
+  if (!aba) return;
+  var alvo = _siglaChave_(sigla);
+  _lembretesLer_(aba).reverse().forEach(function (item) {
+    if (_siglaChave_(item.sigla) === alvo) aba.deleteRow(item.__linha);
+  });
+}
+
+// ---------- e-mail ----------
+
+/** Primeiro nome do paciente: o da anamnese (ind_nome) ou, sem ela, o do cadastro. */
+function _lemPrimeiroNome_(paciente) {
+  var nome = String((paciente && (paciente.ind_nome || paciente.nome)) || '').trim();
+  return nome ? nome.split(/\s+/)[0] : '';
+}
+
+/** E-mail de lembrete (texto puro e HTML no layout dos convites), com os textos aprovados; o link e o do site. */
+function montarEmailLembrete(tipo, nome, assinatura) {
+  var t = EMAIL_LEMBRETE[tipo] || EMAIL_LEMBRETE.outro;
+  var linhasAssinatura = assinatura || [];
+  var ola = nome ? 'Olá, ' + nome + '.' : 'Olá.';
+  var texto = [EMAIL_DESTAQUE, '', ola, '', t.paragrafo, '', SITE_URL, '', EMAIL_LEMBRETE_AVISO, ''].concat(linhasAssinatura).join('\n');
+  var html = _layoutEmail_({ previa: t.previa, titulo: t.titulo, acompanhamento: '', ola: ola, paragrafo: t.paragrafo,
+    botao: t.botao, sobBotao: EMAIL_LEMBRETE_SOB_BOTAO, link: SITE_URL, aviso: EMAIL_LEMBRETE_AVISO, assinatura: linhasAssinatura });
+  return { assunto: t.assunto, texto: texto, html: html };
+}
+
+// ---------- gatilho de hora em hora ----------
+
+/**
+ * Percorre a aba Lembretes de cada profissional ativo e manda o e-mail dos itens que vencem
+ * agora (_lembreteEmailVence_). `quando` (Date) so nos testes; o gatilho passa o evento dele,
+ * que e ignorado. A marca `ultimo_email_em` e gravada ANTES do envio, dentro da trava e relendo
+ * a celula: rodar duas vezes no mesmo dia nunca manda o mesmo item duas vezes. Se o envio
+ * falhar, a marca volta ao que era e a rodada seguinte tenta de novo.
+ * Devolve so contagens (nenhuma sigla, nenhum e-mail).
+ */
+function enviarLembretes_(quando) {
+  _memoZerar_(true);
+  var agora = _lemAgora_(quando);
+  var r = { ok: true, data: agora.data, hora: agora.hora, profissionais: 0, itens: 0, vencendo: 0, enviados: 0,
+    ja_enviados: 0, sem_email: 0, inativos: 0, sem_cota: 0, falhas: 0 };
+  lerAbaComoObjetos(_abrirPlanilha_(SISTEMA_VMC_ID), ABA_PROFISSIONAIS).forEach(function (prof) {
+    try {
+      if (!prof.profissional_id || !_estaAtivo_(prof.ativo)) return;
+      var controle = abrirControleDoProfissional(prof.profissional_id);
+      var aba = _lembretesAba_(controle, false);
+      var itens = _lembretesLer_(aba);
+      if (!itens.length) return;
+      r.profissionais++;
+      r.itens += itens.length;
+      var devidos = itens.filter(function (i) { return _lembreteEmailVence_(i, agora.data, agora.hora); });
+      if (!devidos.length) return;
+      var pacientes = {};
+      lerAbaComoObjetos(controle, ABA_PACIENTES).forEach(function (p) { pacientes[_siglaChave_(p.sigla)] = p; });
+      var assinatura = _assinaturaDe_(prof.nome_completo, prof.crp, prof.genero);
+      var colEnvio = _garantirColunas_(aba, COLUNAS_LEMBRETES).indexOf('ultimo_email_em') + 1;
+      var colId = _garantirColunas_(aba, COLUNAS_LEMBRETES).indexOf('id') + 1;
+      devidos.forEach(function (item) {
+        r.vencendo++;
+        var pac = pacientes[_siglaChave_(item.sigla)];
+        if (!pac || !_estaAtivo_(pac.ativo)) { r.inativos++; return; }
+        var email = normalizarEmail(pac.email);
+        if (!email) { r.sem_email++; return; }
+        var anterior = '';
+        var reserva;
+        try {
+          reserva = _comTrava_(function () {
+            if (String(aba.getRange(item.__linha, colId).getDisplayValues()[0][0]).trim() !== item.id) return 'mudou';
+            anterior = String(aba.getRange(item.__linha, colEnvio).getDisplayValues()[0][0]).trim();
+            if (anterior.slice(0, 10) === agora.data) return 'ja';
+            if (!_reservarEmail_('lembretes')) return 'cota';
+            aba.getRange(item.__linha, colEnvio).setValue(_lemCelula_(agora.carimbo));
+            return 'ok';
+          });
+        } catch (erroTrava) {
+          reserva = 'falha';
+        }
+        if (reserva === 'ja' || reserva === 'mudou') { r.ja_enviados++; return; }
+        if (reserva === 'cota') { r.sem_cota++; return; }
+        if (reserva !== 'ok') { r.falhas++; return; }
+        if (_enviarEmail_(email, montarEmailLembrete(item.tipo, _lemPrimeiroNome_(pac), assinatura))) { r.enviados++; return; }
+        r.falhas++;
+        _comTravaSeDer_(function () { aba.getRange(item.__linha, colEnvio).setValue(_lemCelula_(anterior)); });
+      });
+    } catch (e) {
+      r.falhas++;
+      console.error('lembretes: ' + String(e && e.message || e).slice(0, 160));
+    }
+  });
+  Logger.log('Lembretes: ' + JSON.stringify(r));
+  return r;
+}
+
+
 // ------------------------------------------------------------
 // monitorarPing_ — monitor horario da implantacao de producao
 // ------------------------------------------------------------
@@ -5842,7 +6476,7 @@ function _e3AvisarFalhaPing_(agora, falha, codigo, corpo) {
  * Rodada uma vez; repetir e seguro (apaga antes de criar).
  */
 function instalarGatilhos() {
-  var alvos = ['backupDiario_', 'backupSobDemanda_', 'monitorarPing_'];
+  var alvos = ['backupDiario_', 'backupSobDemanda_', 'monitorarPing_', 'enviarLembretes_'];
   var removidos = 0;
 
   var existentes = ScriptApp.getProjectTriggers();
@@ -5860,8 +6494,16 @@ function instalarGatilhos() {
     .inTimezone('America/Sao_Paulo')
     .create();
 
-  var msg = 'E3: ' + removidos + ' gatilho(s) antigo(s) removido(s). Criado: ' +
-            'monitorarPing_ (diario, entre 7 h e 8 h, America/Sao_Paulo). ' +
+  // 19.2.1: lembretes por e-mail, de hora em hora (a hora de cada item e escolhida pelo profissional;
+  // o e-mail sai na primeira rodada depois dela)
+  ScriptApp.newTrigger('enviarLembretes_')
+    .timeBased()
+    .everyHours(1)
+    .create();
+
+  var msg = 'E3: ' + removidos + ' gatilho(s) antigo(s) removido(s). Criados: ' +
+            'monitorarPing_ (diario, entre 7 h e 8 h, America/Sao_Paulo) e ' +
+            'enviarLembretes_ (de hora em hora). ' +
             'Backup e sob demanda (rodarBackupAgora), sem gatilho.';
   Logger.log(msg);
   return msg;
@@ -5896,6 +6538,23 @@ function rodarBackupAgora() {
 
 function rodarMonitorAgora() {
   return monitorarPing_();
+}
+
+/** 19.2.1: roda o gatilho dos lembretes a mao (clasp --user run run-function rodarLembretesAgora). Devolve so contagens. */
+function rodarLembretesAgora() {
+  return enviarLembretes_();
+}
+
+/**
+ * 19.2.1: tira o gatilho dos lembretes (rollback do pacote: gatilho que aponta para funcao
+ * que nao existe mais da erro toda hora). Uso: clasp --user run run-function removerGatilhoLembretes
+ */
+function removerGatilhoLembretes() {
+  var removidos = 0;
+  ScriptApp.getProjectTriggers().forEach(function (g) {
+    if (g.getHandlerFunction() === 'enviarLembretes_') { ScriptApp.deleteTrigger(g); removidos++; }
+  });
+  return { ok: true, removidos: removidos };
 }
 
 

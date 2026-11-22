@@ -48,7 +48,8 @@ const RESPOSTAS_FINGIDAS = {
   lerHistorico: { ok: true, fingido: true, anamnese_preenchida: true, anamnese: { nome_completo: 'Paciente de teste' }, automonitoramento: [], total_registros: 0 },
   lerEscalas: { ok: true, fingido: true, total: 0, escalas: [] },
   lerItensInstrumento: { ok: true, fingido: true, liberados: [] },
-  lerRascunhos: { ok: true, fingido: true, rascunhos: [] } // Pacote 18.10b: o Início lê os rascunhos do servidor
+  lerRascunhos: { ok: true, fingido: true, rascunhos: [] }, // Pacote 18.10b: o Início lê os rascunhos do servidor
+  lerMeusLembretes: { ok: true, fingido: true, hoje: '', lembretes: [] } // Pacote 19.2.1: o Início lê o combinado da semana (plano de lembretes)
 };
 
 /* "390" | "390,1280" | "390x844,1000x700" | undefined → lista de {w,h}. Sem argumento: celular + computador. */

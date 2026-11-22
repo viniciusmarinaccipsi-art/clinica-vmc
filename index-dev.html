@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Início do profissional como dashboard: atalhos, alertas de risco, atualizações recentes e tela Pacientes com busca — Pacote 19.2 (22/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Plano de lembretes: módulo no paciente aberto, Lembretes de hoje e Atrasados no Início do profissional, combinado da semana no Início do paciente — Pacote 19.2.1 (22/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -766,6 +766,46 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .prof-ev-risco{background:var(--c-risk-tint);border-color:var(--c-risk-tint);}
 .prof-ev-risco .prof-ev-texto,.prof-ev-risco .prof-ev-quando{color:var(--c-risk-ink);}
 .prof-voltar{min-height:var(--hit-min);}
+/* Pacote 19.2.1 — Plano de lembretes: módulo no paciente aberto (formulário e itens), linha dos blocos do Início
+   (item clicável + botão WhatsApp ao lado) e o combinado da semana no Início do paciente (só leitura). */
+.prof-lem-form{border:1px solid var(--c-line);border-radius:var(--r-field);padding:var(--s-4);margin-bottom:var(--s-3);background:var(--c-surface-sub);text-align:left;}
+.prof-lem-form .prof-cad-field input,.prof-lem-form .prof-cad-field select{min-height:var(--hit-min);background:var(--c-surface);color:var(--c-ink);}
+.prof-lem-dias{display:flex;flex-wrap:wrap;gap:var(--s-2);}
+.prof-lem-dia{min-width:var(--hit-min);min-height:var(--hit-min);padding:0 var(--s-2);border:1.5px solid var(--c-line);border-radius:var(--r-field);background:var(--c-surface);color:var(--c-ink-2);font:var(--t-action);cursor:pointer;}
+.prof-lem-dia[aria-pressed="true"]{background:var(--c-action);border-color:var(--c-action);color:var(--c-ink-inv);}
+.prof-lem-dia:focus-visible{outline:2px solid var(--c-action);outline-offset:2px;}
+.prof-lem-ajuda{font:var(--t-body-sm);color:var(--c-ink-3);margin:var(--s-1) 0 var(--s-3);}
+.prof-lem-acoes{display:flex;gap:var(--s-2);flex-wrap:wrap;}
+.prof-lem-acoes .p5-btn{min-height:var(--hit-min);}
+.prof-lem-aviso{font:var(--t-body);color:var(--c-ink-2);margin-bottom:var(--s-3);text-align:left;}
+.prof-lem-aviso:empty{display:none;}
+.prof-lem-aviso p{margin:0 0 var(--s-2);}
+.prof-lem-lista{display:flex;flex-direction:column;gap:var(--s-2);}
+.prof-lem-item{display:flex;flex-wrap:wrap;gap:var(--s-2) var(--s-3);align-items:center;justify-content:space-between;padding:var(--s-3);border:1px solid var(--c-line);border-radius:var(--r-field);text-align:left;}
+.prof-lem-item.encerrado{background:var(--c-surface-sub);}
+.prof-lem-info{flex:1 1 220px;min-width:0;}
+.prof-lem-oque{font:var(--t-body);font-weight:600;color:var(--c-ink);overflow-wrap:anywhere;}
+.prof-lem-item.encerrado .prof-lem-oque{color:var(--c-ink-3);}
+.prof-lem-regra{font:var(--t-body-sm);color:var(--c-ink-2);overflow-wrap:anywhere;}
+.prof-lem-estado{font:var(--t-body-sm);color:var(--c-ink-3);}
+.prof-lem-botoes{display:flex;gap:var(--s-2);flex-wrap:wrap;}
+.prof-lem-btn{display:inline-flex;align-items:center;justify-content:center;min-height:var(--hit-min);padding:0 var(--s-3);border:1px solid var(--c-line-strong);border-radius:var(--r-field);background:var(--c-surface);color:var(--c-ink);font:var(--t-action);text-decoration:none;cursor:pointer;}
+.prof-lem-btn:hover{background:var(--c-surface-sub);}
+.prof-lem-btn:focus-visible{outline:2px solid var(--c-action);outline-offset:2px;}
+.prof-lem-linha{display:flex;gap:var(--s-2);align-items:stretch;}
+.prof-lem-linha .prof-ev{flex:1 1 0;min-width:0;}
+@media (max-width:599px){
+  /* no celular a marca (e-mail, atraso) desce para baixo do texto: ao lado, com o botão WhatsApp, o nome quebrava letra a letra */
+  .prof-lem-linha .prof-ev{grid-template-columns:minmax(0,1fr);}
+  .prof-lem-linha .prof-ev-quando{grid-column:1;grid-row:auto;text-align:left;}
+}
+.prof-lem-sem{display:flex;align-items:center;max-width:104px;font:var(--t-body-sm);color:var(--c-ink-3);}
+.ini-lem{background:var(--c-surface);border:1px solid var(--c-line);border-left:4px solid var(--c-action);border-radius:var(--r-card);padding:16px;box-shadow:var(--sh-1);margin:4px 0 16px;text-align:left;}
+.ini-lem-titulo{display:flex;align-items:center;gap:var(--s-3);font:600 16px/1.3 var(--f-text);color:var(--c-ink);margin-bottom:var(--s-2);}
+.ini-lem-titulo .ico{color:var(--c-action);flex-shrink:0;}
+.ini-lem-lista{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--s-2);}
+.ini-lem-lista li{font:var(--t-body);color:var(--c-ink-2);overflow-wrap:anywhere;}
+.ini-lem-lista strong{font-weight:600;color:var(--c-ink);}
 /* Pacote 13.4: modal de cadastro de novo paciente */
 .prof-cad-field{margin:0 0 14px;}
 .prof-cad-field label{
@@ -4742,6 +4782,24 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
   </div>
 
   <!-- Pacote 13.4.1: Modal de troca de senha do paciente -->
+  <!-- Pacote 19.2.1: confirmação de encerrar um lembrete do plano — textos aprovados pelo usuário em 22/11/2026 -->
+  <div class="p5-modal-overlay" id="profLemEncerrarModal" onclick="if(event.target===this)profLemFecharEncerrar_()">
+    <div class="p5-modal-card" role="dialog" aria-modal="true" aria-labelledby="profLemEncerrarTitulo" style="max-width:400px;">
+      <div class="p5-modal-head">
+        <span class="p5-modal-icone"><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg></span>
+        <div class="p5-modal-titulo" id="profLemEncerrarTitulo">Encerrar este lembrete?</div>
+      </div>
+      <div class="p5-modal-body">
+        <div class="prof-cad-erro" id="profLemEncerrarErro" role="alert"></div>
+        <p style="margin:0;">O paciente deixa de receber este lembrete. O que já foi enviado continua registrado.</p>
+      </div>
+      <div class="p5-modal-acoes prof-lem-acoes">
+        <button class="p5-btn p5-btn-secondary" type="button" onclick="profLemFecharEncerrar_()">Cancelar</button>
+        <button class="p5-btn p5-btn-primary" type="button" id="profLemEncerrarBtn" onclick="profLemConfirmarEncerrar_()">Encerrar</button>
+      </div>
+    </div>
+  </div>
+
   <div class="p5-modal-overlay" id="pacSenhaModal" onclick="if(event.target===this)pacFecharModalSenha()">
     <div class="p5-modal-card" role="dialog" aria-modal="true" aria-labelledby="pacSenhaTitulo" style="max-width:400px;">
       <div class="p5-modal-head">
@@ -4788,6 +4846,12 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
       <div class="hub-rascunho-titulo"><svg class="ico" aria-hidden="true"><use href="#i-pencil"/></svg><span id="iniRascunhoTexto"></span></div>
       <button type="button" class="b56" onclick="iniRascunhoContinuar()">Continuar</button>
       <button type="button" class="b56 b56-sec" onclick="iniRascunhoDescartar()">Descartar</button>
+    </div>
+
+    <!-- Pacote 19.2.1: o que está combinado para a semana (plano de lembretes do profissional), só leitura — texto aprovado em 22/11/2026 -->
+    <div class="ini-lem" id="iniLembretes" hidden>
+      <div class="ini-lem-titulo"><svg class="ico" aria-hidden="true"><use href="#i-calendar"/></svg><span>Combinado para esta semana</span></div>
+      <ul class="ini-lem-lista" id="iniLembretesLista"></ul>
     </div>
 
     <!-- Ação primária: mesmo caminho do card "Iniciar Novo Registro" do hub -->
@@ -8042,6 +8106,7 @@ var VMC_ACOES_GRAVACAO = [
   'profCadastrarPaciente', 'profSalvarAnamnese', 'profSalvarGrade', 'profSalvarMeusDados', // 18.8.1
   'profMarcarEditandoAuto', 'profLimparEditandoAuto', 'profEditarAutomonitoramento',
   'profCriarAutomonitoramento', 'profCriarEscala', 'profEditarEscala', // 18.5
+  'profSalvarLembrete', 'profEncerrarLembrete', 'profLembrarAgora', // 19.2.1
   'profDesativarPaciente', 'profReativarPaciente', 'profExcluirPaciente', 'profAlterarSenhaPaciente',
   'admCadastrarProfissional', 'admAtualizarProfissional', 'admTrocarSenhaProfissional',
   'admDesativarProfissional', 'admReativarProfissional',
@@ -8268,6 +8333,7 @@ function profFluxoAdaptar_(acao, dados) {
   }
   if (acao === 'lerEscalas') { const escs = sel.escalas || []; return { resposta: { ok: true, escalas: escs, total: escs.length, tem_mais: false } }; }
   if (acao === 'lerRascunhos') return { resposta: { ok: true, rascunhos: [] } }; // o rascunho no servidor é só do paciente
+  if (acao === 'lerMeusLembretes') return { resposta: { ok: true, hoje: '', lembretes: [] } }; // 19.2.1: a faixa do Início é só do paciente
   return null;
 }
 function profFluxoEncerrar_(msgOk) {
@@ -8891,6 +8957,9 @@ function iniAbrir() {
   iniAtualizarSaudacao();
   iniRascunhoRender(); // 18.10b: o que já se sabe aparece na hora; a leitura do servidor completa em segundo plano
   rascCarregarDoServidor_();
+  iniLemRender_();
+  if (INI_STATE.invalido) INI_LEM.carregado = false; // 19.2.1: depois de um envio, o item respondido passa para a data seguinte
+  iniLemCarregar_();
   if (INI_STATE.carregado && !INI_STATE.invalido) {
     iniRenderContinuidade(INI_STATE.dados);
     return;
@@ -8932,6 +9001,33 @@ function rascAnotar_(tipo, atualizadoEm, dados) {
 function rascEsquecer_(tipo) {
   RASC_SERVIDOR.lista = RASC_SERVIDOR.lista.filter(function (x) { return x.tipo !== tipo; });
 }
+/* Pacote 19.2.1 — combinado da semana no Início do paciente (plano de lembretes do profissional), só leitura.
+   Uma leitura em segundo plano ao abrir o Início; a faixa some quando não há nada combinado. */
+var INI_LEM = { carregado: false, carregando: false, hoje: '', lista: [] }; // lista: [{ data, hora, tipo, instrumento, texto, recorrencia, periodicidade, dias_semana }]
+async function iniLemCarregar_() {
+  if (INI_LEM.carregado || INI_LEM.carregando || PROF_SESSAO || !carregarSessao()) return;
+  const geracao = VMC_GERACAO_SESSAO;
+  INI_LEM.carregando = true;
+  const r = await iniLerQuieto('lerMeusLembretes', {});
+  if (geracao !== VMC_GERACAO_SESSAO) return; // outra sessão: o estado já foi zerado na saída
+  INI_LEM.carregando = false;
+  if (!r || !r.ok || !Array.isArray(r.lembretes)) return; // sem resposta: tenta de novo na próxima vez que o Início abrir
+  INI_LEM.lista = r.lembretes;
+  INI_LEM.hoje = String(r.hoje || '');
+  INI_LEM.carregado = true;
+  iniLemRender_();
+}
+function iniLemRender_() {
+  const box = document.getElementById('iniLembretes'), ul = document.getElementById('iniLembretesLista');
+  if (!box || !ul) return;
+  box.hidden = !INI_LEM.lista.length;
+  ul.innerHTML = INI_LEM.lista.map(function (l) {
+    const dia = l.data === INI_LEM.hoje ? 'Hoje' : LEM_DIAS[lemDiaDaSemana_(l.data)] + ', ' + lemDataBR_(l.data, true);
+    const repete = l.recorrencia === 'recorrente' ? ' · ' + lemRegra_(l) : '';
+    return '<li><strong>' + esc(dia + (l.hora ? ', às ' + l.hora : '')) + '</strong> · ' + esc(lemOQue_(l, true) + repete) + '</li>';
+  }).join('');
+}
+
 // Só o paciente tem rascunho no servidor. Recusa do servidor não prende a saída: a cópia do aparelho continua.
 async function rascSalvarNoServidor_() {
   if (PROF_SESSAO || !carregarSessao()) return;
@@ -9542,6 +9638,17 @@ async function profCarregarDashboard(pacientesProntos) {
   var pacientes = resp.pacientes || [];
   PROF_LISTA = pacientes; // 19.2: a mesma lista em memória serve ao Início e à tela Pacientes
   profRenderPacientes_();
+  profRenderInicio_();
+
+  // 18.11.1: só depois de a lista estar na tela, em segundo plano (desativados ficam fora)
+  profPreCarregar_(pacientes.filter(function (p) { return String(p.ativo || 'Sim').trim().toLowerCase() !== 'nao'; }));
+}
+
+/* 19.2.1: o Início sai da lista em memória (PROF_LISTA) — refeito também depois de gravar um lembrete, sem nova chamada */
+function profRenderInicio_() {
+  var container = document.getElementById('profDashboardConteudo');
+  if (!container || !PROF_SESSAO) return;
+  var pacientes = PROF_LISTA;
 
   // Pacote 19.2: atalhos. Novo Paciente é do 13.4 e Agenda do 14.1; Escalas e Inventários ganha destino no 19.3
   var atalhos = '<div class="prof-atalhos">' +
@@ -9559,9 +9666,8 @@ async function profCarregarDashboard(pacientesProntos) {
   // Pacote 13.5: os desativados ficam fora dos blocos do Início (continuam na tela Pacientes, recolhidos)
   var ativos = pacientes.filter(function(p){ return String(p.ativo||'Sim').trim().toLowerCase() !== 'nao'; });
 
-  profPreCarregar_(ativos); // 18.11.1: só depois de a lista estar na tela, em segundo plano
-
-  container.innerHTML = atalhos + profRenderAlertas_(ativos) + profRenderAtualizacoes_(ativos);
+  // 19.2.1: Lembretes de hoje e Atrasados entre os alertas e as atualizações
+  container.innerHTML = atalhos + profRenderAlertas_(ativos) + profRenderLembretesHoje_(ativos) + profRenderAtrasados_(ativos) + profRenderAtualizacoes_(ativos);
 }
 
 function profSemPacientesHtml_() {
@@ -9645,6 +9751,310 @@ function profRenderAtualizacoes_(ativos) {
   });
   return profBlocoHtml_('profBlocoAtualizacoes', 'Atualizações recentes <span class="prof-bloco-sub">Últimos ' + PROF_ATUALIZACOES_DIAS + ' dias</span>', itens,
     'Nenhum registro ou escala nos últimos ' + PROF_ATUALIZACOES_DIAS + ' dias.');
+}
+
+/* ============================================================
+   Pacote 19.2.1: Plano de lembretes (textos aprovados pelo usuário em 22/11/2026).
+   - Início do profissional: blocos "Lembretes de hoje" e "Atrasados", com os itens que vêm na lista do login
+     (`lembretes` de cada paciente; o servidor decide o que vence hoje e o que está atrasado) e o botão WhatsApp.
+   - Paciente aberto: módulo "Plano de lembretes" (criar, editar, encerrar, lembrar agora).
+   O e-mail é do servidor (gatilho de hora em hora); o WhatsApp é enviado pelo profissional, pelo botão.
+   Nome de escala e texto do "Outro" nunca entram na mensagem (nenhum dado clínico fora do sistema).
+   ============================================================ */
+var VMC_SITE_URL = 'https://viniciusmarinaccipsi-art.github.io/clinica-vmc/index-dev.html'; // o endereço que vai na mensagem do WhatsApp
+var LEM_REPETIR = { diaria: 'Todo dia', semanal: 'Toda semana', quinzenal: 'A cada 15 dias', mensal: 'Todo mês', dias_semana: 'Dias da semana escolhidos' };
+var LEM_DIAS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+var PROF_LEM = { editando: '', idNovo: '', encerrar: '' }; // item em edição, id do item novo (o reenvio não duplica) e item a encerrar
+
+/** 'AAAA-MM-DD…' → 'DD/MM/AAAA' (ou 'DD/MM' com `curto`); parse manual (data civil não passa por new Date de texto). */
+function lemDataBR_(iso, curto) {
+  var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || ''));
+  return m ? m[3] + '/' + m[2] + (curto ? '' : '/' + m[1]) : '';
+}
+/** Dia da semana (0 = domingo) de 'AAAA-MM-DD'. */
+function lemDiaDaSemana_(iso) {
+  var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || ''));
+  return m ? new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10)).getDay() : 0;
+}
+/** Data civil de hoje no aparelho, 'AAAA-MM-DD'. */
+function lemHojeIso_() {
+  var d = new Date(), p = function (n) { return ('0' + n).slice(-2); };
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+/** O que lembrar. Com `nomeLongo`, a escala sai com o nome do catálogo (como no menu do paciente); sem, com o código. */
+function lemOQue_(l, nomeLongo) {
+  if (l.tipo === 'auto') return 'Automonitoramento';
+  if (l.tipo === 'escala') {
+    var def = ESC_ESCALAS[l.instrumento];
+    return (nomeLongo && def && def.nomeCompleto) ? def.nomeCompleto : String(l.instrumento || '');
+  }
+  return String(l.texto || '');
+}
+/** Como o item se repete, com os rótulos do formulário. */
+function lemRegra_(l) {
+  if (l.recorrencia === 'agora') return 'Lembrar agora';
+  if (l.recorrencia !== 'recorrente') return 'Somente uma vez';
+  if (l.periodicidade === 'dias_semana') return (l.dias_semana || []).map(function (d) { return LEM_DIAS[d]; }).filter(Boolean).join(', ');
+  return LEM_REPETIR[l.periodicidade] || '';
+}
+/** Link do WhatsApp com a mensagem aprovada (uma por tipo; serve a "Lembretes de hoje", "Atrasados" e "Lembrar agora"). */
+function lemLinkWhats_(telefone, tipo, nomePaciente) {
+  var quem = iniPrimeiroNome(PROF_SESSAO && PROF_SESSAO.nome_completo);
+  var artigo = (PROF_SESSAO && PROF_SESSAO.genero === 'F') ? 'a' : 'o';
+  var pac = iniPrimeiroNome(nomePaciente);
+  var corpo = tipo === 'auto' ? 'Passando para lembrar do seu registro no COGNIATIVO. Quando puder: ' + VMC_SITE_URL
+    : (tipo === 'escala' ? 'Passando para lembrar que há uma escala para você responder no COGNIATIVO. Quando puder: ' + VMC_SITE_URL
+    : 'Passando para lembrar do que combinamos. Está no Início do COGNIATIVO: ' + VMC_SITE_URL);
+  var msg = 'Olá' + (pac ? ', ' + pac : '') + '! ' + (quem ? 'Aqui é ' + artigo + ' ' + quem + '. ' : '') + corpo;
+  return 'https://wa.me/55' + String(telefone || '').replace(/\D/g, '') + '?text=' + encodeURIComponent(msg);
+}
+/** Botão WhatsApp (ou o aviso de cadastro sem telefone). `rotulo` é texto fixo da tela. */
+function lemBotaoWhats_(telefone, tipo, nomePaciente, rotulo) {
+  if (!String(telefone || '').replace(/\D/g, '')) return '<span class="prof-lem-sem">Sem telefone no cadastro</span>';
+  return '<a class="prof-lem-btn" data-lem-whats="' + esc(tipo) + '" href="' + esc(lemLinkWhats_(telefone, tipo, nomePaciente)) + '" target="_blank" rel="noopener">' + rotulo + '</a>';
+}
+
+/* ---- Início do profissional: uma linha = o item clicável do bloco (abre o paciente) + o botão WhatsApp ---- */
+function profLemLinhaHtml_(p, l, texto, quando) {
+  return '<div class="prof-lem-linha" data-lem-id="' + esc(l.id) + '">' + profEvHtml_(p, 'lembrete', texto, quando, false) +
+    lemBotaoWhats_(p.telefone, l.tipo, p.nome_completo, 'WhatsApp') + '</div>';
+}
+/* O que o plano prevê para hoje, por hora; a marca diz em que pé está o e-mail */
+function profRenderLembretesHoje_(ativos) {
+  var itens = [];
+  ativos.forEach(function (p) {
+    (p.lembretes || []).forEach(function (l) {
+      if (!l.hoje) return;
+      var marca = l.respondido_hoje ? 'Respondido hoje'
+        : (!p.tem_email ? 'Sem e-mail no cadastro' : (l.email_hoje ? 'E-mail enviado às ' + l.email_hoje : 'E-mail às ' + l.hora));
+      var minutos = parseInt(String(l.hora).slice(0, 2), 10) * 60 + parseInt(String(l.hora).slice(3, 5), 10);
+      itens.push({ dias: isNaN(minutos) ? 0 : minutos, nome: p.nome_completo || p.sigla || '', ordem: 0,
+        html: profLemLinhaHtml_(p, l, esc(lemOQue_(l)) + ' · ' + esc(l.hora), marca) });
+    });
+  });
+  return profBlocoHtml_('profBlocoLembretesHoje', 'Lembretes de hoje', itens, 'Nenhum lembrete previsto para hoje.');
+}
+/* Previsto pelo plano e não respondido até a data; o mais recente primeiro */
+function profRenderAtrasados_(ativos) {
+  var itens = [];
+  ativos.forEach(function (p) {
+    (p.lembretes || []).forEach(function (l) {
+      if (!l.atrasado) return;
+      var dias = iniDiasDesde(l.atrasado);
+      itens.push({ dias: dias === null ? 99999 : dias, nome: p.nome_completo || p.sigla || '', ordem: 0,
+        html: profLemLinhaHtml_(p, l, esc(lemOQue_(l)) + ' · previsto para ' + esc(lemDataBR_(l.atrasado, true)), iniTextoDias(dias)) });
+    });
+  });
+  return profBlocoHtml_('profBlocoAtrasados', 'Atrasados', itens, 'Nenhum lembrete atrasado.');
+}
+
+/* ---- Paciente aberto: módulo "Plano de lembretes" ---- */
+function profLemMeta_() {
+  var n = ((PROF_PACIENTE_SEL && PROF_PACIENTE_SEL.lembretes) || []).filter(function (l) { return l.ativo === 'Sim'; }).length;
+  return n === 0 ? 'Nenhum lembrete' : (n === 1 ? '1 lembrete ativo' : n + ' lembretes ativos');
+}
+function profLemItemHtml_(l) {
+  var encerrado = l.ativo !== 'Sim';
+  var quando = l.recorrencia === 'recorrente'
+    ? lemRegra_(l) + ', às ' + l.hora + ' · desde ' + lemDataBR_(l.data_inicio) + (l.data_termino ? ' · até ' + lemDataBR_(l.data_termino) : '')
+    : lemRegra_(l) + ' · ' + lemDataBR_(l.data_inicio) + ', às ' + l.hora;
+  var estado = encerrado ? 'Encerrado em ' + lemDataBR_(l.encerrado_em)
+    : (l.ultimo_email_em ? 'Último e-mail: ' + lemDataBR_(l.ultimo_email_em, true) + ' às ' + String(l.ultimo_email_em).slice(11, 16) : '');
+  return '<div class="prof-lem-item' + (encerrado ? ' encerrado' : '') + '" data-id="' + esc(l.id) + '">' +
+    '<div class="prof-lem-info"><div class="prof-lem-oque">' + esc(lemOQue_(l, true)) + '</div>' +
+      '<div class="prof-lem-regra">' + esc(quando) + '</div>' +
+      (estado ? '<div class="prof-lem-estado">' + esc(estado) + '</div>' : '') + '</div>' +
+    (encerrado ? '' : '<div class="prof-lem-botoes">' +
+      (l.recorrencia === 'agora' ? '' : '<button type="button" class="prof-lem-btn" data-id="' + esc(l.id) + '" onclick="profLemAbrirForm_(this.dataset.id)">Editar</button>') +
+      '<button type="button" class="prof-lem-btn" data-id="' + esc(l.id) + '" onclick="profLemPedirEncerrar_(this.dataset.id)">Encerrar</button></div>') +
+  '</div>';
+}
+function profLemCorpoHtml_() {
+  var lista = (PROF_PACIENTE_SEL && PROF_PACIENTE_SEL.lembretes) || [];
+  return '<div class="prof-acoes-mod"><button class="prof-btn-acao" type="button" id="profLemBtnNovo" onclick="profLemAbrirForm_(\'\')"><svg class=ico aria-hidden=true><use href=#i-plus-circle></use></svg> Novo lembrete</button></div>' +
+    '<div class="prof-lem-aviso" id="profLemAviso" role="status"></div>' +
+    '<div id="profLemFormBox"></div>' +
+    (lista.length ? '<div class="prof-lem-lista" id="profLemLista">' + lista.map(profLemItemHtml_).join('') + '</div>'
+                  : '<div class="prof-pv-mod-vazio" id="profLemVazio"><span><svg class=ico aria-hidden=true><use href=#i-clock></use></svg></span>Nenhum lembrete combinado com este paciente.</div>');
+}
+function profLemRepintar_() {
+  var corpo = document.getElementById('profModLemBody'), meta = document.getElementById('profModLemMeta');
+  if (corpo) corpo.innerHTML = profLemCorpoHtml_();
+  if (meta) meta.textContent = profLemMeta_();
+}
+/* Formulário: os valores entram por .value depois de montado (nunca concatenados no HTML) */
+function profLemFormHtml_() {
+  var campo = function (id, rotulo, controle, extra) {
+    return '<div class="prof-cad-field" id="profLemCampo' + id + '"><label for="profLem' + id + '" id="profLemRotulo' + id + '">' + rotulo + '</label>' + controle + (extra || '') + '</div>';
+  };
+  var escalas = Object.keys(ESC_ESCALAS).map(function (cod) {
+    return '<option value="escala:' + esc(cod) + '">' + esc(ESC_ESCALAS[cod].nomeCompleto || cod) + '</option>';
+  }).join('');
+  var dias = LEM_DIAS.map(function (d, i) {
+    return '<button type="button" class="prof-lem-dia" data-dia="' + i + '" aria-pressed="false" onclick="profLemAlternarDia_(this)">' + d + '</button>';
+  }).join('');
+  return '<div class="prof-lem-form" id="profLemForm">' +
+    '<p class="prof-lem-ajuda hidden" id="profLemSemEmail">Este paciente não tem e-mail no cadastro: o lembrete só poderá ir por WhatsApp.</p>' +
+    campo('Oque', 'O que lembrar', '<select id="profLemOque" onchange="profLemAjustarForm_()"><option value="auto">Automonitoramento</option><optgroup label="Escalas e Inventários">' + escalas + '</optgroup><option value="outro">Outro</option></select>') +
+    campo('Texto', 'Descreva o que foi combinado', '<input type="text" id="profLemTexto" maxlength="200" autocomplete="off">', '<p class="prof-lem-ajuda">Aparece para o paciente no Início. Não vai no e-mail nem no WhatsApp.</p>') +
+    campo('Quando', 'Quando', '<select id="profLemQuando" onchange="profLemAjustarForm_()"><option value="agora">Lembrar agora</option><option value="uma_vez">Somente uma vez</option><option value="recorrente">Com recorrência</option></select>') +
+    campo('Repetir', 'Repetir', '<select id="profLemRepetir" onchange="profLemAjustarForm_()">' + Object.keys(LEM_REPETIR).map(function (k) { return '<option value="' + k + '">' + LEM_REPETIR[k] + '</option>'; }).join('') + '</select>') +
+    '<div class="prof-cad-field" id="profLemCampoDias"><div class="prof-lem-dias" id="profLemDias" role="group" aria-label="Dias da semana escolhidos">' + dias + '</div></div>' +
+    campo('Data', 'Data de início', '<input type="date" id="profLemData">') +
+    campo('Hora', 'Horário do e-mail', '<input type="time" id="profLemHora">') +
+    campo('Termino', 'Data de término (opcional)', '<input type="date" id="profLemTermino">') +
+    '<p class="prof-lem-ajuda" id="profLemNota">O e-mail sai sozinho no horário escolhido (até uma hora depois). O WhatsApp é enviado por você, pelo botão no Início.</p>' +
+    '<div class="prof-cad-erro" id="profLemErro" role="alert"></div>' +
+    '<div class="prof-lem-acoes"><button class="p5-btn p5-btn-primary" type="button" id="profLemBtnSalvar" onclick="profLemSalvar_()">Salvar lembrete</button>' +
+      '<button class="p5-btn p5-btn-secondary" type="button" onclick="profLemFecharForm_()">Cancelar</button></div>' +
+  '</div>';
+}
+/* Abre o formulário: `id` vazio = lembrete novo; com id = edição (que não oferece "Lembrar agora") */
+function profLemAbrirForm_(id) {
+  var box = document.getElementById('profLemFormBox');
+  if (!box || !PROF_PACIENTE_SEL) return;
+  var l = id ? (PROF_PACIENTE_SEL.lembretes || []).filter(function (x) { return x.id === id; })[0] : null;
+  PROF_LEM.editando = l ? l.id : '';
+  PROF_LEM.idNovo = l ? '' : vmcNovoIdEnvio_();
+  box.innerHTML = profLemFormHtml_();
+  var el = function (x) { return document.getElementById(x); };
+  var hoje = lemHojeIso_();
+  if (l) { var opAgora = el('profLemQuando').querySelector('option[value="agora"]'); if (opAgora) opAgora.remove(); }
+  el('profLemOque').value = l ? (l.tipo === 'escala' ? 'escala:' + l.instrumento : l.tipo) : 'auto';
+  el('profLemTexto').value = l ? (l.texto || '') : '';
+  el('profLemQuando').value = l ? l.recorrencia : 'recorrente';
+  el('profLemRepetir').value = (l && l.periodicidade) ? l.periodicidade : 'diaria';
+  el('profLemData').value = l ? l.data_inicio : hoje;
+  el('profLemHora').value = l ? l.hora : '';
+  el('profLemTermino').value = l ? (l.data_termino || '') : '';
+  if (!l) { el('profLemData').min = hoje; el('profLemTermino').min = hoje; }
+  var marcados = l ? (l.dias_semana || []) : [];
+  Array.prototype.forEach.call(document.querySelectorAll('#profLemDias .prof-lem-dia'), function (b) {
+    b.setAttribute('aria-pressed', marcados.indexOf(parseInt(b.dataset.dia, 10)) !== -1 ? 'true' : 'false');
+  });
+  el('profLemSemEmail').classList.toggle('hidden', !!(PROF_PACIENTE_SEL.contato && PROF_PACIENTE_SEL.contato.email));
+  el('profLemAviso').textContent = '';
+  profLemAjustarForm_();
+  el('profLemOque').focus();
+}
+/* Mostra só os campos que valem para a escolha de "O que lembrar", "Quando" e "Repetir" */
+function profLemAjustarForm_() {
+  var el = function (x) { return document.getElementById(x); };
+  if (!el('profLemForm')) return;
+  var quando = el('profLemQuando').value, agora = quando === 'agora', recorrente = quando === 'recorrente';
+  el('profLemCampoTexto').classList.toggle('hidden', el('profLemOque').value !== 'outro');
+  el('profLemCampoRepetir').classList.toggle('hidden', !recorrente);
+  el('profLemCampoDias').classList.toggle('hidden', !(recorrente && el('profLemRepetir').value === 'dias_semana'));
+  el('profLemCampoData').classList.toggle('hidden', agora);
+  el('profLemCampoHora').classList.toggle('hidden', agora);
+  el('profLemCampoTermino').classList.toggle('hidden', !recorrente);
+  el('profLemNota').classList.toggle('hidden', agora);
+  el('profLemRotuloData').textContent = recorrente ? 'Data de início' : 'Data';
+  el('profLemBtnSalvar').textContent = agora ? 'Enviar agora' : 'Salvar lembrete';
+}
+function profLemAlternarDia_(btn) {
+  btn.setAttribute('aria-pressed', btn.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+}
+function profLemFecharForm_() {
+  var box = document.getElementById('profLemFormBox');
+  if (box) box.innerHTML = '';
+  PROF_LEM.editando = ''; PROF_LEM.idNovo = '';
+  var novo = document.getElementById('profLemBtnNovo');
+  if (novo) novo.focus();
+}
+/* Confere os obrigatórios na tela e grava: "Lembrar agora" manda o e-mail na hora; os demais entram no plano */
+async function profLemSalvar_() {
+  if (!PROF_SESSAO || !PROF_PACIENTE_SEL || !document.getElementById('profLemForm')) return;
+  var el = function (x) { return document.getElementById(x); };
+  var erro = el('profLemErro');
+  var falha = function (msg) { erro.textContent = msg; erro.classList.add('visivel'); };
+  erro.textContent = ''; erro.classList.remove('visivel');
+  var sigla = PROF_PACIENTE_SEL.sigla;
+  var oque = el('profLemOque').value, quando = el('profLemQuando').value, agora = quando === 'agora';
+  var dados = { id: PROF_LEM.editando || PROF_LEM.idNovo, tipo: oque.indexOf('escala:') === 0 ? 'escala' : oque };
+  if (!oque) { falha('Escolha o que lembrar.'); return; }
+  if (dados.tipo === 'escala') dados.instrumento = oque.slice('escala:'.length);
+  if (dados.tipo === 'outro') {
+    dados.texto = el('profLemTexto').value.trim();
+    if (!dados.texto) { falha('Escreva o que foi combinado.'); el('profLemTexto').focus(); return; }
+  }
+  if (!agora) {
+    dados.recorrencia = quando;
+    dados.data_inicio = el('profLemData').value;
+    dados.hora = el('profLemHora').value;
+    if (!dados.data_inicio) { falha('Escolha a data.'); el('profLemData').focus(); return; }
+    if (!dados.hora) { falha('Escolha o horário.'); el('profLemHora').focus(); return; }
+    if (quando === 'recorrente') {
+      dados.periodicidade = el('profLemRepetir').value;
+      if (dados.periodicidade === 'dias_semana') {
+        dados.dias_semana = Array.prototype.filter.call(document.querySelectorAll('#profLemDias .prof-lem-dia'), function (b) { return b.getAttribute('aria-pressed') === 'true'; })
+          .map(function (b) { return parseInt(b.dataset.dia, 10); });
+        if (!dados.dias_semana.length) { falha('Escolha pelo menos um dia da semana.'); return; }
+      }
+      dados.data_termino = el('profLemTermino').value;
+      if (dados.data_termino && dados.data_termino < dados.data_inicio) { falha('A data de término não pode ser antes do início.'); el('profLemTermino').focus(); return; }
+    }
+  }
+  var btn = el('profLemBtnSalvar'), rotulo = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Aguarde…';
+  var resp = await chamarServidor(agora ? 'profLembrarAgora' : 'profSalvarLembrete', { siglaPaciente: sigla, dados: dados });
+  if (!PROF_PACIENTE_SEL || PROF_PACIENTE_SEL.sigla !== sigla) return; // saiu do paciente enquanto gravava
+  if (!resp || !resp.ok) {
+    if (document.body.contains(btn)) { btn.disabled = false; btn.textContent = rotulo; falha((resp && resp.erro) || 'Tente novamente.'); }
+    return;
+  }
+  var avisos = [];
+  if (agora) {
+    avisos.push(resp.email_enviado ? 'E-mail enviado para o paciente.'
+      : (resp.motivo === 'sem_email' ? 'Este paciente não tem e-mail no cadastro: o lembrete só poderá ir por WhatsApp.'
+                                     : 'Não foi possível enviar o e-mail agora. Você pode enviar pelo WhatsApp.'));
+  }
+  if (resp.escala_aberta) avisos.push('A escala foi aberta para o paciente responder.');
+  profLemAplicar_(sigla, resp, avisos, agora ? dados.tipo : '');
+}
+/* Depois de gravar: o plano na tela, os blocos do Início (a resposta já traz os itens — nenhuma chamada nova) e o aviso.
+   A memória do paciente aberto já foi esvaziada pelo chamarServidor (18.11: toda gravação do profissional). */
+function profLemAplicar_(sigla, resp, avisos, tipoWhats) {
+  if (resp.inicio) {
+    PROF_LISTA.forEach(function (p) {
+      if (p.sigla !== sigla) return;
+      p.lembretes = resp.inicio.lembretes || []; p.telefone = resp.inicio.telefone; p.tem_email = resp.inicio.tem_email;
+    });
+    profRenderInicio_();
+  }
+  PROF_LEM.editando = ''; PROF_LEM.idNovo = '';
+  PROF_PACIENTE_SEL.lembretes = resp.lembretes || [];
+  if (Array.isArray(resp.escalas_liberadas)) { // lembrete de escala abre a escala: o cadeado do módulo Escalas acompanha
+    PROF_PACIENTE_SEL.escalasLiberadas = resp.escalas_liberadas;
+    profAtualizarCadeados_();
+  }
+  profLemRepintar_();
+  var aviso = document.getElementById('profLemAviso');
+  if (!aviso) return;
+  aviso.innerHTML = avisos.map(function (a) { return '<p>' + esc(a) + '</p>'; }).join('') +
+    (tipoWhats ? lemBotaoWhats_(PROF_PACIENTE_SEL.contato && PROF_PACIENTE_SEL.contato.telefone, tipoWhats, PROF_PACIENTE_SEL.nome, 'Enviar também por WhatsApp') : '');
+}
+function profLemPedirEncerrar_(id) {
+  PROF_LEM.encerrar = id;
+  var erro = document.getElementById('profLemEncerrarErro');
+  erro.textContent = ''; erro.classList.remove('visivel');
+  document.getElementById('profLemEncerrarModal').classList.add('show');
+}
+function profLemFecharEncerrar_() {
+  document.getElementById('profLemEncerrarModal').classList.remove('show');
+}
+async function profLemConfirmarEncerrar_() {
+  var sigla = PROF_PACIENTE_SEL && PROF_PACIENTE_SEL.sigla;
+  if (!sigla || !PROF_LEM.encerrar) return;
+  var btn = document.getElementById('profLemEncerrarBtn'), erro = document.getElementById('profLemEncerrarErro');
+  btn.disabled = true; btn.textContent = 'Aguarde…';
+  var resp = await chamarServidor('profEncerrarLembrete', { siglaPaciente: sigla, id: PROF_LEM.encerrar });
+  btn.disabled = false; btn.textContent = 'Encerrar';
+  if (!resp || !resp.ok) { erro.textContent = (resp && resp.erro) || 'Tente novamente.'; erro.classList.add('visivel'); return; }
+  profLemFecharEncerrar_();
+  PROF_LEM.encerrar = '';
+  if (!PROF_PACIENTE_SEL || PROF_PACIENTE_SEL.sigla !== sigla) return;
+  profLemAplicar_(sigla, resp, [], '');
 }
 
 /* ============================================================
@@ -9937,7 +10347,7 @@ async function profConferirPaciente_(sigla, mostrado) {
   // refaz a tela só se o profissional continua nela, sem fluxo, modal ou editor abertos
   if (!PROF_PACIENTE_SEL || PROF_PACIENTE_SEL.sigla !== sigla || PROF_FLUXO || secaoAtivaId() !== 'sec-prof-paciente') return;
   if (document.querySelector('.p5-modal-overlay.show, .hist-modal-overlay.show, .pev-modal-overlay.show, .p11-mov.show, .rr-submodal-overlay.show')) return;
-  if (document.getElementById('profEdContatoEmail')) return;
+  if (document.getElementById('profEdContatoEmail') || document.getElementById('profLemForm')) return; // 19.2.1: nem com o formulário do lembrete aberto
   var abertos = Array.prototype.map.call(document.querySelectorAll('#profPacienteConteudo .prof-pv-mod.aberto'), function (m) { return m.id; });
   var y = window.scrollY;
   profRenderPaciente_(sigla, resp);
@@ -9961,6 +10371,8 @@ function profRenderPaciente_(sigla, resp) {
   PROF_PACIENTE_SEL.automonitoramento = resp.automonitoramento || [];
   PROF_PACIENTE_SEL.escalas = resp.escalas || [];
   PROF_PACIENTE_SEL.escalasLiberadas = resp.escalas_liberadas || []; // 17.1.2: BSS liberada para este paciente?
+  PROF_PACIENTE_SEL.lembretes = resp.lembretes || []; // 19.2.1: plano de lembretes
+  PROF_LEM.editando = ''; PROF_LEM.idNovo = '';
 
   var iniciaisNome = nome.split(' ').filter(function(w){ return w.length > 0; })
     .map(function(w){ return w[0].toUpperCase(); }).slice(0,2).join('');
@@ -10045,6 +10457,15 @@ function profRenderPaciente_(sigla, resp) {
   html += profBuscaHtml_(); // 17.3.2: busca por nome, sigla ou tag (filtra os cartões e a lista "Nova escala")
   html += profRenderizarEscalas_(resp.escalas || []);
   html += '</div></div>';
+
+  // 4. Plano de lembretes (19.2.1)
+  html += '<div class="prof-pv-mod mod-blue" id="profMod-lem">';
+  html += '<div class="prof-pv-mod-head" onclick="profToggleModulo_(\'lem\')">';
+  html += '<span class="prof-pv-mod-icon"><svg class=ico aria-hidden=true><use href=#i-clock></use></svg></span>';
+  html += '<div class="prof-pv-mod-info"><div class="prof-pv-mod-title">Plano de lembretes</div><div class="prof-pv-mod-meta" id="profModLemMeta">' + profEscHtml_(profLemMeta_()) + '</div></div>';
+  html += '<span class="prof-pv-mod-chevron">›</span>';
+  html += '</div>';
+  html += '<div class="prof-pv-mod-body" id="profModLemBody">' + profLemCorpoHtml_() + '</div></div>';
 
   html += '</div>'; // fecha .prof-pv-mods
 
@@ -11227,6 +11648,7 @@ function sairDoSistema(opcoes) {
   ANAM_STATE.dadosConsulta = null; ANAM_STATE.numPessoasConfianca = 1; ANAM_STATE.cepBuscado = ''; ANAM_STATE.cepAbertos = [];
   INI_STATE.carregado = false; INI_STATE.carregando = false; INI_STATE.invalido = true; INI_STATE.dados = null;
   RASC_SERVIDOR = { carregado: false, carregando: false, lista: [] }; iniRascunhoRender(); // 18.10b
+  INI_LEM = { carregado: false, carregando: false, hoje: '', lista: [] }; iniLemRender_(); PROF_LEM = { editando: '', idNovo: '', encerrar: '' }; // 19.2.1
   P136_ESTADO = { idx: null, tipo: null, sigla: null, timestamp: null };
   HIST_FILTRO = 'todos'; HIST_MESES_ABERTOS = {}; CHK_ENV.periodo = null;
   ['profDashboardConteudo', 'profPacientesConteudo', 'profPacienteConteudo', 'autoHistLista', 'pevConteudo', 'eschConteudo', 'anamConteudo', 'iniContinuidade', 'graDias'].forEach(function (id) {
