@@ -8558,6 +8558,8 @@ var VMC_ACOES_GRAVACAO = [
   'pacienteAgendarSessao', 'pacienteConfirmarSessao', 'pacienteCancelarSessao', 'pacientePedirAgenda', // 14.3
   'confirmarSessaoPorLink', 'profMarcarEventosVistos', 'profAvisarSessao', // 14.4
   'profSalvarValorSessao', // 14.6
+  'profSalvarCadastroFinanceiro', 'profSalvarConfigFinanceiro', 'profSalvarPagamento', 'profEstornarPagamento', 'profDecidirComprovante', 'profGerarCobrancas', 'profEnviarCobranca',
+  'profDescartarCobranca', 'profNaoCobrarSessao', 'profSalvarDespesa', 'profEncerrarDespesaFixa', 'pacienteEnviarComprovante', 'pacientePedirRecibo', // Fase 20
   'profDesativarPaciente', 'profReativarPaciente', 'profExcluirPaciente', 'profAlterarSenhaPaciente',
   'admCadastrarProfissional', 'admAtualizarProfissional', 'admTrocarSenhaProfissional',
   'admDesativarProfissional', 'admReativarProfissional',
@@ -24639,7 +24641,7 @@ async function ageConfirmarPorLink_(token) {
    ============================================================ */
 var FIN = { dados: null, carregando: false, erro: '', msg: '', aba: 'resumo', periodo: 'mes', comparar: 'anterior', de: '', ate: '',
   leitura: 'sessoes', granul: 'dia', vista: 'paciente', fSigla: '', fModalidade: '', fSituacao: '', fCob: '', fCategoria: '', fDesp: '',
-  modal: null, grafico: null, ocupado: false, inicio: null, inicioPedido: false, pac: null, pacSigla: '', meu: null };
+  modal: null, grafico: null, ocupado: false, inicio: null, inicioPedido: false, pac: null, pacSigla: '', pacLido: 0, meu: null };
 var FIN_ABAS = [['resumo', 'Resumo'], ['receitas', 'Receitas'], ['cobrancas', 'Cobranças'], ['despesas', 'Despesas'], ['recibos', 'Recibos'], ['config', 'Configuração']];
 var FIN_PERIODOS = [['mes', 'Este mês'], ['mes_passado', 'Mês passado'], ['semana', 'Esta semana'], ['ano', 'Este ano'], ['12m', 'Últimos 12 meses'], ['personalizado', 'Personalizado']];
 var FIN_MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
@@ -24681,12 +24683,12 @@ function finSitSessao_(s) {
   return s.pago > 0 ? ['atencao', 'Parcial'] : ['aberto', 'Em aberto'];
 }
 function finModalidade_(m) { return m === 'online' ? 'On-line' : 'Presencial'; }
-function finEstado_(s) { return ({ realizada: 'Realizada', falta: 'Falta', cancelada: 'Cancelada fora do prazo', agendada: 'Agendada' })[s.estado] || ''; }
+function finEstado_(s) { return (s.reposicao ? 'Reposição · ' : '') + (({ realizada: 'Realizada', falta: 'Falta', cancelada: 'Cancelada fora do prazo', agendada: 'Agendada', ocorrida: 'Ocorrida, sem situação marcada' })[s.estado] || ''); }
 function finSomas_(d) {
   var s = { sessoes: 0, total: 0, recebido: 0, aberto: 0, atrasado: 0, despTotal: 0, despPago: 0 };
   d.sessoes.forEach(function (x) { if (!x.cobravel) return; s.sessoes++; s.total += x.valor; s.recebido += Math.min(x.pago, x.valor); });
   s.aberto = s.total - s.recebido;
-  d.cobrancas.forEach(function (c) { if (c.situacao === 'atrasada') s.atrasado += c.total - c.pago; });
+  d.cobrancas.forEach(function (c) { if (c.situacao === 'atrasada') s.atrasado += c.falta; });
   d.despesas.forEach(function (x) { s.despTotal += x.valor; if (x.situacao === 'paga') s.despPago += x.valor; });
   return s;
 }
@@ -24768,7 +24770,7 @@ function finResumoHtml_(d) {
     finCartao_('fin-atencao', 'Atrasado', finBRL_(s.atrasado), s.atrasado ? 'Cobranças vencidas sem pagamento' : 'Nenhuma cobrança vencida') +
     finCartao_('fin-neutro', 'Despesas', finBRL_(s.despPago), finVariacao_(s.despPago, ant.despesas)) +
     finCartao_('fin-largo', 'Resultado', finBRL_(recebido - s.despPago), 'Recebido menos despesas pagas') + '</div>';
-  h += '<div class="fin-painel"><div class="fin-painel-topo"><h3 class="fin-painel-tit">Sessões e valor</h3>' + finSeg_('granul', [['dia', 'Por dia'], ['semana', 'Por semana']], FIN.granul, 'Agrupar o gráfico') + '</div>' +
+  h += '<div class="fin-painel"><div class="fin-painel-topo"><h3 class="fin-painel-tit">Sessões e valor</h3>' + (r.granul === 'dia' ? finSeg_('granul', [['dia', 'Por dia'], ['semana', 'Por semana']], FIN.granul, 'Agrupar o gráfico') : '<span class="fin-sub">Por mês</span>') + '</div>' +
     (r.serie.length ? '<div class="fin-grafico"><canvas id="finGrafico" role="img" aria-label="Sessões e valor no período"></canvas></div><div class="fin-legenda"><span><i></i>Sessões</span><span><i class="fin-leg-linha"></i>Valor das sessões (R$)</span></div>'
                     : '<p class="fin-nota">Nenhuma sessão neste período.</p>') + '</div>';
   var a = r.agenda, p = r.pacientes, ano = r.ano, maior = Math.max.apply(null, r.encaminhamento.map(function (e) { return e.n; }).concat([1]));
@@ -24788,14 +24790,14 @@ function finGraficoDesenhar_(d) {
   var canvas = document.getElementById('finGrafico');
   if (!canvas || typeof Chart === 'undefined') return;
   var pontos = d.resumo.serie;
-  if (FIN.granul === 'semana') {
+  if (d.resumo.granul === 'dia' && FIN.granul === 'semana') {
     var semanas = [];
     pontos.forEach(function (p, i) { var k = Math.floor(i / 7); if (!semanas[k]) semanas[k] = { dia: p.dia, sessoes: 0, valor: 0 }; semanas[k].sessoes += p.sessoes; semanas[k].valor += p.valor; });
     pontos = semanas;
   }
   var tinta = vmcTok('--c-ink-3'), grade = vmcTok('--c-line-soft');
   FIN.grafico = new Chart(canvas.getContext('2d'), {
-    data: { labels: pontos.map(function (p) { return finDia_(p.dia); }), datasets: [
+    data: { labels: pontos.map(function (p) { return d.resumo.granul === 'mes' ? p.dia.slice(5, 7) + '/' + p.dia.slice(0, 4) : finDia_(p.dia); }), datasets: [
       { type: 'line', label: 'Valor das sessões', yAxisID: 'v', data: pontos.map(function (p) { return p.valor / 100; }), borderColor: vmcTok('--c-pos'), backgroundColor: vmcTok('--c-pos'), borderWidth: 2.5, pointRadius: 3, tension: 0 },
       { type: 'bar', label: 'Sessões', yAxisID: 's', data: pontos.map(function (p) { return p.sessoes; }), backgroundColor: vmcTok('--c-action'), borderRadius: 4, maxBarThickness: 28 }
     ] },
@@ -24832,6 +24834,7 @@ function finReceitasHtml_(d) {
     '<div class="fin-campo"><label for="finFSigla">Paciente</label><select id="finFSigla" onchange="finMudar_(\'fSigla\', this.value)">' + finOpcoes_([['', 'Todos']].concat(nomes), FIN.fSigla) + '</select></div>' +
     '<div class="fin-campo fin-campo-curto"><label for="finFModalidade">Modalidade</label><select id="finFModalidade" onchange="finMudar_(\'fModalidade\', this.value)">' + finOpcoes_([['', 'Todas'], ['presencial', 'Presencial'], ['online', 'On-line']], FIN.fModalidade) + '</select></div>' +
     '<div class="fin-campo fin-campo-curto"><label for="finFSituacao">Situação</label><select id="finFSituacao" onchange="finMudar_(\'fSituacao\', this.value)">' + finOpcoes_([['', 'Todas'], ['Paga', 'Paga'], ['Parcial', 'Parcial'], ['Em aberto', 'Em aberto'], ['Não cobrada', 'Não cobrada']], FIN.fSituacao) + '</select></div></div>';
+  h += finComprovantesHtml_(d);
   if (!sessoes.length) return h + '<div class="fin-painel"><p class="fin-nota">Nenhuma sessão neste período.</p></div>';
   var tot = { n: 0, total: 0, rec: 0 };
   if (FIN.vista === 'paciente') {
@@ -24860,6 +24863,24 @@ function finReceitasHtml_(d) {
   return h;
 }
 
+/* O comprovante que o paciente enviou só vira pagamento depois da conferência do profissional */
+function finComprovantesHtml_(d) {
+  if (!d.comprovantes.length) return '';
+  return '<div class="fin-painel" id="finComprovantes"><h3 class="fin-painel-tit">Comprovantes para conferir</h3>' + d.comprovantes.map(function (c) {
+    return '<div class="fin-item"><div><div class="fin-item-nome">' + esc(c.nome) + '</div><span class="fin-sub">Enviado pelo paciente · pagamento de ' + finDia_(c.data) + '</span></div><div class="fin-item-valor">' + finBRL_(c.valor) + '</div>' +
+      '<div class="fin-item-acoes"><button type="button" class="fin-link" data-id="' + esc(c.id) + '" onclick="finArquivoAbrir_(this.dataset.id)">Ver comprovante</button>' +
+      '<button type="button" class="prof-btn-acao" data-id="' + esc(c.id) + '" data-sigla="' + esc(c.sigla) + '" onclick="finModalAbrir_(\'pagamento\', this.dataset.sigla, this.dataset.id)">Conferir</button></div></div>';
+  }).join('') + '</div>';
+}
+/* O arquivo só vem do servidor com o crachá; a página o entrega como arquivo para abrir ou guardar */
+async function finArquivoAbrir_(id) {
+  var r = await chamarServidor('lerArquivoFinanceiro', { id: id });
+  if (!r || !r.ok || !r.arquivo) { finModalErro_((r && r.erro) || 'Não foi possível abrir o arquivo agora.'); return; }
+  var a = document.createElement('a');
+  a.href = 'data:' + r.arquivo.tipo + ';base64,' + r.arquivo.base64; a.download = r.arquivo.nome;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
 /* Tela 3 — Cobranças */
 function finCobrancasHtml_(d) {
   var conta = {};
@@ -24881,6 +24902,7 @@ function finCobrancasHtml_(d) {
 function finCobQuando_(c) {
   if (c.situacao === 'a_enviar') return 'Ainda não enviada';
   if (c.situacao === 'paga') return 'Paga em ' + finDia_(c.paga_em);
+  if (c.situacao === 'parcial' || (c.situacao === 'atrasada' && c.pago)) return 'Falta ' + finBRL_(c.falta) + ' · vence em ' + finDia_(c.vence_em);
   return 'Enviada em ' + finDia_(c.enviada_em) + ' · vence em ' + finDia_(c.vence_em);
 }
 function finWhatsLink_(telefone, texto) { return 'https://wa.me/55' + String(telefone || '').replace(/\D/g, '') + '?text=' + encodeURIComponent(texto); }
@@ -24900,7 +24922,8 @@ function finDespesasHtml_(d) {
     var semValor = x.fixa && x.tipo === 'variavel' && !x.valor;
     h += '<tr><td class="fin-principal">' + esc(x.nome) + (x.fixa ? '<span class="fin-sub">' + (x.tipo === 'variavel' ? 'Todo mês · valor muda a cada mês' : 'Todo mês · valor fixo') + '</span>' : '') + '</td><td data-rot="Categoria">' + esc(x.categoria) + '</td><td data-rot="Vence">' + finDia_(x.vence) +
       '</td><td class="fin-num" data-rot="Valor">' + (semValor ? '<span class="fin-sub">Informe o valor deste mês</span>' : finBRL_(x.valor)) + '</td><td data-rot="Situação">' + finTag_(x.situacao === 'paga' ? ['ok', 'Paga em ' + finDia_(x.paga_em)] : (x.vence < d.hoje ? ['atencao', 'Vencida'] : ['aberto', 'A pagar'])) +
-      '</td><td class="fin-num fin-acao">' + (x.situacao === 'paga' ? '' : '<button type="button" class="prof-lem-btn" data-id="' + esc(x.id) + '" onclick="finModalAbrir_(\'despesa\', this.dataset.id)">Marcar como paga</button>') + '</td></tr>';
+      '</td><td class="fin-num fin-acao">' + (x.situacao === 'paga' ? (x.tem_arquivo ? '<button type="button" class="fin-link" data-id="' + esc(x.id) + '" onclick="finArquivoAbrir_(this.dataset.id)">Ver comprovante</button>' : '') :
+        '<button type="button" class="prof-lem-btn" data-id="' + esc(x.id) + '" onclick="finModalAbrir_(\'despesa\', this.dataset.id)">Marcar como paga</button>') + '</td></tr>';
   });
   return h + '</tbody></table></div>';
 }
@@ -24929,18 +24952,18 @@ function finConfigHtml_(d) {
     '<div class="fin-campo fin-inteiro"><label for="finCfgDados">Dados para receber</label><textarea id="finCfgDados" data-fin-chave="dados_receber" rows="4"></textarea><span class="fin-sub">Vai no fim de toda cobrança e aparece para o paciente. Exemplo: chave Pix, nome e banco.</span></div>' +
     '<div class="fin-campo"><label for="finCfgValor">Valor padrão da sessão (R$)</label><input type="text" inputmode="decimal" id="finCfgValor" data-fin-chave="valor_padrao"><span class="fin-sub">Vale para o paciente que não tem valor próprio.</span></div>' +
     '<div class="fin-campo"><label for="finCfgPrazo">Prazo para pagar depois da cobrança (dias)</label><input type="text" inputmode="numeric" id="finCfgPrazo" data-fin-chave="prazo_dias"><span class="fin-sub">Sugere o “Vence em” de cada cobrança.</span></div>' +
-    '<div class="fin-campo fin-inteiro"><label for="finCfgFormas">Formas de pagamento</label><input type="text" id="finCfgFormas" data-fin-chave="formas"><span class="fin-sub">Separe por vírgula.</span></div></div></div>';
+    '<div class="fin-campo fin-inteiro"><label for="finCfgFormas">Formas de pagamento</label><textarea id="finCfgFormas" data-fin-chave="formas" rows="5"></textarea><span class="fin-sub">Uma por linha.</span></div></div></div>';
   h += '<div class="fin-painel"><h3 class="fin-painel-tit">Texto da cobrança</h3><p class="fin-nota">O que estiver entre chaves é trocado na hora: {nome}, {saudacao}, {mes}, {demonstrativo}, {total} e {dados}. Você ainda revisa cada mensagem antes de enviar.</p>' +
     '<div class="fin-campo"><label for="finCfgTexto">Modelo</label><textarea id="finCfgTexto" data-fin-chave="texto_cobranca" rows="9"></textarea></div></div>';
-  h += '<div class="fin-painel"><h3 class="fin-painel-tit">Despesas</h3><div class="fin-campo"><label for="finCfgCategorias">Categorias de despesa</label><input type="text" id="finCfgCategorias" data-fin-chave="categorias"><span class="fin-sub">Separe por vírgula.</span></div></div>';
-  h += '<div class="fin-painel"><h3 class="fin-painel-tit">Recibos e livro caixa</h3><p class="fin-nota">Para quem emite recibo pelo Receita Saúde e escritura o Carnê-Leão. Desligado, a aba Recibos não aparece.</p>' +
+  h += '<div class="fin-painel"><h3 class="fin-painel-tit">Despesas</h3><div class="fin-campo"><label for="finCfgCategorias">Categorias de despesa</label><textarea id="finCfgCategorias" data-fin-chave="categorias" rows="8"></textarea><span class="fin-sub">Uma por linha.</span></div></div>';
+  if (c.fiscal_disponivel) h += '<div class="fin-painel"><h3 class="fin-painel-tit">Recibos e livro caixa</h3><p class="fin-nota">Para quem emite recibo pelo Receita Saúde e escritura o Carnê-Leão. Desligado, a aba Recibos não aparece.</p>' +
     '<fieldset class="fin-fieldset"><legend>Usar recibos e livro caixa</legend><div class="fin-opcoes">' +
     '<label class="fin-opcao"><input type="radio" name="finCfgFiscal" value="Sim"' + (c.fiscal ? ' checked' : '') + '> Sim</label><label class="fin-opcao"><input type="radio" name="finCfgFiscal" value="Nao"' + (c.fiscal ? '' : ' checked') + '> Não</label></div></fieldset>' +
     (c.fiscal ? '<div class="fin-form fin-duas"><div class="fin-campo"><label for="finCfgCpf">Seu CPF (emissor do recibo)</label><input type="text" inputmode="numeric" id="finCfgCpf" data-fin-chave="cpf_emissor" autocomplete="off"></div>' +
       '<div class="fin-campo"><label for="finCfgRegistro">Registro profissional (CRP)</label><input type="text" id="finCfgRegistro" data-fin-chave="registro"></div></div>' : '') + '</div>';
   h += '<div class="fin-acoes"><button type="button" class="prof-btn-acao" onclick="finConfigSalvar_()">Salvar</button></div>';
   setTimeout(function () { // valores entram por .value, nunca por concatenação
-    var v = { dados_receber: c.dados_receber, valor_padrao: finBRL_(c.valor_padrao).replace('R$ ', ''), prazo_dias: String(c.prazo_dias), formas: c.formas.join(', '), texto_cobranca: c.texto_cobranca, categorias: c.categorias.join(', '), cpf_emissor: c.cpf_emissor || '', registro: c.registro || '' };
+    var v = { dados_receber: c.dados_receber, valor_padrao: finBRL_(c.valor_padrao).replace('R$ ', ''), prazo_dias: String(c.prazo_dias), formas: c.formas.join('\n'), texto_cobranca: c.texto_cobranca, categorias: c.categorias.join('\n'), cpf_emissor: c.cpf_emissor || '', registro: c.registro || '' };
     document.querySelectorAll('#finConteudo [data-fin-chave]').forEach(function (el) { el.value = v[el.dataset.finChave] || ''; });
   }, 0);
   return h;
@@ -24949,7 +24972,7 @@ async function finConfigSalvar_() {
   var dados = {};
   document.querySelectorAll('#finConteudo [data-fin-chave]').forEach(function (el) { dados[el.dataset.finChave] = el.value.trim(); });
   var fiscal = document.querySelector('input[name="finCfgFiscal"]:checked');
-  dados.fiscal = fiscal ? fiscal.value : 'Nao';
+  if (fiscal) dados.fiscal = fiscal.value;
   await finSalvar_('profSalvarConfigFinanceiro', { dados: dados }, 'Configuração salva.');
 }
 /* Toda ação que salva devolve o fluxo de caixa do período: a tela nunca relê */
@@ -24968,8 +24991,8 @@ async function finSalvar_(acao, corpo, msg) {
 }
 
 /* ---- janelas (um painel só, como o da consulta na Agenda) ---- */
-function finModalAbrir_(tipo, id) {
-  FIN.modal = { tipo: tipo, id: id };
+function finModalAbrir_(tipo, id, comprovante) {
+  FIN.modal = { tipo: tipo, id: id, comprovante: comprovante || '' };
   document.getElementById('finModal').classList.add('show');
   finModalRender_();
 }
@@ -24978,11 +25001,11 @@ function finModalFechar_() { FIN.modal = null; document.getElementById('finModal
 function finZerar_() {
   if (FIN.grafico) FIN.grafico.destroy();
   finModalFechar_();
-  FIN.dados = null; FIN.grafico = null; FIN.inicio = null; FIN.inicioPedido = false; FIN.pac = null; FIN.pacSigla = ''; FIN.meu = null; FIN.msg = ''; FIN.erro = ''; FIN.aba = 'resumo'; FIN.carregando = false; FIN.ocupado = false;
+  FIN.dados = null; FIN.grafico = null; FIN.inicio = null; FIN.inicioPedido = false; FIN.pac = null; FIN.pacSigla = ''; FIN.pacLido = 0; FIN.meu = null; FIN.msg = ''; FIN.erro = ''; FIN.aba = 'resumo'; FIN.carregando = false; FIN.ocupado = false;
 }
 function finModalErro_(msg) {
   var corpo = document.getElementById('finModalCorpo');
-  if (!FIN.modal || !corpo) { FIN.erro = msg; finRender_(); return; }
+  if (!FIN.modal || !corpo) { FIN.erro = msg; FIN.msg = ''; finRender_(); return; }
   corpo.querySelectorAll('[data-fin-erro]').forEach(function (e) { e.remove(); });
   corpo.insertAdjacentHTML('afterbegin', '<p class="age-msg age-msg-erro" role="alert" data-fin-erro>' + esc(msg) + '</p>');
   corpo.scrollTop = 0;
@@ -24997,12 +25020,15 @@ function finModalRender_() {
   if (partes.depois) partes.depois();
 }
 
-/* Lançar pagamento: o sistema sugere as sessões mais antigas em aberto; o profissional troca e confirma */
+/* Lançar pagamento: o sistema sugere as sessões mais antigas em aberto; o profissional troca e confirma.
+   A mesma janela confere o comprovante enviado pelo paciente e usa o crédito que ele já tem. */
 function finPagModal_(d, m) {
+  var comp = m.comprovante ? d.comprovantes.filter(function (x) { return x.id === m.comprovante; })[0] : null;
   var sigla = m.id || (d.pacientes[0] && d.pacientes[0].sigla) || '', p = finPac_(sigla);
   var abertas = d.abertas.filter(function (s) { return s.sigla === sigla; }), mes = '';
-  var corpo = '<div class="fin-form fin-duas">' +
-    '<div class="fin-campo fin-inteiro"><label for="finPagPaciente">Paciente</label><select id="finPagPaciente" onchange="finModalAbrir_(\'pagamento\', this.value)">' + finOpcoes_(d.pacientes.map(function (x) { return [x.sigla, x.nome]; }), sigla) + '</select></div>' +
+  var corpo = comp ? '<p class="fin-nota-forte">Comprovante enviado por ' + esc(finPrimeiroNome_(p.nome)) + '. Confira o valor e a data antes de confirmar. <button type="button" class="fin-link" data-id="' + esc(comp.id) + '" onclick="finArquivoAbrir_(this.dataset.id)">Ver comprovante</button></p>' : '';
+  corpo += '<div class="fin-form fin-duas">' +
+    '<div class="fin-campo fin-inteiro"><label for="finPagPaciente">Paciente</label><select id="finPagPaciente"' + (comp ? ' disabled' : '') + ' onchange="finModalAbrir_(\'pagamento\', this.value)">' + finOpcoes_(d.pacientes.map(function (x) { return [x.sigla, x.nome]; }), sigla) + '</select></div>' +
     '<div class="fin-campo"><label for="finPagData">Data do pagamento</label><input type="date" id="finPagData"></div>' +
     '<div class="fin-campo"><label for="finPagValor">Valor (R$)</label><input type="text" inputmode="decimal" id="finPagValor" autocomplete="off" oninput="finPagSugerir_()"></div>' +
     '<div class="fin-campo"><label for="finPagForma">Forma de pagamento</label><select id="finPagForma">' + finOpcoes_([['', 'Escolha']].concat(d.config.formas.map(function (f) { return [f, f]; })), '') + '</select></div>' +
@@ -25016,18 +25042,25 @@ function finPagModal_(d, m) {
     corpo += '<label class="fin-ses"><input type="checkbox" data-fin-ses="' + esc(s.id) + '" data-falta="' + (s.valor - s.pago) + '" onchange="finPagRecalcular_()"><span class="fin-ses-txt">' + finDia_(s.data) + ' · ' + esc(finEstado_(s)) +
       (s.pago ? '<span class="fin-sub">Já pago: ' + finBRL_(s.pago) + '</span>' : '') + '</span><span class="fin-ses-val">' + finBRL_(s.valor - s.pago) + '</span></label>';
   });
-  corpo += '</fieldset><div id="finPagResumo"></div>';
-  return { titulo: 'Lançar pagamento', corpo: corpo, acoes: '<button type="button" class="p5-btn p5-btn-primary" onclick="finPagConfirmar_()">Confirmar pagamento</button>',
-    depois: function () { document.getElementById('finPagData').value = d.hoje; if (m.valor) { document.getElementById('finPagValor').value = m.valor; finPagSugerir_(); } else finPagRecalcular_(); } };
+  corpo += '</fieldset>';
+  if (p.credito && !comp && abertas.length) corpo += '<p class="fin-nota">' + esc(finPrimeiroNome_(p.nome)) + ' tem crédito de ' + finBRL_(p.credito) + '. <button type="button" class="fin-link" onclick="finPagConfirmar_(true)">Usar o crédito nas sessões marcadas</button></p>';
+  corpo += '<div id="finPagResumo"></div>';
+  return { titulo: comp ? 'Conferir comprovante' : 'Lançar pagamento', corpo: corpo,
+    acoes: '<button type="button" class="p5-btn p5-btn-primary" onclick="finPagConfirmar_()">Confirmar pagamento</button>' + (comp ? '<button type="button" class="p5-btn p5-btn-secondary" onclick="finComprovanteRecusar_()">Recusar comprovante</button>' : ''),
+    depois: function () {
+      document.getElementById('finPagData').value = comp ? comp.data : d.hoje;
+      if (comp) { document.getElementById('finPagValor').value = finBRL_(comp.valor).replace('R$ ', ''); finPagSugerir_(); } else finPagRecalcular_();
+    } };
 }
+async function finComprovanteRecusar_() { await finSalvar_('profDecidirComprovante', { id: FIN.modal.comprovante, aprovar: false }, 'Comprovante recusado. O paciente vê "Não confirmado".'); }
 function finPagSugerir_() {
   var resta = finCentavos_(document.getElementById('finPagValor').value);
   document.querySelectorAll('#finModalCorpo [data-fin-ses]').forEach(function (c) { c.checked = resta > 0; resta -= Number(c.dataset.falta); });
   finPagRecalcular_();
 }
 /* O valor abate as marcadas na ordem das datas; o que sobra é crédito; o que falta fica em aberto na última */
-function finPagPlano_() {
-  var valor = finCentavos_(document.getElementById('finPagValor').value), resta = valor, itens = [];
+function finPagPlano_(teto) {
+  var valor = teto !== undefined ? teto : finCentavos_(document.getElementById('finPagValor').value), resta = valor, itens = [];
   document.querySelectorAll('#finModalCorpo [data-fin-ses]').forEach(function (c) {
     if (!c.checked || resta <= 0) return;
     var v = Math.min(resta, Number(c.dataset.falta)); itens.push({ sessao: c.dataset.finSes, valor: v }); resta -= v;
@@ -25047,13 +25080,20 @@ function finPagRecalcular_() {
     '<tr><td>Crédito</td><td class="fin-num">' + finBRL_(p.credito || 0) + '</td><td class="fin-num">' + finBRL_((p.credito || 0) + plano.sobra) + '</td></tr></tbody></table>';
   alvo.innerHTML = h;
 }
-async function finPagConfirmar_() {
+async function finPagConfirmar_(usarCredito) {
+  var sigla = document.getElementById('finPagPaciente').value, m = FIN.modal;
+  if (usarCredito === true) {
+    var pc = finPagPlano_(finPac_(sigla).credito);
+    if (!pc.itens.length) return finModalErro_('Marque as sessões que o crédito vai quitar.');
+    return finSalvar_('profSalvarPagamento', { siglaPaciente: sigla, dados: { id: vmcNovoIdEnvio_(), credito: true, sessoes: pc.itens } }, 'Crédito usado nas sessões marcadas.');
+  }
   var plano = finPagPlano_(), forma = document.getElementById('finPagForma').value, data = document.getElementById('finPagData').value;
   if (!plano.valor) return finModalErro_('Informe o valor do pagamento.');
   if (!data) return finModalErro_('Informe a data do pagamento.');
   if (!forma) return finModalErro_('Escolha a forma de pagamento.');
-  await finSalvar_('profSalvarPagamento', { siglaPaciente: document.getElementById('finPagPaciente').value, dados: { data: data, valor: plano.valor, forma: forma,
-    quem: document.getElementById('finPagQuem').value, obs: document.getElementById('finPagObs').value.trim(), sessoes: plano.itens } }, 'Pagamento lançado.');
+  var dados = { id: vmcNovoIdEnvio_(), data: data, valor: plano.valor, forma: forma, quem: document.getElementById('finPagQuem').value, obs: document.getElementById('finPagObs').value.trim(), sessoes: plano.itens };
+  if (m.comprovante) return finSalvar_('profDecidirComprovante', { id: m.comprovante, aprovar: true, dados: dados }, 'Comprovante confirmado. Pagamento lançado.');
+  await finSalvar_('profSalvarPagamento', { siglaPaciente: sigla, dados: dados }, 'Pagamento lançado.');
 }
 
 /* Gerar cobranças: o sistema propõe pelo modo de pagamento de cada paciente; o profissional aprova quem entra */
@@ -25074,6 +25114,7 @@ async function finGerarConfirmar_() {
 /* Revisar e enviar uma cobrança */
 function finCobModal_(d, m) {
   var c = d.cobrancas.filter(function (x) { return x.id === m.id; })[0], p = finPac_(c.sigla), nova = c.situacao === 'a_enviar';
+  var fone = (p.pagadores && p.pagadores[0] && p.pagadores[0].telefone) || p.telefone;
   var corpo = '<p class="fin-nota">Para ' + esc(c.para || p.nome) + (c.para && c.para !== p.nome ? ' (quem paga por ' + esc(finPrimeiroNome_(p.nome)) + ')' : '') + ' · ' + finBRL_(c.total) + '</p>';
   corpo += '<fieldset class="fin-fieldset"><legend>Sessões ' + (nova ? 'propostas' : 'desta cobrança') + '</legend>';
   c.sessoes.forEach(function (id) {
@@ -25083,11 +25124,13 @@ function finCobModal_(d, m) {
   });
   corpo += '</fieldset>';
   if (nova) corpo += '<p class="fin-nota">Desmarcar tira a sessão só desta cobrança; ela continua em aberto. <button type="button" class="fin-link" onclick="finNaoCobrar_()">Não cobrar as sessões desmarcadas</button></p>';
-  corpo += '<div class="fin-form fin-duas"><div class="fin-campo"><label for="finCobVence">Vence em</label><input type="date" id="finCobVence"' + (nova ? '' : ' disabled') + '></div></div>' +
+  if (nova && p.recibo) corpo += '<label class="fin-ses"><input type="checkbox" id="finCobRecibo" onchange="finCobRecibo_(this.checked)"><span class="fin-ses-txt">O recibo deste mês já foi emitido<span class="fin-sub">Marcado, a mensagem avisa quem paga.</span></span></label>';
+  corpo += '<div class="fin-form fin-duas"><div class="fin-campo"><label for="finCobVence">Vence em</label><input type="date" id="finCobVence"></div></div>' +
     '<div class="fin-campo"><label for="finCobTexto">Revise a mensagem antes de enviar</label><textarea id="finCobTexto" rows="17"></textarea></div>';
   var acoes = '<button type="button" class="p5-btn p5-btn-primary" onclick="finCobEnviar_(\'email\')">Enviar por e-mail</button>' +
-    (p.telefone ? '<a class="p5-btn p5-btn-secondary" id="finCobWhats" target="_blank" rel="noopener" href="#" onclick="finCobWhats_(this)">Abrir no WhatsApp</a>' : '') +
-    (nova ? '<button type="button" class="p5-btn p5-btn-secondary" onclick="finCobEnviar_(\'marcar\')">Marcar como enviada</button>' : '');
+    (fone ? '<a class="p5-btn p5-btn-secondary" id="finCobWhats" target="_blank" rel="noopener" href="#" data-fone="' + esc(fone) + '" onclick="finCobWhats_(this)">Abrir no WhatsApp</a>' : '') +
+    '<button type="button" class="p5-btn p5-btn-secondary" onclick="finCobEnviar_(\'marcar\')">Marcar como enviada</button>' +
+    (nova ? '<button type="button" class="p5-btn p5-btn-secondary" onclick="finCobDescartar_()">Descartar</button>' : '');
   return { titulo: nova ? 'Revisar e enviar' : 'Cobrança de ' + finPrimeiroNome_(p.nome), corpo: corpo, acoes: acoes, fechar: 'Fechar',
     depois: function () { document.getElementById('finCobTexto').value = c.texto; document.getElementById('finCobVence').value = c.vence_em; } };
 }
@@ -25096,16 +25139,20 @@ function finCobSelecao_() {
   document.querySelectorAll('#finModalCorpo [data-fin-ses]').forEach(function (c) { (c.checked ? marcadas : fora).push(c.dataset.finSes); });
   return { marcadas: marcadas, fora: fora };
 }
-function finCobWhats_(a) {
-  var c = FIN.dados.cobrancas.filter(function (x) { return x.id === FIN.modal.id; })[0];
-  a.href = finWhatsLink_(finPac_(c.sigla).telefone, document.getElementById('finCobTexto').value);
+/* A frase do recibo entra depois da saudação, ou sai, sem mexer no resto do que já foi editado */
+function finCobRecibo_(marcado) {
+  var campo = document.getElementById('finCobTexto'), frase = 'O recibo deste mês já foi emitido.\n\n', t = campo.value.split(frase).join('');
+  var i = t.indexOf('\n\n');
+  campo.value = marcado ? (i === -1 ? frase + t : t.slice(0, i + 2) + frase + t.slice(i + 2)) : t;
 }
+function finCobWhats_(a) { a.href = finWhatsLink_(a.dataset.fone, document.getElementById('finCobTexto').value); }
 async function finCobEnviar_(canal) {
   var sel = finCobSelecao_();
   if (!sel.marcadas.length) return finModalErro_('Marque pelo menos uma sessão.');
-  await finSalvar_('profEnviarCobranca', { id: FIN.modal.id, canal: canal, sessoes: sel.marcadas, vence_em: document.getElementById('finCobVence').value, texto: document.getElementById('finCobTexto').value },
+  await finSalvar_('profEnviarCobranca', { id: FIN.modal.id, dados: { canal: canal, sessoes: sel.marcadas, vence_em: document.getElementById('finCobVence').value, texto: document.getElementById('finCobTexto').value } },
     canal === 'email' ? 'Cobrança enviada por e-mail.' : 'Cobrança marcada como enviada.');
 }
+async function finCobDescartar_() { await finSalvar_('profDescartarCobranca', { id: FIN.modal.id }, 'Cobrança descartada. As sessões continuam em aberto.'); }
 async function finNaoCobrar_() {
   var sel = finCobSelecao_();
   if (!sel.fora.length) return finModalErro_('Desmarque antes a sessão que não deve ser cobrada.');
@@ -25116,26 +25163,33 @@ async function finNaoCobrar_() {
 function finDespModal_(d, m) {
   var x = d.despesas.filter(function (e) { return e.id === m.id; })[0];
   var corpo = '<div class="fin-form fin-duas">' +
-    '<div class="fin-campo fin-inteiro"><label for="finDespNome">Nome</label><input type="text" id="finDespNome" maxlength="80"></div>' +
-    '<div class="fin-campo"><label for="finDespCategoria">Categoria</label><select id="finDespCategoria">' + finOpcoes_([['', 'Escolha']].concat(d.config.categorias.map(function (c) { return [c, c]; })), x ? x.categoria : '') + '</select></div>' +
+    '<div class="fin-campo fin-inteiro"><label for="finDespNome">Nome</label><input type="text" id="finDespNome" maxlength="80"' + (x ? ' disabled' : '') + '></div>' +
+    '<div class="fin-campo"><label for="finDespCategoria">Categoria</label><select id="finDespCategoria"' + (x ? ' disabled' : '') + '>' + finOpcoes_([['', 'Escolha']].concat(d.config.categorias.concat(x && d.config.categorias.indexOf(x.categoria) === -1 ? [x.categoria] : []).map(function (c) { return [c, c]; })), x ? x.categoria : '') + '</select></div>' +
     '<div class="fin-campo"><label for="finDespValor">Valor (R$)</label><input type="text" inputmode="decimal" id="finDespValor" autocomplete="off">' + (x && x.fixa ? '<span class="fin-sub">' + (x.tipo === 'variavel' ? 'Informe o valor deste mês.' : 'Sugestão: o mesmo valor do mês passado.') + '</span>' : '') + '</div>' +
     '<div class="fin-campo"><label for="finDespData">' + (x ? 'Data do pagamento' : 'Data') + '</label><input type="date" id="finDespData"></div>' +
-    '<div class="fin-campo"><label for="finDespArquivo">Comprovante (opcional)</label><input type="file" id="finDespArquivo" accept="image/*,application/pdf"></div></div>';
+    '<div class="fin-campo"><label for="finDespArquivo">Comprovante (opcional)</label><input type="file" id="finDespArquivo" accept="image/jpeg,image/png,application/pdf"></div></div>';
   if (!x) corpo += '<fieldset class="fin-fieldset"><legend>Situação</legend><div class="fin-opcoes"><label class="fin-opcao"><input type="radio" name="finDespSit" value="paga"> Paga</label><label class="fin-opcao"><input type="radio" name="finDespSit" value="a_pagar"> A pagar</label></div></fieldset>' +
     '<fieldset class="fin-fieldset"><legend>Repete todo mês</legend><div class="fin-opcoes"><label class="fin-opcao"><input type="radio" name="finDespRep" value="" checked> Não</label><label class="fin-opcao"><input type="radio" name="finDespRep" value="fixo"> Valor fixo</label><label class="fin-opcao"><input type="radio" name="finDespRep" value="variavel"> Valor muda a cada mês</label></div></fieldset>';
   corpo += '<div class="fin-campo"><label for="finDespObs">Observações</label><input type="text" id="finDespObs" maxlength="200"></div>';
+  if (x && x.fixa) corpo += '<p class="fin-nota"><button type="button" class="fin-link" onclick="finDespEncerrar_()">Parar de repetir esta despesa</button></p>';
   return { titulo: x ? 'Marcar como paga' : 'Nova despesa', corpo: corpo, acoes: '<button type="button" class="p5-btn p5-btn-primary" onclick="finDespSalvar_()">' + (x ? 'Confirmar pagamento' : 'Salvar') + '</button>',
     depois: function () { document.getElementById('finDespData').value = d.hoje; if (x) { document.getElementById('finDespNome').value = x.nome; if (x.valor) document.getElementById('finDespValor').value = finBRL_(x.valor).replace('R$ ', ''); } } };
 }
 async function finDespSalvar_() {
   var sit = document.querySelector('input[name="finDespSit"]:checked'), rep = document.querySelector('input[name="finDespRep"]:checked'), id = FIN.modal.id;
-  var dados = { id: id, nome: document.getElementById('finDespNome').value.trim(), categoria: document.getElementById('finDespCategoria').value, valor: finCentavos_(document.getElementById('finDespValor').value),
+  var dados = { id: id || vmcNovoIdEnvio_(), nome: document.getElementById('finDespNome').value.trim(), categoria: document.getElementById('finDespCategoria').value, valor: finCentavos_(document.getElementById('finDespValor').value),
     data: document.getElementById('finDespData').value, situacao: id ? 'paga' : (sit ? sit.value : ''), repete: rep ? rep.value : '', obs: document.getElementById('finDespObs').value.trim() };
   if (!dados.nome) return finModalErro_('Informe o nome da despesa.');
-  if (!dados.valor) return finModalErro_('Informe o valor.');
+  if (!id && !dados.categoria) return finModalErro_('Escolha a categoria.');
+  if (!dados.valor && dados.situacao !== 'a_pagar') return finModalErro_('Informe o valor.');
   if (!dados.situacao) return finModalErro_('Marque se a despesa está paga ou a pagar.');
+  if (!dados.data) return finModalErro_('Informe a data.');
+  var arq = await finArquivoLer_(document.getElementById('finDespArquivo').files[0]);
+  if (arq && arq.erro) return finModalErro_(arq.erro);
+  if (arq) dados.arquivo = arq;
   await finSalvar_('profSalvarDespesa', { dados: dados }, id ? 'Conta marcada como paga.' : 'Despesa salva.');
 }
+async function finDespEncerrar_() { await finSalvar_('profEncerrarDespesaFixa', { id: FIN.modal.id }, 'Esta despesa não se repete mais. O que já foi lançado continua.'); }
 
 /* Recibo: prévia literal e editável; o lote aparece inteiro na tela antes de o arquivo existir */
 function finRecModal_(d, m) {
@@ -25173,6 +25227,9 @@ function finInicioHtml_() {
   if (i.comprovantes.length) h += '<section class="prof-bloco" id="finBlocoComprovantes"><h3 class="prof-bloco-titulo">Comprovantes para conferir</h3><div class="prof-bloco-lista">' + i.comprovantes.map(function (c) {
     return '<button type="button" class="prof-ev" onclick="finAbrirTela()"><span class="prof-ev-nome">' + esc(c.nome) + '</span><span class="prof-ev-texto">Enviou um comprovante de ' + finBRL_(c.valor) + '</span><span class="prof-ev-quando">' + finDia_(c.data) + '</span></button>';
   }).join('') + '</div></section>';
+  if (i.recibos.length) h += '<section class="prof-bloco" id="finBlocoRecibos"><h3 class="prof-bloco-titulo">Pedidos de recibo</h3><div class="prof-bloco-lista">' + i.recibos.map(function (c) {
+    return '<button type="button" class="prof-ev" data-sigla="' + esc(c.sigla) + '" onclick="profAbrirPaciente(this.dataset.sigla)"><span class="prof-ev-nome">' + esc(c.nome) + '</span><span class="prof-ev-texto">Pediu o recibo deste mês</span><span class="prof-ev-quando">' + finDia_(c.data) + '</span></button>';
+  }).join('') + '</div></section>';
   if (i.contas.length) h += '<section class="prof-bloco" id="finBlocoContas"><h3 class="prof-bloco-titulo">Contas a vencer <span class="prof-bloco-sub">Próximos 7 dias</span></h3><div class="prof-bloco-lista">' + i.contas.map(function (c) {
     return '<button type="button" class="prof-ev" onclick="finAbrirTela()"><span class="prof-ev-nome">' + esc(c.nome) + '</span><span class="prof-ev-texto">' + (c.valor ? finBRL_(c.valor) : 'Informe o valor deste mês') + '</span><span class="prof-ev-quando">vence em ' + finDia_(c.vence) + '</span></button>';
   }).join('') + '</div></section>';
@@ -25190,7 +25247,7 @@ async function finInicioCarregar_() {
 
 /* ---- Tela 5: módulo Financeiro do paciente aberto pelo profissional ---- */
 function finPacModuloHtml_(sigla) {
-  if (FIN.pacSigla !== sigla) { FIN.pacSigla = sigla; FIN.pac = null; finPacCarregar_(sigla); }
+  if (FIN.pacSigla !== sigla || Date.now() - FIN.pacLido > 20000) { if (FIN.pacSigla !== sigla) FIN.pac = null; FIN.pacSigla = sigla; FIN.pacLido = Date.now(); finPacCarregar_(sigla); }
   return '<div class="prof-pv-mod mod-blue" id="profMod-fin"><div class="prof-pv-mod-head" onclick="profToggleModulo_(\'fin\')">' +
     '<span class="prof-pv-mod-icon"><svg class=ico aria-hidden=true><use href=#i-wallet></use></svg></span>' +
     '<div class="prof-pv-mod-info"><div class="prof-pv-mod-title">Financeiro</div><div class="prof-pv-mod-meta" id="profModFinMeta">Valor, cobrança e extrato</div></div>' +
@@ -25212,7 +25269,7 @@ function finPacCorpoHtml_() {
   var c = x.cadastro, radio = function (nome, pares, atual) {
     return '<div class="fin-opcoes">' + pares.map(function (o) { return '<label class="fin-opcao"><input type="radio" name="' + nome + '" value="' + o[0] + '"' + (o[0] === atual ? ' checked' : '') + ' onchange="finPacAlternar_()"> ' + esc(o[1]) + '</label>'; }).join('') + '</div>';
   };
-  var h = '<div class="fin-form fin-duas"><div class="fin-campo"><label for="finPacValor">Valor da sessão (R$)</label><input type="text" inputmode="decimal" id="finPacValor" autocomplete="off"><span class="fin-sub">O novo valor vale para as próximas sessões ainda não pagas.</span></div>' +
+  var h = '<div class="fin-form fin-duas"><div class="fin-campo"><label for="finPacValor">Valor da sessão (R$)</label><input type="text" inputmode="decimal" id="finPacValor" autocomplete="off"><span class="fin-sub">O novo valor vale para as próximas sessões ainda não pagas.' + (!c.valor && x.valor_padrao ? ' Em branco, vale o seu valor padrão (' + finBRL_(x.valor_padrao) + ').' : '') + '</span></div>' +
     '<div class="fin-campo"><label for="finPacEnc">Encaminhamento</label><input type="text" id="finPacEnc" maxlength="80"><span class="fin-sub">Por onde o paciente chegou.</span></div></div>';
   h += '<fieldset class="fin-fieldset"><legend>Cobrança — de quanto em quanto</legend>' + radio('finPacModo', FIN_MODOS, c.modo) + '</fieldset>' +
     '<div class="fin-form fin-duas' + (c.modo === 'n' ? '' : ' hidden') + '" id="finPacNWrap"><div class="fin-campo"><label for="finPacN">A cada quantas sessões</label><input type="text" inputmode="numeric" id="finPacN"></div></div>' +
@@ -25225,15 +25282,18 @@ function finPacCorpoHtml_() {
     : '<p class="fin-nota">Nome e CPF vêm da anamnese: ' + esc(x.anamnese.nome || 'ainda não preenchida') + (x.anamnese.cpf ? ' · CPF ' + esc(x.anamnese.cpf) : '') + '.</p>';
   h += '<fieldset class="fin-fieldset"><legend>Precisa de recibo</legend>' + radio('finPacRecibo', [['Sim', 'Sim'], ['Nao', 'Não']], c.recibo) + '</fieldset>' +
     '<fieldset class="fin-fieldset' + (c.recibo === 'Sim' ? '' : ' hidden') + '" id="finPacTitularWrap"><legend>Recibo em nome de</legend>' + radio('finPacTitular', [['paciente', 'O paciente'], ['pagador', 'Quem paga'], ['outro', 'Outra pessoa']], c.titular) + '</fieldset>' +
+    (c.recibo === 'Sim' && c.titular === 'outro' ? '<div class="fin-form fin-duas"><div class="fin-campo"><label for="finPacTitNome">Nome que vai no recibo</label><input type="text" id="finPacTitNome" maxlength="100"></div>' +
+      '<div class="fin-campo"><label for="finPacTitDoc">CPF do recibo</label><input type="text" inputmode="numeric" id="finPacTitDoc" autocomplete="off"></div></div>' : '') +
     '<fieldset class="fin-fieldset"><legend>Enviar cobrança por</legend>' + radio('finPacCanal', [['email', 'E-mail'], ['whatsapp', 'WhatsApp'], ['ambos', 'Os dois']], c.canal) + '</fieldset>';
   h += '<div class="fin-acoes"><button type="button" class="prof-btn-acao" onclick="finPacSalvar_()">Salvar</button><span class="fin-sub" id="finPacMsg" role="status"></span></div>';
   h += '<p class="fin-ses-mes">Extrato</p><div class="fin-cartoes">' + finCartao_('', 'Em aberto', finBRL_(x.em_aberto), '') + finCartao_('fin-ok', 'Crédito', finBRL_(x.credito), '') + '</div>';
   h += x.extrato.length ? x.extrato.map(function (e) {
-    return '<div class="fin-linha"><span>' + finDia_(e.data) + ' · ' + esc(e.texto) + '</span><b>' + (e.tipo === 'pagamento' ? '+ ' : '') + finBRL_(e.valor) + '</b></div>';
+    var sit = e.tipo === 'pagamento' ? ' <button type="button" class="fin-link" data-id="' + esc(e.id) + '" onclick="finPacEstornar_(this)">Desfazer</button>' : ' · ' + (({ paga: 'paga', parcial: 'paga em parte' })[e.situacao] || 'em aberto');
+    return '<div class="fin-linha"><span>' + finDia_(e.data) + ' · ' + esc(e.texto) + sit + '</span><b>' + (e.tipo === 'pagamento' ? '+ ' : '') + finBRL_(e.valor) + '</b></div>';
   }).join('') : '<p class="fin-nota">Nenhuma sessão cobrada ainda.</p>';
   setTimeout(function () {
     var campo = function (id, v) { var el = document.getElementById(id); if (el) el.value = v || ''; };
-    campo('finPacValor', c.valor ? finBRL_(c.valor).replace('R$ ', '') : ''); campo('finPacEnc', c.encaminhamento); campo('finPacN', c.n);
+    campo('finPacValor', c.valor ? finBRL_(c.valor).replace('R$ ', '') : ''); campo('finPacEnc', c.encaminhamento); campo('finPacN', c.n); campo('finPacTitNome', c.titular_nome); campo('finPacTitDoc', c.titular_documento);
     c.pagadores.forEach(function (pg, i) { document.querySelectorAll('[data-fin-pagador="' + i + '"] [data-fin-pg]').forEach(function (el) { el.value = pg[el.dataset.finPg] || ''; }); });
   }, 0);
   return h;
@@ -25243,6 +25303,8 @@ function finPacLer_() {
   var c = FIN.pac.cadastro;
   c.valor = finCentavos_(document.getElementById('finPacValor').value); c.encaminhamento = document.getElementById('finPacEnc').value.trim(); c.n = document.getElementById('finPacN').value.trim();
   c.modo = marcado('finPacModo'); c.quando = marcado('finPacQuando'); c.pagador = marcado('finPacPagador'); c.recibo = marcado('finPacRecibo'); c.titular = marcado('finPacTitular'); c.canal = marcado('finPacCanal');
+  var tn = document.getElementById('finPacTitNome'), td = document.getElementById('finPacTitDoc');
+  if (tn) { c.titular_nome = tn.value.trim(); c.titular_documento = td.value.trim(); }
   document.querySelectorAll('[data-fin-pagador]').forEach(function (bloco) { var pg = c.pagadores[Number(bloco.dataset.finPagador)]; bloco.querySelectorAll('[data-fin-pg]').forEach(function (el) { pg[el.dataset.finPg] = el.value.trim(); }); });
   return c;
 }
@@ -25256,8 +25318,20 @@ function finPacMaisPagador_() { finPacLer_().pagadores.push({}); document.getEle
 async function finPacSalvar_() {
   var c = finPacLer_(), msg = document.getElementById('finPacMsg');
   var r = await chamarServidor('profSalvarCadastroFinanceiro', { siglaPaciente: FIN.pacSigla, dados: c, id_envio: vmcNovoIdEnvio_() });
-  if (r && r.ok && r.paciente) { FIN.pac = r.paciente; document.getElementById('profModFinBody').innerHTML = finPacCorpoHtml_(); msg = document.getElementById('finPacMsg'); }
+  if (r && r.ok && r.paciente) {
+    FIN.pac = r.paciente; FIN.dados = null; // a página Fluxo de caixa relê na próxima abertura
+    document.getElementById('profModFinBody').innerHTML = finPacCorpoHtml_(); msg = document.getElementById('finPacMsg');
+    var naLista = (PROF_LISTA || []).filter(function (p) { return p.sigla === FIN.pacSigla; })[0]; // o campo do cabeçalho (14.6) mostra o mesmo valor
+    if (naLista) { naLista.valor_sessao = r.paciente.cadastro.valor ? finBRL_(r.paciente.cadastro.valor).replace('R$ ', '') : ''; profValorPintar_(); }
+  }
   msg.textContent = r && r.ok ? 'Cadastro salvo.' : ((r && r.erro) || 'Não foi possível salvar agora.');
+}
+/* Desfazer um pagamento pede dois toques no mesmo botão */
+async function finPacEstornar_(botao) {
+  if (botao.dataset.pronto !== '1') { botao.dataset.pronto = '1'; botao.textContent = 'Toque de novo para desfazer'; return; }
+  var r = await chamarServidor('profEstornarPagamento', { id: botao.dataset.id, id_envio: vmcNovoIdEnvio_() });
+  if (r && r.ok && r.paciente) { FIN.pac = r.paciente; FIN.dados = null; document.getElementById('profModFinBody').innerHTML = finPacCorpoHtml_(); }
+  else botao.textContent = (r && r.erro) || 'Não foi possível desfazer agora.';
 }
 
 /* ---- Tela 6: Financeiro na área do paciente ---- */
@@ -25283,12 +25357,12 @@ function finMeuRender_() {
   if (m.msg) h += '<p class="age-msg" role="status">' + esc(m.msg) + '</p>';
   h += '<div class="fin-painel"><h3 class="fin-painel-tit">' + esc(finMaiuscula_(m.mes)) + '</h3>';
   h += m.sessoes.length ? m.sessoes.map(function (s) { return '<div class="fin-linha"><span>' + finDiaLongo_(s.data) + '</span><span>' + finTag_(s.paga ? ['ok', 'Paga'] : ['aberto', 'Em aberto']) + '</span></div>'; }).join('') +
-      finLinhas_([['Total do mês', finBRL_(m.total), true], ['Pago', finBRL_(m.pago)], ['Em aberto', finBRL_(m.total - m.pago)]])
+      finLinhas_([['Total do mês', finBRL_(m.total), true], ['Pago', finBRL_(m.pago)], ['Em aberto', finBRL_(m.total - m.pago)]].concat(m.aberto_anterior ? [['Em aberto de meses anteriores', finBRL_(m.aberto_anterior)]] : []).concat(m.credito ? [['Seu crédito', finBRL_(m.credito)]] : []))
     : '<p class="fin-nota">Nenhuma sessão cobrada neste mês.</p>';
   h += '</div>';
   if (m.dados_receber) h += '<div class="fin-painel"><div class="fin-painel-topo"><h3 class="fin-painel-tit">Dados para pagar</h3><button type="button" class="prof-lem-btn" onclick="finMeuCopiar_(this)">Copiar</button></div><div class="fin-dados" id="finMeuDados">' + esc(m.dados_receber) + '</div></div>';
   h += '<div class="fin-painel"><h3 class="fin-painel-tit">Enviar comprovante</h3><p class="fin-nota">Foto ou PDF, até 5 MB. Seu terapeuta confere antes de o pagamento contar.</p><div class="fin-form fin-duas">' +
-    '<div class="fin-campo fin-inteiro"><label for="finMeuArquivo">Comprovante</label><input type="file" id="finMeuArquivo" accept="image/*,application/pdf"></div>' +
+    '<div class="fin-campo fin-inteiro"><label for="finMeuArquivo">Comprovante</label><input type="file" id="finMeuArquivo" accept="image/jpeg,image/png,application/pdf"></div>' +
     '<div class="fin-campo"><label for="finMeuValor">Valor pago (R$)</label><input type="text" inputmode="decimal" id="finMeuValor" autocomplete="off"></div>' +
     '<div class="fin-campo"><label for="finMeuData">Data do pagamento</label><input type="date" id="finMeuData"></div></div>' +
     '<div class="fin-acoes"><button type="button" class="prof-btn-acao" onclick="finMeuEnviar_()">Enviar</button><span class="fin-sub" id="finMeuErro" role="alert"></span></div></div>';
@@ -25296,7 +25370,7 @@ function finMeuRender_() {
     '<p class="fin-nota">O recibo deste mês é preparado pelo seu terapeuta.</p></div>';
   h += '<div class="fin-painel"><h3 class="fin-painel-tit">Histórico de pagamentos</h3>' + (m.historico.length ? m.historico.map(function (p) {
     var sit = ({ aguardando: ['aberto', 'Aguardando conferência'], confirmado: ['ok', 'Confirmado'], recusado: ['atencao', 'Não confirmado. Fale com seu terapeuta.'] })[p.situacao];
-    return '<div class="fin-item"><div><div class="fin-item-nome">' + finDiaLongo_(p.data) + '</div><span class="fin-sub">' + esc(p.forma) + '</span></div><div class="fin-item-valor">' + finBRL_(p.valor) + '</div><div class="fin-item-acoes">' + finTag_(sit) + '</div></div>';
+    return '<div class="fin-item"><div><div class="fin-item-nome">' + finDiaLongo_(p.data) + '</div><span class="fin-sub">' + esc(p.forma || 'Comprovante enviado por você') + '</span></div><div class="fin-item-valor">' + finBRL_(p.valor) + '</div><div class="fin-item-acoes">' + finTag_(sit) + '</div></div>';
   }).join('') : '<p class="fin-nota">Nenhum pagamento registrado.</p>') + '</div></div>';
   c.innerHTML = h;
 }
@@ -25332,7 +25406,7 @@ async function finMeuEnviar_() {
   if (!arq) { erro.textContent = 'Escolha a foto ou o PDF do comprovante.'; return; }
   if (arq.erro) { erro.textContent = arq.erro; return; }
   if (!valor || !data) { erro.textContent = 'Informe o valor e a data do pagamento.'; return; }
-  var r = await chamarServidor('pacienteEnviarComprovante', { dados: { valor: valor, data: data, arquivo: arq }, id_envio: vmcNovoIdEnvio_() });
+  var r = await chamarServidor('pacienteEnviarComprovante', { dados: { id: vmcNovoIdEnvio_(), valor: valor, data: data, arquivo: arq } });
   if (r && r.ok && r.meu) { FIN.meu = r.meu; FIN.meu.msg = 'Comprovante enviado. Seu terapeuta vai conferir.'; finMeuRender_(); window.scrollTo({ top: 0, behavior: vmcRolagem_() }); }
   else erro.textContent = (r && r.erro) || 'Não foi possível enviar agora. Tente de novo.';
 }

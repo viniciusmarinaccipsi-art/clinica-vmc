@@ -8987,7 +8987,7 @@ function profSalvarConfigFinanceiro(s, dados, periodo) {
   var alvo = _ageProf_(s);
   if (!alvo.ok) return alvo;
   var d = dados && typeof dados === 'object' ? dados : {}, atual = {}, agora = _lemAgora_();
-  var lista = function (t, max) { return String(t === undefined || t === null ? '' : t).split(/[,|\n]/).map(function (x) { return _finTxt_(x, 40); }).filter(function (x, i, l) { return x && l.indexOf(x) === i; }).slice(0, max).join('|'); };
+  var lista = function (t, max) { return String(t === undefined || t === null ? '' : t).split(/[|\n]/).map(function (x) { return _finTxt_(x, 40); }).filter(function (x, i, l) { return x && l.indexOf(x) === i; }).slice(0, max).join('|'); };
   var novo = { dados_receber: String(d.dados_receber === undefined || d.dados_receber === null ? '' : d.dados_receber).replace(/\r/g, '').trim().slice(0, 600), formas: lista(d.formas, 12),
     valor_padrao: String(_finCent_(d.valor_padrao)), prazo_dias: String(Math.min(90, Math.max(0, parseInt(d.prazo_dias, 10) || 0))),
     texto_cobranca: String(d.texto_cobranca === undefined || d.texto_cobranca === null ? '' : d.texto_cobranca).replace(/\r/g, '').trim().slice(0, 1500), categorias: lista(d.categorias, 30) };

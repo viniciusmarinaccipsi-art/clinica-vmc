@@ -146,10 +146,10 @@ tenta('B', () => {
   let r = fin();
   ok('B1 antes de qualquer uso a leitura responde com os padrões e nenhuma aba do financeiro nasce', r.ok && r.financeiro.config.formas.length === 5 && r.financeiro.config.valor_padrao === 0 && r.financeiro.sessoes.length === 0 &&
     Object.keys(S('COLUNAS_FIN')).every(n => !aba(n)), Object.keys(S('COLUNAS_FIN')).filter(n => aba(n)));
-  r = prof('profSalvarConfigFinanceiro', { periodo: 'mes', dados: { dados_receber: 'Pix (chave e-mail): financeiro@consultorio.exemplo\nFavorecida: Nova de Prova', formas: 'Pix, Dinheiro, Transferência', valor_padrao: '250,00', prazo_dias: '5', texto_cobranca: '', categorias: 'Aluguel, Contas, Material' } });
-  ok('B2 configuração salva: valor padrão em centavos, listas limpas, texto vazio volta ao modelo; a resposta já traz a leitura', r.ok && r.financeiro.config.valor_padrao === 25000 && r.financeiro.config.formas.join('|') === 'Pix|Dinheiro|Transferência' &&
-    r.financeiro.config.categorias.length === 3 && /\{demonstrativo\}/.test(r.financeiro.config.texto_cobranca) && r.financeiro.config.prazo_dias === 5, r.financeiro && r.financeiro.config);
-  ok('B3 sem forma de pagamento a configuração é recusada', prof('profSalvarConfigFinanceiro', { dados: { formas: ' , ', categorias: 'Aluguel' } }).ok === false);
+  r = prof('profSalvarConfigFinanceiro', { periodo: 'mes', dados: { dados_receber: 'Pix (chave e-mail): financeiro@consultorio.exemplo\nFavorecida: Nova de Prova', formas: 'Pix\nDinheiro\nTransferência\nPix', valor_padrao: '250,00', prazo_dias: '5', texto_cobranca: '', categorias: 'Aluguel\nContas (água, luz, internet)\nMaterial' } });
+  ok('B2 configuração salva: valor padrão em centavos, listas uma por linha (sem repetidos; vírgula faz parte do nome), texto vazio volta ao modelo; a resposta já traz a leitura', r.ok && r.financeiro.config.valor_padrao === 25000 && r.financeiro.config.formas.join('|') === 'Pix|Dinheiro|Transferência' &&
+    r.financeiro.config.categorias.length === 3 && r.financeiro.config.categorias[1] === 'Contas (água, luz, internet)' && /\{demonstrativo\}/.test(r.financeiro.config.texto_cobranca) && r.financeiro.config.prazo_dias === 5, r.financeiro && r.financeiro.config);
+  ok('B3 sem forma de pagamento a configuração é recusada', prof('profSalvarConfigFinanceiro', { dados: { formas: ' \n ', categorias: 'Aluguel' } }).ok === false);
   r = cadastro(ANA, { modo: 'mensal', quando: 'f3', recibo: 'Sim', canal: 'whatsapp', encaminhamento: 'Indicação de paciente' });
   ok('B4 cadastro da Ana: mensal do dia 21 ao fim, recibo, quem paga é ela mesma (nenhuma pessoa gravada); o valor vai para o cadastro do paciente (o mesmo campo do 14.6)',
     r.ok && r.paciente.cadastro.modo === 'mensal' && r.paciente.cadastro.quando === 'f3' && r.paciente.cadastro.valor === 28000 && r.paciente.cadastro.pagadores.length === 0 && linhas('Fin_Pessoas') <= 0 &&
@@ -346,7 +346,7 @@ tenta('G', () => {
   const dAluguel = uuid(), dAvulsa = uuid(), dEnergia = uuid();
   let r = prof('profSalvarDespesa', { periodo: 'mes', dados: { id: dAluguel, nome: 'Aluguel da sala', categoria: 'Aluguel', valor: 120000, data: '2026-11-05', situacao: 'paga', repete: 'fixo' } });
   ok('G1 despesa paga que repete (valor fixo): uma linha no mês e a despesa fixa criada com o dia 5', r.ok && linhas('Fin_Despesas') === 1 && linhas('Fin_Despesas_Fixas') === 1 && r.financeiro.despesas.length === 1 && r.financeiro.despesas[0].fixa && r.financeiro.despesas[0].tipo === 'fixo');
-  r = prof('profSalvarDespesa', { periodo: 'mes', dados: { id: dEnergia, nome: 'Energia', categoria: 'Contas', valor: 21440, data: '2026-11-16', situacao: 'paga', repete: 'variavel' } });
+  r = prof('profSalvarDespesa', { periodo: 'mes', dados: { id: dEnergia, nome: 'Energia', categoria: 'Contas (água, luz, internet)', valor: 21440, data: '2026-11-16', situacao: 'paga', repete: 'variavel' } });
   r = prof('profSalvarDespesa', { periodo: 'mes', dados: { id: dAvulsa, nome: 'Supervisão clínica', categoria: 'Material', valor: 40000, data: '2026-11-27', situacao: 'a_pagar', repete: '' } });
   ok('G2 despesa avulsa a pagar com vencimento futuro entra pendente', r.ok && r.financeiro.despesas.filter(d => d.situacao === 'a_pagar').length === 1 && r.financeiro.despesas.length === 3);
   ok('G3 sem nome, sem categoria, paga com valor zero ou paga com data futura: recusado', [{ nome: '', categoria: 'Aluguel', valor: 100, data: '2026-11-05', situacao: 'paga' }, { nome: 'X', categoria: '', valor: 100, data: '2026-11-05', situacao: 'paga' },
