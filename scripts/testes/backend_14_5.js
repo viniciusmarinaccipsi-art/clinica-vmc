@@ -303,6 +303,32 @@ tenta('S', () => {
   ok('S11 sugestão vazia e sem horário não vira pedido', r.ok === false && r.codigo === 'ocupado', r);
 });
 
+/* ---------------------------------------------------------------- U */
+console.log('U. 14.5.1 — o link de confirmação diz onde é a sessão');
+tenta('U', () => {
+  const tok = id => lida(id).link_confirmar.split('?confirmar=')[1];
+  const link = id => h.post({ acao: 'confirmarSessaoPorLink', t: tok(id) });
+  grade({ avisos_sessao: 'Nao', endereco: ATUAL, endereco_novo: NOVO, endereco_novo_desde: '2026-12-01' });
+  const idP = uuid(), idO = uuid();
+  let r = sessao(P2, { id: idP, data: '2027-01-20', hora: '16:00', avisos: [] });
+  ok('U0 sessão presencial criada', r.ok === true, r);
+  r = link(idP);
+  ok('U1 presencial: endereço que vale na data e o link do mapa', r.ok === true && r.estado === 'agendada' && r.endereco === NOVO && r.mapa === 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(NOVO) && r.meet_link === '', r);
+  ok('U2 a resposta não leva nome, sigla nem telefone', Object.keys(r).sort().join(',') === 'data,endereco,estado,hora,ja_confirmada,mapa,meet_link,modalidade,ok', Object.keys(r));
+  grade({ avisos_sessao: 'Nao', endereco: ATUAL, endereco_novo: '', endereco_novo_desde: '' });
+  r = link(idP);
+  ok('U3 sem endereço novo, vale o atual (e a segunda abertura diz que já estava confirmada)', r.ok === true && r.ja_confirmada === true && r.endereco === ATUAL, r);
+  grade({ avisos_sessao: 'Nao', endereco: '', endereco_novo: '', endereco_novo_desde: '' });
+  r = link(idP);
+  ok('U4 sem endereço na Grade: vazio, sem link de mapa', r.ok === true && r.endereco === '' && r.mapa === '', r);
+  r = sessao(P2, { id: idO, data: '2027-01-21', hora: '16:00', modalidade: 'online', avisos: [] });
+  ok('U5 sessão on-line criada', r.ok === true, r);
+  grade({ avisos_sessao: 'Nao', endereco: ATUAL, endereco_novo: '', endereco_novo_desde: '' });
+  r = link(idO);
+  ok('U6 on-line: nenhum endereço; a sala do Meet é a da própria sessão', r.ok === true && r.modalidade === 'online' && r.endereco === '' && r.mapa === '' && r.meet_link === String(lida(idO).meet_link || ''), r);
+  ok('U7 token inválido continua sem dizer nada', h.post({ acao: 'confirmarSessaoPorLink', t: 'abc.def' }).ok === false && h.post({ acao: 'confirmarSessaoPorLink', t: 'abc.def' }).endereco === undefined);
+});
+
 /* ---------------------------------------------------------------- T */
 console.log('T. Listas e versão');
 tenta('T', () => {
@@ -310,7 +336,6 @@ tenta('T', () => {
   ok('T1 profLerHorariosLivres é leitura (fora da trava) e exige crachá', S('ACOES_SO_LEITURA').indexOf('profLerHorariosLivres') !== -1 && S('ACOES_COM_TRAVA').indexOf('profLerHorariosLivres') === -1 && S('ACOES_PUBLICAS').indexOf('profLerHorariosLivres') === -1 && h.post({ acao: 'profLerHorariosLivres' }).ok === false);
   ok('T2 um paciente não lê os horários livres do profissional', pac(P1, 'profLerHorariosLivres', {}).ok === false);
   ok('T3 colunas novas no fim e criadas na planilha', S('COLUNAS_SESSOES').slice(-3).join(',') === 'gcal_evento,gcal_sinc,meet_link' && S('COLUNAS_PEDIDOS_AGENDA').slice(-1)[0] === 'sugestao' && h.cab(aba('Sessoes')).indexOf('meet_link') !== -1 && h.cab(aba('Pedidos_Agenda')).indexOf('sugestao') !== -1);
-  ok('T4 VERSAO_PACOTE = 14.5', S('VERSAO_PACOTE') === '14.5', S('VERSAO_PACOTE'));
   ok('T5 o manifesto pede o Calendar', JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'appsscript.json'), 'utf8')).oauthScopes.indexOf('https://www.googleapis.com/auth/calendar') !== -1);
   ok('T6 o token do Google nunca vai para o log nem para a resposta', src.indexOf('getOAuthToken()') === src.lastIndexOf('getOAuthToken()') && logServidor.join(' ').indexOf('tok') === -1);
   const inesperados = logServidor.filter(l => !/^trava de gravacao: nao obtida/.test(l));

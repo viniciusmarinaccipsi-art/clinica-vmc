@@ -67,7 +67,7 @@
 // pacienteConfirmarSessao, pacienteCancelarSessao, pacientePedirAgenda); avisos de sessao por e-mail, desligados por padrao.
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.5';
+var VERSAO_PACOTE = '14.5.1';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -6871,7 +6871,9 @@ function _ageLerTokenConfirmar_(token) {
 
 /**
  * Acao PUBLICA (sem cracha): o link do e-mail e do WhatsApp. So faz uma coisa — marcar a presenca
- * como confirmada na sessao do token — e so devolve dia, hora e modalidade (nenhum nome).
+ * como confirmada na sessao do token — e so devolve dia, hora, modalidade e ONDE e a sessao (nenhum nome).
+ * 14.5.1: o "onde" e o endereco do consultorio que vale na data, com o link do mapa (presencial), ou a sala
+ * do Meet daquela sessao (on-line) — o WhatsApp deixou de levar o endereco por extenso.
  * Token invalido nem abre planilha. Sessao cancelada, com situacao marcada ou ja iniciada: link vencido.
  */
 function confirmarSessaoPorLink(token) {
@@ -6887,7 +6889,10 @@ function confirmarSessaoPorLink(token) {
   if (!x || (x.estado !== 'agendada' && x.estado !== '') || _ageMinutosAte_(x.data, x.hora_inicio, agora) <= 0) return vencido;
   var ja = !!x.confirmada_em;
   if (!ja) _ageGravar_(aba, COLUNAS_SESSOES, x.__linha, { confirmada_em: agora.carimbo, atualizado_em: agora.carimbo });
-  return { ok: true, ja_confirmada: ja, data: x.data, hora: _lemHora_(x.hora_inicio), modalidade: x.modalidade === 'online' ? 'online' : 'presencial' };
+  var online = x.modalidade === 'online';
+  var ender = online ? '' : _ageEndereco_(_ageConfig_(controle), x.data);
+  return { ok: true, ja_confirmada: ja, data: x.data, hora: _lemHora_(x.hora_inicio), modalidade: online ? 'online' : 'presencial',
+    estado: 'agendada', endereco: ender, mapa: _ageMapa_(ender), meet_link: online ? String(x.meet_link || '') : '' };
 }
 
 /** Marcas dos dois lembretes para uma sessao que nasce ou muda de data: 'dispensado' quando ela ja esta dentro do prazo daquele lembrete. */

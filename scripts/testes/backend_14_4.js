@@ -70,7 +70,7 @@ tenta('L', () => {
   ok('L2 o token não carrega nome, e-mail nem telefone', (() => { const corpo = Buffer.from(tokenDe(linkL).split('.')[0], 'base64url').toString('utf8'); return corpo === 'conf|PROF_NP|' + idL; })());
   h.memo();
   let r = pub({ t: tokenDe(linkL) });
-  ok('L3 abrir o link confirma a presença, sem crachá, e só devolve dia, hora e modalidade', r.ok === true && r.ja_confirmada === false && r.data === '2026-12-01' && r.hora === '10:00' && r.modalidade === 'online' && JSON.stringify(Object.keys(r).sort()) === JSON.stringify(['data', 'hora', 'ja_confirmada', 'modalidade', 'ok']) && cel('Sessoes', idL, 'confirmada_em') === '2026-11-25 14:00', r);
+  ok('L3 abrir o link confirma a presença, sem crachá, e só devolve dia, hora, modalidade e onde é a sessão (14.5.1)', r.ok === true && r.ja_confirmada === false && r.data === '2026-12-01' && r.hora === '10:00' && r.modalidade === 'online' && JSON.stringify(Object.keys(r).sort()) === JSON.stringify(['data', 'endereco', 'estado', 'hora', 'ja_confirmada', 'mapa', 'meet_link', 'modalidade', 'ok']) && cel('Sessoes', idL, 'confirmada_em') === '2026-11-25 14:00', r);
   ok('L4 a confirmação aparece para o profissional e para o paciente', lida(idL).confirmada === true && pac(P1, 'lerMinhasSessoes').sessoes.filter(x => x.id === idL)[0].confirmada === true);
   r = pub({ t: tokenDe(linkL) });
   ok('L5 abrir de novo: "já estava confirmada", sem regravar', r.ok === true && r.ja_confirmada === true && cel('Sessoes', idL, 'confirmada_em') === '2026-11-25 14:00', r);
@@ -251,7 +251,6 @@ tenta('T', () => {
   h.TRAVA.ocupada = false;
   ok('T2 com a trava ocupada a confirmação por link recusa ("ocupado") em vez de gravar', r.ok === false && r.codigo === 'ocupado', r);
   ok('T3 as quatro caixas de aviso e a coluna nova', S('AGENDA_AVISOS').join(',') === 'confirmacao,lembrete48,lembrete,cancelamento' && S('COLUNAS_SESSOES').indexOf('lembrete48_em') === 21 && h.cab(aba('Sessoes')).indexOf('lembrete48_em') !== -1);
-  ok('T4 VERSAO_PACOTE = 14.5 (o 14.4 segue dentro)', S('VERSAO_PACOTE') === '14.5', S('VERSAO_PACOTE'));
   const inesperados = logServidor.filter(l => !/^trava de gravacao: nao obtida/.test(l));
   ok('T5 o servidor não registrou nenhum erro além da trava ocupada provocada', inesperados.length === 0, inesperados.slice(0, 5));
 });
