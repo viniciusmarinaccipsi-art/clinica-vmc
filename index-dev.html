@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia e valor por paciente · agendamento do paciente com a aprovação do profissional · Painel de Evolução na tela do profissional — Pacote 19.1 · o pedido de agendamento do paciente aparece como “Agendamento solicitado” — Pacote 14.7.1 · Fluxo de caixa: receitas lidas da Agenda, pagamentos, cobranças por e-mail e WhatsApp, comprovante do paciente, despesas e contas a pagar — Pacote 20.0 · recibos e livro caixa: quem precisa de recibo, prévia literal e arquivo de lote do Carnê-Leão · Biblioteca de Escalas e Inventários com "Aplicar a um paciente" — Pacote 19.3 · tags da busca das escalas recolhidas atrás de um botão; saiu a tag "Mensuração" — Pacote 19.3.1 · cada profissional conecta a própria Google Agenda, com a opção dos compromissos pessoais — Pacote 14.8 · sessões com status pendente no Início, a palavra "Status" na sessão e os dois e-mails da agenda ao profissional — Pacote 20.2 (23/11/2026) · na tela do profissional, os subtítulos do Painel de Evolução falam do paciente — Pacote 19.1.1 (23/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia e valor por paciente · agendamento do paciente com a aprovação do profissional · Painel de Evolução na tela do profissional — Pacote 19.1 · o pedido de agendamento do paciente aparece como “Agendamento solicitado” — Pacote 14.7.1 · Fluxo de caixa: receitas lidas da Agenda, pagamentos, cobranças por e-mail e WhatsApp, comprovante do paciente, despesas e contas a pagar — Pacote 20.0 · recibos e livro caixa: quem precisa de recibo, prévia literal e arquivo de lote do Carnê-Leão · Biblioteca de Escalas e Inventários com "Aplicar a um paciente" — Pacote 19.3 · tags da busca das escalas recolhidas atrás de um botão; saiu a tag "Mensuração" — Pacote 19.3.1 · cada profissional conecta a própria Google Agenda, com a opção dos compromissos pessoais — Pacote 14.8 · sessões com status pendente no Início, a palavra "Status" na sessão e os dois e-mails da agenda ao profissional — Pacote 20.2 (23/11/2026) · na tela do profissional, os subtítulos do Painel de Evolução falam do paciente — Pacote 19.1.1 (23/11/2026) · tags das escalas: saem Monitoramento, Diagnóstico e Processo e juntam-se as repetidas; "emoções agradáveis" na tela do paciente — Pacote 19.3.2 (23/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -5560,7 +5560,7 @@ body:has(#sec-prof-financeiro.active) .app,body:has(#sec-prof-financeiro.active)
           <ul>
             <li>Ajuda a identificar <strong>recursos pessoais</strong> — coisas que você já faz bem</li>
             <li>Mostra <strong>o que funciona</strong> para você, quando se sente bem</li>
-            <li>Reforça a percepção de <strong>emoções positivas</strong>, que muitas vezes passam despercebidas</li>
+            <li>Reforça a percepção de <strong>emoções agradáveis</strong>, que muitas vezes passam despercebidas</li>
             <li>Equilibra o foco: nosso cérebro tende a dar mais atenção ao negativo, e registrar o positivo é um exercício de <strong>reequilíbrio</strong></li>
             <li>Cria um arquivo de memórias e estratégias que você pode revisitar nos momentos difíceis</li>
           </ul>
@@ -16915,7 +16915,7 @@ const PEV_SECOES = [
     tok: '--c-reg-neg', classe: 'coral' },
   // ----- POSITIVAS -----
   { secao: 'pos', prefixo: 'pos_emo_', titulo: 'Emoções Agradáveis',
-    sub: 'Quais grupos de emoções positivas você tem registrado',
+    sub: 'Quais grupos de emoções agradáveis você tem registrado',
     subProf: 'Quais grupos de emoções agradáveis aparecem mais nos registros do paciente',
     tok: '--c-reg-pos', classe: 'green' },
   { secao: 'pos', prefixo: 'pos_fis_', titulo: 'Reações Físicas — Bem-Estar',
@@ -18549,7 +18549,7 @@ const ESC_ESCALAS = {
     nomeTraducao: 'Escala de Ideação Suicida de Beck', // 17.3.2: nome original no título, tradução em letra menor
     ficha: { // 17.3.2: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
       tags: [
-        'Ideação suicida',
+        'Risco de suicídio',
         'Depressão'
       ],
       descricao: 'Escala de autorrelato com 21 grupos de afirmações que avalia a presença e a intensidade de pensamentos, planos e desejos suicidas na última semana, incluindo o dia de hoje. É a versão de autorrelato da Scale for Suicide Ideation, originalmente aplicada por entrevista (Beck, Kovacs & Weissman, 1979; Beck & Steer, 1991). Mede ideação, não prediz comportamento por si só.',
@@ -18632,7 +18632,6 @@ const ESC_ESCALAS = {
     ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
       tags: [
         'Motivação',
-        'Mudança de comportamento',
         'Álcool'
       ],
       descricao: 'Escala de autorrelato que mede a prontidão para mudar um comportamento-problema a partir do modelo transteórico dos estágios de mudança: pré-contemplação (não reconhece o problema), contemplação (reconhece e pondera), ação (já está mudando) e manutenção (sustenta a mudança). A versão original tem 32 itens e foi criada para pacientes em psicoterapia (McConnaughy, Prochaska & Velicer, 1983); as versões brasileiras usam 24 itens, seis por estágio, com o comportamento nomeado nos itens.',
@@ -18699,7 +18698,6 @@ const ESC_ESCALAS = {
     ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
       tags: [
         'Motivação',
-        'Mudança de comportamento',
         'Drogas'
       ],
       descricao: 'Escala de autorrelato que mede a prontidão para mudar um comportamento-problema a partir do modelo transteórico dos estágios de mudança: pré-contemplação (não reconhece o problema), contemplação (reconhece e pondera), ação (já está mudando) e manutenção (sustenta a mudança). A versão original tem 32 itens e foi criada para pacientes em psicoterapia (McConnaughy, Prochaska & Velicer, 1983); as versões brasileiras usam 24 itens, seis por estágio, com o comportamento nomeado nos itens.',
@@ -18771,7 +18769,6 @@ const ESC_ESCALAS = {
     ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
       tags: [
         'Motivação',
-        'Mudança de comportamento',
         'Tabaco'
       ],
       descricao: 'Escala de autorrelato que mede a prontidão para mudar um comportamento-problema a partir do modelo transteórico dos estágios de mudança: pré-contemplação (não reconhece o problema), contemplação (reconhece e pondera), ação (já está mudando) e manutenção (sustenta a mudança). A versão original tem 32 itens e foi criada para pacientes em psicoterapia (McConnaughy, Prochaska & Velicer, 1983); as versões brasileiras usam 24 itens, seis por estágio, com o comportamento nomeado nos itens.',
@@ -18843,7 +18840,6 @@ const ESC_ESCALAS = {
     ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
       tags: [
         'Motivação',
-        'Mudança de comportamento',
         'Alimentação'
       ],
       descricao: 'Escala de autorrelato que mede a prontidão para mudar um comportamento-problema a partir do modelo transteórico dos estágios de mudança: pré-contemplação (não reconhece o problema), contemplação (reconhece e pondera), ação (já está mudando) e manutenção (sustenta a mudança). A versão original tem 32 itens e foi criada para pacientes em psicoterapia (McConnaughy, Prochaska & Velicer, 1983); as versões brasileiras usam 24 itens, seis por estágio, com o comportamento nomeado nos itens.',
@@ -18936,9 +18932,7 @@ const ESC_ESCALAS = {
     nomeTraducao: 'Lista de Verificação de TEPT para o DSM-5', // 17.3.2: nome original no título, tradução em letra menor
     ficha: { // 17.3.2: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
       tags: [
-        'Trauma',
-        'TEPT',
-        'Diagnóstico'
+        'Trauma'
       ],
       descricao: 'Lista de autorrelato com 20 itens que correspondem aos 20 sintomas de transtorno de estresse pós-traumático do DSM-5, nos quatro grupos de critérios: reexperiência (B), evitação (C), alterações negativas em cognição e humor (D) e alterações em excitação e reatividade (E). Cada item é pontuado pelo incômodo no último mês, de 0 (nenhum) a 4 (extremamente). Substitui a PCL do DSM-IV (Weathers et al., 2013; Blevins, Weathers, Davis, Witte & Domino, 2015).',
       tempo: '5 a 10 minutos.',
@@ -19232,7 +19226,6 @@ const ESC_ESCALAS = {
     ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
       tags: [
         'Atenção plena',
-        'Processo',
         'Bem-estar'
       ],
       descricao: 'Escala de autorrelato com 15 itens que mede a disposição para estar atento e consciente ao que acontece no momento presente, no dia a dia. Os itens descrevem situações de desatenção e funcionamento automático (fazer as coisas sem prestar atenção, não notar sensações), e a atenção plena é inferida pela frequência baixa dessas experiências (Brown & Ryan, 2003).',
@@ -19281,7 +19274,6 @@ const ESC_ESCALAS = {
     ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
       tags: [
         'Supressão de pensamentos',
-        'Processo',
         'Transdiagnóstico'
       ],
       descricao: 'Inventário de autorrelato com 15 itens que mede a tendência crônica a suprimir pensamentos indesejados: tentar não pensar em algo, afastar pensamentos, distrair-se deles. O nome vem do experimento em que tentar não pensar num urso branco aumenta a frequência desse pensamento. A supressão é um processo transdiagnóstico ligado a pensamentos intrusivos, obsessões, depressão e ansiedade (Wegner & Zanakos, 1994).',
@@ -19348,7 +19340,6 @@ const ESC_ESCALAS = {
     nomeTraducao: 'Escala de Afetos Positivos e Negativos',
     ficha: { // 17.5.1: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
       tags: [
-        'Humor',
         'Afeto',
         'Bem-estar'
       ],
@@ -19591,7 +19582,6 @@ const ESC_ESCALAS = {
     ficha: { // 17.5.1: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
       tags: [
         'Autocompaixão',
-        'Processo',
         'Bem-estar',
         'Transdiagnóstico'
       ],
@@ -20159,8 +20149,7 @@ const ESC_ESCALAS = {
       tags: [
         'Drogas',
         'Dependência',
-        'Motivação',
-        'Processo'
+        'Motivação'
       ],
       descricao: 'Inventário de autorrelato com 20 itens que mede com que frequência a pessoa usa os dez processos de mudança do Modelo Transteórico para não usar drogas: cinco cognitivos ou experienciais (ampliação da consciência, alívio emocional, reavaliação do ambiente, deliberação social e autorreavaliação) e cinco comportamentais (autodeliberação, controle de estímulos, contracondicionamento, gerenciamento de reforço e relações de ajuda). É a versão breve do Processes of Change Questionnaire (Prochaska, Velicer, DiClemente & Fava, 1988), adaptada para usuários de drogas ilícitas na PUCRS (Szupszynski, 2012).',
       tempo: '5 a 10 minutos.',
@@ -20462,7 +20451,6 @@ const ESC_ESCALAS = {
     ficha: { // 17.8: ficha da escala (Informações), conteúdo original do Code; referências conferidas em 22/11/2026 (PDFs no cache fontes_escalas)
       tags: [
         'Trauma',
-        'TEPT',
         'Cognições'
       ],
       descricao: 'Inventário de autorrelato com 33 afirmações, respondidas de 1 (discordo totalmente) a 7 (concordo totalmente), sobre pensamentos e crenças que a pessoa pode ter depois de um evento traumático. Mede três tipos de cognições ligadas à manutenção do estresse pós-traumático: cognições negativas sobre si mesmo, cognições negativas sobre o mundo e autorresponsabilização pelo evento (Foa, Ehlers, Clark, Tolin & Orsillo, 1999).',
@@ -20529,9 +20517,8 @@ const ESC_ESCALAS = {
     nomeTraducao: 'Medida de Resultado da Avaliação Clínica de Rotina',
     ficha: { // 17.8: ficha da escala (Informações), conteúdo original do Code; referências conferidas em 22/11/2026 (PDFs no cache fontes_escalas)
       tags: [
-        'Monitoramento',
         'Funcionamento global',
-        'Risco'
+        'Risco de suicídio'
       ],
       descricao: 'Medida de resultado de uso geral em psicoterapia, com 34 itens sobre a última semana, respondidos de 0 (nunca) a 4 (sempre ou quase sempre), em quatro domínios: bem-estar subjetivo, problemas e sintomas, funcionamento e risco para si e para os outros. Foi construída no Reino Unido para medir sofrimento psicológico e mudança ao longo do tratamento, em qualquer abordagem (Evans et al., 2000, 2002).',
       tempo: '5 a 10 minutos.',

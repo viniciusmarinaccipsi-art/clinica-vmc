@@ -2255,6 +2255,14 @@ emite e os códigos do rendimento e da ocupação — nada disso fica no código
   duas telas que usam a busca das escalas (paciente aberto e Biblioteca); as buscas de paciente não têm tags.
 - **Tag que vale para toda escala não é tag.** "Mensuração" estava em 24 das 40 fichas e saiu do catálogo (`ficha.tags`),
   por decisão do usuário: toda escala mede. Tag descreve o assunto da escala; o que toda escala faz não entra.
+- **Limpeza do 19.3.2 (23/11/2026):** saíram as tags que dizem o tipo de uso ou são jargão vago (`Monitoramento`,
+  `Diagnóstico`, `Processo`) e as repetidas foram juntadas: `TEPT` → `Trauma`, `Humor` → `Afeto`, `Mudança de
+  comportamento` → `Motivação`, `Risco` e `Ideação suicida` → `Risco de suicídio`. O catálogo tem 38 tags; ficaram
+  `Rastreamento` e `Transdiagnóstico`. Ficha nova: uma tag por assunto, sem sinônimo de tag que já existe.
+- **"Agradáveis", não "positivas" (19.3.2):** os dois textos da tela do paciente que diziam "emoções positivas" (subtítulo
+  do bloco Emoções Agradáveis do Painel de Evolução e a lista "Por que registrar momentos bons") dizem "emoções
+  agradáveis". "Registro Negativo/Positivo" e os divisores "Aspectos Negativos/Positivos" são nomes dos dois tipos de
+  registro e não mudaram.
 
 ## Pacote 14.8 — Agenda: cada profissional conecta a própria conta do Google (23/11/2026)
 
