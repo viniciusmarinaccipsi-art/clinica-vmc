@@ -2240,3 +2240,13 @@ emite e os códigos do rendimento e da ocupação — nada disso fica no código
     mesmo `profAplicarEscala_` do cartão do paciente (`PROF_FLUXO`; escore no servidor; resultado aberto ao terminar, 19.0.1).
   - `profAbrirPaciente` aceita `sec-prof-biblioteca` como origem: o Voltar do paciente devolve à Biblioteca.
 - **Saída:** `vmcFecharSobreposicoes_` esvazia `#bibCorpo` e `sairDoSistema` zera `BIB`; Esc fecha a janela.
+
+### Tags da busca recolhidas e sem "Mensuração" (Pacote 19.3.1 — 23/11/2026, só frontend)
+
+- **Decisão do usuário (23/11/2026):** as tags ficam recolhidas e só aparecem quando o botão delas é tocado. `profBuscaHtml_`
+  põe o campo e o botão `.esc-busca-abrir` (ícone `#i-tag` + "Tags") numa `.esc-busca-linha`; a lista `.esc-busca-tags` nasce
+  com `.hidden`; `profAlternarTags_(btn)` abre e fecha a lista da busca em que o botão está (`aria-expanded`). Com a lista
+  recolhida, `profFiltrarEscalas_` mostra no botão quantas tags estão marcadas ("Tags (1)", classe `com-tags`). Vale para as
+  duas telas que usam a busca das escalas (paciente aberto e Biblioteca); as buscas de paciente não têm tags.
+- **Tag que vale para toda escala não é tag.** "Mensuração" estava em 24 das 40 fichas e saiu do catálogo (`ficha.tags`),
+  por decisão do usuário: toda escala mede. Tag descreve o assunto da escala; o que toda escala faz não entra.

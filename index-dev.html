@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia e valor por paciente · agendamento do paciente com a aprovação do profissional · Painel de Evolução na tela do profissional — Pacote 19.1 · o pedido de agendamento do paciente aparece como “Agendamento solicitado” — Pacote 14.7.1 · Fluxo de caixa: receitas lidas da Agenda, pagamentos, cobranças por e-mail e WhatsApp, comprovante do paciente, despesas e contas a pagar — Pacote 20.0 · recibos e livro caixa: quem precisa de recibo, prévia literal e arquivo de lote do Carnê-Leão · Biblioteca de Escalas e Inventários com "Aplicar a um paciente" — Pacote 19.3 · cada profissional conecta a própria Google Agenda, com a opção dos compromissos pessoais — Pacote 14.8 (23/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia e valor por paciente · agendamento do paciente com a aprovação do profissional · Painel de Evolução na tela do profissional — Pacote 19.1 · o pedido de agendamento do paciente aparece como “Agendamento solicitado” — Pacote 14.7.1 · Fluxo de caixa: receitas lidas da Agenda, pagamentos, cobranças por e-mail e WhatsApp, comprovante do paciente, despesas e contas a pagar — Pacote 20.0 · recibos e livro caixa: quem precisa de recibo, prévia literal e arquivo de lote do Carnê-Leão · Biblioteca de Escalas e Inventários com "Aplicar a um paciente" — Pacote 19.3 · tags da busca das escalas recolhidas atrás de um botão; saiu a tag "Mensuração" — Pacote 19.3.1 · cada profissional conecta a própria Google Agenda, com a opção dos compromissos pessoais — Pacote 14.8 (23/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -3420,6 +3420,16 @@ button.cab-no-item{cursor:pointer;}
   border:1px solid var(--c-line); border-radius:var(--r-field); background:var(--c-surface); color:var(--c-ink); font:var(--t-body);
 }
 .esc-busca-campo:focus { outline:2px solid var(--c-action); outline-offset:1px; }
+/* 19.3.1: as tags ficam recolhidas; o botão ao lado do campo abre e fecha a lista e mostra quantas estão marcadas */
+.esc-busca-linha { display:flex; gap:8px; align-items:stretch; }
+.esc-busca-linha .esc-busca-campo { flex:1; min-width:0; }
+.esc-busca-abrir {
+  display:inline-flex; align-items:center; gap:6px; min-height:var(--hit-min); padding:0 var(--s-3);
+  border:1px solid var(--c-line); border-radius:var(--r-field); background:var(--c-surface-sub);
+  color:var(--c-ink-2); font:var(--t-body-sm); font-weight:600; cursor:pointer; white-space:nowrap;
+}
+.esc-busca-abrir:hover, .esc-busca-abrir:focus-visible, .esc-busca-abrir[aria-expanded="true"] { border-color:var(--c-action); color:var(--c-action); outline:none; }
+.esc-busca-abrir.com-tags { background:var(--c-action); border-color:var(--c-action); color:var(--c-ink-inv); }
 .esc-busca-tags { display:flex; gap:6px; flex-wrap:wrap; }
 .esc-busca-chip {
   min-height:var(--hit-min); padding:0 12px; border:1px solid var(--c-line); border-radius:999px;
@@ -4572,6 +4582,7 @@ body:has(#sec-prof-financeiro.active) .app,body:has(#sec-prof-financeiro.active)
   <!-- Pacote 16.10: símbolo da marca (docs/design/marca/simbolo.svg) — o C pega currentColor, o ponto --c-marca-ponto -->
   <symbol id="i-marca" viewBox="0 0 64 64"><path d="M47.32 19.14A20 20 0 1 0 47.32 44.86" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round"/><circle cx="32" cy="32" r="7.5" stroke="none" style="fill:var(--c-marca-ponto)"/></symbol>
   <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H5a2 2 0 0 1-2-2z"/><path d="M16.5 14h.01"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 11.5V4a1 1 0 0 1 1-1h7.5l9.3 9.3a1 1 0 0 1 0 1.4l-7.1 7.1a1 1 0 0 1-1.4 0L3 11.5z"/><path d="M7.5 7.5h.01"/></symbol>
 </svg>
 
 <div class="loading-overlay" id="loadingOverlay">
@@ -17800,8 +17811,7 @@ const ESC_ESCALAS = {
     nomeTraducao: 'Questionário sobre a Saúde do Paciente-9', // 17.3.2: nome original no título, tradução em letra menor
     ficha: { // 17.3.2: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
       tags: [
-        'Depressão',
-        'Mensuração'
+        'Depressão'
       ],
       descricao: 'Instrumento de autorrelato com nove itens que correspondem, um a um, aos critérios diagnósticos de episódio depressivo maior do DSM-IV, mantidos no DSM-5. Cada item é pontuado pela frequência nas duas últimas semanas (0 = nenhuma vez a 3 = quase todos os dias). Serve tanto para rastrear depressão quanto para medir a gravidade dos sintomas e acompanhar a resposta ao tratamento (Kroenke, Spitzer & Williams, 2001).',
       tempo: '3 a 5 minutos.',
@@ -17894,8 +17904,7 @@ const ESC_ESCALAS = {
     ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
       tags: [
         'Ansiedade',
-        'Rastreamento',
-        'Mensuração'
+        'Rastreamento'
       ],
       descricao: 'Escala de autorrelato com sete itens que cobrem os sintomas centrais do transtorno de ansiedade generalizada do DSM-IV (nervosismo, preocupação incontrolável e excessiva, dificuldade de relaxar, inquietação, irritabilidade e medo de que algo terrível aconteça), pontuados pela frequência nas duas últimas semanas, de 0 (nenhuma vez) a 3 (quase todos os dias). Foi construída para rastrear o transtorno e medir a gravidade dos sintomas na atenção primária (Spitzer, Kroenke, Williams & Löwe, 2006).',
       tempo: '2 a 3 minutos.',
@@ -17979,8 +17988,7 @@ const ESC_ESCALAS = {
     nomeTraducao: 'Escala de Estresse Percebido-10', // 17.4: nome original no título, tradução em letra menor
     ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
       tags: [
-        'Estresse',
-        'Mensuração'
+        'Estresse'
       ],
       descricao: 'Escala de autorrelato que mede o quanto a pessoa avalia as situações da própria vida como imprevisíveis, incontroláveis e sobrecarregadas no último mês. Não lista eventos: mede a percepção de estresse, com base no modelo transacional de estresse e enfrentamento. A versão original tem 14 itens (Cohen, Kamarck & Mermelstein, 1983); a de 10 itens retirou os quatro de pior desempenho e é a recomendada pelos autores (Cohen & Williamson, 1988).',
       tempo: '3 a 5 minutos.',
@@ -18057,8 +18065,7 @@ const ESC_ESCALAS = {
         'Depressão',
         'Ansiedade',
         'Estresse',
-        'Rastreamento',
-        'Mensuração'
+        'Rastreamento'
       ],
       descricao: 'Versão curta da DASS-42, com três subescalas de sete itens que medem, na última semana, sintomas de depressão (disforia, desesperança, anedonia, inércia), de ansiedade (ativação autonômica, efeitos musculares, ansiedade situacional) e de estresse (tensão, irritabilidade, dificuldade de relaxar, reatividade). Foi construída para separar depressão de ansiedade e isolar um terceiro fator, o estresse, que o modelo tripartite não previa (Lovibond & Lovibond, 1995).',
       tempo: '5 a 7 minutos.',
@@ -18165,8 +18172,7 @@ const ESC_ESCALAS = {
     ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
       tags: [
         'Rastreamento',
-        'Transtornos mentais comuns',
-        'Mensuração'
+        'Transtornos mentais comuns'
       ],
       descricao: 'Questionário de rastreamento de transtornos mentais comuns (sintomas depressivos, ansiosos e somáticos não psicóticos) nos últimos 30 dias, com 20 perguntas de resposta sim ou não. Foi desenvolvido pela Organização Mundial da Saúde para a atenção primária de países em desenvolvimento, num estudo colaborativo em quatro países (Harding et al., 1980), e tem guia de uso oficial (Beusenberg & Orley, 1994).',
       tempo: 'Cerca de 5 minutos.',
@@ -18260,8 +18266,7 @@ const ESC_ESCALAS = {
     nomeTraducao: 'Inventário de Depressão de Beck-II', // 17.3.2: nome original no título, tradução em letra menor
     ficha: { // 17.3.2: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
       tags: [
-        'Depressão',
-        'Mensuração'
+        'Depressão'
       ],
       descricao: 'Inventário de autorrelato com 21 grupos de afirmações que medem a intensidade de sintomas depressivos (afetivos, cognitivos, motivacionais e somáticos) nas duas últimas semanas, incluindo o dia de hoje. A segunda edição (1996) alinhou os itens aos critérios do DSM-IV, substituindo quatro itens da versão original e ampliando o período de referência de uma para duas semanas (Beck, Steer & Brown, 1996).',
       tempo: '5 a 10 minutos.',
@@ -18333,8 +18338,7 @@ const ESC_ESCALAS = {
     nomeTraducao: 'Inventário de Ansiedade de Beck', // 17.4: nome original no título, tradução em letra menor
     ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
       tags: [
-        'Ansiedade',
-        'Mensuração'
+        'Ansiedade'
       ],
       descricao: 'Inventário de autorrelato com 21 sintomas de ansiedade (predominantemente somáticos e de pânico, como dormência, calor, tremor, medo de perder o controle), pontuados pela intensidade na última semana, incluindo o dia de hoje, de 0 (absolutamente não) a 3 (gravemente). Foi construído para medir ansiedade com o mínimo de sobreposição com depressão (Beck, Epstein, Brown & Steer, 1988).',
       tempo: '5 a 10 minutos.',
@@ -18497,8 +18501,7 @@ const ESC_ESCALAS = {
     ficha: { // 17.3.2: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
       tags: [
         'Ideação suicida',
-        'Depressão',
-        'Mensuração'
+        'Depressão'
       ],
       descricao: 'Escala de autorrelato com 21 grupos de afirmações que avalia a presença e a intensidade de pensamentos, planos e desejos suicidas na última semana, incluindo o dia de hoje. É a versão de autorrelato da Scale for Suicide Ideation, originalmente aplicada por entrevista (Beck, Kovacs & Weissman, 1979; Beck & Steer, 1991). Mede ideação, não prediz comportamento por si só.',
       tempo: '5 a 10 minutos.',
@@ -18886,8 +18889,7 @@ const ESC_ESCALAS = {
       tags: [
         'Trauma',
         'TEPT',
-        'Diagnóstico',
-        'Mensuração'
+        'Diagnóstico'
       ],
       descricao: 'Lista de autorrelato com 20 itens que correspondem aos 20 sintomas de transtorno de estresse pós-traumático do DSM-5, nos quatro grupos de critérios: reexperiência (B), evitação (C), alterações negativas em cognição e humor (D) e alterações em excitação e reatividade (E). Cada item é pontuado pelo incômodo no último mês, de 0 (nenhum) a 4 (extremamente). Substitui a PCL do DSM-IV (Weathers et al., 2013; Blevins, Weathers, Davis, Witte & Domino, 2015).',
       tempo: '5 a 10 minutos.',
@@ -18946,8 +18948,7 @@ const ESC_ESCALAS = {
     ficha: { // 17.4: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
       tags: [
         'Preocupação',
-        'Ansiedade',
-        'Mensuração'
+        'Ansiedade'
       ],
       descricao: 'Questionário de autorrelato com 16 itens que mede a preocupação patológica como traço: a tendência a se preocupar de forma excessiva, generalizada e difícil de controlar, independentemente do tema. É a medida de referência do processo central do transtorno de ansiedade generalizada (Meyer, Miller, Metzger & Borkovec, 1990).',
       tempo: '3 a 5 minutos.',
@@ -19060,8 +19061,7 @@ const ESC_ESCALAS = {
     ficha: { // 17.3.2: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
       tags: [
         'Aceitação',
-        'Transdiagnóstico',
-        'Mensuração'
+        'Transdiagnóstico'
       ],
       descricao: 'Questionário de sete itens que mede a inflexibilidade psicológica, entendida na Terapia de Aceitação e Compromisso (ACT) como esquiva experiencial: a tendência a evitar ou controlar pensamentos, emoções e sensações desagradáveis mesmo quando isso afasta a pessoa do que importa para ela. É a revisão da versão original de 9 itens, com melhor consistência (Bond et al., 2011).',
       tempo: '2 a 3 minutos.',
@@ -19301,8 +19301,7 @@ const ESC_ESCALAS = {
       tags: [
         'Humor',
         'Afeto',
-        'Bem-estar',
-        'Mensuração'
+        'Bem-estar'
       ],
       descricao: 'Lista de palavras que descrevem sentimentos e emoções, respondida em cinco pontos de intensidade. Mede duas dimensões independentes do humor: afeto positivo (entusiasmo, energia, atenção) e afeto negativo (sofrimento subjetivo: medo, culpa, nervosismo). Escores baixos de afeto positivo acompanham tristeza e apatia; escores altos de afeto negativo acompanham ansiedade e angústia (Watson, Clark & Tellegen, 1988).',
       tempo: '3 a 5 minutos.',
@@ -19359,8 +19358,7 @@ const ESC_ESCALAS = {
     ficha: { // 17.5.1: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
       tags: [
         'Ansiedade social',
-        'Rastreamento',
-        'Mensuração'
+        'Rastreamento'
       ],
       descricao: 'Inventário de autorrelato com 17 itens que cobre os três componentes da ansiedade social: medo, evitação e sintomas fisiológicos (rubor, suor, tremor, palpitação), pontuados pelo incômodo na última semana, de 0 (nada) a 4 (extremamente) (Connor et al., 2000).',
       tempo: '3 a 5 minutos.',
@@ -19416,8 +19414,7 @@ const ESC_ESCALAS = {
     ficha: { // 17.5.1: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
       tags: [
         'TOC',
-        'Rastreamento',
-        'Mensuração'
+        'Rastreamento'
       ],
       descricao: 'Inventário de autorrelato com 18 itens que mede o incômodo causado por sintomas obsessivo-compulsivos no último mês, de 0 (nem um pouco) a 4 (extremamente), em seis dimensões de três itens: verificação, lavagem, ordenação, acumulação, obsessões e neutralização. É a versão curta do OCI, com escore mais simples e menos sobreposição entre subescalas (Foa et al., 2002).',
       tempo: '3 a 5 minutos.',
@@ -19488,8 +19485,7 @@ const ESC_ESCALAS = {
     ficha: { // 17.5.1: ficha da escala (Informações), conteúdo original do Code aprovado pelo usuário em 20/11/2026
       tags: [
         'TDAH',
-        'Rastreamento',
-        'Mensuração'
+        'Rastreamento'
       ],
       descricao: 'Escala de autorrelato da Organização Mundial da Saúde com 18 perguntas sobre a frequência, nos últimos seis meses, dos sintomas do critério A do DSM-IV para TDAH em adultos: nove de desatenção e nove de hiperatividade e impulsividade, de 0 (nunca) a 4 (muito frequentemente). Seis delas formam a triagem curta (ASRS-6) (Kessler et al., 2005).',
       tempo: '5 a 8 minutos.',
@@ -19631,8 +19627,7 @@ const ESC_ESCALAS = {
       tags: [
         'Álcool',
         'Dependência',
-        'Rastreamento',
-        'Mensuração'
+        'Rastreamento'
       ],
       descricao: 'Questionário de rastreamento desenvolvido pela Organização Mundial da Saúde num projeto colaborativo em seis países para identificar o uso de risco e o uso nocivo de álcool na atenção primária. Os dez itens cobrem três domínios: consumo (itens 1 a 3), comportamento de dependência (4 a 6) e problemas relacionados ao álcool (7 a 10), pensando no último ano (Saunders, Aasland, Babor, de la Fuente & Grant, 1993).',
       tempo: '2 a 4 minutos.',
@@ -19700,8 +19695,7 @@ const ESC_ESCALAS = {
       tags: [
         'Tabaco',
         'Dependência',
-        'Rastreamento',
-        'Mensuração'
+        'Rastreamento'
       ],
       descricao: 'Teste breve de seis itens que mede a dependência física de nicotina pelo padrão de consumo: tempo até o primeiro cigarro do dia, dificuldade de não fumar onde é proibido, cigarro mais difícil de abandonar, número de cigarros por dia, fumar mais nas primeiras horas do dia e fumar mesmo doente. É a revisão do Questionário de Tolerância de Fagerström (Heatherton, Kozlowski, Frecker & Fagerström, 1991).',
       tempo: '1 a 2 minutos.',
@@ -19782,8 +19776,7 @@ const ESC_ESCALAS = {
     ficha: { // 17.6: ficha da escala (Informações), conteúdo original do Code; referências conferidas em 21/11/2026
       tags: [
         'Jogo',
-        'Dependência',
-        'Mensuração'
+        'Dependência'
       ],
       descricao: 'Escala de autorrelato com 12 itens que mede a gravidade dos sintomas de jogo nos últimos sete dias e a sua mudança durante o tratamento: vontade de jogar (itens 1 a 4: intensidade, frequência, duração e controle), pensamentos sobre jogo (5 a 7), tempo gasto, excitação antes de jogar, prazer ao ganhar, sofrimento emocional e problemas pessoais causados pelo jogo (8 a 12). Cada item vai de 0 a 4 com âncoras próprias (Kim, Grant, Potenza, Blanco & Hollander, 2009).',
       tempo: '3 a 5 minutos.',
@@ -19995,8 +19988,7 @@ const ESC_ESCALAS = {
       tags: [
         'Drogas',
         'Dependência',
-        'Rastreamento',
-        'Mensuração'
+        'Rastreamento'
       ],
       descricao: 'Questionário breve de rastreamento, irmão do AUDIT, para identificar padrões problemáticos de uso de drogas ilícitas e de medicamentos usados fora da prescrição. Os 11 itens cobrem frequência e intensidade do uso (itens 1 a 4), sinais de dependência (5 a 9) e consequências (10 e 11); o álcool fica de fora (Berman, Bergman, Palmstierna & Schlyter, 2005).',
       tempo: '5 a 10 minutos.',
@@ -20181,8 +20173,7 @@ const ESC_ESCALAS = {
       tags: [
         'Internet',
         'Dependência',
-        'Rastreamento',
-        'Mensuração'
+        'Rastreamento'
       ],
       descricao: 'Questionário breve de rastreamento do uso problemático da internet, com 9 itens em três dimensões de três itens: obsessão (preocupação e sintomas de abstinência), negligência (de atividades e necessidades) e descontrole (dificuldade de controlar o uso). É a forma curta do PIUQ de 18 itens (Demetrovics, Szeredi & Rózsa, 2008; Koronczai et al., 2011).',
       tempo: '3 a 5 minutos.',
@@ -20232,8 +20223,7 @@ const ESC_ESCALAS = {
       tags: [
         'Smartphone',
         'Dependência',
-        'Rastreamento',
-        'Mensuração'
+        'Rastreamento'
       ],
       descricao: 'Escala de autorrelato com 33 afirmações sobre o uso do smartphone, de 1 (discordo totalmente) a 6 (concordo totalmente), que mede o uso problemático pelos componentes típicos das adições comportamentais: perturbação da vida diária, antecipação positiva, abstinência, relações orientadas ao ciberespaço, uso excessivo e tolerância (Kwon et al., 2013). A versão brasileira reuniu uso excessivo e tolerância num só fator (Andrade et al., 2020).',
       tempo: 'Cerca de 10 minutos.',
@@ -20304,8 +20294,7 @@ const ESC_ESCALAS = {
     ficha: { // 17.8: ficha da escala (Informações), conteúdo original do Code; referências conferidas em 22/11/2026 (PDFs no cache fontes_escalas)
       tags: [
         'Transdiagnóstico',
-        'Aceitação',
-        'Mensuração'
+        'Aceitação'
       ],
       descricao: 'Questionário breve, da Terapia de Aceitação e Compromisso, que mede a fusão cognitiva: o quanto a pessoa fica presa aos próprios pensamentos, toma-os como fatos e deixa que eles dominem a experiência e o comportamento. São sete afirmações respondidas de 1 (nunca verdadeiro) a 7 (sempre verdadeiro); o oposto da fusão é a desfusão, a capacidade de ver pensamentos como eventos mentais (Gillanders et al., 2014).',
       tempo: '2 a 3 minutos.',
@@ -20352,8 +20341,7 @@ const ESC_ESCALAS = {
     ficha: { // 17.8: ficha da escala (Informações), conteúdo original do Code; referências conferidas em 22/11/2026 (PDFs no cache fontes_escalas)
       tags: [
         'Transdiagnóstico',
-        'Regulação emocional',
-        'Mensuração'
+        'Regulação emocional'
       ],
       descricao: 'Escala de autorrelato com 36 itens que mede dificuldades na regulação emocional em seis dimensões: não aceitação das respostas emocionais, dificuldade em agir conforme os objetivos quando perturbado, dificuldade de controle de impulsos, falta de consciência emocional, acesso limitado a estratégias de regulação e falta de clareza emocional. A desregulação emocional é um processo transdiagnóstico ligado a depressão, ansiedade, uso de substâncias, transtornos alimentares e de personalidade (Gratz & Roemer, 2004).',
       tempo: '8 a 10 minutos.',
@@ -20568,8 +20556,7 @@ const ESC_ESCALAS = {
     ficha: { // 17.8: ficha da escala (Informações), conteúdo original do Code; referências conferidas em 22/11/2026 (PDFs no cache fontes_escalas)
       tags: [
         'Transdiagnóstico',
-        'Impulsividade',
-        'Mensuração'
+        'Impulsividade'
       ],
       descricao: 'Escala de autorrelato com 30 itens, respondidos de 1 (raramente ou nunca) a 4 (quase sempre ou sempre), que mede a impulsividade como traço: agir sem pensar, dificuldade de manter a atenção e de planejar e orientar-se para o futuro. É a 11ª versão da escala de Ernest Barratt (Patton, Stanford & Barratt, 1995). A versão brasileira tem dois fatores: controle inibitório e não planejamento (Vasconcelos et al., 2015).',
       tempo: '5 a 10 minutos.',
@@ -23071,15 +23058,28 @@ function profBuscaHtml_(prefixo) {
   var chips = profTagsDoCatalogo_().map(function (t) {
     return '<button type="button" class="esc-busca-chip" data-tag="' + escapeHtmlAuto(t) + '" aria-pressed="false" onclick="profAlternarTag_(this)">' + escapeHtmlAuto(t) + '</button>';
   }).join('');
+  // 19.3.1 (decisão do usuário, 23/11/2026): as tags nascem recolhidas e só aparecem quando o botão delas é tocado
   return '<div class="esc-busca" id="' + p + 'Busca">' +
+         '<div class="esc-busca-linha">' +
          '<input type="search" class="esc-busca-campo" id="' + p + 'BuscaCampo" placeholder="Buscar escala por nome, sigla ou tag" aria-label="Buscar escala" oninput="profFiltrarEscalas_(this)">' +
-         (chips ? '<div class="esc-busca-tags" id="' + p + 'BuscaTags">' + chips + '</div>' : '') +
+         (chips ? '<button type="button" class="esc-busca-abrir" id="' + p + 'BuscaAbrir" aria-expanded="false" aria-controls="' + p + 'BuscaTags" aria-label="Mostrar ou esconder as tags" onclick="profAlternarTags_(this)">' +
+                  '<svg class=ico aria-hidden=true><use href=#i-tag></use></svg><span>Tags</span><span class="esc-busca-abrir-n"></span></button>' : '') +
+         '</div>' +
+         (chips ? '<div class="esc-busca-tags hidden" id="' + p + 'BuscaTags">' + chips + '</div>' : '') +
          '<div class="esc-busca-vazio hidden" id="' + p + 'BuscaVazio">Nenhuma escala corresponde à busca.</div>' +
          '</div>';
 }
 function profAlternarTag_(btn) {
   btn.setAttribute('aria-pressed', btn.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
   profFiltrarEscalas_(btn);
+}
+// 19.3.1: abre e fecha a lista de tags da busca em que o botão está
+function profAlternarTags_(btn) {
+  var raiz = btn.closest('.esc-busca');
+  var painel = raiz ? raiz.querySelector('.esc-busca-tags') : null;
+  if (!painel) return;
+  var aberto = painel.classList.toggle('hidden') === false;
+  btn.setAttribute('aria-expanded', aberto ? 'true' : 'false');
 }
 function profNormalizar_(t) {
   return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -23100,6 +23100,8 @@ function profFiltrarEscalas_(origem) {
   if (!campo || !raiz.parentElement) return;
   var texto = profNormalizar_(campo.value).trim();
   var tags = Array.prototype.map.call(raiz.querySelectorAll('.esc-busca-chip[aria-pressed="true"]'), function (b) { return b.dataset.tag; });
+  var abrir = raiz.querySelector('.esc-busca-abrir'); // 19.3.1: com a lista recolhida, o botão diz quantas tags estão marcadas
+  if (abrir) { abrir.classList.toggle('com-tags', tags.length > 0); abrir.querySelector('.esc-busca-abrir-n').textContent = tags.length ? ' (' + tags.length + ')' : ''; }
   var visiveis = 0;
   raiz.parentElement.querySelectorAll('.esch-bloco[data-esc], #profNovaEscalaLista button[data-esc]').forEach(function (el) {
     var mostra = profEscalaCorresponde_(el.dataset.esc, texto, tags);
