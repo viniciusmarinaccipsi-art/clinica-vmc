@@ -1069,7 +1069,7 @@ var SITE_URL = 'https://viniciusmarinaccipsi-art.github.io/clinica-vmc/index-dev
 // 18.1.6: versao da Politica de Privacidade (a mesma exibida em privacidade.html).
 // Mudou o texto da politica -> sobe a versao aqui e na pagina; paciente com aceite
 // de versao anterior ve o aceite de novo no proximo login.
-var POLITICA_VERSAO = '2026-10';
+var POLITICA_VERSAO = '2026-11';
 var ACOES_PUBLICAS = ['ping', 'autenticar', 'pedirRedefinicao', 'definirSenha',
   'confirmarSessaoPorLink']; // 14.4: o link do e-mail e do WhatsApp so confirma a presenca daquela sessao (token assinado)
 var PERFIS = ['paciente', 'profissional', 'admin'];

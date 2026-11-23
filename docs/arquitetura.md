@@ -2108,3 +2108,54 @@ Decisão do usuário: o paciente vê os horários livres, escolhe um e aguarda a
   limite.
 - **Trabalho em paralelo:** o pacote nasceu em `repo-14-7` (worktree). Com três conversas no repositório, a regra é
   `..\ORQUESTRA_SESSOES.md` (territórios, pontos de encosto e fila de publicação com `PUBLICANDO.md`).
+
+## Fase 20 — Fluxo de caixa (Pacote 20.0 — 23/11/2026)
+
+Prompt e decisões: `..\prompts_fluxo_caixa\PROMPT_FASE_20.md`; plano aprovado e mapa de execução citados no relatório
+`..\VMC-offline\PACOTE_20_0_RELATORIO.md`. Produto geral (não é réplica das planilhas do usuário).
+
+- **O financeiro lê a Agenda.** O item a receber é a própria linha de `Sessoes`; nenhuma sessão é copiada nem digitada.
+  `_finCobravel_(x, cad, agora)`: `cobrada = Sim` entra, `Nao` não entra, reposição nunca; sem situação marcada, a que já
+  ocorreu entra como proposta (estado `ocorrida` na leitura) e a futura só entra para quem paga o mês (mensal adiantado ou
+  por faixa) e só no mês corrente. Valor da sessão (`_finValor_`): o da sessão; sem ele, o `valor_sessao` do cadastro do
+  paciente (14.6); sem ele, o `valor_padrao` do profissional. O `valor` da sessão continua em reais, texto; **o financeiro
+  trabalha em centavos inteiros** (`_finCent_` converte; `_finInt_` confere o que vem da tela).
+- **Abas novas na Controle** (nascem no primeiro uso; toda célula texto literal por `_lemCelula_`, lidas por
+  `getDisplayValues`; colunas em `COLUNAS_FIN`): `Fin_Cadastro` (`id` = sigla; modo, n, quando, pagador, recibo, titular,
+  canal, encaminhamento, recibo_pedido_em), `Fin_Pessoas` (pagadores e titular do recibo, com CPF ou CNPJ conferido por
+  `_finDocumento_`), `Fin_Pagamentos` (origem `profissional` ou `comprovante`; situação `confirmado`, `aguardando`,
+  `recusado`, `estornado`), `Fin_Alocacoes` (pagamento → sessão, valor), `Fin_Cobrancas`, `Fin_Despesas_Fixas`,
+  `Fin_Despesas` e `Config_Financeiro` (chave → valor). O valor da sessão do paciente **não** tem coluna nova: é o
+  `valor_sessao` do cadastro (um dono só).
+- **Tudo é calculado, nada é digitado como situação.** `_finEstado_` soma as alocações dos pagamentos **confirmados** e dá
+  o pago de cada sessão e o crédito de cada paciente (pagamentos confirmados menos alocações). Situação da cobrança
+  (`_finCobranca_`): a enviar, enviada, parcial, atrasada (vencida com saldo) ou paga. "Recebido" tem duas leituras: pelo mês
+  das sessões (padrão; sai das alocações) e pela data do pagamento (`resumo.recebido_entrada`).
+- **Pagamento** (`profSalvarPagamento`): `dados.sessoes` é a escolha do profissional (a tela sugere as mais antigas,
+  `_finSugerir_` / `finPagSugerir_`); o que não for alocado é crédito; `credito: true` aloca o crédito que já existe;
+  `simular: true` devolve o antes e o depois sem gravar; `id` do cliente → reenvio responde `duplicado`. O mês do pagamento
+  é o das sessões que ele quita (não se pergunta). `profEstornarPagamento` deixa a linha com `estornado`.
+- **Cobrança só por ação do profissional; não há gatilho.** `_finPropostas_` propõe por paciente e por mês, pelo modo de
+  pagamento (`_finElegivel_`: por sessão e a cada N só o que ocorreu; mensal desde o dia 1, 11 ou 21; mês seguinte só depois
+  que o mês fecha; mês fechado em aberto sempre). `profGerarCobrancas` grava "a enviar"; `profEnviarCobranca` é a única
+  porta de saída (`canal: 'email'` manda pelo `_layoutEmail_`, com `linhas` e `semBotao`, a quem paga, cota própria
+  `cobrancas` de 60 por dia; `'marcar'` registra o envio por fora, pelo WhatsApp). Sessão desmarcada sai só daquele envio;
+  **"Não cobrar esta sessão" é outro gesto** (`profNaoCobrarSessao` grava `cobrada = Nao` em `Sessoes`).
+- **Comprovante** (primeiro envio de arquivo do sistema): base64 no `doPost`, JPG, PNG ou PDF até 5 MB, guardado na pasta
+  `Comprovantes` da pasta do profissional (`_finGuardarArquivo_`); o pagamento nasce `aguardando` e não conta até
+  `profDecidirComprovante`. `lerArquivoFinanceiro` entrega o arquivo só com crachá (profissional dono ou o paciente que
+  enviou); a página o oferece como arquivo para abrir (sem origem nova na CSP).
+- **Despesas:** a despesa fixa gera a conta do mês **na leitura** (`_finDespesas_`, id `fixa:<id>:<AAAA-MM>`); valor fixo
+  sugere o último pago, valor variável vem em branco; pagar grava o lançamento com data e valor reais
+  (`profSalvarDespesa`); `profEncerrarDespesaFixa` para de repetir.
+- **Leituras:** `profLerFinanceiro` (período da página, `siglaPaciente` para o módulo do paciente aberto — só aí os
+  documentos aparecem —, ou `so: 'inicio'` para os blocos do Início) e, do paciente, `lerMeuFinanceiro` (só o próprio, pela
+  sigla do crachá). Toda ação que salva devolve a leitura do período (`_finResposta_`): a tela nunca relê.
+- **Frontend (`fin*`):** página `sec-prof-financeiro` (abas Resumo, Receitas, Cobranças, Despesas, Configuração; a aba
+  Recibos e a parte fiscal da configuração só aparecem quando o servidor as oferecer, na Etapa 9), janela única `finModal`,
+  módulo Financeiro no paciente aberto (`finPacModuloHtml_`), tela `sec-financeiro` do paciente e os blocos do Início
+  (`finInicioHtml_`, lidos em segundo plano depois do login — uma chamada a mais, que não segura a tela). Estado em `FIN`,
+  zerado em `finZerar_` no login e na saída.
+- **Excluir paciente:** saem o cadastro financeiro, quem paga e as cobranças; os pagamentos ficam (`_finApagarDoPaciente_`).
+- **Provas:** `scripts/testes/backend_20.js` (94 provas, em São Paulo e em UTC) e o roteiro `..\FASE_20_fluxo.js`
+  (`Código.js` real em Node, 390 e 1280).
