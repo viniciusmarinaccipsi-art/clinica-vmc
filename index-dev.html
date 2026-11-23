@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento — Pacote 13.7 (22/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário — Pacote 14.5.2 (22/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -23512,12 +23512,15 @@ function ageWhatsLink_(tipo, s, anterior) {
   var pac = iniPrimeiroNome(s.nome);
   var quando = ageDiaNome_(s.data, true) + ', ' + lemDataBR_(s.data, true) + ', às ' + s.hora + ' (' + ageModNome_(s.modalidade) + ')';
   // 14.5.1: um link só — a página dele confirma a presença e mostra o endereço com o mapa (presencial) ou a sala do Meet (on-line)
-  var ver = !s.link_confirmar ? '' : (s.modalidade === 'online' ? (s.meet_link ? ' e abrir a sessão on-line' : '') : (s.endereco ? ' e ver o endereço' : ''));
+  var onde14 = !s.link_confirmar ? '' : (s.modalidade === 'online' ? (s.meet_link ? 'abrir a sessão on-line' : '') : (s.endereco ? 'ver o endereço' : ''));
+  var ver = onde14 ? ' e ' + onde14 : '';
   var confirmar = ' Para confirmar a presença' + ver + ', toque aqui: ' + (s.link_confirmar || VMC_SITE_URL); // 14.4
+  // 14.5.2: sessão já confirmada (pelo paciente ou por pedido aprovado no horário que ele pediu) — a mensagem não pede de novo
+  if (s.confirmada) confirmar = ' Sua presença já está confirmada.' + (onde14 ? ' Para ' + onde14 + ', toque aqui: ' + s.link_confirmar : '');
   var onde = s.link_confirmar ? confirmar : '';
   var corpo = tipo === 'lembrete' ? 'Lembrete da nossa sessão: ' + quando + '.' + confirmar
     : (tipo === 'cancelamento' ? 'A sessão de ' + lemDataBR_(s.data, true) + ' às ' + s.hora + ' foi cancelada. Para marcar outra data: ' + VMC_SITE_URL
-    : (tipo === 'remarcacao' ? 'Nossa sessão passou de ' + lemDataBR_(anterior.data, true) + ' às ' + anterior.hora + ' para ' + lemDataBR_(s.data, true) + ' às ' + s.hora + ' (' + ageModNome_(s.modalidade) + ').' + onde
+    : (tipo === 'remarcacao' ? 'Nossa sessão passou de ' + lemDataBR_(anterior.data, true) + ' às ' + anterior.hora + ' para ' + lemDataBR_(s.data, true) + ' às ' + s.hora + ' (' + ageModNome_(s.modalidade) + ').' + (s.confirmada ? confirmar : onde)
     : 'Sua sessão está marcada para ' + quando + '.' + confirmar));
   var msg = 'Olá' + (pac ? ', ' + pac : '') + '! ' + (quem ? 'Aqui é ' + artigo + ' ' + quem + '. ' : '') + corpo;
   return 'https://wa.me/55' + String(s.telefone || '').replace(/\D/g, '') + '?text=' + encodeURIComponent(msg);
