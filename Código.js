@@ -9123,9 +9123,8 @@ function profGerarCobrancas(s, siglas, periodo) {
 /** E-mail de cobranca no layout do sistema: o texto que o profissional revisou, linha a linha; sem botao (quem paga pode nao ter acesso). */
 function montarEmailCobranca(texto, mes, assinatura) {
   var linhas = String(texto || '').replace(/\r/g, '').split('\n').map(function (l) { return l.replace(/^\*(.*)\*$/, '$1'); });
-  var aviso = 'Este demonstrativo foi enviado a pedido de quem assina abaixo. Em caso de dúvida, responda diretamente a ele.';
-  return { assunto: 'Demonstrativo de ' + mes, texto: linhas.concat(['', aviso, '']).concat(assinatura || []).join('\n'),
-    html: _layoutEmail_({ previa: 'Demonstrativo de ' + mes, titulo: 'Demonstrativo do mês', ola: linhas[0] || '', paragrafo: '', linhas: linhas.slice(1), semBotao: true, link: SITE_URL, aviso: aviso, assinatura: assinatura || [] }) };
+  return { assunto: 'Demonstrativo de ' + mes, texto: linhas.concat(['']).concat(assinatura || []).join('\n'),
+    html: _layoutEmail_({ previa: 'Demonstrativo de ' + mes, titulo: 'Demonstrativo do mês', ola: linhas[0] || '', paragrafo: '', linhas: linhas.slice(1), semBotao: true, link: SITE_URL, aviso: '', assinatura: assinatura || [] }) };
 }
 
 /**
