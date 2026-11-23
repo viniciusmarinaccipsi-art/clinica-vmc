@@ -2062,3 +2062,25 @@ Grade (`graCfgEndereco`, `graCfgEnderecoNovo`, `graCfgEnderecoDesde`, `graCfgCal
 - **14.5.3:** `ageAplicar_` só chama `calRender()` com `calDataRef` e `calMiniMes` iniciados (Agenda já aberta nesta página).
 - **Prova no publicado do lado do paciente:** `..\PACOTE_14_5_2_real.js` (conta descartável; crachás por `sessoes14_5_2`,
   temporária de `..\PACOTE_14_5_2_temp.js`; `zerar14_5_2` recomeça a agenda de teste; `limpar14_3` apaga a conta).
+
+## Pacote 14.6 — Agenda: quatro ajustes (23/11/2026)
+
+- **Cancelada e cobrada na grade:** `_ageCanceladaCobrada_(x)` (cancelada, `cobrada = Sim`, não de `edicao_serie`) entra em
+  `_ageLeitura_` ao lado das ativas; `_ageOcupado_` continua olhando só `_ageAtiva_` (ela não ocupa o horário). No cliente o
+  bloco usa `.cal-ev-cancelada` (e `.cal-ev-lado` quando há sessão ativa no mesmo intervalo); `ageAbrirSessao_` abre a vista
+  `cancelada` (só leitura) e "Agendar reposição" chama `ageRepor_()`.
+- **"Esta e as seguintes" com o dia:** em `profSalvarSessao` (sessão existente), `delta` = dias entre a data nova e a antiga;
+  `_ageSeguintesPlano_(ctx, seguintes, delta, hora, dur, idAberta)` decide, na ordem que evita colisão (da última para a
+  primeira quando anda para a frente), quem move e quem fica; quem move já assume o lugar novo no `ctx`. Movida com dia ou
+  hora diferente perde a confirmação e ganha as marcas de lembrete da data nova. Série semanal: `dias_semana` é deslocado
+  pelo mesmo `delta`. `simular` devolve `datas`, `puladas`, `conflito`, `seguintes`. No cliente, `ageSalvar_` chama a
+  simulação quando o escopo é `seguintes` e a data mudou, e mostra a vista `listaSeg`; `ageSalvarSeg_` confirma (`AGE.segOk`).
+- **Limite:** chave `limite_agendamentos` da `Config_Agenda` (`_ageConfig_`, `salvarGradeAtendimento`); `_ageLimite_` conta
+  sessões futuras agendadas com `origem = paciente` e sem `reposicao_de`; `_ageMinhas_` devolve `limite { max, usadas,
+  atingido, msg }`; `pacienteAgendarSessao` recusa com `codigo: 'limite'`. Cliente: `graCfgLimite`; `sesEscolherHorario_`
+  mostra `limite.msg` sem abrir os horários.
+- **Valor por paciente:** ação `profSalvarValorSessao(s, siglaPaciente, valor)` (na trava; 72 ações) grava a coluna
+  `valor_sessao` da aba Pacientes da Controle como texto literal (`_lemCelula_`, por `camposServidor` de
+  `_atualizarLinhaPorChave_`); `listarPacientesDoProfissional` devolve `valor_sessao`. Cliente: campo no cabeçalho do paciente
+  (`profBuildHeader_`, valor posto por `.value` em `profValorPintar_`), `profValorSalvar_`, e `ageEscolher_` preenche o valor
+  da nova consulta quando ele está vazio.
