@@ -103,8 +103,9 @@ tenta('L', () => {
 console.log('E. Eventos da agenda (sino e Início)');
 tenta('E', () => {
   irPara(2026, 11, 25, 15, 0);
-  const idAg = uuid();
-  pac(P2, 'pacienteAgendarSessao', { dados: { id: idAg, data: '2026-12-04', hora: '10:00' } });
+  const uAg = uuid(), idAg = 'ag-' + uAg; // 14.7: o paciente pede, o profissional aprova, a sessão nasce com este id
+  pac(P2, 'pacienteAgendarSessao', { dados: { id: uAg, data: '2026-12-04', hora: '10:00' } });
+  prof('profDecidirPedido', { id: uAg, aprovar: true, periodo: PER });
   irPara(2026, 11, 25, 15, 10);
   pac(P2, 'pacienteConfirmarSessao', { id: idAg });
   irPara(2026, 11, 25, 15, 20);
@@ -117,9 +118,9 @@ tenta('E', () => {
   prof('profCancelarSessao', { id: idProf, opcoes: { quem: 'profissional' }, periodo: PER });
   let a = prof('profLerAgenda', PER);
   const E = a.eventos;
-  ok('E1 eventos do mais novo ao mais antigo: cancelou, pediu remarcação, confirmou, agendou', E.slice(0, 4).map(e => e.tipo + ' ' + e.sigla).join(' | ') === ['cancelou ' + P1, 'remarcar ' + P2, 'confirmou ' + P2, 'agendou ' + P2].join(' | ') && E[0].em === '2026-11-25 15:30' && E[0].nome === 'Paula Primeira' && E[0].data === '2026-12-08' && E[0].hora === '10:00' && E[1].data === '2026-12-07' && E[1].hora === '10:00', E.slice(0, 5)); // o pedido mostra o horário pedido
+  ok('E1 eventos do mais novo ao mais antigo: cancelou, pediu remarcação, confirmou, pediu agendamento (14.7)', E.slice(0, 4).map(e => e.tipo + ' ' + e.sigla).join(' | ') === ['cancelou ' + P1, 'remarcar ' + P2, 'confirmou ' + P2, 'agendar ' + P2].join(' | ') && E[0].em === '2026-11-25 15:30' && E[0].nome === 'Paula Primeira' && E[0].data === '2026-12-08' && E[0].hora === '10:00' && E[1].data === '2026-12-07' && E[1].hora === '10:00', E.slice(0, 5)); // o pedido mostra o horário pedido
   ok('E2 confirmação pelo link também é evento', E.some(e => e.tipo === 'confirmou' && e.sigla === P1 && e.data === '2026-12-03'));
-  ok('E3 o que o próprio profissional fez não vira evento (sessão criada, sessão cancelada por ele)', !E.some(e => e.data === '2026-12-09') && E.filter(e => e.tipo === 'agendou').length === 1, E.filter(e => e.tipo === 'agendou'));
+  ok('E3 o que o próprio profissional fez não vira evento (sessão criada, sessão cancelada por ele)', !E.some(e => e.data === '2026-12-09') && E.filter(e => e.tipo === 'agendar').length === 1 && E.filter(e => e.tipo === 'agendou').length === 0, E.filter(e => e.tipo === 'agendar' || e.tipo === 'agendou')); // 14.7: a sessão aprovada não vira "agendou"
   ok('E4 antes de "Marcar como vistos" não há marca', a.eventos_vistos_ate === '');
   irPara(2026, 11, 25, 15, 40);
   const v = prof('profMarcarEventosVistos', { periodo: PER });

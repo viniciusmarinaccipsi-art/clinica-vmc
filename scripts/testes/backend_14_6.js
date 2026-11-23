@@ -1,6 +1,6 @@
 /* Pacote 14.6 — Agenda: quatro ajustes pedidos pelo usuário em 23/11/2026.
    Blocos: C sessão cancelada e cobrada continua na grade (sem ocupar o horário) · S "esta e as seguintes" leva o dia ·
-   L limite de sessões que o paciente agenda sozinho · V valor da sessão no cadastro do paciente · T listas e crachá.
+   L o limite de agendamentos (saiu no 14.7) · V valor da sessão no cadastro do paciente · T listas e crachá.
    Mesmo arnês da suíte do 14.5 (Código.js real sobre planilhas simuladas, relógio fixo em 25/11/2026 14:00).
    Uso: node scripts/testes/backend_14_6.js */
 'use strict';
@@ -128,35 +128,13 @@ tenta('S', () => {
 function _mais(iso, n) { const d = new Real(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
 
 /* ---------------------------------------------------------------- L */
-console.log('L. Limite de sessões que o paciente agenda sozinho');
+console.log('L. O limite de agendamentos saiu no 14.7 (todo agendamento do paciente passa pela aprovação)');
 tenta('L', () => {
-  let r = pac(P2, 'lerMinhasSessoes');
-  ok('L1 sem limite configurado: nada muda (limite 0, não atingido)', r.limite.max === 0 && r.limite.atingido === false && r.limite.msg === '', r.limite);
-  r = grade({ avisos_sessao: 'Nao', limite_agendamentos: 2 });
-  ok('L2 a Grade grava o limite e a leitura devolve', r.ok === true && prof('profLerGrade').config.limite_agendamentos === 2 && prof('profLerAgenda', PER).config.limite_agendamentos === 2, prof('profLerGrade').config);
-  r = pac(P2, 'pacienteAgendarSessao', { dados: { id: uuid(), data: '2026-12-14', hora: '10:00', modalidade: 'presencial' } });
-  ok('L3 primeira sessão agendada pelo paciente: aceita', r.ok === true && r.limite.usadas === 1 && r.limite.atingido === false, r.limite || r.erro);
-  r = pac(P2, 'pacienteAgendarSessao', { dados: { id: uuid(), data: '2026-12-15', hora: '10:00', modalidade: 'presencial' } });
-  ok('L4 segunda: aceita, e o limite fica atingido, com a frase da tela', r.ok === true && r.limite.usadas === 2 && r.limite.atingido === true && r.limite.msg === 'Você já tem 2 sessões marcadas por você. Para marcar mais, fale com Dra. Nova de Prova.', r.limite || r.erro);
-  const n = aba('Sessoes').getLastRow();
-  r = pac(P2, 'pacienteAgendarSessao', { dados: { id: uuid(), data: '2026-12-16', hora: '10:00', modalidade: 'presencial' } });
-  ok('L5 terceira: recusada com a mesma frase, nada gravado', r.ok === false && r.codigo === 'limite' && r.erro === 'Você já tem 2 sessões marcadas por você. Para marcar mais, fale com Dra. Nova de Prova.' && aba('Sessoes').getLastRow() === n, r);
-  ok('L6 sessão marcada pelo profissional não conta no limite do paciente', sessao(P2, { data: '2026-12-17', hora: '10:00' }).ok === true && pac(P2, 'lerMinhasSessoes').limite.usadas === 2);
-  ok('L7 outro paciente tem a conta dele (P1 não agendou nada sozinho)', pac(P1, 'lerMinhasSessoes').limite.usadas === 0 && pac(P1, 'lerMinhasSessoes').limite.atingido === false);
-  const minhas = pac(P2, 'lerMinhasSessoes').sessoes.filter(x => x.data === '2026-12-14')[0];
-  pac(P2, 'pacienteCancelarSessao', { id: minhas.id });
-  r = pac(P2, 'lerMinhasSessoes');
-  ok('L8 cancelar uma libera a vaga', r.limite.usadas === 1 && r.limite.atingido === false, r.limite);
-  r = pac(P2, 'pacientePedirAgenda', { dados: { id: uuid(), tipo: 'remarcar', sessao_id: pac(P2, 'lerMinhasSessoes').sessoes.filter(x => x.data === '2026-12-15')[0].id, data: '2026-12-18', hora: '10:00' } });
-  ok('L9 o limite não impede pedir remarcação', r.ok === true, r && r.erro);
-  grade({ avisos_sessao: 'Nao', limite_agendamentos: 1 });
-  ok('L10 limite 1: singular na frase', pac(P2, 'lerMinhasSessoes').limite.msg === 'Você já tem 1 sessão marcada por você. Para marcar mais, fale com Dra. Nova de Prova.', pac(P2, 'lerMinhasSessoes').limite);
-  r = grade({ avisos_sessao: 'Nao', limite_agendamentos: '' });
-  ok('L11 vazio na Grade = sem limite de novo; valor inválido também', pac(P2, 'lerMinhasSessoes').limite.max === 0 && (grade({ limite_agendamentos: 'abc' }), pac(P2, 'lerMinhasSessoes').limite.max === 0) && (grade({ limite_agendamentos: -3 }), pac(P2, 'lerMinhasSessoes').limite.max === 0));
-  grade({ limite_agendamentos: 3 });
-  grade({ avisos_sessao: 'Nao' });
-  ok('L12 salvar a Grade sem mandar o limite não o apaga', prof('profLerGrade').config.limite_agendamentos === 3, prof('profLerGrade').config);
-  grade({ limite_agendamentos: '' });
+  ok('L1 a leitura do paciente não traz mais o limite', pac(P2, 'lerMinhasSessoes').limite === undefined);
+  grade({ avisos_sessao: 'Nao', limite_agendamentos: 2 });
+  ok('L2 a Grade não grava mais a chave e a agenda não a lê', prof('profLerGrade').config.limite_agendamentos === undefined && prof('profLerAgenda', PER).config.limite_agendamentos === undefined, prof('profLerGrade').config);
+  const fonteJs = fs.readFileSync(path.join(__dirname, '..', '..', 'Código.js'), 'utf8');
+  ok('L3 nada do limite ficou no servidor', fonteJs.indexOf('limite_agendamentos') === -1 && fonteJs.indexOf('_ageLimite_') === -1 && fonteJs.indexOf('_ageMsgLimite_') === -1);
 });
 
 /* ---------------------------------------------------------------- V */
@@ -183,7 +161,7 @@ tenta('V', () => {
 console.log('T. Listas e versão');
 tenta('T', () => {
   ok('T1 a ação nova está na trava e não é pública nem só leitura', S('ACOES_COM_TRAVA').indexOf('profSalvarValorSessao') !== -1 && S('ACOES_PUBLICAS').indexOf('profSalvarValorSessao') === -1 && S('ACOES_SO_LEITURA').indexOf('profSalvarValorSessao') === -1);
-  ok('T2 nenhuma coluna nova nas abas da agenda (o limite é chave da Config_Agenda; o valor é coluna do cadastro)', S('COLUNAS_SESSOES').slice(-3).join(',') === 'gcal_evento,gcal_sinc,meet_link' && S('COLUNAS_PEDIDOS_AGENDA').slice(-1)[0] === 'sugestao');
+  ok('T2 nenhuma coluna nova em Sessoes (o valor é coluna do cadastro)', S('COLUNAS_SESSOES').slice(-3).join(',') === 'gcal_evento,gcal_sinc,meet_link');
   const inesperados = logServidor.filter(l => !/^trava de gravacao: nao obtida/.test(l));
   ok('T3 o servidor não registrou nenhum erro', inesperados.length === 0, inesperados.slice(0, 5));
 });
