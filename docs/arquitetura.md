@@ -2309,3 +2309,26 @@ Decisões do usuário (23/11/2026): a palavra é **status** (o campo "Situação
   - Envio só por `_reservarEmail_('sessoes')` e `_enviarEmail_`; nenhum `MailApp` direto, nome do remetente e "responder para" intocados.
 - **Trava do remetente** (`_stpDisponivel_`, função única): enquanto o profissional não tiver a própria conta conectada, os dois e-mails só existem para a conta do dono do script (hoje a função chama `_calDoDono_`). A Grade recebe `emails_prof_disponivel` e mostra os campos travados com o aviso; salvar "Ligado" numa conta travada grava `Nao`; o gatilho nem abre a Controle de conta travada. Quando a conta conectada chegar, troca-se só essa função.
 - Prova: `scripts/testes/backend_20_2.js` (relógio fixo, dois fusos) e o roteiro `..\PACOTE_20_2_fluxo.js` (390 e 1280, com os dois e-mails montados pelo gatilho).
+
+## Pacote 14.8.1 — Agenda: a volta da permissão do Google passa por uma página do site (23/11/2026)
+
+Conserto achado na prova do 14.8 com o Google de verdade. Substitui, na seção do 14.8, tudo o que diz "volta pelo `doGet`".
+
+- **O defeito:** quem permite com uma conta que não é a primeira do navegador é devolvido pelo Google com `authuser=1`; o Apps
+  Script manda esse endereço para `script.google.com/accounts?authuser=1&continueUrl=…` e a página não abre ("Não foi possível
+  abrir o arquivo"). A permissão era dada, o `doGet` nunca rodava.
+- **A volta agora:** `_gcalVolta_()` = `conectar.html`, ao lado do `index-dev.html` (derivada de `SITE_URL`). É o `redirect_uri`
+  da ida (`_gcalUrl_`) e da troca do código (`_gcalRetorno_`), e o único endereço cadastrado no cliente OAuth do Google Cloud
+  ("COGNIATIVO - Conectar agenda", projeto `cogniativo-clasp`). **Renomear ou mover a página quebra a conexão.**
+- **`conectar.html`:** página estática, CSP própria (`connect-src` só o Apps Script), `referrer` desligado. Lê `state`, `code` e
+  `error` do endereço, limpa o endereço (`history.replaceState`), faz um POST `{ acao: 'concluirConexaoAgenda', state, code,
+  error }` e mostra só o resultado em `#cxMsg` (`data-resultado`: `esperando` → `conectada` | `negada` | `erro`). Sem `state`,
+  nem chama o servidor. O POST não leva conta do navegador, por isso não sofre do `authuser`.
+- **`concluirConexaoAgenda(dados)`:** ação **pública** (sexta de `ACOES_PUBLICAS`) — a aba da volta não tem a sessão do
+  profissional; quem protege é o `state` assinado (`_gcalEstado_`: profissional, validade de 20 min, HMAC com o segredo da
+  sessão). Fica **fora de `ACOES_COM_TRAVA`**, como o `autenticar`: a conversa com o Google roda sem a trava e só a gravação a
+  pega, dentro de `_gcalRetorno_`. Devolve só `{ ok, resultado }`.
+- **Saíram:** o ramo `state` do `doGet` (voltou a só responder "Use POST") e `_gcalPagina_`.
+- **Portão:** o passo da CSP do `portoes.yml` confere também `conectar.html`.
+- **Provas:** `scripts/testes/backend_14_8.js` (bloco B pela ação nova; B17/B17b/B17c), `..\PACOTE_14_8_1_fluxo.js` (a página de
+  verdade, com `authuser=1` no endereço) e a prova real com a segunda conta do Google no navegador do usuário.
