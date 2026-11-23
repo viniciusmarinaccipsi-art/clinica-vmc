@@ -67,6 +67,9 @@
 // (profLerAgenda, profSalvarSessao com simular, profEditarSerie, profCancelarSessao, profMarcarSituacao, profSalvarBloqueio,
 // profApagarBloqueio, profDecidirPedido) e do paciente (lerMinhasSessoes, lerHorariosLivres, pacienteAgendarSessao,
 // pacienteConfirmarSessao, pacienteCancelarSessao, pacientePedirAgenda); avisos de sessao por e-mail, desligados por padrao.
+// Pacote 14.8 — Agenda: cada profissional conecta a propria conta do Google (profAgendaConectar, profAgendaDesconectar,
+// profAgendaOpcao; a volta do Google chega pelo doGet); a permissao fica no cofre do script; o Google so recebe as sessoes e os
+// compromissos pessoais so fecham horarios com a opcao `agenda_ocupado` ligada (decisoes do usuario de 23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
 var VERSAO_PACOTE = '20.2';
@@ -502,6 +505,19 @@ function _despachar_(acao, payload, s) {
         resposta = confirmarSessaoPorLink(payload.t);
         break;
 
+      // Pacote 14.8 - conta conectada (Google Agenda por profissional)
+      case 'profAgendaConectar':
+        resposta = profAgendaConectar(s, payload.dados, payload.periodo);
+        break;
+
+      case 'profAgendaDesconectar':
+        resposta = profAgendaDesconectar(s, payload.periodo);
+        break;
+
+      case 'profAgendaOpcao':
+        resposta = profAgendaOpcao(s, payload.dados, payload.periodo);
+        break;
+
       case 'profMarcarEventosVistos':
         resposta = profMarcarEventosVistos(s, payload.periodo);
         break;
@@ -619,6 +635,8 @@ function _despachar_(acao, payload, s) {
 }
 
 function doGet(e) {
+  var par = (e && e.parameter) || {};
+  if (par.state) return _gcalPagina_(_gcalRetorno_(par)); // 14.8: volta da tela de permissao do Google
   return _respostaJson_({ ok: false, erro: 'Use POST' });
 }
 
@@ -817,6 +835,7 @@ var ACOES_COM_TRAVA = [
   'profSalvarSessao', 'profEditarSerie', 'profCancelarSessao', 'profMarcarSituacao', 'profSalvarBloqueio', 'profApagarBloqueio', 'profDecidirPedido', // 14.3
   'pacienteAgendarSessao', 'pacienteConfirmarSessao', 'pacienteCancelarSessao', 'pacientePedirAgenda', // 14.3
   'confirmarSessaoPorLink', 'profMarcarEventosVistos', 'profAvisarSessao', // 14.4
+  'profAgendaConectar', 'profAgendaDesconectar', 'profAgendaOpcao', // 14.8
   'profSalvarValorSessao', // 14.6
   'profSalvarCadastroFinanceiro', 'profSalvarConfigFinanceiro', 'profSalvarPagamento', 'profEstornarPagamento', 'profDecidirComprovante', // Fase 20
   'profGerarCobrancas', 'profEnviarCobranca', 'profDescartarCobranca', 'profNaoCobrarSessao', 'profSalvarDespesa', 'profEncerrarDespesaFixa', // Fase 20
@@ -5212,7 +5231,9 @@ function trocarSenhaProfissional(s, profissionalId, novaSenha) {
  * consegue mais logar.
  */
 function desativarProfissional(s, profissionalId) {
-  return _alterarStatusProfissional(s, profissionalId, 'nao');
+  var r = _alterarStatusProfissional(s, profissionalId, 'nao');
+  if (r && r.ok) _gcalDesligar_(profissionalId); // 14.8: a permissao da agenda dele sai junto
+  return r;
 }
 
 function reativarProfissional(s, profissionalId) {
@@ -5341,7 +5362,7 @@ function lerGradeAtendimento(s) {
     }
   }
 
-  return { ok: true, config: config, grade: grade, calendar_disponivel: _calDoDono_(profissionalId), // 14.5
+  return { ok: true, config: config, grade: grade, // 14.8: a conta conectada vem na leitura da Agenda (agenda_externa)
     emails_prof_disponivel: _stpDisponivel_(profissionalId) }; // 20.2
 }
 
@@ -5408,12 +5429,6 @@ function salvarGradeAtendimento(s, config, grade) {
   if (config.endereco !== undefined) cfgGravar.endereco = txtEnd(config.endereco);
   if (config.endereco_novo !== undefined) cfgGravar.endereco_novo = txtEnd(config.endereco_novo);
   if (config.endereco_novo_desde !== undefined) cfgGravar.endereco_novo_desde = _lemDia_(config.endereco_novo_desde) === null ? '' : String(config.endereco_novo_desde).trim();
-  var ligouCalendar = false;
-  if (config.google_calendar !== undefined) {
-    var querCal = String(config.google_calendar).toLowerCase() === 'sim' && _calDoDono_(profissionalId);
-    cfgGravar.google_calendar = querCal ? 'Sim' : 'Nao';
-    ligouCalendar = querCal;
-  }
   // 20.2: os dois e-mails ao profissional (so mudam quando a tela os manda; ligar exige a conta que pode recebe-los)
   if (config.email_status_pendente !== undefined || config.email_agenda_amanha !== undefined) {
     var podeEmailProf = _stpDisponivel_(profissionalId);
@@ -5430,7 +5445,6 @@ function salvarGradeAtendimento(s, config, grade) {
     }
   }
 
-  if (ligouCalendar) _calMarcarFuturas_(controle); // 14.5
 
   // 4. Gravar Grade_Horarios (substitui linhas de dados pelo estado atual)
   var abaGrade = _gradeObterOuCriarAba_(controle, GRADE_ABA_HORARIOS,
@@ -6972,6 +6986,9 @@ function _ageConfig_(controle) {
     // 14.5: endereco do consultorio (o atual e o que passa a valer numa data) e o espelho no Google Calendar (nasce 'Nao')
     if (chave === 'endereco' || chave === 'endereco_novo' || chave === 'endereco_novo_desde' || chave === 'gcal_id' || chave === 'gcal_nome') cfg[chave] = valor;
     if (chave === 'google_calendar') cfg.google_calendar = valor.toLowerCase() === 'sim' ? 'Sim' : 'Nao';
+    // 14.8: conta conectada (so o e-mail), opcao dos compromissos pessoais (nasce 'Nao') e o aviso de conexao caida
+    if (chave === 'agenda_conta' || chave === 'agenda_aviso') cfg[chave] = valor;
+    if (chave === 'agenda_ocupado') cfg.agenda_ocupado = valor.toLowerCase() === 'sim' ? 'Sim' : 'Nao';
   }
   return cfg;
 }
@@ -7226,12 +7243,14 @@ function _ageLeitura_(ctx, de, ate, pacs, agora) {
     if (r) series[r.id] = { cada: parseInt(r.cada, 10) || 1, unidade: r.unidade, dias_semana: String(r.dias_semana || '').split(',').filter(String).map(Number),
       modo_mes: r.modo_mes, fim_tipo: r.fim_tipo, fim_n: parseInt(r.fim_n, 10) || 0, fim_data: r.fim_data };
   });
+  var externa = ctx.profId ? _calEstadoTela_(ctx.profId, ctx.cfg) : null; // 14.8
   var bloqueios = ctx.bloqueios.filter(function (x) { return x.data_inicio <= ateIso && (x.data_fim || x.data_inicio) >= deIso; })
     .map(function (x) { return { id: x.id, data_inicio: x.data_inicio, hora_inicio: _lemHora_(x.hora_inicio), data_fim: x.data_fim || x.data_inicio,
       hora_fim: _lemHora_(x.hora_fim), dia_todo: String(x.dia_todo || '').toLowerCase() === 'sim', nome: x.nome }; });
   return { de: deIso, ate: ateIso, hoje: hoje, agora_hora: agora.hora, config: ctx.cfg, sessoes: sessoes, series: series, bloqueios: bloqueios,
     feriados: _ageFeriadosEntre_(deIso, ateIso), pedidos: _agePedidosPendentes_(ctx, pacs),
-    eventos: _ageEventos_(ctx, pacs, agora), eventos_vistos_ate: ctx.cfg.agenda_vistos_ate || '' }; // 14.4
+    eventos: _ageEventos_(ctx, pacs, agora), eventos_vistos_ate: ctx.cfg.agenda_vistos_ate || '', // 14.4
+    agenda_externa: externa, ocupados: (externa && externa.ocupado) ? _calOcupadosTela_(ctx.profId, ctx.cfg, deIso, ateIso) : [] }; // 14.8
 }
 
 /** Profissional do cracha + a Controle dele. */
@@ -8286,9 +8305,9 @@ function rodarMonitorAgora() {
 // ---------- Pacote 14.5: endereco do consultorio, evento em anexo (.ics) e Google Calendar ----------
 // O espelho e de MAO UNICA (do COGNIATIVO para o Google) e nunca bloqueia a agenda: toda gravacao que muda o que o
 // Calendar mostra marca a sessao com gcal_sinc = 'pendente' (_ageGravar_), e _calSincronizar_ cria, muda ou apaga o
-// evento — na propria acao (ate 3) e no gatilho de 5 minutos (series e o que falhou). So existe para a conta do
-// profissional que e o dono do script (o Calendar e o da conta Google que roda o servidor) e com a chave
-// `google_calendar` = Sim na Config_Agenda (nasce 'Nao'). Acesso pela API REST com o token do proprio script.
+// evento — na propria acao (ate 3) e no gatilho de 5 minutos (series e o que falhou). Vale para o profissional que
+// conectou a propria conta (14.8) e, sem conectar, para o dono do script; sempre com a chave `google_calendar` = Sim
+// na Config_Agenda (nasce 'Nao'). Acesso pela API REST com o token de quem conectou (_calToken_).
 
 function _age2_(n) { return ('0' + Math.floor(n)).slice(-2); }
 
@@ -8342,13 +8361,16 @@ function _ageIcs_(sessoes, profissional, cfg, metodo, utc) {
 }
 
 /** Chamada a API do Google Calendar. Devolve { codigo, corpo } — nunca lanca: quem chama decide o que fazer com a falha. */
-function _calApi_(metodo, caminho, corpo) {
+function _calApi_(metodo, caminho, corpo, profId) {
   try {
-    var opcoes = { method: metodo, headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }, muteHttpExceptions: true };
+    var token = _calToken_(profId); // 14.8: a conta que o profissional conectou; sem `profId`, a do script (funcoes do editor)
+    if (!token) return { codigo: 0, corpo: null };
+    var opcoes = { method: metodo, headers: { Authorization: 'Bearer ' + token }, muteHttpExceptions: true };
     if (corpo !== undefined && corpo !== null) { opcoes.contentType = 'application/json'; opcoes.payload = JSON.stringify(corpo); }
     var r = UrlFetchApp.fetch('https://www.googleapis.com/calendar/v3' + caminho, opcoes);
     var texto = r.getContentText(), dados = null;
     try { dados = texto ? JSON.parse(texto) : null; } catch (e) { dados = null; }
+    if (r.getResponseCode() === 401 && profId) _cacheEsquecer_(['gcalat:' + profId]); // acesso vencido antes da hora: renova na proxima
     return { codigo: r.getResponseCode(), corpo: dados };
   } catch (e) {
     console.error('calendar: ' + String(e && e.message || e).slice(0, 160));
@@ -8382,15 +8404,17 @@ function _calDoDono_(profId) {
 }
 
 /** Id da agenda do Google que recebe o espelho: a de nome `gcal_nome` (padrao CAL_NOME_PADRAO); nasce se nao existir. '' se nao deu. */
-function _calAgendaId_(controle, cfg) {
+function _calAgendaId_(controle, cfg, profId) {
   if (cfg.gcal_id) return cfg.gcal_id;
-  var nome = cfg.gcal_nome || CAL_NOME_PADRAO;
-  var r = _calApi_('get', '/users/me/calendarList?maxResults=250&fields=items(id,summary)');
-  if (r.codigo !== 200 || !r.corpo) return '';
-  var achada = (r.corpo.items || []).filter(function (c) { return c.summary === nome; })[0];
-  var id = achada ? achada.id : '';
+  var nome = cfg.gcal_nome || CAL_NOME_PADRAO, id = '';
+  if (!_gcalGuardada_(profId)) { // dono do script: pode procurar a agenda pelo nome; a conta conectada so enxerga a que o sistema criar
+    var r = _calApi_('get', '/users/me/calendarList?maxResults=250&fields=items(id,summary)', null, profId);
+    if (r.codigo !== 200 || !r.corpo) return '';
+    var achada = (r.corpo.items || []).filter(function (c) { return c.summary === nome; })[0];
+    id = achada ? achada.id : '';
+  }
   if (!id) {
-    var nova = _calApi_('post', '/calendars', { summary: nome, timeZone: 'America/Sao_Paulo' });
+    var nova = _calApi_('post', '/calendars', { summary: nome, timeZone: 'America/Sao_Paulo' }, profId);
     if (nova.codigo !== 200 || !nova.corpo || !nova.corpo.id) return '';
     id = nova.corpo.id;
   }
@@ -8428,7 +8452,7 @@ function _calSincronizar_(controle, profId, o) {
   try {
     if (!controle) return feitos;
     var cfg = _ageConfig_(controle);
-    if (cfg.google_calendar !== 'Sim' || !_calDoDono_(profId)) return feitos;
+    if (!_calConectada_(profId, cfg)) return feitos;
     var aba = _ageAba_(controle, ABA_SESSOES, COLUNAS_SESSOES, false);
     if (!aba) return feitos;
     var so = null;
@@ -8447,18 +8471,18 @@ function _calSincronizar_(controle, profId, o) {
       if (!x.gcal_evento && (!ativa || x.data < hoje)) { gravar(x, { gcal_sinc: '' }); continue; } // nada a espelhar (cancelada sem evento, ou sessao lancada no passado)
       if (n >= max) break;
       n++;
-      if (calId === null) calId = _calAgendaId_(controle, cfg);
+      if (calId === null) calId = _calAgendaId_(controle, cfg, profId);
       if (!calId) break;
       var base = '/calendars/' + encodeURIComponent(calId) + '/events';
       if (!ativa) {
-        var ap = _calApi_('delete', base + '/' + encodeURIComponent(x.gcal_evento));
+        var ap = _calApi_('delete', base + '/' + encodeURIComponent(x.gcal_evento), null, profId);
         if ([200, 204, 404, 410].indexOf(ap.codigo) !== -1) { gravar(x, { gcal_evento: '', gcal_sinc: '', meet_link: '' }); feitos[x.id] = ''; }
         continue;
       }
       if (!pacs) pacs = _agePacientes_(controle);
       var corpo = _calEvento_(x, pacs[_siglaChave_(x.sigla)], cfg);
-      var r = x.gcal_evento ? _calApi_('patch', base + '/' + encodeURIComponent(x.gcal_evento) + '?conferenceDataVersion=1', corpo) : null;
-      if (!r || r.codigo === 404 || r.codigo === 410) r = _calApi_('post', base + '?conferenceDataVersion=1', corpo);
+      var r = x.gcal_evento ? _calApi_('patch', base + '/' + encodeURIComponent(x.gcal_evento) + '?conferenceDataVersion=1', corpo, profId) : null;
+      if (!r || r.codigo === 404 || r.codigo === 410) r = _calApi_('post', base + '?conferenceDataVersion=1', corpo, profId);
       if (r.codigo === 200 && r.corpo && r.corpo.id) {
         var meet = x.modalidade === 'online' ? String(r.corpo.hangoutLink || x.meet_link || '') : '';
         gravar(x, { gcal_evento: r.corpo.id, gcal_sinc: '', meet_link: meet });
@@ -8475,12 +8499,15 @@ function _calSincronizar_(controle, profId, o) {
 }
 
 /** Ao ligar o espelho: as sessoes agendadas de hoje em diante que ainda nao tem evento entram na fila. */
-function _calMarcarFuturas_(controle) {
+function _calMarcarFuturas_(controle, refazer) {
   var aba = _ageAba_(controle, ABA_SESSOES, COLUNAS_SESSOES, false);
   if (!aba) return;
   var hoje = _lemAgora_().data;
   _lembretesLer_(aba).forEach(function (x) {
-    if ((x.estado === 'agendada' || x.estado === '') && x.data >= hoje && !x.gcal_evento && x.gcal_sinc !== 'pendente') _ageGravar_(aba, COLUNAS_SESSOES, x.__linha, { gcal_sinc: 'pendente' });
+    if (!((x.estado === 'agendada' || x.estado === '') && x.data >= hoje)) return;
+    // 14.8: `refazer` = a conta do Google mudou — os eventos antigos ficam na agenda antiga e nascem de novo na nova
+    if (refazer && x.gcal_evento) _ageGravar_(aba, COLUNAS_SESSOES, x.__linha, { gcal_evento: '', gcal_sinc: 'pendente' });
+    else if (!x.gcal_evento && x.gcal_sinc !== 'pendente') _ageGravar_(aba, COLUNAS_SESSOES, x.__linha, { gcal_sinc: 'pendente' });
   });
 }
 
@@ -8501,11 +8528,11 @@ function _calAbs_(rfc) {
 function _calOcupados_(profId, cfg, deIso, dias) {
   try {
     var d0 = _lemDia_(deIso);
-    if (d0 === null || !cfg || cfg.google_calendar !== 'Sim' || !_calDoDono_(profId)) return [];
+    if (d0 === null || !_calConectada_(profId, cfg) || cfg.agenda_ocupado !== 'Sim') return []; // 14.8: so quando o profissional ligou a opcao
     var chave = 'calocup:' + profId + ':' + deIso + ':' + dias;
     var guardado = _cacheLer_(chave);
     if (guardado) { try { return JSON.parse(guardado); } catch (e) { /* le de novo */ } }
-    var r = _calApi_('post', '/freeBusy', { timeMin: deIso + 'T00:00:00-03:00', timeMax: _lemIso_(d0 + dias) + 'T00:00:00-03:00', items: [{ id: 'primary' }] });
+    var r = _calApi_('post', '/freeBusy', { timeMin: deIso + 'T00:00:00-03:00', timeMax: _lemIso_(d0 + dias) + 'T00:00:00-03:00', items: [{ id: 'primary' }] }, profId);
     if (r.codigo !== 200 || !r.corpo || !r.corpo.calendars || !r.corpo.calendars.primary) return [];
     var lista = (r.corpo.calendars.primary.busy || []).map(function (b) { return { ini: _calAbs_(b.start), fim: _calAbs_(b.end) }; })
       .filter(function (b) { return b.ini !== null && b.fim !== null && b.fim > b.ini; });
@@ -8514,6 +8541,274 @@ function _calOcupados_(profId, cfg, deIso, dias) {
   } catch (e) {
     return [];
   }
+}
+
+// ---------- Pacote 14.8: cada profissional conecta a propria conta do Google ----------
+// (decisao do usuario, 23/11/2026) O espelho deixa de ser so da conta do dono do script. O profissional toca em
+// "Conectar Google Agenda", da a permissao na tela do Google e o servidor guarda a permissao dele (refresh token) no
+// cofre do script (PropertiesService, chave 'gcal:<profissional>') — nunca em planilha, nunca em resposta, nunca em log.
+// O dono do script continua valendo pelo token do proprio script, sem conectar. O Google so RECEBE as sessoes; os
+// compromissos pessoais so fecham horarios quando o profissional liga a opcao `agenda_ocupado` (nasce 'Nao').
+// A chave do botao (cliente OAuth) fica em duas propriedades do script que so o usuario preenche.
+var GCAL_PROP_ID = 'GOOGLE_OAUTH_CLIENT_ID';
+var GCAL_PROP_SEGREDO = 'GOOGLE_OAUTH_CLIENT_SECRET';
+var GCAL_ESCOPOS = ['openid', 'email', 'https://www.googleapis.com/auth/calendar.app.created']; // so as agendas que o proprio sistema criar
+var GCAL_ESCOPO_OCUPADO = 'https://www.googleapis.com/auth/calendar.freebusy';                   // ver SE esta ocupado, nunca o que e
+var GCAL_ESTADO_MIN = 20;       // validade do pedido de conexao (ida ao Google e volta)
+var GCAL_OCUPADOS_DIAS = 62;    // janela maxima dos compromissos pessoais mostrados na Agenda
+var MSG_GCAL_INDISPONIVEL = 'A conexão com o Google ainda não está disponível.';
+var MSG_GCAL_CONECTE = 'Conecte a sua agenda primeiro.';
+
+function _gcalCliente_() {
+  try {
+    var p = PropertiesService.getScriptProperties();
+    var id = String(p.getProperty(GCAL_PROP_ID) || '').trim(), seg = String(p.getProperty(GCAL_PROP_SEGREDO) || '').trim();
+    return (id && seg) ? { id: id, segredo: seg } : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+/** A permissao guardada do profissional: { rt, conta, escopos } ou null. O `rt` nunca sai do servidor. */
+function _gcalGuardada_(profId) {
+  if (!profId) return null;
+  if (_MEMO_.gcal === undefined) _MEMO_.gcal = {};
+  if (_MEMO_.gcal[profId] !== undefined) return _MEMO_.gcal[profId];
+  var g = null;
+  try { var bruto = PropertiesService.getScriptProperties().getProperty('gcal:' + profId); g = bruto ? JSON.parse(bruto) : null; } catch (e) { g = null; }
+  if (g && !g.rt) g = null;
+  _MEMO_.gcal[profId] = g;
+  return g;
+}
+function _gcalGuardar_(profId, dados) {
+  PropertiesService.getScriptProperties().setProperty('gcal:' + profId, JSON.stringify(dados));
+  if (_MEMO_.gcal === undefined) _MEMO_.gcal = {};
+  _MEMO_.gcal[profId] = dados;
+}
+function _gcalEsquecer_(profId) {
+  try { PropertiesService.getScriptProperties().deleteProperty('gcal:' + profId); } catch (e) { /* nada guardado */ }
+  if (_MEMO_.gcal === undefined) _MEMO_.gcal = {};
+  _MEMO_.gcal[profId] = null;
+  _cacheEsquecer_(['gcalat:' + profId]);
+}
+/** Retira a permissao no Google e esquece o que estava guardado (desconectar, profissional desativado). Nunca lanca. */
+function _gcalDesligar_(profId) {
+  var g = _gcalGuardada_(profId);
+  if (g && g.rt) {
+    try { UrlFetchApp.fetch('https://oauth2.googleapis.com/revoke', { method: 'post', muteHttpExceptions: true, payload: { token: g.rt } }); }
+    catch (e) { console.error('agenda externa: a permissao nao foi retirada no Google'); }
+  }
+  _gcalEsquecer_(profId);
+}
+
+/** Pedido de conexao assinado: gcal|profissional|validade|ocupado. E o `state` que vai ao Google e volta. */
+function _gcalEstado_(profId, ocupado, agoraMs) {
+  var corpo = _b64url_(['gcal', String(profId), String(agoraMs + GCAL_ESTADO_MIN * 60000), ocupado ? '1' : '0'].join('|'));
+  return corpo + '.' + _hmacHex_(corpo, _segredoSessao_()).slice(0, 32);
+}
+function _gcalLerEstado_(estado, agoraMs) {
+  var partes = String(estado === undefined || estado === null ? '' : estado).split('.');
+  if (partes.length !== 2 || !partes[0] || _hmacHex_(partes[0], _segredoSessao_()).slice(0, 32) !== partes[1]) return null;
+  var c;
+  try { c = _deB64url_(partes[0]).split('|'); } catch (e) { return null; }
+  if (c.length !== 4 || c[0] !== 'gcal' || !c[1] || !(parseInt(c[2], 10) > agoraMs)) return null;
+  return { profId: c[1], ocupado: c[3] === '1' };
+}
+
+/** Endereco da tela de permissao do Google ('' se a chave do botao nao esta configurada). */
+function _gcalUrl_(profId, ocupado) {
+  var cli = _gcalCliente_(), volta = _e3UrlDoServico_();
+  if (!cli || !volta) return '';
+  var q = { client_id: cli.id, redirect_uri: volta, response_type: 'code', scope: GCAL_ESCOPOS.concat(ocupado ? [GCAL_ESCOPO_OCUPADO] : []).join(' '),
+    access_type: 'offline', prompt: 'consent', include_granted_scopes: 'true', state: _gcalEstado_(profId, ocupado, Date.now()) };
+  return 'https://accounts.google.com/o/oauth2/v2/auth?' + Object.keys(q).map(function (k) { return k + '=' + encodeURIComponent(q[k]); }).join('&');
+}
+
+function _gcalJson_(resposta) {
+  try { return JSON.parse(resposta.getContentText()); } catch (e) { return null; }
+}
+/** E-mail da conta que deu a permissao (do id_token que o proprio Google devolveu ao servidor). */
+function _gcalConta_(idToken) {
+  try { return normalizarEmail(JSON.parse(_deB64url_(String(idToken || '').split('.')[1])).email || ''); } catch (e) { return ''; }
+}
+
+/**
+ * Volta do Google (doGet): troca o codigo pela permissao e liga o espelho do profissional do `state`.
+ * Devolve 'conectada' | 'negada' (o profissional nao permitiu) | 'erro'. Nunca lanca.
+ */
+function _gcalRetorno_(par) {
+  try {
+    var est = _gcalLerEstado_(par.state, Date.now());
+    if (!est) return 'erro';
+    if (par.error || !par.code) return 'negada';
+    var cli = _gcalCliente_();
+    if (!cli) return 'erro';
+    var prof = buscarProfissional(est.profId);
+    if (!prof || !_estaAtivo_(prof.ativo)) return 'erro';
+    var controle = abrirControleDoProfissional(est.profId);
+    if (!controle) return 'erro';
+    var r = UrlFetchApp.fetch('https://oauth2.googleapis.com/token', { method: 'post', muteHttpExceptions: true,
+      payload: { code: String(par.code), client_id: cli.id, client_secret: cli.segredo, redirect_uri: _e3UrlDoServico_(), grant_type: 'authorization_code' } });
+    var d = _gcalJson_(r);
+    if (r.getResponseCode() !== 200 || !d || !d.refresh_token) { console.error('agenda externa: o Google nao devolveu a permissao (' + r.getResponseCode() + ')'); return 'erro'; }
+    var conta = _gcalConta_(d.id_token), escopos = String(d.scope || '');
+    var temOcupado = escopos.indexOf(GCAL_ESCOPO_OCUPADO) !== -1;
+    _comTrava_(function () {
+      var antes = _gcalGuardada_(est.profId), cfg = _ageConfig_(controle);
+      var outraConta = !antes || antes.conta !== conta;
+      _gcalGuardar_(est.profId, { rt: d.refresh_token, conta: conta, escopos: escopos });
+      if (d.access_token) _cacheGuardar_('gcalat:' + est.profId, d.access_token, Math.max(60, (parseInt(d.expires_in, 10) || 3600) - 300));
+      _ageConfigGravar_(controle, 'google_calendar', 'Sim');
+      _ageConfigGravar_(controle, 'agenda_conta', conta);
+      _ageConfigGravar_(controle, 'agenda_aviso', '');
+      _ageConfigGravar_(controle, 'agenda_ocupado', temOcupado && (est.ocupado || cfg.agenda_ocupado === 'Sim') ? 'Sim' : 'Nao');
+      if (outraConta) _ageConfigGravar_(controle, 'gcal_id', ''); // conta nova: a agenda do espelho nasce nela
+      _calMarcarFuturas_(controle, outraConta);
+    });
+    return 'conectada';
+  } catch (e) {
+    console.error('agenda externa: a volta do Google falhou: ' + String(e && e.message || e).slice(0, 160));
+    return 'erro';
+  }
+}
+
+/**
+ * Pagina que o navegador recebe na volta do Google. A tela de permissao abre em OUTRA aba (a sessao do profissional mora
+ * so na memoria da aba do COGNIATIVO): esta pagina so diz o resultado — nenhum dado, nenhum link — e a aba original
+ * percebe a conexao ao voltar a ser vista.
+ */
+function _gcalPagina_(resultado) {
+  var frase = resultado === 'conectada' ? 'Agenda conectada. Você já pode fechar esta aba e voltar ao COGNIATIVO.'
+    : 'A conexão com o Google não foi concluída. Feche esta aba e tente de novo no COGNIATIVO.';
+  var html = '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>' +
+    '<body style="font-family:Arial,Helvetica,sans-serif;padding:24px;"><p data-resultado="' + resultado + '">' + frase + '</p></body></html>';
+  return HtmlService.createHtmlOutput(html).setTitle('COGNIATIVO');
+}
+
+/** A permissao caiu no Google (retirada pelo profissional ou vencida): esquece, desliga o espelho e deixa o aviso para a tela. */
+function _gcalCaiu_(profId) {
+  _gcalEsquecer_(profId);
+  try {
+    var controle = abrirControleDoProfissional(profId);
+    if (controle) _comTravaSeDer_(function () { _ageConfigGravar_(controle, 'google_calendar', 'Nao'); _ageConfigGravar_(controle, 'agenda_aviso', 'caiu'); });
+  } catch (e) { /* o aviso fica para a proxima */ }
+}
+
+/** Token de acesso da conta conectada (55 minutos no cache). '' se nao ha conexao ou se ela caiu. */
+function _gcalToken_(profId) {
+  var g = _gcalGuardada_(profId);
+  if (!g) return '';
+  var guardado = _cacheLer_('gcalat:' + profId);
+  if (guardado) return guardado;
+  var cli = _gcalCliente_();
+  if (!cli) return '';
+  try {
+    var r = UrlFetchApp.fetch('https://oauth2.googleapis.com/token', { method: 'post', muteHttpExceptions: true,
+      payload: { client_id: cli.id, client_secret: cli.segredo, refresh_token: g.rt, grant_type: 'refresh_token' } });
+    var d = _gcalJson_(r);
+    if (r.getResponseCode() === 200 && d && d.access_token) {
+      _cacheGuardar_('gcalat:' + profId, d.access_token, Math.max(60, (parseInt(d.expires_in, 10) || 3600) - 300));
+      return d.access_token;
+    }
+    if (d && d.error === 'invalid_grant') _gcalCaiu_(profId);
+  } catch (e) {
+    console.error('agenda externa: nao renovei o acesso (' + String(e && e.message || e).slice(0, 120) + ')');
+  }
+  return '';
+}
+
+/** Token para falar com o Calendar do profissional: o da conta que ele conectou; para o dono do script, o do proprio script. */
+function _calToken_(profId) {
+  if (profId !== undefined && profId !== null) {
+    if (_gcalGuardada_(profId)) return _gcalToken_(profId);
+    if (!_calDoDono_(profId)) return '';
+  }
+  return ScriptApp.getOAuthToken();
+}
+
+/** O espelho esta ligado e ha por onde falar com o Google? */
+function _calConectada_(profId, cfg) {
+  return !!cfg && cfg.google_calendar === 'Sim' && (!!_gcalGuardada_(profId) || _calDoDono_(profId));
+}
+
+/** Como a tela mostra a conta conectada (nenhum segredo): { servico, disponivel, conectada, conta, ocupado, aviso }. */
+function _calEstadoTela_(profId, cfg) {
+  var g = _gcalGuardada_(profId), dono = !g && _calDoDono_(profId);
+  var conectada = !!cfg && cfg.google_calendar === 'Sim' && (!!g || dono);
+  var conta = '';
+  if (conectada) { try { conta = g ? String(g.conta || '') : normalizarEmail(Session.getEffectiveUser().getEmail()); } catch (e) { conta = ''; } }
+  return { servico: 'google', disponivel: !!g || dono || !!_gcalCliente_(), direta: dono, conectada: conectada, conta: conta, // `direta`: o dono do script liga sem ir ao Google
+    ocupado: conectada && cfg.agenda_ocupado === 'Sim', aviso: conectada ? '' : String((cfg && cfg.agenda_aviso) || '') };
+}
+
+/** Compromissos pessoais do periodo como a Agenda os desenha: [ { data, hora_inicio, hora_fim } ], um pedaco por dia, sem titulo. */
+function _calOcupadosTela_(profId, cfg, deIso, ateIso) {
+  var a = _lemDia_(deIso), b = _lemDia_(ateIso), lista = [];
+  if (a === null || b === null || b < a) return lista;
+  _calOcupados_(profId, cfg, deIso, Math.min(b - a + 1, GCAL_OCUPADOS_DIAS)).forEach(function (o) {
+    for (var d = Math.floor(o.ini / 1440); d <= Math.floor((o.fim - 1) / 1440); d++) {
+      if (d < a || d > b) continue;
+      var ini = Math.max(o.ini, d * 1440) - d * 1440, fim = Math.min(o.fim, (d + 1) * 1440) - d * 1440;
+      lista.push({ data: _lemIso_(d), hora_inicio: _age2_(ini / 60) + ':' + _age2_(ini % 60), hora_fim: fim >= 1440 ? '23:59' : _age2_(fim / 60) + ':' + _age2_(fim % 60) });
+    }
+  });
+  return lista;
+}
+
+/**
+ * "Conectar Google Agenda". O dono do script ja tem a permissao: o espelho liga na hora. Os demais recebem o endereco
+ * da tela de permissao do Google (`url`); a conexao se completa na volta (doGet). `dados`: { ocupado: true } pede junto
+ * a permissao de ver os horarios ocupados.
+ */
+function profAgendaConectar(s, dados, periodo) {
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  var d = dados && typeof dados === 'object' ? dados : {};
+  if (!_gcalGuardada_(alvo.profissionalId) && _calDoDono_(alvo.profissionalId)) {
+    _ageConfigGravar_(alvo.controle, 'google_calendar', 'Sim');
+    _ageConfigGravar_(alvo.controle, 'agenda_aviso', '');
+    _calMarcarFuturas_(alvo.controle);
+    // as sessoes que ja existiam entram na fila; quem as leva ao Google e o gatilho (nada e enviado na hora)
+    var ctx0 = _ageCtx_(alvo.controle, false), p0 = periodo && typeof periodo === 'object' ? periodo : {};
+    ctx0.profId = alvo.profissionalId;
+    return { ok: true, conectada: true, agenda: _ageLeitura_(ctx0, p0.de, p0.ate, _agePacientes_(alvo.controle), _lemAgora_()) };
+  }
+  var url = _gcalUrl_(alvo.profissionalId, d.ocupado === true);
+  if (!url) return { ok: false, codigo: 'indisponivel', erro: MSG_GCAL_INDISPONIVEL };
+  return { ok: true, conectada: false, url: url };
+}
+
+/** "Desconectar": retira a permissao no Google e desliga o espelho. O que ja esta na agenda do Google fica la. */
+function profAgendaDesconectar(s, periodo) {
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  _gcalDesligar_(alvo.profissionalId);
+  _ageConfigGravar_(alvo.controle, 'google_calendar', 'Nao');
+  _ageConfigGravar_(alvo.controle, 'agenda_conta', '');
+  _ageConfigGravar_(alvo.controle, 'agenda_ocupado', 'Nao');
+  _ageConfigGravar_(alvo.controle, 'agenda_aviso', '');
+  return _ageResposta_(alvo, { ok: true }, periodo, _lemAgora_());
+}
+
+/**
+ * Opcao do profissional: os compromissos da agenda pessoal fecham horarios no COGNIATIVO? `dados`: { ocupado: true | false }.
+ * Ligar numa conta conectada que ainda nao deu essa permissao devolve `url` (a tela do Google pede so o que falta).
+ */
+function profAgendaOpcao(s, dados, periodo) {
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  var d = dados && typeof dados === 'object' ? dados : {}, cfg = _ageConfig_(alvo.controle);
+  if (!_calConectada_(alvo.profissionalId, cfg)) return { ok: false, codigo: 'desconectada', erro: MSG_GCAL_CONECTE };
+  if (d.ocupado === true) {
+    var g = _gcalGuardada_(alvo.profissionalId);
+    if (g && String(g.escopos || '').indexOf(GCAL_ESCOPO_OCUPADO) === -1) {
+      var url = _gcalUrl_(alvo.profissionalId, true);
+      if (!url) return { ok: false, codigo: 'indisponivel', erro: MSG_GCAL_INDISPONIVEL };
+      return { ok: true, precisa_permissao: true, url: url };
+    }
+  }
+  _ageConfigGravar_(alvo.controle, 'agenda_ocupado', d.ocupado === true ? 'Sim' : 'Nao');
+  return _ageResposta_(alvo, { ok: true }, periodo, _lemAgora_());
 }
 
 /** 19.2.1: roda o gatilho dos lembretes a mao (clasp --user run run-function rodarLembretesAgora). Devolve so contagens. */

@@ -122,12 +122,12 @@ console.log('C. Google Calendar em mão única e Meet por sessão');
 let idC1, idC2, idC3;
 tenta('C', () => {
   ok('C1 com a chave desligada nada vai ao Google', G.chamadas.length === 0 && cel('Sessoes', prof('profLerAgenda', PER).sessoes[0].id, 'gcal_sinc') === 'pendente', G.chamadas.length);
-  let r = grade({ google_calendar: 'Sim' });
-  ok('C2 quem não é o dono do script não liga o espelho', prof('profLerGrade').config.google_calendar === 'Nao' && prof('profLerGrade').calendar_disponivel === false && G.chamadas.length === 0, prof('profLerGrade').config);
+  let r = prof('profAgendaConectar', { periodo: PER }); // 14.8: a chave saiu da Grade; quem não é o dono precisa conectar a própria conta
+  ok('C2 quem não é o dono do script e não conectou a conta não liga o espelho (sem a chave do botão, a conexão não está disponível)', r.ok === false && r.codigo === 'indisponivel' && prof('profLerAgenda', PER).agenda_externa.conectada === false && prof('profLerAgenda', PER).agenda_externa.disponivel === false && G.chamadas.length === 0, r);
   DONO = 'np@exemplo.test';
-  ok('C3 o dono vê o espelho como disponível (o "+marcador" do e-mail não conta)', prof('profLerGrade').calendar_disponivel === true && (() => { DONO = 'np@exemplo.test'; return true; })());
-  r = grade({ google_calendar: 'Sim' });
-  ok('C4 ao ligar, as sessões futuras já existentes entram na fila (nada é enviado na hora)', r.ok === true && prof('profLerGrade').config.google_calendar === 'Sim' && chamadasEv().length === 0);
+  ok('C3 o dono vê o espelho como disponível (o "+marcador" do e-mail não conta)', prof('profLerAgenda', PER).agenda_externa.disponivel === true && prof('profLerAgenda', PER).agenda_externa.conectada === false && (() => { DONO = 'np@exemplo.test'; return true; })());
+  r = prof('profAgendaConectar', { periodo: PER });
+  ok('C4 ao ligar, as sessões futuras já existentes entram na fila (nada é enviado na hora)', r.ok === true && r.conectada === true && r.agenda.agenda_externa.conectada === true && r.agenda.agenda_externa.conta === 'np@exemplo.test' && prof('profLerGrade').config.google_calendar === 'Sim' && chamadasEv().length === 0, r.erro);
   let g = gatilho(quando(2026, 11, 25, 14, 5));
   let evs = eventosDe(NOME_CAL);
   ok('C5 o gatilho cria a agenda "Cogniativo: Agenda Consultório" e espelha as três sessões', g.calendar === 3 && evs && evs.length === 3 && G.agendas.length === 2 && /^cal/.test(String(prof('profLerGrade').config.gcal_id)), { g: g, n: evs && evs.length });
@@ -193,11 +193,11 @@ tenta('C', () => {
   const depois = prof('profLerGrade').config.gcal_id;
   g = gatilho(quando(2026, 11, 25, 14, 25));
   ok('C23 agenda apagada no Google: a consulta nasce, o id é esquecido e o gatilho recria a agenda', r.ok === true && depois === '' && cel('Sessoes', idGone, 'gcal_evento') !== '' && eventosDe(NOME_CAL).length >= 1, { depois: depois, g: g.calendar });
-  r = grade({ google_calendar: 'Nao' });
+  r = prof('profAgendaDesconectar', { periodo: PER });
   n = G.chamadas.length;
   sessao(P1, { id: uuid(), data: '2026-12-10', hora: '09:00' });
   ok('C24 desligado de novo: nada vai ao Google', G.chamadas.length === n);
-  grade({ google_calendar: 'Sim' });
+  prof('profAgendaConectar', { periodo: PER });
   gatilho(quando(2026, 11, 25, 14, 30));
 });
 
@@ -242,6 +242,9 @@ tenta('I', () => {
 /* ---------------------------------------------------------------- O */
 console.log('O. Ocupado na agenda pessoal do Google e horários livres');
 tenta('O', () => {
+  let semOpcao = pac(P1, 'lerHorariosLivres', { de: '2026-12-16' }).livres.filter(x => x.data === '2026-12-16').length;
+  ok('O0 sem a opção ligada, o compromisso pessoal do Google não é lido (14.8: o horário livre vem só do COGNIATIVO)', semOpcao > 0 && G.chamadas.filter(c => c.u === '/freeBusy').length === 0);
+  prof('profAgendaOpcao', { dados: { ocupado: true }, periodo: PER });
   CACHE.clear();
   G.ocupado = [{ start: '2026-12-16T13:00:00Z', end: '2026-12-16T14:30:00Z' }]; // 10:00 a 11:30 em São Paulo
   let r = pac(P1, 'lerHorariosLivres', { de: '2026-12-16' });

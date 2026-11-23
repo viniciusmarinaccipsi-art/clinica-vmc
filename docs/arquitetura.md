@@ -2241,6 +2241,46 @@ emite e os códigos do rendimento e da ocupação — nada disso fica no código
   - `profAbrirPaciente` aceita `sec-prof-biblioteca` como origem: o Voltar do paciente devolve à Biblioteca.
 - **Saída:** `vmcFecharSobreposicoes_` esvazia `#bibCorpo` e `sairDoSistema` zera `BIB`; Esc fecha a janela.
 
+### Tags da busca recolhidas e sem "Mensuração" (Pacote 19.3.1 — 23/11/2026, só frontend)
+
+- **Decisão do usuário (23/11/2026):** as tags ficam recolhidas e só aparecem quando o botão delas é tocado. `profBuscaHtml_`
+  põe o campo e o botão `.esc-busca-abrir` (ícone `#i-tag` + "Tags") numa `.esc-busca-linha`; a lista `.esc-busca-tags` nasce
+  com `.hidden`; `profAlternarTags_(btn)` abre e fecha a lista da busca em que o botão está (`aria-expanded`). Com a lista
+  recolhida, `profFiltrarEscalas_` mostra no botão quantas tags estão marcadas ("Tags (1)", classe `com-tags`). Vale para as
+  duas telas que usam a busca das escalas (paciente aberto e Biblioteca); as buscas de paciente não têm tags.
+- **Tag que vale para toda escala não é tag.** "Mensuração" estava em 24 das 40 fichas e saiu do catálogo (`ficha.tags`),
+  por decisão do usuário: toda escala mede. Tag descreve o assunto da escala; o que toda escala faz não entra.
+
+## Pacote 14.8 — Agenda: cada profissional conecta a própria conta do Google (23/11/2026)
+
+Primeiro de quatro pacotes do plano aprovado pelo usuário (14.8 Google · 14.9 Outlook · 14.10 e-mails pela conta conectada ·
+14.11 convite de agenda para o paciente). O espelho do 14.5 deixou de ser só da conta do dono do script.
+
+- **Chave do botão:** cliente OAuth do Google em duas propriedades do script, `GOOGLE_OAUTH_CLIENT_ID` e
+  `GOOGLE_OAUTH_CLIENT_SECRET`, que só o usuário preenche (`_gcalCliente_`). Sem elas, `profAgendaConectar` responde
+  `codigo: 'indisponivel'`. Endereço de volta = o do próprio Web App (`_e3UrlDoServico_()`, o `/exec` da implantação fixa).
+- **Ida:** `profAgendaConectar(s, dados, periodo)` → `_gcalUrl_` monta a tela de permissão (`access_type=offline`,
+  `prompt=consent`, `state` = `_gcalEstado_`: `gcal|profissional|validade|ocupado`, assinado com o segredo da sessão, 20 min).
+  Escopos: `openid email` + `calendar.app.created` (só as agendas que o sistema criar); `calendar.freebusy` só com a opção.
+  Para o dono do script não há ida: liga `google_calendar` na hora.
+- **Volta:** `doGet(e)` com `state` → `_gcalRetorno_` confere o estado, troca o código (`oauth2.googleapis.com/token`), guarda
+  `{ rt, conta, escopos }` em `PropertiesService` na chave `gcal:<profissional>` (`_gcalGuardar_`), liga `google_calendar`,
+  grava `agenda_conta` (só o e-mail) na `Config_Agenda` e põe as sessões futuras na fila (`_calMarcarFuturas_`; com conta
+  nova, `refazer` zera `gcal_evento`). `_gcalPagina_` devolve uma página que só diz o resultado — a tela do Google abre em
+  **outra aba**, porque a sessão do profissional mora só na memória da página (lição 23).
+- **Uso:** `_calToken_(profId)` = token da conta conectada (`_gcalToken_`: renova com o `rt`, 55 min no cache `gcalat:<id>`)
+  ou, para o dono sem conexão, o do script — o único `ScriptApp.getOAuthToken()` do código. `_calApi_` ganhou o `profId`;
+  `_calConectada_` substituiu `_calDoDono_` nas decisões; `_calAgendaId_` não lista agendas na conta conectada (cria).
+  `invalid_grant` na renovação → `_gcalCaiu_` (apaga, desliga, `agenda_aviso = caiu`).
+- **Compromissos pessoais:** só com `agenda_ocupado = Sim` (ação `profAgendaOpcao`; ligar sem o escopo devolve `url`).
+  `_calOcupados_` tira os horários de `_ageLivres_`; `_calOcupadosTela_` manda à Agenda `ocupados: [{ data, hora_inicio,
+  hora_fim }]`. Nunca entram em `_ageOcupado_`.
+- **Tela:** a leitura da Agenda devolve `agenda_externa { servico, disponivel, direta, conectada, conta, ocupado, aviso }`.
+  Quadro = vista `conta` do `#ageModal` (`ageContaAbrir_`, `ageRenderConta_`, `ageContaConectar_`, `ageContaOpcao_`,
+  `ageContaDesconectar_`); a aba nasce no clique (`window.open('about:blank')` antes do `await`) e `ageContaConferir_` relê a
+  Agenda quando a página volta a ser vista (`visibilitychange`) ou em "Já permiti". Bloco `.cal-ocup` na grade.
+- **Desligar:** `profAgendaDesconectar` e `desativarProfissional` chamam `_gcalDesligar_` (revoga no Google e apaga).
+- Saíram: `google_calendar` de `salvarGradeAtendimento`, `calendar_disponivel` de `lerGradeAtendimento`, o campo da Grade.
 ## Status das sessões (Pacote 20.2 — 23/11/2026)
 
 Decisões do usuário (23/11/2026): a palavra é **status** (o campo "Situação" da sessão passou a "Status"; "Sem marcação" passou a "Sem status"); a sessão de hoje só vira pendência **depois que a última sessão do dia termina**; dois e-mails, só ao profissional, com nome completo e grade com data e hora. A regra do "a receber" não mudou (`_finCobravel_`).
