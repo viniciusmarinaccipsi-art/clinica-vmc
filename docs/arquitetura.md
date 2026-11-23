@@ -2186,3 +2186,26 @@ Prompt e decisões: `..\prompts_fluxo_caixa\PROMPT_FASE_20.md`; plano aprovado e
 - **Excluir paciente:** saem o cadastro financeiro, quem paga e as cobranças; os pagamentos ficam (`_finApagarDoPaciente_`).
 - **Provas:** `scripts/testes/backend_20.js` (94 provas, em São Paulo e em UTC) e o roteiro `..\FASE_20_fluxo.js`
   (`Código.js` real em Node, 390 e 1280).
+
+## Biblioteca de Escalas e Inventários (Pacote 19.3 — 23/11/2026, só frontend; fecha a Fase 19)
+
+- **Direção escala → paciente.** Atalho `#profAtalhoEscalas` do Início → `profAbrirBiblioteca()` → seção `#sec-prof-biblioteca`
+  (molde de `#sec-prof-pacientes`). `bibRender_` desenha o catálogo como ele é (`ESC_HIST_ORDEM` + `ESC_ESCALAS`, nenhuma
+  cópia): cartão `.esch-bloco` com a cor da escala, `escNomeHtml_`, `fichaHtmlBotao_` e o botão "Aplicar a um paciente"
+  (`.prof-btn-acao.bib-aplicar`). Sem cadeado e sem contagem: esses são do paciente aberto.
+- **Busca por contêiner.** `profBuscaHtml_(prefixo)` (padrão `profEsc`, os ids de sempre; a Biblioteca usa `bib`) e
+  `profFiltrarEscalas_(origem)`: a busca filtra só os cartões do pai dela (`raiz.parentElement`). A tela do paciente aberto
+  continua no DOM enquanto a Biblioteca está na tela — sem isso uma busca esconderia cartões da outra.
+- **Ficha sem paciente.** `escCarregarTextos` deixou de exigir sigla quando há `PROF_SESSAO`: para o profissional,
+  `lerItensInstrumento` lê pelo crachá (o servidor ignora a sigla).
+- **Janela `#bibModal` (`.p11-mov`), estado `BIB = { cod, sigla }`:** `bibAbrir_(cod)` → `bibPasso1_` (pacientes ativos de
+  `PROF_LISTA`, busca por nome e sigla com `profNormalizar_`) → `bibEscolher_(sigla)` → `bibPasso2_`.
+  - **Liberar:** `bibLiberar_` chama `profLiberarEscala` com `{ siglaPaciente, instrumento, liberar: true }` — o payload do
+    cadeado ao abrir. **Pela Biblioteca só se abre; fechar continua no cadeado do paciente.** `chamarServidor` esvazia a
+    memória do paciente (18.11), então a tela dele reflete o cadeado na próxima abertura. Quando o paciente está em
+    `PROF_PACIENTES_MEM` e a escala já consta em `escalas_liberadas`, o passo 2 avisa e não oferece liberar; fora da memória,
+    oferece — liberar de novo não muda nada no servidor.
+  - **Preencher agora:** `bibPreencher_` fecha a janela, `await profAbrirPaciente(sigla)`, abre o módulo Escalas e chama o
+    mesmo `profAplicarEscala_` do cartão do paciente (`PROF_FLUXO`; escore no servidor; resultado aberto ao terminar, 19.0.1).
+  - `profAbrirPaciente` aceita `sec-prof-biblioteca` como origem: o Voltar do paciente devolve à Biblioteca.
+- **Saída:** `vmcFecharSobreposicoes_` esvazia `#bibCorpo` e `sairDoSistema` zera `BIB`; Esc fecha a janela.

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia e valor por paciente · agendamento do paciente com a aprovação do profissional · Painel de Evolução na tela do profissional — Pacote 19.1 · o pedido de agendamento do paciente aparece como “Agendamento solicitado” — Pacote 14.7.1 · Fluxo de caixa: receitas lidas da Agenda, pagamentos, cobranças por e-mail e WhatsApp, comprovante do paciente, despesas e contas a pagar — Pacote 20.0 (23/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia e valor por paciente · agendamento do paciente com a aprovação do profissional · Painel de Evolução na tela do profissional — Pacote 19.1 · o pedido de agendamento do paciente aparece como “Agendamento solicitado” — Pacote 14.7.1 · Fluxo de caixa: receitas lidas da Agenda, pagamentos, cobranças por e-mail e WhatsApp, comprovante do paciente, despesas e contas a pagar · Biblioteca de Escalas e Inventários com "Aplicar a um paciente" — Pacote 19.3 (23/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -744,7 +744,6 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .prof-atalho:hover{border-color:var(--c-action);background:var(--c-action-tint);}
 .prof-atalho:focus-visible{outline:2px solid var(--c-action);outline-offset:2px;}
 .prof-atalho:disabled,.prof-atalho:disabled:hover{color:var(--c-ink-3);background:var(--c-surface-sub);border-color:var(--c-line);cursor:not-allowed;box-shadow:none;}
-.prof-atalho-selo{font:var(--t-label);color:var(--c-ink-3);}
 @media (min-width:700px){ .prof-atalhos{grid-template-columns:repeat(4,minmax(0,1fr));} }
 .prof-bloco{margin-bottom:var(--s-5);text-align:left;}
 .prof-bloco-titulo{font:600 16px/1.3 var(--f-title);color:var(--c-ink);margin:0 0 var(--s-2);display:flex;align-items:baseline;gap:var(--s-2);flex-wrap:wrap;}
@@ -3428,6 +3427,21 @@ button.cab-no-item{cursor:pointer;}
 }
 .esc-busca-chip[aria-pressed="true"] { background:var(--c-action); border-color:var(--c-action); color:var(--c-ink-inv); }
 .esc-busca-vazio { font:var(--t-body-sm); color:var(--c-ink-3); padding:8px 0; }
+/* Pacote 19.3 — Biblioteca de Escalas e Inventários (tela do profissional): o cartão é o .esch-bloco das escalas, com
+   cabeçalho e linha de botões próprios; a janela "Aplicar a um paciente" usa .p11-mov e os botões .b56 */
+#bibConteudo{text-align:left;}
+.bib-cab{display:flex;align-items:center;gap:10px;padding:14px 16px 10px;}
+.bib-acoes{display:flex;gap:var(--s-2);flex-wrap:wrap;padding:0 16px 14px;}
+.bib-pergunta{font:600 16px/1.3 var(--f-title);color:var(--c-ink);margin:0 0 var(--s-3);overflow-wrap:anywhere;}
+.bib-lista{display:flex;flex-direction:column;gap:var(--s-2);}
+.bib-pac{display:flex;align-items:center;justify-content:space-between;gap:var(--s-3);width:100%;min-height:var(--hit-min);padding:var(--s-2) var(--s-3);
+  border:1px solid var(--c-line);border-radius:var(--r-field);background:var(--c-surface);color:var(--c-ink);font:var(--t-body);text-align:left;cursor:pointer;}
+.bib-pac:hover,.bib-pac:focus-visible{border-color:var(--c-action);background:var(--c-action-tint);outline:none;}
+.bib-pac-nome{min-width:0;overflow-wrap:anywhere;}
+.bib-pac-sigla{font:var(--t-body-sm);color:var(--c-ink-3);white-space:nowrap;}
+.bib-nota{font:var(--t-body-sm);color:var(--c-ink-2);margin:var(--s-2) 0 var(--s-4);}
+.bib-feito{font:var(--t-body);color:var(--c-ink);margin:0 0 var(--s-4);overflow-wrap:anywhere;}
+.bib-trocar{margin-top:var(--s-2);}
 /* no celular, o cabeçalho do cartão do profissional quebra em duas linhas: título + seta; contagem + cadeado */
 @media (max-width: 600px) {
   #profModEscBody .esch-bloco-head { flex-wrap: wrap; row-gap: 8px; }
@@ -4758,6 +4772,15 @@ body:has(#sec-prof-financeiro.active) .app,body:has(#sec-prof-financeiro.active)
       <h2 class="gra-titulo"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg> Pacientes</h2>
     </div>
     <div class="prof-placeholder" id="profPacientesConteudo"></div>
+  </div>
+
+  <!-- Pacote 19.3: Biblioteca de Escalas e Inventários — as escalas do catálogo, com ficha, busca e "Aplicar a um paciente" (populada por bibRender_) -->
+  <div class="section" id="sec-prof-biblioteca">
+    <div class="gra-topo">
+      <button class="gra-voltar prof-voltar" type="button" onclick="abrirSecao('sec-prof-dashboard')">← Voltar</button>
+      <h2 class="gra-titulo"><svg class="ico" aria-hidden="true"><use href="#i-clipboard"/></svg> Escalas e Inventários</h2>
+    </div>
+    <div id="bibConteudo"></div>
   </div>
 
   <!-- Fase 20: Fluxo de caixa (profissional). O conteúdo é montado por finRender_ com o que vem de profLerFinanceiro -->
@@ -8150,6 +8173,17 @@ body:has(#sec-prof-financeiro.active) .app,body:has(#sec-prof-financeiro.active)
     </div>
   </div>
 
+  <!-- Pacote 19.3 — janela "Aplicar a um paciente" da Biblioteca: escolher o paciente → liberar ou preencher agora -->
+  <div class="p11-mov" id="bibModal" onclick="if(event.target===this)bibFechar_()">
+    <div class="p11-mbox" role="dialog" aria-modal="true" aria-labelledby="bibTitulo">
+      <div class="p11-mhead">
+        <h3 class="p11-mtitle" id="bibTitulo">Aplicar</h3>
+        <button class="p11-mclose" type="button" onclick="bibFechar_()" aria-label="Fechar">×</button>
+      </div>
+      <div class="p11-mbody" id="bibCorpo"></div>
+    </div>
+  </div>
+
   <!-- Modal ao clicar em card de escala sem ter lido "Como Usar" -->
   <div class="p5-modal-overlay" id="escModalComoUsar" onclick="if(event.target===this)escFecharModalComoUsar()">
     <div class="p5-modal-card" role="dialog" aria-modal="true">
@@ -8698,7 +8732,7 @@ function vmcFecharSobreposicoes_() {
   ['.p5-modal-overlay', '.hist-modal-overlay', '.pev-modal-overlay', '.p11-mov', '.rr-submodal-overlay', '#sairFolha'].forEach(function (sel) {
     document.querySelectorAll(sel).forEach(function (m) { m.classList.remove('show'); });
   });
-  ['histModalConteudo', 'eschModalConteudo', 'rrSubmodalBody', 'pevModalLista'].forEach(function (id) {
+  ['histModalConteudo', 'eschModalConteudo', 'rrSubmodalBody', 'pevModalLista', 'bibCorpo'].forEach(function (id) { // 19.3: + janela da Biblioteca
     const el = document.getElementById(id); if (el) el.innerHTML = '';
   });
   if (typeof SAIR_ACAO !== 'undefined') SAIR_ACAO = null;
@@ -10157,7 +10191,7 @@ function profRenderInicio_() {
     '<button type="button" class="prof-atalho" id="profAtalhoNovo" onclick="profAbrirModalCadastro()"><svg class=ico aria-hidden=true><use href=#i-plus-circle></use></svg><span>Novo Paciente</span></button>' +
     '<button type="button" class="prof-atalho" id="profAtalhoAgenda" onclick="calAbrirTela()"><svg class=ico aria-hidden=true><use href=#i-calendar></use></svg><span>Agenda</span></button>' +
     '<button type="button" class="prof-atalho" id="profAtalhoPacientes" onclick="profAbrirPacientes()"><svg class=ico aria-hidden=true><use href=#i-user></use></svg><span>Pacientes</span></button>' +
-    '<button type="button" class="prof-atalho" id="profAtalhoEscalas" disabled><svg class=ico aria-hidden=true><use href=#i-lock></use></svg><span>Escalas e Inventários</span><span class="prof-atalho-selo">Em breve</span></button>' +
+    '<button type="button" class="prof-atalho" id="profAtalhoEscalas" onclick="profAbrirBiblioteca()"><svg class=ico aria-hidden=true><use href=#i-clipboard></use></svg><span>Escalas e Inventários</span></button>' + // 19.3: abre a Biblioteca
     '<button type="button" class="prof-atalho" id="profAtalhoFinanceiro" onclick="finAbrirTela()"><svg class=ico aria-hidden=true><use href=#i-wallet></use></svg><span>Fluxo de caixa</span></button>' + // Fase 20
   '</div>';
 
@@ -10771,7 +10805,7 @@ async function profAbrirPaciente(sigla) {
 
   // 19.2: o paciente abre do Início (alertas, atualizações) ou da tela Pacientes; o Voltar devolve para a mesma tela
   var origem = secaoAtivaId();
-  if (origem === 'sec-prof-dashboard' || origem === 'sec-prof-pacientes') PROF_ORIGEM_PACIENTE = origem;
+  if (origem === 'sec-prof-dashboard' || origem === 'sec-prof-pacientes' || origem === 'sec-prof-biblioteca') PROF_ORIGEM_PACIENTE = origem; // 19.3: + Biblioteca
 
   PROF_PACIENTE_SEL = { sigla: sigla };
   pevZerar_(); // 19.1: o Painel de Evolução nunca guarda nada do paciente aberto antes
@@ -12229,6 +12263,7 @@ function sairDoSistema(opcoes) {
   PROF_PACIENTE_SEL = null;
   PROF_PACIENTES_MEM = {}; PROF_GRADE_MEM = null; // 18.11
   PROF_LISTA = []; PROF_ORIGEM_PACIENTE = 'sec-prof-dashboard'; // 19.2
+  BIB.cod = ''; BIB.sigla = ''; // 19.3: a janela da Biblioteca não guarda o paciente escolhido (o corpo dela é esvaziado em vmcFecharSobreposicoes_)
   PROF_PRE.rodada++; PROF_PRE.andamento = {}; PROF_PRE.versaoTudo++; // 18.11.1
   PROF_LINK_POR_SIGLA = {}; // 18.1.2: links de convite são da sessão que os gerou
   PROF_CONVITE = { cad: { sigla: '', telefone: '', link: '' }, ed: { sigla: '', telefone: '', link: '' } };
@@ -17713,10 +17748,11 @@ async function escCarregarTextos(codigoEscala) {
   if (!def || !def.textoDaAba) return true;
   if (ESC_TEXTOS[def.instrumentoId]) return true;
   var paciente = carregarSessao();
-  if (!paciente || !paciente.sigla) return false;
+  // 19.3: a ficha aberta pela Biblioteca não tem paciente — para o profissional o servidor lê os itens pelo crachá, sem sigla
+  if ((!paciente || !paciente.sigla) && !PROF_SESSAO) return false;
   try {
     var resp = await chamarServidor('lerItensInstrumento', {
-      sigla: paciente.sigla, instrumento: def.instrumentoId
+      sigla: (paciente && paciente.sigla) || '', instrumento: def.instrumentoId
     });
     if (!resp || !resp.ok || !resp.textos) return false;
     ESC_TEXTOS[def.instrumentoId] = resp.textos;
@@ -23025,19 +23061,22 @@ function profTagsDoCatalogo_() {
   });
   return lista.sort(function (a, b) { return a.localeCompare(b, 'pt-BR'); });
 }
-function profBuscaHtml_() {
+// 19.3: a mesma busca serve ao paciente aberto (prefixo 'profEsc', os ids de sempre) e à Biblioteca (prefixo 'bib').
+// As duas ficam na página ao mesmo tempo, então cada uma filtra só os cartões do próprio contêiner (o pai da busca).
+function profBuscaHtml_(prefixo) {
+  var p = prefixo || 'profEsc';
   var chips = profTagsDoCatalogo_().map(function (t) {
     return '<button type="button" class="esc-busca-chip" data-tag="' + escapeHtmlAuto(t) + '" aria-pressed="false" onclick="profAlternarTag_(this)">' + escapeHtmlAuto(t) + '</button>';
   }).join('');
-  return '<div class="esc-busca" id="profEscBusca">' +
-         '<input type="search" class="esc-busca-campo" id="profEscBuscaCampo" placeholder="Buscar escala por nome, sigla ou tag" aria-label="Buscar escala" oninput="profFiltrarEscalas_()">' +
-         (chips ? '<div class="esc-busca-tags" id="profEscBuscaTags">' + chips + '</div>' : '') +
-         '<div class="esc-busca-vazio hidden" id="profEscBuscaVazio">Nenhuma escala corresponde à busca.</div>' +
+  return '<div class="esc-busca" id="' + p + 'Busca">' +
+         '<input type="search" class="esc-busca-campo" id="' + p + 'BuscaCampo" placeholder="Buscar escala por nome, sigla ou tag" aria-label="Buscar escala" oninput="profFiltrarEscalas_(this)">' +
+         (chips ? '<div class="esc-busca-tags" id="' + p + 'BuscaTags">' + chips + '</div>' : '') +
+         '<div class="esc-busca-vazio hidden" id="' + p + 'BuscaVazio">Nenhuma escala corresponde à busca.</div>' +
          '</div>';
 }
 function profAlternarTag_(btn) {
   btn.setAttribute('aria-pressed', btn.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
-  profFiltrarEscalas_();
+  profFiltrarEscalas_(btn);
 }
 function profNormalizar_(t) {
   return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -23051,20 +23090,159 @@ function profEscalaCorresponde_(cod, texto, tags) {
   var palheiro = profNormalizar_([cod, d.nomeCompleto, d.nomeTraducao, d.nomeCurto].concat(dTags).join(' '));
   return palheiro.indexOf(texto) !== -1;
 }
-function profFiltrarEscalas_() {
-  var campo = document.getElementById('profEscBuscaCampo');
-  if (!campo) return;
+// `origem` = o campo ou o chip que disparou a busca; sem ele vale a busca do paciente aberto (a lista "Nova escala" chama assim)
+function profFiltrarEscalas_(origem) {
+  var raiz = (origem && origem.closest) ? origem.closest('.esc-busca') : document.getElementById('profEscBusca');
+  var campo = raiz ? raiz.querySelector('.esc-busca-campo') : null;
+  if (!campo || !raiz.parentElement) return;
   var texto = profNormalizar_(campo.value).trim();
-  var tags = Array.prototype.map.call(document.querySelectorAll('#profEscBuscaTags .esc-busca-chip[aria-pressed="true"]'), function (b) { return b.dataset.tag; });
+  var tags = Array.prototype.map.call(raiz.querySelectorAll('.esc-busca-chip[aria-pressed="true"]'), function (b) { return b.dataset.tag; });
   var visiveis = 0;
-  document.querySelectorAll('#profModEscBody .esch-bloco[data-esc], #profNovaEscalaLista button[data-esc]').forEach(function (el) {
+  raiz.parentElement.querySelectorAll('.esch-bloco[data-esc], #profNovaEscalaLista button[data-esc]').forEach(function (el) {
     var mostra = profEscalaCorresponde_(el.dataset.esc, texto, tags);
     el.classList.toggle('hidden', !mostra);
     if (mostra && el.classList.contains('esch-bloco')) visiveis++;
   });
-  var vazio = document.getElementById('profEscBuscaVazio');
+  var vazio = raiz.querySelector('.esc-busca-vazio');
   if (vazio) vazio.classList.toggle('hidden', visiveis > 0);
 }
+
+/* ============================================================
+   PACOTE 19.3 — BIBLIOTECA DE ESCALAS E INVENTÁRIOS (tela do profissional)
+   Direção escala → paciente: a tela mostra o catálogo (ESC_HIST_ORDEM / ESC_ESCALAS — nenhuma cópia), com a ficha e a
+   busca que o paciente aberto já usa; "Aplicar a um paciente" escolhe o paciente e então libera (a ação do cadeado,
+   profLiberarEscala, sempre com liberar: true — pela Biblioteca só se abre, nunca se fecha) ou preenche agora (abre o
+   paciente e chama o mesmo profAplicarEscala_ do cartão dele). Nenhuma ação nova no servidor.
+   ============================================================ */
+var BIB = { cod: '', sigla: '' }; // escala e paciente da janela aberta (só em memória; zerado ao fechar e ao sair)
+
+function profAbrirBiblioteca() {
+  if (!PROF_SESSAO) return;
+  bibRender_();
+  abrirSecao('sec-prof-biblioteca');
+}
+function bibRender_() {
+  var cont = document.getElementById('bibConteudo');
+  if (!cont) return;
+  var html = profBuscaHtml_('bib');
+  ESC_HIST_ORDEM.forEach(function (cod) {
+    var def = ESC_ESCALAS[cod];
+    if (!def) return;
+    html += '<div class="esch-bloco ' + def.corPrefix + '" data-esc="' + escapeHtmlAuto(cod) + '">' +
+      // def.emoji é HTML do sprite (literal do catálogo, nunca entrada do usuário) — não escapar
+      '<div class="bib-cab"><span class="esch-bloco-icone">' + (def.emoji || '<svg class=ico aria-hidden=true><use href=#i-chart></use></svg>') + '</span>' +
+      '<span class="esch-bloco-titulo">' + escNomeHtml_(def, cod) + '</span></div>' +
+      '<div class="bib-acoes">' + fichaHtmlBotao_(cod) +
+      '<button type="button" class="prof-btn-acao bib-aplicar" data-esc="' + escapeHtmlAuto(cod) + '" onclick="bibAbrir_(this.dataset.esc)">' +
+      '<svg class=ico aria-hidden=true><use href=#i-user></use></svg> Aplicar a um paciente</button></div></div>';
+  });
+  cont.innerHTML = html;
+}
+function bibNomeEscala_(cod) { var d = ESC_ESCALAS[cod] || {}; return d.nomeCurto || cod; }
+function bibPaciente_(sigla) {
+  var p = (PROF_LISTA || []).filter(function (x) { return String(x.sigla) === String(sigla); })[0];
+  return p ? { sigla: String(p.sigla), nome: p.nome_completo || String(p.sigla) } : null;
+}
+function bibAbrir_(cod) {
+  if (!PROF_SESSAO || !ESC_ESCALAS[cod]) return;
+  BIB.cod = cod; BIB.sigla = '';
+  document.getElementById('bibTitulo').textContent = 'Aplicar ' + bibNomeEscala_(cod);
+  bibPasso1_();
+  document.getElementById('bibModal').classList.add('show');
+  var campo = document.getElementById('bibPacBusca');
+  if (campo) campo.focus();
+}
+function bibFechar_() {
+  document.getElementById('bibModal').classList.remove('show');
+  document.getElementById('bibCorpo').innerHTML = '';
+  BIB.cod = ''; BIB.sigla = '';
+}
+// Passo 1: escolher o paciente (só os ativos; busca por nome e sigla, como na tela Pacientes)
+function bibPasso1_() {
+  BIB.sigla = '';
+  var ativos = (PROF_LISTA || []).filter(function (p) { return !!p.sigla && String(p.ativo || 'Sim').trim().toLowerCase() !== 'nao'; });
+  var html = '<p class="bib-pergunta">Para qual paciente?</p>';
+  if (!ativos.length) {
+    html += '<p class="bib-nota">Você ainda não tem pacientes ativos.</p>';
+  } else {
+    html += '<div class="esc-busca"><input type="search" class="esc-busca-campo" id="bibPacBusca" placeholder="Buscar paciente por nome ou sigla" aria-label="Buscar paciente" oninput="bibFiltrarPacientes_()">' +
+      '<div class="esc-busca-vazio hidden" id="bibPacVazio">Nenhum paciente corresponde à busca.</div></div><div class="bib-lista">';
+    ativos.forEach(function (p) {
+      html += '<button type="button" class="bib-pac" data-sigla="' + esc(p.sigla) + '" onclick="bibEscolher_(this.dataset.sigla)">' +
+        '<span class="bib-pac-nome">' + esc(p.nome_completo || p.sigla) + '</span><span class="bib-pac-sigla">' + esc(p.sigla) + '</span></button>';
+    });
+    html += '</div>';
+  }
+  document.getElementById('bibCorpo').innerHTML = html;
+}
+function bibFiltrarPacientes_() {
+  var campo = document.getElementById('bibPacBusca');
+  if (!campo) return;
+  var texto = profNormalizar_(campo.value).trim(), visiveis = 0;
+  document.querySelectorAll('#bibCorpo .bib-pac').forEach(function (el) {
+    var mostra = !texto || profNormalizar_(el.querySelector('.bib-pac-nome').textContent + ' ' + el.dataset.sigla).indexOf(texto) !== -1;
+    el.classList.toggle('hidden', !mostra);
+    if (mostra) visiveis++;
+  });
+  document.getElementById('bibPacVazio').classList.toggle('hidden', visiveis > 0);
+}
+function bibEscolher_(sigla) {
+  if (!bibPaciente_(sigla)) return;
+  BIB.sigla = String(sigla);
+  bibPasso2_();
+}
+// Passo 2: liberar para o paciente responder ou preencher agora. A escala já aberta só é conhecida quando o paciente
+// está na memória desta sessão (PROF_PACIENTES_MEM); sem isso a janela oferece liberar, e liberar de novo não muda nada.
+function bibPasso2_(erro) {
+  var pac = bibPaciente_(BIB.sigla), def = ESC_ESCALAS[BIB.cod];
+  if (!pac || !def) return;
+  var mem = PROF_PACIENTES_MEM[pac.sigla];
+  var jaAberta = !!mem && (mem.escalas_liberadas || []).indexOf(def.instrumentoId) !== -1;
+  var corpo = document.getElementById('bibCorpo');
+  corpo.innerHTML = '<p class="bib-pergunta">' + esc(bibNomeEscala_(BIB.cod) + ' para ' + pac.nome + ' (' + pac.sigla + ')') + '</p>' +
+    (jaAberta ? '<p class="bib-nota">Esta escala já está aberta para este paciente.</p>'
+      : '<button type="button" class="b56" id="bibBtnLiberar" onclick="bibLiberar_()">Liberar para o paciente responder</button>' +
+        '<p class="bib-nota">A escala aparece no menu dele no próximo acesso.</p>') +
+    '<button type="button" class="b56 b56-sec" onclick="bibPreencher_()">Preencher agora</button>' +
+    '<p class="bib-nota">Você responde com o paciente, nesta tela.</p>' +
+    '<button type="button" class="prof-lem-btn bib-trocar" onclick="bibPasso1_()">Escolher outro paciente</button>';
+  if (erro) corpo.insertBefore(autoAvisoEl(erro), corpo.firstChild);
+}
+async function bibLiberar_() {
+  var pac = bibPaciente_(BIB.sigla), def = ESC_ESCALAS[BIB.cod], cod = BIB.cod;
+  if (!PROF_SESSAO || !pac || !def) return;
+  var btn = document.getElementById('bibBtnLiberar');
+  if (btn) btn.disabled = true;
+  // a mesma ação e o mesmo payload do cadeado do paciente aberto; a gravação esvazia a memória deste paciente (chamarServidor)
+  var resp = await chamarServidor('profLiberarEscala', { siglaPaciente: pac.sigla, instrumento: def.instrumentoId, liberar: true });
+  if (BIB.cod !== cod || BIB.sigla !== pac.sigla) return; // a janela foi fechada ou trocada enquanto o servidor respondia
+  if (!resp || !resp.ok) { if (!(resp && resp.codigo === 'sessao_expirada')) bibPasso2_('Não foi possível salvar agora. Tente de novo.'); return; }
+  document.getElementById('bibCorpo').innerHTML =
+    '<p class="bib-feito" role="status">' + esc(bibNomeEscala_(cod) + ' aberta para ' + pac.nome + ': aparece no menu do paciente no próximo acesso dele.') + '</p>' +
+    '<button type="button" class="b56" onclick="bibFechar_()">Voltar às escalas</button>' +
+    '<button type="button" class="b56 b56-sec" onclick="bibAbrirPaciente_()">Abrir o paciente</button>';
+}
+function bibAbrirPaciente_() {
+  var sigla = BIB.sigla;
+  bibFechar_();
+  if (sigla) profAbrirPaciente(sigla);
+}
+// "Preencher agora": abre o paciente escolhido (o Voltar dele devolve à Biblioteca) e chama o Aplicar do cartão dele —
+// o mesmo fluxo do profissional (PROF_FLUXO), com o escore calculado no servidor e o resultado aberto ao terminar.
+async function bibPreencher_() {
+  var sigla = BIB.sigla, cod = BIB.cod;
+  if (!PROF_SESSAO || !sigla || !ESC_ESCALAS[cod]) return;
+  bibFechar_();
+  await profAbrirPaciente(sigla);
+  // o paciente não carregou (o erro está na tela dele) ou o profissional já saiu desta tela
+  if (!PROF_PACIENTE_SEL || PROF_PACIENTE_SEL.sigla !== sigla || !PROF_PACIENTE_SEL.escalasLiberadas || secaoAtivaId() !== 'sec-prof-paciente') return;
+  var mod = document.getElementById('profMod-esc');
+  if (mod) mod.classList.add('aberto'); // se a escala não puder abrir, o aviso aparece dentro deste módulo
+  await profAplicarEscala_(cod);
+}
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') { var m = document.getElementById('bibModal'); if (m && m.classList.contains('show')) bibFechar_(); }
+});
 
 // ESC fecha o modal
 document.addEventListener('keydown', function(e){
