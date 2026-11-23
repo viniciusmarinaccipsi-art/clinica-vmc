@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário — Pacote 14.5.2 (22/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda — Pacote 14.5.3 (23/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -23394,7 +23394,7 @@ function ageAplicar_(resp) {
   (resp.agenda.eventos || []).forEach(function (e) { (evPorSigla[e.sigla] = evPorSigla[e.sigla] || []).push(e); });
   PROF_LISTA.forEach(function (p) { p.eventos_agenda = evPorSigla[p.sigla] || []; });
   AGE.lidoEm = Date.now();
-  if (document.getElementById('calGrid')) calRender();
+  if (document.getElementById('calGrid') && calDataRef && calMiniMes) calRender(); // 14.5.3: só redesenha a grade se a Agenda já foi aberta nesta página (decidir um pedido pelo Início, logo depois do login, quebrava aqui)
   agePedidosRender_();
   ageSinoRender_();
   profRenderInicio_();
