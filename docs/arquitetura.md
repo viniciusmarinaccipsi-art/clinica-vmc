@@ -2043,3 +2043,20 @@ Grade (`graCfgEndereco`, `graCfgEnderecoNovo`, `graCfgEnderecoDesde`, `graCfgCal
 - `autoHidratarFormulario` repõe também as caixas de texto de Pensamentos (uma por pensamento, `" | "`) e Comportamentos.
 - Saíram: o formulário `p136Render*`, `p136ColetarDados_`, `p136SalvarEdicao`, `P136_ESTADO` e as classes `.p136-form-wrap`,
   `.p136-humor-*`, `.p136-btn-salvar/-cancelar`, `.auto-sec-header/-icon/-title`.
+
+## Fechamento da Agenda — 14.5.2 e 14.5.3 (22/11/2026)
+
+- **Confirmação conforme quem mudou o horário (14.5.2):** `profDecidirPedido` calcula `noPedido` (o horário aprovado é o
+  que o paciente pediu: sem `quando`, ou `quando` igual; pedido só com `sugestao` nunca é). Com `noPedido`, grava
+  `confirmada_em` na sessão (remarcada ou reposição nova) e `confirmou_sessao = Sim` no pedido (`COLUNAS_PEDIDOS_AGENDA`);
+  sem, `confirmada_em = ''`. `profSalvarSessao` ao mudar data ou hora continua zerando a confirmação.
+- **E-mails:** `remarcacao` e `pedido_aprovado` passaram a ser do grupo `confirma` de `montarEmailSessao` (botão
+  "Confirmar presença" + link + linha da antecedência); com `p.confirmada`, a regra de sempre troca por "Sua presença já
+  está confirmada." e "Ver minhas sessões".
+- **Sino:** `_ageEventos_` monta `porAprovacao` (sessão + `decidido_em` dos pedidos aprovados com `confirmou_sessao = Sim`) e
+  não emite `confirmou` para essas confirmações. A marca é própria porque o carimbo tem precisão de minuto.
+- **WhatsApp:** `ageWhatsLink_` com `s.confirmada` troca o pedido de confirmação por "Sua presença já está confirmada." +
+  o link para ver o endereço ou abrir a sessão on-line.
+- **14.5.3:** `ageAplicar_` só chama `calRender()` com `calDataRef` e `calMiniMes` iniciados (Agenda já aberta nesta página).
+- **Prova no publicado do lado do paciente:** `..\PACOTE_14_5_2_real.js` (conta descartável; crachás por `sessoes14_5_2`,
+  temporária de `..\PACOTE_14_5_2_temp.js`; `zerar14_5_2` recomeça a agenda de teste; `limpar14_3` apaga a conta).
