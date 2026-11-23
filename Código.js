@@ -67,7 +67,7 @@
 // pacienteConfirmarSessao, pacienteCancelarSessao, pacientePedirAgenda); avisos de sessao por e-mail, desligados por padrao.
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.5.2';
+var VERSAO_PACOTE = '14.5.4';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -6622,8 +6622,7 @@ var COLUNAS_SERIES = ['id', 'sigla', 'cada', 'unidade', 'dias_semana', 'modo_mes
   'ocupado', 'criada_em', 'encerrada_em'];
 var COLUNAS_BLOQUEIOS = ['id', 'data_inicio', 'hora_inicio', 'data_fim', 'hora_fim', 'dia_todo', 'nome'];
 var COLUNAS_PEDIDOS_AGENDA = ['id', 'sigla', 'tipo', 'sessao_id', 'data', 'hora', 'estado', 'criado_em', 'decidido_em',
-  'sugestao', // 14.5: "horario ideal" escrito pelo paciente quando nenhum horario livre serve (data e hora ficam vazias)
-  'confirmou_sessao']; // 14.5.2: 'Sim' quando a aprovacao (no horario que o paciente pediu) ja deixou a sessao confirmada
+  'sugestao']; // 14.5: "horario ideal" escrito pelo paciente quando nenhum horario livre serve (data e hora ficam vazias)
 var AGENDA_SERIE_MAX = 60;        // sessoes por repeticao
 var AGENDA_SERIE_DIAS = 366;      // 12 meses a partir da primeira data
 var AGENDA_LEITURA_DIAS = 100;    // periodo maximo de uma leitura da agenda
@@ -6940,16 +6939,10 @@ function _ageEventos_(ctx, pacs, agora) {
     lista.push(e);
     return e;
   };
-  // 14.5.2: pedido aprovado no horario que o paciente pediu ja nasce confirmado — quem confirmou foi a aprovacao, nao o paciente
-  var porAprovacao = {};
-  ctx.pedidos.forEach(function (p) {
-    if (p.estado !== 'aprovado' || p.confirmou_sessao !== 'Sim' || !p.decidido_em) return;
-    porAprovacao[(p.tipo === 'repor' ? 'rep-' + p.id.slice(0, 56) : p.sessao_id) + '|' + p.decidido_em] = true;
-  });
   ctx.sessoes.forEach(function (x) {
     if (x.cancelada_por === 'edicao_serie') return;
     if (x.origem === 'paciente' && !x.reposicao_de) ev('agendou', x, x.criado_em);
-    if (x.confirmada_em && !porAprovacao[x.id + '|' + x.confirmada_em]) ev('confirmou', x, x.confirmada_em);
+    if (x.confirmada_em) ev('confirmou', x, x.confirmada_em);
     if (x.estado === 'cancelada' && x.cancelada_por === 'paciente') ev('cancelou', x, x.cancelada_em);
   });
   ctx.pedidos.forEach(function (p) {
@@ -7194,9 +7187,9 @@ function montarEmailSessao(tipo, p) {
   else if (tipo === 'cancelamento') t = { assunto: 'Sessão cancelada — COGNIATIVO', titulo: 'Sessão cancelada',
     paragrafo: 'A sessão de ' + _ageDataBR_(x.data) + ' às ' + _lemHora_(x.hora_inicio) + ' com ' + prof + ' foi cancelada. Para marcar outra data, acesse Minhas sessões.', botao: 'Ver minhas sessões', aviso: '' };
   else if (tipo === 'remarcacao') t = { assunto: 'Sessão remarcada — COGNIATIVO', titulo: 'Sua sessão mudou de horário',
-    paragrafo: 'Sua sessão com ' + prof + ' passou de ' + _ageDataBR_(p.anterior.data) + ' às ' + _lemHora_(p.anterior.hora_inicio) + ' para ' + _ageDataBR_(x.data) + ' às ' + _lemHora_(x.hora_inicio) + ' (' + _ageModNome_(x.modalidade) + ').', botao: 'Confirmar presença', aviso: '', sob: sobConfirmar, confirma: true }; // 14.5.2: quem remarcou foi o profissional — pede a confirmacao
+    paragrafo: 'Sua sessão com ' + prof + ' passou de ' + _ageDataBR_(p.anterior.data) + ' às ' + _lemHora_(p.anterior.hora_inicio) + ' para ' + _ageDataBR_(x.data) + ' às ' + _lemHora_(x.hora_inicio) + ' (' + _ageModNome_(x.modalidade) + ').', botao: 'Confirmar presença', aviso: '', sob: sobConfirmar, confirma: true }; // 14.5.2: remarcada, a sessao volta a pedir a confirmacao
   else if (tipo === 'pedido_aprovado') t = { assunto: 'Pedido aprovado — COGNIATIVO', titulo: 'Seu pedido foi aprovado',
-    paragrafo: prof + ' aprovou o seu pedido. A sessão está marcada para ' + _ageQuando_(x) + '.', botao: 'Confirmar presença', aviso: '', sob: sobConfirmar, confirma: true }; // 14.5.2: so pede quando o horario aprovado nao e o que o paciente pediu
+    paragrafo: prof + ' aprovou o seu pedido. A sessão está marcada para ' + _ageQuando_(x) + '.', botao: 'Confirmar presença', aviso: '', sob: sobConfirmar, confirma: true }; // 14.5.4: pedido aprovado sempre pede a confirmacao (o paciente confirma depois, mesmo tendo pedido o horario)
   else if (tipo === 'pedido_recusado') t = { assunto: 'Pedido respondido — COGNIATIVO', titulo: 'Seu pedido não foi aprovado',
     paragrafo: prof + ' não pôde aprovar o horário pedido (' + _ageDataBR_(x.data) + ' às ' + _lemHora_(x.hora_inicio) + '). Veja outros horários em Minhas sessões ou fale diretamente com ' + prof + '.', botao: 'Ver minhas sessões', aviso: '' };
   else t = { assunto: 'Agenda — movimento de paciente', titulo: 'Movimento na sua agenda', paragrafo: String(p.frase || ''), botao: 'Abrir a Agenda', aviso: '' };
@@ -7548,21 +7541,19 @@ function profDecidirPedido(s, id, aprovar, periodo, quando) {
     return { ok: false, erro: 'Esta sessão não pode ser reposta.' };
   }
   if (_ageOcupado_(ctx, dataPed, hora, dur, fora)) return { ok: false, codigo: 'ocupado', erro: MSG_AGE_PEDIDO_OCUPADO };
-  // 14.5.2 (decisao do usuario, 22/11/2026): aprovado no MESMO horario que o paciente pediu, a sessao ja fica confirmada —
-  // foi ele quem pediu o horario. Com outro horario (ou pedido so com o horario ideal), fica a confirmar e o e-mail leva o botao.
-  var noPedido = _lemDia_(p.data) !== null && !!_lemHora_(p.hora) && dataPed === p.data && hora === _lemHora_(p.hora);
-  var conf = noPedido ? agora.carimbo : '';
+  // 14.5.4 (decisao do usuario, 23/11/2026): o paciente SEMPRE confirma depois — mesmo quando foi ele quem pediu o horario.
+  // Toda sessao remarcada ou reposta por pedido fica a confirmar e o e-mail "Pedido aprovado" leva o botao "Confirmar presenca".
   if (p.tipo === 'remarcar') {
     var marcasPed = _ageMarcasLembrete_(dataPed, hora, agora);
-    _ageGravar_(ctx.abaS, COLUNAS_SESSOES, x.__linha, { data: dataPed, hora_inicio: hora, confirmada_em: conf, ultimo_aviso_em: marcasPed.ultimo_aviso_em, lembrete48_em: marcasPed.lembrete48_em, atualizado_em: agora.carimbo });
+    _ageGravar_(ctx.abaS, COLUNAS_SESSOES, x.__linha, { data: dataPed, hora_inicio: hora, confirmada_em: '', ultimo_aviso_em: marcasPed.ultimo_aviso_em, lembrete48_em: marcasPed.lembrete48_em, atualizado_em: agora.carimbo });
   } else {
     _ageNovaSessao_(ctx, agora, { id: 'rep-' + p.id.slice(0, 56), sigla: x.sigla, data: dataPed, hora_inicio: hora, duracao_min: String(dur), modalidade: x.modalidade,
-      valor: x.valor, notas: '', estado: 'agendada', cobrada: 'Nao', reposicao_de: x.id, origem: 'paciente', avisos: x.avisos, confirmada_em: conf,
+      valor: x.valor, notas: '', estado: 'agendada', cobrada: 'Nao', reposicao_de: x.id, origem: 'paciente', avisos: x.avisos,
       criado_em: agora.carimbo, criado_por: String(alvo.nome || ''), atualizado_em: agora.carimbo });
   }
-  _ageGravar_(ctx.abaP, COLUNAS_PEDIDOS_AGENDA, p.__linha, escolheu ? { estado: 'aprovado', decidido_em: agora.carimbo, data: dataPed, hora: hora, confirmou_sessao: noPedido ? 'Sim' : '' } : { estado: 'aprovado', decidido_em: agora.carimbo, confirmou_sessao: noPedido ? 'Sim' : '' });
-  var avA = _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, 'pedido_aprovado', { id: p.tipo === 'remarcar' ? x.id : 'rep-' + p.id.slice(0, 56), data: dataPed, hora_inicio: hora, modalidade: x.modalidade, avisos: '', duracao_min: String(dur), confirmada_em: conf }, '');
-  return _ageResposta_(alvo, { ok: true, aprovado: true, data: dataPed, hora: hora, confirmada: noPedido, aviso: avA }, periodo, agora);
+  _ageGravar_(ctx.abaP, COLUNAS_PEDIDOS_AGENDA, p.__linha, escolheu ? { estado: 'aprovado', decidido_em: agora.carimbo, data: dataPed, hora: hora } : { estado: 'aprovado', decidido_em: agora.carimbo });
+  var avA = _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, 'pedido_aprovado', { id: p.tipo === 'remarcar' ? x.id : 'rep-' + p.id.slice(0, 56), data: dataPed, hora_inicio: hora, modalidade: x.modalidade, avisos: '', duracao_min: String(dur) }, '');
+  return _ageResposta_(alvo, { ok: true, aprovado: true, data: dataPed, hora: hora, aviso: avA }, periodo, agora);
 }
 
 /** 14.4: zera o contador do sino (guarda o instante em que os eventos foram vistos). */

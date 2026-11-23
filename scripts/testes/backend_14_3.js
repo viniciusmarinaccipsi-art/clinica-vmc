@@ -318,7 +318,7 @@ tenta('Q', () => {
   const idQ2 = uuid();
   pac(P1, 'pacientePedirAgenda', { dados: { id: idQ2, tipo: 'remarcar', sessao_id: idPac, data: '2026-12-02', hora: '16:00' } });
   r = prof('profDecidirPedido', { id: idQ2, aprovar: true, periodo: PER });
-  ok('Q6 aprovar no horário pedido: a sessão muda e já fica confirmada (14.5.2)', r.ok && r.aprovado === true && cel('Sessoes', idPac, 'data') === '2026-12-02' && cel('Sessoes', idPac, 'hora_inicio') === '16:00' && cel('Sessoes', idPac, 'confirmada_em') !== '' && cel('Pedidos_Agenda', idQ2, 'estado') === 'aprovado', r);
+  ok('Q6 aprovar: a sessão muda para o horário pedido e a confirmação de presença é zerada (o paciente confirma depois — 14.5.4)', r.ok && r.aprovado === true && cel('Sessoes', idPac, 'data') === '2026-12-02' && cel('Sessoes', idPac, 'hora_inicio') === '16:00' && cel('Sessoes', idPac, 'confirmada_em') === '' && cel('Pedidos_Agenda', idQ2, 'estado') === 'aprovado', r);
   ok('Q7 decidir de novo o mesmo pedido não repete a ação', prof('profDecidirPedido', { id: idQ2, aprovar: true, periodo: PER }).duplicado === true);
   ok('Q8 pedido de remarcação para horário que não está livre ou fora da grade: recusado', pac(P1, 'pacientePedirAgenda', { dados: { id: uuid(), tipo: 'remarcar', sessao_id: idPac, data: '2026-12-01', hora: '16:00' } }).ok === false && pac(P1, 'pacientePedirAgenda', { dados: { id: uuid(), tipo: 'remarcar', sessao_id: idPac, data: '2026-12-05', hora: '10:00' } }).ok === false);
   const idFalta = uuid();
