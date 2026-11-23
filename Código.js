@@ -69,7 +69,7 @@
 // pacienteConfirmarSessao, pacienteCancelarSessao, pacientePedirAgenda); avisos de sessao por e-mail, desligados por padrao.
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.7';
+var VERSAO_PACOTE = '20.0';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -514,6 +514,57 @@ function _despachar_(acao, payload, s) {
         resposta = profSalvarValorSessao(s, payload.siglaPaciente, payload.valor);
         break;
 
+      // Fase 20 - Fluxo de caixa (profissional)
+      case 'profLerFinanceiro':
+        resposta = profLerFinanceiro(s, payload);
+        break;
+      case 'profSalvarCadastroFinanceiro':
+        resposta = profSalvarCadastroFinanceiro(s, payload.siglaPaciente, payload.dados);
+        break;
+      case 'profSalvarConfigFinanceiro':
+        resposta = profSalvarConfigFinanceiro(s, payload.dados, payload);
+        break;
+      case 'profSalvarPagamento':
+        resposta = profSalvarPagamento(s, payload.siglaPaciente, payload.dados, payload.simular === true, payload);
+        break;
+      case 'profEstornarPagamento':
+        resposta = profEstornarPagamento(s, payload.id);
+        break;
+      case 'profDecidirComprovante':
+        resposta = profDecidirComprovante(s, payload.id, payload.aprovar === true, payload.dados, payload);
+        break;
+      case 'profGerarCobrancas':
+        resposta = profGerarCobrancas(s, payload.siglas, payload);
+        break;
+      case 'profEnviarCobranca':
+        resposta = profEnviarCobranca(s, payload.id, payload.dados, payload);
+        break;
+      case 'profDescartarCobranca':
+        resposta = profDescartarCobranca(s, payload.id, payload);
+        break;
+      case 'profNaoCobrarSessao':
+        resposta = profNaoCobrarSessao(s, payload.sessoes, payload);
+        break;
+      case 'profSalvarDespesa':
+        resposta = profSalvarDespesa(s, payload.dados, payload);
+        break;
+      case 'profEncerrarDespesaFixa':
+        resposta = profEncerrarDespesaFixa(s, payload.id, payload);
+        break;
+      case 'lerArquivoFinanceiro':
+        resposta = lerArquivoFinanceiro(s, payload.id);
+        break;
+      // Fase 20 - Fluxo de caixa (paciente: so o proprio financeiro)
+      case 'lerMeuFinanceiro':
+        resposta = _exigir_(s, 'paciente') || lerMeuFinanceiro(s.sigla);
+        break;
+      case 'pacienteEnviarComprovante':
+        resposta = _exigir_(s, 'paciente') || pacienteEnviarComprovante(s.sigla, payload.dados);
+        break;
+      case 'pacientePedirRecibo':
+        resposta = _exigir_(s, 'paciente') || pacientePedirRecibo(s.sigla);
+        break;
+
       // Acoes do admin (admin do cracha)
       case 'admListarProfissionais':
         resposta = listarProfissionais(s);
@@ -592,6 +643,7 @@ var ACOES_SO_LEITURA = ['lerHistorico', 'lerEscalas', 'lerRascunhos', 'lerEditan
   'profListarPacientes', 'profLerDadosPaciente', 'profLerGrade', 'admListarProfissionais', 'profLerMeusDados',
   'lerMeusLembretes', // 19.2.1
   'profLerAgenda', 'lerMinhasSessoes', 'lerHorariosLivres', // 14.3
+  'profLerFinanceiro', 'lerMeuFinanceiro', 'lerArquivoFinanceiro', // Fase 20
   'profLerHorariosLivres']; // 14.5
 
 // ---------- 18.11: cache do script (CacheService) ----------
@@ -756,7 +808,10 @@ var ACOES_COM_TRAVA = [
   'profSalvarSessao', 'profEditarSerie', 'profCancelarSessao', 'profMarcarSituacao', 'profSalvarBloqueio', 'profApagarBloqueio', 'profDecidirPedido', // 14.3
   'pacienteAgendarSessao', 'pacienteConfirmarSessao', 'pacienteCancelarSessao', 'pacientePedirAgenda', // 14.3
   'confirmarSessaoPorLink', 'profMarcarEventosVistos', 'profAvisarSessao', // 14.4
-  'profSalvarValorSessao' // 14.6
+  'profSalvarValorSessao', // 14.6
+  'profSalvarCadastroFinanceiro', 'profSalvarConfigFinanceiro', 'profSalvarPagamento', 'profEstornarPagamento', 'profDecidirComprovante', // Fase 20
+  'profGerarCobrancas', 'profEnviarCobranca', 'profDescartarCobranca', 'profNaoCobrarSessao', 'profSalvarDespesa', 'profEncerrarDespesaFixa', // Fase 20
+  'pacienteEnviarComprovante', 'pacientePedirRecibo' // Fase 20
 ];
 
 
@@ -1349,13 +1404,18 @@ function _layoutEmail_(p) {
     linhas.push(esp(12));
     linhas.push('<tr><td><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="#E7E6F5" style="background-color:#E7E6F5;border-radius:16px;padding:7px 12px;' + F + 'font-size:13px;line-height:18px;font-weight:600;color:#3D3A6B;">' + _escHtml_(p.acompanhamento) + '</td></tr></table></td></tr>');
   }
-  linhas.push(esp(14), par(_escHtml_(p.ola), 15, 23, '#3F3C52'), esp(10), par(_escHtml_(p.paragrafo), 15, 23, '#3F3C52'));
+  linhas.push(esp(14), par(_escHtml_(p.ola), 15, 23, '#3F3C52'));
+  if (p.paragrafo || !p.linhas) linhas.push(esp(10), par(_escHtml_(p.paragrafo), 15, 23, '#3F3C52'));
+  // Fase 20: corpo em varias linhas (o demonstrativo da cobranca), cada uma escapada
+  if (p.linhas && p.linhas.length) linhas.push(esp(10), par(p.linhas.map(function (l) { return _escHtml_(l); }).join('<br>'), 15, 23, '#3F3C52'));
   // 14.5: segundo link do e-mail de sessao (endereco no mapa ou sala do Meet)
   if (p.linkExtra && p.linkExtra.url) linhas.push(esp(10), par('<a href="' + _escHtml_(p.linkExtra.url) + '" target="_blank" style="color:#4C4A8F;text-decoration:underline;font-weight:600;">' + _escHtml_(p.linkExtra.rotulo) + '</a>', 15, 23, '#3F3C52'));
+  if (!p.semBotao) { // Fase 20: a cobranca vai sem botao (quem paga pode nao ter acesso)
   linhas.push(esp(22));
   linhas.push('<tr><td><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="#4C4A8F" style="background-color:#4C4A8F;border-radius:999px;"><a href="' + link + '" target="_blank" style="display:block;' + F + 'font-size:15px;line-height:16px;font-weight:600;color:#FFFFFF;text-decoration:none;padding:14px 26px;border-radius:999px;">' + _escHtml_(p.botao) + '</a></td></tr></table></td></tr>');
   if (p.sobBotao) linhas.push(esp(12), par(_escHtml_(p.sobBotao), 13, 20, '#5E5B73')); // 19.2.1: linha sob o botao (lembrete)
   linhas.push(esp(18), par(_escHtml_(EMAIL_LINK_RESERVA) + '<br><a href="' + link + '" target="_blank" style="color:#4C4A8F;text-decoration:underline;word-break:break-all;">' + link + '</a>', 13, 20, '#5E5B73'));
+  }
   linhas.push(esp(24), '<tr><td><div style="height:1px;line-height:1px;font-size:0;background-color:#E2E1EE;">&nbsp;</div></td></tr>', esp(24));
   linhas.push(par(_escHtml_(p.aviso), 13, 20, '#5E5B73'));
   if (ass.length) {
@@ -2123,8 +2183,9 @@ function _reservarEmail_(cota, quantos) {
   var n = quantos || 1;
   // 19.2.1: terceira cota, 'lembretes' (LEMBRETES_DIA_MAX), separada das outras duas
   // 14.3: quarta cota, 'sessoes' (SESSOES_EMAIL_DIA_MAX), para os avisos de sessao
-  var max = cota === 'redefinicoes' ? REDEFINICOES_DIA_MAX : (cota === 'lembretes' ? LEMBRETES_DIA_MAX : (cota === 'sessoes' ? SESSOES_EMAIL_DIA_MAX : EMAILS_DIA_MAX));
-  var prefixo = cota === 'redefinicoes' ? 'redefinicoes:' : (cota === 'lembretes' ? 'lembretes:' : (cota === 'sessoes' ? 'sessoes:' : 'emails:'));
+  // Fase 20: quinta cota, 'cobrancas' (FIN_COBRANCAS_EMAIL_DIA_MAX), para as cobrancas enviadas pelo profissional
+  var max = cota === 'redefinicoes' ? REDEFINICOES_DIA_MAX : (cota === 'lembretes' ? LEMBRETES_DIA_MAX : (cota === 'sessoes' ? SESSOES_EMAIL_DIA_MAX : (cota === 'cobrancas' ? FIN_COBRANCAS_EMAIL_DIA_MAX : EMAILS_DIA_MAX)));
+  var prefixo = cota === 'redefinicoes' ? 'redefinicoes:' : (cota === 'lembretes' ? 'lembretes:' : (cota === 'sessoes' ? 'sessoes:' : (cota === 'cobrancas' ? 'cobrancas:' : 'emails:')));
   // 18.10: a mesma trava das gravacoes (reentrante — nao solta a da acao que chamou)
   return _comTrava_(function () {
     var props = PropertiesService.getScriptProperties();
@@ -4650,6 +4711,7 @@ function profExcluirPaciente(s, siglaPaciente, confirmacaoSigla) {
       }
       _lembretesApagarDoPaciente_(controle, siglaPaciente); // 19.2.1: o plano de lembretes sai com o paciente
       _agendaApagarDoPaciente_(controle, siglaPaciente); // 14.3: sessoes, series e pedidos tambem
+      _finApagarDoPaciente_(controle, siglaPaciente); // Fase 20: cadastro financeiro, quem paga e cobrancas
     }
 
     // 3. Remover linha do Indice_Siglas
@@ -8435,6 +8497,854 @@ function removerGatilhoLembretes() {
   return { ok: true, removidos: removidos };
 }
 
+
+// ============================================================
+// FASE 20 — FLUXO DE CAIXA (Pacote 20.0)
+// O financeiro LE a Agenda: o item a receber e a propria linha de `Sessoes`; nenhuma sessao e copiada.
+// Abas novas na Controle (nascem no primeiro uso; toda celula e texto literal, `_lemCelula_`, lida por
+// `getDisplayValues`): Fin_Cadastro, Fin_Pessoas, Fin_Pagamentos, Fin_Alocacoes, Fin_Cobrancas,
+// Fin_Despesas_Fixas, Fin_Despesas e Config_Financeiro. Valores em CENTAVOS (inteiro em texto); o `valor`
+// da sessao continua em reais, como a Agenda grava (`_finCent_` converte). Situacao de sessao e de
+// cobranca (paga, parcial, atrasada) e sempre calculada, nunca gravada. As regras sao puras e recebem o
+// "agora" por parametro. Nada e gerado nem enviado sozinho: nao ha gatilho neste bloco.
+// ============================================================
+var ABA_FIN_CADASTRO = 'Fin_Cadastro';
+var ABA_FIN_PESSOAS = 'Fin_Pessoas';
+var ABA_FIN_PAGAMENTOS = 'Fin_Pagamentos';
+var ABA_FIN_ALOCACOES = 'Fin_Alocacoes';
+var ABA_FIN_COBRANCAS = 'Fin_Cobrancas';
+var ABA_FIN_FIXAS = 'Fin_Despesas_Fixas';
+var ABA_FIN_DESPESAS = 'Fin_Despesas';
+var ABA_FIN_CONFIG = 'Config_Financeiro';
+var COLUNAS_FIN = {};
+COLUNAS_FIN[ABA_FIN_CADASTRO] = ['id', 'modo', 'n', 'quando', 'pagador', 'recibo', 'titular', 'canal', 'encaminhamento', 'recibo_pedido_em', 'atualizado_em']; // id = sigla do paciente
+COLUNAS_FIN[ABA_FIN_PESSOAS] = ['id', 'sigla', 'papel', 'nome', 'documento', 'telefone', 'email', 'criado_em'];
+COLUNAS_FIN[ABA_FIN_PAGAMENTOS] = ['id', 'sigla', 'data', 'valor', 'forma', 'quem', 'origem', 'situacao', 'obs', 'arquivo_id', 'arquivo_nome', 'arquivo_tipo', 'criado_em', 'decidido_em'];
+COLUNAS_FIN[ABA_FIN_ALOCACOES] = ['id', 'pagamento_id', 'sessao_id', 'sigla', 'valor', 'criado_em'];
+COLUNAS_FIN[ABA_FIN_COBRANCAS] = ['id', 'sigla', 'para', 'canal', 'mes', 'sessoes', 'total', 'texto', 'vence_em', 'criada_em', 'enviada_em', 'enviada_por'];
+COLUNAS_FIN[ABA_FIN_FIXAS] = ['id', 'nome', 'categoria', 'tipo', 'valor', 'dia', 'desde', 'encerrada_em', 'criado_em'];
+COLUNAS_FIN[ABA_FIN_DESPESAS] = ['id', 'fixa_id', 'competencia', 'nome', 'categoria', 'valor', 'vence', 'paga_em', 'situacao', 'obs', 'arquivo_id', 'arquivo_nome', 'arquivo_tipo', 'criado_em'];
+COLUNAS_FIN[ABA_FIN_CONFIG] = ['id', 'valor']; // id = chave
+var FIN_CONFIG_PADRAO = { dados_receber: '', formas: 'Pix|Dinheiro|Transferência|Cartão|Outro', valor_padrao: '0', prazo_dias: '5',
+  texto_cobranca: '{nome}, {saudacao}. Como vai?\n\nSegue o demonstrativo das sessões de {mes}.\n\n{demonstrativo}\n\n*Total: {total}*\n\nDados para o pagamento:\n*{dados}*',
+  categorias: 'Aluguel|Contas (água, luz, internet)|Sistemas e assinaturas|Material|Serviços de terceiros|Formação e supervisão|Impostos e taxas|Outras' };
+var FIN_CADASTRO_PADRAO = { modo: 'sessao', n: '', quando: '', pagador: 'paciente', recibo: 'Nao', titular: 'paciente', canal: 'ambos', encaminhamento: '', recibo_pedido_em: '' };
+var FIN_MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+var FIN_ARQUIVO_MAX_B64 = 7200000;      // ~5,4 MB em base64 (o limite dito na tela e 5 MB)
+var FIN_ARQUIVO_TIPOS = ['image/jpeg', 'image/png', 'application/pdf'];
+var FIN_COBRANCAS_EMAIL_DIA_MAX = 60;   // e-mails de cobranca por dia (cota propria)
+var FIN_PASTA_COMPROVANTES = 'Comprovantes';
+
+// ---------- regras puras ----------
+
+/** Dinheiro digitado ("280", "280,5", "1.120,00", "R$ 90") -> centavos inteiros (0 se nao for numero). */
+function _finCent_(txt) {
+  var t = String(txt === undefined || txt === null ? '' : txt).replace(/[^0-9.,]/g, '');
+  if (!t) return 0;
+  if (t.indexOf(',') !== -1) t = t.replace(/\./g, '').replace(',', '.');
+  else if (/^\d{1,3}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, '');
+  var n = Math.round(parseFloat(t) * 100);
+  return isFinite(n) && n > 0 ? n : 0;
+}
+/** Centavos que vieram da tela (inteiro >= 0, teto de R$ 999.999,99); qualquer outra coisa vira -1. */
+function _finInt_(v) {
+  var n = Number(v);
+  return (typeof v !== 'boolean' && v !== '' && v !== null && isFinite(n) && Math.floor(n) === n && n >= 0 && n <= 99999999) ? n : -1;
+}
+function _finBRL_(c) {
+  var n = Math.round(Number(c) || 0), neg = n < 0; n = Math.abs(n);
+  return (neg ? '- ' : '') + 'R$ ' + String(Math.floor(n / 100)).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + ('0' + (n % 100)).slice(-2);
+}
+function _finDataLonga_(iso) { var p = String(iso).split('-'); return p[2] + ' de ' + FIN_MESES[Number(p[1]) - 1] + ' de ' + p[0]; }
+function _finMesNome_(mes) { var p = String(mes).split('-'); return FIN_MESES[Number(p[1]) - 1] + ' de ' + p[0]; }
+/** Ultimo dia ('AAAA-MM-DD') do mes 'AAAA-MM'. */
+function _finFimDoMes_(mes) { var p = String(mes).split('-'); return _lemIso_(Math.round(Date.UTC(Number(p[0]), Number(p[1]), 0) / 86400000)); }
+/** 'AAAA-MM' deslocado de `n` meses. */
+function _finMesMais_(mes, n) {
+  var p = String(mes).split('-'), t = Number(p[0]) * 12 + (Number(p[1]) - 1) + n;
+  return Math.floor(t / 12) + '-' + ('0' + (t % 12 + 1)).slice(-2);
+}
+/** CPF (11) ou CNPJ (14) com os digitos conferidos. Devolve so os digitos, '' se vazio, null se invalido. */
+function _finDocumento_(txt) {
+  var d = String(txt === undefined || txt === null ? '' : txt).replace(/\D/g, '');
+  if (!d) return '';
+  var dv = function (base, pesos) { var s = 0; for (var i = 0; i < pesos.length; i++) s += Number(base.charAt(i)) * pesos[i]; var r = s % 11; return r < 2 ? 0 : 11 - r; };
+  if (/^(\d)\1+$/.test(d)) return null;
+  if (d.length === 11) {
+    var a = dv(d, [10, 9, 8, 7, 6, 5, 4, 3, 2]), b = dv(d, [11, 10, 9, 8, 7, 6, 5, 4, 3, 2]);
+    return (a === Number(d.charAt(9)) && b === Number(d.charAt(10))) ? d : null;
+  }
+  if (d.length === 14) {
+    var c1 = dv(d, [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]), c2 = dv(d, [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]);
+    return (c1 === Number(d.charAt(12)) && c2 === Number(d.charAt(13))) ? d : null;
+  }
+  return null;
+}
+/** O documento como a tela o mostra na leitura em lista: so o miolo (nunca o numero inteiro fora do cadastro aberto). */
+function _finDocMascara_(d) {
+  d = String(d || '').replace(/\D/g, '');
+  if (d.length === 11) return '***.' + d.slice(3, 6) + '.' + d.slice(6, 9) + '-**';
+  if (d.length === 14) return '**.' + d.slice(2, 5) + '.' + d.slice(5, 8) + '/****-**';
+  return '';
+}
+/** A sessao ja aconteceu em relacao ao "agora"? */
+function _finPassou_(x, agora) { return x.data < agora.data || (x.data === agora.data && _lemHora_(x.hora_inicio) <= agora.hora); }
+/**
+ * A sessao entra no "a receber"? A tabela da Agenda manda (`cobrada`): Sim entra, Nao nao entra, reposicao nunca.
+ * Sem situacao marcada: a que ja ocorreu entra como proposta; a futura so entra para quem paga o mes
+ * (mensal adiantado ou por faixa) e so no mes corrente.
+ */
+function _finCobravel_(x, cad, agora) {
+  if (x.reposicao_de) return false;
+  if (x.cobrada === 'Sim') return true;
+  if (x.cobrada === 'Nao' || x.estado === 'cancelada') return false;
+  if (_finPassou_(x, agora)) return true;
+  return cad.modo === 'mensal' && cad.quando !== 'seguinte' && String(x.data).slice(0, 7) === agora.data.slice(0, 7);
+}
+/**
+ * A sessao em aberto ja pode ser cobrada hoje, pelo modo de pagamento do paciente?
+ * Por sessao e a cada N: so o que ja ocorreu (e, no N, so com N ocorridas em aberto). Mensal: mes fechado em
+ * aberto sempre; mes corrente desde o dia 1 (adiantado e faixa 1 a 10), o dia 11 ou o dia 21; "mes seguinte"
+ * so depois que o mes fecha.
+ */
+function _finElegivel_(s, cad, hojeIso, ocorridasAbertas) {
+  if (cad.modo !== 'mensal') return !s.futura && (cad.modo !== 'n' || ocorridasAbertas >= (parseInt(cad.n, 10) || 2));
+  var mes = s.data.slice(0, 7), mesHoje = hojeIso.slice(0, 7), dia = Number(hojeIso.slice(8, 10));
+  if (mes !== mesHoje) return mes < mesHoje;
+  if (cad.quando === 'seguinte') return false;
+  return cad.quando === 'f2' ? dia >= 11 : (cad.quando === 'f3' ? dia >= 21 : true);
+}
+/** Sugestao de abatimento: as mais antigas primeiro, ate o valor acabar. Devolve { itens: [{sessao, valor}], sobra }. */
+function _finSugerir_(abertas, valor) {
+  var resta = valor, itens = [];
+  abertas.slice().sort(function (a, b) { return (a.data + a.hora).localeCompare(b.data + b.hora); }).forEach(function (s) {
+    var falta = s.valor - s.pago;
+    if (resta <= 0 || falta <= 0) return;
+    var v = Math.min(resta, falta); itens.push({ sessao: s.id, valor: v }); resta -= v;
+  });
+  return { itens: itens, sobra: resta };
+}
+/** Periodo pedido pela tela -> { de, ate, rotulo, antes: {de, ate} } (o periodo de comparacao). */
+function _finPeriodo_(p, hojeIso) {
+  p = p && typeof p === 'object' ? p : {};
+  var hoje = _lemDia_(hojeIso), mes = hojeIso.slice(0, 7), ano = hojeIso.slice(0, 4), de, ate, rotulo;
+  var maiuscula = function (t) { return t.charAt(0).toUpperCase() + t.slice(1); };
+  if (p.periodo === 'mes_passado') { mes = _finMesMais_(mes, -1); de = mes + '-01'; ate = _finFimDoMes_(mes); rotulo = maiuscula(_finMesNome_(mes)); }
+  else if (p.periodo === 'semana') { var seg = hoje - ((new Date(hoje * 86400000).getUTCDay() + 6) % 7); de = _lemIso_(seg); ate = _lemIso_(seg + 6); rotulo = 'Semana de ' + de.slice(8) + '/' + de.slice(5, 7) + ' a ' + ate.slice(8) + '/' + ate.slice(5, 7); }
+  else if (p.periodo === 'ano') { de = ano + '-01-01'; ate = ano + '-12-31'; rotulo = 'Ano de ' + ano; }
+  else if (p.periodo === '12m') { de = _finMesMais_(mes, -11) + '-01'; ate = _finFimDoMes_(mes); rotulo = 'Últimos 12 meses'; }
+  else if (p.periodo === 'personalizado' && _lemDia_(p.de) !== null && _lemDia_(p.ate) !== null && p.de <= p.ate && _lemDia_(p.ate) - _lemDia_(p.de) <= 400) {
+    de = p.de; ate = p.ate; rotulo = de.slice(8) + '/' + de.slice(5, 7) + '/' + de.slice(0, 4) + ' a ' + ate.slice(8) + '/' + ate.slice(5, 7) + '/' + ate.slice(0, 4);
+  } else { de = mes + '-01'; ate = _finFimDoMes_(mes); rotulo = maiuscula(_finMesNome_(mes)); }
+  var dias = _lemDia_(ate) - _lemDia_(de) + 1, antes;
+  if (p.comparar === 'ano_passado') antes = { de: (Number(de.slice(0, 4)) - 1) + de.slice(4), ate: (Number(ate.slice(0, 4)) - 1) + ate.slice(4) };
+  else if (de.slice(8) === '01' && ate === _finFimDoMes_(ate.slice(0, 7))) { // meses inteiros: compara com os meses inteiros anteriores
+    var n = (Number(ate.slice(0, 4)) * 12 + Number(ate.slice(5, 7))) - (Number(de.slice(0, 4)) * 12 + Number(de.slice(5, 7))) + 1;
+    antes = { de: _finMesMais_(de.slice(0, 7), -n) + '-01', ate: _finFimDoMes_(_finMesMais_(ate.slice(0, 7), -n)) };
+  } else antes = { de: _lemIso_(_lemDia_(de) - dias), ate: _lemIso_(_lemDia_(de) - 1) };
+  return { de: de, ate: ate, rotulo: rotulo, dias: dias, antes: antes };
+}
+/** "bom dia" ate 11:59, "boa tarde" ate 17:59, "boa noite" depois. */
+function _finSaudacao_(hora) { return hora < '12:00' ? 'bom dia' : (hora < '18:00' ? 'boa tarde' : 'boa noite'); }
+/** A mensagem de cobranca: o modelo da configuracao com {nome}, {saudacao}, {mes}, {demonstrativo}, {total} e {dados}. */
+function _finTextoCobranca_(modelo, v) {
+  var n = v.sessoes.length, valores = {};
+  v.sessoes.forEach(function (s) { valores[s.valor] = true; });
+  var umValor = Object.keys(valores).length === 1;
+  var demo = n + (n === 1 ? ' sessão' : ' sessões') + ' de psicoterapia' + (umValor ? ' (' + _finBRL_(v.sessoes[0].valor) + (n === 1 ? ')' : ' cada)') : '') + (n === 1 ? ', no dia:' : ', nos dias:') + '\n' +
+    v.sessoes.map(function (s, i) { return String.fromCharCode(97 + (i % 26)) + '. ' + _finDataLonga_(s.data) + (umValor ? '' : ' (' + _finBRL_(s.valor) + ')') + (s.pago ? ' (já pago: ' + _finBRL_(s.pago) + ')' : ''); }).join('\n');
+  var troca = { nome: v.nome, saudacao: v.saudacao, mes: v.mes, demonstrativo: demo, total: _finBRL_(v.total), dados: v.dados || '' };
+  return String(modelo || FIN_CONFIG_PADRAO.texto_cobranca).replace(/\{(nome|saudacao|mes|demonstrativo|total|dados)\}/g, function (_, k) { return troca[k]; });
+}
+
+// ---------- leitura das abas ----------
+
+function _finAba_(controle, nome, criar) { return _ageAba_(controle, nome, COLUNAS_FIN[nome], criar); }
+function _finGravar_(controle, nome, linha, campos) { _ageGravar_(_finAba_(controle, nome, true), COLUNAS_FIN[nome], linha, campos); }
+function _finConfigDe_(linhas) {
+  var c = {}, k;
+  for (k in FIN_CONFIG_PADRAO) c[k] = FIN_CONFIG_PADRAO[k];
+  linhas.forEach(function (l) { c[l.id] = l.valor; });
+  var lista = function (t) { return String(t || '').split('|').map(function (x) { return x.trim(); }).filter(function (x) { return x; }); };
+  return { dados_receber: c.dados_receber, formas: lista(c.formas), valor_padrao: Math.max(0, parseInt(c.valor_padrao, 10) || 0), prazo_dias: Math.min(90, Math.max(0, parseInt(c.prazo_dias, 10) || 0)),
+    texto_cobranca: c.texto_cobranca, categorias: lista(c.categorias), fiscal: false };
+}
+/** Tudo o que as regras precisam, lido uma vez: sessoes da Agenda, pacientes, abas do financeiro e a configuracao. Leitura nunca cria aba. */
+function _finCtx_(controle) {
+  var ler = function (nome) { return _lembretesLer_(_finAba_(controle, nome, false)); };
+  var c = { controle: controle, cfgAgenda: _ageConfig_(controle), pacs: _agePacientes_(controle), cadastros: {} };
+  c.abaS = _ageAba_(controle, ABA_SESSOES, COLUNAS_SESSOES, false);
+  c.sessoes = _lembretesLer_(c.abaS);
+  ler(ABA_FIN_CADASTRO).forEach(function (l) { c.cadastros[_siglaChave_(l.id)] = l; });
+  c.pessoas = ler(ABA_FIN_PESSOAS); c.pagamentos = ler(ABA_FIN_PAGAMENTOS); c.alocacoes = ler(ABA_FIN_ALOCACOES);
+  c.cobrancas = ler(ABA_FIN_COBRANCAS); c.fixas = ler(ABA_FIN_FIXAS); c.despesas = ler(ABA_FIN_DESPESAS);
+  c.config = _finConfigDe_(ler(ABA_FIN_CONFIG));
+  return c;
+}
+function _finCad_(c, sigla) {
+  var l = c.cadastros[_siglaChave_(sigla)] || {}, o = {}, k;
+  for (k in FIN_CADASTRO_PADRAO) o[k] = l[k] || FIN_CADASTRO_PADRAO[k];
+  return o;
+}
+/** Valor da sessao em centavos: o da sessao; sem ele, o do cadastro do paciente; sem ele, o valor padrao do profissional. */
+function _finValor_(x, c) {
+  var p = c.pacs[_siglaChave_(x.sigla)];
+  return _finCent_(x.valor) || _finCent_(p && p.valor) || c.config.valor_padrao;
+}
+/**
+ * O estado calculado: quanto cada sessao ja recebeu, o credito de cada paciente e a lista de sessoes como o
+ * financeiro as ve. So pagamento CONFIRMADO conta (comprovante aguardando, recusado e pagamento desfeito nao).
+ */
+function _finEstado_(c, agora) {
+  var e = { pago: {}, credito: {}, sessoes: [], porId: {}, confirmados: {}, pagoEm: {} };
+  c.pagamentos.forEach(function (p) {
+    if (p.situacao !== 'confirmado') return;
+    var s = _siglaChave_(p.sigla);
+    e.confirmados[p.id] = p; e.credito[s] = (e.credito[s] || 0) + (parseInt(p.valor, 10) || 0);
+  });
+  c.alocacoes.forEach(function (a) {
+    var p = e.confirmados[a.pagamento_id], v = parseInt(a.valor, 10) || 0, s = _siglaChave_(a.sigla);
+    if (!p) return;
+    e.pago[a.sessao_id] = (e.pago[a.sessao_id] || 0) + v; e.credito[s] = (e.credito[s] || 0) - v;
+    if (!e.pagoEm[a.sessao_id] || p.data > e.pagoEm[a.sessao_id]) e.pagoEm[a.sessao_id] = p.data;
+  });
+  c.sessoes.forEach(function (x) {
+    var estado = x.estado || 'agendada';
+    if (estado === 'cancelada' && x.cobrada !== 'Sim') return; // cancelada sem cobranca nao e assunto do financeiro
+    if (_lemDia_(x.data) === null) return;
+    var passou = _finPassou_(x, agora), cobravel = _finCobravel_(x, _finCad_(c, x.sigla), agora);
+    var s = { id: x.id, sigla: String(x.sigla).trim(), data: x.data, hora: _lemHora_(x.hora_inicio), modalidade: x.modalidade === 'online' ? 'online' : 'presencial',
+      estado: (estado === 'agendada' && passou) ? 'ocorrida' : estado, cobravel: cobravel, valor: _finValor_(x, c), pago: 0, reposicao: !!x.reposicao_de, futura: !passou, cancelada_por: x.cancelada_por || '' };
+    s.pago = Math.min(e.pago[x.id] || 0, s.valor);
+    e.sessoes.push(s); e.porId[s.id] = s;
+  });
+  e.sessoes.sort(function (a, b) { return (a.data + a.hora).localeCompare(b.data + b.hora); });
+  return e;
+}
+function _finAbertas_(e, sigla) {
+  var alvo = sigla ? _siglaChave_(sigla) : '';
+  return e.sessoes.filter(function (s) { return s.cobravel && s.pago < s.valor && (!alvo || _siglaChave_(s.sigla) === alvo); });
+}
+/** Situacao da cobranca, calculada: a_enviar, enviada, parcial (recebeu parte depois de cobrada), atrasada (vencida com saldo) ou paga. */
+function _finCobranca_(cb, e, hojeIso) {
+  var ids = String(cb.sessoes || '').split(',').filter(function (x) { return x; }), total = 0, pago = 0, pagaEm = '';
+  ids.forEach(function (id) {
+    var s = e.porId[id];
+    if (!s || !s.cobravel) return;
+    total += s.valor; pago += s.pago;
+    if (e.pagoEm[id] && e.pagoEm[id] > pagaEm) pagaEm = e.pagoEm[id];
+  });
+  // `total` = o que a cobranca pediu (gravado ao gerar ou enviar); `falta` = o que as sessoes dela ainda devem hoje
+  var falta = total - pago, cobrado = parseInt(cb.total, 10) || total;
+  var sit = !cb.enviada_em ? 'a_enviar' : (falta <= 0 ? 'paga' : ((cb.vence_em && cb.vence_em < hojeIso) ? 'atrasada' : (falta < cobrado ? 'parcial' : 'enviada')));
+  return { id: cb.id, sigla: cb.sigla, para: cb.para, canal: cb.canal, mes: _finMesNome_(cb.mes), sessoes: ids, total: cobrado, falta: Math.max(0, falta), pago: Math.max(0, cobrado - Math.max(0, falta)), texto: cb.texto, vence_em: cb.vence_em,
+    enviada_em: String(cb.enviada_em || '').slice(0, 10), paga_em: sit === 'paga' ? pagaEm : '', situacao: sit };
+}
+/** O que o sistema PROPOE cobrar hoje: por paciente e por mes das sessoes, fora o que ja esta numa cobranca ainda nao paga. */
+function _finPropostas_(c, e, hojeIso) {
+  var emCobranca = {}, grupos = {}, ordem = [];
+  c.cobrancas.forEach(function (cb) { var v = _finCobranca_(cb, e, hojeIso); if (v.situacao !== 'paga') v.sessoes.forEach(function (id) { emCobranca[id] = true; }); });
+  var ocorridas = {};
+  _finAbertas_(e).forEach(function (s) { if (!s.futura) ocorridas[_siglaChave_(s.sigla)] = (ocorridas[_siglaChave_(s.sigla)] || 0) + 1; });
+  _finAbertas_(e).forEach(function (s) {
+    var sig = _siglaChave_(s.sigla), p = c.pacs[sig], cad = _finCad_(c, sig);
+    if (!p || !p.ativo || emCobranca[s.id] || !_finElegivel_(s, cad, hojeIso, ocorridas[sig] || 0)) return;
+    var k = sig + '|' + s.data.slice(0, 7);
+    if (!grupos[k]) { grupos[k] = { sigla: s.sigla, mes: s.data.slice(0, 7), sessoes: [], total: 0, motivo: _finMotivo_(cad) }; ordem.push(k); }
+    grupos[k].sessoes.push(s.id); grupos[k].total += s.valor - s.pago;
+  });
+  return ordem.map(function (k) { return grupos[k]; });
+}
+function _finMotivo_(cad) {
+  if (cad.modo === 'n') return 'A cada ' + (parseInt(cad.n, 10) || 2) + ' sessões';
+  if (cad.modo !== 'mensal') return 'Por sessão';
+  return 'Mensal, ' + ({ adiantado: 'adiantado', f1: 'do dia 1 ao 10', f2: 'do dia 11 ao 20', f3: 'do dia 21 ao fim do mês', seguinte: 'no mês seguinte' })[cad.quando || 'f1'];
+}
+/** Pagadores do paciente (so nomes na leitura em lista): os cadastrados ou, se for ele mesmo quem paga, o proprio paciente. */
+function _finPagadores_(c, sigla, completo) {
+  var sig = _siglaChave_(sigla), p = c.pacs[sig] || {};
+  if (_finCad_(c, sig).pagador !== 'outro') return [{ nome: p.nome || sigla, email: p.email || '', telefone: p.telefone || '' }];
+  var lista = c.pessoas.filter(function (x) { return _siglaChave_(x.sigla) === sig && x.papel === 'pagador'; }).map(function (x) {
+    return completo ? { nome: x.nome, documento: x.documento, telefone: x.telefone, email: x.email } : { nome: x.nome, email: x.email, telefone: x.telefone };
+  });
+  return lista.length ? lista : [{ nome: p.nome || sigla, email: p.email || '', telefone: p.telefone || '' }];
+}
+/**
+ * Contas do periodo: as despesas lancadas e, para cada despesa fixa ativa, a conta de cada mes que ainda
+ * nao tem lancamento (nasce na leitura, com o id `fixa:<id>:<AAAA-MM>`; so vira linha quando o profissional paga).
+ * Valor fixo sugere o ultimo valor pago; valor variavel vem em branco (0) ate ele informar.
+ */
+function _finDespesas_(c, de, ate, hojeIso) {
+  var lista = [], temLinha = {}, ultimo = {}, tipoDe = {};
+  c.fixas.forEach(function (f) { tipoDe[f.id] = f.tipo === 'variavel' ? 'variavel' : 'fixo'; });
+  c.despesas.slice().sort(function (a, b) { return String(a.competencia).localeCompare(String(b.competencia)); }).forEach(function (d) {
+    if (d.fixa_id) { temLinha[d.fixa_id + '|' + d.competencia] = true; if (d.situacao === 'paga') ultimo[d.fixa_id] = parseInt(d.valor, 10) || 0; }
+    var ref = d.situacao === 'paga' ? d.paga_em : d.vence;
+    if (ref >= de && ref <= ate) lista.push({ id: d.id, nome: d.nome, categoria: d.categoria, valor: parseInt(d.valor, 10) || 0, vence: d.vence, paga_em: d.paga_em, situacao: d.situacao === 'paga' ? 'paga' : 'a_pagar',
+      fixa: !!d.fixa_id, tipo: d.fixa_id ? (tipoDe[d.fixa_id] || 'fixo') : '', obs: d.obs, tem_arquivo: !!d.arquivo_id });
+  });
+  c.fixas.forEach(function (f) {
+    var mes = de.slice(0, 7), fim = ate.slice(0, 7) < hojeIso.slice(0, 7) ? ate.slice(0, 7) : hojeIso.slice(0, 7);
+    for (; mes <= fim; mes = _finMesMais_(mes, 1)) {
+      if (mes < String(f.desde).slice(0, 7) || (f.encerrada_em && mes > String(f.encerrada_em).slice(0, 7)) || temLinha[f.id + '|' + mes]) continue;
+      var ultimoDia = Number(_finFimDoMes_(mes).slice(8)), vence = mes + '-' + ('0' + Math.min(ultimoDia, Math.max(1, parseInt(f.dia, 10) || 1))).slice(-2);
+      if (vence < de || vence > ate) continue;
+      lista.push({ id: 'fixa:' + f.id + ':' + mes, nome: f.nome, categoria: f.categoria, valor: f.tipo === 'variavel' ? 0 : (ultimo[f.id] !== undefined ? ultimo[f.id] : (parseInt(f.valor, 10) || 0)),
+        vence: vence, paga_em: '', situacao: 'a_pagar', fixa: true, tipo: f.tipo === 'variavel' ? 'variavel' : 'fixo', obs: '', tem_arquivo: false });
+    }
+  });
+  return lista.sort(function (a, b) { return String(a.vence).localeCompare(String(b.vence)); });
+}
+/** Recebido (pelo mes das sessoes) e despesas pagas de um intervalo: os numeros da comparacao. */
+function _finTotais_(c, e, de, ate, hojeIso) {
+  var t = { recebido: 0, despesas: 0 };
+  e.sessoes.forEach(function (s) { if (s.cobravel && s.data >= de && s.data <= ate) t.recebido += s.pago; });
+  _finDespesas_(c, de, ate, hojeIso).forEach(function (d) { if (d.situacao === 'paga') t.despesas += d.valor; });
+  return t;
+}
+/** Os numeros do Resumo que nao saem da lista de sessoes do periodo. */
+function _finResumo_(c, e, per, agora) {
+  var hoje = agora.data, ano = hoje.slice(0, 4), r = { recebido_entrada: 0, anterior: _finTotais_(c, e, per.antes.de, per.antes.ate, hoje) };
+  c.pagamentos.forEach(function (p) { if (p.situacao === 'confirmado' && p.data >= per.de && p.data <= per.ate) r.recebido_entrada += parseInt(p.valor, 10) || 0; });
+  // serie do grafico: por dia ate 62 dias; acima disso, por mes
+  var porMes = per.dias > 62, mapa = {}, chaves = [];
+  if (porMes) { for (var m = per.de.slice(0, 7); m <= per.ate.slice(0, 7); m = _finMesMais_(m, 1)) { mapa[m] = { dia: m + '-01', sessoes: 0, valor: 0 }; chaves.push(m); } }
+  else { for (var d = _lemDia_(per.de); d <= _lemDia_(per.ate); d++) { mapa[_lemIso_(d)] = { dia: _lemIso_(d), sessoes: 0, valor: 0 }; chaves.push(_lemIso_(d)); } }
+  var noPeriodo = e.sessoes.filter(function (s) { return s.data >= per.de && s.data <= per.ate; });
+  noPeriodo.forEach(function (s) { var k = porMes ? s.data.slice(0, 7) : s.data; if (s.cobravel && mapa[k]) { mapa[k].sessoes++; mapa[k].valor += s.valor; } });
+  r.granul = porMes ? 'mes' : 'dia';
+  r.serie = chaves.map(function (k) { return mapa[k]; });
+  // o ano corrente
+  var a = { fat: 0, n: 0, rec: 0, com: 0, sem: 0, meses: {} };
+  e.sessoes.forEach(function (s) {
+    if (!s.cobravel || s.data.slice(0, 4) !== ano) return;
+    a.fat += s.valor; a.n++; a.rec += s.pago; a.meses[s.data.slice(0, 7)] = true;
+    if (_finCad_(c, s.sigla).recibo === 'Sim') a.com += s.valor; else a.sem += s.valor;
+  });
+  var nMeses = Object.keys(a.meses).length, media = nMeses ? Math.round(a.fat / nMeses) : 0;
+  r.ano = { faturamento: a.fat, valor_medio: a.n ? Math.round(a.fat / a.n) : 0, acumulado: a.rec, media_mensal: media, com_recibo: a.com, sem_recibo: a.sem, projecao: media * 12 };
+  // agenda do periodo (todas as linhas de Sessoes, tambem as canceladas sem cobranca)
+  var g = { realizadas: 0, faltas: 0, canc_prof: 0, canc_pac: 0, online: 0, presencial: 0 }, primeira = {}, temNoPeriodo = {}, temAntes = {}, temDepois = {};
+  c.sessoes.forEach(function (x) {
+    var sig = _siglaChave_(x.sigla), estado = x.estado || 'agendada';
+    if (_lemDia_(x.data) === null) return;
+    if (estado !== 'cancelada' && (!primeira[sig] || x.data < primeira[sig])) primeira[sig] = x.data;
+    if (estado !== 'cancelada' && x.data > per.ate) temDepois[sig] = true;
+    if (estado !== 'cancelada' && x.data >= per.antes.de && x.data <= per.antes.ate) temAntes[sig] = true;
+    if (x.data < per.de || x.data > per.ate) return;
+    if (estado === 'cancelada') { if (x.cancelada_por === 'paciente') g.canc_pac++; else if (x.cancelada_por !== 'edicao_serie') g.canc_prof++; return; }
+    temNoPeriodo[sig] = true;
+    if (estado === 'falta') g.faltas++; else if (estado === 'realizada' || _finPassou_(x, agora)) g.realizadas++;
+    if (x.modalidade === 'online') g.online++; else g.presencial++;
+  });
+  var totalAg = g.realizadas + g.faltas + g.canc_prof + g.canc_pac, pct = function (n) { return totalAg ? Math.round(n * 100 / totalAg) : 0; };
+  g.pct_faltas = pct(g.faltas); g.pct_canc_prof = pct(g.canc_prof); g.pct_canc_pac = pct(g.canc_pac);
+  r.agenda = g;
+  var pc = { novos: 0, regulares: 0, sem_sessao: 0, sairam: 0, com_saldo: 0 }, saldo = {}, enc = {};
+  _finAbertas_(e).forEach(function (s) { saldo[_siglaChave_(s.sigla)] = true; });
+  Object.keys(c.pacs).forEach(function (sig) {
+    var p = c.pacs[sig];
+    if (saldo[sig]) pc.com_saldo++;
+    if (temNoPeriodo[sig]) { if (primeira[sig] >= per.de) pc.novos++; else pc.regulares++; }
+    else if (temAntes[sig] && !temDepois[sig]) pc.sairam++;
+    else if (p.ativo) pc.sem_sessao++;
+    var origem = _finCad_(c, sig).encaminhamento;
+    if (p.ativo && origem) enc[origem] = (enc[origem] || 0) + 1;
+  });
+  r.pacientes = pc;
+  r.encaminhamento = Object.keys(enc).map(function (k) { return { nome: k, n: enc[k] }; }).sort(function (x, y) { return y.n - x.n || x.nome.localeCompare(y.nome); });
+  return r;
+}
+function _finComprovantes_(c) {
+  return c.pagamentos.filter(function (p) { return p.origem === 'comprovante' && p.situacao === 'aguardando'; }).map(function (p) {
+    var pac = c.pacs[_siglaChave_(p.sigla)] || {};
+    return { id: p.id, sigla: p.sigla, nome: pac.nome || p.sigla, valor: parseInt(p.valor, 10) || 0, data: p.data, arquivo_nome: p.arquivo_nome, arquivo_tipo: p.arquivo_tipo };
+  });
+}
+/** A leitura da pagina Fluxo de caixa. */
+function _finLeitura_(c, p, agora) {
+  var e = _finEstado_(c, agora), per = _finPeriodo_(p, agora.data), comSessao = {};
+  var sessoes = e.sessoes.filter(function (s) { return s.data >= per.de && s.data <= per.ate; });
+  var abertas = _finAbertas_(e);
+  sessoes.concat(abertas).forEach(function (s) { comSessao[_siglaChave_(s.sigla)] = true; });
+  var pacientes = Object.keys(c.pacs).filter(function (sig) { return c.pacs[sig].ativo || comSessao[sig] || (e.credito[sig] || 0) > 0; }).map(function (sig) {
+    var pc = c.pacs[sig], cad = _finCad_(c, sig);
+    return { sigla: sig, nome: pc.nome, telefone: pc.telefone, tem_email: !!pc.email, valor: _finCent_(pc.valor) || c.config.valor_padrao, modo: cad.modo, n: cad.n, quando: cad.quando,
+      recibo: cad.recibo === 'Sim', canal: cad.canal, encaminhamento: cad.encaminhamento, pagadores: _finPagadores_(c, sig, false).map(function (x) { return { nome: x.nome, tem_email: !!x.email, telefone: x.telefone }; }),
+      credito: Math.max(0, e.credito[sig] || 0), recibo_pedido: String(cad.recibo_pedido_em || '').slice(0, 7) === agora.data.slice(0, 7) };
+  }).sort(function (a, b) { return String(a.nome).localeCompare(String(b.nome), 'pt-BR'); });
+  return { hoje: agora.data, periodo: { de: per.de, ate: per.ate, rotulo: per.rotulo }, config: c.config, pacientes: pacientes, sessoes: sessoes, abertas: abertas,
+    cobrancas: c.cobrancas.map(function (cb) { return _finCobranca_(cb, e, agora.data); }).sort(function (a, b) { return String(b.vence_em).localeCompare(String(a.vence_em)); }),
+    propostas: _finPropostas_(c, e, agora.data), despesas: _finDespesas_(c, per.de, per.ate, agora.data), comprovantes: _finComprovantes_(c), recibos: [], lote_previa: '',
+    resumo: _finResumo_(c, e, per, agora) };
+}
+/** O financeiro de UM paciente, para o modulo do paciente aberto: cadastro (com os documentos), o que a anamnese ja tem e o extrato. */
+function _finPaciente_(c, sigla, agora) {
+  var sig = _siglaChave_(sigla), e = _finEstado_(c, agora), cad = _finCad_(c, sig), pc = c.pacs[sig] || {}, extrato = [], emAberto = 0;
+  e.sessoes.forEach(function (s) {
+    if (_siglaChave_(s.sigla) !== sig || !s.cobravel) return;
+    emAberto += s.valor - s.pago;
+    extrato.push({ data: s.data, tipo: 'sessao', id: s.id, texto: ({ falta: 'Sessão (falta)', cancelada: 'Sessão (cancelada fora do prazo)', agendada: 'Sessão agendada' })[s.estado] || 'Sessão realizada', situacao: s.pago >= s.valor ? 'paga' : (s.pago ? 'parcial' : 'aberta'), valor: s.valor, pago: s.pago });
+  });
+  c.pagamentos.forEach(function (p) {
+    if (_siglaChave_(p.sigla) !== sig || p.situacao !== 'confirmado') return;
+    extrato.push({ data: p.data, tipo: 'pagamento', id: p.id, texto: 'Pagamento' + (p.forma ? ' · ' + p.forma : '') + (p.quem && p.quem !== pc.nome ? ' · ' + p.quem : ''), valor: parseInt(p.valor, 10) || 0 });
+  });
+  extrato.sort(function (a, b) { return String(b.data).localeCompare(String(a.data)); });
+  var anam = { nome: '', cpf: '' };
+  try {
+    var plan = _planilhaDoPaciente_(sig), linha = plan ? lerAbaComoObjetos(plan, ABA_ANAMNESE)[0] : null;
+    if (linha) anam = { nome: String(linha.nome_completo || '').trim(), cpf: _finDocMascara_(linha.cpf) };
+  } catch (erroAnamnese) { /* sem a anamnese o cadastro abre assim mesmo */ }
+  var titular = c.pessoas.filter(function (x) { return _siglaChave_(x.sigla) === sig && x.papel === 'recibo'; })[0];
+  return { cadastro: { valor: _finCent_(pc.valor), encaminhamento: cad.encaminhamento, modo: cad.modo, n: cad.n, quando: cad.quando, pagador: cad.pagador, recibo: cad.recibo, titular: cad.titular, canal: cad.canal,
+      pagadores: cad.pagador === 'outro' ? _finPagadores_(c, sig, true).filter(function (x) { return x.documento !== undefined; }) : [],
+      titular_nome: titular ? titular.nome : '', titular_documento: titular ? titular.documento : '' },
+    anamnese: anam, em_aberto: emAberto, credito: Math.max(0, e.credito[sig] || 0), valor_padrao: c.config.valor_padrao, extrato: extrato,
+    recibo_pedido: String(cad.recibo_pedido_em || '').slice(0, 7) === agora.data.slice(0, 7) };
+}
+/** Os blocos do Inicio do profissional: comprovantes a conferir, pedidos de recibo do mes e contas que vencem em 7 dias. */
+function _finInicio_(c, agora) {
+  var ate = _lemIso_(_lemDia_(agora.data) + 7), mes = agora.data.slice(0, 7), recibos = [];
+  Object.keys(c.cadastros).forEach(function (sig) {
+    var l = c.cadastros[sig], p = c.pacs[sig];
+    if (p && p.ativo && String(l.recibo_pedido_em || '').slice(0, 7) === mes) recibos.push({ sigla: sig, nome: p.nome, data: String(l.recibo_pedido_em).slice(0, 10) });
+  });
+  return { comprovantes: _finComprovantes_(c), recibos: recibos,
+    contas: _finDespesas_(c, mes + '-01', ate > _finFimDoMes_(mes) ? ate : _finFimDoMes_(mes), agora.data).filter(function (d) { return d.situacao === 'a_pagar' && d.vence <= ate; })
+      .map(function (d) { return { nome: d.nome, valor: d.valor, vence: d.vence }; }) };
+}
+
+// ---------- acoes do profissional ----------
+
+function _finResposta_(alvo, resp, p, agora) { resp.financeiro = _finLeitura_(_finCtx_(alvo.controle), p, agora); return resp; }
+function _finTxt_(v, max) { return String(v === undefined || v === null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, max); }
+function _finDoPaciente_(c, sigla) { var sig = _siglaChave_(sigla); return (sig && c.pacs[sig]) ? sig : ''; }
+
+/** Leitura unica do financeiro do profissional: `so: 'inicio'` (blocos do Inicio), `siglaPaciente` (um paciente) ou o periodo da pagina. */
+function profLerFinanceiro(s, p) {
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  p = p && typeof p === 'object' ? p : {};
+  var c = _finCtx_(alvo.controle), agora = _lemAgora_();
+  if (p.so === 'inicio') return { ok: true, inicio: _finInicio_(c, agora) };
+  if (p.siglaPaciente) {
+    var sig = _finDoPaciente_(c, p.siglaPaciente);
+    return sig ? { ok: true, paciente: _finPaciente_(c, sig, agora) } : { ok: false, erro: 'Este paciente nao pertence a voce' };
+  }
+  return { ok: true, financeiro: _finLeitura_(c, p, agora) };
+}
+
+/** Cadastro financeiro do paciente. O valor da sessao mora no cadastro do paciente (`valor_sessao`, 14.6): e o mesmo dado. */
+function profSalvarCadastroFinanceiro(s, siglaPaciente, dados) {
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  var c = _finCtx_(alvo.controle), sig = _finDoPaciente_(c, siglaPaciente), d = dados && typeof dados === 'object' ? dados : {}, agora = _lemAgora_();
+  if (!sig) return { ok: false, erro: 'Este paciente nao pertence a voce' };
+  var um = function (v, lista, padrao) { return lista.indexOf(v) !== -1 ? v : padrao; };
+  var cad = { id: sig, modo: um(d.modo, ['sessao', 'n', 'mensal'], 'sessao'), pagador: um(d.pagador, ['paciente', 'outro'], 'paciente'), recibo: d.recibo === 'Sim' ? 'Sim' : 'Nao',
+    titular: um(d.titular, ['paciente', 'pagador', 'outro'], 'paciente'), canal: um(d.canal, ['email', 'whatsapp', 'ambos'], 'ambos'), encaminhamento: _finTxt_(d.encaminhamento, 80), atualizado_em: agora.carimbo };
+  cad.n = cad.modo === 'n' ? String(Math.min(12, Math.max(2, parseInt(d.n, 10) || 2))) : '';
+  cad.quando = cad.modo === 'mensal' ? um(d.quando, ['adiantado', 'f1', 'f2', 'f3', 'seguinte'], 'f1') : '';
+  var pessoas = [];
+  if (cad.pagador === 'outro') {
+    var lista = Array.isArray(d.pagadores) ? d.pagadores.slice(0, 4) : [];
+    for (var i = 0; i < lista.length; i++) {
+      var pg = lista[i] || {}, nome = _finTxt_(pg.nome, 100), doc = _finDocumento_(pg.documento);
+      if (!nome && !String(pg.documento || '').trim()) continue;
+      if (!nome) return { ok: false, erro: 'Informe o nome de quem paga.' };
+      if (doc === null) return { ok: false, erro: 'O CPF ou CNPJ de ' + nome + ' não confere. Revise os números.' };
+      pessoas.push({ papel: 'pagador', nome: nome, documento: doc, telefone: normalizarTelefone(pg.telefone), email: normalizarEmail(pg.email) });
+    }
+    if (!pessoas.length) return { ok: false, erro: 'Informe o nome de quem paga.' };
+  }
+  if (cad.recibo === 'Sim' && cad.titular === 'outro') {
+    var tNome = _finTxt_(d.titular_nome, 100), tDoc = _finDocumento_(d.titular_documento);
+    if (!tNome) return { ok: false, erro: 'Informe em nome de quem sai o recibo.' };
+    if (tDoc === null) return { ok: false, erro: 'O CPF do recibo não confere. Revise os números.' };
+    pessoas.push({ papel: 'recibo', nome: tNome, documento: tDoc, telefone: '', email: '' });
+  }
+  if (cad.recibo === 'Sim' && cad.titular === 'pagador' && cad.pagador !== 'outro') cad.titular = 'paciente';
+  // valor da sessao: o mesmo campo do cabecalho do paciente (14.6); vale para as proximas sessoes ainda nao pagas
+  var valor = _finInt_(d.valor);
+  if (valor < 0) return { ok: false, erro: 'Valor da sessão inválido.' };
+  var reais = valor ? String(valor / 100).replace('.', ',') : '';
+  var abaPac = alvo.controle.getSheetByName(ABA_PACIENTES);
+  if (!abaPac || !_atualizarLinhaPorChave_(abaPac, 'sigla', sig, {}, { valor_sessao: _lemCelula_(reais) })) return { ok: false, erro: 'Paciente não encontrado na Controle.' };
+  var e = _finEstado_(c, agora), antigo = _finCent_(c.pacs[sig].valor);
+  if (antigo !== valor && valor) c.sessoes.forEach(function (x) { // decisao 6: mudam so as proximas ainda nao pagas; a que teve o valor trocado a mao (diferente do cadastro antigo) fica
+    if (_siglaChave_(x.sigla) === sig && (x.estado || 'agendada') === 'agendada' && !_finPassou_(x, agora) && !x.reposicao_de && !(e.pago[x.id] > 0) && (!_finCent_(x.valor) || _finCent_(x.valor) === antigo)) _ageGravar_(c.abaS, COLUNAS_SESSOES, x.__linha, { valor: reais, atualizado_em: agora.carimbo });
+  });
+  var linhaCad = c.cadastros[sig];
+  _finGravar_(alvo.controle, ABA_FIN_CADASTRO, linhaCad ? linhaCad.__linha : 0, cad);
+  var abaPes = _finAba_(alvo.controle, ABA_FIN_PESSOAS, true);
+  _lembretesLer_(abaPes).reverse().forEach(function (x) { if (_siglaChave_(x.sigla) === sig) abaPes.deleteRow(x.__linha); });
+  pessoas.forEach(function (x) { x.id = Utilities.getUuid(); x.sigla = sig; x.criado_em = agora.carimbo; _finGravar_(alvo.controle, ABA_FIN_PESSOAS, 0, x); });
+  return { ok: true, paciente: _finPaciente_(_finCtx_(alvo.controle), sig, agora) };
+}
+
+function profSalvarConfigFinanceiro(s, dados, periodo) {
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  var d = dados && typeof dados === 'object' ? dados : {}, atual = {}, agora = _lemAgora_();
+  var lista = function (t, max) { return String(t === undefined || t === null ? '' : t).split(/[,|\n]/).map(function (x) { return _finTxt_(x, 40); }).filter(function (x, i, l) { return x && l.indexOf(x) === i; }).slice(0, max).join('|'); };
+  var novo = { dados_receber: String(d.dados_receber === undefined || d.dados_receber === null ? '' : d.dados_receber).replace(/\r/g, '').trim().slice(0, 600), formas: lista(d.formas, 12),
+    valor_padrao: String(_finCent_(d.valor_padrao)), prazo_dias: String(Math.min(90, Math.max(0, parseInt(d.prazo_dias, 10) || 0))),
+    texto_cobranca: String(d.texto_cobranca === undefined || d.texto_cobranca === null ? '' : d.texto_cobranca).replace(/\r/g, '').trim().slice(0, 1500), categorias: lista(d.categorias, 30) };
+  if (!novo.formas) return { ok: false, erro: 'Informe pelo menos uma forma de pagamento.' };
+  if (!novo.categorias) return { ok: false, erro: 'Informe pelo menos uma categoria de despesa.' };
+  if (!novo.texto_cobranca) novo.texto_cobranca = FIN_CONFIG_PADRAO.texto_cobranca;
+  _lembretesLer_(_finAba_(alvo.controle, ABA_FIN_CONFIG, true)).forEach(function (l) { atual[l.id] = l; });
+  Object.keys(novo).forEach(function (k) { if (!atual[k] || atual[k].valor !== novo[k]) _finGravar_(alvo.controle, ABA_FIN_CONFIG, atual[k] ? atual[k].__linha : 0, { id: k, valor: novo[k] }); });
+  return _finResposta_(alvo, { ok: true }, periodo, agora);
+}
+
+/** Confere a alocacao pedida: cada sessao e do paciente, esta em aberto e nao recebe mais do que falta. Devolve a lista limpa ou { erro }. */
+function _finConferirAlocacao_(e, sig, itens, teto) {
+  var limpa = [], soma = 0, vistos = {};
+  (Array.isArray(itens) ? itens : []).forEach(function (it) {
+    var s = e.porId[String(it && it.sessao || '')], v = _finInt_(it && it.valor);
+    if (!s || _siglaChave_(s.sigla) !== sig || !s.cobravel || v <= 0 || vistos[s.id] || v > s.valor - s.pago) { limpa = null; return; }
+    if (limpa) { vistos[s.id] = true; limpa.push({ sessao: s.id, valor: v }); soma += v; }
+  });
+  if (!limpa) return { erro: 'As sessões escolhidas mudaram. Abra o pagamento de novo.' };
+  return soma > teto ? { erro: 'As sessões escolhidas somam mais que o valor disponível.' } : { itens: limpa, soma: soma };
+}
+function _finAlocar_(controle, pagamentoId, sig, itens, agora) {
+  itens.forEach(function (it) { _finGravar_(controle, ABA_FIN_ALOCACOES, 0, { id: Utilities.getUuid(), pagamento_id: pagamentoId, sessao_id: it.sessao, sigla: sig, valor: String(it.valor), criado_em: agora.carimbo }); });
+}
+/** Antes e depois, para a janela de confirmar (o painel nunca muda antes da confirmacao). */
+function _finAntesDepois_(e, sig, soma, sobra) {
+  var aberto = 0, recebido = 0;
+  e.sessoes.forEach(function (x) { if (_siglaChave_(x.sigla) === sig && x.cobravel) { aberto += x.valor - x.pago; recebido += x.pago; } });
+  var credito = Math.max(0, e.credito[sig] || 0);
+  return { antes: { recebido: recebido, a_receber: aberto, credito: credito }, depois: { recebido: recebido + soma, a_receber: aberto - soma, credito: credito + sobra } };
+}
+/**
+ * Lanca um pagamento. `dados`: { id, data, valor (centavos), forma, quem, obs, sessoes: [{sessao, valor}], credito }.
+ * `sessoes` e a escolha do profissional (a tela sugere as mais antigas); o que nao for alocado fica como credito do
+ * paciente. Com `credito: true` nenhum dinheiro novo entra: o credito que ja existe e que abate as sessoes escolhidas.
+ * `simular: true` devolve o antes e o depois sem gravar. O mes do pagamento e o das sessoes que ele quita.
+ */
+function profSalvarPagamento(s, siglaPaciente, dados, simular, periodo) {
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  var c = _finCtx_(alvo.controle), sig = _finDoPaciente_(c, siglaPaciente), d = dados && typeof dados === 'object' ? dados : {}, agora = _lemAgora_();
+  if (!sig) return { ok: false, erro: 'Este paciente nao pertence a voce' };
+  var id = String(d.id || '').trim(), e = _finEstado_(c, agora);
+  if (!_ageIdValido_(id)) return { ok: false, erro: 'Identificador inválido.' };
+  if (c.pagamentos.concat(c.alocacoes).some(function (x) { return x.id === id || x.pagamento_id === id; })) return simular ? { ok: false, erro: 'Este pagamento já foi lançado.' } : _finResposta_(alvo, { ok: true, duplicado: true }, periodo, agora);
+  if (d.credito) { // usar o credito do paciente: aloca do saldo dos pagamentos ja confirmados, os mais antigos primeiro
+    var saldoTotal = Math.max(0, e.credito[sig] || 0), confCred = _finConferirAlocacao_(e, sig, d.sessoes, saldoTotal);
+    if (confCred.erro) return { ok: false, erro: confCred.erro };
+    if (!confCred.soma) return { ok: false, erro: 'Marque as sessões que o crédito vai quitar.' };
+    if (simular) return { ok: true, simulacao: _finAntesDepois_(e, sig, confCred.soma, -confCred.soma) };
+    var usado = {};
+    c.alocacoes.forEach(function (a) { usado[a.pagamento_id] = (usado[a.pagamento_id] || 0) + (parseInt(a.valor, 10) || 0); });
+    var fontes = c.pagamentos.filter(function (p) { return p.situacao === 'confirmado' && _siglaChave_(p.sigla) === sig; }).sort(function (a, b) { return String(a.data).localeCompare(String(b.data)); })
+      .map(function (p) { return { id: p.id, livre: (parseInt(p.valor, 10) || 0) - (usado[p.id] || 0) }; }).filter(function (f) { return f.livre > 0; });
+    confCred.itens.forEach(function (it) {
+      var falta = it.valor;
+      fontes.forEach(function (f) { if (falta <= 0 || f.livre <= 0) return; var v = Math.min(falta, f.livre); _finAlocar_(alvo.controle, f.id, sig, [{ sessao: it.sessao, valor: v }], agora); f.livre -= v; falta -= v; });
+    });
+    return _finResposta_(alvo, { ok: true }, periodo, agora);
+  }
+  var valor = _finInt_(d.valor), forma = _finTxt_(d.forma, 40);
+  if (valor <= 0) return { ok: false, erro: 'Informe o valor do pagamento.' };
+  if (_lemDia_(d.data) === null || d.data > agora.data) return { ok: false, erro: 'Informe a data do pagamento (não pode ser futura).' };
+  if (!forma) return { ok: false, erro: 'Escolha a forma de pagamento.' };
+  var conf = _finConferirAlocacao_(e, sig, d.sessoes, valor);
+  if (conf.erro) return { ok: false, erro: conf.erro };
+  if (simular) return { ok: true, simulacao: _finAntesDepois_(e, sig, conf.soma, valor - conf.soma) };
+  _finGravar_(alvo.controle, ABA_FIN_PAGAMENTOS, 0, { id: id, sigla: sig, data: d.data, valor: String(valor), forma: forma, quem: _finTxt_(d.quem, 100) || c.pacs[sig].nome, origem: 'profissional', situacao: 'confirmado',
+    obs: _finTxt_(d.obs, 200), criado_em: agora.carimbo, decidido_em: agora.carimbo });
+  _finAlocar_(alvo.controle, id, sig, conf.itens, agora);
+  return _finResposta_(alvo, { ok: true, sobra: valor - conf.soma }, periodo, agora);
+}
+
+/** Desfaz um pagamento confirmado: ele deixa de contar (a linha fica, com a situacao `estornado`); as sessoes voltam a ficar em aberto. */
+function profEstornarPagamento(s, id) {
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  var c = _finCtx_(alvo.controle), p = c.pagamentos.filter(function (x) { return x.id === String(id || ''); })[0], agora = _lemAgora_();
+  if (!p || !_finDoPaciente_(c, p.sigla)) return { ok: false, erro: 'Pagamento não encontrado.' };
+  if (p.situacao === 'confirmado') _finGravar_(alvo.controle, ABA_FIN_PAGAMENTOS, p.__linha, { situacao: 'estornado', decidido_em: agora.carimbo });
+  else if (p.situacao !== 'estornado') return { ok: false, erro: 'Só um pagamento confirmado pode ser desfeito.' };
+  return { ok: true, paciente: _finPaciente_(_finCtx_(alvo.controle), p.sigla, agora) };
+}
+
+/**
+ * Comprovante enviado pelo paciente: confirmar (vira pagamento, com a forma, o valor conferido e as sessoes que o
+ * profissional escolher) ou recusar. Nada conta como pago antes desta confirmacao.
+ */
+function profDecidirComprovante(s, id, aprovar, dados, periodo) {
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  var c = _finCtx_(alvo.controle), p = c.pagamentos.filter(function (x) { return x.id === String(id || ''); })[0], d = dados && typeof dados === 'object' ? dados : {}, agora = _lemAgora_();
+  if (!p || p.origem !== 'comprovante') return { ok: false, erro: 'Comprovante não encontrado.' };
+  var sig = _finDoPaciente_(c, p.sigla);
+  if (!sig) return { ok: false, erro: 'Comprovante não encontrado.' };
+  if (p.situacao !== 'aguardando') return _finResposta_(alvo, { ok: true, duplicado: true }, periodo, agora);
+  if (!aprovar) { _finGravar_(alvo.controle, ABA_FIN_PAGAMENTOS, p.__linha, { situacao: 'recusado', decidido_em: agora.carimbo }); return _finResposta_(alvo, { ok: true }, periodo, agora); }
+  var valor = _finInt_(d.valor), forma = _finTxt_(d.forma, 40);
+  if (valor <= 0) return { ok: false, erro: 'Informe o valor do pagamento.' };
+  if (_lemDia_(d.data) === null || d.data > agora.data) return { ok: false, erro: 'Informe a data do pagamento (não pode ser futura).' };
+  if (!forma) return { ok: false, erro: 'Escolha a forma de pagamento.' };
+  var conf = _finConferirAlocacao_(_finEstado_(c, agora), sig, d.sessoes, valor);
+  if (conf.erro) return { ok: false, erro: conf.erro };
+  _finGravar_(alvo.controle, ABA_FIN_PAGAMENTOS, p.__linha, { situacao: 'confirmado', data: d.data, valor: String(valor), forma: forma, quem: _finTxt_(d.quem, 100) || c.pacs[sig].nome, obs: _finTxt_(d.obs, 200), decidido_em: agora.carimbo });
+  _finAlocar_(alvo.controle, p.id, sig, conf.itens, agora);
+  return _finResposta_(alvo, { ok: true, sobra: valor - conf.soma }, periodo, agora);
+}
+
+/**
+ * Monta as cobrancas dos pacientes escolhidos, para revisar: uma por paciente e por mes das sessoes, na situacao
+ * "a enviar". So roda quando o profissional pede; nada e enviado aqui.
+ */
+function profGerarCobrancas(s, siglas, periodo) {
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  var c = _finCtx_(alvo.controle), agora = _lemAgora_(), e = _finEstado_(c, agora), quer = {}, feitas = 0;
+  (Array.isArray(siglas) ? siglas : []).forEach(function (x) { quer[_siglaChave_(x)] = true; });
+  _finPropostas_(c, e, agora.data).forEach(function (pr) {
+    var sig = _siglaChave_(pr.sigla);
+    if (!quer[sig]) return;
+    var cad = _finCad_(c, sig), para = _finPagadores_(c, sig, false)[0], lista = pr.sessoes.map(function (id) { return e.porId[id]; });
+    var texto = _finTextoCobranca_(c.config.texto_cobranca, { nome: String(para.nome).trim().split(/\s+/)[0], saudacao: _finSaudacao_(agora.hora), mes: _finMesNome_(pr.mes),
+      sessoes: lista.map(function (x) { return { data: x.data, valor: x.valor, pago: x.pago }; }), total: pr.total, dados: c.config.dados_receber });
+    _finGravar_(alvo.controle, ABA_FIN_COBRANCAS, 0, { id: Utilities.getUuid(), sigla: sig, para: para.nome, canal: cad.canal, mes: pr.mes, sessoes: pr.sessoes.join(','), total: String(pr.total), texto: texto,
+      vence_em: _lemIso_(_lemDia_(agora.data) + c.config.prazo_dias), criada_em: agora.carimbo });
+    feitas++;
+  });
+  if (!feitas) return { ok: false, erro: 'Nenhuma sessão a cobrar para os pacientes escolhidos.' };
+  return _finResposta_(alvo, { ok: true, geradas: feitas }, periodo, agora);
+}
+
+/** E-mail de cobranca no layout do sistema: o texto que o profissional revisou, linha a linha; sem botao (quem paga pode nao ter acesso). */
+function montarEmailCobranca(texto, mes, assinatura) {
+  var linhas = String(texto || '').replace(/\r/g, '').split('\n').map(function (l) { return l.replace(/^\*(.*)\*$/, '$1'); });
+  var aviso = 'Este demonstrativo foi enviado a pedido de quem assina abaixo. Em caso de dúvida, responda diretamente a ele.';
+  return { assunto: 'Demonstrativo de ' + mes, texto: linhas.concat(['', aviso, '']).concat(assinatura || []).join('\n'),
+    html: _layoutEmail_({ previa: 'Demonstrativo de ' + mes, titulo: 'Demonstrativo do mês', ola: linhas[0] || '', paragrafo: '', linhas: linhas.slice(1), semBotao: true, link: SITE_URL, aviso: aviso, assinatura: assinatura || [] }) };
+}
+
+/**
+ * Envia uma cobranca revisada. `dados`: { canal: 'email' | 'marcar', sessoes: [ids], vence_em, texto }.
+ * 'email' manda o e-mail a quem paga; 'marcar' so registra que ela saiu por fora (WhatsApp). Sessao desmarcada
+ * fica fora DESTA cobranca e continua em aberto. E a unica porta de saida de cobranca: nao ha gatilho.
+ */
+function profEnviarCobranca(s, id, dados, periodo) {
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  var c = _finCtx_(alvo.controle), cb = c.cobrancas.filter(function (x) { return x.id === String(id || ''); })[0], d = dados && typeof dados === 'object' ? dados : {}, agora = _lemAgora_();
+  if (!cb) return { ok: false, erro: 'Cobrança não encontrada.' };
+  var sig = _finDoPaciente_(c, cb.sigla), e = _finEstado_(c, agora);
+  if (!sig) return { ok: false, erro: 'Cobrança não encontrada.' };
+  var atuais = String(cb.sessoes).split(','), ids = (Array.isArray(d.sessoes) ? d.sessoes : atuais).filter(function (x, i, l) { return atuais.indexOf(x) !== -1 && l.indexOf(x) === i && e.porId[x] && e.porId[x].cobravel; });
+  var texto = String(d.texto === undefined || d.texto === null ? cb.texto : d.texto).replace(/\r/g, '').trim().slice(0, 3000), vence = _lemDia_(d.vence_em) !== null ? d.vence_em : cb.vence_em;
+  if (!ids.length) return { ok: false, erro: 'Marque pelo menos uma sessão.' };
+  if (!texto) return { ok: false, erro: 'A mensagem está vazia.' };
+  var total = 0; ids.forEach(function (x) { total += e.porId[x].valor - e.porId[x].pago; });
+  var campos = { sessoes: ids.join(','), total: String(total), texto: texto, vence_em: vence };
+  if (d.canal === 'email') {
+    var para = _finPagadores_(c, sig, false).filter(function (x) { return x.email; })[0];
+    if (!para) return { ok: false, erro: 'Quem paga não tem e-mail no cadastro. Use o WhatsApp ou complete o cadastro.' };
+    if (!_reservarEmail_('cobrancas', 1)) return { ok: false, erro: 'O limite de e-mails de cobrança de hoje foi atingido. Tente amanhã ou use o WhatsApp.' };
+    if (!_enviarEmail_(para.email, montarEmailCobranca(texto, _finMesNome_(cb.mes), _assinaturaDoProfissional_(alvo.profissionalId)))) return { ok: false, erro: 'O e-mail não pôde ser enviado agora. Tente de novo.' };
+    campos.enviada_em = agora.carimbo; campos.enviada_por = 'email';
+  } else if (d.canal === 'marcar') { campos.enviada_em = agora.carimbo; campos.enviada_por = 'whatsapp'; }
+  _finGravar_(alvo.controle, ABA_FIN_COBRANCAS, cb.__linha, campos);
+  return _finResposta_(alvo, { ok: true }, periodo, agora);
+}
+
+/** Descarta uma cobranca que ainda nao foi enviada (as sessoes continuam em aberto e voltam a ser propostas). */
+function profDescartarCobranca(s, id, periodo) {
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  var c = _finCtx_(alvo.controle), cb = c.cobrancas.filter(function (x) { return x.id === String(id || ''); })[0];
+  if (cb && cb.enviada_em) return { ok: false, erro: 'Esta cobrança já foi enviada e fica no histórico.' };
+  if (cb) _finAba_(alvo.controle, ABA_FIN_COBRANCAS, true).deleteRow(cb.__linha);
+  return _finResposta_(alvo, { ok: true }, periodo, _lemAgora_());
+}
+
+/**
+ * "Nao cobrar esta sessao": a sessao deixa de ser cobrada tambem na Agenda (`cobrada = Nao`). E um gesto proprio:
+ * desmarcar uma sessao na cobranca NAO passa por aqui. Sessao com pagamento nao pode ser isentada.
+ */
+function profNaoCobrarSessao(s, sessoes, periodo) {
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  var c = _finCtx_(alvo.controle), agora = _lemAgora_(), e = _finEstado_(c, agora), ids = Array.isArray(sessoes) ? sessoes : [], linhas = [];
+  for (var i = 0; i < ids.length; i++) {
+    var x = c.sessoes.filter(function (l) { return l.id === String(ids[i]); })[0], v = x && e.porId[x.id];
+    if (!x || !v || !v.cobravel) return { ok: false, erro: 'Sessão não encontrada entre as que estão a receber.' };
+    if (v.pago > 0) return { ok: false, erro: 'Esta sessão já tem pagamento. Desfaça o pagamento antes de deixar de cobrar.' };
+    linhas.push(x);
+  }
+  if (!linhas.length) return { ok: false, erro: 'Escolha a sessão que não deve ser cobrada.' };
+  linhas.forEach(function (x) { _ageGravar_(c.abaS, COLUNAS_SESSOES, x.__linha, { cobrada: 'Nao', atualizado_em: agora.carimbo }); });
+  var fora = {}; linhas.forEach(function (x) { fora[x.id] = true; });
+  c.cobrancas.forEach(function (cb) { // a sessao sai das cobrancas ainda nao enviadas; cobranca que ficar vazia e descartada
+    if (cb.enviada_em) return;
+    var resto = String(cb.sessoes).split(',').filter(function (id) { return !fora[id]; });
+    if (resto.length !== String(cb.sessoes).split(',').length) _finGravar_(alvo.controle, ABA_FIN_COBRANCAS, cb.__linha, { sessoes: resto.join(',') });
+  });
+  var abaC = _finAba_(alvo.controle, ABA_FIN_COBRANCAS, false);
+  _lembretesLer_(abaC).reverse().forEach(function (cb) { if (!cb.enviada_em && !cb.sessoes) abaC.deleteRow(cb.__linha); });
+  return _finResposta_(alvo, { ok: true }, periodo, agora);
+}
+
+// ---------- arquivos (comprovantes) ----------
+
+/** Guarda o arquivo na pasta "Comprovantes" do profissional. Devolve { id, nome, tipo } ou { erro }. */
+function _finGuardarArquivo_(profissionalId, arquivo, prefixo) {
+  var a = arquivo && typeof arquivo === 'object' ? arquivo : null;
+  if (!a || !a.base64) return { erro: 'Escolha a foto ou o PDF do comprovante.' };
+  var tipo = String(a.tipo || ''), b64 = String(a.base64);
+  if (FIN_ARQUIVO_TIPOS.indexOf(tipo) === -1) return { erro: 'O comprovante precisa ser uma foto (JPG ou PNG) ou um PDF.' };
+  if (b64.length > FIN_ARQUIVO_MAX_B64) return { erro: 'O arquivo passa de 5 MB.' };
+  if (!/^[A-Za-z0-9+/=]+$/.test(b64)) return { erro: 'Não foi possível ler o arquivo.' };
+  var prof = buscarProfissional(profissionalId);
+  if (!prof || !prof.pasta_drive_id) return { erro: 'Pasta do profissional não encontrada.' };
+  try {
+    var pasta = DriveApp.getFolderById(prof.pasta_drive_id), it = pasta.getFoldersByName(FIN_PASTA_COMPROVANTES);
+    var destino = it.hasNext() ? it.next() : pasta.createFolder(FIN_PASTA_COMPROVANTES);
+    var nome = prefixo + '_' + _finTxt_(a.nome, 60).replace(/[^A-Za-z0-9._-]/g, '_');
+    var arq = DriveApp.createFile(Utilities.newBlob(Utilities.base64Decode(b64), tipo, nome));
+    arq.moveTo(destino);
+    return { id: arq.getId(), nome: nome, tipo: tipo };
+  } catch (erroArquivo) {
+    console.error('_finGuardarArquivo_: ' + String(erroArquivo && erroArquivo.message || erroArquivo).slice(0, 200));
+    return { erro: 'Não foi possível guardar o arquivo agora. Tente de novo.' };
+  }
+}
+/** Entrega um comprovante so a quem pode ve-lo: o profissional dono ou o paciente que o enviou. */
+function lerArquivoFinanceiro(s, id) {
+  var alvo = s && s.tipo === 'paciente' ? _agePaciente_(s.sigla) : _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  var c = _finCtx_(alvo.controle), alvoId = String(id || '');
+  var l = c.pagamentos.filter(function (x) { return x.id === alvoId && x.arquivo_id; })[0] || (s.tipo === 'paciente' ? null : c.despesas.filter(function (x) { return x.id === alvoId && x.arquivo_id; })[0]);
+  if (!l || (s.tipo === 'paciente' && _siglaChave_(l.sigla) !== _siglaChave_(s.sigla))) return { ok: false, erro: 'Arquivo não encontrado.' };
+  try {
+    return { ok: true, arquivo: { nome: l.arquivo_nome, tipo: l.arquivo_tipo, base64: Utilities.base64Encode(DriveApp.getFileById(l.arquivo_id).getBlob().getBytes()) } };
+  } catch (erroLeitura) { return { ok: false, erro: 'Não foi possível abrir o arquivo agora.' }; }
+}
+
+// ---------- despesas e contas a pagar ----------
+
+/**
+ * Lanca ou paga uma despesa. `dados`: { id, nome, categoria, valor (centavos), data, situacao: 'paga' | 'a_pagar',
+ * repete: '' | 'fixo' | 'variavel', obs, arquivo }. `id` no formato `fixa:<id>:<AAAA-MM>` e a conta do mes de uma
+ * despesa fixa (nasce na leitura): pagar grava o lancamento com a data e o valor reais. `repete` cria a despesa fixa.
+ */
+function profSalvarDespesa(s, dados, periodo) {
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  var c = _finCtx_(alvo.controle), d = dados && typeof dados === 'object' ? dados : {}, agora = _lemAgora_(), id = String(d.id || '').trim();
+  var valor = _finInt_(d.valor), nome = _finTxt_(d.nome, 80), categoria = _finTxt_(d.categoria, 40), situacao = d.situacao === 'paga' ? 'paga' : 'a_pagar';
+  if (_lemDia_(d.data) === null) return { ok: false, erro: 'Informe a data.' };
+  if (situacao === 'paga' && d.data > agora.data) return { ok: false, erro: 'A data do pagamento não pode ser futura.' };
+  if (valor < 0 || (situacao === 'paga' && valor === 0)) return { ok: false, erro: 'Informe o valor.' };
+  var arq = { id: '', nome: '', tipo: '' };
+  if (d.arquivo && d.arquivo.base64) { arq = _finGuardarArquivo_(alvo.profissionalId, d.arquivo, 'despesa_' + agora.data); if (arq.erro) return { ok: false, erro: arq.erro }; }
+  var comArq = function (o) { if (arq.id) { o.arquivo_id = arq.id; o.arquivo_nome = arq.nome; o.arquivo_tipo = arq.tipo; } return o; };
+  var m = /^fixa:([A-Za-z0-9-]{8,64}):(\d{4}-\d{2})$/.exec(id);
+  if (m) { // a conta do mes de uma despesa fixa
+    var f = c.fixas.filter(function (x) { return x.id === m[1]; })[0];
+    if (!f) return { ok: false, erro: 'Despesa não encontrada.' };
+    if (c.despesas.some(function (x) { return x.fixa_id === f.id && x.competencia === m[2]; })) return _finResposta_(alvo, { ok: true, duplicado: true }, periodo, agora);
+    var ultimoDia = Number(_finFimDoMes_(m[2]).slice(8));
+    _finGravar_(alvo.controle, ABA_FIN_DESPESAS, 0, comArq({ id: Utilities.getUuid(), fixa_id: f.id, competencia: m[2], nome: f.nome, categoria: f.categoria, valor: String(valor),
+      vence: m[2] + '-' + ('0' + Math.min(ultimoDia, Math.max(1, parseInt(f.dia, 10) || 1))).slice(-2), paga_em: situacao === 'paga' ? d.data : '', situacao: situacao, obs: _finTxt_(d.obs, 200), criado_em: agora.carimbo }));
+    return _finResposta_(alvo, { ok: true }, periodo, agora);
+  }
+  if (!_ageIdValido_(id)) return { ok: false, erro: 'Identificador inválido.' };
+  var atual = c.despesas.filter(function (x) { return x.id === id; })[0];
+  if (atual) { // pagar (ou corrigir) uma despesa que ja existe
+    _finGravar_(alvo.controle, ABA_FIN_DESPESAS, atual.__linha, comArq({ valor: String(valor), paga_em: situacao === 'paga' ? d.data : '', situacao: situacao, obs: _finTxt_(d.obs, 200) || atual.obs }));
+    return _finResposta_(alvo, { ok: true }, periodo, agora);
+  }
+  if (!nome) return { ok: false, erro: 'Informe o nome da despesa.' };
+  if (!categoria) return { ok: false, erro: 'Escolha a categoria.' };
+  var fixaId = '';
+  if (d.repete === 'fixo' || d.repete === 'variavel') {
+    fixaId = Utilities.getUuid();
+    _finGravar_(alvo.controle, ABA_FIN_FIXAS, 0, { id: fixaId, nome: nome, categoria: categoria, tipo: d.repete, valor: String(valor), dia: String(Number(d.data.slice(8))), desde: d.data.slice(0, 7), criado_em: agora.carimbo });
+  }
+  _finGravar_(alvo.controle, ABA_FIN_DESPESAS, 0, comArq({ id: id, fixa_id: fixaId, competencia: d.data.slice(0, 7), nome: nome, categoria: categoria, valor: String(valor), vence: d.data,
+    paga_em: situacao === 'paga' ? d.data : '', situacao: situacao, obs: _finTxt_(d.obs, 200), criado_em: agora.carimbo }));
+  return _finResposta_(alvo, { ok: true }, periodo, agora);
+}
+
+/** A despesa fixa para de gerar a conta dos proximos meses (o que ja foi lancado fica). `id` = o da conta ou o da linha paga. */
+function profEncerrarDespesaFixa(s, id, periodo) {
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  var c = _finCtx_(alvo.controle), agora = _lemAgora_(), m = /^fixa:([A-Za-z0-9-]{8,64}):/.exec(String(id || '')), linha = c.despesas.filter(function (x) { return x.id === String(id || ''); })[0];
+  var f = c.fixas.filter(function (x) { return x.id === (m ? m[1] : (linha ? linha.fixa_id : '')); })[0];
+  if (!f) return { ok: false, erro: 'Despesa não encontrada.' };
+  var mesConta = /^fixa:[A-Za-z0-9-]+:(\d{4}-\d{2})$/.exec(String(id || ''));
+  if (!f.encerrada_em) _finGravar_(alvo.controle, ABA_FIN_FIXAS, f.__linha, { encerrada_em: mesConta ? _finMesMais_(mesConta[1], -1) : linha.competencia });
+  return _finResposta_(alvo, { ok: true }, periodo, agora);
+}
+
+// ---------- lado do paciente (so o proprio financeiro, pela sigla do cracha) ----------
+
+function _finMeu_(c, alvo, agora) {
+  var sig = _siglaChave_(alvo.sigla), e = _finEstado_(c, agora), mes = agora.data.slice(0, 7), cad = _finCad_(c, sig), m = { sessoes: [], total: 0, pago: 0, aberto_anterior: 0 };
+  e.sessoes.forEach(function (s) {
+    if (_siglaChave_(s.sigla) !== sig || !s.cobravel) return;
+    if (s.data.slice(0, 7) === mes) { m.sessoes.push({ data: s.data, paga: s.pago >= s.valor }); m.total += s.valor; m.pago += s.pago; }
+    else if (s.data.slice(0, 7) < mes) m.aberto_anterior += s.valor - s.pago;
+  });
+  var rot = { confirmado: 'confirmado', aguardando: 'aguardando', recusado: 'recusado' };
+  return { ok: true, meu: { mes: _finMesNome_(mes), sessoes: m.sessoes, total: m.total, pago: m.pago, aberto_anterior: m.aberto_anterior, credito: Math.max(0, e.credito[sig] || 0), dados_receber: c.config.dados_receber,
+    pode_recibo: cad.recibo === 'Sim', recibo_pedido: String(cad.recibo_pedido_em || '').slice(0, 7) === mes, profissional: alvo.profissional,
+    historico: c.pagamentos.filter(function (p) { return _siglaChave_(p.sigla) === sig && rot[p.situacao]; }).sort(function (a, b) { return String(b.data + ' ' + b.criado_em).localeCompare(String(a.data + ' ' + a.criado_em)) || (b.__linha - a.__linha); }).slice(0, 24)
+      .map(function (p) { return { id: p.id, data: p.data, valor: parseInt(p.valor, 10) || 0, forma: p.origem === 'comprovante' && p.situacao !== 'confirmado' ? '' : p.forma, situacao: p.situacao, tem_arquivo: !!p.arquivo_id }; }) } };
+}
+function lerMeuFinanceiro(sigla) {
+  var alvo = _agePaciente_(sigla);
+  if (!alvo.ok) return alvo;
+  return _finMeu_(_finCtx_(alvo.controle), alvo, _lemAgora_());
+}
+/** O paciente envia o comprovante: fica AGUARDANDO a confirmacao do profissional e nao conta como pago. No maximo 3 a conferir por vez. */
+function pacienteEnviarComprovante(sigla, dados) {
+  var alvo = _agePaciente_(sigla);
+  if (!alvo.ok) return alvo;
+  var c = _finCtx_(alvo.controle), d = dados && typeof dados === 'object' ? dados : {}, agora = _lemAgora_(), id = String(d.id || '').trim(), sig = _siglaChave_(alvo.sigla);
+  if (!_ageIdValido_(id)) return { ok: false, erro: 'Identificador inválido.' };
+  var ja = c.pagamentos.filter(function (x) { return x.id === id; })[0];
+  if (ja) return _siglaChave_(ja.sigla) === sig ? _finMeu_(c, alvo, agora) : { ok: false, erro: 'Identificador inválido.' };
+  var valor = _finInt_(d.valor);
+  if (valor <= 0) return { ok: false, erro: 'Informe o valor pago.' };
+  if (_lemDia_(d.data) === null || d.data > agora.data) return { ok: false, erro: 'Informe a data do pagamento (não pode ser futura).' };
+  if (c.pagamentos.filter(function (x) { return _siglaChave_(x.sigla) === sig && x.situacao === 'aguardando'; }).length >= 3) return { ok: false, erro: 'Você já tem comprovantes aguardando conferência. Aguarde o seu terapeuta conferir.' };
+  var arq = _finGuardarArquivo_(alvo.profissionalId, d.arquivo, 'comprovante_' + sig + '_' + agora.data);
+  if (arq.erro) return { ok: false, erro: arq.erro };
+  _finGravar_(alvo.controle, ABA_FIN_PAGAMENTOS, 0, { id: id, sigla: sig, data: d.data, valor: String(valor), forma: '', quem: alvo.nome, origem: 'comprovante', situacao: 'aguardando', obs: '',
+    arquivo_id: arq.id, arquivo_nome: arq.nome, arquivo_tipo: arq.tipo, criado_em: agora.carimbo });
+  return _finMeu_(_finCtx_(alvo.controle), alvo, agora);
+}
+/** Pedido de recibo do mes: so para o paciente que o profissional marcou. Fica registrado e aparece no Inicio do profissional. */
+function pacientePedirRecibo(sigla) {
+  var alvo = _agePaciente_(sigla);
+  if (!alvo.ok) return alvo;
+  var c = _finCtx_(alvo.controle), sig = _siglaChave_(alvo.sigla), l = c.cadastros[sig], agora = _lemAgora_();
+  if (!l || l.recibo !== 'Sim') return { ok: false, erro: 'O pedido de recibo não está disponível para você.' };
+  if (String(l.recibo_pedido_em || '').slice(0, 7) !== agora.data.slice(0, 7)) _finGravar_(alvo.controle, ABA_FIN_CADASTRO, l.__linha, { recibo_pedido_em: agora.carimbo });
+  return _finMeu_(_finCtx_(alvo.controle), alvo, agora);
+}
+
+/** Excluir o paciente: saem o cadastro financeiro, quem paga e as cobrancas dele. Pagamentos ficam (sao o caixa do profissional). */
+function _finApagarDoPaciente_(controle, sigla) {
+  var alvo = _siglaChave_(sigla);
+  [[ABA_FIN_CADASTRO, 'id'], [ABA_FIN_PESSOAS, 'sigla'], [ABA_FIN_COBRANCAS, 'sigla']].forEach(function (par) {
+    var aba = _finAba_(controle, par[0], false);
+    _lembretesLer_(aba).reverse().forEach(function (l) { if (_siglaChave_(l[par[1]]) === alvo) aba.deleteRow(l.__linha); });
+  });
+}
+// ---------- fim da Fase 20 ----------
 
 // ------------------------------------------------------------
 // Auxiliares do ping (Pacote E3, decisao 4)

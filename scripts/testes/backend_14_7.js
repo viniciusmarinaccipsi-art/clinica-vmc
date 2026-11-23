@@ -216,7 +216,7 @@ tenta('T', () => {
   ok('T2 a coluna nova do pedido fica no fim e é criada na planilha', S('COLUNAS_PEDIDOS_AGENDA').slice(-2).join(',') === 'sugestao,modalidade' && h.cab(aba('Pedidos_Agenda')).indexOf('modalidade') !== -1 && S('COLUNAS_SESSOES').slice(-3).join(',') === 'gcal_evento,gcal_sinc,meet_link');
   const bruta = aba('Pedidos_Agenda').getRange(h.linhaDe(aba('Pedidos_Agenda'), 'id', uA), h.cab(aba('Pedidos_Agenda')).indexOf('hora') + 1).getValue();
   ok('T3 as células do pedido são texto literal (a hora não vira número)', String(bruta).replace(/^'/, '') === '10:00', bruta);
-  ok('T4 VERSAO_PACOTE = 14.7 e o limite não existe mais no servidor', S('VERSAO_PACOTE') === '14.7' && fonteJs.indexOf('limite_agendamentos') === -1 && fonteJs.indexOf('_ageLimite_') === -1);
+  ok('T4 o limite não existe mais no servidor (a versão é conferida em backend_16_11.js)', fonteJs.indexOf('limite_agendamentos') === -1 && fonteJs.indexOf('_ageLimite_') === -1);
   const inesperados = logServidor.filter(l => !/^trava de gravacao: nao obtida/.test(l));
   ok('T5 o servidor não registrou nenhum erro', inesperados.length === 0, inesperados.slice(0, 5));
 });
