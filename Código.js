@@ -69,7 +69,7 @@
 // pacienteConfirmarSessao, pacienteCancelarSessao, pacientePedirAgenda); avisos de sessao por e-mail, desligados por padrao.
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '20.0';
+var VERSAO_PACOTE = '20.1';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -554,6 +554,12 @@ function _despachar_(acao, payload, s) {
       case 'lerArquivoFinanceiro':
         resposta = lerArquivoFinanceiro(s, payload.id);
         break;
+      case 'profSalvarRecibo': // 20.1
+        resposta = profSalvarRecibo(s, payload.id, payload.dados, payload);
+        break;
+      case 'profGerarLote': // 20.1
+        resposta = profGerarLote(s, payload.qual, payload.simular === true, payload);
+        break;
       // Fase 20 - Fluxo de caixa (paciente: so o proprio financeiro)
       case 'lerMeuFinanceiro':
         resposta = _exigir_(s, 'paciente') || lerMeuFinanceiro(s.sigla);
@@ -811,7 +817,8 @@ var ACOES_COM_TRAVA = [
   'profSalvarValorSessao', // 14.6
   'profSalvarCadastroFinanceiro', 'profSalvarConfigFinanceiro', 'profSalvarPagamento', 'profEstornarPagamento', 'profDecidirComprovante', // Fase 20
   'profGerarCobrancas', 'profEnviarCobranca', 'profDescartarCobranca', 'profNaoCobrarSessao', 'profSalvarDespesa', 'profEncerrarDespesaFixa', // Fase 20
-  'pacienteEnviarComprovante', 'pacientePedirRecibo' // Fase 20
+  'pacienteEnviarComprovante', 'pacientePedirRecibo', // Fase 20
+  'profSalvarRecibo', 'profGerarLote' // 20.1
 ];
 
 
@@ -8516,18 +8523,21 @@ var ABA_FIN_COBRANCAS = 'Fin_Cobrancas';
 var ABA_FIN_FIXAS = 'Fin_Despesas_Fixas';
 var ABA_FIN_DESPESAS = 'Fin_Despesas';
 var ABA_FIN_CONFIG = 'Config_Financeiro';
+var ABA_FIN_RECIBOS = 'Fin_Recibos'; // 20.1
 var COLUNAS_FIN = {};
 COLUNAS_FIN[ABA_FIN_CADASTRO] = ['id', 'modo', 'n', 'quando', 'pagador', 'recibo', 'titular', 'canal', 'encaminhamento', 'recibo_pedido_em', 'atualizado_em']; // id = sigla do paciente
 COLUNAS_FIN[ABA_FIN_PESSOAS] = ['id', 'sigla', 'papel', 'nome', 'documento', 'telefone', 'email', 'criado_em'];
 COLUNAS_FIN[ABA_FIN_PAGAMENTOS] = ['id', 'sigla', 'data', 'valor', 'forma', 'quem', 'origem', 'situacao', 'obs', 'arquivo_id', 'arquivo_nome', 'arquivo_tipo', 'criado_em', 'decidido_em'];
 COLUNAS_FIN[ABA_FIN_ALOCACOES] = ['id', 'pagamento_id', 'sessao_id', 'sigla', 'valor', 'criado_em'];
 COLUNAS_FIN[ABA_FIN_COBRANCAS] = ['id', 'sigla', 'para', 'canal', 'mes', 'sessoes', 'total', 'texto', 'vence_em', 'criada_em', 'enviada_em', 'enviada_por'];
-COLUNAS_FIN[ABA_FIN_FIXAS] = ['id', 'nome', 'categoria', 'tipo', 'valor', 'dia', 'desde', 'encerrada_em', 'criado_em'];
-COLUNAS_FIN[ABA_FIN_DESPESAS] = ['id', 'fixa_id', 'competencia', 'nome', 'categoria', 'valor', 'vence', 'paga_em', 'situacao', 'obs', 'arquivo_id', 'arquivo_nome', 'arquivo_tipo', 'criado_em'];
+COLUNAS_FIN[ABA_FIN_FIXAS] = ['id', 'nome', 'categoria', 'tipo', 'valor', 'dia', 'desde', 'encerrada_em', 'criado_em', 'conta', 'historico']; // 20.1: conta do plano de contas e historico fixo do item
+COLUNAS_FIN[ABA_FIN_DESPESAS] = ['id', 'fixa_id', 'competencia', 'nome', 'categoria', 'valor', 'vence', 'paga_em', 'situacao', 'obs', 'arquivo_id', 'arquivo_nome', 'arquivo_tipo', 'criado_em', 'conta', 'historico', 'lote']; // 20.1: livro caixa
 COLUNAS_FIN[ABA_FIN_CONFIG] = ['id', 'valor']; // id = chave
+COLUNAS_FIN[ABA_FIN_RECIBOS] = ['id', 'sigla', 'mes', 'data', 'datas', 'unitario', 'modalidade', 'valor', 'descricao', 'titular_nome', 'titular_documento', 'situacao', 'numero', 'lote', 'arquivo_id', 'arquivo_nome', 'arquivo_tipo', 'criado_em', 'atualizado_em']; // 20.1
 var FIN_CONFIG_PADRAO = { dados_receber: '', formas: 'Pix|Dinheiro|Transferência|Cartão|Outro', valor_padrao: '0', prazo_dias: '5',
   texto_cobranca: '{nome}, {saudacao}. Como vai?\n\nSegue o demonstrativo das sessões de {mes}.\n\n{demonstrativo}\n\n*Total: {total}*\n\nDados para o pagamento:\n*{dados}*',
-  categorias: 'Aluguel|Contas (água, luz, internet)|Sistemas e assinaturas|Material|Serviços de terceiros|Formação e supervisão|Impostos e taxas|Outras' };
+  categorias: 'Aluguel|Contas (água, luz, internet)|Sistemas e assinaturas|Material|Serviços de terceiros|Formação e supervisão|Impostos e taxas|Outras',
+  fiscal: 'Nao', cpf_emissor: '', cod_rendimento: 'R01.001.001', cod_ocupacao: '255' }; // 20.1: camada fiscal (desligada por padrao)
 var FIN_CADASTRO_PADRAO = { modo: 'sessao', n: '', quando: '', pagador: 'paciente', recibo: 'Nao', titular: 'paciente', canal: 'ambos', encaminhamento: '', recibo_pedido_em: '' };
 var FIN_MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 var FIN_ARQUIVO_MAX_B64 = 7200000;      // ~5,4 MB em base64 (o limite dito na tela e 5 MB)
@@ -8667,7 +8677,7 @@ function _finConfigDe_(linhas) {
   linhas.forEach(function (l) { c[l.id] = l.valor; });
   var lista = function (t) { return String(t || '').split('|').map(function (x) { return x.trim(); }).filter(function (x) { return x; }); };
   return { dados_receber: c.dados_receber, formas: lista(c.formas), valor_padrao: Math.max(0, parseInt(c.valor_padrao, 10) || 0), prazo_dias: Math.min(90, Math.max(0, parseInt(c.prazo_dias, 10) || 0)),
-    texto_cobranca: c.texto_cobranca, categorias: lista(c.categorias), fiscal: false };
+    texto_cobranca: c.texto_cobranca, categorias: lista(c.categorias), fiscal: c.fiscal === 'Sim', fiscal_disponivel: true, cpf_emissor: c.cpf_emissor, cod_rendimento: c.cod_rendimento, cod_ocupacao: c.cod_ocupacao };
 }
 /** Tudo o que as regras precisam, lido uma vez: sessoes da Agenda, pacientes, abas do financeiro e a configuracao. Leitura nunca cria aba. */
 function _finCtx_(controle) {
@@ -8677,7 +8687,7 @@ function _finCtx_(controle) {
   c.sessoes = _lembretesLer_(c.abaS);
   ler(ABA_FIN_CADASTRO).forEach(function (l) { c.cadastros[_siglaChave_(l.id)] = l; });
   c.pessoas = ler(ABA_FIN_PESSOAS); c.pagamentos = ler(ABA_FIN_PAGAMENTOS); c.alocacoes = ler(ABA_FIN_ALOCACOES);
-  c.cobrancas = ler(ABA_FIN_COBRANCAS); c.fixas = ler(ABA_FIN_FIXAS); c.despesas = ler(ABA_FIN_DESPESAS);
+  c.cobrancas = ler(ABA_FIN_COBRANCAS); c.fixas = ler(ABA_FIN_FIXAS); c.despesas = ler(ABA_FIN_DESPESAS); c.recibos = ler(ABA_FIN_RECIBOS);
   c.config = _finConfigDe_(ler(ABA_FIN_CONFIG));
   return c;
 }
@@ -8781,7 +8791,7 @@ function _finDespesas_(c, de, ate, hojeIso) {
     if (d.fixa_id) { temLinha[d.fixa_id + '|' + d.competencia] = true; if (d.situacao === 'paga') ultimo[d.fixa_id] = parseInt(d.valor, 10) || 0; }
     var ref = d.situacao === 'paga' ? d.paga_em : d.vence;
     if (ref >= de && ref <= ate) lista.push({ id: d.id, nome: d.nome, categoria: d.categoria, valor: parseInt(d.valor, 10) || 0, vence: d.vence, paga_em: d.paga_em, situacao: d.situacao === 'paga' ? 'paga' : 'a_pagar',
-      fixa: !!d.fixa_id, tipo: d.fixa_id ? (tipoDe[d.fixa_id] || 'fixo') : '', obs: d.obs, tem_arquivo: !!d.arquivo_id });
+      fixa: !!d.fixa_id, tipo: d.fixa_id ? (tipoDe[d.fixa_id] || 'fixo') : '', obs: d.obs, tem_arquivo: !!d.arquivo_id, conta: d.conta || '', historico: d.historico || '', em_lote: !!d.lote });
   });
   c.fixas.forEach(function (f) {
     var mes = de.slice(0, 7), fim = ate.slice(0, 7) < hojeIso.slice(0, 7) ? ate.slice(0, 7) : hojeIso.slice(0, 7);
@@ -8790,7 +8800,7 @@ function _finDespesas_(c, de, ate, hojeIso) {
       var ultimoDia = Number(_finFimDoMes_(mes).slice(8)), vence = mes + '-' + ('0' + Math.min(ultimoDia, Math.max(1, parseInt(f.dia, 10) || 1))).slice(-2);
       if (vence < de || vence > ate) continue;
       lista.push({ id: 'fixa:' + f.id + ':' + mes, nome: f.nome, categoria: f.categoria, valor: f.tipo === 'variavel' ? 0 : (ultimo[f.id] !== undefined ? ultimo[f.id] : (parseInt(f.valor, 10) || 0)),
-        vence: vence, paga_em: '', situacao: 'a_pagar', fixa: true, tipo: f.tipo === 'variavel' ? 'variavel' : 'fixo', obs: '', tem_arquivo: false });
+        vence: vence, paga_em: '', situacao: 'a_pagar', fixa: true, tipo: f.tipo === 'variavel' ? 'variavel' : 'fixo', obs: '', tem_arquivo: false, conta: f.conta || '', historico: f.historico || '', em_lote: false });
     }
   });
   return lista.sort(function (a, b) { return String(a.vence).localeCompare(String(b.vence)); });
@@ -8874,8 +8884,9 @@ function _finLeitura_(c, p, agora) {
       credito: Math.max(0, e.credito[sig] || 0), recibo_pedido: String(cad.recibo_pedido_em || '').slice(0, 7) === agora.data.slice(0, 7) };
   }).sort(function (a, b) { return String(a.nome).localeCompare(String(b.nome), 'pt-BR'); });
   return { hoje: agora.data, periodo: { de: per.de, ate: per.ate, rotulo: per.rotulo }, config: c.config, pacientes: pacientes, sessoes: sessoes, abertas: abertas,
-    cobrancas: c.cobrancas.map(function (cb) { return _finCobranca_(cb, e, agora.data); }).sort(function (a, b) { return String(b.vence_em).localeCompare(String(a.vence_em)); }),
-    propostas: _finPropostas_(c, e, agora.data), despesas: _finDespesas_(c, per.de, per.ate, agora.data), comprovantes: _finComprovantes_(c), recibos: [], lote_previa: '',
+    cobrancas: c.cobrancas.map(function (cb) { var v = _finCobranca_(cb, e, agora.data); v.recibo_emitido = c.recibos.some(function (r) { return _siglaChave_(r.sigla) === _siglaChave_(cb.sigla) && r.mes === cb.mes && (r.situacao === 'emitido' || r.situacao === 'no_lote'); }); return v; }).sort(function (a, b) { return String(b.vence_em).localeCompare(String(a.vence_em)); }),
+    propostas: _finPropostas_(c, e, agora.data), despesas: _finDespesas_(c, per.de, per.ate, agora.data), comprovantes: _finComprovantes_(c),
+    recibos: c.config.fiscal ? _finRecibos_(c, e, per, agora.data) : [], lote: c.config.fiscal ? _finLote_(c, e, per, agora.data) : null, fiscal: c.config.fiscal ? _finDemonstrativo_(c, per) : null, // 20.1
     resumo: _finResumo_(c, e, per, agora) };
 }
 /** O financeiro de UM paciente, para o modulo do paciente aberto: cadastro (com os documentos), o que a anamnese ja tem e o extrato. */
@@ -8994,6 +9005,14 @@ function profSalvarConfigFinanceiro(s, dados, periodo) {
   if (!novo.formas) return { ok: false, erro: 'Informe pelo menos uma forma de pagamento.' };
   if (!novo.categorias) return { ok: false, erro: 'Informe pelo menos uma categoria de despesa.' };
   if (!novo.texto_cobranca) novo.texto_cobranca = FIN_CONFIG_PADRAO.texto_cobranca;
+  if (d.fiscal !== undefined) { // 20.1: recibos e livro caixa
+    var cpfE = _finDocumento_(d.cpf_emissor), codR = String(d.cod_rendimento === undefined || d.cod_rendimento === null ? '' : d.cod_rendimento).trim().toUpperCase(), codO = String(d.cod_ocupacao === undefined || d.cod_ocupacao === null ? '' : d.cod_ocupacao).trim();
+    novo.fiscal = d.fiscal === 'Sim' ? 'Sim' : 'Nao';
+    if (novo.fiscal === 'Sim' && (!cpfE || cpfE.length !== 11)) return { ok: false, erro: 'Informe o seu CPF: ele vai em cada linha do lote de recibos.' };
+    novo.cpf_emissor = cpfE && cpfE.length === 11 ? cpfE : '';
+    novo.cod_rendimento = /^R\d{2}\.\d{3}\.\d{3}$/.test(codR) ? codR : FIN_CONFIG_PADRAO.cod_rendimento;
+    novo.cod_ocupacao = /^\d{1,4}$/.test(codO) ? codO : FIN_CONFIG_PADRAO.cod_ocupacao;
+  }
   _lembretesLer_(_finAba_(alvo.controle, ABA_FIN_CONFIG, true)).forEach(function (l) { atual[l.id] = l; });
   Object.keys(novo).forEach(function (k) { if (!atual[k] || atual[k].valor !== novo[k]) _finGravar_(alvo.controle, ABA_FIN_CONFIG, atual[k] ? atual[k].__linha : 0, { id: k, valor: novo[k] }); });
   return _finResposta_(alvo, { ok: true }, periodo, agora);
@@ -9222,7 +9241,7 @@ function lerArquivoFinanceiro(s, id) {
   var alvo = s && s.tipo === 'paciente' ? _agePaciente_(s.sigla) : _ageProf_(s);
   if (!alvo.ok) return alvo;
   var c = _finCtx_(alvo.controle), alvoId = String(id || '');
-  var l = c.pagamentos.filter(function (x) { return x.id === alvoId && x.arquivo_id; })[0] || (s.tipo === 'paciente' ? null : c.despesas.filter(function (x) { return x.id === alvoId && x.arquivo_id; })[0]);
+  var l = c.pagamentos.filter(function (x) { return x.id === alvoId && x.arquivo_id; })[0] || c.recibos.filter(function (x) { return x.id === alvoId && x.arquivo_id; })[0] || (s.tipo === 'paciente' ? null : c.despesas.filter(function (x) { return x.id === alvoId && x.arquivo_id; })[0]);
   if (!l || (s.tipo === 'paciente' && _siglaChave_(l.sigla) !== _siglaChave_(s.sigla))) return { ok: false, erro: 'Arquivo não encontrado.' };
   try {
     return { ok: true, arquivo: { nome: l.arquivo_nome, tipo: l.arquivo_tipo, base64: Utilities.base64Encode(DriveApp.getFileById(l.arquivo_id).getBlob().getBytes()) } };
@@ -9244,6 +9263,9 @@ function profSalvarDespesa(s, dados, periodo) {
   if (_lemDia_(d.data) === null) return { ok: false, erro: 'Informe a data.' };
   if (situacao === 'paga' && d.data > agora.data) return { ok: false, erro: 'A data do pagamento não pode ser futura.' };
   if (valor < 0 || (situacao === 'paga' && valor === 0)) return { ok: false, erro: 'Informe o valor.' };
+  var conta = d.conta === undefined ? null : String(d.conta === null ? '' : d.conta).trim().toUpperCase(), historico = d.historico === undefined ? null : _finLoteHistorico_(d.historico).slice(0, 255); // 20.1: livro caixa
+  if (conta && !/^P1[01]\.\d{2}\.\d{5}$/.test(conta)) return { ok: false, erro: 'A conta do livro caixa tem o formato P10.01.00002.' };
+  if (historico && historico.indexOf(';') !== -1) return { ok: false, erro: 'O histórico não pode ter ponto e vírgula.' };
   var arq = { id: '', nome: '', tipo: '' };
   if (d.arquivo && d.arquivo.base64) { arq = _finGuardarArquivo_(alvo.profissionalId, d.arquivo, 'despesa_' + agora.data); if (arq.erro) return { ok: false, erro: arq.erro }; }
   var comArq = function (o) { if (arq.id) { o.arquivo_id = arq.id; o.arquivo_nome = arq.nome; o.arquivo_tipo = arq.tipo; } return o; };
@@ -9254,13 +9276,16 @@ function profSalvarDespesa(s, dados, periodo) {
     if (c.despesas.some(function (x) { return x.fixa_id === f.id && x.competencia === m[2]; })) return _finResposta_(alvo, { ok: true, duplicado: true }, periodo, agora);
     var ultimoDia = Number(_finFimDoMes_(m[2]).slice(8));
     _finGravar_(alvo.controle, ABA_FIN_DESPESAS, 0, comArq({ id: Utilities.getUuid(), fixa_id: f.id, competencia: m[2], nome: f.nome, categoria: f.categoria, valor: String(valor),
-      vence: m[2] + '-' + ('0' + Math.min(ultimoDia, Math.max(1, parseInt(f.dia, 10) || 1))).slice(-2), paga_em: situacao === 'paga' ? d.data : '', situacao: situacao, obs: _finTxt_(d.obs, 200), criado_em: agora.carimbo }));
+      vence: m[2] + '-' + ('0' + Math.min(ultimoDia, Math.max(1, parseInt(f.dia, 10) || 1))).slice(-2), paga_em: situacao === 'paga' ? d.data : '', situacao: situacao, obs: _finTxt_(d.obs, 200), criado_em: agora.carimbo, conta: conta !== null ? conta : (f.conta || ''), historico: historico !== null ? historico : (f.historico || '') }));
     return _finResposta_(alvo, { ok: true }, periodo, agora);
   }
   if (!_ageIdValido_(id)) return { ok: false, erro: 'Identificador inválido.' };
   var atual = c.despesas.filter(function (x) { return x.id === id; })[0];
   if (atual) { // pagar (ou corrigir) uma despesa que ja existe
-    _finGravar_(alvo.controle, ABA_FIN_DESPESAS, atual.__linha, comArq({ valor: String(valor), paga_em: situacao === 'paga' ? d.data : '', situacao: situacao, obs: _finTxt_(d.obs, 200) || atual.obs }));
+    var mud = { valor: String(valor), paga_em: situacao === 'paga' ? d.data : '', situacao: situacao, obs: _finTxt_(d.obs, 200) || atual.obs };
+    if (conta !== null) mud.conta = conta;
+    if (historico !== null) mud.historico = historico;
+    _finGravar_(alvo.controle, ABA_FIN_DESPESAS, atual.__linha, comArq(mud));
     return _finResposta_(alvo, { ok: true }, periodo, agora);
   }
   if (!nome) return { ok: false, erro: 'Informe o nome da despesa.' };
@@ -9268,10 +9293,10 @@ function profSalvarDespesa(s, dados, periodo) {
   var fixaId = '';
   if (d.repete === 'fixo' || d.repete === 'variavel') {
     fixaId = Utilities.getUuid();
-    _finGravar_(alvo.controle, ABA_FIN_FIXAS, 0, { id: fixaId, nome: nome, categoria: categoria, tipo: d.repete, valor: String(valor), dia: String(Number(d.data.slice(8))), desde: d.data.slice(0, 7), criado_em: agora.carimbo });
+    _finGravar_(alvo.controle, ABA_FIN_FIXAS, 0, { id: fixaId, nome: nome, categoria: categoria, tipo: d.repete, valor: String(valor), dia: String(Number(d.data.slice(8))), desde: d.data.slice(0, 7), criado_em: agora.carimbo, conta: conta || '', historico: historico || '' });
   }
   _finGravar_(alvo.controle, ABA_FIN_DESPESAS, 0, comArq({ id: id, fixa_id: fixaId, competencia: d.data.slice(0, 7), nome: nome, categoria: categoria, valor: String(valor), vence: d.data,
-    paga_em: situacao === 'paga' ? d.data : '', situacao: situacao, obs: _finTxt_(d.obs, 200), criado_em: agora.carimbo }));
+    paga_em: situacao === 'paga' ? d.data : '', situacao: situacao, obs: _finTxt_(d.obs, 200), criado_em: agora.carimbo, conta: conta || '', historico: historico || '' }));
   return _finResposta_(alvo, { ok: true }, periodo, agora);
 }
 
@@ -9299,6 +9324,8 @@ function _finMeu_(c, alvo, agora) {
   var rot = { confirmado: 'confirmado', aguardando: 'aguardando', recusado: 'recusado' };
   return { ok: true, meu: { mes: _finMesNome_(mes), sessoes: m.sessoes, total: m.total, pago: m.pago, aberto_anterior: m.aberto_anterior, credito: Math.max(0, e.credito[sig] || 0), dados_receber: c.config.dados_receber,
     pode_recibo: cad.recibo === 'Sim', recibo_pedido: String(cad.recibo_pedido_em || '').slice(0, 7) === mes, profissional: alvo.profissional,
+    recibos: c.recibos.filter(function (r) { return _siglaChave_(r.sigla) === sig && r.situacao === 'emitido'; }).sort(function (a, b) { return String(b.mes).localeCompare(String(a.mes)); }).slice(0, 12)
+      .map(function (r) { return { id: r.id, mes: _finMesNome_(r.mes), do_mes: r.mes === mes, tem_arquivo: !!r.arquivo_id }; }), // 20.1: o recibo emitido fica disponivel para o paciente
     historico: c.pagamentos.filter(function (p) { return _siglaChave_(p.sigla) === sig && rot[p.situacao]; }).sort(function (a, b) { return String(b.data + ' ' + b.criado_em).localeCompare(String(a.data + ' ' + a.criado_em)) || (b.__linha - a.__linha); }).slice(0, 24)
       .map(function (p) { return { id: p.id, data: p.data, valor: parseInt(p.valor, 10) || 0, forma: p.origem === 'comprovante' && p.situacao !== 'confirmado' ? '' : p.forma, situacao: p.situacao, tem_arquivo: !!p.arquivo_id }; }) } };
 }
@@ -9342,6 +9369,235 @@ function _finApagarDoPaciente_(controle, sigla) {
     var aba = _finAba_(controle, par[0], false);
     _lembretesLer_(aba).reverse().forEach(function (l) { if (_siglaChave_(l[par[1]]) === alvo) aba.deleteRow(l.__linha); });
   });
+}
+// ---------- Pacote 20.1: recibos e livro caixa (camada fiscal, opcional, ligada na configuracao do profissional) ----------
+// O sistema PREPARA, MOSTRA e REGISTRA; nao fala com o site do governo. O arquivo de lote sai no formato do Carne-Leao
+// Web: UTF-8 sem BOM, sem cabecalho, separador ";", linhas em CRLF (recibos com 16 campos, despesas com 4). A descricao
+// do recibo e montada das datas, em uma linha, ate 255 caracteres (forma compacta quando a longa nao cabe). Codigo do
+// rendimento, da ocupacao e CPF de quem emite vem da CONFIGURACAO, nunca do codigo.
+
+/** Centavos -> "1600,00" (virgula, sem milhar): o valor nos campos do lote. */
+function _finLoteValorCampo_(cent) { return (Math.round(cent) / 100).toFixed(2).replace('.', ','); }
+/** Centavos -> "1.000,00": o valor dentro do texto da descricao. */
+function _finLoteValorTexto_(cent) { return _finBRL_(cent).replace('R$ ', ''); }
+/** 'AAAA-MM-DD' -> 'DD/MM/AAAA'. */
+function _finLoteData_(iso) { var p = String(iso).split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
+/**
+ * Descricao do recibo. `datas`: ['DD/MM/AAAA', ...] em ordem; `modalidade`: '', 'on-line' ou 'presencial'.
+ * Devolve o texto ou null (mais de 26 sessoes, mais de 255 caracteres mesmo na forma compacta, ";" ou quebra de linha).
+ */
+function _finLoteDescricao_(datas, valorSessaoCent, modalidade) {
+  var n = datas.length, v = _finLoteValorTexto_(valorSessaoCent), letras = 'abcdefghijklmnopqrstuvwxyz';
+  if (!n || n > 26) return null;
+  var ext = function (d) { return d.slice(0, 2) + ' de ' + FIN_MESES[Number(d.slice(3, 5)) - 1] + ' de ' + d.slice(6); };
+  var itens = datas.map(function (d, i) { return letras.charAt(i) + '. ' + ext(d); }).join(', ');
+  var valor, txt;
+  if (n === 1) {
+    valor = modalidade ? ', ofertada na modalidade ' + modalidade + ', no valor de (R$ ' + v + ')' : ' (R$ ' + v + ')';
+    txt = 'Realização de 01 sessão de psicoterapia' + valor + ', datada em: ' + itens + '.';
+  } else {
+    valor = modalidade ? ', ofertadas na modalidade ' + modalidade + ', no valor de (R$ ' + v + ' cada)' : ' (R$ ' + v + ' cada)';
+    txt = 'Realização de ' + ('0' + n).slice(-2) + ' sessões de psicoterapia' + valor + ', datadas em: ' + itens + '.';
+  }
+  if (txt.length > 255) { // forma compacta: os dias agrupados por mes
+    var grupos = [];
+    datas.forEach(function (d) {
+      var chave = d.slice(3, 5) + '|' + d.slice(6);
+      if (grupos.length && grupos[grupos.length - 1].chave === chave) grupos[grupos.length - 1].dias.push(d.slice(0, 2));
+      else grupos.push({ chave: chave, dias: [d.slice(0, 2)] });
+    });
+    var partes = grupos.map(function (g) {
+      var lista = g.dias.length === 1 ? g.dias[0] : g.dias.slice(0, -1).join(', ') + ' e ' + g.dias[g.dias.length - 1];
+      return lista + ' de ' + FIN_MESES[Number(g.chave.slice(0, 2)) - 1] + ' de ' + g.chave.slice(3);
+    });
+    txt = 'Realização de ' + ('0' + n).slice(-2) + ' sessões de psicoterapia' + valor + ', datadas em: ' + partes.join(', ') + '.';
+  }
+  return (txt.length <= 255 && txt.indexOf(';') === -1 && !/[\r\n]/.test(txt)) ? txt : null;
+}
+/** Linha de recibo do lote (16 campos). `cfg`: { cod_rendimento, cod_ocupacao, cpf_emissor }. */
+function _finLoteLinhaRecibo_(dataRecibo, valorTotalCent, descricao, cpf, cfg) {
+  var doc = String(cpf).replace(/\D/g, '');
+  return [dataRecibo, cfg.cod_rendimento, cfg.cod_ocupacao, _finLoteValorCampo_(valorTotalCent), '', descricao, 'PF', doc, doc, '', '', '', '', 'S', cfg.cpf_emissor, ''].join(';') + '\r\n';
+}
+/** Historico em uma linha: as quebras viram " - ". */
+function _finLoteHistorico_(texto) {
+  var quebras = [10, 13, 11, 12, 28, 29, 30, 133, 8232, 8233], t = String(texto === undefined || texto === null ? '' : texto), partes = [''];
+  for (var i = 0; i < t.length; i++) { if (quebras.indexOf(t.charCodeAt(i)) !== -1) partes.push(''); else partes[partes.length - 1] += t.charAt(i); }
+  return partes.map(function (x) { return x.trim(); }).filter(function (x) { return x; }).join(' - ');
+}
+/** Linha de despesa do lote (4 campos) ou null se a conta ou o historico nao servem. */
+function _finLoteLinhaPagamento_(data, conta, valorCent, historico) {
+  var h = _finLoteHistorico_(historico);
+  if (!/^P1[01]\.\d{2}\.\d{5}$/.test(String(conta)) || h.length > 255 || h.indexOf(';') !== -1) return null;
+  return [data, conta, _finLoteValorCampo_(valorCent), h].join(';') + '\r\n';
+}
+function _finCpfValido_(doc) { var d = _finDocumento_(doc); return !!d && d.length === 11; }
+function _finFiscal_(c) {
+  return { ligado: c.config.fiscal === true, cod_rendimento: c.config.cod_rendimento, cod_ocupacao: c.config.cod_ocupacao, cpf_emissor: c.config.cpf_emissor, pronto: c.config.fiscal === true && _finCpfValido_(c.config.cpf_emissor) };
+}
+/**
+ * Em nome de quem sai o recibo do paciente. Com `abrirAnamnese`, o nome e o CPF do proprio paciente sao lidos da
+ * anamnese (uma planilha aberta; so quando o recibo e salvo). Sem isso, devolve o nome do cadastro e `documento: null`.
+ */
+function _finTitular_(c, sigla, abrirAnamnese) {
+  var sig = _siglaChave_(sigla), cad = _finCad_(c, sig), pc = c.pacs[sig] || {};
+  if (cad.titular === 'outro') { var t = c.pessoas.filter(function (x) { return _siglaChave_(x.sigla) === sig && x.papel === 'recibo'; })[0]; if (t) return { nome: t.nome, documento: t.documento }; }
+  if (cad.titular === 'pagador' && cad.pagador === 'outro') { var pg = c.pessoas.filter(function (x) { return _siglaChave_(x.sigla) === sig && x.papel === 'pagador'; })[0]; if (pg) return { nome: pg.nome, documento: pg.documento }; }
+  if (!abrirAnamnese) return { nome: pc.nome || sig, documento: null };
+  var nome = pc.nome || sig, doc = '';
+  try {
+    var plan = _planilhaDoPaciente_(sig), linha = plan ? lerAbaComoObjetos(plan, ABA_ANAMNESE)[0] : null;
+    if (linha) { nome = String(linha.nome_completo || '').trim() || nome; doc = String(linha.cpf || '').replace(/\D/g, ''); }
+  } catch (erroAnamnese) { /* sem a anamnese o recibo fica sem CPF e nao entra no lote */ }
+  return { nome: nome, documento: doc };
+}
+/** O recibo como a tela o recebe (o documento de quem recebe nunca vai inteiro para a lista). */
+function _finReciboVisao_(r, c) {
+  var datas = String(r.datas || '').split(',').filter(function (x) { return x; }), pc = c.pacs[_siglaChave_(r.sigla)] || {};
+  return { id: r.id, sigla: r.sigla, nome: pc.nome || r.sigla, mes: r.mes, mes_nome: _finMesNome_(r.mes), titular: r.titular_nome, titular_doc: r.titular_documento === null ? 'anamnese' : _finDocMascara_(r.titular_documento),
+    cpf_ok: r.titular_documento === null ? null : _finCpfValido_(r.titular_documento), sessoes: datas.length, datas: datas, unitario: parseInt(r.unitario, 10) || 0, modalidade: r.modalidade || '', valor: parseInt(r.valor, 10) || 0,
+    data: r.data || '', situacao: r.situacao || 'a_emitir', numero: r.numero || '', descricao: r.descricao || '', lote: r.lote || '', tem_arquivo: !!r.arquivo_id, novo: !!r.novo };
+}
+/**
+ * Recibos dos meses do periodo: os que ja foram salvos e, para cada paciente marcado "precisa de recibo" com sessao
+ * cobrada no mes e sem recibo valido, a PROPOSTA (id `novo:<sigla>:<AAAA-MM>`), com as datas das sessoes e a descricao
+ * ja montadas e a data do recibo EM BRANCO (ela e sempre informada pelo profissional).
+ */
+function _finRecibos_(c, e, per, hojeIso) {
+  var lista = [], tem = {}, fimMes = hojeIso.slice(0, 7) < per.ate.slice(0, 7) ? hojeIso.slice(0, 7) : per.ate.slice(0, 7);
+  c.recibos.forEach(function (r) {
+    if (r.situacao !== 'cancelado') tem[_siglaChave_(r.sigla) + '|' + r.mes] = true;
+    if (r.mes >= per.de.slice(0, 7) && r.mes <= per.ate.slice(0, 7)) lista.push(_finReciboVisao_(r, c));
+  });
+  var porChave = {};
+  e.sessoes.forEach(function (s) {
+    var sig = _siglaChave_(s.sigla), mes = s.data.slice(0, 7);
+    if (!s.cobravel || mes < per.de.slice(0, 7) || mes > fimMes || tem[sig + '|' + mes] || _finCad_(c, sig).recibo !== 'Sim' || !c.pacs[sig]) return;
+    (porChave[sig + '|' + mes] = porChave[sig + '|' + mes] || []).push(s);
+  });
+  Object.keys(porChave).sort().forEach(function (k) {
+    var ss = porChave[k], sig = k.split('|')[0], mes = k.split('|')[1], conta = {}, unit = 0;
+    ss.forEach(function (s) { conta[s.valor] = (conta[s.valor] || 0) + 1; if (!unit || conta[s.valor] > conta[unit]) unit = s.valor; });
+    var datas = ss.map(function (s) { return _finLoteData_(s.data); }), t = _finTitular_(c, sig, false);
+    lista.push(_finReciboVisao_({ id: 'novo:' + sig + ':' + mes, sigla: sig, mes: mes, data: '', datas: datas.join(','), unitario: String(unit), modalidade: '', valor: String(unit * datas.length),
+      descricao: _finLoteDescricao_(datas, unit, '') || '', titular_nome: t.nome, titular_documento: t.documento, situacao: 'a_emitir', numero: '', novo: true }, c));
+  });
+  return lista.sort(function (a, b) { return (a.mes + a.nome).localeCompare(b.mes + b.nome, 'pt-BR'); });
+}
+/**
+ * A previa LITERAL dos lotes do periodo: as linhas que iriam para o arquivo e o que ficou de fora, com o motivo.
+ * Recibo entra quando esta salvo, "a emitir", com a data informada e CPF valido de quem recebe. Despesa entra quando
+ * esta paga no periodo, tem a conta do plano de contas e o historico, e ainda nao saiu em lote.
+ */
+function _finLote_(c, e, per, hojeIso) {
+  var f = _finFiscal_(c), lote = { pronto: f.pronto, recibos: { linhas: [], itens: [], fora: [] }, despesas: { linhas: [], itens: [], fora: 0, em_lote: 0 } };
+  _finRecibos_(c, e, per, hojeIso).forEach(function (r) {
+    if (r.situacao !== 'a_emitir') return;
+    var bruto = c.recibos.filter(function (x) { return x.id === r.id; })[0];
+    var motivo = r.novo ? 'abra o recibo, informe a data e salve' : (!r.data ? 'falta a data do recibo' : (!r.cpf_ok ? 'falta o CPF de quem recebe o recibo' : (!r.descricao ? 'a descrição não cabe em 255 caracteres' : '')));
+    if (motivo || !bruto) { lote.recibos.fora.push({ nome: r.nome, motivo: motivo }); return; }
+    lote.recibos.itens.push({ id: r.id, data: r.data, titular: r.titular, valor: r.valor, descricao: r.descricao });
+    lote.recibos.linhas.push(_finLoteLinhaRecibo_(_finLoteData_(r.data), r.valor, r.descricao, bruto.titular_documento, f));
+  });
+  c.despesas.forEach(function (d) {
+    if (d.situacao !== 'paga' || d.paga_em < per.de || d.paga_em > per.ate) return;
+    if (d.lote) { lote.despesas.em_lote++; return; }
+    var linha = d.conta ? _finLoteLinhaPagamento_(_finLoteData_(d.paga_em), d.conta, parseInt(d.valor, 10) || 0, d.historico || d.nome) : null;
+    if (!linha) { lote.despesas.fora++; return; }
+    lote.despesas.itens.push({ id: d.id, data: d.paga_em, conta: d.conta, valor: parseInt(d.valor, 10) || 0, historico: _finLoteHistorico_(d.historico || d.nome) });
+    lote.despesas.linhas.push(linha);
+  });
+  return lote;
+}
+/** Demonstrativo do periodo: rendimentos (recibos no lote ou emitidos, pela data do recibo) menos as despesas do livro caixa (pagas, com conta dedutivel P10). */
+function _finDemonstrativo_(c, per) {
+  var d = { rendimentos: 0, despesas: 0, a_emitir: 0 };
+  c.recibos.forEach(function (r) {
+    if (r.situacao === 'a_emitir' && r.mes >= per.de.slice(0, 7) && r.mes <= per.ate.slice(0, 7)) d.a_emitir++;
+    if ((r.situacao === 'no_lote' || r.situacao === 'emitido') && r.data >= per.de && r.data <= per.ate) d.rendimentos += parseInt(r.valor, 10) || 0;
+  });
+  c.despesas.forEach(function (x) { if (x.situacao === 'paga' && x.paga_em >= per.de && x.paga_em <= per.ate && /^P10\./.test(String(x.conta))) d.despesas += parseInt(x.valor, 10) || 0; });
+  d.resultado = d.rendimentos - d.despesas;
+  return d;
+}
+
+/**
+ * Salva um recibo. `id` = o do recibo, ou `novo:<sigla>:<AAAA-MM>` para a proposta do mes. `dados`: { data ('AAAA-MM-DD'),
+ * datas (['DD/MM/AAAA']), unitario (centavos), modalidade ('' | 'on-line' | 'presencial'), numero, situacao, arquivo }.
+ * A descricao e sempre montada das datas, do valor e da modalidade. Informar o numero marca "emitido"; "cancelado"
+ * guarda o numero (recibo cancelado continua consumindo o numero); `situacao: 'a_emitir'` tira o recibo do lote.
+ */
+function profSalvarRecibo(s, id, dados, periodo) {
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  var c = _finCtx_(alvo.controle), d = dados && typeof dados === 'object' ? dados : {}, agora = _lemAgora_(), e = _finEstado_(c, agora);
+  if (!c.config.fiscal) return { ok: false, erro: 'Ligue "Recibos e livro caixa" na Configuração.' };
+  var m = /^novo:([A-Za-z0-9]{1,12}):(\d{4}-\d{2})$/.exec(String(id || '')), atual, sig, mes;
+  if (m) {
+    sig = _finDoPaciente_(c, m[1]); mes = m[2];
+    if (!sig) return { ok: false, erro: 'Este paciente nao pertence a voce' };
+    if (c.recibos.some(function (r) { return _siglaChave_(r.sigla) === sig && r.mes === mes && r.situacao !== 'cancelado'; })) return _finResposta_(alvo, { ok: true, duplicado: true }, periodo, agora);
+    var proposta = _finRecibos_(c, e, { de: mes + '-01', ate: _finFimDoMes_(mes) }, agora.data).filter(function (r) { return r.id === 'novo:' + sig + ':' + mes; })[0];
+    if (!proposta) return { ok: false, erro: 'Não há sessão cobrada deste paciente neste mês.' };
+    var tit = _finTitular_(c, sig, true);
+    atual = { sigla: sig, mes: mes, data: '', datas: proposta.datas.join(','), unitario: String(proposta.unitario), modalidade: '', titular_nome: tit.nome, titular_documento: tit.documento, situacao: 'a_emitir', numero: '' };
+  } else {
+    atual = c.recibos.filter(function (r) { return r.id === String(id || ''); })[0];
+    if (!atual || !_finDoPaciente_(c, atual.sigla)) return { ok: false, erro: 'Recibo não encontrado.' };
+    sig = _siglaChave_(atual.sigla); mes = atual.mes;
+  }
+  var datas = Array.isArray(d.datas) ? d.datas.map(function (x) { return String(x).trim(); }).filter(function (x) { return x; }) : String(atual.datas).split(',');
+  datas = datas.filter(function (x, i, l) { return l.indexOf(x) === i; }).sort(function (a, b) { return (a.slice(6) + a.slice(3, 5) + a.slice(0, 2)).localeCompare(b.slice(6) + b.slice(3, 5) + b.slice(0, 2)); });
+  if (!datas.length) return { ok: false, erro: 'Informe pelo menos uma data de sessão.' };
+  for (var i = 0; i < datas.length; i++) {
+    if (!/^\d{2}\/\d{2}\/\d{4}$/.test(datas[i]) || _lemDia_(datas[i].slice(6) + '-' + datas[i].slice(3, 5) + '-' + datas[i].slice(0, 2)) === null) return { ok: false, erro: 'Data de sessão inválida: ' + datas[i].slice(0, 12) + '. Use dia/mês/ano.' };
+    if (datas[i].slice(6) + '-' + datas[i].slice(3, 5) !== mes) return { ok: false, erro: 'Um recibo por mês de sessões: a data ' + datas[i] + ' não é de ' + _finMesNome_(mes) + '.' };
+  }
+  var unit = d.unitario === undefined ? (parseInt(atual.unitario, 10) || 0) : _finInt_(d.unitario);
+  if (unit <= 0) return { ok: false, erro: 'Informe o valor unitário.' };
+  var modalidade = d.modalidade === undefined ? (atual.modalidade || '') : (d.modalidade === 'on-line' || d.modalidade === 'presencial' ? d.modalidade : '');
+  var data = d.data === undefined ? (atual.data || '') : String(d.data || '');
+  if (data && _lemDia_(data) === null) return { ok: false, erro: 'Data do recibo inválida.' };
+  var desc = _finLoteDescricao_(datas, unit, modalidade);
+  if (!desc) return { ok: false, erro: 'A descrição não cabe em 255 caracteres ou há sessões demais (até 26).' };
+  var numero = d.numero === undefined ? (atual.numero || '') : _finTxt_(d.numero, 20).replace(/[;]/g, '');
+  var situacao = atual.situacao || 'a_emitir';
+  if (d.situacao === 'cancelado') { if (!numero) return { ok: false, erro: 'Informe o número do recibo cancelado (ele continua valendo como número usado).' }; situacao = 'cancelado'; }
+  else if (d.situacao === 'a_emitir') { situacao = 'a_emitir'; numero = ''; }
+  else if (numero) { if (!data) return { ok: false, erro: 'Informe a data do recibo.' }; situacao = 'emitido'; }
+  var campos = { data: data, datas: datas.join(','), unitario: String(unit), modalidade: modalidade, valor: String(unit * datas.length), descricao: desc, situacao: situacao, numero: numero, atualizado_em: agora.carimbo };
+  if (situacao === 'a_emitir') campos.lote = '';
+  if (d.arquivo && d.arquivo.base64) {
+    var arq = _finGuardarArquivo_(alvo.profissionalId, d.arquivo, 'recibo_' + sig + '_' + mes);
+    if (arq.erro) return { ok: false, erro: arq.erro };
+    campos.arquivo_id = arq.id; campos.arquivo_nome = arq.nome; campos.arquivo_tipo = arq.tipo;
+  }
+  if (m) { campos.id = Utilities.getUuid(); campos.sigla = sig; campos.mes = mes; campos.titular_nome = atual.titular_nome; campos.titular_documento = atual.titular_documento; campos.criado_em = agora.carimbo; }
+  _finGravar_(alvo.controle, ABA_FIN_RECIBOS, m ? 0 : atual.__linha, campos);
+  return _finResposta_(alvo, { ok: true, id: m ? campos.id : atual.id }, periodo, agora);
+}
+
+/**
+ * Gera o arquivo de lote do periodo: `qual` = 'recibos' ou 'despesas'. Com `simular: true` devolve so a previa (o portao
+ * e da tela: a tabela literal aparece antes de o arquivo existir). Sem simular, marca o que entrou (recibo vira
+ * "no lote"; despesa ganha o nome do lote) para nunca repetir linha, e devolve o texto do arquivo.
+ */
+function profGerarLote(s, qual, simular, periodo) {
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  var c = _finCtx_(alvo.controle), agora = _lemAgora_(), e = _finEstado_(c, agora), per = _finPeriodo_(periodo, agora.data), f = _finFiscal_(c);
+  if (!f.ligado) return { ok: false, erro: 'Ligue "Recibos e livro caixa" na Configuração.' };
+  if (!f.pronto) return { ok: false, erro: 'Informe o seu CPF na Configuração (ele vai em cada linha do lote de recibos).' };
+  var lote = _finLote_(c, e, per, agora.data), parte = qual === 'despesas' ? lote.despesas : lote.recibos;
+  if (!parte.linhas.length) return { ok: false, erro: qual === 'despesas' ? 'Nenhuma despesa paga com conta do livro caixa neste período.' : 'Nenhum recibo pronto: informe a data de cada recibo e salve.' };
+  if (parte.linhas.length > 1000) return { ok: false, erro: 'O lote passa de 1.000 linhas. Escolha um período menor.' };
+  if (simular) return { ok: true, simulacao: parte };
+  var nome = (qual === 'despesas' ? 'lote-despesas-' : 'lote-recibos-') + per.de + '-a-' + per.ate + '.csv', marca = nome + ' · ' + agora.carimbo;
+  parte.itens.forEach(function (it) {
+    if (qual === 'despesas') { var d = c.despesas.filter(function (x) { return x.id === it.id; })[0]; _finGravar_(alvo.controle, ABA_FIN_DESPESAS, d.__linha, { lote: marca }); }
+    else { var r = c.recibos.filter(function (x) { return x.id === it.id; })[0]; _finGravar_(alvo.controle, ABA_FIN_RECIBOS, r.__linha, { situacao: 'no_lote', lote: marca, atualizado_em: agora.carimbo }); }
+  });
+  return _finResposta_(alvo, { ok: true, arquivo: { nome: nome, texto: parte.linhas.join(''), linhas: parte.linhas.length } }, periodo, agora);
 }
 // ---------- fim da Fase 20 ----------
 

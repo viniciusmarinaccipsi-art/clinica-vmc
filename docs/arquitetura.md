@@ -2186,3 +2186,34 @@ Prompt e decisões: `..\prompts_fluxo_caixa\PROMPT_FASE_20.md`; plano aprovado e
 - **Excluir paciente:** saem o cadastro financeiro, quem paga e as cobranças; os pagamentos ficam (`_finApagarDoPaciente_`).
 - **Provas:** `scripts/testes/backend_20.js` (94 provas, em São Paulo e em UTC) e o roteiro `..\FASE_20_fluxo.js`
   (`Código.js` real em Node, 390 e 1280).
+
+## Fase 20 — Recibos e livro caixa (Pacote 20.1 — 23/11/2026)
+
+Camada fiscal **opcional**, ligada pelo profissional em Configuração (`fiscal = Sim` em `Config_Financeiro`, com o CPF de quem
+emite e os códigos do rendimento e da ocupação — nada disso fica no código). Desligada, a aba Recibos não aparece.
+
+- **O sistema prepara, mostra e registra; não fala com o site do governo.** Importar o lote, ler o número real e baixar o PDF é
+  trabalho da skill, pelo Chrome do usuário.
+- **Aba `Fin_Recibos`** (texto literal): um recibo por paciente e por mês de sessões (`mes`), com `data` (a do recibo, sempre
+  informada pelo profissional; decide o mês do lançamento), `datas` das sessões (`DD/MM/AAAA`), `unitario`, `modalidade`,
+  `valor` (quantidade × unitário), `descricao` (montada, nunca digitada), `titular_nome` e `titular_documento` (fotografia de
+  quem recebe o recibo no momento em que ele é salvo: paciente pela anamnese, quem paga, ou a terceira pessoa do cadastro),
+  `situacao` (`a_emitir`, `no_lote`, `emitido`, `cancelado`), `numero`, `lote` e o arquivo do recibo.
+- **Proposta na leitura** (`_finRecibos_`): para cada paciente marcado "precisa de recibo" com sessão cobrada no mês e sem
+  recibo válido, a leitura traz a proposta (`novo:<sigla>:<AAAA-MM>`) com as datas e a descrição prontas e a **data do recibo em
+  branco**. A anamnese só é aberta quando o recibo é salvo (`_finTitular_`), não na listagem.
+- **Formato do lote** (`_finLoteDescricao_`, `_finLoteLinhaRecibo_`, `_finLoteLinhaPagamento_`): UTF-8 sem BOM, sem cabeçalho,
+  `;`, CRLF; recibo com 16 campos, despesa com 4; descrição em uma linha, até 255 caracteres, com a forma compacta quando a
+  longa não cabe. **Prova:** `scripts/testes/fixtures_lote_20_1.json` é o gabarito gerado pelo gerador que o usuário usa hoje
+  (`lote.py`, lido da pasta dele, com entradas inventadas e o CPF de quem emite trocado por um fictício) e a suíte exige igualdade
+  byte a byte; no PC, `..\FASE_20_lotes_reais.js` confere contra os lotes já aceitos pelo site e imprime só contagens.
+- **O portão é da tela** (`_finLote_` → janela "Conferir o lote"): as linhas literais aparecem antes de o arquivo existir, com o
+  que ficou de fora e o motivo. `profGerarLote` (`simular` devolve só a prévia) marca o que entrou — recibo vira `no_lote`,
+  despesa ganha o nome do lote — para nunca repetir linha.
+- **Livro caixa:** despesa paga com `conta` do plano de contas (`P10.…` dedutível, `P11.…` não) e `historico` em uma linha entra
+  no lote de despesas; a despesa que repete leva conta e histórico fixos para a conta de cada mês.
+- **Registro depois da importação:** `profSalvarRecibo` com `numero` marca `emitido`; `cancelado` guarda o número (ele continua
+  consumido); `a_emitir` devolve o recibo ao lote. Com o arquivo anexado, o paciente o baixa (`lerArquivoFinanceiro`, só o dele).
+- **Demonstrativo** (`_finDemonstrativo_`): rendimentos = recibos no lote ou emitidos, pela data do recibo; despesas = pagas com
+  conta dedutível; resultado = a diferença.
+- Ações novas: `profSalvarRecibo` e `profGerarLote` (90 no `doPost`).
