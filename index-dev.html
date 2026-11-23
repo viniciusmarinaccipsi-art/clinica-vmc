@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia, limite de agendamentos e valor por paciente — Pacote 14.6 (23/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia e valor por paciente · agendamento do paciente com a aprovação do profissional — Pacote 14.7 (23/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -4299,7 +4299,7 @@ button.cab-no-item{cursor:pointer;}
 .age-whats{margin-top:var(--s-2);}
 .age-ped{display:flex;align-items:center;gap:var(--s-2);flex-wrap:wrap;border:1px solid var(--c-line);border-radius:var(--r-field);padding:10px 12px;background:var(--c-surface);}
 .age-ped-texto{flex:1 1 220px;font:var(--t-body);color:var(--c-ink);overflow-wrap:anywhere;}
-.age-ped-acoes{display:flex;gap:var(--s-2);}
+.age-ped-acoes{display:flex;flex-wrap:wrap;gap:var(--s-2);}
 .age-ped-msg{font:var(--t-body-sm);color:var(--c-pos-ink);margin:var(--s-2) 0 0;}
 .ini-ses{display:flex;align-items:center;gap:var(--s-2);width:100%;min-height:var(--hit-min);text-align:left;background:var(--c-surface);border:1px solid var(--c-line);border-left:4px solid var(--c-pos);
   border-radius:var(--r-card);padding:12px 16px;margin:4px 0 12px;font:var(--t-body);color:var(--c-ink);cursor:pointer;box-shadow:var(--sh-1);}
@@ -4307,6 +4307,7 @@ button.cab-no-item{cursor:pointer;}
 .ses-item{border:1px solid var(--c-line);border-radius:var(--r-card);background:var(--c-surface);padding:12px 14px;}
 .ses-quando{font:var(--t-body);font-weight:600;color:var(--c-ink);margin-bottom:4px;}
 .ses-acoes{display:flex;gap:var(--s-2);flex-wrap:wrap;margin-top:var(--s-2);}
+.ses-acoes .p5-btn{min-height:var(--hit-min);}
 .ses-titulo-ant{margin-top:var(--s-4);}
 .ses-dia{text-align:left;margin-bottom:var(--s-3);}
 .ses-horas{display:flex;gap:6px;flex-wrap:wrap;}
@@ -4726,11 +4727,6 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
             <option value="48">48 horas</option>
           </select>
           <div class="gra-hint">O paciente só agenda, cancela ou pede remarcação com esta antecedência.</div>
-        </div>
-        <div class="gra-cfg-item">
-          <label for="graCfgLimite">Sessões futuras que o paciente pode agendar sozinho</label>
-          <input type="number" id="graCfgLimite" min="1" max="99" step="1" inputmode="numeric" autocomplete="off">
-          <div class="gra-hint">Vazio = sem limite. Contam só as sessões que o próprio paciente agendou.</div>
         </div>
         <div class="gra-cfg-item">
           <label for="graCfgAvisos">Avisos de sessão por e-mail</label>
@@ -22986,7 +22982,6 @@ async function graCarregar() {
   // Config -> select de antecedência
   var cfg = resp.config || {};
   var sel = document.getElementById('graCfgAntecedencia');
-  document.getElementById('graCfgLimite').value = cfg.limite_agendamentos ? String(cfg.limite_agendamentos) : ''; // 14.6
   if (cfg.antecedencia_min_horas && sel.querySelector('option[value="' + CSS.escape(String(cfg.antecedencia_min_horas)) + '"]')) { // 18.4 (8.83)
     sel.value = String(cfg.antecedencia_min_horas);
   }
@@ -23148,7 +23143,6 @@ async function graSalvar() {
       duracao_slot_min: 60,
       antecedencia_min_horas: Number(document.getElementById('graCfgAntecedencia').value),
       avisos_sessao: document.getElementById('graCfgAvisos').value, // 14.3
-      limite_agendamentos: document.getElementById('graCfgLimite').value, // 14.6
       endereco: document.getElementById('graCfgEndereco').value, // 14.5
       endereco_novo: document.getElementById('graCfgEnderecoNovo').value,
       endereco_novo_desde: document.getElementById('graCfgEnderecoDesde').value,
@@ -23502,6 +23496,7 @@ function ageFeriado_(iso) { return (AGE.agenda && AGE.agenda.feriados && AGE.age
 
 /* ---------- pedidos dos pacientes (Agenda e Início) ---------- */
 function agePedidoTexto_(p) {
+  if (p.tipo === 'agendar') return esc(p.nome) + ' pede agendar uma sessão em ' + esc(lemDataBR_(p.data, true)) + ' às ' + esc(p.hora) + ' (' + ageModNome_(p.modalidade) + ').'; // 14.7
   if (!p.data) return esc(p.nome) + (p.tipo === 'repor' ? ' pede reposição da sessão de ' + esc(lemDataBR_(p.sessao_data, true)) : ' pede remarcar a sessão de ' + esc(lemDataBR_(p.sessao_data, true)) + ' às ' + esc(p.sessao_hora)) +
     ' e sugere: “' + esc(p.sugestao || '') + '”'; // 14.5: nenhum horário livre serviu
   return p.tipo === 'repor'
@@ -23510,8 +23505,10 @@ function agePedidoTexto_(p) {
 }
 function agePedidosHtml_(pedidos, id) {
   var linhas = pedidos.map(function (p) {
-    return '<div class="age-ped" data-pedido="' + esc(p.id) + '"><span class="age-ped-texto">' + agePedidoTexto_(p) + '</span>' +
-      '<span class="age-ped-acoes"><button type="button" class="prof-lem-btn" data-decidir="' + (p.data ? 'sim' : 'escolher') + '" onclick="ageDecidir_(this)">' + (p.data ? 'Aprovar' : 'Escolher horário') + '</button>' +
+    // 14.7: todo pedido com horário tem os três caminhos — aprovar nele, escolher outro, recusar; sem horário (só a sugestão), escolher ou recusar
+    return '<div class="age-ped" data-pedido="' + esc(p.id) + '" data-tipo="' + esc(p.tipo) + '"><span class="age-ped-texto">' + agePedidoTexto_(p) + '</span>' +
+      '<span class="age-ped-acoes">' + (p.data ? '<button type="button" class="prof-lem-btn" data-decidir="sim" onclick="ageDecidir_(this)">Aprovar</button>' : '') +
+      '<button type="button" class="prof-lem-btn" data-decidir="escolher" onclick="ageDecidir_(this)">Escolher horário</button>' +
       '<button type="button" class="prof-lem-btn" data-decidir="nao" onclick="ageDecidir_(this)">Recusar</button></span></div>';
   }).join('');
   return '<section class="prof-bloco" id="' + id + '"><h3 class="prof-bloco-titulo">Pedidos dos pacientes</h3>' +
@@ -24124,6 +24121,12 @@ function sesLinha_(x, comAcoes) {
     (marcas ? '<div class="age-marcas">' + marcas + '</div>' : '') + ((comAcoes && x.endereco) ? '<div class="age-dica" data-ses="endereco">' + esc('Endereço: ' + x.endereco) + '</div>' : '') + (ped ? '<div class="age-dica">' + ped + '</div>' : '') +
     (acoes ? '<div class="ses-acoes">' + acoes + '</div>' : '') + '</li>';
 }
+/* 14.7: pedido de agendamento do paciente — a sessão só existe depois que o profissional aprova */
+function sesLinhaPedido_(p) {
+  var estado = p.estado === 'recusado' ? 'Pedido recusado' : 'Agendamento pedido para ' + esc(lemDataBR_(p.data, true)) + ' às ' + esc(p.hora) + ' — aguardando resposta';
+  return '<li class="ses-item" data-pedido="' + esc(p.id) + '" data-estado="' + esc(p.estado) + '"><div class="ses-quando">' + esc(ageQuandoCurto_(p.data, p.hora)) + ' · ' + ageModNome_(p.modalidade) + '</div>' +
+    '<div class="age-dica">' + estado + '</div></li>';
+}
 function sesRender_() {
   var el = document.getElementById('sesConteudo');
   if (!el) return;
@@ -24134,11 +24137,15 @@ function sesRender_() {
   var todas = SES.dados.sessoes || [];
   var proximas = todas.filter(function (x) { return x.estado === 'agendada' && x.futura; });
   var anteriores = todas.filter(function (x) { return !(x.estado === 'agendada' && x.futura); }).reverse().slice(0, 30);
+  // 14.7: os pedidos de agendamento (aguardando resposta ou recusados há pouco) entram entre as próximas, na ordem da data
+  var itens = proximas.map(function (x) { return { quando: x.data + ' ' + x.hora, html: sesLinha_(x, true) }; })
+    .concat((SES.dados.pedidos_agendar || []).map(function (p) { return { quando: p.data + ' ' + p.hora, html: sesLinhaPedido_(p) }; }))
+    .sort(function (a, b) { return a.quando < b.quando ? -1 : (a.quando > b.quando ? 1 : 0); });
   el.innerHTML = topo +
     '<button type="button" class="ini-novo" id="sesBtnAgendar" onclick="sesEscolherHorario_(\'agendar\')"><svg class="ico ico-lg" aria-hidden="true"><use href="#i-plus"/></svg> Agendar sessão</button>' +
     '<p class="age-dica" id="sesRegra">' + esc('Cancelamento e remarcação pelo sistema só com ' + sesHoras_() + ' horas ou mais de antecedência. Com menos de ' + sesHoras_() + ' horas, fale diretamente com ' + sesProf_() + '; a sessão é cobrada.') + '</p>' +
     '<h3 class="prof-bloco-titulo">Próximas</h3>' +
-    (proximas.length ? '<ul class="ses-lista" id="sesProximas">' + proximas.map(function (x) { return sesLinha_(x, true); }).join('') + '</ul>' : '<p class="prof-bloco-vazio" id="sesVazio">Você ainda não tem sessões marcadas.</p>') +
+    (itens.length ? '<ul class="ses-lista" id="sesProximas">' + itens.map(function (i) { return i.html; }).join('') + '</ul>' : '<p class="prof-bloco-vazio" id="sesVazio">Você ainda não tem sessões marcadas.</p>') +
     (anteriores.length ? '<h3 class="prof-bloco-titulo ses-titulo-ant">Anteriores</h3><ul class="ses-lista" id="sesAnteriores">' + anteriores.map(function (x) { return sesLinha_(x, false); }).join('') + '</ul>' : '');
 }
 function sesSessao_(btn) { var li = btn.closest('.ses-item'); return li ? (SES.dados.sessoes || []).filter(function (x) { return x.id === li.dataset.sessao; })[0] : null; }
@@ -24164,7 +24171,6 @@ function sesCancelar_() { sesEnviarAcao_('pacienteCancelarSessao', { id: SES.alv
 function sesVoltar_() { SES.vista = 'lista'; SES.erro = ''; SES.livres = null; SES.escolhido = null; sesRender_(); }
 /* Escolha de horário: agendar, pedir remarcação ou pedir reposição usam a mesma lista de horários livres */
 function sesEscolherHorario_(tipo, btn) {
-  if (tipo === 'agendar' && SES.dados && SES.dados.limite && SES.dados.limite.atingido) { SES.msg = ''; SES.erro = SES.dados.limite.msg; sesRender_(); return; } // 14.6
   var x = btn ? sesSessao_(btn) : null;
   SES.vista = tipo; SES.alvo = x ? x.id : ''; SES.msg = ''; SES.erro = ''; SES.escolhido = null; SES.livres = null; SES.ideal = false; SES.idealTexto = '';
   SES.de = (SES.dados && SES.dados.hoje) || lemHojeIso_(); SES.idEnvio = vmcNovoIdEnvio_();
@@ -24188,7 +24194,7 @@ function sesSemana_(delta) {
 }
 function sesRenderHorarios_(el, topo) {
   var intro = SES.vista === 'remarcar' ? 'Escolha um novo horário. O pedido vai para ' + sesProf_() + '; a sessão só muda depois da aprovação.'
-    : (SES.vista === 'repor' ? 'A reposição não é garantida: fica a critério de ' + sesProf_() + '. Se aprovada, usa o valor da sessão já cobrada.' : 'Escolha o dia e o horário');
+    : (SES.vista === 'repor' ? 'A reposição não é garantida: fica a critério de ' + sesProf_() + '. Se aprovada, usa o valor da sessão já cobrada.' : 'Escolha o dia e o horário. O pedido vai para ' + sesProf_() + '; a sessão só é marcada depois da aprovação.'); // 14.7
   var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(SES.de), fim = m ? ageIso_(new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10) + 6)) : SES.de;
   var corpo;
   if (SES.livres === null) corpo = '<p class="age-dica">Carregando…</p>';
@@ -24213,7 +24219,7 @@ function sesRenderHorarios_(el, topo) {
     '<button type="button" class="cal-btn" id="sesSemProx" aria-label="Próxima semana" onclick="sesSemana_(1)">›</button></div>' +
     corpo + mod + sesIdealHtml_() +
     '<div class="ses-acoes"><button type="button" class="p5-btn p5-btn-secondary" onclick="sesVoltar_()">Voltar</button>' +
-    (e ? '<button type="button" class="p5-btn p5-btn-primary" id="sesBtnEnviar" onclick="sesEnviar_()">' + (SES.vista === 'agendar' ? 'Agendar' : 'Enviar pedido') + '</button>' : '') + '</div>';
+    (e ? '<button type="button" class="p5-btn p5-btn-primary" id="sesBtnEnviar" onclick="sesEnviar_()">Enviar pedido</button>' : '') + '</div>';
 }
 function sesEscolher_(btn) {
   SES.escolhido = (SES.livres || []).filter(function (s) { return s.data === btn.dataset.data && s.hora === btn.dataset.hora; })[0] || null;
@@ -24225,7 +24231,7 @@ function sesEnviar_() {
   if (SES.vista === 'agendar') {
     var sel = document.getElementById('sesMod');
     sesEnviarAcao_('pacienteAgendarSessao', { dados: { id: SES.idEnvio, data: e.data, hora: e.hora, modalidade: sel ? sel.value : e.modalidades[0] } },
-      'Sessão agendada para ' + ageDiaNome_(e.data, true) + ', ' + lemDataBR_(e.data, true) + ' às ' + e.hora + '.');
+      'Pedido enviado. Você será avisado quando for respondido.'); // 14.7: a sessão só é marcada quando o profissional aprova
   } else {
     sesEnviarAcao_('pacientePedirAgenda', { dados: { id: SES.idEnvio, tipo: SES.vista === 'repor' ? 'repor' : 'remarcar', sessao_id: SES.alvo, data: e.data, hora: e.hora } },
       'Pedido enviado. Você será avisado quando for respondido.');
@@ -24346,11 +24352,11 @@ async function agePedidoLivres_(linha) {
   caixa.className = 'age-ped-livres';
   caixa.innerHTML = '<p class="age-dica">Carregando…</p>';
   linha.appendChild(caixa);
-  var r = await chamarServidor('profLerHorariosLivres', { de: lemHojeIso_() });
+  var r = await chamarServidor('profLerHorariosLivres', { de: lemHojeIso_(), pedido: linha.dataset.pedido }); // 14.7: o horário do próprio pedido continua na lista
   if (!caixa.isConnected) return;
   var livres = (r && r.ok && r.livres) || [];
   caixa.innerHTML = livres.length
-    ? '<p class="age-dica">Toque no horário para remarcar nele. O paciente é avisado.</p><div class="age-livres-lista">' + ageLivresHtml_(livres, 'ageDecidir_(this)', null) + '</div>'
+    ? '<p class="age-dica">' + (linha.dataset.tipo === 'agendar' ? 'Toque no horário para marcar a sessão nele. O paciente é avisado.' : 'Toque no horário para remarcar nele. O paciente é avisado.') + '</p><div class="age-livres-lista">' + ageLivresHtml_(livres, 'ageDecidir_(this)', null) + '</div>'
     : '<p class="age-dica">Nenhum horário livre nos próximos 14 dias.</p>';
 }
 
@@ -24386,6 +24392,7 @@ function ageEventoTexto_(e) {
   var nome = '<strong>' + esc(e.nome) + '</strong>';
   if (e.tipo === 'confirmou') return nome + ' confirmou a sessão de ' + quando + '.';
   if (e.tipo === 'agendou') return nome + ' agendou uma sessão para ' + quando + '.';
+  if (e.tipo === 'agendar') return nome + ' pediu para agendar uma sessão em ' + quando + '.'; // 14.7
   if (e.tipo === 'cancelou') return nome + ' cancelou a sessão de ' + quando + '.';
   if (e.tipo === 'repor') return nome + ' pediu reposição da sessão de ' + esc(lemDataBR_(e.data, true)) + '.';
   if (e.sem_horario) return nome + ' pediu remarcação da sessão de ' + quando + ' e sugeriu um horário.'; // 14.5

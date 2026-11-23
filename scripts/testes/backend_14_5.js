@@ -177,10 +177,12 @@ tenta('C', () => {
   prof('profMarcarSituacao', { id: idPas, situacao: 'realizada', periodo: PER });
   pac(P1, 'pacienteConfirmarSessao', { id: idC1 });
   ok('C20 marcar situação e confirmar presença não mexem no evento', chamadasEv().length === n);
-  const idPac = uuid();
+  const uPac = uuid(), idPac = 'ag-' + uPac; // 14.7: pedido do paciente + aprovação
   n = chamadasEv().length;
-  r = pac(P1, 'pacienteAgendarSessao', { dados: { id: idPac, data: '2026-12-09', hora: '08:00', modalidade: 'online' } });
-  ok('C21 sessão agendada pelo paciente também é espelhada, com Meet', r.ok === true && chamadasEv().length === n + 1 && /^https:\/\/meet/.test(cel('Sessoes', idPac, 'meet_link')) && minha(P1, idPac).meet_link !== '', r.erro);
+  r = pac(P1, 'pacienteAgendarSessao', { dados: { id: uPac, data: '2026-12-09', hora: '08:00', modalidade: 'online' } });
+  const nPedido = chamadasEv().length;
+  r = prof('profDecidirPedido', { id: uPac, aprovar: true, periodo: PER });
+  ok('C21 o pedido não toca o Calendar; aprovado, a sessão é espelhada, com Meet', r.ok === true && nPedido === n && chamadasEv().length === n + 1 && /^https:\/\/meet/.test(cel('Sessoes', idPac, 'meet_link')) && minha(P1, idPac).meet_link !== '', r.erro);
   n = chamadasEv().length;
   r = pac(P1, 'pacienteCancelarSessao', { id: idPac });
   ok('C22 cancelamento pelo paciente apaga o evento', r.ok === true && chamadasEv().slice(n).length === 1 && chamadasEv().slice(n)[0].metodo === 'delete' && cel('Sessoes', idPac, 'gcal_evento') === '');
@@ -404,11 +406,12 @@ tenta('V', () => {
 
   // 5. sessão que o próprio paciente agenda: já nascia a confirmar e continua
   h.EMAILS.length = 0;
-  const idAg = uuid();
-  r = pac(P1, 'pacienteAgendarSessao', { dados: { id: idAg, data: '2027-02-02', hora: '10:00', modalidade: 'presencial' } });
-  e = h.EMAILS.filter(m => m.subject === 'Sessão agendada — COGNIATIVO')[0];
-  ok('V15 sessão agendada pelo paciente: a confirmar, e o e-mail leva o botão', r.ok === true && cel('Sessoes', idAg, 'confirmada_em') === '' && !!e && pede(e), [r.ok, e && e.body]);
-  ok('V16 a coluna do 14.5.2 saiu da lista (nenhuma aba ganha coluna sem função)', S('COLUNAS_PEDIDOS_AGENDA').indexOf('confirmou_sessao') === -1 && S('COLUNAS_PEDIDOS_AGENDA').slice(-1)[0] === 'sugestao');
+  const uAg = uuid(), idAg = 'ag-' + uAg;
+  r = pac(P1, 'pacienteAgendarSessao', { dados: { id: uAg, data: '2027-02-02', hora: '10:00', modalidade: 'presencial' } });
+  r = prof('profDecidirPedido', { id: uAg, aprovar: true, periodo: PER });
+  e = h.EMAILS.filter(m => m.subject === 'Pedido aprovado — COGNIATIVO')[0];
+  ok('V15 agendamento pedido pelo paciente e aprovado (14.7): a sessão nasce a confirmar, e o e-mail leva o botão', r.ok === true && cel('Sessoes', idAg, 'confirmada_em') === '' && !!e && pede(e), [r.ok, e && e.body]);
+  ok('V16 a coluna do 14.5.2 saiu da lista (nenhuma aba ganha coluna sem função)', S('COLUNAS_PEDIDOS_AGENDA').indexOf('confirmou_sessao') === -1 && S('COLUNAS_PEDIDOS_AGENDA').slice(-2).join(',') === 'sugestao,modalidade');
 });
 
 /* ---------------------------------------------------------------- T */
@@ -417,7 +420,7 @@ tenta('T', () => {
   const src = fs.readFileSync(path.join(__dirname, '..', '..', 'Código.js'), 'utf8');
   ok('T1 profLerHorariosLivres é leitura (fora da trava) e exige crachá', S('ACOES_SO_LEITURA').indexOf('profLerHorariosLivres') !== -1 && S('ACOES_COM_TRAVA').indexOf('profLerHorariosLivres') === -1 && S('ACOES_PUBLICAS').indexOf('profLerHorariosLivres') === -1 && h.post({ acao: 'profLerHorariosLivres' }).ok === false);
   ok('T2 um paciente não lê os horários livres do profissional', pac(P1, 'profLerHorariosLivres', {}).ok === false);
-  ok('T3 colunas novas no fim e criadas na planilha', S('COLUNAS_SESSOES').slice(-3).join(',') === 'gcal_evento,gcal_sinc,meet_link' && S('COLUNAS_PEDIDOS_AGENDA').slice(-1)[0] === 'sugestao' && h.cab(aba('Sessoes')).indexOf('meet_link') !== -1 && h.cab(aba('Pedidos_Agenda')).indexOf('sugestao') !== -1);
+  ok('T3 colunas novas no fim e criadas na planilha', S('COLUNAS_SESSOES').slice(-3).join(',') === 'gcal_evento,gcal_sinc,meet_link' && S('COLUNAS_PEDIDOS_AGENDA').slice(-2).join(',') === 'sugestao,modalidade' && h.cab(aba('Sessoes')).indexOf('meet_link') !== -1 && h.cab(aba('Pedidos_Agenda')).indexOf('sugestao') !== -1);
   ok('T5 o manifesto pede o Calendar', JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'appsscript.json'), 'utf8')).oauthScopes.indexOf('https://www.googleapis.com/auth/calendar') !== -1);
   ok('T6 o token do Google nunca vai para o log nem para a resposta', src.indexOf('getOAuthToken()') === src.lastIndexOf('getOAuthToken()') && logServidor.join(' ').indexOf('tok') === -1);
   const inesperados = logServidor.filter(l => !/^trava de gravacao: nao obtida/.test(l));

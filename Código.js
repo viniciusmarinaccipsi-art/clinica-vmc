@@ -59,6 +59,8 @@
 // Pacote 19.2.1 — Plano de lembretes: aba Lembretes na Controle, acoes profSalvarLembrete, profEncerrarLembrete,
 // profLembrarAgora e lerMeusLembretes, gatilho enviarLembretes_ (e-mail; a cada 5 minutos desde o 19.2.3), blocos do Inicio na lista
 // do profissional; ind_total_auto sem as checagens sozinhas (22/11/2026)
+// Pacote 14.7 — Agenda: o paciente PEDE o agendamento (pacienteAgendarSessao grava um pedido `agendar`); a sessao so nasce quando o
+// profissional aprova (profDecidirPedido); o horario pedido fica reservado ate a resposta; saiu o limite de agendamentos do 14.6.
 // Pacote 14.4 — Agenda: confirmacao de presenca por link (acao publica confirmarSessaoPorLink, token assinado, so confirma),
 // eventos da agenda (sino e Inicio; profMarcarEventosVistos), lembretes de sessao 48 h e 24 h antes, e-mail na hora (profAvisarSessao).
 // Pacote 14.3 — Agenda completa: abas Sessoes, Series, Bloqueios e Pedidos_Agenda na Controle; acoes do profissional
@@ -67,7 +69,7 @@
 // pacienteConfirmarSessao, pacienteCancelarSessao, pacientePedirAgenda); avisos de sessao por e-mail, desligados por padrao.
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.6';
+var VERSAO_PACOTE = '14.7';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -476,7 +478,7 @@ function _despachar_(acao, payload, s) {
         break;
 
       case 'profLerHorariosLivres': // 14.5
-        resposta = profLerHorariosLivres(s, payload.de);
+        resposta = profLerHorariosLivres(s, payload.de, payload.pedido);
         break;
 
       case 'pacienteAgendarSessao':
@@ -5322,8 +5324,6 @@ function salvarGradeAtendimento(s, config, grade) {
   if (config.endereco !== undefined) cfgGravar.endereco = txtEnd(config.endereco);
   if (config.endereco_novo !== undefined) cfgGravar.endereco_novo = txtEnd(config.endereco_novo);
   if (config.endereco_novo_desde !== undefined) cfgGravar.endereco_novo_desde = _lemDia_(config.endereco_novo_desde) === null ? '' : String(config.endereco_novo_desde).trim();
-  // 14.6: quantas sessoes futuras o paciente pode agendar sozinho (vazio = sem limite)
-  if (config.limite_agendamentos !== undefined) { var limNum = parseInt(config.limite_agendamentos, 10); cfgGravar.limite_agendamentos = (limNum > 0 && limNum <= 99) ? limNum : ''; }
   var ligouCalendar = false;
   if (config.google_calendar !== undefined) {
     var querCal = String(config.google_calendar).toLowerCase() === 'sim' && _calDoDono_(profissionalId);
@@ -6612,7 +6612,8 @@ function enviarLembretes_(quando) {
 //                   cancelamento de ninguem: a repeticao foi refeita, e a linha nao aparece em historico).
 //   Series          a regra de cada repeticao (dias_semana no padrao da Grade: 1 = segunda ... 7 = domingo).
 //   Bloqueios       periodo fechado (dia inteiro ou com hora).
-//   Pedidos_Agenda  pedidos do paciente: remarcar | repor; pendente | aprovado | recusado.
+//   Pedidos_Agenda  pedidos do paciente: agendar (14.7; sem sessao ate ser aprovado) | remarcar | repor; pendente | aprovado | recusado.
+//                   Pedido pendente com data e hora RESERVA o horario: ele sai da lista de livres ate o profissional decidir.
 // Decisoes do usuario (22/11/2026): horario ocupado ou bloqueado NUNCA recebe sessao (na serie a
 // data e pulada e listada); paciente so cancela e pede remarcacao com `antecedencia_min_horas` ou
 // mais; reposicao e sempre decisao do profissional. Avisos por e-mail so saem com a chave
@@ -6631,7 +6632,8 @@ var COLUNAS_SERIES = ['id', 'sigla', 'cada', 'unidade', 'dias_semana', 'modo_mes
   'ocupado', 'criada_em', 'encerrada_em'];
 var COLUNAS_BLOQUEIOS = ['id', 'data_inicio', 'hora_inicio', 'data_fim', 'hora_fim', 'dia_todo', 'nome'];
 var COLUNAS_PEDIDOS_AGENDA = ['id', 'sigla', 'tipo', 'sessao_id', 'data', 'hora', 'estado', 'criado_em', 'decidido_em',
-  'sugestao']; // 14.5: "horario ideal" escrito pelo paciente quando nenhum horario livre serve (data e hora ficam vazias)
+  'sugestao',  // 14.5: "horario ideal" escrito pelo paciente quando nenhum horario livre serve (data e hora ficam vazias)
+  'modalidade']; // 14.7: modalidade que o paciente escolheu no pedido de agendamento
 var AGENDA_SERIE_MAX = 60;        // sessoes por repeticao
 var AGENDA_SERIE_DIAS = 366;      // 12 meses a partir da primeira data
 var AGENDA_LEITURA_DIAS = 100;    // periodo maximo de uma leitura da agenda
@@ -6652,6 +6654,7 @@ var MSG_AGE_BLOQUEADO = 'Este horário está bloqueado. Escolha outro.';
 var MSG_AGE_TETO = 'A repetição vai até 12 meses ou 60 sessões. Diminua o período.';
 var MSG_AGE_ACABOU = 'Este horário acabou de ser ocupado. Escolha outro.';
 var MSG_AGE_PEDIDO_OCUPADO = 'O horário pedido já foi ocupado. Recuse o pedido ou marque outro horário.';
+var MSG_AGE_PEDIDO_PASSOU = 'O horário pedido já passou. Recuse o pedido ou escolha outro horário.'; // 14.7
 var MSG_AGE_BLOQ_SESSOES = 'Há sessões neste período. Remarque ou cancele antes de bloquear.';
 var MSG_AGE_NAO_ACHEI = 'Sessão não encontrada.';
 
@@ -6867,7 +6870,6 @@ function _ageConfig_(controle) {
     if (chave === 'duracao_slot_min' && parseInt(valor, 10) > 0) cfg.duracao_slot_min = parseInt(valor, 10);
     if (chave === 'antecedencia_min_horas' && parseInt(valor, 10) >= 0 && valor !== '') cfg.antecedencia_min_horas = parseInt(valor, 10);
     if (chave === 'avisos_sessao') cfg.avisos_sessao = valor.toLowerCase() === 'sim' ? 'Sim' : 'Nao';
-    if (chave === 'limite_agendamentos') cfg.limite_agendamentos = parseInt(valor, 10) > 0 ? parseInt(valor, 10) : 0; // 14.6: 0 = sem limite
     if (chave === 'agenda_vistos_ate') cfg.agenda_vistos_ate = valor; // 14.4: 'AAAA-MM-DD HH:mm' do ultimo "Marcar como vistos"
     // 14.5: endereco do consultorio (o atual e o que passa a valer numa data) e o espelho no Google Calendar (nasce 'Nao')
     if (chave === 'endereco' || chave === 'endereco_novo' || chave === 'endereco_novo_desde' || chave === 'gcal_id' || chave === 'gcal_nome') cfg[chave] = valor;
@@ -6938,7 +6940,7 @@ function _ageNovaSessao_(ctx, agora, campos) {
 
 /**
  * Eventos da agenda feitos pelo PACIENTE nos ultimos AGENDA_EVENTOS_DIAS dias, do mais novo ao mais antigo
- * (nenhuma aba nova: saem das colunas que ja existem). tipo: confirmou | agendou | cancelou | remarcar | repor.
+ * (nenhuma aba nova: saem das colunas que ja existem). tipo: confirmou | agendou (ate o 14.6) | agendar (pedido, 14.7) | cancelou | remarcar | repor.
  */
 function _ageEventos_(ctx, pacs, agora) {
   var corte = _lemIso_(_lemDia_(agora.data) - AGENDA_EVENTOS_DIAS), lista = [];
@@ -6956,6 +6958,7 @@ function _ageEventos_(ctx, pacs, agora) {
     if (x.estado === 'cancelada' && x.cancelada_por === 'paciente') ev('cancelou', x, x.cancelada_em);
   });
   ctx.pedidos.forEach(function (p) {
+    if (p.tipo === 'agendar') { ev('agendar', { sigla: p.sigla, data: p.data, hora_inicio: p.hora }, p.criado_em); return; } // 14.7: o pedido, nao a sessao
     var x = ctx.sessoes.filter(function (y) { return y.id === p.sessao_id; })[0];
     if (!x) return;
     // remarcacao: o evento mostra o horario PEDIDO (depois de aprovado, a sessao ja esta nele e a data antiga nao existe mais)
@@ -7057,7 +7060,8 @@ function _agePacientes_(controle) {
     if (!sigla) return;
     var nome = String(p.ind_nome || p.nome || '').trim();
     mapa[sigla] = { nome: nome || String(p.sigla).trim(), primeiro: _lemPrimeiroNome_(p), telefone: normalizarTelefone(p.telefone),
-      email: normalizarEmail(p.email), ativo: _estaAtivo_(p.ativo) };
+      email: normalizarEmail(p.email), ativo: _estaAtivo_(p.ativo),
+      valor: String(p.valor_sessao === undefined || p.valor_sessao === null ? '' : p.valor_sessao).replace(/[^0-9.,]/g, '').slice(0, 12) }; // 14.7: a sessao aprovada nasce com o valor do cadastro
   });
   return mapa;
 }
@@ -7099,10 +7103,11 @@ function _ageSessaoProf_(ctx, x, pacs) {
 /** Pedidos pendentes, com o que a tela mostra (nome e a sessao a que se referem). */
 function _agePedidosPendentes_(ctx, pacs) {
   return ctx.pedidos.filter(function (p) { return p.estado === 'pendente'; }).map(function (p) {
-    var x = ctx.sessoes.filter(function (y) { return y.id === p.sessao_id; })[0] || {};
+    var x = (p.sessao_id && ctx.sessoes.filter(function (y) { return y.id === p.sessao_id; })[0]) || {};
     var pac = pacs[_siglaChave_(p.sigla)] || { nome: p.sigla };
     return { id: p.id, sigla: p.sigla, nome: pac.nome, tipo: p.tipo, sessao_id: p.sessao_id, sessao_data: x.data || '',
-      sessao_hora: _lemHora_(x.hora_inicio), data: p.data, hora: _lemHora_(p.hora), criado_em: p.criado_em, sugestao: p.sugestao || '' }; // 14.5
+      sessao_hora: _lemHora_(x.hora_inicio), data: p.data, hora: _lemHora_(p.hora), criado_em: p.criado_em, sugestao: p.sugestao || '', // 14.5
+      modalidade: p.tipo === 'agendar' ? (p.modalidade === 'online' ? 'online' : 'presencial') : '' }; // 14.7
   });
 }
 
@@ -7535,7 +7540,7 @@ function profApagarBloqueio(s, id, periodo) {
   return _ageResposta_(alvo, { ok: true }, periodo, _lemAgora_());
 }
 
-/** Aprova (a sessao muda ou a reposicao nasce) ou recusa um pedido do paciente. */
+/** Aprova (a sessao nasce, muda ou a reposicao nasce) ou recusa um pedido do paciente. `quando` { data, hora }: aprovar em outro horario. */
 function profDecidirPedido(s, id, aprovar, periodo, quando) {
   var alvo = _ageProf_(s);
   if (!alvo.ok) return alvo;
@@ -7544,7 +7549,8 @@ function profDecidirPedido(s, id, aprovar, periodo, quando) {
   var p = ctx.pedidos.filter(function (x) { return x.id === String(id || '').trim(); })[0];
   if (!p) return { ok: false, erro: 'Pedido não encontrado.' };
   if (p.estado !== 'pendente') return _ageResposta_(alvo, { ok: true, duplicado: true }, periodo, agora);
-  var x = ctx.sessoes.filter(function (y) { return y.id === p.sessao_id; })[0];
+  var ehAgendar = p.tipo === 'agendar'; // 14.7: pedido de agendamento — nao ha sessao ate ser aprovado
+  var x = ehAgendar ? null : ctx.sessoes.filter(function (y) { return y.id === p.sessao_id; })[0];
   var pac = _agePacientes_(alvo.controle)[_siglaChave_(p.sigla)];
   // 14.5: `quando` { data, hora } = o horario que o profissional escolheu (obrigatorio quando o paciente so escreveu o horario ideal)
   var q = quando && typeof quando === 'object' ? quando : {};
@@ -7553,8 +7559,29 @@ function profDecidirPedido(s, id, aprovar, periodo, quando) {
   var hora = escolheu ? _lemHora_(q.hora) : _lemHora_(p.hora);
   if (aprovar !== true) {
     _ageGravar_(ctx.abaP, COLUNAS_PEDIDOS_AGENDA, p.__linha, { estado: 'recusado', decidido_em: agora.carimbo });
-    var av = _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, 'pedido_recusado', { data: p.data, hora_inicio: hora, modalidade: x ? x.modalidade : '', avisos: '' }, '');
+    var av = _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, 'pedido_recusado', { data: p.data, hora_inicio: _lemHora_(p.hora), modalidade: ehAgendar ? p.modalidade : (x ? x.modalidade : ''), avisos: '' }, '');
     return _ageResposta_(alvo, { ok: true, aprovado: false, aviso: av }, periodo, agora);
+  }
+  if (ehAgendar) {
+    // 14.7: aprovado (no horario pedido ou em outro), a sessao nasce A CONFIRMAR (14.5.4) e o e-mail "Pedido aprovado" leva o botao "Confirmar presenca"
+    if (_lemDia_(dataPed) === null || !hora) return { ok: false, codigo: 'sem_horario', erro: 'Escolha o horário.' };
+    if (!(_ageMinutosAte_(dataPed, hora, agora) > 0)) return { ok: false, codigo: 'passou', erro: MSG_AGE_PEDIDO_PASSOU };
+    var durA = ctx.cfg.duracao_slot_min;
+    if (_ageOcupado_(ctx, dataPed, hora, durA, null)) return { ok: false, codigo: 'ocupado', erro: MSG_AGE_PEDIDO_OCUPADO };
+    // a modalidade pedida vale se a Grade a oferece naquele horario; senao, a que a Grade oferece
+    var modA = p.modalidade === 'online' ? 'online' : 'presencial', modsA = [], dowA = _ageDow_(_lemDia_(dataPed)), iniA = _ageMin_(hora);
+    _ageJanelas_(alvo.controle).forEach(function (j) {
+      if (j.dia_semana !== dowA || iniA < j.ini || iniA + durA > j.fim) return;
+      (j.modalidade === 'ambas' ? ['presencial', 'online'] : [j.modalidade === 'online' ? 'online' : 'presencial']).forEach(function (m) { if (modsA.indexOf(m) === -1) modsA.push(m); });
+    });
+    if (modsA.length && modsA.indexOf(modA) === -1) modA = modsA[0];
+    var idS = 'ag-' + p.id.slice(0, 56);
+    var nova = { id: idS, sigla: p.sigla, data: dataPed, hora_inicio: hora, duracao_min: String(durA), modalidade: modA, valor: pac ? pac.valor : '', notas: '',
+      estado: 'agendada', origem: 'pedido', avisos: AGENDA_AVISOS.join(','), criado_em: agora.carimbo, criado_por: String(alvo.nome || ''), atualizado_em: agora.carimbo };
+    _ageNovaSessao_(ctx, agora, nova);
+    _ageGravar_(ctx.abaP, COLUNAS_PEDIDOS_AGENDA, p.__linha, { estado: 'aprovado', decidido_em: agora.carimbo, sessao_id: idS, data: dataPed, hora: hora });
+    var avG = _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, 'pedido_aprovado', nova, '');
+    return _ageResposta_(alvo, { ok: true, aprovado: true, data: dataPed, hora: hora, aviso: avG }, periodo, agora);
   }
   if (!x) return { ok: false, erro: MSG_AGE_NAO_ACHEI };
   if (_lemDia_(dataPed) === null || !hora) return { ok: false, codigo: 'sem_horario', erro: 'Escolha o horário.' };
@@ -7688,21 +7715,30 @@ function _ageMinhas_(ctx, alvo, agora) {
       mapa: (agendada && futura && x.modalidade !== 'online') ? _ageMapa_(_ageEndereco_(ctx.cfg, x.data)) : '',
       pedido: ultimo ? { tipo: ultimo.tipo, estado: ultimo.estado, data: ultimo.data, hora: _lemHora_(ultimo.hora), sugestao: ultimo.sugestao || '' } : null };
   }).sort(function (a, b) { var p = a.data + ' ' + a.hora, q = b.data + ' ' + b.hora; return p < q ? -1 : (p > q ? 1 : 0); });
-  var lim = _ageLimite_(ctx, alvo.sigla, agora); // 14.6
-  return { ok: true, hoje: agora.data, agora_hora: agora.hora, antecedencia_horas: horas, profissional: alvo.profissional, sessoes: sessoes,
-    limite: { max: lim.max, usadas: lim.usadas, atingido: lim.atingido, msg: lim.atingido ? _ageMsgLimite_(lim.usadas, alvo.profissional) : '' } };
+  // 14.7: pedidos de agendamento do paciente — o que espera resposta e o que foi recusado ha ate 7 dias (so de horario que ainda nao passou)
+  var hojeN = _lemDia_(agora.data);
+  var agendar = pedidos.filter(function (p) {
+    if (p.tipo !== 'agendar' || !(_ageMinutosAte_(p.data, _lemHora_(p.hora), agora) > 0)) return false;
+    if (p.estado === 'pendente') return true;
+    var dec = _lemDia_(String(p.decidido_em || '').slice(0, 10));
+    return p.estado === 'recusado' && dec !== null && hojeN - dec <= 7;
+  }).map(function (p) { return { id: p.id, estado: p.estado, data: p.data, hora: _lemHora_(p.hora), modalidade: p.modalidade === 'online' ? 'online' : 'presencial' }; })
+    .sort(function (a, b) { var p = a.data + ' ' + a.hora, q = b.data + ' ' + b.hora; return p < q ? -1 : (p > q ? 1 : 0); });
+  return { ok: true, hoje: agora.data, agora_hora: agora.hora, antecedencia_horas: horas, profissional: alvo.profissional, sessoes: sessoes, pedidos_agendar: agendar };
 }
 
-/** 14.6: limite de sessoes futuras que o paciente agenda SOZINHO (conta so as que ele mesmo agendou; reposicao e sessao marcada pelo profissional nao contam). */
-function _ageLimite_(ctx, sigla, agora) {
-  var max = ctx.cfg.limite_agendamentos || 0, chave = _siglaChave_(sigla);
-  var usadas = ctx.sessoes.filter(function (x) {
-    return _siglaChave_(x.sigla) === chave && x.origem === 'paciente' && !x.reposicao_de && (x.estado === 'agendada' || x.estado === '') && _ageMinutosAte_(x.data, x.hora_inicio, agora) > 0;
-  }).length;
-  return { max: max, usadas: usadas, atingido: max > 0 && usadas >= max };
-}
-function _ageMsgLimite_(n, profissional) {
-  return 'Você já tem ' + n + (n === 1 ? ' sessão marcada' : ' sessões marcadas') + ' por você. Para marcar mais, fale com ' + profissional + '.';
+/**
+ * 14.7: horarios pedidos por pacientes e ainda sem resposta (so os que nao passaram). Enquanto o profissional nao decide,
+ * eles ficam fora da lista de horarios livres. `menosId`: pedido cuja reserva nao conta (o profissional escolhendo o horario dele).
+ * A reserva nao impede o profissional de marcar ali: quem decide ocupacao continua sendo _ageOcupado_.
+ */
+function _ageReservas_(ctx, agora, menosId) {
+  return ctx.pedidos.filter(function (p) {
+    return p.estado === 'pendente' && p.id !== menosId && _lemDia_(p.data) !== null && !!_lemHora_(p.hora) && _ageMinutosAte_(p.data, _lemHora_(p.hora), agora) > 0;
+  }).map(function (p) {
+    var x = p.sessao_id ? ctx.sessoes.filter(function (y) { return y.id === p.sessao_id; })[0] : null;
+    return { data: p.data, ini: _ageMin_(_lemHora_(p.hora)), dur: _ageDur_(x ? x.duracao_min : '', ctx.cfg.duracao_slot_min) };
+  });
 }
 
 /** Proxima sessao agendada do paciente (para a faixa do Inicio): { data, hora, modalidade } ou null. */
@@ -7730,6 +7766,7 @@ function _ageLivres_(ctx, janelas, deIso, dias, agora, horas) {
   if (ini === null) return lista;
   var prazo = horas === undefined ? ctx.cfg.antecedencia_min_horas : horas; // 14.5: o profissional ve os livres sem o prazo do paciente
   var externos = ctx.externos || [];                                        // 14.5: ocupado na agenda pessoal do Google
+  var reservas = _ageReservas_(ctx, agora, ctx.semReservaDe);               // 14.7: horarios pedidos e ainda sem resposta
   for (var k = 0; k < dias; k++) {
     var iso = _lemIso_(ini + k), dow = _ageDow_(ini + k);
     if (_ageFeriadoEm_(iso)) continue;
@@ -7739,6 +7776,7 @@ function _ageLivres_(ctx, janelas, deIso, dias, agora, horas) {
         var hora = ('0' + Math.floor(t / 60)).slice(-2) + ':' + ('0' + (t % 60)).slice(-2);
         if (!_ageNoPrazo_(iso, hora, agora, prazo) || _ageMinutosAte_(iso, hora, agora) <= 0) continue; // 14.5: horario que ja comecou nunca e livre
         if (_ageOcupado_(ctx, iso, hora, dur, null)) continue;
+        if (reservas.some(function (v) { return v.data === iso && _ageSobrepoe_(t, dur, v.ini, v.dur); })) continue;
         var abs = (ini + k) * 1440 + t;
         if (externos.some(function (e) { return abs < e.fim && e.ini < abs + dur; })) continue;
         var mods = j.modalidade === 'ambas' ? ['presencial', 'online'] : [j.modalidade === 'online' ? 'online' : 'presencial'];
@@ -7763,12 +7801,13 @@ function lerHorariosLivres(sigla, de) {
 }
 
 /** 14.5: horarios livres para o PROFISSIONAL repor ou remarcar (14 dias a partir de `de`; sem o prazo do paciente). */
-function profLerHorariosLivres(s, de) {
+function profLerHorariosLivres(s, de, pedido) {
   var alvo = _ageProf_(s);
   if (!alvo.ok) return alvo;
   var agora = _lemAgora_();
   var deIso = _lemDia_(de) === null || String(de) < agora.data ? agora.data : String(de);
   var ctx = _ageCtx_(alvo.controle, false);
+  ctx.semReservaDe = String(pedido === undefined || pedido === null ? '' : pedido).trim(); // 14.7: escolhendo o horario de um pedido, a reserva dele nao conta
   ctx.externos = _calOcupados_(alvo.profissionalId, ctx.cfg, deIso, CAL_LIVRES_DIAS_PROF);
   return { ok: true, de: deIso, hoje: agora.data, dias: CAL_LIVRES_DIAS_PROF, livres: _ageLivres_(ctx, _ageJanelas_(alvo.controle), deIso, CAL_LIVRES_DIAS_PROF, agora, 0) };
 }
@@ -7779,7 +7818,11 @@ function _ageSlotLivre_(ctx, controle, data, hora, agora) {
   return _ageLivres_(ctx, _ageJanelas_(controle), data, 1, agora).filter(function (x) { return x.hora === hora; })[0] || null;
 }
 
-/** O paciente agenda sozinho num horario livre da Grade. `dados`: { id, data, hora, modalidade }. */
+/**
+ * 14.7 (decisao do usuario, 23/11/2026): o paciente PEDE o horario; a sessao so nasce quando o profissional aprova.
+ * `dados`: { id, data, hora, modalidade }. Grava um pedido `agendar` pendente; o horario fica reservado ate a resposta.
+ * O nome da acao nao mudou (chave tecnica).
+ */
 function pacienteAgendarSessao(sigla, dados) {
   var d = dados && typeof dados === 'object' ? dados : {};
   var alvo = _agePaciente_(sigla);
@@ -7788,23 +7831,18 @@ function pacienteAgendarSessao(sigla, dados) {
   var id = String(d.id).trim(), agora = _lemAgora_();
   var ctx = _ageCtx_(alvo.controle, true);
   ctx.profId = alvo.profissionalId; // 14.5: o ocupado do Google entra na conferencia do horario
-  var ja = ctx.sessoes.filter(function (x) { return x.id === id; })[0];
+  var ja = ctx.pedidos.filter(function (p) { return p.id === id; })[0];
   if (ja) {
     if (_siglaChave_(ja.sigla) !== _siglaChave_(alvo.sigla)) return { ok: false, erro: 'Parametros incompletos' };
     var rd = _ageMinhas_(ctx, alvo, agora); rd.duplicado = true; return rd;
   }
-  var limAg = _ageLimite_(ctx, alvo.sigla, agora); // 14.6
-  if (limAg.atingido) return { ok: false, codigo: 'limite', erro: _ageMsgLimite_(limAg.usadas, alvo.profissional) };
   var data = String(d.data || '').trim(), hora = _lemHora_(d.hora);
   var slot = (_lemDia_(data) !== null && hora) ? _ageSlotLivre_(ctx, alvo.controle, data, hora, agora) : null;
   if (!slot) return { ok: false, codigo: 'ocupado', erro: MSG_AGE_ACABOU };
   var modalidade = slot.modalidades.indexOf(d.modalidade) !== -1 ? d.modalidade : slot.modalidades[0];
-  var nova = { id: id, sigla: alvo.sigla, data: data, hora_inicio: hora, duracao_min: String(ctx.cfg.duracao_slot_min), modalidade: modalidade,
-    estado: 'agendada', origem: 'paciente', avisos: AGENDA_AVISOS.join(','), criado_em: agora.carimbo, criado_por: alvo.nome, atualizado_em: agora.carimbo };
-  _ageNovaSessao_(ctx, agora, nova);
-  _ageAvisarPaciente_(ctx, alvo.profissionalId, _agePacientes_(alvo.controle)[_siglaChave_(alvo.sigla)], 'confirmacao', nova, 'confirmacao');
-  _ageAvisarProfissional_(ctx, alvo.profissionalId, alvo.nome + ' agendou uma sessão para ' + _ageDiaMes_(data) + ' às ' + hora + '.');
-  _calSincronizar_(alvo.controle, alvo.profissionalId, { max: 2, agora: agora }); // 14.5
+  _ageGravar_(ctx.abaP, COLUNAS_PEDIDOS_AGENDA, 0, { id: id, sigla: alvo.sigla, tipo: 'agendar', sessao_id: '', data: data, hora: hora, estado: 'pendente',
+    criado_em: agora.carimbo, modalidade: modalidade });
+  _ageAvisarProfissional_(ctx, alvo.profissionalId, alvo.nome + ' pediu para agendar uma sessão em ' + _ageDiaMes_(data) + ' às ' + hora + '.');
   return _ageMinhas_(_ageCtx_(alvo.controle, false), alvo, agora);
 }
 
