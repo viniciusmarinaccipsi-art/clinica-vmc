@@ -70,9 +70,12 @@
 // Pacote 14.8 — Agenda: cada profissional conecta a propria conta do Google (profAgendaConectar, profAgendaDesconectar,
 // profAgendaOpcao; a volta do Google chega pelo doGet); a permissao fica no cofre do script; o Google so recebe as sessoes e os
 // compromissos pessoais so fecham horarios com a opcao `agenda_ocupado` ligada (decisoes do usuario de 23/11/2026).
+// Pacote 14.8.1 — Agenda: a volta da tela de permissao do Google deixa o doGet (o Apps Script nao abre a pagina quando o
+// profissional permite com uma conta que nao e a primeira do navegador: `authuser=1`) e passa a chegar por uma pagina do
+// site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '20.2';
+var VERSAO_PACOTE = '14.8.1';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -518,6 +521,11 @@ function _despachar_(acao, payload, s) {
         resposta = profAgendaOpcao(s, payload.dados, payload.periodo);
         break;
 
+      // Pacote 14.8.1 - a volta do Google, entregue pela pagina conectar.html (publica: quem protege e o `state` assinado)
+      case 'concluirConexaoAgenda':
+        resposta = concluirConexaoAgenda(payload);
+        break;
+
       case 'profMarcarEventosVistos':
         resposta = profMarcarEventosVistos(s, payload.periodo);
         break;
@@ -635,8 +643,6 @@ function _despachar_(acao, payload, s) {
 }
 
 function doGet(e) {
-  var par = (e && e.parameter) || {};
-  if (par.state) return _gcalPagina_(_gcalRetorno_(par)); // 14.8: volta da tela de permissao do Google
   return _respostaJson_({ ok: false, erro: 'Use POST' });
 }
 
@@ -1101,7 +1107,8 @@ var SITE_URL = 'https://viniciusmarinaccipsi-art.github.io/clinica-vmc/index-dev
 // de versao anterior ve o aceite de novo no proximo login.
 var POLITICA_VERSAO = '2026-11';
 var ACOES_PUBLICAS = ['ping', 'autenticar', 'pedirRedefinicao', 'definirSenha',
-  'confirmarSessaoPorLink']; // 14.4: o link do e-mail e do WhatsApp so confirma a presenca daquela sessao (token assinado)
+  'confirmarSessaoPorLink', // 14.4: o link do e-mail e do WhatsApp so confirma a presenca daquela sessao (token assinado)
+  'concluirConexaoAgenda']; // 14.8.1: a volta do Google so conclui o pedido de conexao que o proprio servidor assinou (`state`)
 var PERFIS = ['paciente', 'profissional', 'admin'];
 var SESSAO_HORAS = 6;
 var LINK_HORAS = 48;
@@ -8545,7 +8552,8 @@ function _calOcupados_(profId, cfg, deIso, dias) {
 
 // ---------- Pacote 14.8: cada profissional conecta a propria conta do Google ----------
 // (decisao do usuario, 23/11/2026) O espelho deixa de ser so da conta do dono do script. O profissional toca em
-// "Conectar Google Agenda", da a permissao na tela do Google e o servidor guarda a permissao dele (refresh token) no
+// "Conectar Google Agenda", da a permissao na tela do Google (a volta chega pela pagina conectar.html do site, 14.8.1)
+// e o servidor guarda a permissao dele (refresh token) no
 // cofre do script (PropertiesService, chave 'gcal:<profissional>') — nunca em planilha, nunca em resposta, nunca em log.
 // O dono do script continua valendo pelo token do proprio script, sem conectar. O Google so RECEBE as sessoes; os
 // compromissos pessoais so fecham horarios quando o profissional liga a opcao `agenda_ocupado` (nasce 'Nao').
@@ -8615,9 +8623,18 @@ function _gcalLerEstado_(estado, agoraMs) {
   return { profId: c[1], ocupado: c[3] === '1' };
 }
 
+/**
+ * 14.8.1: endereco para onde o Google devolve o profissional — a pagina conectar.html do site, ao lado do index-dev.html.
+ * Nao e mais o /exec do Apps Script: com mais de uma conta do Google no navegador o Google acrescenta `authuser=N` e o
+ * Apps Script nao abre a pagina. Tem de ser igual, letra por letra, ao endereco cadastrado na chave do botao.
+ */
+function _gcalVolta_() {
+  return String(SITE_URL).replace(/[^\/]*$/, 'conectar.html');
+}
+
 /** Endereco da tela de permissao do Google ('' se a chave do botao nao esta configurada). */
 function _gcalUrl_(profId, ocupado) {
-  var cli = _gcalCliente_(), volta = _e3UrlDoServico_();
+  var cli = _gcalCliente_(), volta = _gcalVolta_();
   if (!cli || !volta) return '';
   var q = { client_id: cli.id, redirect_uri: volta, response_type: 'code', scope: GCAL_ESCOPOS.concat(ocupado ? [GCAL_ESCOPO_OCUPADO] : []).join(' '),
     access_type: 'offline', prompt: 'consent', include_granted_scopes: 'true', state: _gcalEstado_(profId, ocupado, Date.now()) };
@@ -8633,7 +8650,7 @@ function _gcalConta_(idToken) {
 }
 
 /**
- * Volta do Google (doGet): troca o codigo pela permissao e liga o espelho do profissional do `state`.
+ * Volta do Google (concluirConexaoAgenda): troca o codigo pela permissao e liga o espelho do profissional do `state`.
  * Devolve 'conectada' | 'negada' (o profissional nao permitiu) | 'erro'. Nunca lanca.
  */
 function _gcalRetorno_(par) {
@@ -8648,7 +8665,7 @@ function _gcalRetorno_(par) {
     var controle = abrirControleDoProfissional(est.profId);
     if (!controle) return 'erro';
     var r = UrlFetchApp.fetch('https://oauth2.googleapis.com/token', { method: 'post', muteHttpExceptions: true,
-      payload: { code: String(par.code), client_id: cli.id, client_secret: cli.segredo, redirect_uri: _e3UrlDoServico_(), grant_type: 'authorization_code' } });
+      payload: { code: String(par.code), client_id: cli.id, client_secret: cli.segredo, redirect_uri: _gcalVolta_(), grant_type: 'authorization_code' } });
     var d = _gcalJson_(r);
     if (r.getResponseCode() !== 200 || !d || !d.refresh_token) { console.error('agenda externa: o Google nao devolveu a permissao (' + r.getResponseCode() + ')'); return 'erro'; }
     var conta = _gcalConta_(d.id_token), escopos = String(d.scope || '');
@@ -8673,16 +8690,16 @@ function _gcalRetorno_(par) {
 }
 
 /**
- * Pagina que o navegador recebe na volta do Google. A tela de permissao abre em OUTRA aba (a sessao do profissional mora
- * so na memoria da aba do COGNIATIVO): esta pagina so diz o resultado — nenhum dado, nenhum link — e a aba original
- * percebe a conexao ao voltar a ser vista.
+ * 14.8.1: a pagina conectar.html do site (para onde o Google devolve o profissional, em OUTRA aba) entrega aqui o que
+ * recebeu: `state` e `code`, ou `error` quando ele nao permitiu. Acao publica, sem cracha — a aba da volta nao tem a sessao
+ * do profissional (que mora so na memoria da aba do COGNIATIVO); quem protege e o `state`, assinado pelo servidor, com o
+ * profissional e a validade. Fica fora de ACOES_COM_TRAVA: a conversa com o Google roda sem a trava e so a gravacao a pega
+ * (dentro de _gcalRetorno_). Devolve so o resultado — nenhum dado da conta, nenhuma permissao.
  */
-function _gcalPagina_(resultado) {
-  var frase = resultado === 'conectada' ? 'Agenda conectada. Você já pode fechar esta aba e voltar ao COGNIATIVO.'
-    : 'A conexão com o Google não foi concluída. Feche esta aba e tente de novo no COGNIATIVO.';
-  var html = '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>' +
-    '<body style="font-family:Arial,Helvetica,sans-serif;padding:24px;"><p data-resultado="' + resultado + '">' + frase + '</p></body></html>';
-  return HtmlService.createHtmlOutput(html).setTitle('COGNIATIVO');
+function concluirConexaoAgenda(dados) {
+  var d = dados && typeof dados === 'object' ? dados : {};
+  var resultado = d.state ? _gcalRetorno_({ state: String(d.state), code: d.code ? String(d.code) : '', error: d.error ? String(d.error) : '' }) : 'erro';
+  return { ok: resultado === 'conectada', resultado: resultado };
 }
 
 /** A permissao caiu no Google (retirada pelo profissional ou vencida): esquece, desliga o espelho e deixa o aviso para a tela. */

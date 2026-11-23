@@ -246,7 +246,7 @@ tenta('M', () => {
 /* ---------------------------------------------------------------- T */
 console.log('T. Listas, crachá e versão');
 tenta('T', () => {
-  ok('T1 só a confirmação por link é pública; as três ações novas estão na trava', S('ACOES_PUBLICAS').join(',') === 'ping,autenticar,pedirRedefinicao,definirSenha,confirmarSessaoPorLink' && ['confirmarSessaoPorLink', 'profMarcarEventosVistos', 'profAvisarSessao'].every(a => S('ACOES_COM_TRAVA').indexOf(a) !== -1));
+  ok('T1 da agenda, só a confirmação por link e a volta do Google (14.8.1, protegida pelo state assinado) são públicas; as três ações novas estão na trava', S('ACOES_PUBLICAS').join(',') === 'ping,autenticar,pedirRedefinicao,definirSenha,confirmarSessaoPorLink,concluirConexaoAgenda' && ['confirmarSessaoPorLink', 'profMarcarEventosVistos', 'profAvisarSessao'].every(a => S('ACOES_COM_TRAVA').indexOf(a) !== -1));
   h.TRAVA.ocupada = true;
   const r = pub({ t: tokenDe(linkL) });
   h.TRAVA.ocupada = false;
