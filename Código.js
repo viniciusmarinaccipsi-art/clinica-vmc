@@ -67,7 +67,7 @@
 // pacienteConfirmarSessao, pacienteCancelarSessao, pacientePedirAgenda); avisos de sessao por e-mail, desligados por padrao.
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.5.1';
+var VERSAO_PACOTE = '19.2.4';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -6370,7 +6370,7 @@ function _lembreteMandarEmail_(alvo, item) {
   if (!_estaAtivo_(alvo.paciente.ativo)) return 'inativo';
   if (!email) return 'sem_email';
   if (!_reservarEmail_('lembretes')) return 'cota';
-  if (!_enviarEmail_(email, montarEmailLembrete(item.tipo, _lemPrimeiroNome_(alvo.paciente), _assinaturaDoProfissional_(alvo.profissionalId), _lembreteDetalhe_(item)))) return 'falha';
+  if (!_enviarEmail_(email, montarEmailLembrete(item.tipo, _lemPrimeiroNome_(alvo.paciente), _assinaturaDoProfissional_(alvo.profissionalId), _lembreteDetalhe_(item), _lembreteDestino_(item)))) return 'falha';
   return '';
 }
 
@@ -6479,20 +6479,38 @@ function _lembreteDetalhe_(item) {
 }
 
 /**
- * E-mail de lembrete (texto puro e HTML no layout dos convites), com os textos aprovados; o link e o do site.
+ * 19.2.4: para onde o link do lembrete leva — 'auto' (abre o registro), 'escala.<SIGLA>' (abre aquela escala, so se
+ * for do catalogo) ou '' (o "Outro": Inicio). So o destino vai no link; nenhum dado do paciente.
+ */
+function _lembreteDestino_(item) {
+  if (!item) return '';
+  if (item.tipo === 'auto') return 'auto';
+  if (item.tipo === 'escala' && _idDaEscala_(item.instrumento)) return 'escala.' + encodeURIComponent(String(item.instrumento).trim());
+  return '';
+}
+/** Link do site com o destino (so aceita o formato de _lembreteDestino_; qualquer outra coisa vira o link simples). */
+function _lembreteLink_(destino) {
+  var d = String(destino === undefined || destino === null ? '' : destino);
+  return /^(auto|escala\.[A-Za-z0-9%._~-]{1,60})$/.test(d) ? SITE_URL + '?ir=' + d : SITE_URL;
+}
+
+/**
+ * E-mail de lembrete (texto puro e HTML no layout dos convites), com os textos aprovados; o link e o do site
+ * e, desde o 19.2.4, leva o `destino` (opcional, _lembreteDestino_): abre direto o registro ou a escala.
  * 19.2.2: `detalhe` (opcional, _lembreteDetalhe_) entra no paragrafo da escala e do "Outro". No HTML ele passa
  * pelo escapador unico (_layoutEmail_ escapa o paragrafo inteiro); na versao em texto vai como foi digitado.
  */
-function montarEmailLembrete(tipo, nome, assinatura, detalhe) {
+function montarEmailLembrete(tipo, nome, assinatura, detalhe, destino) {
+  var link = _lembreteLink_(destino);
   var t = EMAIL_LEMBRETE[tipo] || EMAIL_LEMBRETE.outro;
   var linhasAssinatura = assinatura || [];
   var ola = nome ? 'Olá, ' + nome + '.' : 'Olá.';
   var d = String(detalhe === undefined || detalhe === null ? '' : detalhe).trim();
   var molde = EMAIL_LEMBRETE_COM_DETALHE[tipo];
   var paragrafo = (d && molde) ? molde[0] + d + molde[1] : t.paragrafo;
-  var texto = [EMAIL_DESTAQUE, '', ola, '', paragrafo, '', SITE_URL, '', EMAIL_LEMBRETE_AVISO, ''].concat(linhasAssinatura).join('\n');
+  var texto = [EMAIL_DESTAQUE, '', ola, '', paragrafo, '', link, '', EMAIL_LEMBRETE_AVISO, ''].concat(linhasAssinatura).join('\n');
   var html = _layoutEmail_({ previa: t.previa, titulo: t.titulo, acompanhamento: '', ola: ola, paragrafo: paragrafo,
-    botao: t.botao, sobBotao: EMAIL_LEMBRETE_SOB_BOTAO, link: SITE_URL, aviso: EMAIL_LEMBRETE_AVISO, assinatura: linhasAssinatura });
+    botao: t.botao, sobBotao: EMAIL_LEMBRETE_SOB_BOTAO, link: link, aviso: EMAIL_LEMBRETE_AVISO, assinatura: linhasAssinatura });
   return { assunto: t.assunto, texto: texto, html: html };
 }
 
@@ -6550,7 +6568,7 @@ function enviarLembretes_(quando) {
         if (reserva === 'ja' || reserva === 'mudou') { r.ja_enviados++; return; }
         if (reserva === 'cota') { r.sem_cota++; return; }
         if (reserva !== 'ok') { r.falhas++; return; }
-        if (_enviarEmail_(email, montarEmailLembrete(item.tipo, _lemPrimeiroNome_(pac), assinatura, _lembreteDetalhe_(item)))) { r.enviados++; return; }
+        if (_enviarEmail_(email, montarEmailLembrete(item.tipo, _lemPrimeiroNome_(pac), assinatura, _lembreteDetalhe_(item), _lembreteDestino_(item)))) { r.enviados++; return; }
         r.falhas++;
         _comTravaSeDer_(function () { aba.getRange(item.__linha, colEnvio).setValue(_lemCelula_(anterior)); });
       });

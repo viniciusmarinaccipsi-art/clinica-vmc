@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só — Pacote 14.5.1 (22/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala — Pacote 19.2.4 (22/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -808,6 +808,10 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .ini-lem-lista{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--s-2);}
 .ini-lem-lista li{font:var(--t-body);color:var(--c-ink-2);overflow-wrap:anywhere;}
 .ini-lem-lista strong{font-weight:600;color:var(--c-ink);}
+/* 19.2.4: item do combinado que abre o registro ou a escala */
+.ini-lem-item{display:flex;align-items:center;justify-content:space-between;gap:var(--s-3);width:100%;min-height:var(--hit-min);text-align:left;background:var(--c-surface);border:1px solid var(--c-line);border-radius:var(--r-card);padding:var(--s-2) var(--s-3);font:var(--t-body);color:var(--c-ink-2);cursor:pointer;overflow-wrap:anywhere;}
+.ini-lem-item:hover,.ini-lem-item:focus-visible{border-color:var(--c-action);}
+.ini-lem-item::after{content:'›';flex-shrink:0;font:600 20px/1 var(--f-text);color:var(--c-action);}
 /* Pacote 13.4: modal de cadastro de novo paciente */
 .prof-cad-field{margin:0 0 14px;}
 .prof-cad-field label{
@@ -9337,8 +9341,38 @@ function iniLemRender_() {
   ul.innerHTML = INI_LEM.lista.map(function (l) {
     const dia = l.data === INI_LEM.hoje ? 'Hoje' : LEM_DIAS[lemDiaDaSemana_(l.data)] + ', ' + lemDataBR_(l.data, true);
     const repete = l.recorrencia === 'recorrente' ? ' · ' + lemRegra_(l) : '';
-    return '<li><strong>' + esc(dia + (l.hora ? ', às ' + l.hora : '')) + '</strong> · ' + esc(lemOQue_(l, true) + repete) + '</li>';
+    const miolo = '<strong>' + esc(dia + (l.hora ? ', às ' + l.hora : '')) + '</strong> · ' + esc(lemOQue_(l, true) + repete);
+    const ir = vmcDestinoDoLembrete_(l); // 19.2.4: registro e escala viram botão que abre o preenchimento
+    return ir ? '<li><button type="button" class="ini-lem-item" data-ir="' + esc(ir) + '" onclick="vmcDestinoAbrir_(vmcDestinoLer_(this.dataset.ir))"><span>' + miolo + '</span></button></li>' : '<li>' + miolo + '</li>';
   }).join('');
+}
+/* Pacote 19.2.4 — destino do lembrete: o link do e-mail e do WhatsApp (?ir=auto | ?ir=escala.<SIGLA>) e os itens do
+   combinado da semana abrem direto o registro ou a escala. O link só carrega o destino; nenhum dado do paciente. */
+var VMC_DESTINO = null; // { tipo: 'auto' } | { tipo: 'escala', codigo } — guardado só enquanto o paciente faz o login
+function vmcDestinoDoLembrete_(l) {
+  if (!l) return '';
+  if (l.tipo === 'auto') return 'auto';
+  return (l.tipo === 'escala' && ESC_ESCALAS[l.instrumento]) ? 'escala.' + l.instrumento : '';
+}
+function vmcDestinoLer_(valor) {
+  const v = String(valor || '');
+  if (v === 'auto') return { tipo: 'auto' };
+  if (v.indexOf('escala.') === 0 && Object.prototype.hasOwnProperty.call(ESC_ESCALAS, v.slice(7))) return { tipo: 'escala', codigo: v.slice(7) };
+  return null;
+}
+async function vmcDestinoAbrir_(destino) {
+  const d = destino || VMC_DESTINO;
+  VMC_DESTINO = null;
+  if (!d || PROF_SESSAO || !carregarSessao()) return;
+  if (d.tipo === 'auto') { iniNovoRegistro(); return; }
+  const geracao = VMC_GERACAO_SESSAO;
+  abrirSecao('sec-escalas');
+  await escAbrirMenu(); // o mesmo caminho do cartão: escalas liberadas e "primeira vez" vêm do servidor
+  const ativa = document.querySelector('.section.active');
+  if (geracao !== VMC_GERACAO_SESSAO || !carregarSessao() || !ativa || ativa.id !== 'sec-escalas') return; // saiu ou mudou de tela enquanto a resposta vinha
+  const def = ESC_ESCALAS[d.codigo];
+  if ((ESC_LIBERADOS || []).indexOf(def.instrumentoId) === -1) { vmcAvisoNaTela('Esta escala não está aberta para você no momento.'); return; }
+  escClicarCardEscala(d.codigo);
 }
 
 // Só o paciente tem rascunho no servidor. Recusa do servidor não prende a saída: a cópia do aparelho continua.
@@ -9536,6 +9570,7 @@ function loginConcluir_(tipo, resposta) {
     document.getElementById('userBadge').classList.add('visible');
 
     resetarTelaLogin_();
+    VMC_DESTINO = null; // 19.2.4: o destino do lembrete é só do paciente
     abrirSecao('sec-prof-dashboard');
     // Pacote 13.2.2: lista de pacientes. 18.11: ela vem na resposta do login (uma ida ao servidor a menos)
     profCarregarDashboard(Array.isArray(resposta.pacientes) ? resposta.pacientes : null);
@@ -9555,6 +9590,7 @@ function loginConcluir_(tipo, resposta) {
   atualizarMenuConformeSessao();
   resetarTelaLogin_();
   abrirSecao('sec-menu');
+  vmcDestinoAbrir_(); // 19.2.4: veio pelo link de um lembrete
 }
 
 /* Pacote 18.1.3: estado da escolha de profissional ({tipo, email, senha, opcoes}),
@@ -10127,9 +10163,11 @@ function lemLinkWhats_(telefone, tipo, nomePaciente, detalhe) {
   var artigo = (PROF_SESSAO && PROF_SESSAO.genero === 'F') ? 'a' : 'o';
   var pac = iniPrimeiroNome(nomePaciente);
   var d = String(detalhe || '').trim().replace(/[.\s]+$/, '');
-  var corpo = tipo === 'auto' ? 'Passando para lembrar do seu registro no COGNIATIVO. Quando puder: ' + VMC_SITE_URL
+  // 19.2.4: o link já abre o registro ou aquela escala (depois do login, se a sessão não estiver aberta)
+  var linkEscala = VMC_SITE_URL + ((d && ESC_ESCALAS[d]) ? '?ir=escala.' + encodeURIComponent(d) : '');
+  var corpo = tipo === 'auto' ? 'Passando para lembrar do seu registro no COGNIATIVO. Quando puder: ' + VMC_SITE_URL + '?ir=auto'
     : (tipo === 'escala'
-      ? (d ? 'Passando para lembrar que há uma escala aberta para você no COGNIATIVO: ' + d + '. Quando puder, responda: ' + VMC_SITE_URL
+      ? (d ? 'Passando para lembrar que há uma escala aberta para você no COGNIATIVO: ' + d + '. Quando puder, responda: ' + linkEscala
            : 'Passando para lembrar que há uma escala para você responder no COGNIATIVO. Quando puder: ' + VMC_SITE_URL)
       : (d ? 'Passando para lembrar do que combinamos: ' + d + '. Está no Início do COGNIATIVO: ' + VMC_SITE_URL
            : 'Passando para lembrar do que combinamos. Está no Início do COGNIATIVO: ' + VMC_SITE_URL));
@@ -14081,6 +14119,9 @@ window.addEventListener('DOMContentLoaded', () => {
   // Pacote 14.4: link de confirmação de presença (e-mail e WhatsApp) — o token sai da URL na hora
   const confirmar = new URLSearchParams(location.search).get('confirmar');
   if (confirmar) history.replaceState(null, '', location.pathname);
+  // Pacote 19.2.4: link do lembrete (?ir=) — o destino sai da URL na hora e espera o login, se for preciso
+  const ir = new URLSearchParams(location.search).get('ir');
+  if (ir !== null) { history.replaceState(null, '', location.pathname); VMC_DESTINO = (ativar || confirmar) ? null : vmcDestinoLer_(ir); }
   const paciente = carregarSessao();
   if (ativar) {
     // a tela "Crie sua senha" já foi aberta
@@ -14091,6 +14132,7 @@ window.addEventListener('DOMContentLoaded', () => {
     atualizarBadgeUsuario();
     atualizarMenuConformeSessao();
     abrirSecao('sec-menu');
+    vmcDestinoAbrir_(); // 19.2.4
   } else {
     abrirSecao('sec-login');
   }

@@ -407,6 +407,35 @@ tenta('O', () => {
   ok('O10 o "Lembrar agora" de antes (sem enviar_id) continua criando o item e mandando o e-mail', r.ok && r.email_enviado === true && celLem(id2, 'recorrencia') === 'agora' && h.EMAILS.length === 2, r);
 });
 
+/* ---------------------------------------------------------------- P */
+console.log('P. 19.2.4 — o link do lembrete leva direto ao preenchimento');
+tenta('P', () => {
+  const montar = S('montarEmailLembrete'), destino = S('_lembreteDestino_'), link = S('_lembreteLink_'), SITE = S('SITE_URL');
+  const ass = ['Dra. Nova de Prova'];
+  ok('P1 destino: registro = auto; escala do catálogo = escala.<SIGLA>; "Outro", escala desconhecida e item vazio = nada', destino({ tipo: 'auto' }) === 'auto' && destino({ tipo: 'escala', instrumento: 'PHQ-9' }) === 'escala.PHQ-9' && destino({ tipo: 'escala', instrumento: ' URICA-A ' }) === 'escala.URICA-A' && destino({ tipo: 'escala', instrumento: 'NAO-EXISTE' }) === '' && destino({ tipo: 'outro', texto: 'respirar' }) === '' && destino(null) === '', [destino({ tipo: 'escala', instrumento: 'PHQ-9' }), destino({ tipo: 'escala', instrumento: 'NAO-EXISTE' })]);
+  ok('P2 o link só aceita o formato do destino; qualquer outra coisa vira o link simples do site', link('auto') === SITE + '?ir=auto' && link('escala.PHQ-9') === SITE + '?ir=escala.PHQ-9' && link('') === SITE && link(undefined) === SITE && link('escala.<script>') === SITE && link('auto&x=1') === SITE && link('https://exemplo.test') === SITE);
+  const a = montar('auto', 'Ana', ass, '', 'auto');
+  ok('P3 e-mail do registro: o botão e o texto puro levam a ?ir=auto', a.texto.indexOf('\n' + SITE + '?ir=auto\n') !== -1 && a.html.indexOf('href="' + SITE + '?ir=auto"') !== -1, a.texto);
+  const e = montar('escala', 'Ana', ass, 'PHQ-9', 'escala.PHQ-9');
+  ok('P4 e-mail da escala: o botão e o texto puro levam a ?ir=escala.PHQ-9', e.texto.indexOf('\n' + SITE + '?ir=escala.PHQ-9\n') !== -1 && e.html.indexOf('href="' + SITE + '?ir=escala.PHQ-9"') !== -1, e.texto);
+  const o = montar('outro', 'Ana', ass, 'respirar', '');
+  ok('P5 e-mail do "Outro" e chamada antiga (sem destino): link simples do site', o.texto.indexOf('\n' + SITE + '\n') !== -1 && o.html.indexOf('?ir=') === -1 && montar('auto', 'Ana', ass).texto.indexOf('?ir=') === -1);
+  ok('P6 assunto, título e textos aprovados não mudaram', a.assunto === 'Hora do seu registro no COGNIATIVO' && a.html.indexOf('Fazer o registro de hoje') !== -1 && e.assunto === 'Há uma escala para você no COGNIATIVO' && e.html.indexOf('Abre o COGNIATIVO; se a sessão tiver expirado, é só entrar de novo.') !== -1);
+  ok('P7 o link não leva nome, sigla do paciente nem e-mail', !/Ana|exemplo\.test|sigla/.test(a.html.slice(a.html.indexOf('?ir='), a.html.indexOf('?ir=') + 30)));
+  const todas = Object.keys(S('ESCALAS_MENU'));
+  ok('P8 toda escala do catálogo gera um destino que o link aceita (' + todas.length + ')', todas.length >= 40 && todas.every(c => link(destino({ tipo: 'escala', instrumento: c })) === SITE + '?ir=escala.' + encodeURIComponent(c)), todas.filter(c => link(destino({ tipo: 'escala', instrumento: c })) === SITE));
+  const src = require('fs').readFileSync(require('path').join(__dirname, '..', '..', 'Código.js'), 'utf8');
+  ok('P9 os dois envios (gatilho e "Enviar agora") passam o destino do item', (src.match(/_lembreteDetalhe_\(item\), _lembreteDestino_\(item\)\)/g) || []).length === 2);
+  h.EMAILS.length = 0;
+  let r = salvar(P1, { hora: '08:00' });
+  const r2 = salvar(P1, { tipo: 'escala', instrumento: 'PHQ-9', hora: '08:00' });
+  if (r.ok && r2.ok) {
+    gatilho(quando(2026, 12, 15, 8, 10));
+    const ma = h.EMAILS.filter(m => m.subject === 'Hora do seu registro no COGNIATIVO').pop(), me = h.EMAILS.filter(m => m.subject === 'Há uma escala para você no COGNIATIVO').pop();
+    ok('P10 pelo gatilho: o e-mail do registro leva ?ir=auto e o da escala ?ir=escala.PHQ-9', !!ma && !!me && ma.htmlBody.indexOf('href="' + SITE + '?ir=auto"') !== -1 && me.htmlBody.indexOf('href="' + SITE + '?ir=escala.PHQ-9"') !== -1, h.EMAILS.map(m => m.subject));
+  } else ok('P10 itens de prova criados', false, [r, r2]);
+});
+
 /* ---------------------------------------------------------------- T */
 console.log('T. Trava e crachá');
 tenta('T', () => {

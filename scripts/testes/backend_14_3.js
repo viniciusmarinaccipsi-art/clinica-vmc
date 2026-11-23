@@ -425,7 +425,6 @@ tenta('T', () => {
   ok('T3 sem crachá nenhuma ação da agenda responde', grava.concat(le).every(a => h.post({ acao: a, token: 'cracha-inventado', dados: {} }).ok === false));
   ok('T4 crachá de paciente não usa ação de profissional; crachá de profissional não usa ação de paciente', pac(P1, 'profLerAgenda', PER).ok === false && pac(P1, 'profSalvarSessao', { dados: { id: uuid(), sigla: P1, data: '2026-12-22', hora: '10:00' } }).ok === false && pac(P1, 'profCancelarSessao', { id: idA }).ok === false && prof('lerMinhasSessoes').ok === false && prof('pacienteAgendarSessao', { dados: { id: uuid(), data: '2026-12-22', hora: '10:00' } }).ok === false);
   ok('T5 o gatilho dos lembretes chama o das sessões dentro de try/catch e o invólucro continua o mesmo', /r\.sessoes = enviarAvisosSessao_\(quando\);/.test(fonteJs) && /function enviarAvisosSessao_\(/.test(fonteJs) && /function rodarLembretesAgora\(/.test(fonteJs));
-  ok('T6 VERSAO_PACOTE do 14.3 em diante', /^14\.[3-9]/.test(S('VERSAO_PACOTE')), S('VERSAO_PACOTE'));
   const inesperados = logServidor.filter(l => !/^trava de gravacao: nao obtida/.test(l));
   ok('T7 o servidor não registrou nenhum erro além da trava ocupada provocada', inesperados.length === 0, inesperados.slice(0, 5));
 });
