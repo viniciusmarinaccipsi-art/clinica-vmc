@@ -67,7 +67,7 @@
 // pacienteConfirmarSessao, pacienteCancelarSessao, pacientePedirAgenda); avisos de sessao por e-mail, desligados por padrao.
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.5.4';
+var VERSAO_PACOTE = '14.6';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -508,6 +508,10 @@ function _despachar_(acao, payload, s) {
         resposta = profAvisarSessao(s, payload.id, payload.dados);
         break;
 
+      case 'profSalvarValorSessao': // 14.6
+        resposta = profSalvarValorSessao(s, payload.siglaPaciente, payload.valor);
+        break;
+
       // Acoes do admin (admin do cracha)
       case 'admListarProfissionais':
         resposta = listarProfissionais(s);
@@ -749,7 +753,8 @@ var ACOES_COM_TRAVA = [
   'profSalvarLembrete', 'profEncerrarLembrete', 'profLembrarAgora', // 19.2.1
   'profSalvarSessao', 'profEditarSerie', 'profCancelarSessao', 'profMarcarSituacao', 'profSalvarBloqueio', 'profApagarBloqueio', 'profDecidirPedido', // 14.3
   'pacienteAgendarSessao', 'pacienteConfirmarSessao', 'pacienteCancelarSessao', 'pacientePedirAgenda', // 14.3
-  'confirmarSessaoPorLink', 'profMarcarEventosVistos', 'profAvisarSessao' // 14.4
+  'confirmarSessaoPorLink', 'profMarcarEventosVistos', 'profAvisarSessao', // 14.4
+  'profSalvarValorSessao' // 14.6
 ];
 
 
@@ -2346,6 +2351,7 @@ function listarPacientesDoProfissional(s) {
     console.error('listarPacientes: pedidos da agenda nao foram junto: ' + String(erroPed && erroPed.message || erroPed).slice(0, 120));
   }
   var idxEmailCad = col('email'), idxTelCad = col('telefone');
+  var idxValorSessao = col('valor_sessao'); // 14.6
 
   for (var i = 1; i < dados.length; i++) {
     var row = dados[i];
@@ -2389,7 +2395,8 @@ function listarPacientesDoProfissional(s) {
       ind_ultima_escala_faixa: String(ultimaEscala.faixa || ''),
       ind_ultima_escala_data: String(ultimaEscala.data || ''),
       ind_alertas: alerta.instrumento !== undefined ? [alerta] : [],
-      lembretes: [] // 19.2.1
+      lembretes: [], // 19.2.1
+      valor_sessao: idxValorSessao >= 0 ? String(row[idxValorSessao] === undefined || row[idxValorSessao] === null ? '' : row[idxValorSessao]).trim() : '' // 14.6
     });
     // 19.2.1: so paciente ativo e com lembrete de hoje ou atrasado leva os itens e o contato do botao WhatsApp
     if (pedidosPorSigla[_siglaChave_(siglaPac)]) lista[lista.length - 1].pedidos_agenda = pedidosPorSigla[_siglaChave_(siglaPac)]; // 14.3
@@ -5315,6 +5322,8 @@ function salvarGradeAtendimento(s, config, grade) {
   if (config.endereco !== undefined) cfgGravar.endereco = txtEnd(config.endereco);
   if (config.endereco_novo !== undefined) cfgGravar.endereco_novo = txtEnd(config.endereco_novo);
   if (config.endereco_novo_desde !== undefined) cfgGravar.endereco_novo_desde = _lemDia_(config.endereco_novo_desde) === null ? '' : String(config.endereco_novo_desde).trim();
+  // 14.6: quantas sessoes futuras o paciente pode agendar sozinho (vazio = sem limite)
+  if (config.limite_agendamentos !== undefined) { var limNum = parseInt(config.limite_agendamentos, 10); cfgGravar.limite_agendamentos = (limNum > 0 && limNum <= 99) ? limNum : ''; }
   var ligouCalendar = false;
   if (config.google_calendar !== undefined) {
     var querCal = String(config.google_calendar).toLowerCase() === 'sim' && _calDoDono_(profissionalId);
@@ -6858,6 +6867,7 @@ function _ageConfig_(controle) {
     if (chave === 'duracao_slot_min' && parseInt(valor, 10) > 0) cfg.duracao_slot_min = parseInt(valor, 10);
     if (chave === 'antecedencia_min_horas' && parseInt(valor, 10) >= 0 && valor !== '') cfg.antecedencia_min_horas = parseInt(valor, 10);
     if (chave === 'avisos_sessao') cfg.avisos_sessao = valor.toLowerCase() === 'sim' ? 'Sim' : 'Nao';
+    if (chave === 'limite_agendamentos') cfg.limite_agendamentos = parseInt(valor, 10) > 0 ? parseInt(valor, 10) : 0; // 14.6: 0 = sem limite
     if (chave === 'agenda_vistos_ate') cfg.agenda_vistos_ate = valor; // 14.4: 'AAAA-MM-DD HH:mm' do ultimo "Marcar como vistos"
     // 14.5: endereco do consultorio (o atual e o que passa a valer numa data) e o espelho no Google Calendar (nasce 'Nao')
     if (chave === 'endereco' || chave === 'endereco_novo' || chave === 'endereco_novo_desde' || chave === 'gcal_id' || chave === 'gcal_nome') cfg[chave] = valor;
@@ -7009,6 +7019,8 @@ function _ageCtx_(controle, criar) {
 }
 
 function _ageAtiva_(x) { return x.estado !== 'cancelada'; }
+/** 14.6: sessao cancelada e COBRADA — continua na grade do profissional (apagada, sem ocupar o horario) para poder ser reposta. */
+function _ageCanceladaCobrada_(x) { return x.estado === 'cancelada' && x.cobrada === 'Sim' && x.cancelada_por !== 'edicao_serie'; }
 
 /** O bloqueio pega o intervalo [ini, ini + dur) do dia `dataIso`? */
 function _ageBloqueioPega_(b, dataIso, ini, dur) {
@@ -7102,7 +7114,7 @@ function _ageLeitura_(ctx, de, ate, pacs, agora) {
   if (b === null || b < a) b = a + 41;
   if (b - a > AGENDA_LEITURA_DIAS) b = a + AGENDA_LEITURA_DIAS;
   var deIso = _lemIso_(a), ateIso = _lemIso_(b);
-  var sessoes = ctx.sessoes.filter(function (x) { return x.data >= deIso && x.data <= ateIso && _ageAtiva_(x); })
+  var sessoes = ctx.sessoes.filter(function (x) { return x.data >= deIso && x.data <= ateIso && (_ageAtiva_(x) || _ageCanceladaCobrada_(x)); })
     .map(function (x) { return _ageSessaoProf_(ctx, x, pacs); });
   var series = {};
   sessoes.forEach(function (x) {
@@ -7301,9 +7313,15 @@ function profSalvarSessao(s, dados, periodo) {
   if (existente) {
     if (_siglaChave_(existente.sigla) !== _siglaChave_(alvo.sigla) || !_ageAtiva_(existente)) return { ok: false, erro: MSG_AGE_NAO_ACHEI };
     var mudouQuando = existente.data !== v.data || _lemHora_(existente.hora_inicio) !== v.hora || _ageDur_(existente.duracao_min, ctx.cfg.duracao_slot_min) !== v.dur;
+    // 14.6: "esta e as seguintes" leva tambem o DIA — as seguintes da serie andam o mesmo numero de dias (terca -> quinta: todas vao para quinta)
+    var delta = _lemDia_(v.data) - _lemDia_(existente.data);
+    var seguintes = (d.escopo === 'seguintes' && existente.serie_id) ? ctx.sessoes.filter(function (x) { return x.serie_id === existente.serie_id && x.id !== id && x.data > existente.data && x.estado === 'agendada'; }) : [];
+    var plano = _ageSeguintesPlano_(ctx, seguintes, delta, v.hora, v.dur, id);
     var proprio = {}; proprio[id] = true;
+    plano.movidas.forEach(function (m) { proprio[m.x.id] = true; }); // as que saem do lugar nao contam como ocupacao
     var oc = mudouQuando ? _ageOcupado_(ctx, v.data, v.hora, v.dur, proprio) : '';
-    if (simular) return { ok: true, simulacao: { datas: oc ? [] : [v.data], puladas: oc ? [v.data] : [], conflito: oc, avisos: avisoDe(v.data) } };
+    if (simular) return { ok: true, simulacao: { datas: oc ? [] : [v.data].concat(plano.movidas.map(function (m) { return m.data; })), puladas: (oc ? [v.data] : []).concat(plano.puladas),
+      conflito: oc, avisos: avisoDe(v.data), seguintes: seguintes.length } };
     if (oc) return _ageRecusa_(oc);
     var anterior = { data: existente.data, hora_inicio: existente.hora_inicio };
     var campos = { data: v.data, hora_inicio: v.hora, duracao_min: String(v.dur), modalidade: v.modalidade, valor: existente.reposicao_de ? existente.valor : v.valor,
@@ -7313,16 +7331,24 @@ function profSalvarSessao(s, dados, periodo) {
       campos.confirmada_em = ''; campos.ultimo_aviso_em = marcas.ultimo_aviso_em; campos.lembrete48_em = marcas.lembrete48_em;
     }
     _ageGravar_(ctx.abaS, COLUNAS_SESSOES, existente.__linha, campos);
-    var naoAlteradas = [];
-    if (d.escopo === 'seguintes' && existente.serie_id) {
-      ctx.sessoes.filter(function (x) { return x.serie_id === existente.serie_id && x.id !== id && x.data > anterior.data && x.estado === 'agendada'; }).forEach(function (x) {
-        var so = {}; so[x.id] = true;
-        if (_ageOcupado_(ctx, x.data, v.hora, v.dur, so)) { naoAlteradas.push(x.data); return; }
-        _ageGravar_(ctx.abaS, COLUNAS_SESSOES, x.__linha, { hora_inicio: v.hora, duracao_min: String(v.dur), modalidade: v.modalidade, valor: v.valor, notas: v.notas, avisos: v.avisos, atualizado_em: agora.carimbo });
-        x.hora_inicio = v.hora; x.duracao_min = String(v.dur);
-      });
+    var naoAlteradas = plano.puladas;
+    plano.movidas.forEach(function (m) {
+      var x = m.x, camposSeg = { hora_inicio: v.hora, duracao_min: String(v.dur), modalidade: v.modalidade, valor: v.valor, notas: v.notas, avisos: v.avisos, atualizado_em: agora.carimbo };
+      if (m.data !== m.de || m.horaDe !== v.hora) { // mudou o dia ou a hora: o paciente confirma de novo e os lembretes valem para a data nova
+        var marcasSeg = _ageMarcasLembrete_(m.data, v.hora, agora);
+        camposSeg.data = m.data; camposSeg.confirmada_em = ''; camposSeg.ultimo_aviso_em = marcasSeg.ultimo_aviso_em; camposSeg.lembrete48_em = marcasSeg.lembrete48_em;
+      }
+      _ageGravar_(ctx.abaS, COLUNAS_SESSOES, x.__linha, camposSeg);
+    });
+    if (delta !== 0 && plano.movidas.length) { // a regra da serie acompanha o dia novo (so a semanal guarda dias da semana)
+      var serie = ctx.series.filter(function (y) { return y.id === existente.serie_id; })[0];
+      if (serie && serie.unidade === 'semana' && String(serie.dias_semana || '').trim()) {
+        var diasNovos = String(serie.dias_semana).split(',').filter(String).map(function (n) { return ((((parseInt(n, 10) - 1 + delta) % 7) + 7) % 7) + 1; })
+          .filter(function (n, i, a) { return a.indexOf(n) === i; }).sort(function (a, b) { return a - b; });
+        _ageGravar_(ctx.abaR, COLUNAS_SERIES, serie.__linha, { dias_semana: diasNovos.join(',') });
+      }
     }
-    var resp = { ok: true, editada: true, remarcada: mudouQuando, nao_alteradas: naoAlteradas };
+    var resp = { ok: true, editada: true, remarcada: mudouQuando, nao_alteradas: naoAlteradas, movidas: plano.movidas.length };
     if (mudouQuando && (existente.data !== v.data || _lemHora_(existente.hora_inicio) !== v.hora)) {
       resp.aviso = _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, 'remarcacao', { id: id, data: v.data, hora_inicio: v.hora, modalidade: v.modalidade, avisos: v.avisos, duracao_min: String(v.dur) }, 'cancelamento', { anterior: anterior }); // 14.4: caixa "mudanca ou cancelamento"
     }
@@ -7556,6 +7582,47 @@ function profDecidirPedido(s, id, aprovar, periodo, quando) {
   return _ageResposta_(alvo, { ok: true, aprovado: true, data: dataPed, hora: hora, aviso: avA }, periodo, agora);
 }
 
+/**
+ * 14.6: para onde vai cada sessao seguinte da serie quando a sessao aberta muda (`delta` dias, hora e duracao novas).
+ * Devolve { movidas: [{ x, data }], puladas: [datas que ficam como estao] }. Horario ocupado ou bloqueado no destino: a sessao
+ * fica onde esta. Quem vai sair do lugar nao conta como ocupacao; quem fica, conta (a ordem evita que uma caia sobre a outra).
+ */
+function _ageSeguintesPlano_(ctx, seguintes, delta, hora, dur, idAberta) {
+  var plano = { movidas: [], puladas: [] };
+  if (!seguintes.length) return plano;
+  var ordem = seguintes.slice().sort(function (a, b) { return a.data < b.data ? -1 : (a.data > b.data ? 1 : 0); });
+  if (delta > 0) ordem.reverse(); // andando para a frente, a ultima sai primeiro
+  var pendentes = {}; ordem.forEach(function (x) { pendentes[x.id] = true; });
+  ordem.forEach(function (x) {
+    var destino = _lemIso_(_lemDia_(x.data) + delta);
+    var fora = {}; for (var k in pendentes) fora[k] = true; // as que ainda nao foram decididas (vao andar na mesma direcao) + ela mesma
+    fora[idAberta] = true; // a sessao aberta tambem sai do lugar antigo
+    if (_ageOcupado_(ctx, destino, hora, dur, fora)) { plano.puladas.push(x.data); delete pendentes[x.id]; return; } // fica: passa a contar como ocupacao
+    plano.movidas.push({ x: x, data: destino, de: x.data, horaDe: _lemHora_(x.hora_inicio) });
+    delete pendentes[x.id];
+    x.data = destino; x.hora_inicio = hora; x.duracao_min = String(dur); // ja no lugar novo: e ali que ela ocupa para as proximas da fila
+  });
+  plano.movidas.sort(function (a, b) { return a.data < b.data ? -1 : 1; });
+  plano.puladas.sort();
+  return plano;
+}
+
+/** 14.6: valor da sessao no cadastro do paciente (coluna `valor_sessao` da aba Pacientes da Controle, texto literal). A nova consulta ja abre com ele. */
+function profSalvarValorSessao(s, siglaPaciente, valor) {
+  var auth = _authProfissional_(s);
+  if (!auth.ok) return auth;
+  var profId = auth.profissional.profissional_id;
+  var dono = resolverProfissionalIdPorSigla(siglaPaciente, 'paciente');
+  if (!dono) return { ok: false, erro: 'Paciente nao encontrado' };
+  if (dono !== profId) return { ok: false, erro: 'Este paciente nao pertence a voce' };
+  var controle = abrirControleDoProfissional(profId);
+  var aba = controle ? controle.getSheetByName(ABA_PACIENTES) : null;
+  if (!aba) return { ok: false, erro: 'Paciente não encontrado na Controle.' };
+  var v = String(valor === undefined || valor === null ? '' : valor).replace(/[^0-9.,]/g, '').slice(0, 12);
+  if (!_atualizarLinhaPorChave_(aba, 'sigla', siglaPaciente, {}, { valor_sessao: _lemCelula_(v) })) return { ok: false, erro: 'Paciente não encontrado na Controle.' };
+  return { ok: true, valor_sessao: v };
+}
+
 /** 14.4: zera o contador do sino (guarda o instante em que os eventos foram vistos). */
 function profMarcarEventosVistos(s, periodo) {
   var alvo = _ageProf_(s);
@@ -7621,7 +7688,21 @@ function _ageMinhas_(ctx, alvo, agora) {
       mapa: (agendada && futura && x.modalidade !== 'online') ? _ageMapa_(_ageEndereco_(ctx.cfg, x.data)) : '',
       pedido: ultimo ? { tipo: ultimo.tipo, estado: ultimo.estado, data: ultimo.data, hora: _lemHora_(ultimo.hora), sugestao: ultimo.sugestao || '' } : null };
   }).sort(function (a, b) { var p = a.data + ' ' + a.hora, q = b.data + ' ' + b.hora; return p < q ? -1 : (p > q ? 1 : 0); });
-  return { ok: true, hoje: agora.data, agora_hora: agora.hora, antecedencia_horas: horas, profissional: alvo.profissional, sessoes: sessoes };
+  var lim = _ageLimite_(ctx, alvo.sigla, agora); // 14.6
+  return { ok: true, hoje: agora.data, agora_hora: agora.hora, antecedencia_horas: horas, profissional: alvo.profissional, sessoes: sessoes,
+    limite: { max: lim.max, usadas: lim.usadas, atingido: lim.atingido, msg: lim.atingido ? _ageMsgLimite_(lim.usadas, alvo.profissional) : '' } };
+}
+
+/** 14.6: limite de sessoes futuras que o paciente agenda SOZINHO (conta so as que ele mesmo agendou; reposicao e sessao marcada pelo profissional nao contam). */
+function _ageLimite_(ctx, sigla, agora) {
+  var max = ctx.cfg.limite_agendamentos || 0, chave = _siglaChave_(sigla);
+  var usadas = ctx.sessoes.filter(function (x) {
+    return _siglaChave_(x.sigla) === chave && x.origem === 'paciente' && !x.reposicao_de && (x.estado === 'agendada' || x.estado === '') && _ageMinutosAte_(x.data, x.hora_inicio, agora) > 0;
+  }).length;
+  return { max: max, usadas: usadas, atingido: max > 0 && usadas >= max };
+}
+function _ageMsgLimite_(n, profissional) {
+  return 'Você já tem ' + n + (n === 1 ? ' sessão marcada' : ' sessões marcadas') + ' por você. Para marcar mais, fale com ' + profissional + '.';
 }
 
 /** Proxima sessao agendada do paciente (para a faixa do Inicio): { data, hora, modalidade } ou null. */
@@ -7712,6 +7793,8 @@ function pacienteAgendarSessao(sigla, dados) {
     if (_siglaChave_(ja.sigla) !== _siglaChave_(alvo.sigla)) return { ok: false, erro: 'Parametros incompletos' };
     var rd = _ageMinhas_(ctx, alvo, agora); rd.duplicado = true; return rd;
   }
+  var limAg = _ageLimite_(ctx, alvo.sigla, agora); // 14.6
+  if (limAg.atingido) return { ok: false, codigo: 'limite', erro: _ageMsgLimite_(limAg.usadas, alvo.profissional) };
   var data = String(d.data || '').trim(), hora = _lemHora_(d.hora);
   var slot = (_lemDia_(data) !== null && hora) ? _ageSlotLivre_(ctx, alvo.controle, data, hora, agora) : null;
   if (!slot) return { ok: false, codigo: 'ocupado', erro: MSG_AGE_ACABOU };

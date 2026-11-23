@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda — Pacote 14.5.3 (23/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia, limite de agendamentos e valor por paciente — Pacote 14.6 (23/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -4229,6 +4229,12 @@ button.cab-no-item{cursor:pointer;}
 .cal-ev-presencial,.cal-ev-online{border:0;border-left:4px solid var(--c-dass21-ink);width:calc(100% - 6px);text-align:left;color:var(--c-ink);font-family:var(--f-text);display:block;z-index:3;}
 .cal-ev-presencial{background:var(--cal-ev-lilas);} /* 14.4: presencial em lilás, on-line em verde (decisão do usuário, 22/11/2026) */
 .cal-ev-online{background:var(--cal-ev-verde);border-left-color:var(--c-pos);}
+/* Pacote 14.6 — sessão cancelada e cobrada: continua na grade, apagada e tracejada, sem ocupar o horário; ao lado quando há outra sessão no mesmo horário */
+.cal-ev-cancelada{border:1px dashed var(--c-ink-3);border-left:4px solid var(--c-ink-3);background:var(--c-surface-sub);width:calc(100% - 6px);text-align:left;color:var(--c-ink-3);font-family:var(--f-text);display:block;z-index:2;box-shadow:none;}
+.cal-ev-cancelada .cal-ev-nome{text-decoration:line-through;}
+.cal-ev-lado{left:auto;right:2px;width:42%;z-index:4;}
+.prof-valor{display:flex;align-items:center;gap:var(--s-2);flex-wrap:wrap;margin-top:var(--s-2);font:var(--t-body-sm);color:var(--c-ink-inv);} /* o cabeçalho do paciente é índigo: texto claro */
+.prof-valor input{width:120px;min-height:var(--hit-min);padding:6px 10px;border:1px solid var(--c-line);border-radius:var(--r-field);font:var(--t-body);color:var(--c-ink);background:var(--c-surface);}
 /* Pacote 14.4 — sino da Agenda e cartão "Avisar o paciente" */
 .cal-sino{position:relative;}
 .cal-sino-num{position:absolute;top:2px;right:2px;min-width:18px;height:18px;padding:0 4px;border-radius:var(--r-chip);background:var(--c-risk);color:var(--c-ink-inv);font:var(--t-label);line-height:18px;text-align:center;}
@@ -4680,6 +4686,7 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
           <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--c-warn-tint);border:1px solid var(--c-warn);"></span> Feriado</div>
           <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-ev-lilas);border:1px solid var(--c-dass21-ink);opacity:.72;"></span> Consulta realizada</div>
           <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-ev-lilas);border:1px solid var(--c-risk);border-left-width:4px;"></span> Não compareceu</div>
+          <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--c-surface-sub);border:1px dashed var(--c-ink-3);"></span> Cancelada · cobrada</div>
         </div>
       </div>
       <div class="cal-main">
@@ -4719,6 +4726,11 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
             <option value="48">48 horas</option>
           </select>
           <div class="gra-hint">O paciente só agenda, cancela ou pede remarcação com esta antecedência.</div>
+        </div>
+        <div class="gra-cfg-item">
+          <label for="graCfgLimite">Sessões futuras que o paciente pode agendar sozinho</label>
+          <input type="number" id="graCfgLimite" min="1" max="99" step="1" inputmode="numeric" autocomplete="off">
+          <div class="gra-hint">Vazio = sem limite. Contam só as sessões que o próprio paciente agendou.</div>
         </div>
         <div class="gra-cfg-item">
           <label for="graCfgAvisos">Avisos de sessão por e-mail</label>
@@ -8401,6 +8413,7 @@ var VMC_ACOES_GRAVACAO = [
   'profSalvarSessao', 'profEditarSerie', 'profCancelarSessao', 'profMarcarSituacao', 'profSalvarBloqueio', 'profApagarBloqueio', 'profDecidirPedido', // 14.3
   'pacienteAgendarSessao', 'pacienteConfirmarSessao', 'pacienteCancelarSessao', 'pacientePedirAgenda', // 14.3
   'confirmarSessaoPorLink', 'profMarcarEventosVistos', 'profAvisarSessao', // 14.4
+  'profSalvarValorSessao', // 14.6
   'profDesativarPaciente', 'profReativarPaciente', 'profExcluirPaciente', 'profAlterarSenhaPaciente',
   'admCadastrarProfissional', 'admAtualizarProfissional', 'admTrocarSenhaProfissional',
   'admDesativarProfissional', 'admReativarProfissional',
@@ -11011,6 +11024,11 @@ function profBuildHeader_(iniciais, nome, sub) {
       acoesHtml += '<button class="p135-btn p135-btn-senha" data-sigla="' + esc(PROF_PACIENTE_SEL.sigla) + '" onclick="p137AbrirSenha(this.dataset.sigla)"><svg class=ico aria-hidden=true><use href=#i-key></use></svg> Senha</button>';
     }
     acoesHtml += '</div>';
+    if (ativoAtual !== 'nao' && /^Paciente · /.test(String(sub || ''))) { // 14.6: valor da sessão do cadastro (a nova consulta abre com ele)
+      acoesHtml += '<div class="prof-valor"><label for="profValorSessao">Valor da sessão (R$)</label><input type="text" id="profValorSessao" maxlength="12" inputmode="decimal" autocomplete="off">' +
+        '<button type="button" class="prof-lem-btn" id="profValorSalvar" onclick="profValorSalvar_()">Salvar</button><span id="profValorMsg" role="status"></span></div>';
+      setTimeout(profValorPintar_, 0); // o valor entra por .value, depois de o cabeçalho estar na tela
+    }
   }
   return '<div class="prof-pv-header">' +
     '<div class="prof-pv-avatar">' + profEscHtml_(iniciais) + '</div>' +
@@ -11021,6 +11039,28 @@ function profBuildHeader_(iniciais, nome, sub) {
     '</div>' +
     '<button class="prof-pv-back" onclick="profVoltarDashboard()">← Voltar</button>' +
   '</div>';
+}
+
+/* 14.6: valor da sessão do paciente aberto (vem na lista do login; grava no cadastro) */
+function profValorPintar_() {
+  var campo = document.getElementById('profValorSessao');
+  if (!campo || !PROF_PACIENTE_SEL) return;
+  var item = PROF_LISTA.filter(function (x) { return x.sigla === PROF_PACIENTE_SEL.sigla; })[0];
+  campo.value = (item && item.valor_sessao) || '';
+}
+async function profValorSalvar_() {
+  var campo = document.getElementById('profValorSessao'), msg = document.getElementById('profValorMsg'), btn = document.getElementById('profValorSalvar');
+  if (!campo || !PROF_PACIENTE_SEL || btn.disabled) return;
+  var sigla = PROF_PACIENTE_SEL.sigla;
+  btn.disabled = true; msg.textContent = '';
+  var r = await chamarServidor('profSalvarValorSessao', { siglaPaciente: sigla, valor: campo.value });
+  btn = document.getElementById('profValorSalvar'); msg = document.getElementById('profValorMsg'); campo = document.getElementById('profValorSessao');
+  if (btn) btn.disabled = false;
+  if (!r || !r.ok) { if (msg && r && r.codigo !== 'sessao_expirada') msg.textContent = (r && r.erro) || 'Não foi possível salvar agora.'; return; }
+  var item = PROF_LISTA.filter(function (x) { return x.sigla === sigla; })[0];
+  if (item) item.valor_sessao = r.valor_sessao;
+  if (campo) campo.value = r.valor_sessao;
+  if (msg) msg.textContent = 'Valor salvo.';
 }
 
 /* Abre/fecha um card-módulo */
@@ -22946,6 +22986,7 @@ async function graCarregar() {
   // Config -> select de antecedência
   var cfg = resp.config || {};
   var sel = document.getElementById('graCfgAntecedencia');
+  document.getElementById('graCfgLimite').value = cfg.limite_agendamentos ? String(cfg.limite_agendamentos) : ''; // 14.6
   if (cfg.antecedencia_min_horas && sel.querySelector('option[value="' + CSS.escape(String(cfg.antecedencia_min_horas)) + '"]')) { // 18.4 (8.83)
     sel.value = String(cfg.antecedencia_min_horas);
   }
@@ -23107,6 +23148,7 @@ async function graSalvar() {
       duracao_slot_min: 60,
       antecedencia_min_horas: Number(document.getElementById('graCfgAntecedencia').value),
       avisos_sessao: document.getElementById('graCfgAvisos').value, // 14.3
+      limite_agendamentos: document.getElementById('graCfgLimite').value, // 14.6
       endereco: document.getElementById('graCfgEndereco').value, // 14.5
       endereco_novo: document.getElementById('graCfgEnderecoNovo').value,
       endereco_novo_desde: document.getElementById('graCfgEnderecoDesde').value,
@@ -23429,11 +23471,13 @@ function ageDesenharDia_(col, iso) {
     if (ini + dur <= CAL_HORA_INI * 60 || ini >= CAL_HORA_FIM * 60) return;
     var el = document.createElement('button');
     el.type = 'button';
-    el.className = 'cal-ev ' + (s.modalidade === 'online' ? 'cal-ev-online' : 'cal-ev-presencial') + (s.estado === 'realizada' ? ' cal-ev-realizada' : (s.estado === 'falta' ? ' cal-ev-falta' : ''));
+    var canc = s.estado === 'cancelada'; // 14.6: só chega cancelada quando foi cobrada
+    el.className = 'cal-ev ' + (canc ? 'cal-ev-cancelada' : (s.modalidade === 'online' ? 'cal-ev-online' : 'cal-ev-presencial') + (s.estado === 'realizada' ? ' cal-ev-realizada' : (s.estado === 'falta' ? ' cal-ev-falta' : '')));
+    if (canc && CAL_SESSOES.some(function (o) { return o !== s && o.estado !== 'cancelada' && o.data === s.data && ageMin_(o.hora) < ini + dur && ageMin_(o.hora) + (o.duracao_min || 60) > ini; })) el.classList.add('cal-ev-lado');
     el.dataset.sessao = s.id;
     el.style.top = ((ini - CAL_HORA_INI * 60) / 60 * CAL_ALT_HORA) + 'px';
     el.style.height = Math.max(dur / 60 * CAL_ALT_HORA - 4, 26) + 'px';
-    var sit = s.estado === 'realizada' ? 'Consulta realizada' : (s.estado === 'falta' ? 'Não compareceu' : '');
+    var sit = canc ? 'Cancelada · cobrada' : (s.estado === 'realizada' ? 'Consulta realizada' : (s.estado === 'falta' ? 'Não compareceu' : ''));
     var icones = (s.modalidade === 'online' ? '<svg class=ico aria-hidden=true><use href=#i-video></use></svg>' : '') +
       (s.serie_id ? '<svg class=ico aria-hidden=true><use href=#i-repeat></use></svg>' : '') +
       (s.confirmada ? '<svg class=ico aria-hidden=true><use href=#i-check></use></svg>' : '');
@@ -23556,6 +23600,7 @@ function ageAbrirNovo_(iso, hora) {
 function ageAbrirSessao_(id) {
   var s = CAL_SESSOES.filter(function (x) { return x.id === id; })[0];
   if (!s) return;
+  if (s.estado === 'cancelada') { AGE.p = { modo: 'cancelada', sessao: s }; AGE.vista = 'cancelada'; AGE.sim = null; document.getElementById('ageModal').classList.add('show'); ageRender_(); return; } // 14.6
   var p = agePainelNovo_(s.data, s.hora);
   p.modo = 'editar'; p.id = s.id; p.sigla = s.sigla; p.nome = s.nome; p.dur = s.duracao_min; p.modalidade = s.modalidade;
   p.valor = s.valor || ''; p.notas = s.notas || ''; p.sessao = s;
@@ -23670,6 +23715,25 @@ function ageRender_() {
   var titulo = document.getElementById('ageTitulo'), corpo = document.getElementById('ageCorpo'), acoes = document.getElementById('ageAcoes');
   var erro = '<div class="prof-cad-erro" id="ageErro" role="alert"></div>';
   if (AGE.vista === 'avisar') { ageRenderAvisar_(titulo, corpo, acoes); return; }
+  if (AGE.vista === 'cancelada') { // 14.6: sessão cancelada e cobrada — só leitura, com a reposição
+    var sc = p.sessao;
+    titulo.textContent = 'Consulta cancelada';
+    corpo.innerHTML = '<p class="age-texto"><strong>' + esc(sc.nome) + '</strong> · ' + esc(ageQuandoCurto_(sc.data, sc.hora)) + '</p>' +
+      '<div class="age-marcas"><span class="cal-ev-marca">Cancelada · cobrada</span>' + (sc.reposta_em ? ' <span class="cal-ev-marca">' + esc('Reposta em ' + lemDataBR_(sc.reposta_em, true)) + '</span>' : '') + '</div>' +
+      (sc.pode_repor ? '<p class="age-dica">A reposição usa o valor desta sessão e não gera cobrança nova.</p>' : '');
+    acoes.innerHTML = ageBtn_('Fechar', 'ageFecharDeVez_()', !sc.pode_repor) + (sc.pode_repor ? ageBtn_('Agendar reposição', 'ageRepor_()', true, 'ageBtnOk') : '');
+    return;
+  }
+  if (AGE.vista === 'listaSeg') { // 14.6: "esta e as seguintes" com mudança de dia — as datas antes de gravar
+    var ss = AGE.sim || { datas: [], puladas: [] };
+    titulo.textContent = 'Esta consulta e as seguintes';
+    corpo.innerHTML = (ss.conflito ? '<p class="age-aviso" id="ageSegConflito">' + esc(ss.conflito === 'bloqueado' ? 'Este horário está bloqueado. Escolha outro.' : 'Este horário já está ocupado. Escolha outro.') + '</p>'
+      : '<p class="age-texto" id="ageSegTitulo">Serão movidas ' + ss.datas.length + ' sessões:</p>' +
+        '<ul class="age-datas" id="ageSegDatas">' + ss.datas.map(function (iso) { return '<li>' + esc(ageDiaNome_(iso) + ', ' + lemDataBR_(iso)) + ' às ' + esc(p.hora) + '</li>'; }).join('') + '</ul>' +
+        (ss.puladas.length ? '<p class="age-aviso" id="ageSegPuladas">Puladas (horário ocupado): ' + esc(ageListaDatas_(ss.puladas)) + '</p>' : '')) + erro;
+    acoes.innerHTML = ageBtn_('Voltar', 'ageVistaPainel_()', false) + (ss.conflito ? '' : ageBtn_('Salvar', 'ageSalvarSeg_()', true, 'ageBtnOk'));
+    return;
+  }
   if (AGE.vista === 'sair') {
     titulo.textContent = 'Sair sem salvar?';
     corpo.innerHTML = '<p class="age-texto">As alterações desta consulta serão perdidas.</p>';
@@ -23778,7 +23842,9 @@ function ageBuscar_() {
 function ageEscolher_(sigla) {
   var x = PROF_LISTA.filter(function (y) { return y.sigla === sigla; })[0];
   if (!x) return;
-  ageLer_(); AGE.p.sigla = x.sigla; AGE.p.nome = x.nome_completo || x.sigla; AGE.p.busca = ''; ageRender_();
+  ageLer_(); AGE.p.sigla = x.sigla; AGE.p.nome = x.nome_completo || x.sigla; AGE.p.busca = '';
+  if (AGE.p.modo === 'novo' && !AGE.p.reposicao_de && !AGE.p.valor && x.valor_sessao) AGE.p.valor = x.valor_sessao; // 14.6: valor da sessão do cadastro
+  ageRender_();
 }
 function ageNovoPaciente_() { ageFecharDeVez_(); profAbrirModalCadastro(); }
 function ageRepPintar_() {
@@ -23896,6 +23962,15 @@ async function ageSalvar_() {
   var dados = ageDadosEnvio_(p);
   if (p.reposicao_de) dados.reposicao_de = p.reposicao_de;
   if (p.modo === 'editar' && p.sessao && p.sessao.serie_id) dados.escopo = p.escopo;
+  // 14.6: "esta e as seguintes" com outro dia — mostra as datas (e as puladas) antes de gravar
+  if (dados.escopo === 'seguintes' && p.data !== p.sessao.data && !AGE.segOk) {
+    ageOcupar_(true);
+    var rs = await chamarServidor('profSalvarSessao', { dados: Object.assign({}, dados, { simular: true }) });
+    ageOcupar_(false);
+    if (!rs.ok) { ageErro_(rs.erro || 'Não foi possível calcular as datas agora.'); return; }
+    AGE.sim = rs.simulacao; AGE.vista = 'listaSeg'; ageRender_(); return;
+  }
+  AGE.segOk = false;
   ageOcupar_(true);
   var r = await chamarServidor('profSalvarSessao', { dados: dados, periodo: agePeriodo_() });
   ageOcupar_(false);
@@ -23929,6 +24004,9 @@ async function ageSituacao_() {
   ageRender_();
 }
 function ageRepor_() { var s = AGE.p && AGE.p.sessao; if (s) ageAbrirReposicao_(s); }
+/* 14.6: lista de "esta e as seguintes" — voltar ao painel sem reler os campos (eles não estão na tela) e confirmar o salvamento */
+function ageVistaPainel_() { AGE.vista = 'painel'; AGE.sim = null; ageRender_(); }
+function ageSalvarSeg_() { AGE.segOk = true; AGE.vista = 'painel'; ageRender_(); ageSalvar_(); }
 
 /* ---------- cancelar ---------- */
 function ageRenderCancelar_(titulo, corpo, acoes, erro) {
@@ -24086,6 +24164,7 @@ function sesCancelar_() { sesEnviarAcao_('pacienteCancelarSessao', { id: SES.alv
 function sesVoltar_() { SES.vista = 'lista'; SES.erro = ''; SES.livres = null; SES.escolhido = null; sesRender_(); }
 /* Escolha de horário: agendar, pedir remarcação ou pedir reposição usam a mesma lista de horários livres */
 function sesEscolherHorario_(tipo, btn) {
+  if (tipo === 'agendar' && SES.dados && SES.dados.limite && SES.dados.limite.atingido) { SES.msg = ''; SES.erro = SES.dados.limite.msg; sesRender_(); return; } // 14.6
   var x = btn ? sesSessao_(btn) : null;
   SES.vista = tipo; SES.alvo = x ? x.id : ''; SES.msg = ''; SES.erro = ''; SES.escolhido = null; SES.livres = null; SES.ideal = false; SES.idealTexto = '';
   SES.de = (SES.dados && SES.dados.hoje) || lemHojeIso_(); SES.idEnvio = vmcNovoIdEnvio_();
