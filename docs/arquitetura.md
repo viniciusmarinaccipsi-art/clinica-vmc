@@ -2075,12 +2075,36 @@ Grade (`graCfgEndereco`, `graCfgEnderecoNovo`, `graCfgEnderecoDesde`, `graCfgCal
   hora diferente perde a confirmação e ganha as marcas de lembrete da data nova. Série semanal: `dias_semana` é deslocado
   pelo mesmo `delta`. `simular` devolve `datas`, `puladas`, `conflito`, `seguintes`. No cliente, `ageSalvar_` chama a
   simulação quando o escopo é `seguintes` e a data mudou, e mostra a vista `listaSeg`; `ageSalvarSeg_` confirma (`AGE.segOk`).
-- **Limite:** chave `limite_agendamentos` da `Config_Agenda` (`_ageConfig_`, `salvarGradeAtendimento`); `_ageLimite_` conta
-  sessões futuras agendadas com `origem = paciente` e sem `reposicao_de`; `_ageMinhas_` devolve `limite { max, usadas,
-  atingido, msg }`; `pacienteAgendarSessao` recusa com `codigo: 'limite'`. Cliente: `graCfgLimite`; `sesEscolherHorario_`
-  mostra `limite.msg` sem abrir os horários.
+- **Limite de agendamentos:** existiu só no 14.6; **saiu no 14.7** (todo agendamento do paciente passa pela aprovação).
 - **Valor por paciente:** ação `profSalvarValorSessao(s, siglaPaciente, valor)` (na trava; 72 ações) grava a coluna
   `valor_sessao` da aba Pacientes da Controle como texto literal (`_lemCelula_`, por `camposServidor` de
   `_atualizarLinhaPorChave_`); `listarPacientesDoProfissional` devolve `valor_sessao`. Cliente: campo no cabeçalho do paciente
   (`profBuildHeader_`, valor posto por `.value` em `profValorPintar_`), `profValorSalvar_`, e `ageEscolher_` preenche o valor
   da nova consulta quando ele está vazio.
+
+## Pacote 14.7 — Agenda: agendamento do paciente com aprovação (23/11/2026)
+
+Decisão do usuário: o paciente vê os horários livres, escolhe um e aguarda a aprovação ou a sugestão de outro horário.
+
+- **Pedido de agendamento:** `pacienteAgendarSessao(sigla, dados)` (nome mantido) grava uma linha em `Pedidos_Agenda` com
+  `tipo = agendar`, `sessao_id` vazio, `data`, `hora` e a coluna nova `modalidade`; avisa o profissional
+  (`_ageAvisarProfissional_`). Nenhuma sessão nasce. Reenvio do mesmo `id`: `duplicado`.
+- **Reserva:** `_ageReservas_(ctx, agora, menosId)` lista os pedidos **pendentes com horário que ainda não passou** (qualquer
+  tipo; na remarcação, pela duração da sessão). `_ageLivres_` tira esses horários da lista — a do paciente
+  (`lerHorariosLivres`, `_ageSlotLivre_`) e a do profissional (`profLerHorariosLivres`). `ctx.semReservaDe` (parâmetro
+  `pedido` de `profLerHorariosLivres`) deixa o horário do próprio pedido na lista quando o profissional está escolhendo o
+  horário dele. A reserva **não** entra em `_ageOcupado_`: o profissional pode marcar ali.
+- **Decisão:** `profDecidirPedido(s, id, aprovar, periodo, quando)`. Pedido `agendar` aprovado: confere o horário
+  (`codigo: 'passou'` se já passou; `'ocupado'` se há sessão ou bloqueio), cria a sessão (`id = 'ag-' + id do pedido`,
+  `origem = pedido`, `estado = agendada`, `confirmada_em` vazio, duração do slot, todos os avisos, `valor` = `valor_sessao`
+  do cadastro, modalidade pedida ou a que a Grade oferece naquele horário), liga o pedido à sessão (`sessao_id`) e manda
+  `pedido_aprovado`. `quando { data, hora }` aprova em outro horário. Recusa: `pedido_recusado`.
+- **Leituras:** `_agePedidosPendentes_` devolve `modalidade` nos pedidos `agendar`; `_ageMinhas_` devolve
+  `pedidos_agendar` (pendentes e recusados há até 7 dias, só de horário que não passou) e deixou de devolver `limite`;
+  `_ageEventos_` tem o tipo `agendar` (o pedido) — a sessão aprovada não vira `agendou`.
+- **Cliente:** `sesEnviar_` manda o pedido e mostra "Pedido enviado…"; `sesLinhaPedido_` desenha o pedido entre as próximas;
+  `agePedidoTexto_` e `agePedidosHtml_` (três botões em todo pedido com horário; `data-tipo` na linha);
+  `agePedidoLivres_` passa `pedido` ao servidor; `ageEventoTexto_` com o tipo `agendar`. Saíram `graCfgLimite` e a frase do
+  limite.
+- **Trabalho em paralelo:** o pacote nasceu em `repo-14-7` (worktree). Com três conversas no repositório, a regra é
+  `..\ORQUESTRA_SESSOES.md` (territórios, pontos de encosto e fila de publicação com `PUBLICANDO.md`).
