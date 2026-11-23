@@ -1,0 +1,213 @@
+{
+ "emissor": "11144477735",
+ "recibos": [
+  {
+   "data": "30/11/2026",
+   "datas": [
+    "03/11/2026"
+   ],
+   "valor_sessao_centavos": 28000,
+   "cpf": "529.982.247-25",
+   "modalidade": "",
+   "descricao": "Realização de 01 sessão de psicoterapia (R$ 280,00), datada em: a. 03 de novembro de 2026.",
+   "linha": "30/11/2026;R01.001.001;255;280,00;;Realização de 01 sessão de psicoterapia (R$ 280,00), datada em: a. 03 de novembro de 2026.;PF;52998224725;52998224725;;;;;S;11144477735;\r\n"
+  },
+  {
+   "data": "24/11/2026",
+   "datas": [
+    "03/11/2026",
+    "10/11/2026"
+   ],
+   "valor_sessao_centavos": 28000,
+   "cpf": "529.982.247-25",
+   "modalidade": "",
+   "descricao": "Realização de 02 sessões de psicoterapia (R$ 280,00 cada), datadas em: a. 03 de novembro de 2026, b. 10 de novembro de 2026.",
+   "linha": "24/11/2026;R01.001.001;255;560,00;;Realização de 02 sessões de psicoterapia (R$ 280,00 cada), datadas em: a. 03 de novembro de 2026, b. 10 de novembro de 2026.;PF;52998224725;52998224725;;;;;S;11144477735;\r\n"
+  },
+  {
+   "data": "30/11/2026",
+   "datas": [
+    "24/11/2026",
+    "03/11/2026",
+    "17/11/2026",
+    "10/11/2026"
+   ],
+   "valor_sessao_centavos": 25000,
+   "cpf": "111.444.777-35",
+   "modalidade": "",
+   "descricao": "Realização de 04 sessões de psicoterapia (R$ 250,00 cada), datadas em: a. 03 de novembro de 2026, b. 10 de novembro de 2026, c. 17 de novembro de 2026, d. 24 de novembro de 2026.",
+   "linha": "30/11/2026;R01.001.001;255;1000,00;;Realização de 04 sessões de psicoterapia (R$ 250,00 cada), datadas em: a. 03 de novembro de 2026, b. 10 de novembro de 2026, c. 17 de novembro de 2026, d. 24 de novembro de 2026.;PF;11144477735;11144477735;;;;;S;11144477735;\r\n"
+  },
+  {
+   "data": "05/12/2026",
+   "datas": [
+    "02/11/2026",
+    "09/11/2026",
+    "16/11/2026",
+    "23/11/2026",
+    "30/11/2026"
+   ],
+   "valor_sessao_centavos": 100000,
+   "cpf": "52998224725",
+   "modalidade": "",
+   "descricao": "Realização de 05 sessões de psicoterapia (R$ 1.000,00 cada), datadas em: a. 02 de novembro de 2026, b. 09 de novembro de 2026, c. 16 de novembro de 2026, d. 23 de novembro de 2026, e. 30 de novembro de 2026.",
+   "linha": "05/12/2026;R01.001.001;255;5000,00;;Realização de 05 sessões de psicoterapia (R$ 1.000,00 cada), datadas em: a. 02 de novembro de 2026, b. 09 de novembro de 2026, c. 16 de novembro de 2026, d. 23 de novembro de 2026, e. 30 de novembro de 2026.;PF;52998224725;52998224725;;;;;S;11144477735;\r\n"
+  },
+  {
+   "data": "30/11/2026",
+   "datas": [
+    "03/11/2026",
+    "05/11/2026",
+    "10/11/2026",
+    "12/11/2026",
+    "17/11/2026",
+    "19/11/2026",
+    "24/11/2026"
+   ],
+   "valor_sessao_centavos": 28050,
+   "cpf": "529.982.247-25",
+   "modalidade": "",
+   "descricao": "Realização de 07 sessões de psicoterapia (R$ 280,50 cada), datadas em: 03, 05, 10, 12, 17, 19 e 24 de novembro de 2026.",
+   "linha": "30/11/2026;R01.001.001;255;1963,50;;Realização de 07 sessões de psicoterapia (R$ 280,50 cada), datadas em: 03, 05, 10, 12, 17, 19 e 24 de novembro de 2026.;PF;52998224725;52998224725;;;;;S;11144477735;\r\n"
+  },
+  {
+   "data": "30/11/2026",
+   "datas": [
+    "03/11/2026",
+    "05/11/2026",
+    "10/11/2026",
+    "12/11/2026",
+    "17/11/2026",
+    "19/11/2026",
+    "24/11/2026",
+    "26/11/2026"
+   ],
+   "valor_sessao_centavos": 30000,
+   "cpf": "529.982.247-25",
+   "modalidade": "",
+   "descricao": "Realização de 08 sessões de psicoterapia (R$ 300,00 cada), datadas em: 03, 05, 10, 12, 17, 19, 24 e 26 de novembro de 2026.",
+   "linha": "30/11/2026;R01.001.001;255;2400,00;;Realização de 08 sessões de psicoterapia (R$ 300,00 cada), datadas em: 03, 05, 10, 12, 17, 19, 24 e 26 de novembro de 2026.;PF;52998224725;52998224725;;;;;S;11144477735;\r\n"
+  },
+  {
+   "data": "30/11/2026",
+   "datas": [
+    "02/11/2026",
+    "04/11/2026",
+    "06/11/2026",
+    "09/11/2026",
+    "11/11/2026",
+    "13/11/2026",
+    "16/11/2026",
+    "18/11/2026",
+    "20/11/2026",
+    "23/11/2026",
+    "25/11/2026",
+    "27/11/2026",
+    "30/11/2026"
+   ],
+   "valor_sessao_centavos": 9000,
+   "cpf": "529.982.247-25",
+   "modalidade": "",
+   "descricao": "Realização de 13 sessões de psicoterapia (R$ 90,00 cada), datadas em: 02, 04, 06, 09, 11, 13, 16, 18, 20, 23, 25, 27 e 30 de novembro de 2026.",
+   "linha": "30/11/2026;R01.001.001;255;1170,00;;Realização de 13 sessões de psicoterapia (R$ 90,00 cada), datadas em: 02, 04, 06, 09, 11, 13, 16, 18, 20, 23, 25, 27 e 30 de novembro de 2026.;PF;52998224725;52998224725;;;;;S;11144477735;\r\n"
+  },
+  {
+   "data": "10/11/2026",
+   "datas": [
+    "10/11/2026"
+   ],
+   "valor_sessao_centavos": 32000,
+   "cpf": "529.982.247-25",
+   "modalidade": "on-line",
+   "descricao": "Realização de 01 sessão de psicoterapia, ofertada na modalidade on-line, no valor de (R$ 320,00), datada em: a. 10 de novembro de 2026.",
+   "linha": "10/11/2026;R01.001.001;255;320,00;;Realização de 01 sessão de psicoterapia, ofertada na modalidade on-line, no valor de (R$ 320,00), datada em: a. 10 de novembro de 2026.;PF;52998224725;52998224725;;;;;S;11144477735;\r\n"
+  },
+  {
+   "data": "30/11/2026",
+   "datas": [
+    "05/11/2026",
+    "12/11/2026",
+    "19/11/2026",
+    "26/11/2026"
+   ],
+   "valor_sessao_centavos": 32000,
+   "cpf": "529.982.247-25",
+   "modalidade": "presencial",
+   "descricao": "Realização de 04 sessões de psicoterapia, ofertadas na modalidade presencial, no valor de (R$ 320,00 cada), datadas em: a. 05 de novembro de 2026, b. 12 de novembro de 2026, c. 19 de novembro de 2026, d. 26 de novembro de 2026.",
+   "linha": "30/11/2026;R01.001.001;255;1280,00;;Realização de 04 sessões de psicoterapia, ofertadas na modalidade presencial, no valor de (R$ 320,00 cada), datadas em: a. 05 de novembro de 2026, b. 12 de novembro de 2026, c. 19 de novembro de 2026, d. 26 de novembro de 2026.;PF;52998224725;52998224725;;;;;S;11144477735;\r\n"
+  },
+  {
+   "data": "30/11/2026",
+   "datas": [
+    "02/11/2026",
+    "04/11/2026",
+    "06/11/2026",
+    "09/11/2026",
+    "11/11/2026",
+    "13/11/2026",
+    "16/11/2026",
+    "18/11/2026",
+    "20/11/2026"
+   ],
+   "valor_sessao_centavos": 15000,
+   "cpf": "529.982.247-25",
+   "modalidade": "on-line",
+   "descricao": "Realização de 09 sessões de psicoterapia, ofertadas na modalidade on-line, no valor de (R$ 150,00 cada), datadas em: 02, 04, 06, 09, 11, 13, 16, 18 e 20 de novembro de 2026.",
+   "linha": "30/11/2026;R01.001.001;255;1350,00;;Realização de 09 sessões de psicoterapia, ofertadas na modalidade on-line, no valor de (R$ 150,00 cada), datadas em: 02, 04, 06, 09, 11, 13, 16, 18 e 20 de novembro de 2026.;PF;52998224725;52998224725;;;;;S;11144477735;\r\n"
+  },
+  {
+   "data": "31/03/2027",
+   "datas": [
+    "01/03/2027",
+    "08/03/2027",
+    "15/03/2027",
+    "22/03/2027",
+    "29/03/2027"
+   ],
+   "valor_sessao_centavos": 123456,
+   "cpf": "111.444.777-35",
+   "modalidade": "",
+   "descricao": "Realização de 05 sessões de psicoterapia (R$ 1.234,56 cada), datadas em: a. 01 de março de 2027, b. 08 de março de 2027, c. 15 de março de 2027, d. 22 de março de 2027, e. 29 de março de 2027.",
+   "linha": "31/03/2027;R01.001.001;255;6172,80;;Realização de 05 sessões de psicoterapia (R$ 1.234,56 cada), datadas em: a. 01 de março de 2027, b. 08 de março de 2027, c. 15 de março de 2027, d. 22 de março de 2027, e. 29 de março de 2027.;PF;11144477735;11144477735;;;;;S;11144477735;\r\n"
+  }
+ ],
+ "despesas": [
+  {
+   "data": "05/11/2026",
+   "conta": "P10.01.00002",
+   "valor_centavos": 120000,
+   "historico": "Aluguel de sala – Imobiliária Exemplo – 11.222.333/0001-81",
+   "linha": "05/11/2026;P10.01.00002;1200,00;Aluguel de sala – Imobiliária Exemplo – 11.222.333/0001-81\r\n"
+  },
+  {
+   "data": "10/11/2026",
+   "conta": "P10.01.00014",
+   "valor_centavos": 12990,
+   "historico": "Pagamento ref. internet",
+   "linha": "10/11/2026;P10.01.00014;129,90;Pagamento ref. internet\r\n"
+  },
+  {
+   "data": "16/11/2026",
+   "conta": "P10.01.00007",
+   "valor_centavos": 21440,
+   "historico": "Energia\nconta de novembro\r\n  unidade 3  ",
+   "linha": "16/11/2026;P10.01.00007;214,40;Energia - conta de novembro - unidade 3\r\n"
+  },
+  {
+   "data": "20/11/2026",
+   "conta": "P11.01.00001",
+   "valor_centavos": 9900,
+   "historico": "Despesa não dedutível de teste",
+   "linha": "20/11/2026;P11.01.00001;99,00;Despesa não dedutível de teste\r\n"
+  },
+  {
+   "data": "28/11/2026",
+   "conta": "P10.01.00006",
+   "valor_centavos": 100005,
+   "historico": "Serviços contábeis — Escritório Exemplo",
+   "linha": "28/11/2026;P10.01.00006;1000,05;Serviços contábeis — Escritório Exemplo\r\n"
+  }
+ ],
+ "arquivo_recibos": "30/11/2026;R01.001.001;255;280,00;;Realização de 01 sessão de psicoterapia (R$ 280,00), datada em: a. 03 de novembro de 2026.;PF;52998224725;52998224725;;;;;S;11144477735;\r\n24/11/2026;R01.001.001;255;560,00;;Realização de 02 sessões de psicoterapia (R$ 280,00 cada), datadas em: a. 03 de novembro de 2026, b. 10 de novembro de 2026.;PF;52998224725;52998224725;;;;;S;11144477735;\r\n30/11/2026;R01.001.001;255;1000,00;;Realização de 04 sessões de psicoterapia (R$ 250,00 cada), datadas em: a. 03 de novembro de 2026, b. 10 de novembro de 2026, c. 17 de novembro de 2026, d. 24 de novembro de 2026.;PF;11144477735;11144477735;;;;;S;11144477735;\r\n05/12/2026;R01.001.001;255;5000,00;;Realização de 05 sessões de psicoterapia (R$ 1.000,00 cada), datadas em: a. 02 de novembro de 2026, b. 09 de novembro de 2026, c. 16 de novembro de 2026, d. 23 de novembro de 2026, e. 30 de novembro de 2026.;PF;52998224725;52998224725;;;;;S;11144477735;\r\n30/11/2026;R01.001.001;255;1963,50;;Realização de 07 sessões de psicoterapia (R$ 280,50 cada), datadas em: 03, 05, 10, 12, 17, 19 e 24 de novembro de 2026.;PF;52998224725;52998224725;;;;;S;11144477735;\r\n30/11/2026;R01.001.001;255;2400,00;;Realização de 08 sessões de psicoterapia (R$ 300,00 cada), datadas em: 03, 05, 10, 12, 17, 19, 24 e 26 de novembro de 2026.;PF;52998224725;52998224725;;;;;S;11144477735;\r\n30/11/2026;R01.001.001;255;1170,00;;Realização de 13 sessões de psicoterapia (R$ 90,00 cada), datadas em: 02, 04, 06, 09, 11, 13, 16, 18, 20, 23, 25, 27 e 30 de novembro de 2026.;PF;52998224725;52998224725;;;;;S;11144477735;\r\n10/11/2026;R01.001.001;255;320,00;;Realização de 01 sessão de psicoterapia, ofertada na modalidade on-line, no valor de (R$ 320,00), datada em: a. 10 de novembro de 2026.;PF;52998224725;52998224725;;;;;S;11144477735;\r\n30/11/2026;R01.001.001;255;1280,00;;Realização de 04 sessões de psicoterapia, ofertadas na modalidade presencial, no valor de (R$ 320,00 cada), datadas em: a. 05 de novembro de 2026, b. 12 de novembro de 2026, c. 19 de novembro de 2026, d. 26 de novembro de 2026.;PF;52998224725;52998224725;;;;;S;11144477735;\r\n30/11/2026;R01.001.001;255;1350,00;;Realização de 09 sessões de psicoterapia, ofertadas na modalidade on-line, no valor de (R$ 150,00 cada), datadas em: 02, 04, 06, 09, 11, 13, 16, 18 e 20 de novembro de 2026.;PF;52998224725;52998224725;;;;;S;11144477735;\r\n31/03/2027;R01.001.001;255;6172,80;;Realização de 05 sessões de psicoterapia (R$ 1.234,56 cada), datadas em: a. 01 de março de 2027, b. 08 de março de 2027, c. 15 de março de 2027, d. 22 de março de 2027, e. 29 de março de 2027.;PF;11144477735;11144477735;;;;;S;11144477735;\r\n",
+ "arquivo_despesas": "05/11/2026;P10.01.00002;1200,00;Aluguel de sala – Imobiliária Exemplo – 11.222.333/0001-81\r\n10/11/2026;P10.01.00014;129,90;Pagamento ref. internet\r\n16/11/2026;P10.01.00007;214,40;Energia - conta de novembro - unidade 3\r\n20/11/2026;P11.01.00001;99,00;Despesa não dedutível de teste\r\n28/11/2026;P10.01.00006;1000,05;Serviços contábeis — Escritório Exemplo\r\n"
+}

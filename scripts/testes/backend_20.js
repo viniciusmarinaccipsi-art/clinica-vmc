@@ -1,7 +1,7 @@
 /* Fase 20 — Fluxo de caixa (Pacote 20.0): o `Código.js` real sobre planilhas simuladas, relógio fixo em 25/11/2026 14:00.
    Blocos: A regras puras · B configuração e cadastro · C a leitura segue a Agenda · D pagamento, parcial, crédito e desfazer ·
    E cobranças (só por ação do profissional) · F lado do paciente e comprovante · G despesas e contas a pagar · H resumo ·
-   T listas, trava, texto literal e sigilo. Dados inventados; os CPFs são números de teste com dígito válido.
+   R recibos, lote do Carnê-Leão e livro caixa (20.1; o gabarito do lote vem do gerador que o usuário usa hoje) · T listas, trava, texto literal e sigilo. Dados inventados; os CPFs são números de teste com dígito válido.
    Sem argumento, roda duas vezes: no fuso de São Paulo e em UTC.
    Uso: node scripts/testes/backend_20.js */
 'use strict';
@@ -386,19 +386,107 @@ tenta('H', () => {
   ok('H8 despesas pagas do período anterior entram na comparação', prof('profLerFinanceiro', { periodo: 'personalizado', de: '2026-12-01', ate: '2026-12-31' }).financeiro.resumo.anterior.despesas === 120000 + 21440);
 });
 
+/* ---------------------------------------------------------------- R */
+console.log('R. Recibos, lote e livro caixa (20.1)');
+tenta('R', () => {
+  const FX = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures_lote_20_1.json'), 'utf8'));
+  const cfgLote = { cod_rendimento: 'R01.001.001', cod_ocupacao: '255', cpf_emissor: FX.emissor };
+  const ordem = l => l.slice().sort((a, b) => (a.slice(6) + a.slice(3, 5) + a.slice(0, 2)).localeCompare(b.slice(6) + b.slice(3, 5) + b.slice(0, 2)));
+  const desc = S('_finLoteDescricao_'), linhaR = S('_finLoteLinhaRecibo_'), linhaD = S('_finLoteLinhaPagamento_');
+  const difR = FX.recibos.filter(r => { const d = desc(ordem(r.datas), r.valor_sessao_centavos, r.modalidade); return d !== r.descricao || linhaR(r.data, r.datas.length * r.valor_sessao_centavos, d, r.cpf, cfgLote) !== r.linha; });
+  ok('R1 lote de recibos idêntico, byte a byte, ao do gerador que o usuário usa hoje: ' + FX.recibos.length + ' recibos inventados (1 sessão, várias, com modalidade, forma compacta, milhar, centavos)', difR.length === 0 &&
+    Buffer.from(FX.recibos.map(r => linhaR(r.data, r.datas.length * r.valor_sessao_centavos, desc(ordem(r.datas), r.valor_sessao_centavos, r.modalidade), r.cpf, cfgLote)).join(''), 'utf8').equals(Buffer.from(FX.arquivo_recibos, 'utf8')), difR.map(r => r.descricao));
+  const difD = FX.despesas.filter(d => linhaD(d.data, d.conta, d.valor_centavos, d.historico) !== d.linha);
+  ok('R2 lote de despesas idêntico, byte a byte: ' + FX.despesas.length + ' despesas (histórico com quebra de linha, conta não dedutível, centavos)', difD.length === 0 &&
+    Buffer.from(FX.despesas.map(d => linhaD(d.data, d.conta, d.valor_centavos, d.historico)).join(''), 'utf8').equals(Buffer.from(FX.arquivo_despesas, 'utf8')), difD.map(d => d.linha));
+  ok('R3 formato: UTF-8 sem BOM, 16 campos no recibo e 4 na despesa, fim de linha CRLF; conta fora do plano, histórico com ";" ou acima de 255 e descrição que não cabe são recusados',
+    FX.arquivo_recibos.charCodeAt(0) !== 0xFEFF && FX.recibos.every(r => r.linha.split(';').length === 16 && /\r\n$/.test(r.linha)) && FX.despesas.every(d => d.linha.split(';').length === 4) &&
+    linhaD('05/11/2026', 'X10.01.00002', 100, 'a') === null && linhaD('05/11/2026', 'P10.01.00002', 100, 'a;b') === null && linhaD('05/11/2026', 'P10.01.00002', 100, 'a'.repeat(256)) === null &&
+    desc(Array.from({ length: 27 }, (_, i) => '01/11/2026'), 100, '') === null);
+
+  // desligada, a camada fiscal não mostra nada
+  let f = fin().financeiro;
+  ok('R4 com "recibos e livro caixa" desligado: nenhum recibo, nenhuma prévia de lote, e salvar recibo é recusado', f.config.fiscal === false && f.recibos.length === 0 && f.lote === null && prof('profSalvarRecibo', { id: 'novo:' + ANA + ':2026-11', dados: {} }).ok === false);
+  const cfg = extra => prof('profSalvarConfigFinanceiro', { periodo: 'mes', dados: Object.assign({ dados_receber: 'Pix: chave', formas: 'Pix\nDinheiro', valor_padrao: '250', prazo_dias: '5', texto_cobranca: '', categorias: 'Aluguel\nContas (água, luz, internet)\nMaterial' }, extra) });
+  ok('R5 ligar sem o CPF de quem emite (ou com CPF errado) é recusado', cfg({ fiscal: 'Sim', cpf_emissor: '' }).ok === false && cfg({ fiscal: 'Sim', cpf_emissor: '111.444.777-36' }).ok === false);
+  let r = cfg({ fiscal: 'Sim', cpf_emissor: '111.444.777-35', cod_rendimento: '', cod_ocupacao: '' });
+  f = r.financeiro;
+  const rec = sig => f.recibos.filter(x => x.sigla === sig)[0];
+  ok('R6 ligado: códigos padrão do Carnê-Leão; a leitura propõe um recibo por paciente marcado, com sessão cobrada no mês — Ana (4), Bruno (1) e Elisa (2); quem não precisa de recibo (Carla) fica fora',
+    r.ok && f.config.fiscal === true && f.config.cod_rendimento === 'R01.001.001' && f.config.cod_ocupacao === '255' && f.recibos.length === 3 && rec(ANA).sessoes === 4 && rec(BRUNO).sessoes === 1 && rec(ELISA).sessoes === 2 && !rec(CARLA), f.recibos.map(x => [x.nome, x.sessoes]));
+  ok('R7 a proposta vem com a descrição montada, o valor certo, a data do recibo EM BRANCO e fora do lote (falta abrir e informar a data)', rec(ANA).novo === true && rec(ANA).data === '' && rec(ANA).valor === 120000 &&
+    rec(ANA).descricao === 'Realização de 04 sessões de psicoterapia (R$ 300,00 cada), datadas em: a. 03 de novembro de 2026, b. 10 de novembro de 2026, c. 17 de novembro de 2026, d. 24 de novembro de 2026.' &&
+    f.lote.recibos.linhas.length === 0 && f.lote.recibos.fora.length === 3 && linhas('Fin_Recibos') <= 0, [rec(ANA), f.lote.recibos.fora]);
+  ok('R8 o CPF de quem recebe o recibo não vai para a lista: só o miolo, mascarado', JSON.stringify(f.recibos).indexOf('11144477735') === -1 && rec(BRUNO).titular === 'Paulo Tavares' && rec(BRUNO).titular_doc === '***.444.777-**');
+
+  // salvar os recibos
+  r = prof('profSalvarRecibo', { id: rec(BRUNO).id, periodo: 'mes', dados: { data: '2026-11-30' } });
+  f = r.financeiro;
+  const idBruno = r.id;
+  ok('R9 recibo do Bruno salvo com a data: em nome de quem o cadastro manda (Paulo), entra na prévia do lote com a linha literal de 16 campos', r.ok && linhas('Fin_Recibos') === 1 && rec(BRUNO).novo === false && f.lote.recibos.linhas.length === 1 &&
+    f.lote.recibos.linhas[0] === '30/11/2026;R01.001.001;255;250,00;;Realização de 01 sessão de psicoterapia (R$ 250,00), datada em: a. 02 de novembro de 2026.;PF;11144477735;11144477735;;;;;S;11144477735;\r\n', f.lote.recibos.linhas);
+  ok('R10 salvar de novo a mesma proposta não cria o segundo recibo do mês', prof('profSalvarRecibo', { id: 'novo:' + BRUNO + ':2026-11', dados: { data: '2026-11-30' } }).duplicado === true && linhas('Fin_Recibos') === 1);
+  r = prof('profSalvarRecibo', { id: rec(ANA).id, periodo: 'mes', dados: { data: '2026-11-30' } });
+  f = r.financeiro;
+  const idAna = r.id;
+  ok('R11 recibo da Ana (em nome dela): sem CPF na anamnese fica fora do lote, com o motivo', r.ok && rec(ANA).cpf_ok === false && f.lote.recibos.fora.some(x => x.nome === 'Ana Beatriz Moura' && /CPF/.test(x.motivo)) && f.lote.recibos.linhas.length === 1);
+  ok('R12 datas: de outro mês, inválida ou nenhuma são recusadas; valor unitário zero também', [{ datas: ['03/11/2026', '01/12/2026'] }, { datas: ['31/11/2026'] }, { datas: [] }, { unitario: 0 }].every(d => prof('profSalvarRecibo', { id: idAna, dados: d }).ok === false));
+  r = prof('profSalvarRecibo', { id: idAna, periodo: 'mes', dados: { datas: ['24/11/2026', '03/11/2026', '10/11/2026'], unitario: 28050, modalidade: 'on-line' } });
+  f = r.financeiro;
+  ok('R13 editar o recibo: as datas ficam em ordem, o valor é quantidade × unitário e a descrição é montada de novo, com o complemento de modalidade', r.ok && rec(ANA).sessoes === 3 && rec(ANA).valor === 84150 &&
+    rec(ANA).descricao === 'Realização de 03 sessões de psicoterapia, ofertadas na modalidade on-line, no valor de (R$ 280,50 cada), datadas em: a. 03 de novembro de 2026, b. 10 de novembro de 2026, c. 24 de novembro de 2026.', rec(ANA));
+  const bruta = aba('Fin_Recibos').getRange(h.linhaDe(aba('Fin_Recibos'), 'id', idBruno), h.cab(aba('Fin_Recibos')).indexOf('titular_documento') + 1).getValue();
+  ok('R14 o CPF de quem recebe fica na aba como texto', typeof bruta === 'string' && bruta.replace(/^'/, '') === '11144477735', bruta);
+
+  // gerar o lote
+  r = prof('profGerarLote', { qual: 'recibos', simular: true, periodo: 'mes' });
+  ok('R15 o portão: simular devolve as linhas literais e não marca nada', r.ok && r.simulacao.linhas.length === 1 && cel('Fin_Recibos', idBruno, 'situacao').replace(/^'/, '') === 'a_emitir');
+  r = prof('profGerarLote', { qual: 'recibos', periodo: 'mes' });
+  f = r.financeiro;
+  ok('R16 gerar o arquivo: o texto é a linha da prévia, o nome leva o período e o recibo passa a "no lote"', r.ok && r.arquivo.linhas === 1 && r.arquivo.nome === 'lote-recibos-2026-11-01-a-2026-11-30.csv' && /^30\/11\/2026;R01\.001\.001;255;250,00;;Realização de 01 sessão/.test(r.arquivo.texto) && /\r\n$/.test(r.arquivo.texto) && rec(BRUNO).situacao === 'no_lote');
+  ok('R17 gerar de novo não repete a linha: nada pronto', prof('profGerarLote', { qual: 'recibos', periodo: 'mes' }).ok === false);
+  ok('R18 registrar o número marca "emitido"; sem a data do recibo o número é recusado', prof('profSalvarRecibo', { id: rec(ELISA).id, dados: { numero: '119' } }).ok === false && (() => { r = prof('profSalvarRecibo', { id: idBruno, periodo: 'mes', dados: { numero: '118' } }); f = r.financeiro; return r.ok && rec(BRUNO).situacao === 'emitido' && rec(BRUNO).numero === '118'; })());
+  r = prof('profSalvarRecibo', { id: idBruno, periodo: 'mes', dados: { situacao: 'cancelado' } });
+  f = r.financeiro;
+  ok('R19 recibo cancelado guarda o número (ele continua valendo como número usado) e o mês volta a ter uma proposta de recibo', r.ok && f.recibos.filter(x => x.id === idBruno)[0].situacao === 'cancelado' && f.recibos.filter(x => x.id === idBruno)[0].numero === '118' && f.recibos.some(x => x.sigla === BRUNO && x.novo));
+
+  // livro caixa: despesas com conta e histórico
+  const dA = uuid(), dB = uuid();
+  prof('profSalvarDespesa', { dados: { id: dA, nome: 'Internet', categoria: 'Contas (água, luz, internet)', valor: 12990, data: '2026-11-10', situacao: 'paga', repete: 'fixo', conta: 'p10.01.00014', historico: 'Pagamento ref. internet\nnovembro' } });
+  prof('profSalvarDespesa', { dados: { id: dB, nome: 'Café', categoria: 'Material', valor: 4000, data: '2026-11-11', situacao: 'paga', repete: '' } });
+  ok('R20 conta fora do formato e histórico com ";" são recusados', prof('profSalvarDespesa', { dados: { id: uuid(), nome: 'X', categoria: 'Material', valor: 100, data: '2026-11-11', situacao: 'paga', conta: 'P12.01.00001' } }).ok === false &&
+    prof('profSalvarDespesa', { dados: { id: uuid(), nome: 'X', categoria: 'Material', valor: 100, data: '2026-11-11', situacao: 'paga', conta: 'P10.01.00012', historico: 'a;b' } }).ok === false);
+  f = fin().financeiro;
+  ok('R21 prévia do lote de despesas: só as pagas com conta do plano; o histórico vai em uma linha; as sem conta são contadas à parte', f.lote.despesas.linhas.join('') === '10/11/2026;P10.01.00014;129,90;Pagamento ref. internet - novembro\r\n' && f.lote.despesas.fora >= 1, f.lote.despesas);
+  r = prof('profGerarLote', { qual: 'despesas', periodo: 'mes' });
+  ok('R22 gerar o lote de despesas marca a despesa e não a repete no lote seguinte', r.ok && r.arquivo.texto === '10/11/2026;P10.01.00014;129,90;Pagamento ref. internet - novembro\r\n' && r.financeiro.lote.despesas.linhas.length === 0 && r.financeiro.lote.despesas.em_lote === 1 && prof('profGerarLote', { qual: 'despesas', periodo: 'mes' }).ok === false);
+  irPara(2026, 12, 2, 9, 0);
+  const contaDez = fin().financeiro.despesas.filter(d => d.nome === 'Internet')[0];
+  ok('R23 a despesa que repete leva a conta e o histórico fixos para a conta do mês seguinte', contaDez.conta === 'P10.01.00014' && contaDez.historico === 'Pagamento ref. internet - novembro' && /^fixa:/.test(contaDez.id));
+  irPara(2026, 11, 25, 14, 0);
+  // demonstrativo e o lado do paciente
+  r = prof('profSalvarRecibo', { id: rec(ELISA).id, periodo: 'mes', dados: { data: '2026-11-03', numero: '119', arquivo: { nome: 'recibo 119.pdf', tipo: 'application/pdf', base64: Buffer.from('pdf de teste').toString('base64') } } });
+  f = r.financeiro;
+  const idElisa = r.id;
+  ok('R24 demonstrativo do mês: rendimentos = recibos emitidos ou no lote pela data do recibo; despesas = pagas com conta dedutível; resultado = um menos o outro', r.ok && f.fiscal.rendimentos === 64000 && f.fiscal.despesas === 12990 && f.fiscal.resultado === 64000 - 12990, f.fiscal);
+  const meuE = pac(ELISA, 'lerMeuFinanceiro').meu;
+  ok('R25 o paciente vê o recibo emitido do mês e baixa o arquivo; outro paciente não o alcança', meuE.recibos.length === 1 && meuE.recibos[0].do_mes === true && meuE.recibos[0].tem_arquivo === true && pac(ELISA, 'lerArquivoFinanceiro', { id: idElisa }).ok === true && pac(ANA, 'lerArquivoFinanceiro', { id: idElisa }).ok === false && pac(ANA, 'lerMeuFinanceiro').meu.recibos.length === 0);
+  ok('R26 a cobrança sabe que o recibo do mês já foi emitido (para a frase da mensagem) e o paciente não alcança as ações dos recibos', f.cobrancas.filter(c => c.sigla === ANA)[0].recibo_emitido === false && pac(ELISA, 'profSalvarRecibo', { id: idElisa, dados: { numero: '1' } }).ok === false && pac(ELISA, 'profGerarLote', { qual: 'recibos' }).ok === false);
+});
+
 /* ---------------------------------------------------------------- T */
 console.log('T. Listas, trava, texto literal e sigilo');
 tenta('T', () => {
   const src = fs.readFileSync(path.join(__dirname, '..', '..', 'Código.js'), 'utf8');
   const trava = S('ACOES_COM_TRAVA'), leitura = S('ACOES_SO_LEITURA');
-  const gravam = ['profSalvarCadastroFinanceiro', 'profSalvarConfigFinanceiro', 'profSalvarPagamento', 'profEstornarPagamento', 'profDecidirComprovante', 'profGerarCobrancas', 'profEnviarCobranca', 'profDescartarCobranca', 'profNaoCobrarSessao', 'profSalvarDespesa', 'profEncerrarDespesaFixa', 'pacienteEnviarComprovante', 'pacientePedirRecibo'];
-  ok('T1 as 13 ações que salvam estão na trava; as 3 leituras estão na lista de leitura; todas existem no doPost', gravam.every(a => trava.indexOf(a) !== -1 && src.indexOf("case '" + a + "':") !== -1) && ['profLerFinanceiro', 'lerMeuFinanceiro', 'lerArquivoFinanceiro'].every(a => leitura.indexOf(a) !== -1 && trava.indexOf(a) === -1 && src.indexOf("case '" + a + "':") !== -1));
+  const gravam = ['profSalvarCadastroFinanceiro', 'profSalvarConfigFinanceiro', 'profSalvarPagamento', 'profEstornarPagamento', 'profDecidirComprovante', 'profGerarCobrancas', 'profEnviarCobranca', 'profDescartarCobranca', 'profNaoCobrarSessao', 'profSalvarDespesa', 'profEncerrarDespesaFixa', 'pacienteEnviarComprovante', 'pacientePedirRecibo', 'profSalvarRecibo', 'profGerarLote'];
+  ok('T1 as 15 ações que salvam estão na trava; as 3 leituras estão na lista de leitura; todas existem no doPost', gravam.every(a => trava.indexOf(a) !== -1 && src.indexOf("case '" + a + "':") !== -1) && ['profLerFinanceiro', 'lerMeuFinanceiro', 'lerArquivoFinanceiro'].every(a => leitura.indexOf(a) !== -1 && trava.indexOf(a) === -1 && src.indexOf("case '" + a + "':") !== -1));
   ok('T2 nenhuma ação do financeiro é pública: sem crachá, todas respondem sessão expirada', gravam.concat(['profLerFinanceiro', 'lerMeuFinanceiro', 'lerArquivoFinanceiro']).every(a => { h.memo(); const r = h.post({ acao: a }); return r.ok === false && S('ACOES_PUBLICAS').indexOf(a) === -1; }));
   const semApostrofo = [];
   Object.keys(S('COLUNAS_FIN')).forEach(n => { const a = aba(n); if (!a) return; a.getDataRange().getValues().slice(1).forEach(l => l.forEach(v => { if (v !== '' && typeof v !== 'string') semApostrofo.push(n + ':' + String(v).slice(0, 20)); })); });
   ok('T3 toda célula das abas do financeiro é texto (nenhuma data, valor, CPF ou hora virou número ou Date)', semApostrofo.length === 0 && linhas('Fin_Alocacoes') > 0, semApostrofo.slice(0, 6));
   ok('T4 o cabeçalho de cada aba é exatamente o de COLUNAS_FIN', Object.keys(S('COLUNAS_FIN')).filter(n => aba(n)).every(n => h.cab(aba(n)).join() === S('COLUNAS_FIN')[n].join()));
-  ok('T5 VERSAO_PACOTE = 20.0 e o ping a devolve', S('VERSAO_PACOTE') === '20.0' && h.post({ acao: 'ping' }).versao_pacote === '20.0');
+  ok('T5 VERSAO_PACOTE = 20.1 e o ping a devolve', S('VERSAO_PACOTE') === '20.1' && h.post({ acao: 'ping' }).versao_pacote === '20.1');
   ok('T6 nenhum CPF ou CNPJ foi para o log do servidor', logServidor.join(' ').indexOf('52998224725') === -1 && logServidor.join(' ').indexOf('11222333000181') === -1);
   // excluir o paciente: cadastro, quem paga e cobranças saem; os pagamentos ficam
   const pagAntes = linhas('Fin_Pagamentos');

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia e valor por paciente · agendamento do paciente com a aprovação do profissional · Painel de Evolução na tela do profissional — Pacote 19.1 · o pedido de agendamento do paciente aparece como “Agendamento solicitado” — Pacote 14.7.1 · Fluxo de caixa: receitas lidas da Agenda, pagamentos, cobranças por e-mail e WhatsApp, comprovante do paciente, despesas e contas a pagar · Biblioteca de Escalas e Inventários com "Aplicar a um paciente" — Pacote 19.3 (23/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia e valor por paciente · agendamento do paciente com a aprovação do profissional · Painel de Evolução na tela do profissional — Pacote 19.1 · o pedido de agendamento do paciente aparece como “Agendamento solicitado” — Pacote 14.7.1 · Fluxo de caixa: receitas lidas da Agenda, pagamentos, cobranças por e-mail e WhatsApp, comprovante do paciente, despesas e contas a pagar — Pacote 20.0 · recibos e livro caixa: quem precisa de recibo, prévia literal e arquivo de lote do Carnê-Leão · Biblioteca de Escalas e Inventários com "Aplicar a um paciente" — Pacote 19.3 (23/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -8594,6 +8594,7 @@ var VMC_ACOES_GRAVACAO = [
   'profSalvarValorSessao', // 14.6
   'profSalvarCadastroFinanceiro', 'profSalvarConfigFinanceiro', 'profSalvarPagamento', 'profEstornarPagamento', 'profDecidirComprovante', 'profGerarCobrancas', 'profEnviarCobranca',
   'profDescartarCobranca', 'profNaoCobrarSessao', 'profSalvarDespesa', 'profEncerrarDespesaFixa', 'pacienteEnviarComprovante', 'pacientePedirRecibo', // Fase 20
+  'profSalvarRecibo', 'profGerarLote', // 20.1
   'profDesativarPaciente', 'profReativarPaciente', 'profExcluirPaciente', 'profAlterarSenhaPaciente',
   'admCadastrarProfissional', 'admAtualizarProfissional', 'admTrocarSenhaProfissional',
   'admDesativarProfissional', 'admReativarProfissional',
@@ -24868,13 +24869,15 @@ async function ageConfirmarPorLink_(token) {
    ============================================================ */
 var FIN = { dados: null, carregando: false, erro: '', msg: '', aba: 'resumo', periodo: 'mes', comparar: 'anterior', de: '', ate: '',
   leitura: 'sessoes', granul: 'dia', vista: 'paciente', fSigla: '', fModalidade: '', fSituacao: '', fCob: '', fCategoria: '', fDesp: '',
-  modal: null, grafico: null, ocupado: false, inicio: null, inicioPedido: false, pac: null, pacSigla: '', pacLido: 0, meu: null };
+  modal: null, grafico: null, ocupado: false, ultima: null, inicio: null, inicioPedido: false, pac: null, pacSigla: '', pacLido: 0, meu: null };
 var FIN_ABAS = [['resumo', 'Resumo'], ['receitas', 'Receitas'], ['cobrancas', 'Cobranças'], ['despesas', 'Despesas'], ['recibos', 'Recibos'], ['config', 'Configuração']];
 var FIN_PERIODOS = [['mes', 'Este mês'], ['mes_passado', 'Mês passado'], ['semana', 'Esta semana'], ['ano', 'Este ano'], ['12m', 'Últimos 12 meses'], ['personalizado', 'Personalizado']];
 var FIN_MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 var FIN_SIT_COB = { a_enviar: ['aberto', 'A enviar'], enviada: ['', 'Enviada'], paga: ['ok', 'Paga'], parcial: ['atencao', 'Parcial'], atrasada: ['atencao', 'Atrasada'] };
 var FIN_SIT_REC = { a_emitir: ['aberto', 'A emitir'], no_lote: ['', 'No lote'], emitido: ['ok', 'Emitido'], cancelado: ['atencao', 'Cancelado'] };
 var FIN_MODOS = [['sessao', 'Por sessão'], ['n', 'A cada … sessões'], ['mensal', 'Mensal']];
+var FIN_CONTAS = [['P10.01.00001', 'Água'], ['P10.01.00002', 'Aluguel'], ['P10.01.00003', 'Condomínio'], ['P10.01.00004', 'Contribuições a entidades de classe'], ['P10.01.00005', 'Cópia e autenticação'], ['P10.01.00006', 'Emolumentos'], ['P10.01.00007', 'Energia'],
+  ['P10.01.00008', 'Gás'], ['P10.01.00009', 'IPTU'], ['P10.01.00010', 'ISS'], ['P10.01.00011', 'Conservação e limpeza'], ['P10.01.00012', 'Material de escritório'], ['P10.01.00013', 'Remuneração a terceiros com vínculo'], ['P10.01.00014', 'Telefone']]; // sugestões; a conta pode ser digitada
 var FIN_QUANDO = [['adiantado', 'Adiantado'], ['f1', 'Do dia 1 ao 10'], ['f2', 'Do dia 11 ao 20'], ['f3', 'Do dia 21 ao fim do mês'], ['seguinte', 'No mês seguinte']];
 
 /* ---- formatos ---- */
@@ -25155,20 +25158,24 @@ function finDespesasHtml_(d) {
   return h + '</tbody></table></div>';
 }
 
-/* Tela 8 — Recibos e livro caixa */
+/* Tela 8 — Recibos e livro caixa (aparece com "Recibos e livro caixa" ligado na Configuração) */
 function finRecibosHtml_(d) {
-  var s = finSomas_(d), bruto = 0;
-  var h = '<div class="fin-barra"><p class="fin-periodo-rot">Recibos de ' + esc(finMesNome_(d.periodo.de)) + '</p></div>';
+  var h = finPeriodoHtml_(d, false);
   h += '<p class="fin-nota-forte">O sistema prepara o arquivo. O envio ao site da Receita é feito por você.</p>';
-  h += '<div class="fin-painel"><h3 class="fin-painel-tit">Quem precisa de recibo neste mês</h3><table class="fin-tabela fin-empilha"><thead><tr><th>Paciente</th><th>Em nome de</th><th class="fin-num">Sessões</th><th class="fin-num">Valor</th><th>Data do recibo</th><th>Situação</th><th></th></tr></thead><tbody>';
-  d.recibos.forEach(function (r) {
-    if (r.situacao !== 'cancelado') bruto += r.valor;
-    h += '<tr><td class="fin-principal">' + esc(finPac_(r.sigla).nome) + '</td><td data-rot="Em nome de">' + esc(r.titular) + '</td><td class="fin-num" data-rot="Sessões">' + r.sessoes + '</td><td class="fin-num" data-rot="Valor">' + finBRL_(r.valor) +
-      '</td><td data-rot="Data do recibo">' + (r.data ? finDia_(r.data) : '<span class="fin-sub">Informe a data</span>') + '</td><td data-rot="Situação">' + finTag_(FIN_SIT_REC[r.situacao]) + (r.numero ? ' <span class="fin-sub">nº ' + esc(r.numero) + '</span>' : '') +
-      '</td><td class="fin-num fin-acao"><button type="button" class="prof-lem-btn" data-id="' + esc(r.id) + '" onclick="finModalAbrir_(\'recibo\', this.dataset.id)">Ver e editar</button></td></tr>';
-  });
-  h += '</tbody></table><div class="fin-acoes"><button type="button" class="prof-btn-acao" onclick="finModalAbrir_(\'lote\', \'\')">Conferir o lote</button></div></div>';
-  h += '<div class="fin-painel"><h3 class="fin-painel-tit">Demonstrativo do mês</h3>' + finLinhas_([['Rendimentos (recibos do mês)', finBRL_(bruto)], ['Despesas do livro caixa', finBRL_(s.despPago)], ['Resultado', finBRL_(bruto - s.despPago), true]]) + '</div>';
+  h += '<div class="fin-painel"><h3 class="fin-painel-tit">Quem precisa de recibo</h3>';
+  if (!d.recibos.length) h += '<p class="fin-nota">Nenhum paciente marcado com recibo tem sessão cobrada neste período.</p>';
+  else {
+    h += '<table class="fin-tabela fin-empilha"><thead><tr><th>Paciente</th><th>Em nome de</th><th class="fin-num">Sessões</th><th class="fin-num">Valor</th><th>Data do recibo</th><th>Situação</th><th></th></tr></thead><tbody>';
+    d.recibos.forEach(function (r) {
+      h += '<tr><td class="fin-principal">' + esc(r.nome) + '<span class="fin-sub">' + esc(finMaiuscula_(r.mes_nome)) + '</span></td><td data-rot="Em nome de">' + esc(r.titular) + (r.cpf_ok === false ? '<span class="fin-sub">Falta o CPF</span>' : '') + '</td><td class="fin-num" data-rot="Sessões">' + r.sessoes +
+        '</td><td class="fin-num" data-rot="Valor">' + finBRL_(r.valor) + '</td><td data-rot="Data do recibo">' + (r.data ? finDia_(r.data) : '<span class="fin-sub">Informe a data</span>') + '</td><td data-rot="Situação">' + finTag_(FIN_SIT_REC[r.situacao] || FIN_SIT_REC.a_emitir) + (r.numero ? ' <span class="fin-sub">nº ' + esc(r.numero) + '</span>' : '') +
+        '</td><td class="fin-num fin-acao"><button type="button" class="prof-lem-btn" data-id="' + esc(r.id) + '" onclick="finModalAbrir_(\'recibo\', this.dataset.id)">Ver e editar</button></td></tr>';
+    });
+    h += '</tbody></table>';
+  }
+  h += '<div class="fin-acoes"><button type="button" class="prof-btn-acao" onclick="finModalAbrir_(\'lote\', \'\')">Conferir o lote</button></div></div>';
+  h += '<div class="fin-painel"><h3 class="fin-painel-tit">Demonstrativo do mês</h3>' + finLinhas_([['Rendimentos (recibos no lote ou emitidos)', finBRL_(d.fiscal.rendimentos)], ['Despesas do livro caixa', finBRL_(d.fiscal.despesas)], ['Resultado', finBRL_(d.fiscal.resultado), true]]) +
+    (d.fiscal.a_emitir ? '<p class="fin-nota">' + d.fiscal.a_emitir + (d.fiscal.a_emitir === 1 ? ' recibo ainda a emitir.' : ' recibos ainda a emitir.') + '</p>' : '') + '</div>';
   return h;
 }
 
@@ -25186,11 +25193,12 @@ function finConfigHtml_(d) {
   if (c.fiscal_disponivel) h += '<div class="fin-painel"><h3 class="fin-painel-tit">Recibos e livro caixa</h3><p class="fin-nota">Para quem emite recibo pelo Receita Saúde e escritura o Carnê-Leão. Desligado, a aba Recibos não aparece.</p>' +
     '<fieldset class="fin-fieldset"><legend>Usar recibos e livro caixa</legend><div class="fin-opcoes">' +
     '<label class="fin-opcao"><input type="radio" name="finCfgFiscal" value="Sim"' + (c.fiscal ? ' checked' : '') + '> Sim</label><label class="fin-opcao"><input type="radio" name="finCfgFiscal" value="Nao"' + (c.fiscal ? '' : ' checked') + '> Não</label></div></fieldset>' +
-    (c.fiscal ? '<div class="fin-form fin-duas"><div class="fin-campo"><label for="finCfgCpf">Seu CPF (emissor do recibo)</label><input type="text" inputmode="numeric" id="finCfgCpf" data-fin-chave="cpf_emissor" autocomplete="off"></div>' +
-      '<div class="fin-campo"><label for="finCfgRegistro">Registro profissional (CRP)</label><input type="text" id="finCfgRegistro" data-fin-chave="registro"></div></div>' : '') + '</div>';
+    '<div class="fin-form fin-duas"><div class="fin-campo fin-inteiro"><label for="finCfgCpf">Seu CPF (vai em cada linha do lote de recibos)</label><input type="text" inputmode="numeric" id="finCfgCpf" data-fin-chave="cpf_emissor" autocomplete="off"></div>' +
+      '<div class="fin-campo"><label for="finCfgRend">Código do rendimento</label><input type="text" id="finCfgRend" data-fin-chave="cod_rendimento"><span class="fin-sub">O do plano de contas do Carnê-Leão. Padrão: R01.001.001.</span></div>' +
+      '<div class="fin-campo"><label for="finCfgOcup">Código da ocupação</label><input type="text" inputmode="numeric" id="finCfgOcup" data-fin-chave="cod_ocupacao"><span class="fin-sub">Padrão: 255 (psicólogo).</span></div></div></div>';
   h += '<div class="fin-acoes"><button type="button" class="prof-btn-acao" onclick="finConfigSalvar_()">Salvar</button></div>';
   setTimeout(function () { // valores entram por .value, nunca por concatenação
-    var v = { dados_receber: c.dados_receber, valor_padrao: finBRL_(c.valor_padrao).replace('R$ ', ''), prazo_dias: String(c.prazo_dias), formas: c.formas.join('\n'), texto_cobranca: c.texto_cobranca, categorias: c.categorias.join('\n'), cpf_emissor: c.cpf_emissor || '', registro: c.registro || '' };
+    var v = { dados_receber: c.dados_receber, valor_padrao: finBRL_(c.valor_padrao).replace('R$ ', ''), prazo_dias: String(c.prazo_dias), formas: c.formas.join('\n'), texto_cobranca: c.texto_cobranca, categorias: c.categorias.join('\n'), cpf_emissor: c.cpf_emissor || '', cod_rendimento: c.cod_rendimento || '', cod_ocupacao: c.cod_ocupacao || '' };
     document.querySelectorAll('#finConteudo [data-fin-chave]').forEach(function (el) { el.value = v[el.dataset.finChave] || ''; });
   }, 0);
   return h;
@@ -25210,6 +25218,7 @@ async function finSalvar_(acao, corpo, msg) {
   var r = await chamarServidor(acao, corpo);
   FIN.ocupado = false;
   if (!r || !r.ok) { finModalErro_((r && r.erro) || 'Não foi possível concluir agora. Tente de novo.'); return false; }
+  FIN.ultima = r;
   if (r.financeiro) FIN.dados = r.financeiro;
   FIN.msg = msg; FIN.erro = '';
   finModalFechar_();
@@ -25359,7 +25368,8 @@ function finCobModal_(d, m) {
     '<button type="button" class="p5-btn p5-btn-secondary" onclick="finCobEnviar_(\'marcar\')">Marcar como enviada</button>' +
     (nova ? '<button type="button" class="p5-btn p5-btn-secondary" onclick="finCobDescartar_()">Descartar</button>' : '');
   return { titulo: nova ? 'Revisar e enviar' : 'Cobrança de ' + finPrimeiroNome_(p.nome), corpo: corpo, acoes: acoes, fechar: 'Fechar',
-    depois: function () { document.getElementById('finCobTexto').value = c.texto; document.getElementById('finCobVence').value = c.vence_em; } };
+    depois: function () { document.getElementById('finCobTexto').value = c.texto; document.getElementById('finCobVence').value = c.vence_em;
+      var cx = document.getElementById('finCobRecibo'); if (cx && c.recibo_emitido) { cx.checked = true; finCobRecibo_(true); } } };
 }
 function finCobSelecao_() {
   var marcadas = [], fora = [];
@@ -25398,9 +25408,13 @@ function finDespModal_(d, m) {
   if (!x) corpo += '<fieldset class="fin-fieldset"><legend>Situação</legend><div class="fin-opcoes"><label class="fin-opcao"><input type="radio" name="finDespSit" value="paga"> Paga</label><label class="fin-opcao"><input type="radio" name="finDespSit" value="a_pagar"> A pagar</label></div></fieldset>' +
     '<fieldset class="fin-fieldset"><legend>Repete todo mês</legend><div class="fin-opcoes"><label class="fin-opcao"><input type="radio" name="finDespRep" value="" checked> Não</label><label class="fin-opcao"><input type="radio" name="finDespRep" value="fixo"> Valor fixo</label><label class="fin-opcao"><input type="radio" name="finDespRep" value="variavel"> Valor muda a cada mês</label></div></fieldset>';
   corpo += '<div class="fin-campo"><label for="finDespObs">Observações</label><input type="text" id="finDespObs" maxlength="200"></div>';
+  if (d.config.fiscal) corpo += '<div class="fin-form fin-duas"><div class="fin-campo"><label for="finDespConta">Conta do livro caixa</label><input type="text" id="finDespConta" list="finContas" autocomplete="off" maxlength="12"><datalist id="finContas">' +
+    FIN_CONTAS.map(function (c) { return '<option value="' + c[0] + '">' + esc(c[1]) + '</option>'; }).join('') + '</datalist><span class="fin-sub">No formato P10.01.00002. Em branco, a despesa não entra no lote.</span></div>' +
+    '<div class="fin-campo"><label for="finDespHist">Histórico</label><input type="text" id="finDespHist" maxlength="255"><span class="fin-sub">O texto que vai no livro caixa. Em branco, vai o nome.</span></div></div>';
   if (x && x.fixa) corpo += '<p class="fin-nota"><button type="button" class="fin-link" onclick="finDespEncerrar_()">Parar de repetir esta despesa</button></p>';
   return { titulo: x ? 'Marcar como paga' : 'Nova despesa', corpo: corpo, acoes: '<button type="button" class="p5-btn p5-btn-primary" onclick="finDespSalvar_()">' + (x ? 'Confirmar pagamento' : 'Salvar') + '</button>',
-    depois: function () { document.getElementById('finDespData').value = d.hoje; if (x) { document.getElementById('finDespNome').value = x.nome; if (x.valor) document.getElementById('finDespValor').value = finBRL_(x.valor).replace('R$ ', ''); } } };
+    depois: function () { document.getElementById('finDespData').value = d.hoje; if (x) { document.getElementById('finDespNome').value = x.nome; if (x.valor) document.getElementById('finDespValor').value = finBRL_(x.valor).replace('R$ ', ''); }
+      if (x && document.getElementById('finDespConta')) { document.getElementById('finDespConta').value = x.conta || ''; document.getElementById('finDespHist').value = x.historico || ''; } } };
 }
 async function finDespSalvar_() {
   var sit = document.querySelector('input[name="finDespSit"]:checked'), rep = document.querySelector('input[name="finDespRep"]:checked'), id = FIN.modal.id;
@@ -25414,38 +25428,66 @@ async function finDespSalvar_() {
   var arq = await finArquivoLer_(document.getElementById('finDespArquivo').files[0]);
   if (arq && arq.erro) return finModalErro_(arq.erro);
   if (arq) dados.arquivo = arq;
+  if (document.getElementById('finDespConta')) { dados.conta = document.getElementById('finDespConta').value.trim(); dados.historico = document.getElementById('finDespHist').value.trim(); }
   await finSalvar_('profSalvarDespesa', { dados: dados }, id ? 'Conta marcada como paga.' : 'Despesa salva.');
 }
 async function finDespEncerrar_() { await finSalvar_('profEncerrarDespesaFixa', { id: FIN.modal.id }, 'Esta despesa não se repete mais. O que já foi lançado continua.'); }
 
-/* Recibo: prévia literal e editável; o lote aparece inteiro na tela antes de o arquivo existir */
+/* Recibo: a descrição é montada das datas, do valor e da modalidade; a data do recibo é sempre informada pelo profissional */
 function finRecModal_(d, m) {
   var r = d.recibos.filter(function (x) { return x.id === m.id; })[0];
-  var corpo = '<p class="fin-nota">' + esc(finPac_(r.sigla).nome) + ' · em nome de ' + esc(r.titular) + '</p><div class="fin-form fin-duas">' +
+  var corpo = '<p class="fin-nota">' + esc(r.nome) + ' · em nome de ' + esc(r.titular) + (r.titular_doc === 'anamnese' ? ' (CPF da anamnese)' : (r.titular_doc ? ' · CPF ' + esc(r.titular_doc) : '')) + '</p>';
+  if (r.cpf_ok === false) corpo += '<p class="fin-nota-forte">Falta o CPF de quem recebe o recibo. Complete a anamnese ou o cadastro financeiro do paciente; sem ele o recibo não entra no lote.</p>';
+  corpo += '<div class="fin-form fin-duas">' +
     '<div class="fin-campo"><label for="finRecData">Data do recibo</label><input type="date" id="finRecData"><span class="fin-sub">Informe a data: a do pagamento, a da última sessão ou a do pedido. Ela decide o mês.</span></div>' +
-    '<div class="fin-campo"><label for="finRecQtd">Quantidade</label><input type="text" inputmode="numeric" id="finRecQtd"></div>' +
-    '<div class="fin-campo"><label for="finRecUnit">Valor unitário (R$)</label><input type="text" inputmode="decimal" id="finRecUnit"></div>' +
-    '<div class="fin-campo"><label for="finRecNumero">Número do recibo</label><input type="text" id="finRecNumero"><span class="fin-sub">Preencha depois de importar no site.</span></div>' +
-    '<div class="fin-campo fin-inteiro"><label for="finRecDesc">Descrição (uma linha, até 255 caracteres)</label><textarea id="finRecDesc" rows="4" maxlength="255"></textarea></div></div>';
-  return { titulo: 'Recibo', corpo: corpo, acoes: '<button type="button" class="p5-btn p5-btn-primary" onclick="finRecSalvar_()">Salvar</button>',
-    depois: function () { document.getElementById('finRecData').value = r.data; document.getElementById('finRecQtd').value = r.sessoes; document.getElementById('finRecUnit').value = finBRL_(r.unitario).replace('R$ ', '');
-      document.getElementById('finRecNumero').value = r.numero; document.getElementById('finRecDesc').value = r.descricao; } };
+    '<div class="fin-campo"><label for="finRecUnit">Valor unitário (R$)</label><input type="text" inputmode="decimal" id="finRecUnit" autocomplete="off"></div>' +
+    '<div class="fin-campo fin-inteiro"><label for="finRecDatas">Datas das sessões</label><textarea id="finRecDatas" rows="5"></textarea><span class="fin-sub">Uma por linha, no formato dia/mês/ano. A quantidade é o número de datas.</span></div>' +
+    '<div class="fin-campo"><label for="finRecModalidade">Modalidade na descrição</label><select id="finRecModalidade">' + finOpcoes_([['', 'Não citar'], ['on-line', 'On-line'], ['presencial', 'Presencial']], r.modalidade) + '</select></div>' +
+    '<div class="fin-campo"><label for="finRecNumero">Número do recibo</label><input type="text" id="finRecNumero" maxlength="20"><span class="fin-sub">Preencha depois de importar no site.</span></div>' +
+    '<div class="fin-campo fin-inteiro"><label for="finRecArquivo">Arquivo do recibo (opcional)</label><input type="file" id="finRecArquivo" accept="image/jpeg,image/png,application/pdf"><span class="fin-sub">Com o arquivo, o paciente consegue baixar o recibo.</span></div></div>';
+  corpo += '<p class="fin-ses-mes">Descrição (uma linha, até 255 caracteres)</p><div class="fin-dados" id="finRecDesc">' + esc(r.descricao) + '</div><p class="fin-nota">A descrição é montada com as datas, o valor e a modalidade. Salve para ver a nova.</p>';
+  var acoes = '<button type="button" class="p5-btn p5-btn-primary" onclick="finRecSalvar_(\'\')">Salvar</button>' +
+    (r.situacao === 'no_lote' ? '<button type="button" class="p5-btn p5-btn-secondary" onclick="finRecSalvar_(\'a_emitir\')">Voltar para a emitir</button>' : '') +
+    (r.situacao === 'emitido' ? '<button type="button" class="p5-btn p5-btn-secondary" onclick="finRecSalvar_(\'cancelado\')">Cancelar recibo</button>' : '');
+  return { titulo: 'Recibo de ' + r.mes_nome, corpo: corpo, acoes: acoes, fechar: 'Fechar',
+    depois: function () { document.getElementById('finRecData').value = r.data; document.getElementById('finRecUnit').value = finBRL_(r.unitario).replace('R$ ', '');
+      document.getElementById('finRecNumero').value = r.numero; document.getElementById('finRecDatas').value = r.datas.join('\n'); } };
 }
-async function finRecSalvar_() {
-  await finSalvar_('profSalvarRecibo', { id: FIN.modal.id, dados: { data: document.getElementById('finRecData').value, quantidade: document.getElementById('finRecQtd').value, unitario: finCentavos_(document.getElementById('finRecUnit').value),
-    numero: document.getElementById('finRecNumero').value.trim(), descricao: document.getElementById('finRecDesc').value.replace(/\s+/g, ' ').trim() } }, 'Recibo salvo.');
+async function finRecSalvar_(situacao) {
+  var dados = { data: document.getElementById('finRecData').value, unitario: finCentavos_(document.getElementById('finRecUnit').value), modalidade: document.getElementById('finRecModalidade').value,
+    datas: document.getElementById('finRecDatas').value.split(/[\n,;]/).map(function (x) { return x.trim(); }).filter(function (x) { return x; }), numero: document.getElementById('finRecNumero').value.trim() };
+  if (situacao) dados.situacao = situacao;
+  var arq = await finArquivoLer_(document.getElementById('finRecArquivo').files[0]);
+  if (arq && arq.erro) return finModalErro_(arq.erro);
+  if (arq) dados.arquivo = arq;
+  await finSalvar_('profSalvarRecibo', { id: FIN.modal.id, dados: dados }, situacao === 'cancelado' ? 'Recibo cancelado. O número continua registrado.' : (situacao === 'a_emitir' ? 'Recibo de volta para a emitir.' : 'Recibo salvo.'));
 }
+/* O portão é da tela: o que vai no arquivo aparece inteiro antes de ele existir */
 function finLoteModal_(d) {
-  var prontos = d.recibos.filter(function (r) { return r.situacao === 'a_emitir' && r.data; }), semData = d.recibos.filter(function (r) { return r.situacao === 'a_emitir' && !r.data; }).length;
-  var corpo = '<p class="fin-nota">É exatamente isto que vai no arquivo. Confira antes de gerar.</p>';
-  if (semData) corpo += '<p class="fin-nota-forte">' + semData + (semData === 1 ? ' recibo ficou' : ' recibos ficaram') + ' de fora: falta a data do recibo.</p>';
-  corpo += '<div class="fin-rolagem"><table class="fin-tabela"><thead><tr><th>Data</th><th>Em nome de</th><th class="fin-num">Valor</th><th>Descrição</th></tr></thead><tbody>' + prontos.map(function (r) {
+  var l = d.lote, corpo = '<p class="fin-nota">É exatamente isto que vai no arquivo. Confira antes de gerar.</p>';
+  if (!l.pronto) corpo += '<p class="fin-nota-forte">Informe o seu CPF em Configuração › Recibos e livro caixa: ele vai em cada linha do lote de recibos.</p>';
+  corpo += '<p class="fin-ses-mes">Recibos</p>';
+  if (l.recibos.fora.length) corpo += '<p class="fin-nota-forte">' + l.recibos.fora.length + (l.recibos.fora.length === 1 ? ' recibo ficou' : ' recibos ficaram') + ' de fora: ' + l.recibos.fora.map(function (x) { return esc(x.nome) + ' (' + esc(x.motivo) + ')'; }).join('; ') + '.</p>';
+  corpo += l.recibos.itens.length ? '<div class="fin-rolagem"><table class="fin-tabela"><thead><tr><th>Data</th><th>Em nome de</th><th class="fin-num">Valor</th><th>Descrição</th></tr></thead><tbody>' + l.recibos.itens.map(function (r) {
     return '<tr><td>' + finDia_(r.data) + '</td><td>' + esc(r.titular) + '</td><td class="fin-num">' + finBRL_(r.valor) + '</td><td>' + esc(r.descricao) + '</td></tr>';
-  }).join('') + '</tbody></table></div><p class="fin-ses-mes">Linhas do arquivo</p><pre class="fin-lote">' + esc(d.lote_previa || '') + '</pre>';
-  return { titulo: 'Conferir o lote', corpo: corpo, fechar: 'Fechar', acoes: (prontos.length ? '<button type="button" class="p5-btn p5-btn-primary" data-qual="recibos" onclick="finLoteGerar_(this.dataset.qual)">Gerar arquivo de recibos</button>' : '') +
-    '<button type="button" class="p5-btn p5-btn-secondary" data-qual="despesas" onclick="finLoteGerar_(this.dataset.qual)">Gerar arquivo de despesas</button>' };
+  }).join('') + '</tbody></table></div><pre class="fin-lote" id="finLoteRecibos">' + esc(l.recibos.linhas.join('')) + '</pre>' : '<p class="fin-nota">Nenhum recibo pronto para o lote.</p>';
+  corpo += '<p class="fin-ses-mes">Despesas do livro caixa</p>';
+  if (l.despesas.fora) corpo += '<p class="fin-nota">' + l.despesas.fora + (l.despesas.fora === 1 ? ' despesa paga ficou' : ' despesas pagas ficaram') + ' de fora: sem a conta do livro caixa.</p>';
+  if (l.despesas.em_lote) corpo += '<p class="fin-nota">' + l.despesas.em_lote + (l.despesas.em_lote === 1 ? ' despesa já saiu' : ' despesas já saíram') + ' em lote anterior.</p>';
+  corpo += l.despesas.itens.length ? '<pre class="fin-lote" id="finLoteDespesas">' + esc(l.despesas.linhas.join('')) + '</pre>' : '<p class="fin-nota">Nenhuma despesa pronta para o lote.</p>';
+  return { titulo: 'Conferir o lote', corpo: corpo, fechar: 'Fechar', acoes: (l.pronto && l.recibos.itens.length ? '<button type="button" class="p5-btn p5-btn-primary" data-qual="recibos" onclick="finLoteGerar_(this.dataset.qual)">Gerar arquivo de recibos</button>' : '') +
+    (l.pronto && l.despesas.itens.length ? '<button type="button" class="p5-btn p5-btn-secondary" data-qual="despesas" onclick="finLoteGerar_(this.dataset.qual)">Gerar arquivo de despesas</button>' : '') };
 }
-async function finLoteGerar_(qual) { await finSalvar_('profGerarLote', { qual: qual }, qual === 'recibos' ? 'Arquivo de recibos gerado.' : 'Arquivo de despesas gerado.'); }
+/* O arquivo sai como o site pede: UTF-8 sem marca no começo, sem cabeçalho, ";" e fim de linha do Windows */
+async function finLoteGerar_(qual) {
+  if (!(await finSalvar_('profGerarLote', { qual: qual }, qual === 'recibos' ? 'Arquivo de recibos gerado. Os recibos dele ficaram "No lote".' : 'Arquivo de despesas gerado.'))) return;
+  var arq = FIN.ultima && FIN.ultima.arquivo;
+  if (!arq) return;
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([arq.texto], { type: 'text/csv;charset=utf-8' })); a.download = arq.nome;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+}
 
 /* ---- Início do profissional: dois blocos (sugestão) ---- */
 function finInicioHtml_() {
@@ -25593,8 +25635,10 @@ function finMeuRender_() {
     '<div class="fin-campo"><label for="finMeuValor">Valor pago (R$)</label><input type="text" inputmode="decimal" id="finMeuValor" autocomplete="off"></div>' +
     '<div class="fin-campo"><label for="finMeuData">Data do pagamento</label><input type="date" id="finMeuData"></div></div>' +
     '<div class="fin-acoes"><button type="button" class="prof-btn-acao" onclick="finMeuEnviar_()">Enviar</button><span class="fin-sub" id="finMeuErro" role="alert"></span></div></div>';
-  if (m.pode_recibo) h += '<div class="fin-painel"><div class="fin-painel-topo"><h3 class="fin-painel-tit">Recibo</h3>' + (m.recibo_pedido ? finTag_(['aberto', 'Pedido enviado ao seu terapeuta']) : '<button type="button" class="prof-lem-btn" onclick="finMeuPedirRecibo_()">Pedir recibo</button>') + '</div>' +
-    '<p class="fin-nota">O recibo deste mês é preparado pelo seu terapeuta.</p></div>';
+  if (m.pode_recibo) h += '<div class="fin-painel"><div class="fin-painel-topo"><h3 class="fin-painel-tit">Recibo</h3>' + ((m.recibos || []).some(function (r) { return r.do_mes; }) ? finTag_(['ok', 'Recibo disponível']) : m.recibo_pedido ? finTag_(['aberto', 'Pedido enviado ao seu terapeuta']) : '<button type="button" class="prof-lem-btn" onclick="finMeuPedirRecibo_()">Pedir recibo</button>') + '</div>' +
+    '<p class="fin-nota">O recibo deste mês é preparado pelo seu terapeuta.</p>' + (m.recibos || []).map(function (r) {
+      return '<div class="fin-linha"><span>Recibo de ' + esc(r.mes) + '</span><span>' + (r.tem_arquivo ? '<button type="button" class="fin-link" data-id="' + esc(r.id) + '" onclick="finArquivoAbrir_(this.dataset.id)">Baixar</button>' : finTag_(['ok', 'Emitido'])) + '</span></div>';
+    }).join('') + '</div>';
   h += '<div class="fin-painel"><h3 class="fin-painel-tit">Histórico de pagamentos</h3>' + (m.historico.length ? m.historico.map(function (p) {
     var sit = ({ aguardando: ['aberto', 'Aguardando conferência'], confirmado: ['ok', 'Confirmado'], recusado: ['atencao', 'Não confirmado. Fale com seu terapeuta.'] })[p.situacao];
     return '<div class="fin-item"><div><div class="fin-item-nome">' + finDiaLongo_(p.data) + '</div><span class="fin-sub">' + esc(p.forma || 'Comprovante enviado por você') + '</span></div><div class="fin-item-valor">' + finBRL_(p.valor) + '</div><div class="fin-item-acoes">' + finTag_(sit) + '</div></div>';
