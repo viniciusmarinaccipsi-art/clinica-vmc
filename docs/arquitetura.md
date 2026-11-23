@@ -2109,6 +2109,33 @@ Decisão do usuário: o paciente vê os horários livres, escolhe um e aguarda a
 - **Trabalho em paralelo:** o pacote nasceu em `repo-14-7` (worktree). Com três conversas no repositório, a regra é
   `..\ORQUESTRA_SESSOES.md` (territórios, pontos de encosto e fila de publicação com `PUBLICANDO.md`).
 
+## Painel de Evolução na tela do profissional (Pacote 19.1 — 23/11/2026, só frontend)
+
+- **Uma tela, dois perfis:** `#sec-auto-painel` e `pevRenderizar` servem ao paciente e ao profissional. O modo é uma
+  variável de estado: `PEV_STATE.visaoProfissional` e `PEV_STATE.origem` (tela para onde o Voltar devolve), no molde de
+  `ESC_HIST_STATE.visaoProfissional` + `ESCP_STATE.origem` do Painel das Escalas (19.0).
+- **Entrada do profissional:** botão "Painel de Evolução" no módulo `auto` de `profRenderPaciente_`, ao lado de "Novo
+  registro" → `profAbrirPainelEvolucao()`: zera o estado, põe em `PEV_STATE` (por `pevGuardar_`) os registros que
+  `profLerDadosPaciente` já trouxe (`PROF_PACIENTE_SEL.automonitoramento` — a aba inteira, por isso `tem_mais: false` e
+  `pevCompletar_` nunca chama o servidor), marca o modo e abre a seção. `pevAbrir`, em modo profissional, só desenha: não lê
+  sessão nem chama `lerHistorico`. **Nenhuma chamada ao servidor.**
+- **O que muda na tela do profissional:** o nome do paciente no topo (`.escp-paciente`, a mesma classe do Painel das
+  Escalas) e os dois avisos de vazio ("O paciente ainda não enviou registros." e "Nenhum registro nesse período" + "Tente um
+  período mais longo.", por `escPainelVazioHtml_`). O HTML do paciente é o mesmo de antes, byte a byte. O período de abertura
+  é o automático do paciente (`pevPeriodoInicial`).
+- **Voltar:** `data-barra-voltar="pevVoltar()"` (na lista de `vmcAcaoDaBarra_`). Paciente: `sec-automonitoramento`, como
+  antes. Profissional: zera e volta a `sec-prof-paciente`.
+- **Zeragem num lugar só — `pevZerar_()`:** destrói os gráficos, esvazia registros, total, marcas de página, validade do
+  cache e período automático, repõe modo e origem, fecha a pizza e limpa `#pevConteudo`. É chamada em `profAbrirPaciente`
+  (antes de qualquer coisa do paciente novo), em `profVoltarDashboard`, em `pevVoltar` (modo profissional), em
+  `profAbrirPainelEvolucao` e em `descartarCachesPaciente_` (as duas saídas e o fim do fluxo aberto pelo profissional). Efeito
+  colateral desejado: depois de sair, o HTML do último painel desenhado não fica mais no DOM (antes só os gráficos eram
+  destruídos).
+- **Roteiros com relógio fixo:** `page.clock.setFixedTime` congela o `Date.now()` que o Chart.js usa para animar — os
+  gráficos ficam no primeiro quadro (barras com largura zero) e o toque numa barra não acerta nada. Antes de fotografar ou
+  tocar, o roteiro leva os gráficos ao estado final com `chart.update('none')` (`assentarGraficos` em
+  `PACOTE_19_1_fluxo.js`).
+
 ## Fase 20 — Fluxo de caixa (Pacote 20.0 — 23/11/2026)
 
 Prompt e decisões: `..\prompts_fluxo_caixa\PROMPT_FASE_20.md`; plano aprovado e mapa de execução citados no relatório

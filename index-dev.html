@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia e valor por paciente · agendamento do paciente com a aprovação do profissional · Fluxo de caixa: receitas lidas da Agenda, pagamentos, cobranças por e-mail e WhatsApp, comprovante do paciente, despesas e contas a pagar — Pacote 20.0 (23/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia e valor por paciente · agendamento do paciente com a aprovação do profissional · Painel de Evolução na tela do profissional — Pacote 19.1 · o pedido de agendamento do paciente aparece como “Agendamento solicitado” — Pacote 14.7.1 · Fluxo de caixa: receitas lidas da Agenda, pagamentos, cobranças por e-mail e WhatsApp, comprovante do paciente, despesas e contas a pagar — Pacote 20.0 (23/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -5575,7 +5575,7 @@ body:has(#sec-prof-financeiro.active) .app,body:has(#sec-prof-financeiro.active)
   </div>
 
   <!-- PAINEL DE EVOLUÇÃO -->
-  <div class="section" id="sec-auto-painel" data-barra-titulo="Painel de Evolução" data-barra-voltar="abrirSecao('sec-automonitoramento')">
+  <div class="section" id="sec-auto-painel" data-barra-titulo="Painel de Evolução" data-barra-voltar="pevVoltar()">
     <!-- Container preenchido pelo JS quando o paciente abre o painel (lazy load) -->
     <div id="pevConteudo">
       <div class="pev-loading">
@@ -8856,7 +8856,7 @@ function loadingMensagem(txt) {
 // Função nova usada num desses atributos entra aqui.
 function vmcAcaoDaBarra_(codigo) {
   var acoes = { abrirSecao: abrirSecao, menuSalvarESair: menuSalvarESair, etapaSalvarESair: etapaSalvarESair,
-    autoVoltarEditarRevisar: autoVoltarEditarRevisar, escCancelarAplicacao: escCancelarAplicacao, voltarMenuAnamnese: voltarMenuAnamnese, escPainelVoltar: escPainelVoltar };
+    autoVoltarEditarRevisar: autoVoltarEditarRevisar, escCancelarAplicacao: escCancelarAplicacao, voltarMenuAnamnese: voltarMenuAnamnese, escPainelVoltar: escPainelVoltar, pevVoltar: pevVoltar };
   var m = /^([A-Za-z_$][\w$]*)\((?:'([^']*)')?\)$/.exec(String(codigo || '').trim());
   if (!m || !Object.prototype.hasOwnProperty.call(acoes, m[1])) { console.error('Ação da barra fora da lista: ' + codigo); return; }
   if (m[2] === undefined) acoes[m[1]](); else acoes[m[1]](m[2]);
@@ -10774,6 +10774,7 @@ async function profAbrirPaciente(sigla) {
   if (origem === 'sec-prof-dashboard' || origem === 'sec-prof-pacientes') PROF_ORIGEM_PACIENTE = origem;
 
   PROF_PACIENTE_SEL = { sigla: sigla };
+  pevZerar_(); // 19.1: o Painel de Evolução nunca guarda nada do paciente aberto antes
   var iniciais = sigla.charAt(0);
 
   var container = document.getElementById('profPacienteConteudo');
@@ -10978,7 +10979,7 @@ function profRenderPaciente_(sigla, resp) {
   html += '<span class="prof-pv-mod-chevron">›</span>';
   html += '</div>';
   html += '<div class="prof-pv-mod-body">';
-  html += '<div class="prof-acoes-mod"><button class="prof-btn-acao" type="button" onclick="profNovoRegistro()"><svg class=ico aria-hidden=true><use href=#i-plus-circle></use></svg> Novo registro</button></div>'; // 18.5
+  html += '<div class="prof-acoes-mod"><button class="prof-btn-acao" type="button" onclick="profNovoRegistro()"><svg class=ico aria-hidden=true><use href=#i-plus-circle></use></svg> Novo registro</button><button class="prof-btn-acao" type="button" onclick="profAbrirPainelEvolucao()"><svg class=ico aria-hidden=true><use href=#i-chart></use></svg> Painel de Evolução</button></div>'; // 18.5; 19.1: + Painel de Evolução
   html += profRenderizarAutomonitoramento_(resp.automonitoramento || []);
   html += '</div></div>';
 
@@ -11689,6 +11690,7 @@ function p135ToggleInativos() {
 function profVoltarDashboard() {
   PROF_PACIENTE_SEL = null;
   window._HIST_REGS = null;
+  pevZerar_(); // 19.1
   abrirSecao(PROF_ORIGEM_PACIENTE); // 19.2: Início ou tela Pacientes, de onde o paciente foi aberto
 }
 
@@ -12179,15 +12181,7 @@ function pacIniciarEdicaoAnamnese() {
 // gráficos desenhados com esses dados são descartados nos dois logouts. Sem isto, outro paciente na mesma aba em
 // menos de 30 s veria o Painel/histórico do anterior. Só exibição; nada gravado.
 function descartarCachesPaciente_() {
-  if (typeof PEV_STATE !== 'undefined') {
-    Object.keys(PEV_STATE.charts || {}).forEach(function (k) { try { PEV_STATE.charts[k] && PEV_STATE.charts[k].destroy(); } catch (e) {} });
-    PEV_STATE.charts = {};
-    PEV_STATE.registros = [];
-    PEV_STATE.total = 0; PEV_STATE.temMais = false; PEV_STATE.temNegativo = false; PEV_STATE.completando = false; // 18.5
-    PEV_STATE.carregadoEm = 0;
-    PEV_STATE.invalidado = true;
-    PEV_STATE.periodoAuto = true;
-  }
+  if (typeof PEV_STATE !== 'undefined') pevZerar_(); // 19.1: a zeragem do Painel mora num lugar só (antes era feita aqui, campo a campo)
   if (typeof ESC_HIST_STATE !== 'undefined') {
     ESC_HIST_STATE.registros = [];
     ESC_HIST_STATE.temMais = false; // 18.5
@@ -16905,8 +16899,48 @@ var PEV_STATE = {
   invalidado: false,
   // Pacote 16.4a: true enquanto o período ainda pode ser escolhido pelos dados.
   // Vira false na primeira escolha manual; volta a true quando o cache é invalidado.
-  periodoAuto: true
+  periodoAuto: true,
+  // 19.1: o profissional abre este mesmo painel com os registros do paciente aberto (já na memória dele).
+  visaoProfissional: false,
+  origem: 'sec-automonitoramento' // tela para onde o Voltar da barra devolve
 };
+
+// 19.1: zera tudo que o painel guarda de um paciente — registros, total, gráficos, período e a tela desenhada.
+// Chamado ao abrir outro paciente, ao sair do paciente aberto, no Voltar do painel do profissional e nas saídas.
+function pevZerar_() {
+  Object.keys(PEV_STATE.charts || {}).forEach(function (k) { try { PEV_STATE.charts[k] && PEV_STATE.charts[k].destroy(); } catch (e) {} });
+  PEV_STATE.charts = {};
+  PEV_STATE.registros = [];
+  PEV_STATE.total = 0; PEV_STATE.temMais = false; PEV_STATE.temNegativo = false; PEV_STATE.completando = false; // 18.5
+  PEV_STATE.carregadoEm = 0;
+  PEV_STATE.invalidado = true;
+  PEV_STATE.periodoAuto = true;
+  PEV_STATE.visaoProfissional = false;
+  PEV_STATE.origem = 'sec-automonitoramento';
+  var modal = document.getElementById('pevModal'); if (modal) modal.classList.remove('show');
+  var cont = document.getElementById('pevConteudo'); if (cont) cont.innerHTML = '';
+}
+
+// 19.1: "Voltar" da barra do painel — o paciente volta ao Automonitoramento; o profissional, ao paciente aberto,
+// e nada do painel fica na memória.
+function pevVoltar() {
+  var destino = PEV_STATE.origem || 'sec-automonitoramento';
+  if (PEV_STATE.visaoProfissional) pevZerar_();
+  abrirSecao(destino);
+}
+
+// 19.1: profissional — paciente aberto → módulo Automonitoramento → Painel de Evolução. Os registros são os que
+// profLerDadosPaciente já trouxe (a aba inteira): nenhuma chamada ao servidor e nenhuma página a completar.
+function profAbrirPainelEvolucao() {
+  if (!PROF_SESSAO || !PROF_PACIENTE_SEL) return;
+  pevZerar_();
+  var regs = PROF_PACIENTE_SEL.automonitoramento || [];
+  pevGuardar_({ automonitoramento: regs, total_registros: regs.length, tem_mais: false,
+    tem_negativo: regs.some(function (r) { return r.neg_preenchido === 'sim'; }) }, Date.now());
+  PEV_STATE.visaoProfissional = true;
+  PEV_STATE.origem = 'sec-prof-paciente';
+  abrirSecao('sec-auto-painel');
+}
 
 function pevInvalidarCache() {
   PEV_STATE.invalidado = true;
@@ -16967,6 +17001,7 @@ function pevPeriodoInicial(registros) {
 // ----- 4. ABERTURA DO PAINEL (lazy load) -----
 async function pevAbrir() {
   const cont = document.getElementById('pevConteudo');
+  if (PEV_STATE.visaoProfissional) { pevRenderizar(); return; } // 19.1: registros já postos por profAbrirPainelEvolucao
   const agora = Date.now();
   const cacheValido = !PEV_STATE.invalidado
                       && PEV_STATE.registros.length > 0
@@ -17066,6 +17101,14 @@ function pevRenderizar() {
     PEV_STATE.periodoAuto = false;
   }
 
+  // 19.1: na tela do profissional, o nome do paciente no topo (como no Painel das Escalas) e os avisos de vazio dele
+  const prof = PEV_STATE.visaoProfissional === true;
+  const cab = (prof && PROF_PACIENTE_SEL) ? '<div class="escp-paciente">' + esc((PROF_PACIENTE_SEL.nome || '') + ' (' + (PROF_PACIENTE_SEL.sigla || '') + ')') + '</div>' : '';
+  if (prof && PEV_STATE.registros.length === 0) {
+    cont.innerHTML = cab + escPainelVazioHtml_('i-inbox', 'O paciente ainda não enviou registros.', '');
+    return;
+  }
+
   if (PEV_STATE.registros.length === 0) {
     cont.innerHTML = `
       <div class="pev-vazio">
@@ -17081,6 +17124,12 @@ function pevRenderizar() {
 
   const regs = pevFiltrarPorPeriodo(PEV_STATE.registros, PEV_STATE.periodoAtual);
 
+  if (prof && regs.length === 0) {
+    cont.innerHTML = cab + pevMontarSeletor() + escPainelVazioHtml_('i-calendar', 'Nenhum registro nesse período', 'Tente um período mais longo.');
+    pevBindSeletor();
+    return;
+  }
+
   if (regs.length === 0) {
     cont.innerHTML = `
       ${pevMontarSeletor()}
@@ -17094,7 +17143,7 @@ function pevRenderizar() {
   }
 
   const resumo = pevCalcularResumo(regs);
-  cont.innerHTML = `
+  cont.innerHTML = `${cab}
     <div class="pev-resumo">
       <div class="pev-resumo-card">
         <div class="pev-resumo-num">${resumo.total}</div>
@@ -24278,7 +24327,7 @@ function sesLinha_(x, comAcoes) {
 }
 /* 14.7: pedido de agendamento do paciente — a sessão só existe depois que o profissional aprova */
 function sesLinhaPedido_(p) {
-  var estado = p.estado === 'recusado' ? 'Pedido recusado' : 'Agendamento pedido para ' + esc(lemDataBR_(p.data, true)) + ' às ' + esc(p.hora) + ' — aguardando resposta';
+  var estado = p.estado === 'recusado' ? 'Pedido recusado' : 'Agendamento solicitado para ' + esc(lemDataBR_(p.data, true)) + ' às ' + esc(p.hora) + ' — aguardando resposta';
   return '<li class="ses-item" data-pedido="' + esc(p.id) + '" data-estado="' + esc(p.estado) + '"><div class="ses-quando">' + esc(ageQuandoCurto_(p.data, p.hora)) + ' · ' + ageModNome_(p.modalidade) + '</div>' +
     '<div class="age-dica">' + estado + '</div></li>';
 }
