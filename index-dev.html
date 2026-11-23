@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia e valor por paciente · agendamento do paciente com a aprovação do profissional · Painel de Evolução na tela do profissional — Pacote 19.1 · o pedido de agendamento do paciente aparece como “Agendamento solicitado” — Pacote 14.7.1 · Fluxo de caixa: receitas lidas da Agenda, pagamentos, cobranças por e-mail e WhatsApp, comprovante do paciente, despesas e contas a pagar — Pacote 20.0 · recibos e livro caixa: quem precisa de recibo, prévia literal e arquivo de lote do Carnê-Leão · Biblioteca de Escalas e Inventários com "Aplicar a um paciente" — Pacote 19.3 (23/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia e valor por paciente · agendamento do paciente com a aprovação do profissional · Painel de Evolução na tela do profissional — Pacote 19.1 · o pedido de agendamento do paciente aparece como “Agendamento solicitado” — Pacote 14.7.1 · Fluxo de caixa: receitas lidas da Agenda, pagamentos, cobranças por e-mail e WhatsApp, comprovante do paciente, despesas e contas a pagar — Pacote 20.0 · recibos e livro caixa: quem precisa de recibo, prévia literal e arquivo de lote do Carnê-Leão · Biblioteca de Escalas e Inventários com "Aplicar a um paciente" — Pacote 19.3 · cada profissional conecta a própria Google Agenda, com a opção dos compromissos pessoais — Pacote 14.8 (23/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -4275,6 +4275,12 @@ button.cab-no-item{cursor:pointer;}
 .cal-ev-marca{display:inline-block;font:var(--t-label);border-radius:var(--r-chip);padding:2px 8px;background:var(--c-warn-tint);color:var(--c-warn-ink);}
 .cal-bloq{position:absolute;left:0;width:100%;border:1px dashed var(--c-ink-3);border-radius:6px;background:var(--c-surface-sub);color:var(--c-ink-2);
   font:var(--t-body-sm);text-align:left;padding:4px 6px;overflow:hidden;cursor:pointer;z-index:2;}
+/* 14.8: compromisso da agenda pessoal (só com a opção ligada) — avisa, não trava: o clique passa para a grade */
+.cal-ocup{position:absolute;left:0;width:100%;border:1px dotted var(--c-ink-3);border-radius:6px;background:var(--c-surface-sub);color:var(--c-ink-2);
+  font:var(--t-body-sm);text-align:left;padding:4px 6px;overflow:hidden;pointer-events:none;z-index:1;}
+.cal-btn-ligado{border-color:var(--c-pos);color:var(--c-pos-ink);}
+.age-check.age-check-longo{flex-wrap:nowrap;align-items:flex-start;}
+.age-check.age-check-longo input[type="checkbox"]{margin-top:2px;}
 .cal-fer{font:var(--t-label);color:var(--c-warn-ink);background:var(--c-warn-tint);border-radius:6px;padding:2px 4px;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .age-msg{font:var(--t-body);background:var(--c-surface);border:1px solid var(--c-line);border-left:4px solid var(--c-pos);border-radius:var(--r-field);
   padding:10px 14px;margin:0 0 12px;color:var(--c-ink);display:flex;align-items:center;gap:var(--s-2);flex-wrap:wrap;}
@@ -4811,6 +4817,8 @@ body:has(#sec-prof-financeiro.active) .app,body:has(#sec-prof-financeiro.active)
       <h2 class="gra-titulo"><svg class="ico" aria-hidden="true"><use href="#i-calendar"/></svg> Agenda</h2>
       <!-- Pacote 14.4: sino com os últimos eventos dos pacientes (confirmou, agendou, cancelou, pediu) -->
       <button class="cal-btn cal-sino" id="calSino" type="button" style="margin-left:auto;" aria-label="Últimos eventos" aria-expanded="false" onclick="ageSinoAlternar_()"><svg class="ico" aria-hidden="true"><use href="#i-bell"/></svg><span class="cal-sino-num hidden" id="calSinoNum"></span></button>
+      <!-- Pacote 14.8: cada profissional conecta a própria agenda -->
+      <button class="cal-btn" id="calBtnConectar" type="button" onclick="ageContaAbrir_()"><svg class="ico" aria-hidden="true"><use href="#i-calendar"/></svg> Conectar agenda</button>
       <button class="cal-btn" onclick="graAbrirTela()"><svg class="ico" aria-hidden="true"><use href="#i-settings"/></svg> Grade de Atendimento</button>
     </div>
     <div class="cal-sino-painel hidden" id="calSinoPainel"></div>
@@ -4842,6 +4850,7 @@ body:has(#sec-prof-financeiro.active) .app,body:has(#sec-prof-financeiro.active)
           <div class="cal-leg-item"><span><svg class="ico" aria-hidden="true"><use href="#i-repeat"/></svg></span> Série</div>
           <div class="cal-leg-item"><span class="cal-ev-marca">Reposição</span></div>
           <div class="cal-leg-item"><span><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg></span> Bloqueado</div>
+          <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--c-surface-sub);border:1px dotted var(--c-ink-3);"></span> Ocupado · agenda pessoal</div>
           <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--c-warn-tint);border:1px solid var(--c-warn);"></span> Feriado</div>
           <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-ev-lilas);border:1px solid var(--c-dass21-ink);opacity:.72;"></span> Consulta realizada</div>
           <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-ev-lilas);border:1px solid var(--c-risk);border-left-width:4px;"></span> Não compareceu</div>
@@ -4898,7 +4907,7 @@ body:has(#sec-prof-financeiro.active) .app,body:has(#sec-prof-financeiro.active)
     </div>
 
     <div class="gra-card">
-      <h3><svg class="ico" aria-hidden="true"><use href="#i-calendar"/></svg> Consultório e Google Calendar</h3>
+      <h3><svg class="ico" aria-hidden="true"><use href="#i-calendar"/></svg> Consultório</h3>
       <div class="gra-cfg-grid">
         <div class="gra-cfg-item gra-cfg-largo">
           <label for="graCfgEndereco">Endereço do consultório</label>
@@ -4913,14 +4922,6 @@ body:has(#sec-prof-financeiro.active) .app,body:has(#sec-prof-financeiro.active)
           <label for="graCfgEnderecoDesde">Novo endereço vale a partir de</label>
           <input type="date" id="graCfgEnderecoDesde">
           <div class="gra-hint">As sessões desta data em diante usam o novo endereço.</div>
-        </div>
-        <div class="gra-cfg-item hidden" id="graCfgCalendarItem">
-          <label for="graCfgCalendar">Google Calendar</label>
-          <select id="graCfgCalendar">
-            <option value="Nao" selected>Desligado</option>
-            <option value="Sim">Ligado</option>
-          </select>
-          <div class="gra-hint">Ligado, cada sessão aparece na agenda "Cogniativo: Agenda Consultório" do seu Google e as sessões on-line ganham um link do Meet. Os compromissos da sua agenda pessoal deixam de ser oferecidos aos pacientes.</div>
         </div>
       </div>
     </div>
@@ -8591,6 +8592,7 @@ var VMC_ACOES_GRAVACAO = [
   'profSalvarSessao', 'profEditarSerie', 'profCancelarSessao', 'profMarcarSituacao', 'profSalvarBloqueio', 'profApagarBloqueio', 'profDecidirPedido', // 14.3
   'pacienteAgendarSessao', 'pacienteConfirmarSessao', 'pacienteCancelarSessao', 'pacientePedirAgenda', // 14.3
   'confirmarSessaoPorLink', 'profMarcarEventosVistos', 'profAvisarSessao', // 14.4
+  'profAgendaConectar', 'profAgendaDesconectar', 'profAgendaOpcao', // 14.8
   'profSalvarValorSessao', // 14.6
   'profSalvarCadastroFinanceiro', 'profSalvarConfigFinanceiro', 'profSalvarPagamento', 'profEstornarPagamento', 'profDecidirComprovante', 'profGerarCobrancas', 'profEnviarCobranca',
   'profDescartarCobranca', 'profNaoCobrarSessao', 'profSalvarDespesa', 'profEncerrarDespesaFixa', 'pacienteEnviarComprovante', 'pacientePedirRecibo', // Fase 20
@@ -23370,12 +23372,10 @@ async function graCarregar() {
   }
 
   document.getElementById('graCfgAvisos').value = String(cfg.avisos_sessao || '').toLowerCase() === 'sim' ? 'Sim' : 'Nao'; // 14.3
-  // 14.5: endereço do consultório e espelho no Google Calendar (a chave só aparece para a conta que tem o Calendar)
+  // 14.5: endereço do consultório (14.8: a conexão com a agenda do Google saiu daqui para o quadro "Sincronizar com a sua agenda", na Agenda)
   document.getElementById('graCfgEndereco').value = String(cfg.endereco || '');
   document.getElementById('graCfgEnderecoNovo').value = String(cfg.endereco_novo || '');
   document.getElementById('graCfgEnderecoDesde').value = String(cfg.endereco_novo_desde || '');
-  document.getElementById('graCfgCalendar').value = String(cfg.google_calendar || '').toLowerCase() === 'sim' ? 'Sim' : 'Nao';
-  document.getElementById('graCfgCalendarItem').classList.toggle('hidden', resp.calendar_disponivel !== true);
 
   // Grade -> estado por dia (dia ativo se possui ao menos uma janela com ativo=sim)
   graEstado = graEstadoVazio_();
@@ -23528,8 +23528,7 @@ async function graSalvar() {
       avisos_sessao: document.getElementById('graCfgAvisos').value, // 14.3
       endereco: document.getElementById('graCfgEndereco').value, // 14.5
       endereco_novo: document.getElementById('graCfgEnderecoNovo').value,
-      endereco_novo_desde: document.getElementById('graCfgEnderecoDesde').value,
-      google_calendar: document.getElementById('graCfgCalendarItem').classList.contains('hidden') ? undefined : document.getElementById('graCfgCalendar').value
+      endereco_novo_desde: document.getElementById('graCfgEnderecoDesde').value
     },
     grade: grade
   });
@@ -23817,6 +23816,7 @@ function ageAplicar_(resp) {
   agePedidosRender_();
   ageSinoRender_();
   profRenderInicio_();
+  ageContaDepois_(); // 14.8
 }
 function ageMsg_(texto, erro, linkHtml) {
   var el = document.getElementById('calMsg');
@@ -23840,6 +23840,18 @@ function ageDesenharDia_(col, iso) {
     el.style.height = ((fim - ini) / 60 * CAL_ALT_HORA) + 'px';
     el.innerHTML = '<svg class=ico aria-hidden=true><use href=#i-lock></use></svg> <span>Bloqueado' + (b.nome ? ' · ' + esc(b.nome) : '') + '</span>';
     el.addEventListener('click', function (e) { e.stopPropagation(); ageAbrirBloqueio_(b.id); });
+    col.appendChild(el);
+  });
+  (AGE.agenda.ocupados || []).forEach(function (o) { // 14.8: compromissos da agenda pessoal, sem título — só com a opção ligada
+    if (o.data !== iso) return;
+    var ini = Math.max(ageMin_(o.hora_inicio), CAL_HORA_INI * 60), fim = Math.min(ageMin_(o.hora_fim), CAL_HORA_FIM * 60);
+    if (!(fim > ini)) return;
+    var el = document.createElement('div');
+    el.className = 'cal-ocup'; el.dataset.ocupado = o.hora_inicio;
+    el.style.top = ((ini - CAL_HORA_INI * 60) / 60 * CAL_ALT_HORA) + 'px';
+    el.style.height = ((fim - ini) / 60 * CAL_ALT_HORA) + 'px';
+    el.title = o.hora_inicio + ' – ' + o.hora_fim + ' · Ocupado · agenda pessoal';
+    el.textContent = 'Ocupado · agenda pessoal';
     col.appendChild(el);
   });
   CAL_SESSOES.forEach(function (s) {
@@ -24009,11 +24021,12 @@ function ageAbrirReposicao_(orig) {
 }
 function ageFecharDeVez_() {
   document.getElementById('ageModal').classList.remove('show');
-  AGE.p = null; AGE.vista = ''; AGE.sim = null;
+  AGE.p = null; AGE.vista = ''; AGE.sim = null; AGE.contaEspera = ''; // 14.8
 }
 /* Fechar o painel: com alteração não salva, pede confirmação */
 function ageFechar() {
   if (!AGE.p) return;
+  if (AGE.p.tipo === 'conta') { ageFecharDeVez_(); return; } // 14.8: o quadro da conta não tem o que perder
   if (AGE.vista === 'painel') { ageLer_(); if (ageFoto_(AGE.p) !== AGE.p.foto) { AGE.vista = 'sair'; ageRender_(); return; } }
   else if (AGE.vista !== 'sair' && AGE.vista !== 'avisar') { AGE.vista = 'painel'; ageRender_(); return; }
   if (AGE.vista === 'avisar' && AGE.p.aviso) ageMsg_(AGE.p.aviso.msg, false, AGE.p.aviso.repor ? '<button type="button" class="prof-lem-btn" id="ageBtnReporCancelada" onclick="ageReporCancelada_()">Agendar reposição</button>' : '');
@@ -24094,6 +24107,7 @@ function ageRender_() {
   if (!p) return;
   var titulo = document.getElementById('ageTitulo'), corpo = document.getElementById('ageCorpo'), acoes = document.getElementById('ageAcoes');
   var erro = '<div class="prof-cad-erro" id="ageErro" role="alert"></div>';
+  if (p.tipo === 'conta') { ageRenderConta_(titulo, corpo, acoes); return; } // 14.8
   if (AGE.vista === 'avisar') { ageRenderAvisar_(titulo, corpo, acoes); return; }
   if (AGE.vista === 'cancelada') { // 14.6: sessão cancelada e cobrada — só leitura, com a reposição
     var sc = p.sessao;
@@ -24820,6 +24834,117 @@ function profRenderEventosAgenda_(ativos) {
   eventos.sort(function (a, b) { return a.em < b.em ? 1 : (a.em > b.em ? -1 : 0); });
   return '<section class="prof-bloco" id="profBlocoEventosAgenda"><h3 class="prof-bloco-titulo">Atualizações da agenda</h3>' +
     (eventos.length ? '<ul class="age-evs">' + ageEventosHtml_(eventos.slice(0, 8), null) + '</ul>' : '<p class="prof-bloco-vazio">Nenhum evento nos últimos 30 dias.</p>') + '</section>';
+}
+
+/* ============================================================
+   PACOTE 14.8 — Sincronizar com a sua agenda (cada profissional conecta a própria conta do Google)
+   Textos aprovados pelo usuário em 23/11/2026. A tela de permissão do Google abre em OUTRA aba: a sessão do
+   profissional mora só na memória desta página; ao voltar para cá, a Agenda é relida e o quadro mostra o resultado.
+   ============================================================ */
+function ageExterna_() {
+  return (AGE.agenda && AGE.agenda.agenda_externa) || { disponivel: false, direta: false, conectada: false, conta: '', ocupado: false, aviso: '' };
+}
+function ageContaAbrir_() {
+  AGE.p = { tipo: 'conta' }; AGE.vista = 'conta'; AGE.contaMsg = ''; AGE.contaErro = ''; AGE.contaEspera = '';
+  document.getElementById('ageModal').classList.add('show');
+  ageRender_();
+}
+function ageContaVista_(vista) { AGE.vista = vista; AGE.contaMsg = ''; AGE.contaErro = ''; ageRender_(); }
+function ageRenderConta_(titulo, corpo, acoes) {
+  var e = ageExterna_();
+  titulo.textContent = 'Sincronizar com a sua agenda';
+  var topo = (AGE.contaMsg ? '<p class="age-msg" id="ageContaMsg" role="status">' + esc(AGE.contaMsg) + '</p>' : '') +
+    (AGE.contaErro ? '<p class="age-msg age-msg-erro" id="ageContaErro" role="alert">' + esc(AGE.contaErro) + '</p>' : '');
+  if (AGE.vista === 'contaSair') {
+    corpo.innerHTML = '<p class="age-texto"><strong>Desconectar a agenda?</strong></p>' +
+      '<p class="age-texto">As sessões já enviadas continuam na sua agenda do Google. As próximas não serão mais enviadas.</p>';
+    acoes.innerHTML = ageBtn_('Voltar', 'ageContaVista_(\'conta\')', false) + ageBtn_('Desconectar', 'ageContaDesconectar_()', true, 'ageBtnOk');
+    return;
+  }
+  if (AGE.contaEspera) { // a tela do Google está aberta em outra aba
+    corpo.innerHTML = topo + '<p class="age-texto" id="ageContaEspera">A tela de permissão do Google abriu em outra aba. Depois de permitir, volte para cá.</p>' +
+      (AGE.contaUrl ? '<p class="age-dica"><a class="age-link" id="ageContaLink" href="' + esc(AGE.contaUrl) + '" target="_blank" rel="noopener">Abrir a tela do Google</a></p>' : '');
+    acoes.innerHTML = ageBtn_('Fechar', 'ageFecharDeVez_()', false) + ageBtn_('Já permiti', 'ageContaConferir_(true)', true, 'ageBtnOk');
+    return;
+  }
+  if (e.conectada) {
+    corpo.innerHTML = topo + '<p class="age-texto" id="ageContaEstado"><strong>' + esc('Conectada: ' + e.conta) + '</strong></p>' +
+      '<label class="age-check age-check-longo" for="ageContaOcupado"><input type="checkbox" id="ageContaOcupado"' + (e.ocupado ? ' checked' : '') + ' onchange="ageContaOpcao_(this)"> ' +
+      '<span>Fechar no Cogniativo os horários em que tenho compromisso na minha agenda pessoal</span></label>' +
+      '<p class="age-dica">O Cogniativo vê só que o horário está ocupado, não o que é. Esses horários aparecem na sua Agenda como "Ocupado" e não são oferecidos aos pacientes.</p>';
+    acoes.innerHTML = ageBtn_('Fechar', 'ageFecharDeVez_()', false) + ageBtn_('Desconectar', 'ageContaVista_(\'contaSair\')', false, 'ageBtnDesconectar');
+    return;
+  }
+  corpo.innerHTML = topo + (e.aviso === 'caiu' && !AGE.contaErro ? '<p class="age-msg age-msg-erro" id="ageContaCaiu" role="alert">A conexão com o Google caiu. Conecte de novo.</p>' : '') +
+    '<p class="age-texto">Conecte a sua conta para que as sessões apareçam na sua agenda pessoal.</p>' +
+    (!e.disponivel ? '<p class="age-dica" id="ageContaIndisp">A conexão com o Google ainda não está disponível.</p>'
+      : (e.direta ? '' : '<p class="age-dica" id="ageContaAvisoGoogle">O Google vai mostrar um aviso de "app não verificado". Toque em "Avançado" e depois em "Acessar COGNIATIVO".</p>'));
+  acoes.innerHTML = ageBtn_('Fechar', 'ageFecharDeVez_()', !e.disponivel) + (e.disponivel ? ageBtn_('Conectar Google Agenda', 'ageContaConectar_()', true, 'ageBtnOk') : '');
+}
+/* Leva a aba aberta no clique para a tela do Google (ou mostra o link, se o navegador barrou a aba) e passa a esperar a volta */
+function ageContaIrAoGoogle_(aba, url, espera) {
+  AGE.contaEspera = espera; AGE.contaUrl = '';
+  if (aba) { aba.opener = null; aba.location.href = url; } else AGE.contaUrl = url;
+  AGE.contaMsg = ''; AGE.contaErro = '';
+  ageRender_();
+}
+async function ageContaConectar_() {
+  if (AGE.ocupado) return;
+  // a aba abre no próprio clique (síncrono), senão o bloqueador de pop-up a barraria depois do await; o dono do script não vai ao Google
+  var aba = ageExterna_().direta ? null : window.open('about:blank', '_blank');
+  ageOcupar_(true);
+  var r = await chamarServidor('profAgendaConectar', { dados: {}, periodo: agePeriodo_() });
+  ageOcupar_(false);
+  if (!AGE.p || AGE.p.tipo !== 'conta') { if (aba) aba.close(); return; }
+  if (!r || !r.ok) { if (aba) aba.close(); AGE.contaMsg = ''; AGE.contaErro = (r && r.erro) || 'A conexão com o Google não foi concluída. Tente de novo.'; ageRender_(); return; }
+  if (r.url) { ageContaIrAoGoogle_(aba, r.url, 'conectar'); return; }
+  if (aba) aba.close();
+  AGE.contaMsg = 'Agenda conectada.'; AGE.contaErro = '';
+  ageAplicar_(r);
+}
+async function ageContaDesconectar_() {
+  if (AGE.ocupado) return;
+  ageOcupar_(true);
+  var r = await chamarServidor('profAgendaDesconectar', { periodo: agePeriodo_() });
+  ageOcupar_(false);
+  if (!AGE.p || AGE.p.tipo !== 'conta') return;
+  AGE.vista = 'conta';
+  if (!r || !r.ok) { AGE.contaMsg = ''; AGE.contaErro = (r && r.erro) || 'Não foi possível salvar agora.'; ageRender_(); return; }
+  AGE.contaMsg = 'Agenda desconectada.'; AGE.contaErro = '';
+  ageAplicar_(r);
+}
+async function ageContaOpcao_(caixa) {
+  if (AGE.ocupado) { caixa.checked = !caixa.checked; return; }
+  var quer = caixa.checked;
+  // ligar pode pedir ao Google a permissão de ver os horários ocupados: a aba abre no clique e fecha se não for preciso
+  var aba = (quer && !ageExterna_().direta) ? window.open('about:blank', '_blank') : null;
+  AGE.ocupado = true; caixa.disabled = true;
+  var r = await chamarServidor('profAgendaOpcao', { dados: { ocupado: quer }, periodo: agePeriodo_() });
+  AGE.ocupado = false;
+  if (!AGE.p || AGE.p.tipo !== 'conta') { if (aba) aba.close(); return; }
+  if (!r || !r.ok) { if (aba) aba.close(); AGE.contaMsg = ''; AGE.contaErro = (r && r.erro) || 'Não foi possível salvar agora.'; ageRender_(); return; }
+  if (r.url) { ageContaIrAoGoogle_(aba, r.url, 'ocupado'); return; }
+  if (aba) aba.close();
+  AGE.contaMsg = ''; AGE.contaErro = '';
+  ageAplicar_(r);
+}
+/* De volta da aba do Google: relê a Agenda; `pedido` = o profissional tocou em "Já permiti" */
+async function ageContaConferir_(pedido) {
+  if (!AGE.contaEspera || AGE.carregando) return;
+  var espera = AGE.contaEspera;
+  await ageCarregar_(true, true);
+  if (!AGE.p || AGE.p.tipo !== 'conta' || AGE.contaEspera !== espera) return;
+  var e = ageExterna_(), deu = espera === 'ocupado' ? e.ocupado : e.conectada;
+  if (deu) { AGE.contaEspera = ''; AGE.contaUrl = ''; AGE.contaErro = ''; AGE.contaMsg = espera === 'ocupado' ? '' : 'Agenda conectada.'; }
+  else if (pedido) { AGE.contaEspera = ''; AGE.contaUrl = ''; AGE.contaMsg = ''; AGE.contaErro = 'A conexão com o Google não foi concluída. Tente de novo.'; }
+  ageRender_();
+}
+document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible' && AGE.contaEspera) ageContaConferir_(false); });
+/* O botão do topo da Agenda mostra se há conta conectada; o quadro aberto acompanha a agenda que chegou */
+function ageContaDepois_() {
+  var b = document.getElementById('calBtnConectar');
+  if (b) b.classList.toggle('cal-btn-ligado', ageExterna_().conectada === true);
+  if (AGE.p && AGE.p.tipo === 'conta' && !AGE.contaEspera) ageRender_();
 }
 
 /* ---------- atualização automática: ao voltar para a aba e, com a Agenda aberta, a cada 2 minutos ---------- */
