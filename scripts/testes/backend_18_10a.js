@@ -347,7 +347,7 @@ tenta('T', () => {
   ok('T6 com a trava ocupada toda ação de gravação recusa; a leitura (lista) segue respondendo', edit.ok === false && edit.codigo === 'ocupado' && lista.ok === true && lista.pacientes.length === 2);
   TRAVA.ocupada = false;
   const todas = FONTE.match(/case '([A-Za-z]+)':/g).map(c => c.slice(6, -2));
-  const leitura = ['ping', 'autenticar', 'pedirRedefinicao', 'lerHistorico', 'lerEscalas', 'lerRascunhos', 'lerItensInstrumento', 'lerEditandoAuto', 'profListarPacientes', 'profLerDadosPaciente', 'profLerGrade', 'admListarProfissionais', 'profLerMeusDados', 'lerMeusLembretes', 'profLerAgenda', 'lerMinhasSessoes', 'lerHorariosLivres', 'profLerHorariosLivres', 'profLerFinanceiro', 'lerMeuFinanceiro', 'lerArquivoFinanceiro'];
+  const leitura = ['ping', 'autenticar', 'pedirRedefinicao', 'concluirConexaoAgenda' /* 14.8.1: como o autenticar, pega a trava só no trecho que grava */, 'lerHistorico', 'lerEscalas', 'lerRascunhos', 'lerItensInstrumento', 'lerEditandoAuto', 'profListarPacientes', 'profLerDadosPaciente', 'profLerGrade', 'admListarProfissionais', 'profLerMeusDados', 'lerMeusLembretes', 'profLerAgenda', 'lerMinhasSessoes', 'lerHorariosLivres', 'profLerHorariosLivres', 'profLerFinanceiro', 'lerMeuFinanceiro', 'lerArquivoFinanceiro'];
   const semTrava = todas.filter(a => ACOES_COM_TRAVA.indexOf(a) === -1 && leitura.indexOf(a) === -1);
   ok('T7 toda ação do doPost que grava está em ACOES_COM_TRAVA (as demais são as leituras conhecidas)', semTrava.length === 0 && ACOES_COM_TRAVA.every(a => todas.indexOf(a) !== -1), semTrava);
   TRAVA.pegas = TRAVA.soltas = 0; EMAILS.length = 0;

@@ -1,5 +1,5 @@
 /* Pacote 14.8 — Agenda: cada profissional conecta a própria conta do Google (decisões do usuário, 23/11/2026).
-   Blocos: A sem a chave do botão · B conectar (ida ao Google e volta pelo doGet) · C espelho na conta conectada ·
+   Blocos: A sem a chave do botão · B conectar (ida ao Google e volta pela página do site, que chama concluirConexaoAgenda — 14.8.1) · C espelho na conta conectada ·
    D opção dos compromissos pessoais · E desconectar e conexão caída · F dono do script · G segredos · T listas.
    Código.js real sobre planilhas simuladas, relógio fixo em 25/11/2026 14:00, Google de mentira (permissão, token, Calendar).
    Uso: node scripts/testes/backend_14_8.js */
@@ -104,7 +104,8 @@ const grade = cfg => prof('profSalvarGrade', { config: Object.assign({ duracao_s
 const cfg = () => prof('profLerGrade').config;
 const externa = () => prof('profLerAgenda', PER).agenda_externa;
 const gatilho = () => { h.memo(); return S('enviarLembretes_')(); };
-const volta = par => { h.memo(); return S('doGet')({ parameter: par }); };
+const VOLTA = 'https://viniciusmarinaccipsi-art.github.io/clinica-vmc/conectar.html'; // 14.8.1: a página do site, não mais o /exec
+const volta = par => { h.memo(); return h.post(Object.assign({ acao: 'concluirConexaoAgenda' }, par)); }; // sem crachá: quem protege é o state
 const estadoDa = url => decodeURIComponent((/[?&]state=([^&]+)/.exec(url) || [])[1] || '');
 const par = url => { const o = {}; String(url).split('?')[1].split('&').forEach(kv => { const i = kv.indexOf('='); o[kv.slice(0, i)] = decodeURIComponent(kv.slice(i + 1)); }); return o; };
 const livres = (sigla, de) => pac(sigla, 'lerHorariosLivres', { de: de }).livres.map(x => x.data + ' ' + x.hora);
@@ -139,23 +140,23 @@ tenta('B', () => {
   urlBase = r.url;
   const q = par(r.url);
   ok('B2 conectar devolve o endereço da tela de permissão do Google, sem gravar nada', r.ok === true && r.conectada === false && r.url.indexOf('https://accounts.google.com/o/oauth2/v2/auth?') === 0 && cfg().google_calendar === undefined && h.PROPS['gcal:PROF_NP'] === undefined, r);
-  ok('B3 o pedido leva o cliente, a volta para o próprio servidor, acesso duradouro e a tela de permissão sempre', q.client_id === 'cliente-1.apps.exemplo' && q.redirect_uri === 'https://script.local/exec' && q.response_type === 'code' && q.access_type === 'offline' && q.prompt === 'consent', q);
+  ok('B3 o pedido leva o cliente, a volta para a página conectar.html do site (não o /exec do Apps Script), acesso duradouro e a tela de permissão sempre', q.client_id === 'cliente-1.apps.exemplo' && q.redirect_uri === VOLTA && q.redirect_uri === S('SITE_URL').replace('index-dev.html', 'conectar.html') && q.redirect_uri.indexOf('script.') === -1 && q.response_type === 'code' && q.access_type === 'offline' && q.prompt === 'consent', q);
   ok('B4 a permissão pedida é a menor: só as agendas que o sistema criar (sem ver a agenda pessoal, sem horários ocupados)', q.scope === 'openid email https://www.googleapis.com/auth/calendar.app.created', q.scope);
   ok('B5 o segredo da chave nunca vai no endereço', r.url.indexOf('SEGREDO') === -1 && JSON.stringify(r).indexOf('SEGREDO') === -1);
   ok('B6 o estado é assinado: diz de qual profissional é o pedido e vence', !!S('_gcalLerEstado_')(q.state, AGORA) && S('_gcalLerEstado_')(q.state, AGORA).profId === 'PROF_NP' && S('_gcalLerEstado_')(q.state, AGORA + 21 * 60000) === null && S('_gcalLerEstado_')(q.state.replace(/.$/, c => (c === 'a' ? 'b' : 'a')), AGORA) === null && S('_gcalLerEstado_')('', AGORA) === null);
 
   let pg = volta({ state: q.state, error: 'access_denied' });
-  ok('B7 o profissional não permitiu: a página diz que a conexão não foi concluída e nada é guardado', pg.html.indexOf('data-resultado="negada"') !== -1 && pg.html.indexOf('não foi concluída') !== -1 && h.PROPS['gcal:PROF_NP'] === undefined && cfg().google_calendar === undefined && G.chamadas.length === 0, pg.html.slice(0, 200));
+  ok('B7 o profissional não permitiu: a resposta diz "negada" e nada é guardado', pg.ok === false && pg.resultado === 'negada' && h.PROPS['gcal:PROF_NP'] === undefined && cfg().google_calendar === undefined && G.chamadas.length === 0, pg);
   pg = volta({ state: q.state + 'x', code: 'cod:paula@gmail.test:base' });
-  ok('B8 estado adulterado: "erro", o código nem é trocado', pg.html.indexOf('data-resultado="erro"') !== -1 && G.chamadas.length === 0 && h.PROPS['gcal:PROF_NP'] === undefined);
+  ok('B8 estado adulterado: "erro", o código nem é trocado', pg.ok === false && pg.resultado === 'erro' && G.chamadas.length === 0 && h.PROPS['gcal:PROF_NP'] === undefined);
   pg = volta({ state: q.state, code: 'codigo-invalido' });
-  ok('B9 código que o Google recusa: "erro", nada guardado', pg.html.indexOf('data-resultado="erro"') !== -1 && h.PROPS['gcal:PROF_NP'] === undefined && cfg().google_calendar === undefined);
+  ok('B9 código que o Google recusa: "erro", nada guardado', pg.ok === false && pg.resultado === 'erro' && h.PROPS['gcal:PROF_NP'] === undefined && cfg().google_calendar === undefined);
   const troca = G.chamadas.filter(c => c.u === '/token')[0];
-  ok('B10 a troca do código vai com o segredo e a mesma volta (só entre servidores)', troca && troca.tipo === 'authorization_code' && troca.segredo === 'SEGREDO-DE-TESTE' && troca.cliente === 'cliente-1.apps.exemplo' && troca.redirect === 'https://script.local/exec', troca);
+  ok('B10 a troca do código vai com o segredo e a mesma volta (só entre servidores)', troca && troca.tipo === 'authorization_code' && troca.segredo === 'SEGREDO-DE-TESTE' && troca.cliente === 'cliente-1.apps.exemplo' && troca.redirect === VOLTA, troca);
 
   G.chamadas.length = 0;
   pg = volta({ state: q.state, code: 'cod:paula@gmail.test:base' });
-  ok('B11 permitiu: a página só diz "Agenda conectada. Você já pode fechar esta aba e voltar ao COGNIATIVO." (nenhum dado, nenhum link, nenhum script)', pg.html.indexOf('Agenda conectada. Você já pode fechar esta aba e voltar ao COGNIATIVO.') !== -1 && pg.html.indexOf('data-resultado="conectada"') !== -1 && pg.html.indexOf('<script') === -1 && pg.html.indexOf('href=') === -1 && pg.html.indexOf('rt-') === -1 && pg.html.indexOf('paula@') === -1 && pg.titulo === 'COGNIATIVO', pg.html.slice(0, 300));
+  ok('B11 permitiu: a resposta só diz o resultado, "conectada" (nenhuma conta, nenhuma permissão, nada além de ok e resultado)', pg.ok === true && pg.resultado === 'conectada' && Object.keys(pg).sort().join(',') === 'ok,resultado' && JSON.stringify(pg).indexOf('rt-') === -1 && JSON.stringify(pg).indexOf('paula@') === -1, pg);
   const guardado = JSON.parse(h.PROPS['gcal:PROF_NP'] || '{}');
   ok('B12 a permissão fica no cofre do script (com a conta e o que foi permitido), não em planilha', /^rt-paula@gmail\.test-\d+$/.test(guardado.rt) && guardado.conta === 'paula@gmail.test' && guardado.escopos.indexOf('calendar.app.created') !== -1 && JSON.stringify(aba('Config_Agenda').getDataRange().getDisplayValues()).indexOf('rt-') === -1, Object.keys(guardado));
   const c = cfg();
@@ -165,11 +166,15 @@ tenta('B', () => {
   ok('B15 a sessão que já existia entra na fila do espelho, e nada foi ao Calendar ainda', cel('Sessoes', idAntes, 'gcal_sinc') === 'pendente' && doCalendar().length === 0);
   ok('B16 nenhuma resposta ao navegador leva a permissão', JSON.stringify(prof('profLerAgenda', PER)).indexOf('rt-') === -1 && JSON.stringify(prof('profLerGrade')).indexOf('rt-') === -1 && JSON.stringify(prof('profLerAgenda', PER)).indexOf('at-') === -1);
   h.memo();
-  const semEstado = S('doGet')({ parameter: {} }), semNada = S('doGet')();
-  ok('B17 o doGet sem a volta do Google continua respondendo "Use POST"', JSON.parse(semEstado.conteudo).erro === 'Use POST' && JSON.parse(semNada.conteudo).erro === 'Use POST');
+  const semEstado = S('doGet')({ parameter: {} }), semNada = S('doGet')(), comEstado = S('doGet')({ parameter: { state: q.state, code: 'cod:outra@gmail.test:base' } });
+  ok('B17 o doGet não recebe mais a volta do Google: responde "Use POST" sempre, e não conecta ninguém', JSON.parse(semEstado.conteudo).erro === 'Use POST' && JSON.parse(semNada.conteudo).erro === 'Use POST' && JSON.parse(comEstado.conteudo).erro === 'Use POST' && cfg().agenda_conta === 'paula@gmail.test');
+  h.memo();
+  const semState = h.post({ acao: 'concluirConexaoAgenda', code: 'cod:outra@gmail.test:base' }), vazio = h.post({ acao: 'concluirConexaoAgenda' });
+  ok('B17b a ação sem o state (ou sem nada): "erro", nada vai ao Google', semState.ok === false && semState.resultado === 'erro' && vazio.resultado === 'erro' && cfg().agenda_conta === 'paula@gmail.test');
+  ok('B17c a ação é pública (o state assinado é a proteção) e fica fora da trava do doPost: a conversa com o Google roda sem a trava', S('ACOES_PUBLICAS').indexOf('concluirConexaoAgenda') !== -1 && S('ACOES_COM_TRAVA').indexOf('concluirConexaoAgenda') === -1 && S('ACOES_SO_LEITURA').indexOf('concluirConexaoAgenda') === -1);
   irPara(2026, 11, 25, 14, 30);
   pg = volta({ state: q.state, code: 'cod:outra@gmail.test:base' });
-  ok('B18 pedido vencido (30 minutos depois): "erro", a conta conectada não muda', pg.html.indexOf('data-resultado="erro"') !== -1 && cfg().agenda_conta === 'paula@gmail.test');
+  ok('B18 pedido vencido (30 minutos depois): "erro", a conta conectada não muda', pg.resultado === 'erro' && cfg().agenda_conta === 'paula@gmail.test');
   irPara(2026, 11, 25, 14, 0);
 });
 
@@ -299,7 +304,7 @@ console.log('T. Listas e versão');
 tenta('T', () => {
   const novas = ['profAgendaConectar', 'profAgendaDesconectar', 'profAgendaOpcao'];
   ok('T1 as três ações novas estão na trava, exigem crachá e não são leitura', novas.every(a => S('ACOES_COM_TRAVA').indexOf(a) !== -1 && S('ACOES_PUBLICAS').indexOf(a) === -1 && S('ACOES_SO_LEITURA').indexOf(a) === -1));
-  ok('T2 VERSAO_PACOTE = 14.8', S('VERSAO_PACOTE') === '14.8');
+  ok('T2 VERSAO_PACOTE = 14.8.1', S('VERSAO_PACOTE') === '14.8.1');
   ok('T3 nenhuma coluna nova nas abas da agenda (a conexão mora na Config_Agenda e no cofre do script)', S('COLUNAS_SESSOES').slice(-3).join(',') === 'gcal_evento,gcal_sinc,meet_link' && S('COLUNAS_PEDIDOS_AGENDA').slice(-2).join(',') === 'sugestao,modalidade');
   const esperados = logServidor.filter(l => /agenda externa: o Google nao devolveu a permissao \(400\)/.test(l)).length;
   const inesperados = logServidor.filter(l => !/^trava de gravacao: nao obtida/.test(l) && !/agenda externa: o Google nao devolveu a permissao \(400\)/.test(l));

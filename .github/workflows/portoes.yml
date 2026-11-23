@@ -68,11 +68,11 @@ jobs:
       - name: CSP presente e nenhum código montado a partir de texto
         timeout-minutes: 1
         run: |
-          for f in index-dev.html admin.html privacidade.html; do
+          for f in index-dev.html admin.html privacidade.html conectar.html; do
             grep -q 'http-equiv="Content-Security-Policy"' "$f" || { echo "::error file=$f::sem CSP"; exit 1; }
             if grep -q "unsafe-eval" "$f"; then echo "::error file=$f::CSP com unsafe-eval"; exit 1; fi
           done
-          if grep -nE "new Function|[^A-Za-z_.]eval\(" index-dev.html admin.html; then echo "::error::new Function/eval em página"; exit 1; fi
+          if grep -nE "new Function|[^A-Za-z_.]eval\(" index-dev.html admin.html conectar.html; then echo "::error::new Function/eval em página"; exit 1; fi
 
       - name: Gitleaks (histórico inteiro, achados mascarados)
         timeout-minutes: 5
