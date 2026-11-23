@@ -4362,6 +4362,121 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
   .barra-acao .btn-step-prev,.barra-acao .esc-btn-secondary{flex:0 0 38%;}
   body:has(.section.active .barra-acao) .app{padding-bottom:calc(100px + 64px);}
 }
+/* ===== Fase 20 — Fluxo de caixa (telas do profissional e do paciente). Classes novas: prefixo fin- ===== */
+body:has(#sec-prof-financeiro.active) .app,body:has(#sec-prof-financeiro.active) .topbar-in{max-width:1120px;}
+.prof-atalhos:has(#profAtalhoFinanceiro) #profAtalhoFinanceiro{grid-column:1 / -1;}
+@media (min-width:700px){
+  .prof-atalhos:has(#profAtalhoFinanceiro){grid-template-columns:repeat(5,minmax(0,1fr));}
+  .prof-atalhos:has(#profAtalhoFinanceiro) #profAtalhoFinanceiro{grid-column:auto;}
+}
+.fin-abas{display:flex;gap:var(--s-2);overflow-x:auto;margin:0 0 var(--s-4);padding:2px 2px 6px;scrollbar-width:thin;}
+.fin-aba{flex:0 0 auto;min-height:var(--hit-min);padding:0 var(--s-4);border:1.5px solid var(--c-line);border-radius:var(--r-field);background:var(--c-surface);color:var(--c-ink-2);font:var(--t-action);cursor:pointer;white-space:nowrap;}
+.fin-aba:hover{border-color:var(--c-action);}
+.fin-aba:focus-visible,.fin-seg button:focus-visible,.fin-link:focus-visible{outline:2px solid var(--c-action);outline-offset:2px;}
+.fin-aba[aria-selected="true"]{background:var(--c-action);border-color:var(--c-action);color:var(--c-ink-inv);}
+.fin-barra{display:flex;flex-wrap:wrap;gap:var(--s-2) var(--s-3);align-items:flex-end;margin:0 0 var(--s-4);text-align:left;}
+.fin-campo{display:flex;flex-direction:column;gap:4px;flex:1 1 160px;min-width:0;text-align:left;}
+.fin-campo-curto{flex:0 1 150px;}
+.fin-campo label,.fin-rot{font:var(--t-label);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--c-ink-3);}
+.fin-campo select,.fin-campo input,.fin-campo textarea{width:100%;min-height:var(--hit-min);padding:9px 12px;border:1.5px solid var(--c-line);border-radius:var(--r-field);background:var(--c-surface);color:var(--c-ink);font:var(--t-body);box-sizing:border-box;}
+.fin-campo textarea{min-height:120px;resize:vertical;line-height:1.5;}
+.fin-campo select:focus,.fin-campo input:focus,.fin-campo textarea:focus{border-color:var(--c-action);outline:none;}
+.fin-barra-acoes{display:flex;flex-wrap:wrap;gap:var(--s-2);align-items:center;margin-left:auto;}
+.fin-periodo-rot{flex:1 1 100%;margin:0;font:600 18px/1.3 var(--f-title);color:var(--c-ink);}
+.fin-seg{display:inline-flex;border:1.5px solid var(--c-line);border-radius:var(--r-field);overflow:hidden;background:var(--c-surface);}
+.fin-seg button{min-height:var(--hit-min);padding:0 var(--s-3);border:0;border-right:1px solid var(--c-line);background:transparent;color:var(--c-ink-2);font:var(--t-body-sm);font-weight:600;cursor:pointer;}
+.fin-seg button:last-child{border-right:0;}
+.fin-seg button[aria-pressed="true"]{background:var(--c-action-tint);color:var(--c-action-ink);}
+.fin-cartoes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s-2);margin:0 0 var(--s-4);}
+.fin-cartao{background:var(--c-surface);border:1px solid var(--c-line);border-top:3px solid var(--c-action);border-radius:var(--r-card);box-shadow:var(--sh-1);padding:var(--s-3);text-align:left;min-width:0;}
+.fin-cartao-rot{font:var(--t-label);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--c-ink-3);}
+.fin-cartao-num{font:600 22px/1.25 var(--f-title);color:var(--c-ink);font-variant-numeric:tabular-nums;margin-top:4px;overflow-wrap:anywhere;}
+.fin-cartao-sub{font:var(--t-body-sm);color:var(--c-ink-3);margin-top:2px;}
+.fin-cartao.fin-ok{border-top-color:var(--c-pos);}
+.fin-cartao.fin-ok .fin-cartao-num{color:var(--c-pos-ink);}
+.fin-cartao.fin-atencao{border-top-color:var(--c-warn);}
+.fin-cartao.fin-atencao .fin-cartao-num{color:var(--c-warn-ink);}
+.fin-cartao.fin-neutro{border-top-color:var(--c-line-strong);}
+.fin-cartao.fin-largo{grid-column:1 / -1;}
+@media (min-width:700px){
+  .fin-cartoes{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .fin-cartoes.fin-cinco{grid-template-columns:repeat(5,minmax(0,1fr));}
+  .fin-cartao.fin-largo{grid-column:auto;}
+  .fin-cartao-num{font-size:24px;}
+}
+.fin-painel{background:var(--c-surface);border:1px solid var(--c-line);border-radius:var(--r-card);box-shadow:var(--sh-1);padding:var(--s-4);margin:0 0 var(--s-4);text-align:left;min-width:0;}
+.fin-painel-topo{display:flex;flex-wrap:wrap;gap:var(--s-2);align-items:center;justify-content:space-between;margin:0 0 var(--s-3);}
+.fin-painel-tit{font:600 16px/1.3 var(--f-title);color:var(--c-ink);margin:0;}
+.fin-painel > .fin-painel-tit{margin-bottom:var(--s-2);}
+.fin-grade{display:grid;grid-template-columns:minmax(0,1fr);gap:0 var(--s-4);}
+@media (min-width:900px){ .fin-grade{grid-template-columns:repeat(2,minmax(0,1fr));} }
+.fin-grafico{position:relative;height:260px;}
+.fin-legenda{display:flex;flex-wrap:wrap;gap:var(--s-2) var(--s-4);font:var(--t-body-sm);color:var(--c-ink-2);margin-top:var(--s-2);}
+.fin-legenda i{display:inline-block;width:14px;height:10px;border-radius:2px;margin-right:6px;background:var(--c-action);}
+.fin-legenda i.fin-leg-linha{height:3px;vertical-align:middle;background:var(--c-pos);}
+.fin-linha{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s-3);padding:9px 0;border-bottom:1px solid var(--c-line-soft);font:var(--t-body);color:var(--c-ink-2);}
+.fin-linha:last-child{border-bottom:0;}
+.fin-linha b{font-weight:600;color:var(--c-ink);font-variant-numeric:tabular-nums;white-space:nowrap;}
+.fin-linha.fin-total{border-top:2px solid var(--c-line-strong);border-bottom:0;font-weight:600;color:var(--c-ink);}
+.fin-rank{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px var(--s-3);align-items:center;padding:7px 0;font:var(--t-body);color:var(--c-ink-2);}
+.fin-rank b{font-weight:600;color:var(--c-ink);font-variant-numeric:tabular-nums;}
+.fin-rank-barra{grid-column:1 / -1;height:8px;border-radius:var(--r-chip);background:var(--c-action-tint);overflow:hidden;}
+.fin-rank-barra i{display:block;height:100%;border-radius:var(--r-chip);background:var(--c-action);}
+.fin-tabela{width:100%;border-collapse:collapse;font:var(--t-body);text-align:left;}
+.fin-tabela th{font:var(--t-label);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--c-ink-3);padding:8px 10px;border-bottom:1.5px solid var(--c-line-strong);white-space:nowrap;}
+.fin-tabela td{padding:10px;border-bottom:1px solid var(--c-line-soft);color:var(--c-ink);vertical-align:middle;overflow-wrap:anywhere;}
+.fin-tabela tr:last-child td{border-bottom:0;}
+.fin-tabela .fin-num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.fin-tabela tfoot td{border-top:2px solid var(--c-line-strong);font-weight:600;}
+.fin-sub{display:block;font:var(--t-body-sm);color:var(--c-ink-3);}
+@media (max-width:699px){
+  .fin-tabela.fin-empilha thead{display:none;}
+  .fin-tabela.fin-empilha tr{display:block;padding:var(--s-3) 0;border-bottom:1px solid var(--c-line);}
+  .fin-tabela.fin-empilha tr:last-child{border-bottom:0;}
+  .fin-tabela.fin-empilha td{display:flex;justify-content:space-between;gap:var(--s-3);padding:3px 0;border:0;text-align:right;}
+  .fin-tabela.fin-empilha td::before{content:attr(data-rot);font:var(--t-body-sm);color:var(--c-ink-3);text-align:left;flex:0 0 auto;}
+  .fin-tabela.fin-empilha td.fin-principal{display:block;text-align:left;font-weight:600;padding-bottom:6px;}
+  .fin-tabela.fin-empilha td.fin-principal::before{content:none;}
+  .fin-tabela.fin-empilha td.fin-acao{justify-content:flex-end;padding-top:var(--s-2);}
+  .fin-tabela.fin-empilha td.fin-acao::before{content:none;}
+  .fin-tabela.fin-empilha tfoot td{border-top:0;}
+}
+.fin-rolagem{overflow-x:auto;}
+.fin-tag{display:inline-block;font:var(--t-label);border-radius:var(--r-chip);padding:3px 9px;white-space:nowrap;background:var(--c-surface-sub);color:var(--c-ink-2);}
+.fin-tag-ok{background:var(--c-pos-tint);color:var(--c-pos-ink);}
+.fin-tag-aberto{background:var(--c-action-tint);color:var(--c-action-ink);}
+.fin-tag-atencao{background:var(--c-warn-tint);color:var(--c-warn-ink);}
+.fin-nota{font:var(--t-body-sm);color:var(--c-ink-3);margin:0 0 var(--s-3);text-align:left;}
+.fin-nota-forte{font:var(--t-body);color:var(--c-ink);background:var(--c-action-tint);border-radius:var(--r-field);padding:var(--s-2) var(--s-3);margin:0 0 var(--s-3);text-align:left;}
+.fin-link{display:inline-flex;align-items:center;min-height:var(--hit-min);padding:0 4px;border:0;background:none;color:var(--c-action);font:var(--t-body-sm);font-weight:600;text-decoration:underline;cursor:pointer;}
+.fin-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px var(--s-3);align-items:center;padding:var(--s-3) 0;border-bottom:1px solid var(--c-line-soft);text-align:left;}
+.fin-item:last-child{border-bottom:0;}
+.fin-item-nome{font:var(--t-body);font-weight:600;color:var(--c-ink);overflow-wrap:anywhere;}
+.fin-item-valor{font:600 16px/1.3 var(--f-title);color:var(--c-ink);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;}
+.fin-item-acoes{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:var(--s-2);align-items:center;justify-content:space-between;}
+.fin-ses-mes{font:var(--t-label);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--c-ink-3);margin:var(--s-3) 0 2px;}
+.fin-ses{display:flex;align-items:center;gap:var(--s-3);min-height:var(--hit-min);padding:4px 0;border-bottom:1px solid var(--c-line-soft);font:var(--t-body);color:var(--c-ink);cursor:pointer;}
+.fin-ses input{width:20px;height:20px;flex:0 0 20px;accent-color:var(--c-action);}
+.fin-ses-txt{flex:1;min-width:0;}
+.fin-ses-val{font-variant-numeric:tabular-nums;white-space:nowrap;}
+.fin-form{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--s-3);margin:0 0 var(--s-3);}
+@media (min-width:700px){ .fin-form.fin-duas{grid-template-columns:repeat(2,minmax(0,1fr));} .fin-form .fin-inteiro{grid-column:1 / -1;} }
+.fin-fieldset{border:0;margin:0 0 var(--s-3);padding:0;min-width:0;}
+.fin-fieldset legend{padding:0;margin:0 0 6px;font:var(--t-label);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--c-ink-3);}
+.fin-opcoes{display:flex;flex-wrap:wrap;gap:var(--s-2);}
+.fin-opcao{display:inline-flex;align-items:center;gap:8px;min-height:var(--hit-min);padding:0 var(--s-3);border:1.5px solid var(--c-line);border-radius:var(--r-field);background:var(--c-surface);font:var(--t-body);color:var(--c-ink);cursor:pointer;}
+.fin-opcao input{width:18px;height:18px;accent-color:var(--c-action);}
+.fin-opcao:has(input:checked){border-color:var(--c-action);background:var(--c-action-tint);}
+.fin-dados{white-space:pre-wrap;font:var(--t-body);color:var(--c-ink);background:var(--c-surface-sub);border-radius:var(--r-field);padding:var(--s-3);margin:0 0 var(--s-3);}
+.fin-lote{font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--c-ink);background:var(--c-surface-sub);border-radius:var(--r-field);padding:var(--s-3);white-space:pre;overflow-x:auto;margin:0 0 var(--s-3);}
+.fin-modal{max-width:560px;}
+.fin-modal a.p5-btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;}
+.fin-acoes{display:flex;flex-wrap:wrap;gap:var(--s-2);align-items:center;margin-top:var(--s-3);}
+.fin-pac-wrap{max-width:560px;margin:0 auto;}
+@media print{
+  .topbar,.gra-voltar,.fin-abas,.fin-barra,.fin-acoes{display:none !important;}
+  .fin-painel,.fin-cartao{box-shadow:none;break-inside:avoid;}
+}
 </style>
 </head>
 <body>
@@ -4435,6 +4550,7 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
   <symbol id="i-humor-5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9h.01M15 9h.01"/><path d="M7.5 13.5c1 3.2 8 3.2 9 0"/></symbol>
   <!-- Pacote 16.10: símbolo da marca (docs/design/marca/simbolo.svg) — o C pega currentColor, o ponto --c-marca-ponto -->
   <symbol id="i-marca" viewBox="0 0 64 64"><path d="M47.32 19.14A20 20 0 1 0 47.32 44.86" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round"/><circle cx="32" cy="32" r="7.5" stroke="none" style="fill:var(--c-marca-ponto)"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H5a2 2 0 0 1-2-2z"/><path d="M16.5 14h.01"/></symbol>
 </svg>
 
 <div class="loading-overlay" id="loadingOverlay">
@@ -4643,6 +4759,25 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
     <div class="prof-placeholder" id="profPacientesConteudo"></div>
   </div>
 
+  <!-- Fase 20: Fluxo de caixa (profissional). O conteúdo é montado por finRender_ com o que vem de profLerFinanceiro -->
+  <div class="section" id="sec-prof-financeiro">
+    <div class="gra-topo">
+      <button class="gra-voltar" type="button" onclick="abrirSecao('sec-prof-dashboard')">← Voltar</button>
+      <h2 class="gra-titulo"><svg class="ico" aria-hidden="true"><use href="#i-wallet"/></svg> Fluxo de caixa</h2>
+    </div>
+    <div id="finConteudo"></div>
+  </div>
+  <div class="p5-modal-overlay" id="finModal" onclick="if(event.target===this)finModalFechar_()">
+    <div class="p5-modal-card age-card fin-modal" role="dialog" aria-modal="true" aria-labelledby="finModalTitulo">
+      <div class="p5-modal-head">
+        <span class="p5-modal-icone"><svg class="ico" aria-hidden="true"><use href="#i-wallet"/></svg></span>
+        <div class="p5-modal-titulo" id="finModalTitulo"></div>
+      </div>
+      <div class="p5-modal-body" id="finModalCorpo"></div>
+      <div class="p5-modal-acoes" id="finModalAcoes"></div>
+    </div>
+  </div>
+
   <!-- ============================================================
        PACOTE 14.2: AGENDA VISUAL (Módulo Consultório Digital)
        ============================================================ -->
@@ -4798,6 +4933,11 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
   <!-- Pacote 14.3: Minhas sessões (paciente) -->
   <div class="section" id="sec-sessoes" data-barra-titulo="Minhas sessões">
     <div id="sesConteudo"></div>
+  </div>
+
+  <!-- Fase 20: Financeiro (paciente) -->
+  <div class="section" id="sec-financeiro" data-barra-titulo="Financeiro">
+    <div id="finMeuConteudo"></div>
   </div>
 
   <!-- PACOTE 13.3.1: VISUALIZAÇÃO INDIVIDUAL DO PACIENTE (read-only, visão profissional) -->
@@ -5109,6 +5249,14 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
         <span class="card-icon"><svg class="ico ico-lg" aria-hidden="true"><use href="#i-calendar"/></svg></span>
         <div class="card-title">Minhas sessões</div>
         <div class="card-desc">Veja, confirme e agende suas sessões.</div>
+        <span class="card-arrow">›</span>
+      </button>
+
+      <!-- Fase 20 -->
+      <button class="card card-blue" id="cardFinanceiro" onclick="finMeuAbrirTela()">
+        <span class="card-icon"><svg class="ico ico-lg" aria-hidden="true"><use href="#i-wallet"/></svg></span>
+        <div class="card-title">Financeiro</div>
+        <div class="card-desc">Sessões do mês, pagamento e recibo.</div>
         <span class="card-arrow">›</span>
       </button>
 
@@ -9553,6 +9701,7 @@ function loginConcluir_(tipo, resposta) {
   document.getElementById('inputSenha').value = '';
 
   VMC_GERACAO_SESSAO++; // 18.1.2 (8.69): sessão nova; respostas pendentes da anterior são descartadas
+  finZerar_(); // Fase 20
 
   // Pacote 18.1: o servidor devolve o crachá (token) e o perfil; a senha não fica em lugar nenhum
   const perfil = resposta.perfil || {};
@@ -10011,6 +10160,7 @@ function profRenderInicio_() {
     '<button type="button" class="prof-atalho" id="profAtalhoAgenda" onclick="calAbrirTela()"><svg class=ico aria-hidden=true><use href=#i-calendar></use></svg><span>Agenda</span></button>' +
     '<button type="button" class="prof-atalho" id="profAtalhoPacientes" onclick="profAbrirPacientes()"><svg class=ico aria-hidden=true><use href=#i-user></use></svg><span>Pacientes</span></button>' +
     '<button type="button" class="prof-atalho" id="profAtalhoEscalas" disabled><svg class=ico aria-hidden=true><use href=#i-lock></use></svg><span>Escalas e Inventários</span><span class="prof-atalho-selo">Em breve</span></button>' +
+    '<button type="button" class="prof-atalho" id="profAtalhoFinanceiro" onclick="finAbrirTela()"><svg class=ico aria-hidden=true><use href=#i-wallet></use></svg><span>Fluxo de caixa</span></button>' + // Fase 20
   '</div>';
 
   if (pacientes.length === 0) {
@@ -10022,7 +10172,7 @@ function profRenderInicio_() {
   var ativos = pacientes.filter(function(p){ return String(p.ativo||'Sim').trim().toLowerCase() !== 'nao'; });
 
   // 19.2.1: Lembretes de hoje e Atrasados entre os alertas e as atualizações
-  container.innerHTML = atalhos + profRenderAlertas_(ativos) + profRenderPedidos_(ativos) + profRenderEventosAgenda_(ativos) + profRenderLembretesHoje_(ativos) + profRenderAtrasados_(ativos) + profRenderAtualizacoes_(ativos);
+  container.innerHTML = atalhos + profRenderAlertas_(ativos) + profRenderPedidos_(ativos) + profRenderEventosAgenda_(ativos) + profRenderLembretesHoje_(ativos) + profRenderAtrasados_(ativos) + finInicioHtml_() + profRenderAtualizacoes_(ativos); // Fase 20: blocos do financeiro
 }
 
 function profSemPacientesHtml_() {
@@ -10859,6 +11009,8 @@ function profRenderPaciente_(sigla, resp) {
   html += '<span class="prof-pv-mod-chevron">›</span>';
   html += '</div>';
   html += '<div class="prof-pv-mod-body" id="profModLemBody">' + profLemCorpoHtml_() + '</div></div>';
+
+  html += finPacModuloHtml_(sigla); // Fase 20
 
   html += '</div>'; // fecha .prof-pv-mods
 
@@ -12090,6 +12242,7 @@ function sairDoSistema(opcoes) {
   PROF_CONVITE = { cad: { sigla: '', telefone: '', link: '' }, ed: { sigla: '', telefone: '', link: '' } };
   graEstado = null; graCarregando = false; CAL_GRADE_JANELAS = {}; CAL_SESSOES = [];
   AGE = { agenda: null, carregando: false, p: null, vista: '', sim: null, ocupado: false }; document.getElementById('ageModal').classList.remove('show'); // 14.3
+  finZerar_(); // Fase 20
   document.getElementById('profNomeHeader').textContent = 'Olá, Profissional';
   document.getElementById('profSiglaHeader').textContent = 'Área do Psicólogo';
   profFecharMeusDados(true); // 18.8.1: a janela "Meus dados" sai com a sessão, sem nada digitado
@@ -24470,6 +24623,719 @@ async function ageConfirmarPorLink_(token) {
 }
 
 /* Fim do Pacote 14.3 — Agenda completa */
+
+/* ============================================================
+   FASE 20 — FLUXO DE CAIXA
+   Telas do profissional (página Fluxo de caixa, módulo Financeiro do paciente aberto, blocos do Início)
+   e do paciente (Financeiro). Os dados vêm de `profLerFinanceiro` e `lerMeuFinanceiro`; valores sempre
+   em centavos (inteiros). Nada é salvo nem enviado sem o clique do profissional: o sistema só sugere.
+   ============================================================ */
+var FIN = { dados: null, carregando: false, erro: '', msg: '', aba: 'resumo', periodo: 'mes', comparar: 'anterior', de: '', ate: '',
+  leitura: 'sessoes', granul: 'dia', vista: 'paciente', fSigla: '', fModalidade: '', fSituacao: '', fCob: '', fCategoria: '', fDesp: '',
+  modal: null, grafico: null, ocupado: false, inicio: null, inicioPedido: false, pac: null, pacSigla: '', meu: null };
+var FIN_ABAS = [['resumo', 'Resumo'], ['receitas', 'Receitas'], ['cobrancas', 'Cobranças'], ['despesas', 'Despesas'], ['recibos', 'Recibos'], ['config', 'Configuração']];
+var FIN_PERIODOS = [['mes', 'Este mês'], ['mes_passado', 'Mês passado'], ['semana', 'Esta semana'], ['ano', 'Este ano'], ['12m', 'Últimos 12 meses'], ['personalizado', 'Personalizado']];
+var FIN_MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+var FIN_SIT_COB = { a_enviar: ['aberto', 'A enviar'], enviada: ['', 'Enviada'], paga: ['ok', 'Paga'], parcial: ['atencao', 'Parcial'], atrasada: ['atencao', 'Atrasada'] };
+var FIN_SIT_REC = { a_emitir: ['aberto', 'A emitir'], no_lote: ['', 'No lote'], emitido: ['ok', 'Emitido'], cancelado: ['atencao', 'Cancelado'] };
+var FIN_MODOS = [['sessao', 'Por sessão'], ['n', 'A cada … sessões'], ['mensal', 'Mensal']];
+var FIN_QUANDO = [['adiantado', 'Adiantado'], ['f1', 'Do dia 1 ao 10'], ['f2', 'Do dia 11 ao 20'], ['f3', 'Do dia 21 ao fim do mês'], ['seguinte', 'No mês seguinte']];
+
+/* ---- formatos ---- */
+function finBRL_(c) {
+  var n = Math.round(Number(c) || 0), neg = n < 0; n = Math.abs(n);
+  return (neg ? '− ' : '') + 'R$ ' + String(Math.floor(n / 100)).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + ('0' + (n % 100)).slice(-2);
+}
+function finCentavos_(txt) {
+  var t = String(txt || '').replace(/[^0-9,.]/g, '');
+  if (!t) return 0;
+  if (t.indexOf(',') !== -1) t = t.replace(/\./g, '').replace(',', '.');
+  return Math.round((parseFloat(t) || 0) * 100);
+}
+function finDia_(iso) { var p = String(iso || '').split('-'); return p.length === 3 ? p[2] + '/' + p[1] : '—'; }
+function finDiaLongo_(iso) { var p = String(iso || '').split('-'); return p.length === 3 ? p[2] + ' de ' + FIN_MESES[Number(p[1]) - 1] + ' de ' + p[0] : ''; }
+function finMesNome_(iso) { var p = String(iso || '').split('-'); return p.length >= 2 ? FIN_MESES[Number(p[1]) - 1] + ' de ' + p[0] : ''; }
+function finMaiuscula_(t) { return t ? t.charAt(0).toUpperCase() + t.slice(1) : ''; }
+function finPrimeiroNome_(nome) { return String(nome || '').trim().split(/\s+/)[0] || ''; }
+function finPac_(sigla) { return ((FIN.dados && FIN.dados.pacientes) || []).filter(function (p) { return p.sigla === sigla; })[0] || { sigla: sigla, nome: sigla, pagadores: [] }; }
+var FIN_TAGS = { ok: ' fin-tag-ok', aberto: ' fin-tag-aberto', atencao: ' fin-tag-atencao' };
+function finTag_(par) { return '<span class="fin-tag' + (FIN_TAGS[par[0]] || '') + '">' + esc(par[1]) + '</span>'; }
+function finOpcoes_(pares, atual) {
+  return pares.map(function (o) { return '<option value="' + esc(o[0]) + '"' + (String(o[0]) === String(atual) ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('');
+}
+function finSeg_(campo, pares, atual, rotulo) {
+  return '<div class="fin-seg" role="group" aria-label="' + esc(rotulo) + '">' + pares.map(function (o) {
+    return '<button type="button" aria-pressed="' + (o[0] === atual) + '" data-fin-campo="' + campo + '" data-fin-valor="' + o[0] + '" onclick="finMudar_(this.dataset.finCampo, this.dataset.finValor)">' + esc(o[1]) + '</button>';
+  }).join('') + '</div>';
+}
+function finSitSessao_(s) {
+  if (!s.cobravel) return ['', s.estado === 'agendada' ? 'A realizar' : 'Não cobrada'];
+  if (s.valor > 0 && s.pago >= s.valor) return ['ok', 'Paga'];
+  return s.pago > 0 ? ['atencao', 'Parcial'] : ['aberto', 'Em aberto'];
+}
+function finModalidade_(m) { return m === 'online' ? 'On-line' : 'Presencial'; }
+function finEstado_(s) { return ({ realizada: 'Realizada', falta: 'Falta', cancelada: 'Cancelada fora do prazo', agendada: 'Agendada' })[s.estado] || ''; }
+function finSomas_(d) {
+  var s = { sessoes: 0, total: 0, recebido: 0, aberto: 0, atrasado: 0, despTotal: 0, despPago: 0 };
+  d.sessoes.forEach(function (x) { if (!x.cobravel) return; s.sessoes++; s.total += x.valor; s.recebido += Math.min(x.pago, x.valor); });
+  s.aberto = s.total - s.recebido;
+  d.cobrancas.forEach(function (c) { if (c.situacao === 'atrasada') s.atrasado += c.total - c.pago; });
+  d.despesas.forEach(function (x) { s.despTotal += x.valor; if (x.situacao === 'paga') s.despPago += x.valor; });
+  return s;
+}
+
+/* ---- página do profissional ---- */
+function finAbrirTela() {
+  if (!PROF_SESSAO) return;
+  abrirSecao('sec-prof-financeiro');
+  FIN.msg = '';
+  finRender_();
+  if (!FIN.dados) finCarregar_();
+}
+async function finCarregar_() {
+  if (FIN.carregando) return;
+  var geracao = VMC_GERACAO_SESSAO;
+  FIN.carregando = true; FIN.erro = '';
+  finRender_();
+  var r = await chamarServidor('profLerFinanceiro', { periodo: FIN.periodo, comparar: FIN.comparar, de: FIN.de, ate: FIN.ate });
+  FIN.carregando = false;
+  if (geracao !== VMC_GERACAO_SESSAO) return;
+  if (r && r.ok && r.financeiro) FIN.dados = r.financeiro; else FIN.erro = (r && r.erro) || 'Não foi possível ler o fluxo de caixa agora.';
+  finRender_();
+}
+function finTrocarAba_(aba) { FIN.aba = aba; FIN.msg = ''; finRender_(); }
+function finMudar_(campo, valor, reler) {
+  FIN[campo] = valor; FIN.msg = '';
+  if (reler && !(campo === 'periodo' && valor === 'personalizado')) finCarregar_(); else finRender_();
+}
+function finAplicarDatas_() {
+  FIN.de = document.getElementById('finDe').value; FIN.ate = document.getElementById('finAte').value;
+  if (FIN.de && FIN.ate && FIN.de <= FIN.ate) finCarregar_(); else { FIN.erro = 'Informe a data inicial e a final do período.'; finRender_(); }
+}
+function finRender_() {
+  var c = document.getElementById('finConteudo');
+  if (!c) return;
+  if (FIN.grafico) { FIN.grafico.destroy(); FIN.grafico = null; }
+  var d = FIN.dados;
+  var telas = { resumo: finResumoHtml_, receitas: finReceitasHtml_, cobrancas: finCobrancasHtml_, despesas: finDespesasHtml_, recibos: finRecibosHtml_, config: finConfigHtml_ };
+  var h = '<div class="fin-abas" role="tablist" aria-label="Partes do fluxo de caixa">' + FIN_ABAS.filter(function (a) { return a[0] !== 'recibos' || (d && d.config.fiscal); }).map(function (a) {
+    return '<button type="button" class="fin-aba" role="tab" aria-selected="' + (FIN.aba === a[0]) + '" data-fin-aba="' + a[0] + '" onclick="finTrocarAba_(this.dataset.finAba)">' + a[1] + '</button>';
+  }).join('') + '</div>';
+  if (FIN.msg) h += '<p class="age-msg" role="status">' + esc(FIN.msg) + '</p>';
+  if (FIN.erro) h += '<p class="age-msg age-msg-erro" role="alert">' + esc(FIN.erro) + '</p>';
+  if (d) h += telas[FIN.aba](d); else if (FIN.carregando) h += '<p class="fin-nota">Carregando…</p>';
+  c.innerHTML = h;
+  if (d && FIN.aba === 'resumo') finGraficoDesenhar_(d);
+}
+function finPeriodoHtml_(d, comComparar) {
+  var h = '<div class="fin-barra"><p class="fin-periodo-rot">' + esc(d.periodo.rotulo) + '</p>' +
+    '<div class="fin-campo fin-campo-curto"><label for="finPeriodo">Período</label><select id="finPeriodo" onchange="finMudar_(\'periodo\', this.value, true)">' + finOpcoes_(FIN_PERIODOS, FIN.periodo) + '</select></div>';
+  if (FIN.periodo === 'personalizado') {
+    h += '<div class="fin-campo fin-campo-curto"><label for="finDe">De</label><input type="date" id="finDe"></div>' +
+      '<div class="fin-campo fin-campo-curto"><label for="finAte">Até</label><input type="date" id="finAte"></div>' +
+      '<button type="button" class="prof-lem-btn" onclick="finAplicarDatas_()">Aplicar</button>';
+  }
+  if (comComparar) h += '<div class="fin-campo fin-campo-curto"><label for="finComparar">Comparar com</label><select id="finComparar" onchange="finMudar_(\'comparar\', this.value, true)">' +
+    finOpcoes_([['anterior', 'Período anterior'], ['ano_passado', 'Mesmo período do ano passado']], FIN.comparar) + '</select></div>';
+  return h + '</div>';
+}
+function finCartao_(classe, rotulo, valor, sub) {
+  return '<div class="fin-cartao ' + classe + '"><div class="fin-cartao-rot">' + rotulo + '</div><div class="fin-cartao-num">' + valor + '</div>' + (sub ? '<div class="fin-cartao-sub">' + esc(sub) + '</div>' : '') + '</div>';
+}
+function finVariacao_(atual, antes) {
+  if (!antes) return '';
+  var p = Math.round((atual - antes) * 100 / Math.abs(antes));
+  return (p > 0 ? '+' : (p < 0 ? '−' : '')) + Math.abs(p) + '% ' + (FIN.comparar === 'ano_passado' ? 'sobre o ano passado' : 'sobre o período anterior');
+}
+function finLinhas_(pares) { return pares.map(function (p) { return '<div class="fin-linha' + (p[2] ? ' fin-total' : '') + '"><span>' + esc(p[0]) + '</span><b>' + esc(p[1]) + '</b></div>'; }).join(''); }
+
+/* Tela 1 — Resumo */
+function finResumoHtml_(d) {
+  var s = finSomas_(d), r = d.resumo, ant = r.anterior || {};
+  var recebido = FIN.leitura === 'entrada' ? r.recebido_entrada : s.recebido;
+  var h = finPeriodoHtml_(d, true);
+  h += '<div class="fin-barra"><div class="fin-campo"><span class="fin-rot">Recebido por</span><div>' + finSeg_('leitura', [['sessoes', 'Mês das sessões'], ['entrada', 'Data do pagamento']], FIN.leitura, 'Recebido por') + '</div></div></div>';
+  h += '<div class="fin-cartoes fin-cinco">' +
+    finCartao_('fin-ok', 'Recebido', finBRL_(recebido), finVariacao_(recebido, ant.recebido)) +
+    finCartao_('', 'A receber', finBRL_(s.aberto), s.sessoes + ' sessões cobradas no período') +
+    finCartao_('fin-atencao', 'Atrasado', finBRL_(s.atrasado), s.atrasado ? 'Cobranças vencidas sem pagamento' : 'Nenhuma cobrança vencida') +
+    finCartao_('fin-neutro', 'Despesas', finBRL_(s.despPago), finVariacao_(s.despPago, ant.despesas)) +
+    finCartao_('fin-largo', 'Resultado', finBRL_(recebido - s.despPago), 'Recebido menos despesas pagas') + '</div>';
+  h += '<div class="fin-painel"><div class="fin-painel-topo"><h3 class="fin-painel-tit">Sessões e valor</h3>' + finSeg_('granul', [['dia', 'Por dia'], ['semana', 'Por semana']], FIN.granul, 'Agrupar o gráfico') + '</div>' +
+    (r.serie.length ? '<div class="fin-grafico"><canvas id="finGrafico" role="img" aria-label="Sessões e valor no período"></canvas></div><div class="fin-legenda"><span><i></i>Sessões</span><span><i class="fin-leg-linha"></i>Valor das sessões (R$)</span></div>'
+                    : '<p class="fin-nota">Nenhuma sessão neste período.</p>') + '</div>';
+  var a = r.agenda, p = r.pacientes, ano = r.ano, maior = Math.max.apply(null, r.encaminhamento.map(function (e) { return e.n; }).concat([1]));
+  h += '<div class="fin-grade">' +
+    '<div class="fin-painel"><h3 class="fin-painel-tit">No ano</h3>' + finLinhas_([['Faturamento', finBRL_(ano.faturamento)], ['Valor médio da sessão', finBRL_(ano.valor_medio)], ['Acumulado (recebido)', finBRL_(ano.acumulado)],
+      ['Média mensal', finBRL_(ano.media_mensal)], ['Com recibo', finBRL_(ano.com_recibo)], ['Sem recibo', finBRL_(ano.sem_recibo)], ['Projeção do ano', finBRL_(ano.projecao)]]) + '</div>' +
+    '<div class="fin-painel"><h3 class="fin-painel-tit">Agenda no período</h3>' + finLinhas_([['Sessões realizadas', String(a.realizadas)], ['Faltas', a.faltas + ' (' + a.pct_faltas + '%)'],
+      ['Canceladas por você', a.canc_prof + ' (' + a.pct_canc_prof + '%)'], ['Canceladas pelo paciente', a.canc_pac + ' (' + a.pct_canc_pac + '%)'], ['On-line', String(a.online)], ['Presencial', String(a.presencial)]]) + '</div>' +
+    '<div class="fin-painel"><h3 class="fin-painel-tit">Pacientes</h3>' + finLinhas_([['Novos', String(p.novos)], ['Regulares', String(p.regulares)], ['Sem sessão no período', String(p.sem_sessao)], ['Saíram', String(p.sairam)], ['Com saldo em aberto', String(p.com_saldo)]]) + '</div>' +
+    '<div class="fin-painel"><h3 class="fin-painel-tit">Encaminhamento</h3><p class="fin-nota">Por onde os pacientes chegaram.</p>' + r.encaminhamento.map(function (e) {
+      return '<div class="fin-rank"><span>' + esc(e.nome) + '</span><b>' + e.n + '</b><div class="fin-rank-barra"><i style="width:' + Math.round(e.n * 100 / maior) + '%"></i></div></div>';
+    }).join('') + '</div></div>';
+  h += '<div class="fin-acoes"><button type="button" class="prof-lem-btn" onclick="finExportar_()">Exportar lista</button><button type="button" class="prof-lem-btn" onclick="window.print()">Salvar em PDF</button></div>';
+  return h;
+}
+function finGraficoDesenhar_(d) {
+  var canvas = document.getElementById('finGrafico');
+  if (!canvas || typeof Chart === 'undefined') return;
+  var pontos = d.resumo.serie;
+  if (FIN.granul === 'semana') {
+    var semanas = [];
+    pontos.forEach(function (p, i) { var k = Math.floor(i / 7); if (!semanas[k]) semanas[k] = { dia: p.dia, sessoes: 0, valor: 0 }; semanas[k].sessoes += p.sessoes; semanas[k].valor += p.valor; });
+    pontos = semanas;
+  }
+  var tinta = vmcTok('--c-ink-3'), grade = vmcTok('--c-line-soft');
+  FIN.grafico = new Chart(canvas.getContext('2d'), {
+    data: { labels: pontos.map(function (p) { return finDia_(p.dia); }), datasets: [
+      { type: 'line', label: 'Valor das sessões', yAxisID: 'v', data: pontos.map(function (p) { return p.valor / 100; }), borderColor: vmcTok('--c-pos'), backgroundColor: vmcTok('--c-pos'), borderWidth: 2.5, pointRadius: 3, tension: 0 },
+      { type: 'bar', label: 'Sessões', yAxisID: 's', data: pontos.map(function (p) { return p.sessoes; }), backgroundColor: vmcTok('--c-action'), borderRadius: 4, maxBarThickness: 28 }
+    ] },
+    options: { responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (it) { return it.dataset.yAxisID === 'v' ? 'Valor: ' + finBRL_(Math.round(it.parsed.y * 100)) : 'Sessões: ' + it.parsed.y; } } } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: tinta, font: { size: 11 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 10 } },
+        s: { position: 'left', beginAtZero: true, ticks: { color: tinta, font: { size: 11 }, precision: 0 }, grid: { color: grade, drawTicks: false } },
+        v: { position: 'right', beginAtZero: true, ticks: { color: tinta, font: { size: 11 }, maxTicksLimit: 6, callback: function (v) { return 'R$ ' + Number(v).toLocaleString('pt-BR'); } }, grid: { display: false } }
+      } }
+  });
+}
+function finExportar_() {
+  var d = FIN.dados, linhas = [['Data', 'Paciente', 'Modalidade', 'Estado', 'Situação do pagamento', 'Valor', 'Pago']];
+  d.sessoes.forEach(function (s) { linhas.push([finDiaLongo_(s.data), finPac_(s.sigla).nome, finModalidade_(s.modalidade), finEstado_(s), finSitSessao_(s)[1], finBRL_(s.valor), finBRL_(s.pago)]); });
+  var texto = '﻿' + linhas.map(function (l) { return l.map(function (c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(';'); }).join('\r\n');
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([texto], { type: 'text/csv;charset=utf-8' }));
+  a.download = 'fluxo-de-caixa-' + d.periodo.de + '-a-' + d.periodo.ate + '.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+}
+
+/* Tela 2 — Receitas */
+function finReceitasHtml_(d) {
+  var sessoes = d.sessoes.filter(function (s) {
+    return (!FIN.fSigla || s.sigla === FIN.fSigla) && (!FIN.fModalidade || s.modalidade === FIN.fModalidade) && (!FIN.fSituacao || finSitSessao_(s)[1] === FIN.fSituacao);
+  });
+  var nomes = d.pacientes.map(function (p) { return [p.sigla, p.nome]; });
+  var h = finPeriodoHtml_(d, false);
+  h += '<div class="fin-barra">' + finSeg_('vista', [['paciente', 'Por paciente'], ['sessao', 'Por sessão']], FIN.vista, 'Ver as receitas') +
+    '<div class="fin-barra-acoes"><button type="button" class="prof-btn-acao" onclick="finModalAbrir_(\'pagamento\', \'\')">Lançar pagamento</button></div></div>';
+  h += '<div class="fin-barra">' +
+    '<div class="fin-campo"><label for="finFSigla">Paciente</label><select id="finFSigla" onchange="finMudar_(\'fSigla\', this.value)">' + finOpcoes_([['', 'Todos']].concat(nomes), FIN.fSigla) + '</select></div>' +
+    '<div class="fin-campo fin-campo-curto"><label for="finFModalidade">Modalidade</label><select id="finFModalidade" onchange="finMudar_(\'fModalidade\', this.value)">' + finOpcoes_([['', 'Todas'], ['presencial', 'Presencial'], ['online', 'On-line']], FIN.fModalidade) + '</select></div>' +
+    '<div class="fin-campo fin-campo-curto"><label for="finFSituacao">Situação</label><select id="finFSituacao" onchange="finMudar_(\'fSituacao\', this.value)">' + finOpcoes_([['', 'Todas'], ['Paga', 'Paga'], ['Parcial', 'Parcial'], ['Em aberto', 'Em aberto'], ['Não cobrada', 'Não cobrada']], FIN.fSituacao) + '</select></div></div>';
+  if (!sessoes.length) return h + '<div class="fin-painel"><p class="fin-nota">Nenhuma sessão neste período.</p></div>';
+  var tot = { n: 0, total: 0, rec: 0 };
+  if (FIN.vista === 'paciente') {
+    var linhas = d.pacientes.map(function (p) {
+      var x = { p: p, n: 0, total: 0, rec: 0 };
+      sessoes.forEach(function (s) { if (s.sigla !== p.sigla || !s.cobravel) return; x.n++; x.total += s.valor; x.rec += Math.min(s.pago, s.valor); });
+      return x;
+    }).filter(function (x) { return x.n || x.p.credito; });
+    h += '<div class="fin-painel"><table class="fin-tabela fin-empilha"><thead><tr><th>Paciente</th><th class="fin-num">Sessões cobradas</th><th class="fin-num">Total</th><th class="fin-num">Recebido</th><th class="fin-num">A receber</th><th class="fin-num">Crédito</th><th></th></tr></thead><tbody>';
+    linhas.forEach(function (x) {
+      tot.n += x.n; tot.total += x.total; tot.rec += x.rec;
+      h += '<tr><td class="fin-principal">' + esc(x.p.nome) + '</td><td class="fin-num" data-rot="Sessões cobradas">' + x.n + '</td><td class="fin-num" data-rot="Total">' + finBRL_(x.total) + '</td><td class="fin-num" data-rot="Recebido">' + finBRL_(x.rec) +
+        '</td><td class="fin-num" data-rot="A receber">' + finBRL_(x.total - x.rec) + '</td><td class="fin-num" data-rot="Crédito">' + (x.p.credito ? finBRL_(x.p.credito) : '—') +
+        '</td><td class="fin-num fin-acao">' + (x.total - x.rec > 0 ? '<button type="button" class="prof-lem-btn" data-sigla="' + esc(x.p.sigla) + '" onclick="finModalAbrir_(\'pagamento\', this.dataset.sigla)">Lançar pagamento</button>' : finTag_(['ok', 'Em dia'])) + '</td></tr>';
+    });
+    h += '</tbody><tfoot><tr><td class="fin-principal">Total do período</td><td class="fin-num" data-rot="Sessões cobradas">' + tot.n + '</td><td class="fin-num" data-rot="Total">' + finBRL_(tot.total) + '</td><td class="fin-num" data-rot="Recebido">' + finBRL_(tot.rec) +
+      '</td><td class="fin-num" data-rot="A receber">' + finBRL_(tot.total - tot.rec) + '</td><td></td><td></td></tr></tfoot></table></div>';
+  } else {
+    h += '<div class="fin-painel"><table class="fin-tabela fin-empilha"><thead><tr><th>Data</th><th>Paciente</th><th>Modalidade</th><th>Sessão</th><th class="fin-num">Valor</th><th class="fin-num">Pagamento</th></tr></thead><tbody>';
+    sessoes.forEach(function (s) {
+      h += '<tr><td class="fin-principal">' + finDia_(s.data) + ' · ' + esc(s.hora) + '<span class="fin-sub">' + esc(finPac_(s.sigla).nome) + '</span></td><td data-rot="Paciente">' + esc(finPac_(s.sigla).nome) + '</td><td data-rot="Modalidade">' + finModalidade_(s.modalidade) +
+        '</td><td data-rot="Sessão">' + esc(finEstado_(s)) + '</td><td class="fin-num" data-rot="Valor">' + finBRL_(s.valor) + '</td><td class="fin-num" data-rot="Pagamento">' + finTag_(finSitSessao_(s)) + '</td></tr>';
+    });
+    h += '</tbody></table></div>';
+  }
+  return h;
+}
+
+/* Tela 3 — Cobranças */
+function finCobrancasHtml_(d) {
+  var conta = {};
+  d.cobrancas.forEach(function (c) { conta[c.situacao] = (conta[c.situacao] || 0) + 1; });
+  var filtros = [['', 'Todas (' + d.cobrancas.length + ')']].concat(Object.keys(FIN_SIT_COB).map(function (k) { return [k, FIN_SIT_COB[k][1] + ' (' + (conta[k] || 0) + ')']; }));
+  var h = '<div class="fin-barra"><p class="fin-periodo-rot">Cobranças</p><div class="fin-campo fin-campo-curto"><label for="finFCob">Situação</label><select id="finFCob" onchange="finMudar_(\'fCob\', this.value)">' + finOpcoes_(filtros, FIN.fCob) + '</select></div>' +
+    '<div class="fin-barra-acoes"><button type="button" class="prof-btn-acao" onclick="finModalAbrir_(\'gerar\', \'\')">Gerar cobranças</button></div></div>';
+  h += '<p class="fin-nota-forte">Nada é enviado sem o seu clique. O sistema monta a cobrança quando você pede; você revisa, edita e envia.</p>';
+  var lista = d.cobrancas.filter(function (c) { return !FIN.fCob || c.situacao === FIN.fCob; });
+  if (!lista.length) return h + '<div class="fin-painel"><p class="fin-nota">Nenhuma cobrança nesta situação.</p></div>';
+  h += '<div class="fin-painel">' + lista.map(function (c) {
+    var p = finPac_(c.sigla);
+    return '<div class="fin-item"><div><div class="fin-item-nome">' + esc(p.nome) + '</div><span class="fin-sub">' + (c.para && c.para !== p.nome ? 'Para ' + esc(c.para) + ' (quem paga) · ' : '') + c.sessoes.length + (c.sessoes.length === 1 ? ' sessão' : ' sessões') + ' de ' + esc(c.mes) + '</span></div>' +
+      '<div class="fin-item-valor">' + finBRL_(c.total) + '</div><div class="fin-item-acoes"><span>' + finTag_(FIN_SIT_COB[c.situacao]) + ' <span class="fin-sub">' + esc(finCobQuando_(c)) + '</span></span>' +
+      '<button type="button" class="prof-lem-btn" data-id="' + esc(c.id) + '" onclick="finModalAbrir_(\'cobranca\', this.dataset.id)">' + (c.situacao === 'a_enviar' ? 'Revisar e enviar' : 'Abrir') + '</button></div></div>';
+  }).join('') + '</div>';
+  return h;
+}
+function finCobQuando_(c) {
+  if (c.situacao === 'a_enviar') return 'Ainda não enviada';
+  if (c.situacao === 'paga') return 'Paga em ' + finDia_(c.paga_em);
+  return 'Enviada em ' + finDia_(c.enviada_em) + ' · vence em ' + finDia_(c.vence_em);
+}
+function finWhatsLink_(telefone, texto) { return 'https://wa.me/55' + String(telefone || '').replace(/\D/g, '') + '?text=' + encodeURIComponent(texto); }
+
+/* Tela 4 — Despesas e contas a pagar */
+function finDespesasHtml_(d) {
+  var lista = d.despesas.filter(function (x) { return (!FIN.fCategoria || x.categoria === FIN.fCategoria) && (!FIN.fDesp || x.situacao === FIN.fDesp); });
+  var s = finSomas_(d);
+  var h = finPeriodoHtml_(d, false);
+  h += '<div class="fin-cartoes">' + finCartao_('fin-neutro', 'Total do mês', finBRL_(s.despTotal), d.despesas.length + ' contas') + finCartao_('fin-ok', 'Pago', finBRL_(s.despPago), '') + finCartao_('fin-atencao fin-largo', 'A pagar', finBRL_(s.despTotal - s.despPago), '') + '</div>';
+  h += '<div class="fin-barra"><div class="fin-campo"><label for="finFCategoria">Categoria</label><select id="finFCategoria" onchange="finMudar_(\'fCategoria\', this.value)">' + finOpcoes_([['', 'Todas']].concat(d.config.categorias.map(function (c) { return [c, c]; })), FIN.fCategoria) + '</select></div>' +
+    '<div class="fin-campo fin-campo-curto"><label for="finFDesp">Situação</label><select id="finFDesp" onchange="finMudar_(\'fDesp\', this.value)">' + finOpcoes_([['', 'Todas'], ['paga', 'Paga'], ['a_pagar', 'A pagar']], FIN.fDesp) + '</select></div>' +
+    '<div class="fin-barra-acoes"><button type="button" class="prof-btn-acao" onclick="finModalAbrir_(\'despesa\', \'\')">Nova despesa</button></div></div>';
+  if (!lista.length) return h + '<div class="fin-painel"><p class="fin-nota">Nenhuma despesa neste período.</p></div>';
+  h += '<div class="fin-painel"><h3 class="fin-painel-tit">Contas do mês</h3><table class="fin-tabela fin-empilha"><thead><tr><th>Despesa</th><th>Categoria</th><th>Vence</th><th class="fin-num">Valor</th><th>Situação</th><th></th></tr></thead><tbody>';
+  lista.forEach(function (x) {
+    var semValor = x.fixa && x.tipo === 'variavel' && !x.valor;
+    h += '<tr><td class="fin-principal">' + esc(x.nome) + (x.fixa ? '<span class="fin-sub">' + (x.tipo === 'variavel' ? 'Todo mês · valor muda a cada mês' : 'Todo mês · valor fixo') + '</span>' : '') + '</td><td data-rot="Categoria">' + esc(x.categoria) + '</td><td data-rot="Vence">' + finDia_(x.vence) +
+      '</td><td class="fin-num" data-rot="Valor">' + (semValor ? '<span class="fin-sub">Informe o valor deste mês</span>' : finBRL_(x.valor)) + '</td><td data-rot="Situação">' + finTag_(x.situacao === 'paga' ? ['ok', 'Paga em ' + finDia_(x.paga_em)] : (x.vence < d.hoje ? ['atencao', 'Vencida'] : ['aberto', 'A pagar'])) +
+      '</td><td class="fin-num fin-acao">' + (x.situacao === 'paga' ? '' : '<button type="button" class="prof-lem-btn" data-id="' + esc(x.id) + '" onclick="finModalAbrir_(\'despesa\', this.dataset.id)">Marcar como paga</button>') + '</td></tr>';
+  });
+  return h + '</tbody></table></div>';
+}
+
+/* Tela 8 — Recibos e livro caixa */
+function finRecibosHtml_(d) {
+  var s = finSomas_(d), bruto = 0;
+  var h = '<div class="fin-barra"><p class="fin-periodo-rot">Recibos de ' + esc(finMesNome_(d.periodo.de)) + '</p></div>';
+  h += '<p class="fin-nota-forte">O sistema prepara o arquivo. O envio ao site da Receita é feito por você.</p>';
+  h += '<div class="fin-painel"><h3 class="fin-painel-tit">Quem precisa de recibo neste mês</h3><table class="fin-tabela fin-empilha"><thead><tr><th>Paciente</th><th>Em nome de</th><th class="fin-num">Sessões</th><th class="fin-num">Valor</th><th>Data do recibo</th><th>Situação</th><th></th></tr></thead><tbody>';
+  d.recibos.forEach(function (r) {
+    if (r.situacao !== 'cancelado') bruto += r.valor;
+    h += '<tr><td class="fin-principal">' + esc(finPac_(r.sigla).nome) + '</td><td data-rot="Em nome de">' + esc(r.titular) + '</td><td class="fin-num" data-rot="Sessões">' + r.sessoes + '</td><td class="fin-num" data-rot="Valor">' + finBRL_(r.valor) +
+      '</td><td data-rot="Data do recibo">' + (r.data ? finDia_(r.data) : '<span class="fin-sub">Informe a data</span>') + '</td><td data-rot="Situação">' + finTag_(FIN_SIT_REC[r.situacao]) + (r.numero ? ' <span class="fin-sub">nº ' + esc(r.numero) + '</span>' : '') +
+      '</td><td class="fin-num fin-acao"><button type="button" class="prof-lem-btn" data-id="' + esc(r.id) + '" onclick="finModalAbrir_(\'recibo\', this.dataset.id)">Ver e editar</button></td></tr>';
+  });
+  h += '</tbody></table><div class="fin-acoes"><button type="button" class="prof-btn-acao" onclick="finModalAbrir_(\'lote\', \'\')">Conferir o lote</button></div></div>';
+  h += '<div class="fin-painel"><h3 class="fin-painel-tit">Demonstrativo do mês</h3>' + finLinhas_([['Rendimentos (recibos do mês)', finBRL_(bruto)], ['Despesas do livro caixa', finBRL_(s.despPago)], ['Resultado', finBRL_(bruto - s.despPago), true]]) + '</div>';
+  return h;
+}
+
+/* Tela 7 — Configuração */
+function finConfigHtml_(d) {
+  var c = d.config;
+  var h = '<div class="fin-painel"><h3 class="fin-painel-tit">Recebimento</h3><div class="fin-form fin-duas">' +
+    '<div class="fin-campo fin-inteiro"><label for="finCfgDados">Dados para receber</label><textarea id="finCfgDados" data-fin-chave="dados_receber" rows="4"></textarea><span class="fin-sub">Vai no fim de toda cobrança e aparece para o paciente. Exemplo: chave Pix, nome e banco.</span></div>' +
+    '<div class="fin-campo"><label for="finCfgValor">Valor padrão da sessão (R$)</label><input type="text" inputmode="decimal" id="finCfgValor" data-fin-chave="valor_padrao"><span class="fin-sub">Vale para o paciente que não tem valor próprio.</span></div>' +
+    '<div class="fin-campo"><label for="finCfgPrazo">Prazo para pagar depois da cobrança (dias)</label><input type="text" inputmode="numeric" id="finCfgPrazo" data-fin-chave="prazo_dias"><span class="fin-sub">Sugere o “Vence em” de cada cobrança.</span></div>' +
+    '<div class="fin-campo fin-inteiro"><label for="finCfgFormas">Formas de pagamento</label><input type="text" id="finCfgFormas" data-fin-chave="formas"><span class="fin-sub">Separe por vírgula.</span></div></div></div>';
+  h += '<div class="fin-painel"><h3 class="fin-painel-tit">Texto da cobrança</h3><p class="fin-nota">O que estiver entre chaves é trocado na hora: {nome}, {saudacao}, {mes}, {demonstrativo}, {total} e {dados}. Você ainda revisa cada mensagem antes de enviar.</p>' +
+    '<div class="fin-campo"><label for="finCfgTexto">Modelo</label><textarea id="finCfgTexto" data-fin-chave="texto_cobranca" rows="9"></textarea></div></div>';
+  h += '<div class="fin-painel"><h3 class="fin-painel-tit">Despesas</h3><div class="fin-campo"><label for="finCfgCategorias">Categorias de despesa</label><input type="text" id="finCfgCategorias" data-fin-chave="categorias"><span class="fin-sub">Separe por vírgula.</span></div></div>';
+  h += '<div class="fin-painel"><h3 class="fin-painel-tit">Recibos e livro caixa</h3><p class="fin-nota">Para quem emite recibo pelo Receita Saúde e escritura o Carnê-Leão. Desligado, a aba Recibos não aparece.</p>' +
+    '<fieldset class="fin-fieldset"><legend>Usar recibos e livro caixa</legend><div class="fin-opcoes">' +
+    '<label class="fin-opcao"><input type="radio" name="finCfgFiscal" value="Sim"' + (c.fiscal ? ' checked' : '') + '> Sim</label><label class="fin-opcao"><input type="radio" name="finCfgFiscal" value="Nao"' + (c.fiscal ? '' : ' checked') + '> Não</label></div></fieldset>' +
+    (c.fiscal ? '<div class="fin-form fin-duas"><div class="fin-campo"><label for="finCfgCpf">Seu CPF (emissor do recibo)</label><input type="text" inputmode="numeric" id="finCfgCpf" data-fin-chave="cpf_emissor" autocomplete="off"></div>' +
+      '<div class="fin-campo"><label for="finCfgRegistro">Registro profissional (CRP)</label><input type="text" id="finCfgRegistro" data-fin-chave="registro"></div></div>' : '') + '</div>';
+  h += '<div class="fin-acoes"><button type="button" class="prof-btn-acao" onclick="finConfigSalvar_()">Salvar</button></div>';
+  setTimeout(function () { // valores entram por .value, nunca por concatenação
+    var v = { dados_receber: c.dados_receber, valor_padrao: finBRL_(c.valor_padrao).replace('R$ ', ''), prazo_dias: String(c.prazo_dias), formas: c.formas.join(', '), texto_cobranca: c.texto_cobranca, categorias: c.categorias.join(', '), cpf_emissor: c.cpf_emissor || '', registro: c.registro || '' };
+    document.querySelectorAll('#finConteudo [data-fin-chave]').forEach(function (el) { el.value = v[el.dataset.finChave] || ''; });
+  }, 0);
+  return h;
+}
+async function finConfigSalvar_() {
+  var dados = {};
+  document.querySelectorAll('#finConteudo [data-fin-chave]').forEach(function (el) { dados[el.dataset.finChave] = el.value.trim(); });
+  var fiscal = document.querySelector('input[name="finCfgFiscal"]:checked');
+  dados.fiscal = fiscal ? fiscal.value : 'Nao';
+  await finSalvar_('profSalvarConfigFinanceiro', { dados: dados }, 'Configuração salva.');
+}
+/* Toda ação que salva devolve o fluxo de caixa do período: a tela nunca relê */
+async function finSalvar_(acao, corpo, msg) {
+  if (FIN.ocupado) return false;
+  FIN.ocupado = true;
+  corpo.id_envio = vmcNovoIdEnvio_(); corpo.periodo = FIN.periodo; corpo.comparar = FIN.comparar; corpo.de = FIN.de; corpo.ate = FIN.ate;
+  var r = await chamarServidor(acao, corpo);
+  FIN.ocupado = false;
+  if (!r || !r.ok) { finModalErro_((r && r.erro) || 'Não foi possível concluir agora. Tente de novo.'); return false; }
+  if (r.financeiro) FIN.dados = r.financeiro;
+  FIN.msg = msg; FIN.erro = '';
+  finModalFechar_();
+  finRender_();
+  return true;
+}
+
+/* ---- janelas (um painel só, como o da consulta na Agenda) ---- */
+function finModalAbrir_(tipo, id) {
+  FIN.modal = { tipo: tipo, id: id };
+  document.getElementById('finModal').classList.add('show');
+  finModalRender_();
+}
+function finModalFechar_() { FIN.modal = null; document.getElementById('finModal').classList.remove('show'); }
+/* Ao sair, nada do financeiro fica na memória da página */
+function finZerar_() {
+  if (FIN.grafico) FIN.grafico.destroy();
+  finModalFechar_();
+  FIN.dados = null; FIN.grafico = null; FIN.inicio = null; FIN.inicioPedido = false; FIN.pac = null; FIN.pacSigla = ''; FIN.meu = null; FIN.msg = ''; FIN.erro = ''; FIN.aba = 'resumo'; FIN.carregando = false; FIN.ocupado = false;
+}
+function finModalErro_(msg) {
+  var corpo = document.getElementById('finModalCorpo');
+  if (!FIN.modal || !corpo) { FIN.erro = msg; finRender_(); return; }
+  corpo.querySelectorAll('[data-fin-erro]').forEach(function (e) { e.remove(); });
+  corpo.insertAdjacentHTML('afterbegin', '<p class="age-msg age-msg-erro" role="alert" data-fin-erro>' + esc(msg) + '</p>');
+  corpo.scrollTop = 0;
+}
+function finModalRender_() {
+  var m = FIN.modal, d = FIN.dados;
+  if (!m || !d) return;
+  var partes = ({ pagamento: finPagModal_, gerar: finGerarModal_, cobranca: finCobModal_, despesa: finDespModal_, recibo: finRecModal_, lote: finLoteModal_ })[m.tipo](d, m);
+  document.getElementById('finModalTitulo').textContent = partes.titulo;
+  document.getElementById('finModalCorpo').innerHTML = partes.corpo;
+  document.getElementById('finModalAcoes').innerHTML = partes.acoes + '<button type="button" class="p5-btn p5-btn-secondary" onclick="finModalFechar_()">' + (partes.fechar || 'Cancelar') + '</button>';
+  if (partes.depois) partes.depois();
+}
+
+/* Lançar pagamento: o sistema sugere as sessões mais antigas em aberto; o profissional troca e confirma */
+function finPagModal_(d, m) {
+  var sigla = m.id || (d.pacientes[0] && d.pacientes[0].sigla) || '', p = finPac_(sigla);
+  var abertas = d.abertas.filter(function (s) { return s.sigla === sigla; }), mes = '';
+  var corpo = '<div class="fin-form fin-duas">' +
+    '<div class="fin-campo fin-inteiro"><label for="finPagPaciente">Paciente</label><select id="finPagPaciente" onchange="finModalAbrir_(\'pagamento\', this.value)">' + finOpcoes_(d.pacientes.map(function (x) { return [x.sigla, x.nome]; }), sigla) + '</select></div>' +
+    '<div class="fin-campo"><label for="finPagData">Data do pagamento</label><input type="date" id="finPagData"></div>' +
+    '<div class="fin-campo"><label for="finPagValor">Valor (R$)</label><input type="text" inputmode="decimal" id="finPagValor" autocomplete="off" oninput="finPagSugerir_()"></div>' +
+    '<div class="fin-campo"><label for="finPagForma">Forma de pagamento</label><select id="finPagForma">' + finOpcoes_([['', 'Escolha']].concat(d.config.formas.map(function (f) { return [f, f]; })), '') + '</select></div>' +
+    '<div class="fin-campo"><label for="finPagQuem">Quem pagou</label><select id="finPagQuem">' + finOpcoes_((p.pagadores || []).map(function (x) { return [x.nome, x.nome]; }), '') + '</select></div>' +
+    '<div class="fin-campo fin-inteiro"><label for="finPagObs">Observações</label><input type="text" id="finPagObs" maxlength="200"></div></div>';
+  corpo += '<fieldset class="fin-fieldset"><legend>Quais sessões este pagamento quita?</legend><p class="fin-nota">Sugestão: as mais antigas em aberto. Você pode trocar.</p>';
+  if (!abertas.length) corpo += '<p class="fin-nota">Nenhuma sessão em aberto. O valor inteiro fica como crédito de ' + esc(finPrimeiroNome_(p.nome)) + '.</p>';
+  abertas.forEach(function (s) {
+    var rot = finMaiuscula_(finMesNome_(s.data));
+    if (rot !== mes) { mes = rot; corpo += '<p class="fin-ses-mes">' + esc(mes) + '</p>'; }
+    corpo += '<label class="fin-ses"><input type="checkbox" data-fin-ses="' + esc(s.id) + '" data-falta="' + (s.valor - s.pago) + '" onchange="finPagRecalcular_()"><span class="fin-ses-txt">' + finDia_(s.data) + ' · ' + esc(finEstado_(s)) +
+      (s.pago ? '<span class="fin-sub">Já pago: ' + finBRL_(s.pago) + '</span>' : '') + '</span><span class="fin-ses-val">' + finBRL_(s.valor - s.pago) + '</span></label>';
+  });
+  corpo += '</fieldset><div id="finPagResumo"></div>';
+  return { titulo: 'Lançar pagamento', corpo: corpo, acoes: '<button type="button" class="p5-btn p5-btn-primary" onclick="finPagConfirmar_()">Confirmar pagamento</button>',
+    depois: function () { document.getElementById('finPagData').value = d.hoje; if (m.valor) { document.getElementById('finPagValor').value = m.valor; finPagSugerir_(); } else finPagRecalcular_(); } };
+}
+function finPagSugerir_() {
+  var resta = finCentavos_(document.getElementById('finPagValor').value);
+  document.querySelectorAll('#finModalCorpo [data-fin-ses]').forEach(function (c) { c.checked = resta > 0; resta -= Number(c.dataset.falta); });
+  finPagRecalcular_();
+}
+/* O valor abate as marcadas na ordem das datas; o que sobra é crédito; o que falta fica em aberto na última */
+function finPagPlano_() {
+  var valor = finCentavos_(document.getElementById('finPagValor').value), resta = valor, itens = [];
+  document.querySelectorAll('#finModalCorpo [data-fin-ses]').forEach(function (c) {
+    if (!c.checked || resta <= 0) return;
+    var v = Math.min(resta, Number(c.dataset.falta)); itens.push({ sessao: c.dataset.finSes, valor: v }); resta -= v;
+  });
+  return { valor: valor, itens: itens, sobra: resta, alocado: valor - resta };
+}
+function finPagRecalcular_() {
+  var alvo = document.getElementById('finPagResumo'), d = FIN.dados, sigla = document.getElementById('finPagPaciente').value, p = finPac_(sigla);
+  var plano = finPagPlano_(), aberto = 0, recebido = 0;
+  d.abertas.forEach(function (s) { if (s.sigla === sigla) aberto += s.valor - s.pago; });
+  d.sessoes.forEach(function (s) { if (s.sigla === sigla && s.cobravel) recebido += Math.min(s.pago, s.valor); });
+  var h = '';
+  if (plano.valor && plano.sobra) h += '<p class="fin-nota-forte">Sobra de ' + finBRL_(plano.sobra) + ' fica como crédito de ' + esc(finPrimeiroNome_(p.nome)) + '.</p>';
+  h += '<table class="fin-tabela"><thead><tr><th>Antes e depois</th><th class="fin-num">Antes</th><th class="fin-num">Depois</th></tr></thead><tbody>' +
+    '<tr><td>Recebido de ' + esc(finPrimeiroNome_(p.nome)) + ' no período</td><td class="fin-num">' + finBRL_(recebido) + '</td><td class="fin-num">' + finBRL_(recebido + plano.alocado) + '</td></tr>' +
+    '<tr><td>A receber</td><td class="fin-num">' + finBRL_(aberto) + '</td><td class="fin-num">' + finBRL_(aberto - plano.alocado) + '</td></tr>' +
+    '<tr><td>Crédito</td><td class="fin-num">' + finBRL_(p.credito || 0) + '</td><td class="fin-num">' + finBRL_((p.credito || 0) + plano.sobra) + '</td></tr></tbody></table>';
+  alvo.innerHTML = h;
+}
+async function finPagConfirmar_() {
+  var plano = finPagPlano_(), forma = document.getElementById('finPagForma').value, data = document.getElementById('finPagData').value;
+  if (!plano.valor) return finModalErro_('Informe o valor do pagamento.');
+  if (!data) return finModalErro_('Informe a data do pagamento.');
+  if (!forma) return finModalErro_('Escolha a forma de pagamento.');
+  await finSalvar_('profSalvarPagamento', { siglaPaciente: document.getElementById('finPagPaciente').value, dados: { data: data, valor: plano.valor, forma: forma,
+    quem: document.getElementById('finPagQuem').value, obs: document.getElementById('finPagObs').value.trim(), sessoes: plano.itens } }, 'Pagamento lançado.');
+}
+
+/* Gerar cobranças: o sistema propõe pelo modo de pagamento de cada paciente; o profissional aprova quem entra */
+function finGerarModal_(d) {
+  var corpo = '<p class="fin-nota">O sistema propõe pelo modo de pagamento de cada paciente. Desmarque quem não deve receber cobrança agora.</p>';
+  if (!d.propostas.length) corpo += '<p class="fin-nota">Nenhuma sessão a cobrar hoje.</p>';
+  d.propostas.forEach(function (x) {
+    corpo += '<label class="fin-ses"><input type="checkbox" checked data-fin-prop="' + esc(x.sigla) + '"><span class="fin-ses-txt">' + esc(finPac_(x.sigla).nome) + '<span class="fin-sub">' + x.sessoes.length + (x.sessoes.length === 1 ? ' sessão' : ' sessões') + ' · ' + esc(x.motivo) + '</span></span><span class="fin-ses-val">' + finBRL_(x.total) + '</span></label>';
+  });
+  return { titulo: 'Gerar cobranças', corpo: corpo, acoes: d.propostas.length ? '<button type="button" class="p5-btn p5-btn-primary" onclick="finGerarConfirmar_()">Gerar para revisar</button>' : '', fechar: d.propostas.length ? 'Cancelar' : 'Fechar' };
+}
+async function finGerarConfirmar_() {
+  var siglas = [];
+  document.querySelectorAll('#finModalCorpo [data-fin-prop]').forEach(function (c) { if (c.checked) siglas.push(c.dataset.finProp); });
+  if (!siglas.length) return finModalErro_('Marque pelo menos um paciente.');
+  await finSalvar_('profGerarCobrancas', { siglas: siglas }, 'Cobranças prontas para revisar. Nenhuma foi enviada.');
+}
+/* Revisar e enviar uma cobrança */
+function finCobModal_(d, m) {
+  var c = d.cobrancas.filter(function (x) { return x.id === m.id; })[0], p = finPac_(c.sigla), nova = c.situacao === 'a_enviar';
+  var corpo = '<p class="fin-nota">Para ' + esc(c.para || p.nome) + (c.para && c.para !== p.nome ? ' (quem paga por ' + esc(finPrimeiroNome_(p.nome)) + ')' : '') + ' · ' + finBRL_(c.total) + '</p>';
+  corpo += '<fieldset class="fin-fieldset"><legend>Sessões ' + (nova ? 'propostas' : 'desta cobrança') + '</legend>';
+  c.sessoes.forEach(function (id) {
+    var s = d.abertas.concat(d.sessoes).filter(function (x) { return x.id === id; })[0];
+    if (!s) return;
+    corpo += '<label class="fin-ses"><input type="checkbox" checked' + (nova ? '' : ' disabled') + ' data-fin-ses="' + esc(id) + '"><span class="fin-ses-txt">' + finDiaLongo_(s.data) + '<span class="fin-sub">' + esc(finEstado_(s)) + '</span></span><span class="fin-ses-val">' + finBRL_(s.valor - s.pago) + '</span></label>';
+  });
+  corpo += '</fieldset>';
+  if (nova) corpo += '<p class="fin-nota">Desmarcar tira a sessão só desta cobrança; ela continua em aberto. <button type="button" class="fin-link" onclick="finNaoCobrar_()">Não cobrar as sessões desmarcadas</button></p>';
+  corpo += '<div class="fin-form fin-duas"><div class="fin-campo"><label for="finCobVence">Vence em</label><input type="date" id="finCobVence"' + (nova ? '' : ' disabled') + '></div></div>' +
+    '<div class="fin-campo"><label for="finCobTexto">Revise a mensagem antes de enviar</label><textarea id="finCobTexto" rows="17"></textarea></div>';
+  var acoes = '<button type="button" class="p5-btn p5-btn-primary" onclick="finCobEnviar_(\'email\')">Enviar por e-mail</button>' +
+    (p.telefone ? '<a class="p5-btn p5-btn-secondary" id="finCobWhats" target="_blank" rel="noopener" href="#" onclick="finCobWhats_(this)">Abrir no WhatsApp</a>' : '') +
+    (nova ? '<button type="button" class="p5-btn p5-btn-secondary" onclick="finCobEnviar_(\'marcar\')">Marcar como enviada</button>' : '');
+  return { titulo: nova ? 'Revisar e enviar' : 'Cobrança de ' + finPrimeiroNome_(p.nome), corpo: corpo, acoes: acoes, fechar: 'Fechar',
+    depois: function () { document.getElementById('finCobTexto').value = c.texto; document.getElementById('finCobVence').value = c.vence_em; } };
+}
+function finCobSelecao_() {
+  var marcadas = [], fora = [];
+  document.querySelectorAll('#finModalCorpo [data-fin-ses]').forEach(function (c) { (c.checked ? marcadas : fora).push(c.dataset.finSes); });
+  return { marcadas: marcadas, fora: fora };
+}
+function finCobWhats_(a) {
+  var c = FIN.dados.cobrancas.filter(function (x) { return x.id === FIN.modal.id; })[0];
+  a.href = finWhatsLink_(finPac_(c.sigla).telefone, document.getElementById('finCobTexto').value);
+}
+async function finCobEnviar_(canal) {
+  var sel = finCobSelecao_();
+  if (!sel.marcadas.length) return finModalErro_('Marque pelo menos uma sessão.');
+  await finSalvar_('profEnviarCobranca', { id: FIN.modal.id, canal: canal, sessoes: sel.marcadas, vence_em: document.getElementById('finCobVence').value, texto: document.getElementById('finCobTexto').value },
+    canal === 'email' ? 'Cobrança enviada por e-mail.' : 'Cobrança marcada como enviada.');
+}
+async function finNaoCobrar_() {
+  var sel = finCobSelecao_();
+  if (!sel.fora.length) return finModalErro_('Desmarque antes a sessão que não deve ser cobrada.');
+  await finSalvar_('profNaoCobrarSessao', { sessoes: sel.fora }, sel.fora.length === 1 ? 'A sessão não será cobrada.' : 'As sessões não serão cobradas.');
+}
+
+/* Nova despesa, ou pagar uma conta do mês */
+function finDespModal_(d, m) {
+  var x = d.despesas.filter(function (e) { return e.id === m.id; })[0];
+  var corpo = '<div class="fin-form fin-duas">' +
+    '<div class="fin-campo fin-inteiro"><label for="finDespNome">Nome</label><input type="text" id="finDespNome" maxlength="80"></div>' +
+    '<div class="fin-campo"><label for="finDespCategoria">Categoria</label><select id="finDespCategoria">' + finOpcoes_([['', 'Escolha']].concat(d.config.categorias.map(function (c) { return [c, c]; })), x ? x.categoria : '') + '</select></div>' +
+    '<div class="fin-campo"><label for="finDespValor">Valor (R$)</label><input type="text" inputmode="decimal" id="finDespValor" autocomplete="off">' + (x && x.fixa ? '<span class="fin-sub">' + (x.tipo === 'variavel' ? 'Informe o valor deste mês.' : 'Sugestão: o mesmo valor do mês passado.') + '</span>' : '') + '</div>' +
+    '<div class="fin-campo"><label for="finDespData">' + (x ? 'Data do pagamento' : 'Data') + '</label><input type="date" id="finDespData"></div>' +
+    '<div class="fin-campo"><label for="finDespArquivo">Comprovante (opcional)</label><input type="file" id="finDespArquivo" accept="image/*,application/pdf"></div></div>';
+  if (!x) corpo += '<fieldset class="fin-fieldset"><legend>Situação</legend><div class="fin-opcoes"><label class="fin-opcao"><input type="radio" name="finDespSit" value="paga"> Paga</label><label class="fin-opcao"><input type="radio" name="finDespSit" value="a_pagar"> A pagar</label></div></fieldset>' +
+    '<fieldset class="fin-fieldset"><legend>Repete todo mês</legend><div class="fin-opcoes"><label class="fin-opcao"><input type="radio" name="finDespRep" value="" checked> Não</label><label class="fin-opcao"><input type="radio" name="finDespRep" value="fixo"> Valor fixo</label><label class="fin-opcao"><input type="radio" name="finDespRep" value="variavel"> Valor muda a cada mês</label></div></fieldset>';
+  corpo += '<div class="fin-campo"><label for="finDespObs">Observações</label><input type="text" id="finDespObs" maxlength="200"></div>';
+  return { titulo: x ? 'Marcar como paga' : 'Nova despesa', corpo: corpo, acoes: '<button type="button" class="p5-btn p5-btn-primary" onclick="finDespSalvar_()">' + (x ? 'Confirmar pagamento' : 'Salvar') + '</button>',
+    depois: function () { document.getElementById('finDespData').value = d.hoje; if (x) { document.getElementById('finDespNome').value = x.nome; if (x.valor) document.getElementById('finDespValor').value = finBRL_(x.valor).replace('R$ ', ''); } } };
+}
+async function finDespSalvar_() {
+  var sit = document.querySelector('input[name="finDespSit"]:checked'), rep = document.querySelector('input[name="finDespRep"]:checked'), id = FIN.modal.id;
+  var dados = { id: id, nome: document.getElementById('finDespNome').value.trim(), categoria: document.getElementById('finDespCategoria').value, valor: finCentavos_(document.getElementById('finDespValor').value),
+    data: document.getElementById('finDespData').value, situacao: id ? 'paga' : (sit ? sit.value : ''), repete: rep ? rep.value : '', obs: document.getElementById('finDespObs').value.trim() };
+  if (!dados.nome) return finModalErro_('Informe o nome da despesa.');
+  if (!dados.valor) return finModalErro_('Informe o valor.');
+  if (!dados.situacao) return finModalErro_('Marque se a despesa está paga ou a pagar.');
+  await finSalvar_('profSalvarDespesa', { dados: dados }, id ? 'Conta marcada como paga.' : 'Despesa salva.');
+}
+
+/* Recibo: prévia literal e editável; o lote aparece inteiro na tela antes de o arquivo existir */
+function finRecModal_(d, m) {
+  var r = d.recibos.filter(function (x) { return x.id === m.id; })[0];
+  var corpo = '<p class="fin-nota">' + esc(finPac_(r.sigla).nome) + ' · em nome de ' + esc(r.titular) + '</p><div class="fin-form fin-duas">' +
+    '<div class="fin-campo"><label for="finRecData">Data do recibo</label><input type="date" id="finRecData"><span class="fin-sub">Informe a data: a do pagamento, a da última sessão ou a do pedido. Ela decide o mês.</span></div>' +
+    '<div class="fin-campo"><label for="finRecQtd">Quantidade</label><input type="text" inputmode="numeric" id="finRecQtd"></div>' +
+    '<div class="fin-campo"><label for="finRecUnit">Valor unitário (R$)</label><input type="text" inputmode="decimal" id="finRecUnit"></div>' +
+    '<div class="fin-campo"><label for="finRecNumero">Número do recibo</label><input type="text" id="finRecNumero"><span class="fin-sub">Preencha depois de importar no site.</span></div>' +
+    '<div class="fin-campo fin-inteiro"><label for="finRecDesc">Descrição (uma linha, até 255 caracteres)</label><textarea id="finRecDesc" rows="4" maxlength="255"></textarea></div></div>';
+  return { titulo: 'Recibo', corpo: corpo, acoes: '<button type="button" class="p5-btn p5-btn-primary" onclick="finRecSalvar_()">Salvar</button>',
+    depois: function () { document.getElementById('finRecData').value = r.data; document.getElementById('finRecQtd').value = r.sessoes; document.getElementById('finRecUnit').value = finBRL_(r.unitario).replace('R$ ', '');
+      document.getElementById('finRecNumero').value = r.numero; document.getElementById('finRecDesc').value = r.descricao; } };
+}
+async function finRecSalvar_() {
+  await finSalvar_('profSalvarRecibo', { id: FIN.modal.id, dados: { data: document.getElementById('finRecData').value, quantidade: document.getElementById('finRecQtd').value, unitario: finCentavos_(document.getElementById('finRecUnit').value),
+    numero: document.getElementById('finRecNumero').value.trim(), descricao: document.getElementById('finRecDesc').value.replace(/\s+/g, ' ').trim() } }, 'Recibo salvo.');
+}
+function finLoteModal_(d) {
+  var prontos = d.recibos.filter(function (r) { return r.situacao === 'a_emitir' && r.data; }), semData = d.recibos.filter(function (r) { return r.situacao === 'a_emitir' && !r.data; }).length;
+  var corpo = '<p class="fin-nota">É exatamente isto que vai no arquivo. Confira antes de gerar.</p>';
+  if (semData) corpo += '<p class="fin-nota-forte">' + semData + (semData === 1 ? ' recibo ficou' : ' recibos ficaram') + ' de fora: falta a data do recibo.</p>';
+  corpo += '<div class="fin-rolagem"><table class="fin-tabela"><thead><tr><th>Data</th><th>Em nome de</th><th class="fin-num">Valor</th><th>Descrição</th></tr></thead><tbody>' + prontos.map(function (r) {
+    return '<tr><td>' + finDia_(r.data) + '</td><td>' + esc(r.titular) + '</td><td class="fin-num">' + finBRL_(r.valor) + '</td><td>' + esc(r.descricao) + '</td></tr>';
+  }).join('') + '</tbody></table></div><p class="fin-ses-mes">Linhas do arquivo</p><pre class="fin-lote">' + esc(d.lote_previa || '') + '</pre>';
+  return { titulo: 'Conferir o lote', corpo: corpo, fechar: 'Fechar', acoes: (prontos.length ? '<button type="button" class="p5-btn p5-btn-primary" data-qual="recibos" onclick="finLoteGerar_(this.dataset.qual)">Gerar arquivo de recibos</button>' : '') +
+    '<button type="button" class="p5-btn p5-btn-secondary" data-qual="despesas" onclick="finLoteGerar_(this.dataset.qual)">Gerar arquivo de despesas</button>' };
+}
+async function finLoteGerar_(qual) { await finSalvar_('profGerarLote', { qual: qual }, qual === 'recibos' ? 'Arquivo de recibos gerado.' : 'Arquivo de despesas gerado.'); }
+
+/* ---- Início do profissional: dois blocos (sugestão) ---- */
+function finInicioHtml_() {
+  if (!FIN.inicio) { finInicioCarregar_(); return ''; }
+  var i = FIN.inicio, h = '';
+  if (i.comprovantes.length) h += '<section class="prof-bloco" id="finBlocoComprovantes"><h3 class="prof-bloco-titulo">Comprovantes para conferir</h3><div class="prof-bloco-lista">' + i.comprovantes.map(function (c) {
+    return '<button type="button" class="prof-ev" onclick="finAbrirTela()"><span class="prof-ev-nome">' + esc(c.nome) + '</span><span class="prof-ev-texto">Enviou um comprovante de ' + finBRL_(c.valor) + '</span><span class="prof-ev-quando">' + finDia_(c.data) + '</span></button>';
+  }).join('') + '</div></section>';
+  if (i.contas.length) h += '<section class="prof-bloco" id="finBlocoContas"><h3 class="prof-bloco-titulo">Contas a vencer <span class="prof-bloco-sub">Próximos 7 dias</span></h3><div class="prof-bloco-lista">' + i.contas.map(function (c) {
+    return '<button type="button" class="prof-ev" onclick="finAbrirTela()"><span class="prof-ev-nome">' + esc(c.nome) + '</span><span class="prof-ev-texto">' + (c.valor ? finBRL_(c.valor) : 'Informe o valor deste mês') + '</span><span class="prof-ev-quando">vence em ' + finDia_(c.vence) + '</span></button>';
+  }).join('') + '</div></section>';
+  return h;
+}
+async function finInicioCarregar_() {
+  if (FIN.inicioPedido) return;
+  FIN.inicioPedido = true;
+  var geracao = VMC_GERACAO_SESSAO;
+  var r = await chamarServidor('profLerFinanceiro', { so: 'inicio' });
+  if (geracao !== VMC_GERACAO_SESSAO || !r || !r.ok || !r.inicio) return;
+  FIN.inicio = r.inicio;
+  if (document.getElementById('sec-prof-dashboard').classList.contains('active')) profRenderInicio_();
+}
+
+/* ---- Tela 5: módulo Financeiro do paciente aberto pelo profissional ---- */
+function finPacModuloHtml_(sigla) {
+  if (FIN.pacSigla !== sigla) { FIN.pacSigla = sigla; FIN.pac = null; finPacCarregar_(sigla); }
+  return '<div class="prof-pv-mod mod-blue" id="profMod-fin"><div class="prof-pv-mod-head" onclick="profToggleModulo_(\'fin\')">' +
+    '<span class="prof-pv-mod-icon"><svg class=ico aria-hidden=true><use href=#i-wallet></use></svg></span>' +
+    '<div class="prof-pv-mod-info"><div class="prof-pv-mod-title">Financeiro</div><div class="prof-pv-mod-meta" id="profModFinMeta">Valor, cobrança e extrato</div></div>' +
+    '<span class="prof-pv-mod-chevron">›</span></div><div class="prof-pv-mod-body" id="profModFinBody">' + finPacCorpoHtml_() + '</div></div>';
+}
+async function finPacCarregar_(sigla) {
+  var geracao = VMC_GERACAO_SESSAO;
+  var r = await chamarServidor('profLerFinanceiro', { siglaPaciente: sigla });
+  if (geracao !== VMC_GERACAO_SESSAO || FIN.pacSigla !== sigla) return;
+  FIN.pac = (r && r.ok && r.paciente) || { erro: (r && r.erro) || 'Não foi possível ler o financeiro deste paciente agora.' };
+  var corpo = document.getElementById('profModFinBody'), meta = document.getElementById('profModFinMeta');
+  if (corpo) corpo.innerHTML = finPacCorpoHtml_();
+  if (meta && !FIN.pac.erro) meta.textContent = FIN.pac.em_aberto ? 'Em aberto: ' + finBRL_(FIN.pac.em_aberto) : 'Nada em aberto';
+}
+function finPacCorpoHtml_() {
+  var x = FIN.pac;
+  if (!x) return '<p class="fin-nota">Carregando…</p>';
+  if (x.erro) return '<p class="age-msg age-msg-erro" role="alert">' + esc(x.erro) + '</p>';
+  var c = x.cadastro, radio = function (nome, pares, atual) {
+    return '<div class="fin-opcoes">' + pares.map(function (o) { return '<label class="fin-opcao"><input type="radio" name="' + nome + '" value="' + o[0] + '"' + (o[0] === atual ? ' checked' : '') + ' onchange="finPacAlternar_()"> ' + esc(o[1]) + '</label>'; }).join('') + '</div>';
+  };
+  var h = '<div class="fin-form fin-duas"><div class="fin-campo"><label for="finPacValor">Valor da sessão (R$)</label><input type="text" inputmode="decimal" id="finPacValor" autocomplete="off"><span class="fin-sub">O novo valor vale para as próximas sessões ainda não pagas.</span></div>' +
+    '<div class="fin-campo"><label for="finPacEnc">Encaminhamento</label><input type="text" id="finPacEnc" maxlength="80"><span class="fin-sub">Por onde o paciente chegou.</span></div></div>';
+  h += '<fieldset class="fin-fieldset"><legend>Cobrança — de quanto em quanto</legend>' + radio('finPacModo', FIN_MODOS, c.modo) + '</fieldset>' +
+    '<div class="fin-form fin-duas' + (c.modo === 'n' ? '' : ' hidden') + '" id="finPacNWrap"><div class="fin-campo"><label for="finPacN">A cada quantas sessões</label><input type="text" inputmode="numeric" id="finPacN"></div></div>' +
+    '<fieldset class="fin-fieldset' + (c.modo === 'mensal' ? '' : ' hidden') + '" id="finPacQuandoWrap"><legend>Quando (mensal)</legend>' + radio('finPacQuando', FIN_QUANDO, c.quando) + '</fieldset>';
+  h += '<fieldset class="fin-fieldset"><legend>Quem paga</legend>' + radio('finPacPagador', [['paciente', 'O próprio paciente'], ['outro', 'Outra pessoa']], c.pagador) + '</fieldset>';
+  h += c.pagador === 'outro'
+    ? c.pagadores.map(function (pg, i) { return '<div class="fin-form fin-duas" data-fin-pagador="' + i + '"><div class="fin-campo"><label for="finPgNome' + i + '">Nome</label><input type="text" id="finPgNome' + i + '" data-fin-pg="nome"></div><div class="fin-campo"><label for="finPgDoc' + i + '">CPF ou CNPJ</label><input type="text" inputmode="numeric" id="finPgDoc' + i + '" data-fin-pg="documento" autocomplete="off"></div>' +
+        '<div class="fin-campo"><label for="finPgTel' + i + '">Telefone</label><input type="tel" id="finPgTel' + i + '" data-fin-pg="telefone"></div><div class="fin-campo"><label for="finPgEmail' + i + '">E-mail</label><input type="email" id="finPgEmail' + i + '" data-fin-pg="email"></div></div>'; }).join('') +
+      '<button type="button" class="fin-link" onclick="finPacMaisPagador_()">Adicionar outro pagador</button>'
+    : '<p class="fin-nota">Nome e CPF vêm da anamnese: ' + esc(x.anamnese.nome || 'ainda não preenchida') + (x.anamnese.cpf ? ' · CPF ' + esc(x.anamnese.cpf) : '') + '.</p>';
+  h += '<fieldset class="fin-fieldset"><legend>Precisa de recibo</legend>' + radio('finPacRecibo', [['Sim', 'Sim'], ['Nao', 'Não']], c.recibo) + '</fieldset>' +
+    '<fieldset class="fin-fieldset' + (c.recibo === 'Sim' ? '' : ' hidden') + '" id="finPacTitularWrap"><legend>Recibo em nome de</legend>' + radio('finPacTitular', [['paciente', 'O paciente'], ['pagador', 'Quem paga'], ['outro', 'Outra pessoa']], c.titular) + '</fieldset>' +
+    '<fieldset class="fin-fieldset"><legend>Enviar cobrança por</legend>' + radio('finPacCanal', [['email', 'E-mail'], ['whatsapp', 'WhatsApp'], ['ambos', 'Os dois']], c.canal) + '</fieldset>';
+  h += '<div class="fin-acoes"><button type="button" class="prof-btn-acao" onclick="finPacSalvar_()">Salvar</button><span class="fin-sub" id="finPacMsg" role="status"></span></div>';
+  h += '<p class="fin-ses-mes">Extrato</p><div class="fin-cartoes">' + finCartao_('', 'Em aberto', finBRL_(x.em_aberto), '') + finCartao_('fin-ok', 'Crédito', finBRL_(x.credito), '') + '</div>';
+  h += x.extrato.length ? x.extrato.map(function (e) {
+    return '<div class="fin-linha"><span>' + finDia_(e.data) + ' · ' + esc(e.texto) + '</span><b>' + (e.tipo === 'pagamento' ? '+ ' : '') + finBRL_(e.valor) + '</b></div>';
+  }).join('') : '<p class="fin-nota">Nenhuma sessão cobrada ainda.</p>';
+  setTimeout(function () {
+    var campo = function (id, v) { var el = document.getElementById(id); if (el) el.value = v || ''; };
+    campo('finPacValor', c.valor ? finBRL_(c.valor).replace('R$ ', '') : ''); campo('finPacEnc', c.encaminhamento); campo('finPacN', c.n);
+    c.pagadores.forEach(function (pg, i) { document.querySelectorAll('[data-fin-pagador="' + i + '"] [data-fin-pg]').forEach(function (el) { el.value = pg[el.dataset.finPg] || ''; }); });
+  }, 0);
+  return h;
+}
+function finPacLer_() {
+  var marcado = function (nome) { var el = document.querySelector('input[name="' + nome + '"]:checked'); return el ? el.value : ''; };
+  var c = FIN.pac.cadastro;
+  c.valor = finCentavos_(document.getElementById('finPacValor').value); c.encaminhamento = document.getElementById('finPacEnc').value.trim(); c.n = document.getElementById('finPacN').value.trim();
+  c.modo = marcado('finPacModo'); c.quando = marcado('finPacQuando'); c.pagador = marcado('finPacPagador'); c.recibo = marcado('finPacRecibo'); c.titular = marcado('finPacTitular'); c.canal = marcado('finPacCanal');
+  document.querySelectorAll('[data-fin-pagador]').forEach(function (bloco) { var pg = c.pagadores[Number(bloco.dataset.finPagador)]; bloco.querySelectorAll('[data-fin-pg]').forEach(function (el) { pg[el.dataset.finPg] = el.value.trim(); }); });
+  return c;
+}
+/* Trocar uma opção mostra ou esconde os campos que dependem dela, sem perder o que já foi digitado */
+function finPacAlternar_() {
+  var c = finPacLer_();
+  if (c.pagador === 'outro' && !c.pagadores.length) c.pagadores.push({});
+  document.getElementById('profModFinBody').innerHTML = finPacCorpoHtml_();
+}
+function finPacMaisPagador_() { finPacLer_().pagadores.push({}); document.getElementById('profModFinBody').innerHTML = finPacCorpoHtml_(); }
+async function finPacSalvar_() {
+  var c = finPacLer_(), msg = document.getElementById('finPacMsg');
+  var r = await chamarServidor('profSalvarCadastroFinanceiro', { siglaPaciente: FIN.pacSigla, dados: c, id_envio: vmcNovoIdEnvio_() });
+  if (r && r.ok && r.paciente) { FIN.pac = r.paciente; document.getElementById('profModFinBody').innerHTML = finPacCorpoHtml_(); msg = document.getElementById('finPacMsg'); }
+  msg.textContent = r && r.ok ? 'Cadastro salvo.' : ((r && r.erro) || 'Não foi possível salvar agora.');
+}
+
+/* ---- Tela 6: Financeiro na área do paciente ---- */
+function finMeuAbrirTela() {
+  if (PROF_SESSAO || !carregarSessao()) return;
+  abrirSecao('sec-financeiro');
+  finMeuRender_();
+  finMeuCarregar_();
+}
+async function finMeuCarregar_() {
+  var geracao = VMC_GERACAO_SESSAO;
+  var r = await chamarServidor('lerMeuFinanceiro', {});
+  if (geracao !== VMC_GERACAO_SESSAO) return;
+  FIN.meu = (r && r.ok && r.meu) || { erro: (r && r.erro) || 'Não foi possível ler seu financeiro agora.' };
+  finMeuRender_();
+}
+function finMeuRender_() {
+  var c = document.getElementById('finMeuConteudo'), m = FIN.meu;
+  if (!c) return;
+  if (!m) { c.innerHTML = '<p class="fin-nota">Carregando…</p>'; return; }
+  if (m.erro) { c.innerHTML = '<p class="age-msg age-msg-erro" role="alert">' + esc(m.erro) + '</p>'; return; }
+  var h = '<div class="fin-pac-wrap">';
+  if (m.msg) h += '<p class="age-msg" role="status">' + esc(m.msg) + '</p>';
+  h += '<div class="fin-painel"><h3 class="fin-painel-tit">' + esc(finMaiuscula_(m.mes)) + '</h3>';
+  h += m.sessoes.length ? m.sessoes.map(function (s) { return '<div class="fin-linha"><span>' + finDiaLongo_(s.data) + '</span><span>' + finTag_(s.paga ? ['ok', 'Paga'] : ['aberto', 'Em aberto']) + '</span></div>'; }).join('') +
+      finLinhas_([['Total do mês', finBRL_(m.total), true], ['Pago', finBRL_(m.pago)], ['Em aberto', finBRL_(m.total - m.pago)]])
+    : '<p class="fin-nota">Nenhuma sessão cobrada neste mês.</p>';
+  h += '</div>';
+  if (m.dados_receber) h += '<div class="fin-painel"><div class="fin-painel-topo"><h3 class="fin-painel-tit">Dados para pagar</h3><button type="button" class="prof-lem-btn" onclick="finMeuCopiar_(this)">Copiar</button></div><div class="fin-dados" id="finMeuDados">' + esc(m.dados_receber) + '</div></div>';
+  h += '<div class="fin-painel"><h3 class="fin-painel-tit">Enviar comprovante</h3><p class="fin-nota">Foto ou PDF, até 5 MB. Seu terapeuta confere antes de o pagamento contar.</p><div class="fin-form fin-duas">' +
+    '<div class="fin-campo fin-inteiro"><label for="finMeuArquivo">Comprovante</label><input type="file" id="finMeuArquivo" accept="image/*,application/pdf"></div>' +
+    '<div class="fin-campo"><label for="finMeuValor">Valor pago (R$)</label><input type="text" inputmode="decimal" id="finMeuValor" autocomplete="off"></div>' +
+    '<div class="fin-campo"><label for="finMeuData">Data do pagamento</label><input type="date" id="finMeuData"></div></div>' +
+    '<div class="fin-acoes"><button type="button" class="prof-btn-acao" onclick="finMeuEnviar_()">Enviar</button><span class="fin-sub" id="finMeuErro" role="alert"></span></div></div>';
+  if (m.pode_recibo) h += '<div class="fin-painel"><div class="fin-painel-topo"><h3 class="fin-painel-tit">Recibo</h3>' + (m.recibo_pedido ? finTag_(['aberto', 'Pedido enviado ao seu terapeuta']) : '<button type="button" class="prof-lem-btn" onclick="finMeuPedirRecibo_()">Pedir recibo</button>') + '</div>' +
+    '<p class="fin-nota">O recibo deste mês é preparado pelo seu terapeuta.</p></div>';
+  h += '<div class="fin-painel"><h3 class="fin-painel-tit">Histórico de pagamentos</h3>' + (m.historico.length ? m.historico.map(function (p) {
+    var sit = ({ aguardando: ['aberto', 'Aguardando conferência'], confirmado: ['ok', 'Confirmado'], recusado: ['atencao', 'Não confirmado. Fale com seu terapeuta.'] })[p.situacao];
+    return '<div class="fin-item"><div><div class="fin-item-nome">' + finDiaLongo_(p.data) + '</div><span class="fin-sub">' + esc(p.forma) + '</span></div><div class="fin-item-valor">' + finBRL_(p.valor) + '</div><div class="fin-item-acoes">' + finTag_(sit) + '</div></div>';
+  }).join('') : '<p class="fin-nota">Nenhum pagamento registrado.</p>') + '</div></div>';
+  c.innerHTML = h;
+}
+function finMeuCopiar_(botao) {
+  var texto = document.getElementById('finMeuDados').textContent;
+  if (navigator.clipboard) navigator.clipboard.writeText(texto).then(function () { botao.textContent = 'Copiado'; });
+}
+/* A foto é reduzida no aparelho antes de subir; PDF vai como está, até 5 MB */
+function finArquivoLer_(arquivo) {
+  return new Promise(function (ok) {
+    if (!arquivo) return ok(null);
+    if (arquivo.size > 5 * 1024 * 1024 && arquivo.type === 'application/pdf') return ok({ erro: 'O arquivo passa de 5 MB.' });
+    var leitor = new FileReader();
+    leitor.onload = function () {
+      if (arquivo.type.indexOf('image/') !== 0) return ok({ nome: arquivo.name, tipo: arquivo.type, base64: String(leitor.result).split(',')[1] });
+      var img = new Image();
+      img.onload = function () {
+        var k = Math.min(1, 1600 / Math.max(img.width, img.height)), tela = document.createElement('canvas');
+        tela.width = Math.round(img.width * k); tela.height = Math.round(img.height * k);
+        tela.getContext('2d').drawImage(img, 0, 0, tela.width, tela.height);
+        ok({ nome: arquivo.name.replace(/\.[^.]+$/, '') + '.jpg', tipo: 'image/jpeg', base64: tela.toDataURL('image/jpeg', 0.82).split(',')[1] });
+      };
+      img.onerror = function () { ok({ erro: 'Não foi possível ler a imagem.' }); };
+      img.src = leitor.result;
+    };
+    leitor.onerror = function () { ok({ erro: 'Não foi possível ler o arquivo.' }); };
+    leitor.readAsDataURL(arquivo);
+  });
+}
+async function finMeuEnviar_() {
+  var erro = document.getElementById('finMeuErro'), valor = finCentavos_(document.getElementById('finMeuValor').value), data = document.getElementById('finMeuData').value;
+  var arq = await finArquivoLer_(document.getElementById('finMeuArquivo').files[0]);
+  if (!arq) { erro.textContent = 'Escolha a foto ou o PDF do comprovante.'; return; }
+  if (arq.erro) { erro.textContent = arq.erro; return; }
+  if (!valor || !data) { erro.textContent = 'Informe o valor e a data do pagamento.'; return; }
+  var r = await chamarServidor('pacienteEnviarComprovante', { dados: { valor: valor, data: data, arquivo: arq }, id_envio: vmcNovoIdEnvio_() });
+  if (r && r.ok && r.meu) { FIN.meu = r.meu; FIN.meu.msg = 'Comprovante enviado. Seu terapeuta vai conferir.'; finMeuRender_(); window.scrollTo({ top: 0, behavior: vmcRolagem_() }); }
+  else erro.textContent = (r && r.erro) || 'Não foi possível enviar agora. Tente de novo.';
+}
+async function finMeuPedirRecibo_() {
+  var r = await chamarServidor('pacientePedirRecibo', { id_envio: vmcNovoIdEnvio_() });
+  if (r && r.ok && r.meu) { FIN.meu = r.meu; FIN.meu.msg = 'Pedido enviado ao seu terapeuta.'; }
+  else FIN.meu.msg = (r && r.erro) || 'Não foi possível enviar o pedido agora.';
+  finMeuRender_();
+}
+/* Fim da Fase 20 — Fluxo de caixa */
 
 </script>
 </body>
