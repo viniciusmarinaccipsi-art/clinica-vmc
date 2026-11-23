@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia e valor por paciente · agendamento do paciente com a aprovação do profissional · Painel de Evolução na tela do profissional — Pacote 19.1 · o pedido de agendamento do paciente aparece como “Agendamento solicitado” — Pacote 14.7.1 · Fluxo de caixa: receitas lidas da Agenda, pagamentos, cobranças por e-mail e WhatsApp, comprovante do paciente, despesas e contas a pagar — Pacote 20.0 · recibos e livro caixa: quem precisa de recibo, prévia literal e arquivo de lote do Carnê-Leão · Biblioteca de Escalas e Inventários com "Aplicar a um paciente" — Pacote 19.3 · tags da busca das escalas recolhidas atrás de um botão; saiu a tag "Mensuração" — Pacote 19.3.1 · cada profissional conecta a própria Google Agenda, com a opção dos compromissos pessoais — Pacote 14.8 · sessões com status pendente no Início, a palavra "Status" na sessão e os dois e-mails da agenda ao profissional — Pacote 20.2 (23/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia e valor por paciente · agendamento do paciente com a aprovação do profissional · Painel de Evolução na tela do profissional — Pacote 19.1 · o pedido de agendamento do paciente aparece como “Agendamento solicitado” — Pacote 14.7.1 · Fluxo de caixa: receitas lidas da Agenda, pagamentos, cobranças por e-mail e WhatsApp, comprovante do paciente, despesas e contas a pagar — Pacote 20.0 · recibos e livro caixa: quem precisa de recibo, prévia literal e arquivo de lote do Carnê-Leão · Biblioteca de Escalas e Inventários com "Aplicar a um paciente" — Pacote 19.3 · tags da busca das escalas recolhidas atrás de um botão; saiu a tag "Mensuração" — Pacote 19.3.1 · cada profissional conecta a própria Google Agenda, com a opção dos compromissos pessoais — Pacote 14.8 · sessões com status pendente no Início, a palavra "Status" na sessão e os dois e-mails da agenda ao profissional — Pacote 20.2 (23/11/2026) · na tela do profissional, os subtítulos do Painel de Evolução falam do paciente — Pacote 19.1.1 (23/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -16898,9 +16898,11 @@ const PEV_SECOES = [
   // Tipos de Situação vai PRIMEIRO no lado negativo (gatilho)
   { secao: 'neg', prefixo: 'neg_sit_tipo_', titulo: 'Tipos de Situação',
     sub: 'Em que tipo de contexto seus registros costumam acontecer',
+    subProf: 'Em que tipo de contexto os registros do paciente costumam acontecer',
     tok: '--c-reg-neg', classe: 'coral' },
   { secao: 'neg', prefixo: 'neg_emo_', titulo: 'Emoções Desagradáveis',
     sub: 'Quais grupos de emoções aparecem mais nos seus registros',
+    subProf: 'Quais grupos de emoções aparecem mais nos registros do paciente',
     tok: '--c-reg-neg', classe: 'coral' },
   { secao: 'neg', prefixo: 'neg_fis_', titulo: 'Reações Físicas — Mal-Estar',
     sub: 'Quais grupos de sensações corporais aparecem mais',
@@ -16914,6 +16916,7 @@ const PEV_SECOES = [
   // ----- POSITIVAS -----
   { secao: 'pos', prefixo: 'pos_emo_', titulo: 'Emoções Agradáveis',
     sub: 'Quais grupos de emoções positivas você tem registrado',
+    subProf: 'Quais grupos de emoções positivas o paciente tem registrado',
     tok: '--c-reg-pos', classe: 'green' },
   { secao: 'pos', prefixo: 'pos_fis_', titulo: 'Reações Físicas — Bem-Estar',
     sub: 'Quais sensações corporais agradáveis aparecem mais',
@@ -17439,7 +17442,7 @@ function pevMontarBlocoBarras(secao) {
   return `
     <div class="pev-bloco ${secao.classe}">
       <div class="pev-bloco-titulo">${secao.titulo}</div>
-      <div class="pev-bloco-sub">${secao.sub}</div>
+      <div class="pev-bloco-sub">${(PEV_STATE.visaoProfissional && secao.subProf) || secao.sub}</div>
       <div class="pev-barras-canvas-box">
         <canvas id="${canvasId}"></canvas>
       </div>

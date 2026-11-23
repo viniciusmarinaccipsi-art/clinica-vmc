@@ -2123,6 +2123,10 @@ Decisão do usuário: o paciente vê os horários livres, escolhe um e aguarda a
   Escalas) e os dois avisos de vazio ("O paciente ainda não enviou registros." e "Nenhum registro nesse período" + "Tente um
   período mais longo.", por `escPainelVazioHtml_`). O HTML do paciente é o mesmo de antes, byte a byte. O período de abertura
   é o automático do paciente (`pevPeriodoInicial`).
+- **Subtítulos que falam com o paciente (19.1.1, decisão do usuário de 23/11/2026):** três blocos de `PEV_SECOES`
+  (`neg_sit_tipo_`, `neg_emo_`, `pos_emo_`) têm `subProf` — a mesma frase falando *do* paciente ("os registros do
+  paciente", "o paciente tem registrado"); `pevMontarBlocoBarras` usa `subProf` só em modo profissional. Frase nova que
+  fale com o paciente num bloco ganha a sua `subProf`; as demais não precisam.
 - **Voltar:** `data-barra-voltar="pevVoltar()"` (na lista de `vmcAcaoDaBarra_`). Paciente: `sec-automonitoramento`, como
   antes. Profissional: zera e volta a `sec-prof-paciente`.
 - **Zeragem num lugar só — `pevZerar_()`:** destrói os gráficos, esvazia registros, total, marcas de página, validade do
