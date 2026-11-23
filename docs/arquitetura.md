@@ -2046,6 +2046,8 @@ Grade (`graCfgEndereco`, `graCfgEnderecoNovo`, `graCfgEnderecoDesde`, `graCfgCal
 
 ## Fechamento da Agenda — 14.5.2 e 14.5.3 (22/11/2026)
 
+> **14.5.4 (23/11/2026) desfez o primeiro item abaixo:** não existe mais `noPedido`, `confirmou_sessao` nem `porAprovacao`. Regra em vigor: o paciente sempre confirma depois — `profDecidirPedido` grava `confirmada_em = ''` na remarcação e não confirma a reposição nova; o e-mail `pedido_aprovado` sempre pede a confirmação. Os demais itens (e-mails no grupo `confirma`, WhatsApp de sessão já confirmada, 14.5.3) continuam.
+
 - **Confirmação conforme quem mudou o horário (14.5.2):** `profDecidirPedido` calcula `noPedido` (o horário aprovado é o
   que o paciente pediu: sem `quando`, ou `quando` igual; pedido só com `sugestao` nunca é). Com `noPedido`, grava
   `confirmada_em` na sessão (remarcada ou reposição nova) e `confirmou_sessao = Sim` no pedido (`COLUNAS_PEDIDOS_AGENDA`);
