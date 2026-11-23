@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala — Pacote 19.2.4 (22/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento — Pacote 13.7 (22/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -972,27 +972,15 @@ body.vmc-largo .topbar-in{max-width:1360px;}
   padding:9px 18px;font-family:var(--f-text);font-size:13px;font-weight:700;cursor:pointer;
 }
 .p136-btn-editar:hover{background:var(--c-action-hover);}
-.p136-btn-salvar{background:var(--c-reg-pos);color:var(--c-ink-inv);border:none;border-radius:8px;padding:9px 18px;font-family:var(--f-text);font-size:13px;font-weight:700;cursor:pointer;}
-.p136-btn-salvar:hover{background:var(--c-pos);}
-.p136-btn-cancelar{background:var(--c-surface);color:var(--c-ink);border:1.5px solid var(--c-line);border-radius:8px;padding:9px 18px;font-family:var(--f-text);font-size:13px;font-weight:700;cursor:pointer;}
-.p136-btn-cancelar:hover{background:var(--c-surface-sub);}
 .p136-edit-erro{font:var(--t-body-sm);color:var(--c-risk-ink);text-align:center;margin:0 18px 6px;min-height:16px;}
 /* Form de edição */
-.p136-form-wrap{padding:12px 18px 4px;}
 
 /* Humor selector */
 
-.p136-humor-btn{
-  padding:6px 12px;border:1.5px solid var(--c-line);border-radius:7px;
-  background:var(--c-surface);font-family:var(--f-text);font-size:13px;cursor:pointer;
-  transition:all .15s;
-}
-.p136-humor-btn.ativo{background:var(--c-action);color:var(--c-ink-inv);border-color:var(--c-action);}
 /* 18.7 (C6): área de toque ≥ 44 px sem mudar o desenho — a camada invisível ::after cresce na vertical, o botão não */
-.p136-humor-btn,.p135-btn,.pev-periodo-btn{position:relative;}
-.p136-humor-btn::after,.p135-btn::after,.pev-periodo-btn::after{content:'';position:absolute;left:0;right:0;top:50%;height:max(100%,var(--hit-min));transform:translateY(-50%);}
+.p135-btn,.pev-periodo-btn{position:relative;}
+.p135-btn::after,.pev-periodo-btn::after{content:'';position:absolute;left:0;right:0;top:50%;height:max(100%,var(--hit-min));transform:translateY(-50%);}
 .p135-acoes-wrap{row-gap:12px;} /* no celular os botões de gestão quebram em duas linhas: 33 + 12 ≥ 44, as áreas não se sobrepõem */
-.p136-humor-vazio{font:var(--t-body-sm);color:var(--c-ink-3);margin:-4px 0 10px;} /* 18.4 (8.50) */
 /* Carimbo de edição no card histc */
 
 /* ===== Campos de formulário ===== */
@@ -1904,16 +1892,13 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 /* Obs box */
 
 /* Header de sub-seção */
-.auto-sec-header{display:flex;align-items:center;gap:12px;padding-bottom:8px;border-bottom:3px solid;margin-bottom:10px;}
-.auto-sec-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;}
-.auto-sec-title{font-family:var(--f-title);font-size:17px;font-weight:700;}
 
 /* ============================================================
    Pacote 16.5d-2 — etapas do registro (03_componentes.md §1, §3–§9): título da etapa, campo de texto,
    grupo recolhível, lista de subgrupos com check redondo, barra deslizante (input type=range nativo
    vestido com os tokens), cabeçalho cumulativo, aviso de obrigatório na tela e rodapé com contagem.
    Cor "do tipo": [data-tipo="neg"] ameixa / [data-tipo="pos"] verde-água (a seção física e o bloco
-   .auto-tipo carregam data-tipo; no modal de edição, #p136Side_neg/pos).
+   .auto-tipo carregam data-tipo).
    ============================================================ */
 /* Legenda 1–5 do "Como Usar" (fora das etapas) */
 .auto-scale{font:var(--t-body-sm);border-radius:var(--r-field);padding:7px 12px;margin:6px 0;display:flex;justify-content:space-between;font-weight:700;gap:4px;flex-wrap:wrap;}
@@ -4342,7 +4327,6 @@ body.vmc-largo .app{max-width:1360px;}
 .ico{width:1.25em;height:1.25em;vertical-align:-.3em;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;display:inline-block;}
 .ico-lg{width:28px;height:28px;}
 .esc-card-icon .ico,.login-tipo-icon .ico,.p5-modal-icone .ico,.login-icon .ico,.prof-pv-mod-icon .ico,.card-icon .ico{width:28px;height:28px;} /* 16.5d-3.1: .p8-edu-icon passou a 20 px, na sua regra */
-.auto-sec-icon .ico{width:20px;height:20px;}
 .ico-pos{color:var(--c-pos);} .ico-warn{color:var(--c-warn);} .ico-risk2{color:var(--c-risk-ink-2);} .ico-risk{color:var(--c-risk);}
 /* Pacote 16.5b: rostinhos do humor — cor por nível (ameixa → verde-água), traço 2 como no 05_rostinhos.svg */
 .ico-humor-1{color:var(--c-humor-1-ink);stroke-width:2;} .ico-humor-2{color:var(--c-humor-2-ink);stroke-width:2;} .ico-humor-3{color:var(--c-humor-3-ink);stroke-width:2;} .ico-humor-4{color:var(--c-humor-4-ink);stroke-width:2;} .ico-humor-5{color:var(--c-humor-5-ink);stroke-width:2;}
@@ -8555,8 +8539,6 @@ function vmcFecharSobreposicoes_() {
   ['.p5-modal-overlay', '.hist-modal-overlay', '.pev-modal-overlay', '.p11-mov', '.rr-submodal-overlay', '#sairFolha'].forEach(function (sel) {
     document.querySelectorAll(sel).forEach(function (m) { m.classList.remove('show'); });
   });
-  const hist = document.getElementById('histModalOverlay');
-  if (hist) hist._p136Editando = false; // o lock de presença não é limpo: o crachá já não vale
   ['histModalConteudo', 'eschModalConteudo', 'rrSubmodalBody', 'pevModalLista'].forEach(function (id) {
     const el = document.getElementById(id); if (el) el.innerHTML = '';
   });
@@ -8760,6 +8742,7 @@ function topbarAtualizar(idSecao) {
     };
     btn.setAttribute('aria-label', sec.getAttribute('data-barra-voltar-rotulo') || 'Voltar');
     btn.title = sec.getAttribute('data-barra-voltar-rotulo') || 'Voltar';
+    if (REG_EDICAO) regEdicaoBarra_(bar, btn, acaoEl, idSecao); // 13.7
   } else {
     bar.classList.add('marca'); bar.classList.remove('tela', 'sem-voltar', 'com-acao');
   }
@@ -8791,11 +8774,17 @@ var SAIR_ACAO = null;
 // decisão (voltar da barra, ⏻, "Salvar e sair" da etapa e do menu, Cancelar da escala). "Sair" mantém o rascunho na aba.
 function confirmarSaida(acao) {
   if (!fluxoEmAndamento()) { acao(); return; }
+  if (REG_EDICAO && !regEdicaoMudou_()) { acao(); return; } // 13.7: edição sem nenhuma alteração sai direto
   fluxoGuardarRascunho();
   SAIR_ACAO = acao;
   const noRegistro = fluxoRegistroTelas().indexOf(secaoAtivaId()) !== -1;
   const continuar = document.getElementById('sairFolhaContinuar');
   continuar.textContent = noRegistro ? 'Continuar registro' : 'Continuar aqui'; // anamnese e escala mantêm o rótulo de sempre
+  // 13.7: na edição de um registro já enviado nada fica guardado — a folha diz isso
+  const editando = !!REG_EDICAO;
+  document.getElementById('sairFolhaTitulo').textContent = editando ? 'Sair sem salvar?' : 'Sair sem enviar?';
+  document.querySelector('#sairFolha .folha-txt').textContent = editando ? 'As alterações deste registro serão perdidas.' : 'O que você preencheu fica guardado enquanto esta aba estiver aberta.';
+  if (editando) continuar.textContent = 'Continuar editando';
   // 18.10b (G2): "Sair" guarda o rascunho também no servidor (a cópia do aparelho continua) e só então executa a ação
   document.getElementById('sairModalConfirmar').onclick = async function () { const a = SAIR_ACAO; sairModalFechar(); await rascSalvarNoServidor_(); if (a) a(); }; // a ação é lida antes de fechar (fechar zera SAIR_ACAO)
   document.getElementById('sairFolha').classList.add('show');
@@ -8928,6 +8917,7 @@ function vmcRolagem_() {
 }
 
 function abrirSecao(idSecao) {
+  if (REG_EDICAO && regEdicaoTelas_().indexOf(idSecao) === -1) regEdicaoLimpar_(false); // 13.7: saiu do fluxo, a edição acaba
   // 18.5: fluxo do paciente aberto pelo profissional — destino fora do fluxo devolve à tela do paciente
   if (PROF_FLUXO && profFluxoTelas_().indexOf(idSecao) === -1) { profFluxoEncerrar_(); return; }
   var focoAntes = document.activeElement; // 18.7 (C6)
@@ -9290,6 +9280,7 @@ var RASC_SERVIDOR = { carregado: false, carregando: false, lista: [] }; // lista
 // anamnese em edição de uma já enviada ficam só no aparelho, como antes)
 function rascDoFluxoAtivo_() {
   const id = secaoAtivaId(); if (!id) return null;
+  if (REG_EDICAO) return null; // 13.7
   if (fluxoRegistroTelas().indexOf(id) !== -1) {
     const r = autoCarregarRascunho();
     return (r && r.dados && r.dados.humor_nivel && r.tipo) ? { tipo: r.tipo === 'pos' ? 'auto_positivo' : 'auto_negativo', dados: r } : null;
@@ -12076,7 +12067,7 @@ function sairDoSistema(opcoes) {
   RASC_SERVIDOR = { carregado: false, carregando: false, lista: [] }; iniRascunhoRender(); // 18.10b
   INI_LEM = { carregado: false, carregando: false, hoje: '', lista: [], proxima: null }; iniLemRender_();
   SES = { dados: null, carregando: false, vista: 'lista', alvo: '', livres: null, de: '', escolhido: null, msg: '', erro: '', idEnvio: '', ocupado: false }; // 14.3 PROF_LEM = { editando: '', idNovo: '', encerrar: '' }; // 19.2.1
-  P136_ESTADO = { idx: null, tipo: null, sigla: null, timestamp: null };
+  regEdicaoLimpar_(true); // 13.7: a presença não é limpa (o crachá já não vale)
   HIST_FILTRO = 'todos'; HIST_MESES_ABERTOS = {}; CHK_ENV.periodo = null;
   ['profDashboardConteudo', 'profPacientesConteudo', 'profPacienteConteudo', 'autoHistLista', 'pevConteudo', 'eschConteudo', 'anamConteudo', 'iniContinuidade', 'graDias'].forEach(function (id) {
     const el = document.getElementById(id); if (el) el.innerHTML = '';
@@ -14651,7 +14642,7 @@ function cabAtualizarAtual() {
   if (fEl) { if (frase) fEl.textContent = frase; else fEl.remove(); }
 }
 function cabIrEtapa(i, tipo) { autoEntrarSecao(cabBlocoId(CAB_ETAPAS[i], tipo), i, tipo); } // nó feito da trilha (D2): o mesmo caminho do trilho antigo
-function cabEditar(tipo) { autoAbrirMenuTipo(tipo); } // "editar" → menu "Suas 5 etapas" (§3 v4)
+function cabEditar(tipo) { if (REG_EDICAO) { regEdicaoRevisar_(); return; } autoAbrirMenuTipo(tipo); } // "editar" → menu "Suas 5 etapas" (§3 v4)
 
 /* Fim do Pacote 11.6 (cabeçalho cumulativo / ex-11.4a) — o modal "+N" (p11a*) saiu no 16.5e: "ver tudo" abre a revisão em leitura */
 
@@ -14725,6 +14716,7 @@ function chkAbrir() {
   autoPreencherDataHoraAgora();
   chkAtualizarPill(); // 16.5d-3 (contrato v4 item 25): a pílula já nasce "Hoje, dd/mm · hh:mm"
   chkMostrarCampos(false);
+  regEdicaoAjustarChecagem_(); // 13.7: botões de sempre
 }
 // "Hoje, dd/mm · hh:mm" (ou "dd/mm/aaaa · hh:mm" quando não é hoje)
 function chkTextoDataHora(d, h, comHoje) {
@@ -14754,11 +14746,13 @@ function chkEditar() {
   autoValidarPasso1();
   chkAtualizarPill(); // 16.5d-3: pílula com a data/hora já escolhida
   chkMostrarCampos(false);
+  regEdicaoAjustarChecagem_(); // 13.7: na edição, "Concluir e Revisar" (ou "Salvar alterações") e data fixa
 }
 // "+ Iniciar novo registro": guarda a checagem em AUTO_STATE (nada é enviado) e vai escolher o tipo
 function chkIniciarNovoRegistro() {
   const obs = document.getElementById('autoInpObsHumor');
   AUTO_STATE.dados.humor_observacoes = obs ? obs.value.trim() : '';
+  if (REG_EDICAO) { if (REG_EDICAO.soChecagem) regEdicaoSalvar_(); else regEdicaoRevisar_(); return; } // 13.7
   autoSalvarRascunho();
   if (AUTO_STATE.revisaoRetorno) { revisarAbrir(AUTO_STATE.revisaoRetorno); return; } // 16.5e: veio do "editar" da revisão
   if (AUTO_STATE.tipoAtual) { autoAbrirMenuTipo(AUTO_STATE.tipoAtual); return; } // veio do "editar" do menu
@@ -15649,6 +15643,7 @@ function revisarAbrir(tipo, opts) {
   document.getElementById('rvsAviso').innerHTML = '';
   document.getElementById('rvsIntro').hidden = !!opts.leitura;
   document.getElementById('rvsEnvio').hidden = !!opts.leitura;
+  regEdicaoAjustarRevisar_(); // 13.7: "Editar registro" + "Salvar alterações" quando a revisão é de um registro já enviado
   abrirSecao('sec-auto-revisar');
 }
 function revisarVerTudo(tipo) {
@@ -15703,6 +15698,7 @@ function enviadoFazerTambem() {
 function escapeHtmlAuto(s) { return esc(s); }
 
 async function autoEnviarRegistro(opcoes) {
+  if (REG_EDICAO) { regEdicaoSalvar_(); return; } // 13.7: o botão final da revisão grava só o que mudou
   const paciente = carregarSessao();
   if (!paciente) {
     sairDoSistema();
@@ -16162,12 +16158,8 @@ function histAvisoNaTela(msg) {
 }
 
 function histFecharModal() {
-  // Pacote 13.6: limpar lock se estava editando
   var modal = document.getElementById('histModalOverlay');
-  if (modal && modal._p136Editando) {
-    p136LimparLock_(false);
-  }
-  if (modal) { modal._p136Editando = false; modal.classList.remove('show'); }
+  if (modal) modal.classList.remove('show'); // 13.7: a edição saiu da janela (regEdicaoAbrir_); aqui só se lê
   // Restaurar rodapé padrão PRIMEIRO (recria p136BtnEditar)
   var rodape = document.getElementById('histModalRodape');
   if (rodape) {
@@ -16181,20 +16173,51 @@ function histFecharModal() {
 }
 
 /* ============================================================
-   PACOTE 13.6 — Edição inline de automonitoramento
+   PACOTE 13.7 — Edição do registro pelo fluxo de preenchimento
+   (substitui o formulário da janela, Pacote 13.6)
+   ============================================================
+   "Editar" de Meus Registros (paciente) e do registro aberto pelo profissional leva às MESMAS telas do
+   preenchimento: a revisão ("Editar registro") já preenchida com aquele registro, com o "editar" de cada bloco
+   abrindo a etapa de verdade. Registro só com a checagem de humor abre a própria checagem.
+   Enquanto REG_EDICAO existe: nada vira rascunho (autoSalvarRascunho e rascDoFluxoAtivo_ não gravam), a sequência
+   obrigatória de primeira vez não vale, a barra não oferece "Salvar e sair", o voltar das etapas devolve à revisão
+   e o botão final grava só os campos alterados (vmcCamposAlterados_ sobre o que foi carregado) pelas ações de
+   sempre (pacienteEditarAutomonitoramento / profEditarAutomonitoramento). Data e hora do registro não mudam aqui,
+   nem o lado (Negativo/Positivo) preenchido. Sair para qualquer tela fora do fluxo encerra a edição (abrirSecao).
    ============================================================ */
-
-// Estado da edição em andamento
-var P136_ESTADO = { idx: null, tipo: null, sigla: null, timestamp: null };
+var REG_EDICAO = null; // { idx, timestamp, quem: { tipo, sigla }, lados: ['neg'|'pos'], soChecagem, original, guardado, salvando }
 
 function p136_quemSou_() {
   if (PROF_SESSAO) return { tipo: 'profissional', sigla: PROF_SESSAO.sigla };
-  // Paciente usa sessionStorage, não objeto SESSAO global
-  var pac = (typeof carregarSessao === 'function') ? carregarSessao() : null;
+  var pac = (typeof carregarSessao === 'function') ? carregarSessao() : null; // paciente: sessionStorage
   if (pac && pac.sigla) return { tipo: 'paciente', sigla: pac.sigla };
   return null;
 }
+function regEdicaoSiglaPaciente_(e) { return (e.quem.tipo === 'profissional' && PROF_PACIENTE_SEL) ? PROF_PACIENTE_SEL.sigla : e.quem.sigla; }
+// Telas em que a edição vive: checagem, as 5 etapas dos dois tipos e a revisão (os menus "Suas 5 etapas" ficam de fora)
+function regEdicaoTelas_() { return fluxoRegistroTelas().filter(function (id) { return id.indexOf('sec-auto-menu') !== 0; }); }
+// Colunas que o formulário do registro conhece (do DOM: campos de texto e grupos; mais as caixas de pensamentos e comportamentos)
+function regEdicaoChaves_() {
+  var ks = ['humor_nivel', 'humor_observacoes'];
+  document.querySelectorAll('[data-auto-campo]').forEach(function (el) { ks.push(el.getAttribute('data-auto-campo')); });
+  document.querySelectorAll('[data-grupo]').forEach(function (g) { ks.push(g.getAttribute('data-grupo')); });
+  ['neg', 'pos'].forEach(function (tp) { ks.push(tp + '_pens_o_que', tp + '_comp_o_que'); });
+  return ks.filter(function (k, i) { return k && ks.indexOf(k) === i; });
+}
+// O que está na tela agora, nas chaves do formulário (vazio = '')
+function regEdicaoColetar_() {
+  Object.keys(AUTO_SEC_MAP).forEach(autoColetarDadosDaSecao);
+  var obs = document.getElementById('autoInpObsHumor');
+  if (obs) AUTO_STATE.dados.humor_observacoes = obs.value.trim();
+  var d = {};
+  regEdicaoChaves_().forEach(function (k) { var v = AUTO_STATE.dados[k]; d[k] = (v === undefined || v === null) ? '' : v; });
+  return d;
+}
+function regEdicaoMudou_() {
+  return !!REG_EDICAO && !!REG_EDICAO.original && Object.keys(vmcCamposAlterados_(REG_EDICAO.original, regEdicaoColetar_())).length > 0;
+}
 
+// Botão "Editar" da janela do registro (o nome da função é o de sempre: o botão do rodapé chama por ele)
 async function p136IniciarEdicao() {
   var modal = document.getElementById('histModalOverlay');
   var idx = modal._p136Idx;
@@ -16203,311 +16226,144 @@ async function p136IniciarEdicao() {
   var r = regs[idx];
   var ts = String(r.timestamp || '').trim();
   if (!ts) { document.getElementById('p136EditErro').textContent = 'Este registro não pode ser editado (sem timestamp).'; return; }
-
   var eu = p136_quemSou_();
   if (!eu) return;
-
-  P136_ESTADO = { idx: idx, tipo: eu.tipo, sigla: eu.sigla, timestamp: ts };
-
-  // Pacote 13.6.2: gravar lock em paralelo (fire-and-forget)
-  // Não bloqueamos a abertura do form aguardando o servidor
-  if (eu.tipo === 'profissional') {
-    chamarServidor('profMarcarEditandoAuto', {
-      siglaPaciente: (PROF_PACIENTE_SEL ? PROF_PACIENTE_SEL.sigla : eu.sigla),
-      timestamp: ts
-    });
-  } else {
-    var _pacLock = (typeof carregarSessao === 'function') ? carregarSessao() : null;
-    chamarServidor('pacienteMarcarEditandoAuto', {
-      sigla: eu.sigla, timestamp: ts
-    });
-  }
-
-  document.getElementById('histModalOverlay')._p136Editando = true;
-  // Substituir conteúdo do modal pelo form de edição
-  document.getElementById('histModalConteudo').innerHTML = p136RenderFormEdicao_(r);
-  p136InicializarBarras_(); // 16.5d-2
-  autoLegendaAjustarVisiveis();
-  P136_ESTADO.original = p136ColetarDados_(); // 18.5: base do envio só dos campos alterados
-  document.getElementById('p136EditErro').textContent = '';
-
-  // Trocar rodapé
-  var rodape = document.getElementById('histModalRodape');
-  rodape.innerHTML =
-    '<button class="p136-btn-cancelar" type="button" onclick="p136CancelarEdicao()">Cancelar</button>' +
-    '<button class="p136-btn-salvar" type="button" onclick="p136SalvarEdicao()"><svg class=ico aria-hidden=true><use href=#i-save></use></svg> Salvar</button>';
-}
-
-async function p136CancelarEdicao() {
-  await p136LimparLock_(true);
-  // Reabrir modal em modo view
-  var idx = P136_ESTADO.idx;
-  P136_ESTADO = { idx: null, tipo: null, sigla: null, timestamp: null };
-  var modal = document.getElementById('histModalOverlay');
-  modal._p136Editando = false;
+  // presença (18.5: só avisa, não bloqueia) — gravada em paralelo, sem esperar o servidor
+  if (eu.tipo === 'profissional') chamarServidor('profMarcarEditandoAuto', { siglaPaciente: (PROF_PACIENTE_SEL ? PROF_PACIENTE_SEL.sigla : eu.sigla), timestamp: ts });
+  else chamarServidor('pacienteMarcarEditandoAuto', { sigla: eu.sigla, timestamp: ts });
   histFecharModal();
-  if (idx !== null && window._HIST_REGS && window._HIST_REGS[idx]) {
-    histAbrirModal(idx);
+  regEdicaoAbrir_(idx, r, eu, ts);
+}
+function regEdicaoAbrir_(idx, r, eu, ts) {
+  if (eu.tipo === 'profissional' && PROF_PACIENTE_SEL) PROF_FLUXO = { sigla: PROF_PACIENTE_SEL.sigla }; // as telas do paciente, com a sessão do fluxo
+  var lados = ['neg', 'pos'].filter(function (tp) { return r[tp + '_preenchido'] === 'sim'; });
+  // marcado ANTES de mexer no formulário: a partir daqui nada vira rascunho
+  REG_EDICAO = { idx: idx, timestamp: ts, quem: eu, lados: lados, soChecagem: !lados.length, original: null, salvando: false,
+    guardado: { primeiraVezNeg: AUTO_STATE.primeiraVezNeg, primeiraVezPos: AUTO_STATE.primeiraVezPos } };
+  autoResetState();
+  var d = {};
+  regEdicaoChaves_().forEach(function (k) { if (r[k] !== undefined && r[k] !== null && String(r[k]) !== '') d[k] = r[k]; });
+  var dm = String(r.data_registro || '').match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (dm) d.data_registro = dm[0];
+  d.hora_registro = autoFormatarHora(r.hora_registro);
+  var nivel = vmcHumorNivel_(r.humor_nivel);
+  if (nivel) d.humor_nivel = nivel; else delete d.humor_nivel;
+  lados.forEach(function (tp) { d[tp + '_preenchido'] = 'sim'; });
+  AUTO_STATE.dados = d;
+  AUTO_STATE.primeiraVezNeg = false; AUTO_STATE.primeiraVezPos = false; // todas as etapas abertas
+  AUTO_STATE.seqNegAtual = AUTO_SEQ_NEG.length; AUTO_STATE.seqPosAtual = AUTO_SEQ_POS.length;
+  autoHidratarFormulario();
+  REG_EDICAO.original = regEdicaoColetar_();
+  AUTO_STATE.tipoAtual = lados[0] || null;
+  AUTO_STATE.ultimoTipoFinalizado = lados[0] || null;
+  if (REG_EDICAO.soChecagem) chkEditar(); else revisarAbrir(lados[0]);
+}
+function regEdicaoRevisar_() { if (REG_EDICAO && !REG_EDICAO.soChecagem) revisarAbrir(REG_EDICAO.lados[0]); }
+
+// Revisão: título, blocos (os dois lados, quando o registro tem os dois) e botão final. Sem edição, volta ao de sempre.
+function regEdicaoAjustarRevisar_() {
+  var sec = document.getElementById('sec-auto-revisar'), btn = document.getElementById('autoBtnEnviar'), rod = document.querySelector('#rvsEnvio .rvs-rodape');
+  var e = REG_EDICAO;
+  if (!sec || !btn) return;
+  sec.setAttribute('data-barra-titulo', e ? 'Editar registro' : 'Revisar e Enviar');
+  if (rod) rod.hidden = !!e;
+  btn.innerHTML = cabIco(e ? 'i-save' : 'i-send') + (e ? ' Salvar alterações' : ' Enviar Registro');
+  if (!e) return;
+  document.getElementById('rvsIntro').hidden = true;
+  if (e.lados.length > 1) {
+    sec.setAttribute('data-tipo', 'neg');
+    sec.setAttribute('data-barra-sobretitulo', 'Automonitoramento');
+    document.getElementById('rvsBlocos').innerHTML = e.lados.map(function (tp) {
+      return '<div data-tipo="' + tp + '"><div class="rotulo-secao">' + (tp === 'pos' ? 'Registro Positivo' : 'Registro Negativo') + '</div>' +
+        CAB_ETAPAS.map(function (et) { return revisarBlocoHtml(et, tp); }).join('') + '</div>';
+    }).join('');
   }
 }
+// Checagem: na edição não se inicia registro nem se conclui só com a checagem, e a data e a hora não mudam
+function regEdicaoAjustarChecagem_() {
+  var e = REG_EDICAO, ini = document.getElementById('chkBtnIniciar'), con = document.getElementById('chkBtnConcluir'), pill = document.getElementById('chkDataPill');
+  if (ini) ini.innerHTML = e ? (e.soChecagem ? cabIco('i-save') + ' Salvar alterações' : 'Concluir e Revisar') : cabIco('i-plus') + ' Iniciar novo registro';
+  if (con) con.hidden = !!e;
+  if (pill) { pill.disabled = !!e; var alt = pill.querySelector('.chk-data-alterar'); if (alt) alt.hidden = !!e; }
+}
+// Barra na edição: sem "Salvar e sair"; o voltar das etapas e da checagem devolve à revisão; o da revisão sai da edição
+function regEdicaoBarra_(bar, btn, acaoEl, idSecao) {
+  acaoEl.textContent = ''; acaoEl.onclick = null;
+  bar.classList.remove('com-acao', 'sem-voltar');
+  btn.onclick = function () {
+    if (!REG_EDICAO) return;
+    if (idSecao === 'sec-auto-revisar') { if (AUTO_STATE.revisaoLeitura) autoVoltarEditarRevisar(); else regEdicaoSair_(); return; }
+    if (REG_EDICAO.soChecagem) { regEdicaoSair_(); return; }
+    autoColetarSecaoAtiva();
+    regEdicaoRevisar_();
+  };
+}
+// Sair sem salvar: pergunta só quando algo mudou (a folha de sempre, com o texto da edição)
+function regEdicaoSair_() { confirmarSaida(function () { regEdicaoVoltar_(false); }); }
 
-async function p136SalvarEdicao() {
-  var dados = p136ColetarDados_();
-  var eu = P136_ESTADO;
-  if (!eu.timestamp) { document.getElementById('p136EditErro').textContent = 'Erro: timestamp não encontrado.'; return; }
-
-  // 18.5: só os campos alterados seguem para o servidor (nada mudou → nada a gravar)
-  var campos = vmcCamposAlterados_(eu.original || {}, dados);
-  if (!Object.keys(campos).length) { p136CancelarEdicao(); return; }
-  var idEnvio = vmcNovoIdEnvio_();
-
-  var btn = document.querySelector('#histModalRodape .p136-btn-salvar');
-  if (btn) { btn.disabled = true; btn.textContent = 'Salvando…'; }
-
-  var resp;
-  if (eu.tipo === 'profissional') {
-    resp = await chamarServidor('profEditarAutomonitoramento', {
-      siglaPaciente: (PROF_PACIENTE_SEL ? PROF_PACIENTE_SEL.sigla : eu.sigla),
-      timestamp: eu.timestamp, campos: campos, id_envio: idEnvio
-    });
-  } else {
-    resp = await chamarServidor('pacienteEditarAutomonitoramento', {
-      sigla: eu.sigla, timestamp: eu.timestamp, campos: campos, id_envio: idEnvio
-    });
+// Encerra a edição: presença limpa (quando nada foi gravado), formulário zerado e a tela de volta ao normal. Não navega.
+function regEdicaoLimpar_(gravou) {
+  var e = REG_EDICAO; if (!e) return;
+  REG_EDICAO = null;
+  if (!gravou && vmcTokenSessao_()) {
+    if (e.quem.tipo === 'profissional') chamarServidor('profLimparEditandoAuto', { siglaPaciente: regEdicaoSiglaPaciente_(e), timestamp: e.timestamp });
+    else chamarServidor('pacienteLimparEditandoAuto', { sigla: e.quem.sigla, timestamp: e.timestamp });
   }
+  autoResetState();
+  AUTO_STATE.primeiraVezNeg = e.guardado.primeiraVezNeg; AUTO_STATE.primeiraVezPos = e.guardado.primeiraVezPos;
+  AUTO_STATE.ultimoTipoFinalizado = null;
+  regEdicaoAjustarRevisar_(); regEdicaoAjustarChecagem_();
+}
+// Volta de onde a edição saiu: o registro aberto em Meus Registros (paciente) ou a tela do paciente (profissional)
+function regEdicaoVoltar_(gravou, msg) {
+  var e = REG_EDICAO; if (!e) return;
+  regEdicaoLimpar_(gravou);
+  if (PROF_FLUXO) { profFluxoEncerrar_(msg || ''); return; }
+  abrirSecao('sec-auto-historico');
+  histRenderizarLista();
+  if (window._HIST_REGS && window._HIST_REGS[e.idx]) histAbrirModal(e.idx);
+}
 
-  if (btn) { btn.disabled = false; btn.textContent = 'Salvar'; }
-
+async function regEdicaoSalvar_() {
+  var e = REG_EDICAO; if (!e || e.salvando) return;
+  var campos = vmcCamposAlterados_(e.original, regEdicaoColetar_());
+  // etapa alterada passa pela validação de sempre (o aviso aparece nela, junto do que falta)
+  for (var i = 0; i < e.lados.length; i++) {
+    for (var j = 0; j < CAB_ETAPAS.length; j++) {
+      var pref = e.lados[i] + '_' + CAB_ETAPAS[j] + '_', sid = cabBlocoId(CAB_ETAPAS[j], e.lados[i]);
+      if (!Object.keys(campos).some(function (k) { return k.indexOf(pref) === 0; })) continue;
+      var valid = autoValidarSecao(sid);
+      if (!valid.ok) { AUTO_STATE.revisaoRetorno = e.lados[i]; abrirSecao(sid); autoExibirAviso(sid, valid); return; }
+    }
+  }
+  if (!Object.keys(campos).length) { regEdicaoVoltar_(false); return; } // nada mudou → nada a gravar
+  var btn = document.getElementById(e.soChecagem ? 'chkBtnIniciar' : 'autoBtnEnviar');
+  var aviso = document.getElementById(e.soChecagem ? 'chkAviso' : 'rvsAviso');
+  if (aviso) aviso.innerHTML = '';
+  e.salvando = true;
+  if (btn) { btn.disabled = true; btn.classList.add('enviando'); btn.setAttribute('aria-busy', 'true'); }
+  var idEnvio = vmcNovoIdEnvio_();
+  var resp = (e.quem.tipo === 'profissional')
+    ? await chamarServidor('profEditarAutomonitoramento', { siglaPaciente: regEdicaoSiglaPaciente_(e), timestamp: e.timestamp, campos: campos, id_envio: idEnvio })
+    : await chamarServidor('pacienteEditarAutomonitoramento', { sigla: e.quem.sigla, timestamp: e.timestamp, campos: campos, id_envio: idEnvio });
+  e.salvando = false;
+  if (btn) { btn.disabled = false; btn.classList.remove('enviando'); btn.removeAttribute('aria-busy'); }
+  if (REG_EDICAO !== e) return; // a edição foi encerrada enquanto o servidor respondia
   if (!resp || !resp.ok) {
-    document.getElementById('p136EditErro').textContent = (resp && resp.erro) || 'Erro ao salvar.';
+    var av = autoAvisoEl((resp && resp.erro) || 'Erro ao salvar.');
+    if (aviso) { aviso.appendChild(av); av.scrollIntoView({ block: 'center', behavior: vmcRolagem_() }); }
     return;
   }
-
-  // Atualizar registro em memória com os dados salvos
-  var idx = eu.idx;
-  if (window._HIST_REGS && window._HIST_REGS[idx]) {
-    var r = window._HIST_REGS[idx];
+  // o registro em memória acompanha o que foi gravado (a janela reabre já atualizada)
+  var r = window._HIST_REGS && window._HIST_REGS[e.idx];
+  if (r) {
     for (var k in campos) r[k] = campos[k];
     if (resp.autoria_campos) r.autoria_campos = resp.autoria_campos; // 18.5: carimbo de cada campo, do servidor
-    r.editado = 'Sim';
-    r.editado_por = eu.tipo;
-    r.editado_em = resp.editado_em || '';
-    r.editando_quem = '';
+    r.editado = 'Sim'; r.editado_por = e.quem.tipo; r.editado_em = resp.editado_em || ''; r.editando_quem = '';
   }
-  // 16.5e (débito 8.27c): o Painel e o Início leem o registro corrigido na próxima abertura
-  if (typeof pevInvalidarCache === 'function') pevInvalidarCache();
+  if (typeof pevInvalidarCache === 'function') pevInvalidarCache(); // 16.5e (8.27c): Painel e Início leem o registro corrigido
   if (typeof iniInvalidar === 'function') iniInvalidar();
-
-  var modal = document.getElementById('histModalOverlay');
-  modal._p136Editando = false;
-  P136_ESTADO = { idx: null, tipo: null, sigla: null, timestamp: null };
-
-  histFecharModal();
-  // Reabrir em modo view com dados atualizados
-  if (idx !== null && window._HIST_REGS && window._HIST_REGS[idx]) {
-    histAbrirModal(idx);
-  }
-}
-
-async function p136LimparLock_(aguardar) {
-  var eu = P136_ESTADO;
-  if (!eu.timestamp) return;
-  var payload;
-  var acao;
-  if (eu.tipo === 'profissional') {
-    acao = 'profLimparEditandoAuto';
-    payload = { siglaPaciente: (PROF_PACIENTE_SEL ? PROF_PACIENTE_SEL.sigla : eu.sigla),
-      timestamp: eu.timestamp };
-  } else {
-    acao = 'pacienteLimparEditandoAuto';
-    payload = { sigla: eu.sigla, timestamp: eu.timestamp };
-  }
-  if (aguardar) await chamarServidor(acao, payload);
-  else chamarServidor(acao, payload); // fire-and-forget
-}
-
-/* Coleta todos os valores do form de edição no modal */
-function p136ColetarDados_() {
-  var dados = {};
-  // Humor nivel
-  var hInput = document.getElementById('p136HumorNivel');
-  if (hInput && hInput.value) dados['humor_nivel'] = hInput.value; // 18.4 (8.50): sem humor e sem escolha, o campo não vai
-  // Todos os [data-campo] (textareas, checkboxes de side toggle)
-  var campos = document.querySelectorAll('#histModalConteudo [data-campo]');
-  campos.forEach(function(el) {
-    var c = el.getAttribute('data-campo');
-    if (!c) return;
-    if (el.type === 'checkbox') dados[c] = el.checked ? 'sim' : 'nao';
-    else dados[c] = el.value;
-  });
-  // Grupos de checkboxes (auto-group com data-grupo-edit)
-  var grupos = document.querySelectorAll('#histModalConteudo [data-grupo-edit]');
-  grupos.forEach(function(g) {
-    var chave = g.getAttribute('data-grupo-edit');
-    var temLikert = g.getAttribute('data-tem-likert') === '1';
-    var optEls = g.querySelectorAll('.auto-option');
-    var itens = [];
-    optEls.forEach(function(optEl) {
-      var cb = optEl.querySelector('input[type="checkbox"]');
-      if (!cb || !cb.checked) return;
-      var item = cb.getAttribute('data-item');
-      if (!item && optEl.querySelector('.auto-option-other')) { // 16.5e (8.24): "Outro (texto)" gravado como na coleta das etapas
-        var txtOutro = optEl.querySelector('.auto-option-other input[type="text"]');
-        if (!txtOutro || !txtOutro.value.trim()) return;
-        item = 'Outro (' + txtOutro.value.trim() + ')';
-      }
-      if (!item) return;
-      if (temLikert) {
-        var nota = autoNotaDoItem(optEl); // 16.5d-2: barra deslizante; sem nota, o item vai sem ":n" (antes recebia 3 em silêncio)
-        itens.push(nota ? item + ':' + nota : item);
-      } else {
-        itens.push(item);
-      }
-    });
-    dados[chave] = itens.join(' | ');
-  });
-  return dados;
-}
-
-/* Renderiza o form completo de edição para um registro */
-function p136RenderFormEdicao_(r) {
-  var html = '<div class="p136-form-wrap">';
-  html += p136RenderHumor_(r);
-  html += p136RenderSecao_(r, 'neg');
-  html += p136RenderSecao_(r, 'pos');
-  html += '</div>';
-  return html;
-}
-
-function p136RenderHumor_(r) {
-  var nivel = vmcHumorNivel_(r.humor_nivel); // 18.4 (8.50): sem humor, nenhum rosto marcado
-  var h = '<div style="margin-bottom:18px;">';
-  h += '<div class="auto-sec-header" style="border-color:var(--c-action);margin-bottom:12px;">';
-  h += '<div class="auto-sec-icon" style="background:var(--c-action-tint);color:var(--c-action);"><svg class=ico aria-hidden=true><use href=#i-humor-3></use></svg></div>';
-  h += '<div><div class="auto-sec-title">Estado de Humor</div></div>';
-  h += '</div>';
-  h += '<div style="display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap;">';
-  for (var i = 1; i <= 5; i++) {
-    h += '<button type="button" class="p136-humor-btn' + (i === nivel ? ' ativo' : '') + '" onclick="p136ToggleHumor(this,' + i + ')">' + vmcHumorIcone(i) + ' ' + i + '</button>';
-  }
-  h += '</div>';
-  h += vmcCarimboHtml_(r, 'humor_nivel'); // 18.5
-  if (!nivel) h += '<div class="p136-humor-vazio" id="p136HumorVazio">Sem registro de humor</div>';
-  h += '<input type="hidden" id="p136HumorNivel" value="' + (nivel || '') + '">';
-  h += '<div class="prof-edit-field"><label>Observações</label>';
-  h += '<textarea data-campo="humor_observacoes" rows="2">' + escapeHtmlAuto(String(r.humor_observacoes || '')) + '</textarea>' + vmcCarimboHtml_(r, 'humor_observacoes') + '</div>';
-  h += '</div>';
-  return h;
-}
-
-function p136ToggleHumor(btn, val) {
-  var btns = document.querySelectorAll('.p136-humor-btn');
-  btns.forEach(function(b){ b.classList.remove('ativo'); });
-  btn.classList.add('ativo');
-  var inp = document.getElementById('p136HumorNivel');
-  if (inp) inp.value = val;
-  var vazio = document.getElementById('p136HumorVazio'); if (vazio) vazio.remove(); // 18.4
-}
-
-function p136RenderSecao_(r, tipo) {
-  var preenchido = String(r[tipo + '_preenchido'] || 'nao').trim() === 'sim';
-  var corVar = tipo === 'neg' ? '--c-reg-neg' : '--c-reg-pos'; // 16.5e (débito 8.26): tokens do tipo, não --coral/--green
-  var h = '<div style="margin-bottom:18px;">';
-  h += '<div class="auto-sec-header" style="border-color:var(' + corVar + ');margin-bottom:12px;">';
-  h += '<div class="auto-sec-icon" style="background:var(' + corVar + '-tint);color:var(' + corVar + '-ink);">' + (tipo==='neg'?'<svg class=ico aria-hidden=true><use href=#i-heart-crack></use></svg>':'<svg class=ico aria-hidden=true><use href=#i-heart></use></svg>') + '</div>';
-  h += '<div><div class="auto-sec-title">' + (tipo==='neg' ? 'Registro Negativo' : 'Registro Positivo') + '</div></div>';
-  h += '</div>';
-  h += '<label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--c-ink-2);cursor:pointer;margin-bottom:12px;">';
-  h += '<input type="checkbox" data-campo="' + tipo + '_preenchido"' + (preenchido ? ' checked' : '') + ' onchange="p136ToggleSide(this)" style="width:17px;height:17px;cursor:pointer;"> Ativar este lado do registro</label>';
-  h += '<div id="p136Side_' + tipo + '" data-tipo="' + tipo + '"' + (preenchido ? '' : ' style="display:none;"') + '>'; // 16.5d-2: cor do tipo para lista e barra
-  h += '<div class="prof-edit-field"><label>Situação (texto livre)</label>';
-  h += '<textarea data-campo="' + tipo + '_sit_o_que" rows="2">' + escapeHtmlAuto(String(r[tipo + '_sit_o_que'] || '')) + '</textarea>' + vmcCarimboHtml_(r, tipo + '_sit_o_que') + '</div>';
-  var sitGrupos = ['interpessoais','desempenho','solidao','perda','internas'];
-  sitGrupos.forEach(function(g) { h += p136RenderGrupo_(r, tipo + '_sit_tipo_' + g, false); });
-  var catsDef = tipo === 'neg' ? [
-    { prefixos: ['_emo_tristeza','_emo_ansiedade','_emo_raiva','_emo_culpa','_emo_ciume'], likert: true },
-    { prefixos: ['_fis_ativacao','_fis_desativacao','_fis_tensao','_fis_digestivas','_fis_sono'], likert: true },
-    { textoKey: '_pens_o_que', prefixos: ['_pens_sobre_mim','_pens_sobre_futuro','_pens_sobre_outros','_pens_cobranca','_pens_culpa'], likert: true },
-    { textoKey: '_comp_o_que', prefixos: ['_comp_evitacao','_comp_isolamento','_comp_reatividade','_comp_entorpecimento','_comp_controle'], likert: false }
-  ] : [
-    { prefixos: ['_emo_felicidade','_emo_orgulho','_emo_conexao','_emo_calma','_emo_esperanca'], likert: true },
-    { prefixos: ['_fis_calma','_fis_energia','_fis_relaxamento','_fis_digestivo','_fis_atencao'], likert: true },
-    { textoKey: '_pens_o_que', prefixos: ['_pens_autocompaixao','_pens_esperanca','_pens_confianca','_pens_flexibilidade','_pens_responsabilidade'], likert: true },
-    { textoKey: '_comp_o_que', prefixos: ['_comp_enfrentamento','_comp_conexao','_comp_expressao','_comp_autocuidado','_comp_aceitacao'], likert: false }
-  ];
-  catsDef.forEach(function(cat) {
-    if (cat.textoKey) {
-      h += '<div class="prof-edit-field" style="margin-top:10px;"><label>Texto livre</label>';
-      h += '<textarea data-campo="' + tipo + cat.textoKey + '" rows="2">' + escapeHtmlAuto(String(r[tipo + cat.textoKey] || '')) + '</textarea>' + vmcCarimboHtml_(r, tipo + cat.textoKey) + '</div>';
-    }
-    cat.prefixos.forEach(function(s) { h += p136RenderGrupo_(r, tipo + s, cat.likert); });
-  });
-  h += '</div></div>';
-  return h;
-}
-
-function p136ToggleSide(cb) {
-  var tipo = cb.getAttribute('data-campo').replace('_preenchido','');
-  var el = document.getElementById('p136Side_' + tipo);
-  if (el) el.style.display = cb.checked ? '' : 'none';
-}
-
-function p136RenderGrupo_(r, chave, comLikert) {
-  // 16.5d-2: mesma ListaSubgrupo das etapas (check redondo + barra deslizante); rótulo e legenda vêm do grupo
-  // original do formulário (DOM-first); as barras nascem no valor gravado por p136InicializarBarras_
-  var optEls = document.querySelectorAll('[data-grupo="' + chave + '"] input[data-item]');
-  if (!optEls.length) return '';
-  var titulo = histTituloGrupo(chave);
-  var valorAtual = String(r[chave] || '');
-  var partes = valorAtual ? valorAtual.split(' | ').map(function(s){ return s.trim(); }).filter(Boolean) : [];
-  var marcados = {};
-  var intensidades = {};
-  partes.forEach(function(p) {
-    var mm = p.match(/^(.+):(\d)$/);
-    if (comLikert && mm) { marcados[mm[1].trim()] = true; intensidades[mm[1].trim()] = parseInt(mm[2],10); }
-    else { marcados[p] = true; }
-  });
-  var rotuloEl = document.querySelector('[data-grupo="' + chave + '"] .auto-item-likert-label');
-  var rotulo = rotuloEl ? rotuloEl.textContent.trim() : '';
-  var h = '<div class="auto-group open" data-grupo-edit="' + chave + '"' + (comLikert ? ' data-tem-likert="1"' : '') + '>';
-  h += '<div class="auto-group-head"><div class="auto-group-title">' + escapeHtmlAuto(titulo) + '</div></div>';
-  h += vmcCarimboHtml_(r, chave); // 18.5
-  h += '<div class="auto-group-body"><div class="auto-lista" role="group" aria-label="' + escapeHtmlAuto(titulo) + '">';
-  optEls.forEach(function(el) {
-    var item = el.getAttribute('data-item');
-    if (!item) return;
-    var checked = !!marcados[item];
-    var itemEsc = esc(item);
-    h += '<div class="auto-option' + (checked ? ' marked' : '') + '">';
-    h += '<label class="auto-option-lbl"><input type="checkbox" data-item="' + itemEsc + '"' + (checked ? ' checked' : '') + ' onchange="p136ToggleLikert(this)">';
-    h += '<span class="auto-check" aria-hidden="true"><svg class=ico aria-hidden=true><use href=#i-check></use></svg></span>';
-    h += '<span class="auto-option-nome">' + escapeHtmlAuto(item) + '</span>' + (comLikert ? '<span class="auto-option-nota"></span>' : '') + '</label>';
-    if (comLikert) h += '<div class="auto-item-likert" data-nota="' + (intensidades[item] || '') + '"><span class="auto-item-likert-label">' + escapeHtmlAuto(rotulo) + '</span></div>';
-    h += '</div>';
-  });
-  // 16.5e (débito 8.24): a linha "Outro:" das etapas, já preenchida quando o registro tem "Outro (…)" gravado
-  var outroChave = Object.keys(marcados).find(function (k) { return k.indexOf('Outro (') === 0; });
-  var outroTxt = outroChave ? outroChave.slice(7, -1) : '';
-  h += '<div class="auto-option auto-option-is-outro' + (outroChave ? ' marked' : '') + '">';
-  h += '<div class="auto-option-other"><label class="auto-option-other-chk"><input type="checkbox" aria-label="Outro"' + (outroChave ? ' checked' : '') + ' onchange="p136ToggleLikert(this)"><span class="auto-check" aria-hidden="true"><svg class=ico aria-hidden=true><use href=#i-check></use></svg></span></label>';
-  h += '<span class="auto-option-other-lbl">Outro:</span><input class="auto-option-other-inp" type="text" placeholder="especifique..." aria-label="Outro" value="' + escapeHtmlAuto(outroTxt) + '" oninput="p136OutroInput(this)"></div>';
-  if (comLikert) h += '<div class="auto-item-likert" data-nota="' + (outroChave && intensidades[outroChave] ? intensidades[outroChave] : '') + '"><span class="auto-item-likert-label">' + escapeHtmlAuto(rotulo) + '</span></div>';
-  h += '</div>';
-  h += '</div></div></div>';
-  return h;
-}
-// Campo do "Outro" no modal de edição: com texto conta como marcado; apagar desmarca (a mesma regra §5 das etapas)
-function p136OutroInput(inp) {
-  var wrap = inp.closest('.auto-option-other'); var cb = wrap && wrap.querySelector('input[type="checkbox"]');
-  if (cb) { cb.checked = !!inp.value.trim(); autoAtualizarOptionMarked(cb); }
-}
-// Depois de montar o form de edição: cada item marcado com intensidade ganha a barra já no valor gravado
-function p136InicializarBarras_() {
-  document.querySelectorAll('#histModalConteudo [data-grupo-edit] .auto-option.marked input[type="checkbox"]').forEach(function(cb) { autoAtualizarOptionMarked(cb); });
-}
-
-function p136ToggleLikert(cb) {
-  autoAtualizarOptionMarked(cb); // marca/desmarca; com intensidade, abre a barra sem valor ou apaga a nota
+  regEdicaoVoltar_(true, resp.mensagem || '');
 }
 
 // Monta uma seção completa do modal (com todos os subitens)
@@ -16651,6 +16507,7 @@ function autoFormatarHora(raw) {
 // RASCUNHO
 // ============================================================
 function autoSalvarRascunho() {
+  if (REG_EDICAO) return; // 13.7: edição de um registro já enviado não é rascunho
   try {
     sessionStorage.setItem(AUTO_RASCUNHO_KEY, JSON.stringify({
       sigla: vmcSiglaSessao_(), // 18.1.2 (8.70)
@@ -16688,6 +16545,16 @@ function autoHidratarFormulario() {
   document.querySelectorAll('[data-auto-campo]').forEach(el => {
     const k = el.getAttribute('data-auto-campo');
     if (d[k]) el.value = d[k];
+  });
+  // 13.7: caixas de Pensamentos (uma por pensamento, gravadas juntas com " | ") e de Comportamentos
+  ['neg', 'pos'].forEach(tipo => {
+    const partes = String(d[tipo + '_pens_o_que'] || '').split(' | ').map(s => s.trim()).filter(Boolean);
+    if (partes.length) {
+      while (document.querySelectorAll('[data-auto-campo-pens="' + tipo + '"]').length < partes.length) p8AdicionarPensamento(tipo);
+      document.querySelectorAll('[data-auto-campo-pens="' + tipo + '"]').forEach((cx, i) => { cx.value = partes[i] || ''; });
+    }
+    const comp = document.querySelector('[data-auto-campo-comp="' + tipo + '"]');
+    if (comp && d[tipo + '_comp_o_que']) comp.value = d[tipo + '_comp_o_que'];
   });
   // Grupos — re-marca checkboxes a partir do formato "item:likert | item:likert"
   document.querySelectorAll('[data-grupo]').forEach(grupo => {
