@@ -117,14 +117,15 @@ tenta('A', () => {
   const am = (ls, pedidos) => montar('amanha', { nome: 'Nova', data: '2026-11-26', sessoes: ls, pedidos: pedidos || 0 });
   const quatro = [linha('09:00', 'Ana Souza Lima', { modalidade: 'online', confirmada: true }), linha('10:00', 'Bruno Reis Costa'), linha('14:00', 'Carla Mendes Dias', { confirmada: true }), linha('15:00', 'Davi Lopes Nunes', { modalidade: 'online', confirmada: true })].map(l => Object.assign(l, { data: '2026-11-26' }));
   const e4 = am(quatro, 1);
-  ok('A17 e-mail da véspera: assunto, título e a frase com o dia da semana, a data e a conta das confirmações', e4.assunto === 'Sua agenda de amanhã — COGNIATIVO' && /<h1[^>]*>Sua agenda de amanhã<\/h1>/.test(e4.html) && e4.texto.indexOf('Quinta-feira, 26/11/2026: 4 sessões, 3 confirmadas e 1 a confirmar.') !== -1, e4.texto.slice(0, 300));
+  ok('A17 e-mail da véspera: assunto, título e a frase com o dia da semana, a data e a conta das confirmações', e4.assunto === 'Sua agenda de amanhã — COGNIATIVO' && /<h1[^>]*>Sua agenda de amanhã<\/h1>/.test(e4.html) && e4.texto.indexOf('Quinta-feira, 26/11/2026: quatro sessões, três confirmadas e uma a confirmar.') !== -1, e4.texto.slice(0, 300));
   ok('A18 e-mail da véspera: grade com Data, Hora, Paciente (a modalidade sob o nome) e Presença; no texto puro, as cinco em linha; botão "Abrir a Agenda"',
     /<th[^>]*>Data<\/th><th[^>]*>Hora<\/th><th[^>]*>Paciente<\/th><th[^>]*>Presença<\/th>/.test(e4.html) && />26\/11<\/td><td[^>]*>9h<\/td><td[^>]*>Ana Souza Lima<br><span[^>]*>On-line<\/span><\/td><td[^>]*>Confirmada<\/td>/.test(e4.html) && />Presencial<\/span><\/td><td[^>]*>A confirmar<\/td>/.test(e4.html) &&
     e4.texto.indexOf('Data · Hora · Paciente · Modalidade · Presença') !== -1 && e4.texto.indexOf('26/11 · 9h · Ana Souza Lima · On-line · Confirmada') !== -1 && e4.html.indexOf('Abrir a Agenda') !== -1);
   ok('A19 e-mail da véspera: variações da frase (todas, nenhuma, uma só) e a linha dos pedidos no singular e no plural',
-    am(quatro.map(l => Object.assign({}, l, { confirmada: true }))).texto.indexOf('4 sessões, todas confirmadas.') !== -1 && am(quatro.map(l => Object.assign({}, l, { confirmada: false }))).texto.indexOf('4 sessões, nenhuma confirmada ainda.') !== -1 &&
-    am([quatro[0]]).texto.indexOf('1 sessão, confirmada.') !== -1 && am([quatro[1]]).texto.indexOf('1 sessão, a confirmar.') !== -1 &&
-    e4.texto.indexOf('1 pedido de paciente aguarda a sua resposta.') !== -1 && am(quatro, 3).texto.indexOf('3 pedidos de pacientes aguardam a sua resposta.') !== -1 && am(quatro, 0).texto.indexOf('pedido') === -1);
+    am(quatro.map(l => Object.assign({}, l, { confirmada: true }))).texto.indexOf('quatro sessões, todas confirmadas.') !== -1 && am(quatro.map(l => Object.assign({}, l, { confirmada: false }))).texto.indexOf('quatro sessões, nenhuma confirmada ainda.') !== -1 &&
+    am([quatro[0]]).texto.indexOf('uma sessão, confirmada.') !== -1 && am([quatro[1]]).texto.indexOf('uma sessão, a confirmar.') !== -1 &&
+    e4.texto.indexOf('Um pedido de paciente aguarda a sua resposta.') !== -1 && am(quatro, 3).texto.indexOf('Três pedidos de pacientes aguardam a sua resposta.') !== -1 && am(quatro, 0).texto.indexOf('pedido') === -1 && am(quatro, 2).texto.indexOf('Dois pedidos de pacientes aguardam a sua resposta.') !== -1 &&
+    am(Array.from({ length: 21 }, () => quatro[0])).texto.indexOf('21 sessões, todas confirmadas.') !== -1);
 });
 
 /* ---------------------------------------------------------------- B */
@@ -213,7 +214,7 @@ tenta('D', () => {
   r = gatilho();
   const e2 = E[1] || {};
   ok('D6 20:00: sai a agenda de amanhã, com as duas sessões de sexta (a cancelada fora), modalidade e presença', E.length === 2 && r.amanha === 1 && e2.to === 'np@exemplo.test' && e2.subject === 'Sua agenda de amanhã — COGNIATIVO' &&
-    String(e2.body).indexOf('Sexta-feira, 27/11/2026: 2 sessões, 1 confirmada e 1 a confirmar.') !== -1 && String(e2.body).indexOf("27/11 · 9h · Bruno & <b>\"Reis\"</b> O'Costa · Presencial · A confirmar") !== -1 &&
+    String(e2.body).indexOf('Sexta-feira, 27/11/2026: duas sessões, uma confirmada e uma a confirmar.') !== -1 && String(e2.body).indexOf("27/11 · 9h · Bruno & <b>\"Reis\"</b> O'Costa · Presencial · A confirmar") !== -1 &&
     String(e2.body).indexOf('27/11 · 11h · Carla Mendes Dias · On-line · Confirmada') !== -1 && String(e2.body).indexOf('16h') === -1 && String(e2.htmlBody).indexOf('<b>"Reis"') === -1, [E.length, r, String(e2.body).slice(0, 500)]);
   irPara(2026, 11, 26, 20, 5);
   r = gatilho();

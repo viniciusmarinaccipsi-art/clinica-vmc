@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '20.2.1';
+var VERSAO_PACOTE = '20.2.2';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -9967,7 +9967,7 @@ function _stpHoraCurta_(h) {
 }
 /** Numero por extenso, no feminino (conta sessoes), ate vinte; acima disso, em algarismos. Pedido do usuario (23/11/2026) para o e-mail de fim de dia. */
 var STP_EXTENSO = ['zero', 'uma', 'duas', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez', 'onze', 'doze', 'treze', 'catorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove', 'vinte'];
-function _stpExtenso_(n) { var k = parseInt(n, 10); return k >= 0 && k <= 20 ? STP_EXTENSO[k] : String(k); }
+function _stpExtenso_(n, masculino) { var k = parseInt(n, 10); if (masculino && (k === 1 || k === 2)) return k === 1 ? 'um' : 'dois'; return k >= 0 && k <= 20 ? STP_EXTENSO[k] : String(k); }
 function _stpMaiuscula_(t) { return String(t).charAt(0).toUpperCase() + String(t).slice(1); }
 /** Fim da sessao em minutos do dia (inicio + duracao; sem duracao valida, a padrao). */
 function _stpFimMin_(x, durPadrao) {
@@ -10091,10 +10091,10 @@ function montarEmailAgendaProfissional(tipo, p) {
   } else {
     var conf = lista.filter(function (x) { return x.confirmada; }).length, falta = n - conf, dia = _lemDia_(p.data), pedidos = parseInt(p.pedidos, 10) || 0;
     var presenca = n === 1 ? (conf ? 'confirmada' : 'a confirmar')
-      : (falta === 0 ? 'todas confirmadas' : (conf === 0 ? 'nenhuma confirmada ainda' : conf + (conf === 1 ? ' confirmada' : ' confirmadas') + ' e ' + falta + ' a confirmar'));
+      : (falta === 0 ? 'todas confirmadas' : (conf === 0 ? 'nenhuma confirmada ainda' : _stpExtenso_(conf) + (conf === 1 ? ' confirmada' : ' confirmadas') + ' e ' + _stpExtenso_(falta) + ' a confirmar')); // 20.2.2: numeros por extenso, como no e-mail de fim de dia
     t = { assunto: 'Sua agenda de amanhã — COGNIATIVO', titulo: 'Sua agenda de amanhã', botao: 'Abrir a Agenda',
-      aviso: pedidos ? (pedidos === 1 ? '1 pedido de paciente aguarda a sua resposta.' : pedidos + ' pedidos de pacientes aguardam a sua resposta.') : '',
-      paragrafo: (dia === null ? '' : STP_DIAS[_lemDiaDaSemana_(dia)] + ', ') + _ageDataBR_(p.data) + ': ' + n + (n === 1 ? ' sessão, ' : ' sessões, ') + presenca + '.',
+      aviso: pedidos ? (pedidos === 1 ? 'Um pedido de paciente aguarda a sua resposta.' : _stpMaiuscula_(_stpExtenso_(pedidos, true)) + ' pedidos de pacientes aguardam a sua resposta.') : '',
+      paragrafo: (dia === null ? '' : STP_DIAS[_lemDiaDaSemana_(dia)] + ', ') + _ageDataBR_(p.data) + ': ' + (n === 1 ? 'uma sessão, ' : _stpExtenso_(n) + ' sessões, ') + presenca + '.',
       // na grade do e-mail a modalidade vai sob o nome do paciente (cinco colunas nao cabem num telefone); no texto puro, as cinco em linha
       tabela: { cab: ['Data', 'Hora', 'Paciente', 'Presença'], linhas: lista.map(function (x) {
         return [_ageDiaMes_(x.data), _stpHoraCurta_(x.hora), [String(x.paciente || ''), _ageModNome_(x.modalidade)], x.confirmada ? 'Confirmada' : 'A confirmar'];
