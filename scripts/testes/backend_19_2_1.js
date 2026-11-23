@@ -260,7 +260,7 @@ tenta('E', () => {
   h.EMAILS.length = 0;
   r = gatilho(quando(2026, 12, 10, 9, 30));
   ok('E16 item encerrado não manda mais e-mail (o de P3 continua)', r.enviados === 1 && h.EMAILS.length === 1 && h.EMAILS[0].to === 'p3@exemplo.test', r);
-  ok('E17 o resumo do gatilho só tem contagens (nenhuma sigla, nenhum e-mail)', Object.keys(r).every(k => typeof r[k] === 'number' || typeof r[k] === 'boolean' || k === 'data' || k === 'hora' || (k === 'sessoes' && Object.keys(r.sessoes).every(q => typeof r.sessoes[q] === 'number'))) && JSON.stringify(r).indexOf('@') === -1);
+  ok('E17 o resumo do gatilho só tem contagens (nenhuma sigla, nenhum e-mail)', Object.keys(r).every(k => typeof r[k] === 'number' || typeof r[k] === 'boolean' || k === 'data' || k === 'hora' || ((k === 'sessoes' || k === 'agenda_prof') && Object.keys(r[k]).every(q => typeof r[k][q] === 'number'))) && JSON.stringify(r).indexOf('@') === -1);
   ok('E18 o invólucro rodarLembretesAgora existe e roda o mesmo gatilho', (() => { h.memo(); const x = S('rodarLembretesAgora')(); return x.ok === true && typeof x.enviados === 'number'; })());
 });
 

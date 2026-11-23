@@ -2240,3 +2240,19 @@ emite e os códigos do rendimento e da ocupação — nada disso fica no código
     mesmo `profAplicarEscala_` do cartão do paciente (`PROF_FLUXO`; escore no servidor; resultado aberto ao terminar, 19.0.1).
   - `profAbrirPaciente` aceita `sec-prof-biblioteca` como origem: o Voltar do paciente devolve à Biblioteca.
 - **Saída:** `vmcFecharSobreposicoes_` esvazia `#bibCorpo` e `sairDoSistema` zera `BIB`; Esc fecha a janela.
+
+## Status das sessões (Pacote 20.2 — 23/11/2026)
+
+Decisões do usuário (23/11/2026): a palavra é **status** (o campo "Situação" da sessão passou a "Status"; "Sem marcação" passou a "Sem status"); a sessão de hoje só vira pendência **depois que a última sessão do dia termina**; dois e-mails, só ao profissional, com nome completo e grade com data e hora. A regra do "a receber" não mudou (`_finCobravel_`).
+
+- **Regra pura** (`_stpPendentes_`, com o "agora" por parâmetro): sessão não cancelada, ainda `agendada`, de dia anterior — ou de hoje, se `agora` já passou do fim da última sessão ativa do dia (`_stpFimDoDia_`: início + duração). Mais antigas primeiro.
+- **Bloco "Sessões com status pendente" no Início**: os dados vêm na leitura que o Início já fazia (`profLerFinanceiro { so: 'inicio' }` → `inicio.status_pendente = { total, itens }`, no máximo 60 linhas); nenhuma chamada nova no login. A tela (`stpInicioHtml_`) agrupa por dia; `FIN.inicioLido` faz a leitura ser refeita em segundo plano depois de 2 minutos, quando o Início é redesenhado.
+- **Ação nova `profMarcarStatusLote`** (`ids`, `situacao`: `realizada` | `falta`; 91 ações): serve a "Realizada", "Não compareceu" e "Todas realizadas". Só toca sessão que está na lista de pendentes (nunca futura, cancelada ou já marcada), grava o mesmo que `profMarcarSituacao` (`estado`, `cobrada` por `_ageCobrada_`) e devolve o `inicio` atualizado. "Outra" não chama o servidor: abre a sessão na Agenda (`stpOutra_`).
+- **Dois e-mails ao profissional**, no gatilho dos lembretes (`enviarEmailsProfissional_`, chamada no fim de `enviarLembretes_`, dentro de `try/catch`):
+  - fim de dia (`_stpEmailPendenteVence_`): só em dia com sessão, **uma hora depois** do fim da última (teto 23:55), uma vez por dia, e só se sobrou sessão de hoje com status pendente;
+  - véspera (`_stpEmailAmanhaVence_`): a partir do horário escolhido (padrão 20:00), uma vez por dia, e só se amanhã tem sessão agendada.
+  - Chaves na `Config_Agenda`: `email_status_pendente`, `email_agenda_amanha` (nascem `Nao`), `email_agenda_hora` (texto literal `HH:mm`) e as marcas `email_status_enviado_em` / `email_agenda_enviado_em` (`AAAA-MM-DD`). A marca é gravada **antes** do envio, dentro da trava e relendo a célula; cota ou falha desfazem a marca.
+  - Texto: `montarEmailAgendaProfissional`; a grade usa o parâmetro opcional `tabela` de `_layoutEmail_` (cabeçalho + linhas, toda célula escapada). Assunto e título sem nome de paciente.
+  - Envio só por `_reservarEmail_('sessoes')` e `_enviarEmail_`; nenhum `MailApp` direto, nome do remetente e "responder para" intocados.
+- **Trava do remetente** (`_stpDisponivel_`, função única): enquanto o profissional não tiver a própria conta conectada, os dois e-mails só existem para a conta do dono do script (hoje a função chama `_calDoDono_`). A Grade recebe `emails_prof_disponivel` e mostra os campos travados com o aviso; salvar "Ligado" numa conta travada grava `Nao`; o gatilho nem abre a Controle de conta travada. Quando a conta conectada chegar, troca-se só essa função.
+- Prova: `scripts/testes/backend_20_2.js` (relógio fixo, dois fusos) e o roteiro `..\PACOTE_20_2_fluxo.js` (390 e 1280, com os dois e-mails montados pelo gatilho).

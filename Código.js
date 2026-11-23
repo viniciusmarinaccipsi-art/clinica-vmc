@@ -69,7 +69,7 @@
 // pacienteConfirmarSessao, pacienteCancelarSessao, pacientePedirAgenda); avisos de sessao por e-mail, desligados por padrao.
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '20.1';
+var VERSAO_PACOTE = '20.2';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -560,6 +560,9 @@ function _despachar_(acao, payload, s) {
       case 'profGerarLote': // 20.1
         resposta = profGerarLote(s, payload.qual, payload.simular === true, payload);
         break;
+      case 'profMarcarStatusLote': // 20.2: status das sessoes pelo bloco do Inicio
+        resposta = profMarcarStatusLote(s, payload.ids, payload.situacao);
+        break;
       // Fase 20 - Fluxo de caixa (paciente: so o proprio financeiro)
       case 'lerMeuFinanceiro':
         resposta = _exigir_(s, 'paciente') || lerMeuFinanceiro(s.sigla);
@@ -818,7 +821,8 @@ var ACOES_COM_TRAVA = [
   'profSalvarCadastroFinanceiro', 'profSalvarConfigFinanceiro', 'profSalvarPagamento', 'profEstornarPagamento', 'profDecidirComprovante', // Fase 20
   'profGerarCobrancas', 'profEnviarCobranca', 'profDescartarCobranca', 'profNaoCobrarSessao', 'profSalvarDespesa', 'profEncerrarDespesaFixa', // Fase 20
   'pacienteEnviarComprovante', 'pacientePedirRecibo', // Fase 20
-  'profSalvarRecibo', 'profGerarLote' // 20.1
+  'profSalvarRecibo', 'profGerarLote', // 20.1
+  'profMarcarStatusLote' // 20.2
 ];
 
 
@@ -1415,6 +1419,16 @@ function _layoutEmail_(p) {
   if (p.paragrafo || !p.linhas) linhas.push(esp(10), par(_escHtml_(p.paragrafo), 15, 23, '#3F3C52'));
   // Fase 20: corpo em varias linhas (o demonstrativo da cobranca), cada uma escapada
   if (p.linhas && p.linhas.length) linhas.push(esp(10), par(p.linhas.map(function (l) { return _escHtml_(l); }).join('<br>'), 15, 23, '#3F3C52'));
+  // 20.2: grade opcional (cabecalho + linhas), toda celula escapada — a agenda que vai ao profissional
+  if (p.tabela && p.tabela.linhas && p.tabela.linhas.length) {
+    var cel = 'padding:8px 8px;border-bottom:1px solid #E2E1EE;text-align:left;vertical-align:top;' + F + 'font-size:14px;line-height:20px;';
+    // celula [principal, secundario]: a segunda linha vai menor e mais clara (cabe na largura de um telefone)
+    var conteudo = function (c) { return Array.isArray(c) ? _escHtml_(c[0]) + '<br><span style="font-size:13px;line-height:18px;color:#5E5B73;">' + _escHtml_(c[1]) + '</span>' : _escHtml_(c); };
+    linhas.push(esp(14), '<tr><td><table width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;border:1px solid #E2E1EE;">' +
+      '<tr>' + p.tabela.cab.map(function (c) { return '<th bgcolor="#F3F3F8" style="' + cel + 'background-color:#F3F3F8;font-weight:600;color:#3D3A6B;">' + _escHtml_(c) + '</th>'; }).join('') + '</tr>' +
+      p.tabela.linhas.map(function (l) { return '<tr>' + l.map(function (c) { return '<td style="' + cel + 'color:#1D1B2B;">' + conteudo(c) + '</td>'; }).join('') + '</tr>'; }).join('') +
+      '</table></td></tr>');
+  }
   // 14.5: segundo link do e-mail de sessao (endereco no mapa ou sala do Meet)
   if (p.linkExtra && p.linkExtra.url) linhas.push(esp(10), par('<a href="' + _escHtml_(p.linkExtra.url) + '" target="_blank" style="color:#4C4A8F;text-decoration:underline;font-weight:600;">' + _escHtml_(p.linkExtra.rotulo) + '</a>', 15, 23, '#3F3C52'));
   if (!p.semBotao) { // Fase 20: a cobranca vai sem botao (quem paga pode nao ter acesso)
@@ -5327,7 +5341,8 @@ function lerGradeAtendimento(s) {
     }
   }
 
-  return { ok: true, config: config, grade: grade, calendar_disponivel: _calDoDono_(profissionalId) }; // 14.5
+  return { ok: true, config: config, grade: grade, calendar_disponivel: _calDoDono_(profissionalId), // 14.5
+    emails_prof_disponivel: _stpDisponivel_(profissionalId) }; // 20.2
 }
 
 /**
@@ -5399,8 +5414,15 @@ function salvarGradeAtendimento(s, config, grade) {
     cfgGravar.google_calendar = querCal ? 'Sim' : 'Nao';
     ligouCalendar = querCal;
   }
+  // 20.2: os dois e-mails ao profissional (so mudam quando a tela os manda; ligar exige a conta que pode recebe-los)
+  if (config.email_status_pendente !== undefined || config.email_agenda_amanha !== undefined) {
+    var podeEmailProf = _stpDisponivel_(profissionalId);
+    if (config.email_status_pendente !== undefined) cfgGravar.email_status_pendente = (String(config.email_status_pendente).toLowerCase() === 'sim' && podeEmailProf) ? 'Sim' : 'Nao';
+    if (config.email_agenda_amanha !== undefined) cfgGravar.email_agenda_amanha = (String(config.email_agenda_amanha).toLowerCase() === 'sim' && podeEmailProf) ? 'Sim' : 'Nao';
+  }
+  if (config.email_agenda_hora !== undefined && _stpHoraValida_(config.email_agenda_hora)) cfgGravar.email_agenda_hora = String(config.email_agenda_hora);
   for (var chave in cfgGravar) {
-    var valorTxt = (chave === 'endereco' || chave === 'endereco_novo' || chave === 'endereco_novo_desde') ? _lemCelula_(cfgGravar[chave]) : _celulaSegura_(String(cfgGravar[chave])); // 18.2; 14.5: endereco e texto literal
+    var valorTxt = (chave === 'endereco' || chave === 'endereco_novo' || chave === 'endereco_novo_desde' || chave === 'email_agenda_hora') ? _lemCelula_(cfgGravar[chave]) : _celulaSegura_(String(cfgGravar[chave])); // 18.2; 14.5: endereco e texto literal
     if (chavesExistentes[chave]) {
       abaCfg.getRange(chavesExistentes[chave], 2).setValue(valorTxt);
     } else {
@@ -6662,6 +6684,13 @@ function enviarLembretes_(quando) {
     r.sessoes = { falhas: 1 };
     console.error('agenda: ' + String(erroSessoes && erroSessoes.message || erroSessoes).slice(0, 160));
   }
+  // 20.2: os dois e-mails ao profissional (status pendente e agenda de amanha), no mesmo gatilho e sem derrubar a rodada
+  try {
+    r.agenda_prof = enviarEmailsProfissional_(quando);
+  } catch (erroProf) {
+    r.agenda_prof = { falhas: 1 };
+    console.error('agenda (e-mails ao profissional): ' + String(erroProf && erroProf.message || erroProf).slice(0, 160));
+  }
   Logger.log('Lembretes: ' + JSON.stringify(r));
   return r;
 }
@@ -7569,7 +7598,7 @@ function profMarcarSituacao(s, id, situacao, periodo) {
   var x = ctx.sessoes.filter(function (y) { return y.id === String(id || '').trim(); })[0];
   if (!x || !_ageAtiva_(x)) return { ok: false, erro: MSG_AGE_NAO_ACHEI };
   var estado = situacao === 'realizada' ? 'realizada' : (situacao === 'falta' ? 'falta' : 'agendada');
-  if (estado === 'agendada' && _ageRepostaEm_(ctx, x.id)) return { ok: false, erro: 'Esta sessão já foi reposta. Cancele a reposição antes de mudar a situação.' };
+  if (estado === 'agendada' && _ageRepostaEm_(ctx, x.id)) return { ok: false, erro: 'Esta sessão já foi reposta. Cancele a reposição antes de mudar o status.' };
   _ageGravar_(ctx.abaS, COLUNAS_SESSOES, x.__linha, { estado: estado, cobrada: estado === 'agendada' ? (x.reposicao_de ? 'Nao' : '') : _ageCobrada_(estado, true, !!x.reposicao_de), atualizado_em: agora.carimbo });
   return _ageResposta_(alvo, { ok: true }, periodo, agora);
 }
@@ -8921,7 +8950,7 @@ function _finInicio_(c, agora) {
     var l = c.cadastros[sig], p = c.pacs[sig];
     if (p && p.ativo && String(l.recibo_pedido_em || '').slice(0, 7) === mes) recibos.push({ sigla: sig, nome: p.nome, data: String(l.recibo_pedido_em).slice(0, 10) });
   });
-  return { comprovantes: _finComprovantes_(c), recibos: recibos,
+  return { comprovantes: _finComprovantes_(c), recibos: recibos, status_pendente: _stpVisao_(c, agora), // 20.2
     contas: _finDespesas_(c, mes + '-01', ate > _finFimDoMes_(mes) ? ate : _finFimDoMes_(mes), agora.data).filter(function (d) { return d.situacao === 'a_pagar' && d.vence <= ate; })
       .map(function (d) { return { nome: d.nome, valor: d.valor, vence: d.vence }; }) };
 }
@@ -9600,6 +9629,232 @@ function profGerarLote(s, qual, simular, periodo) {
   return _finResposta_(alvo, { ok: true, arquivo: { nome: nome, texto: parte.linhas.join(''), linhas: parte.linhas.length } }, periodo, agora);
 }
 // ---------- fim da Fase 20 ----------
+
+// ============================================================
+// PACOTE 20.2 — STATUS DAS SESSOES
+// Bloco "Sessoes com status pendente" do Inicio do profissional e os dois e-mails que vao SO a ele:
+// o de fim de dia (sobrou sessao sem status) e o da vespera (a agenda de amanha).
+// Decisoes do usuario (23/11/2026): a palavra e "status"; a sessao de hoje so vira pendencia depois que a
+// ULTIMA sessao do dia termina; dois e-mails; nome completo; grade com data e hora.
+// Regras puras, com o "agora" por parametro. Nenhum e-mail vai a paciente por aqui.
+// Remetente: enquanto o profissional nao tiver a propria conta conectada, os dois e-mails so existem para a
+// conta do dono do script (_stpDisponivel_ e o unico lugar a trocar quando a conta conectada chegar).
+// ============================================================
+
+var STP_LISTA_MAX = 60;        // linhas do bloco do Inicio (as mais antigas primeiro)
+var STP_EMAIL_FOLGA_MIN = 60;  // o e-mail de fim de dia sai uma hora depois do fim da ultima sessao
+var STP_EMAIL_TETO_MIN = 1435; // ... e nunca depois das 23:55
+var STP_HORA_PADRAO = '20:00'; // horario padrao do e-mail da vespera
+var STP_DIAS = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+
+function _stpHoraValida_(h) { return /^([01]\d|2[0-3]):[0-5]\d$/.test(String(h)); }
+/** '09:00' -> '9h'; '10:30' -> '10h30'. */
+function _stpHoraCurta_(h) {
+  var t = _lemHora_(h);
+  return t ? String(+t.slice(0, 2)) + 'h' + (t.slice(3) === '00' ? '' : t.slice(3)) : '';
+}
+/** Fim da sessao em minutos do dia (inicio + duracao; sem duracao valida, a padrao). */
+function _stpFimMin_(x, durPadrao) {
+  var ini = _ageMin_(x.hora_inicio), dur = parseInt(x.duracao_min, 10);
+  return ini === null ? null : ini + (dur > 0 ? dur : durPadrao);
+}
+/** Minuto em que a agenda do dia termina (o fim da ultima sessao nao cancelada); null se o dia nao tem sessao. */
+function _stpFimDoDia_(sessoes, dataIso, durPadrao) {
+  var fim = null;
+  sessoes.forEach(function (x) {
+    if (x.data !== dataIso || !_ageAtiva_(x)) return;
+    var f = _stpFimMin_(x, durPadrao);
+    if (f !== null && (fim === null || f > fim)) fim = f;
+  });
+  return fim;
+}
+/**
+ * Sessoes com status pendente: nao cancelada, ainda "agendada", de um dia anterior — ou de hoje, depois que a
+ * ultima sessao do dia terminou. Mais antigas primeiro.
+ */
+function _stpPendentes_(sessoes, agora, durPadrao) {
+  var fimHoje = _stpFimDoDia_(sessoes, agora.data, durPadrao), agoraMin = _ageMin_(agora.hora);
+  var hojeFechou = fimHoje !== null && agoraMin !== null && agoraMin >= fimHoje;
+  return sessoes.filter(function (x) {
+    if (!_ageAtiva_(x) || (x.estado !== 'agendada' && x.estado !== '') || _lemDia_(x.data) === null) return false;
+    return x.data < agora.data || (x.data === agora.data && hojeFechou);
+  }).sort(function (a, b) {
+    if (a.data !== b.data) return a.data < b.data ? -1 : 1;
+    var ha = _lemHora_(a.hora_inicio), hb = _lemHora_(b.hora_inicio);
+    return ha < hb ? -1 : (ha > hb ? 1 : 0);
+  });
+}
+/** O bloco do Inicio: o total e as primeiras linhas (id, paciente, data, hora). `c` e o contexto do financeiro, que ja leu as sessoes. */
+function _stpVisao_(c, agora) {
+  var todas = _stpPendentes_(c.sessoes, agora, c.cfgAgenda.duracao_slot_min);
+  return { total: todas.length, itens: todas.slice(0, STP_LISTA_MAX).map(function (x) {
+    var p = c.pacs[_siglaChave_(x.sigla)];
+    return { id: x.id, sigla: x.sigla, nome: p ? p.nome : x.sigla, data: x.data, hora: _lemHora_(x.hora_inicio) };
+  }) };
+}
+
+/**
+ * Informa o status de uma ou de varias sessoes pelo bloco do Inicio. `situacao`: 'realizada' | 'falta'.
+ * So vale para sessao que esta com status pendente (nunca toca sessao futura, cancelada ou ja marcada) e grava
+ * o mesmo que a Agenda grava. Devolve os blocos do Inicio ja atualizados.
+ */
+function profMarcarStatusLote(s, ids, situacao) {
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  var estado = situacao === 'realizada' ? 'realizada' : (situacao === 'falta' ? 'falta' : '');
+  var lista = (Array.isArray(ids) ? ids : []).map(function (x) { return String(x === undefined || x === null ? '' : x).trim(); }).filter(String);
+  if (!estado || !lista.length || lista.length > STP_LISTA_MAX) return { ok: false, erro: 'Parametros incompletos' };
+  var c = _finCtx_(alvo.controle), agora = _lemAgora_(), pend = {}, marcadas = 0;
+  _stpPendentes_(c.sessoes, agora, c.cfgAgenda.duracao_slot_min).forEach(function (x) { pend[x.id] = x; });
+  lista.forEach(function (id) {
+    var x = pend[id];
+    if (!x) return;
+    _ageGravar_(c.abaS, COLUNAS_SESSOES, x.__linha, { estado: estado, cobrada: _ageCobrada_(estado, true, !!x.reposicao_de), atualizado_em: agora.carimbo });
+    delete pend[id];
+    marcadas++;
+  });
+  return { ok: true, marcadas: marcadas, inicio: _finInicio_(marcadas ? _finCtx_(alvo.controle) : c, agora) };
+}
+
+// ---------- os dois e-mails ao profissional ----------
+
+/** Este profissional pode receber os e-mails do sistema sobre a agenda dele? Hoje: so o dono do script (o e-mail sairia do Gmail dele mesmo). */
+function _stpDisponivel_(profId) { return _calDoDono_(profId); }
+
+/** As chaves dos dois e-mails na Config_Agenda (nascem desligadas) e a marca do ultimo envio de cada um ('AAAA-MM-DD'). */
+function _stpConfig_(controle) {
+  var cfg = { email_status_pendente: 'Nao', email_agenda_amanha: 'Nao', email_agenda_hora: STP_HORA_PADRAO, email_status_enviado_em: '', email_agenda_enviado_em: '' };
+  var aba = controle ? controle.getSheetByName(GRADE_ABA_CONFIG) : null;
+  if (!aba) return cfg;
+  var v = aba.getDataRange().getDisplayValues();
+  for (var i = 1; i < v.length; i++) {
+    var chave = String(v[i][0] || '').trim(), valor = String(v[i][1] || '').trim();
+    if (chave === 'email_status_pendente' || chave === 'email_agenda_amanha') cfg[chave] = valor.toLowerCase() === 'sim' ? 'Sim' : 'Nao';
+    if (chave === 'email_agenda_hora' && _stpHoraValida_(valor)) cfg.email_agenda_hora = valor;
+    if (chave === 'email_status_enviado_em' || chave === 'email_agenda_enviado_em') cfg[chave] = valor;
+  }
+  return cfg;
+}
+/**
+ * O e-mail de fim de dia vence agora? So em dia com sessao, uma hora depois do fim da ultima, uma vez por dia, e so
+ * se sobrou sessao DE HOJE com status pendente. Devolve null ou { hoje: [sessoes], antigas: n }.
+ */
+function _stpEmailPendenteVence_(sessoes, cfg, agora, durPadrao) {
+  if (cfg.email_status_pendente !== 'Sim' || cfg.email_status_enviado_em === agora.data) return null;
+  var fim = _stpFimDoDia_(sessoes, agora.data, durPadrao), a = _ageMin_(agora.hora);
+  if (fim === null || a === null || a < Math.min(fim + STP_EMAIL_FOLGA_MIN, STP_EMAIL_TETO_MIN)) return null;
+  var pend = _stpPendentes_(sessoes, agora, durPadrao), hoje = pend.filter(function (x) { return x.data === agora.data; });
+  return hoje.length ? { hoje: hoje, antigas: pend.length - hoje.length } : null;
+}
+/** O e-mail da vespera vence agora? A partir do horario escolhido, uma vez por dia, e so se amanha tem sessao agendada. Devolve null ou { data, sessoes }. */
+function _stpEmailAmanhaVence_(sessoes, cfg, agora) {
+  if (cfg.email_agenda_amanha !== 'Sim' || cfg.email_agenda_enviado_em === agora.data || agora.hora < cfg.email_agenda_hora) return null;
+  var amanha = _lemIso_(_lemDia_(agora.data) + 1);
+  var lista = sessoes.filter(function (x) { return x.data === amanha && (x.estado === 'agendada' || x.estado === ''); }).sort(function (a, b) {
+    var ha = _lemHora_(a.hora_inicio), hb = _lemHora_(b.hora_inicio);
+    return ha < hb ? -1 : (ha > hb ? 1 : 0);
+  });
+  return lista.length ? { data: amanha, sessoes: lista } : null;
+}
+
+/**
+ * E-mail ao profissional sobre a agenda dele (textos aprovados pelo usuario em 23/11/2026), no layout do sistema.
+ * tipo 'pendente': p = { nome, sessoes: [{ data, hora, paciente }], antigas }.
+ * tipo 'amanha':   p = { nome, data, sessoes: [{ data, hora, paciente, modalidade, confirmada }], pedidos }.
+ * O assunto e o titulo nunca levam nome de paciente; o nome completo vai so na grade.
+ */
+function montarEmailAgendaProfissional(tipo, p) {
+  var lista = p.sessoes || [], n = lista.length, t;
+  if (tipo === 'pendente') {
+    var antigas = parseInt(p.antigas, 10) || 0;
+    t = { assunto: 'Sessões com status pendente — COGNIATIVO', titulo: 'Sessões com status pendente', botao: 'Informar o status', aviso: '',
+      paragrafo: (n === 1 ? '1 sessão de hoje ainda está sem status.' : n + ' sessões de hoje ainda estão sem status.') + (antigas ? ' Há também ' + antigas + ' de dias anteriores.' : ''),
+      tabela: { cab: ['Data', 'Hora', 'Paciente'], linhas: lista.map(function (x) { return [_ageDiaMes_(x.data), _stpHoraCurta_(x.hora), String(x.paciente || '')]; }) } };
+  } else {
+    var conf = lista.filter(function (x) { return x.confirmada; }).length, falta = n - conf, dia = _lemDia_(p.data), pedidos = parseInt(p.pedidos, 10) || 0;
+    var presenca = n === 1 ? (conf ? 'confirmada' : 'a confirmar')
+      : (falta === 0 ? 'todas confirmadas' : (conf === 0 ? 'nenhuma confirmada ainda' : conf + (conf === 1 ? ' confirmada' : ' confirmadas') + ' e ' + falta + ' a confirmar'));
+    t = { assunto: 'Sua agenda de amanhã — COGNIATIVO', titulo: 'Sua agenda de amanhã', botao: 'Abrir a Agenda',
+      aviso: pedidos ? (pedidos === 1 ? '1 pedido de paciente aguarda a sua resposta.' : pedidos + ' pedidos de pacientes aguardam a sua resposta.') : '',
+      paragrafo: (dia === null ? '' : STP_DIAS[_lemDiaDaSemana_(dia)] + ', ') + _ageDataBR_(p.data) + ': ' + n + (n === 1 ? ' sessão, ' : ' sessões, ') + presenca + '.',
+      // na grade do e-mail a modalidade vai sob o nome do paciente (cinco colunas nao cabem num telefone); no texto puro, as cinco em linha
+      tabela: { cab: ['Data', 'Hora', 'Paciente', 'Presença'], linhas: lista.map(function (x) {
+        return [_ageDiaMes_(x.data), _stpHoraCurta_(x.hora), [String(x.paciente || ''), _ageModNome_(x.modalidade)], x.confirmada ? 'Confirmada' : 'A confirmar'];
+      }), cabTexto: ['Data', 'Hora', 'Paciente', 'Modalidade', 'Presença'] } };
+  }
+  var ola = p.nome ? 'Olá, ' + p.nome + '.' : 'Olá.';
+  var texto = [EMAIL_DESTAQUE, '', ola, '', t.paragrafo, '', (t.tabela.cabTexto || t.tabela.cab).join(' · ')].concat(t.tabela.linhas.map(function (l) { return l.map(function (c) { return Array.isArray(c) ? c.join(' · ') : c; }).join(' · '); }))
+    .concat(['', SITE_URL, '']).concat(t.aviso ? [t.aviso, ''] : []).join('\n');
+  var html = _layoutEmail_({ previa: t.titulo, titulo: t.titulo, acompanhamento: '', ola: ola, paragrafo: t.paragrafo, tabela: t.tabela, botao: t.botao,
+    sobBotao: EMAIL_LEMBRETE_SOB_BOTAO, link: SITE_URL, aviso: t.aviso, assinatura: [] });
+  return { assunto: t.assunto, texto: texto, html: html };
+}
+
+/**
+ * Os dois e-mails de UM profissional (quem chama ja conferiu a trava da conta). A marca do dia e gravada ANTES do
+ * envio, dentro da trava e relendo a celula: duas rodadas do gatilho nunca mandam o mesmo e-mail duas vezes. Se o
+ * envio nao sai (cota ou falha), a marca e desfeita e a rodada seguinte tenta de novo. Devolve so contagens.
+ */
+function _stpEnviarDe_(prof, controle, agora) {
+  var r = { pendente: 0, amanha: 0, ja_enviados: 0, sem_email: 0, sem_cota: 0, falhas: 0 };
+  var cfg = _stpConfig_(controle);
+  if (cfg.email_status_pendente !== 'Sim' && cfg.email_agenda_amanha !== 'Sim') return r;
+  var sessoes = _lembretesLer_(_ageAba_(controle, ABA_SESSOES, COLUNAS_SESSOES, false));
+  if (!sessoes.length) return r;
+  var devidos = [];
+  var fimDeDia = _stpEmailPendenteVence_(sessoes, cfg, agora, _ageConfig_(controle).duracao_slot_min);
+  if (fimDeDia) devidos.push({ tipo: 'pendente', marca: 'email_status_enviado_em', dados: fimDeDia });
+  var vespera = _stpEmailAmanhaVence_(sessoes, cfg, agora);
+  if (vespera) devidos.push({ tipo: 'amanha', marca: 'email_agenda_enviado_em', dados: vespera });
+  if (!devidos.length) return r;
+  var para = normalizarEmail(prof.email);
+  if (!para) { r.sem_email += devidos.length; return r; }
+  var pacs = _agePacientes_(controle), nome = String(prof.nome_completo || '').trim().split(/\s+/)[0] || '';
+  var linha = function (x) {
+    var p = pacs[_siglaChave_(x.sigla)];
+    return { data: x.data, hora: x.hora_inicio, paciente: p ? p.nome : x.sigla, modalidade: x.modalidade, confirmada: !!x.confirmada_em };
+  };
+  devidos.forEach(function (d) {
+    var reserva;
+    try {
+      reserva = _comTrava_(function () {
+        if (_stpConfig_(controle)[d.marca] === agora.data) return 'ja';
+        _ageConfigGravar_(controle, d.marca, agora.data);
+        return 'ok';
+      });
+    } catch (erroTrava) { reserva = 'falha'; }
+    if (reserva === 'ja') { r.ja_enviados++; return; }
+    if (reserva !== 'ok') { r.falhas++; return; }
+    var desfazer = function () { _comTravaSeDer_(function () { _ageConfigGravar_(controle, d.marca, ''); }); };
+    if (!_reservarEmail_('sessoes')) { r.sem_cota++; desfazer(); return; }
+    var email = d.tipo === 'pendente'
+      ? montarEmailAgendaProfissional('pendente', { nome: nome, sessoes: d.dados.hoje.map(linha), antigas: d.dados.antigas })
+      : montarEmailAgendaProfissional('amanha', { nome: nome, data: d.dados.data, sessoes: d.dados.sessoes.map(linha),
+          pedidos: _lembretesLer_(_ageAba_(controle, ABA_PEDIDOS_AGENDA, COLUNAS_PEDIDOS_AGENDA, false)).filter(function (x) { return x.estado === 'pendente'; }).length });
+    if (_enviarEmail_(para, email)) r[d.tipo]++; else { r.falhas++; desfazer(); }
+  });
+  return r;
+}
+
+/** Rodada do gatilho (chamada no fim de enviarLembretes_): os dois e-mails de cada profissional que pode recebe-los. So contagens. */
+function enviarEmailsProfissional_(quando) {
+  var agora = _lemAgora_(quando);
+  var r = { profissionais: 0, pendente: 0, amanha: 0, ja_enviados: 0, sem_email: 0, sem_cota: 0, falhas: 0 };
+  lerAbaComoObjetos(_abrirPlanilha_(SISTEMA_VMC_ID), ABA_PROFISSIONAIS).forEach(function (prof) {
+    try {
+      if (!prof.profissional_id || !_estaAtivo_(prof.ativo) || !_stpDisponivel_(prof.profissional_id)) return;
+      var controle = abrirControleDoProfissional(prof.profissional_id);
+      if (!controle) return;
+      r.profissionais++;
+      var parte = _stpEnviarDe_(prof, controle, agora);
+      for (var k in parte) r[k] += parte[k];
+    } catch (e) {
+      r.falhas++;
+      console.error('agenda (e-mails ao profissional): ' + String(e && e.message || e).slice(0, 160));
+    }
+  });
+  return r;
+}
 
 // ------------------------------------------------------------
 // Auxiliares do ping (Pacote E3, decisao 4)

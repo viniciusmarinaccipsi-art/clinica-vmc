@@ -486,7 +486,7 @@ tenta('T', () => {
   Object.keys(S('COLUNAS_FIN')).forEach(n => { const a = aba(n); if (!a) return; a.getDataRange().getValues().slice(1).forEach(l => l.forEach(v => { if (v !== '' && typeof v !== 'string') semApostrofo.push(n + ':' + String(v).slice(0, 20)); })); });
   ok('T3 toda célula das abas do financeiro é texto (nenhuma data, valor, CPF ou hora virou número ou Date)', semApostrofo.length === 0 && linhas('Fin_Alocacoes') > 0, semApostrofo.slice(0, 6));
   ok('T4 o cabeçalho de cada aba é exatamente o de COLUNAS_FIN', Object.keys(S('COLUNAS_FIN')).filter(n => aba(n)).every(n => h.cab(aba(n)).join() === S('COLUNAS_FIN')[n].join()));
-  ok('T5 VERSAO_PACOTE = 20.1 e o ping a devolve', S('VERSAO_PACOTE') === '20.1' && h.post({ acao: 'ping' }).versao_pacote === '20.1');
+  ok('T5 o ping devolve a VERSAO_PACOTE (o número é conferido em backend_16_11, H3)', /^\d+\.\d+/.test(S('VERSAO_PACOTE')) && h.post({ acao: 'ping' }).versao_pacote === S('VERSAO_PACOTE'));
   ok('T6 nenhum CPF ou CNPJ foi para o log do servidor', logServidor.join(' ').indexOf('52998224725') === -1 && logServidor.join(' ').indexOf('11222333000181') === -1);
   // excluir o paciente: cadastro, quem paga e cobranças saem; os pagamentos ficam
   const pagAntes = linhas('Fin_Pagamentos');

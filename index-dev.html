@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia e valor por paciente · agendamento do paciente com a aprovação do profissional · Painel de Evolução na tela do profissional — Pacote 19.1 · o pedido de agendamento do paciente aparece como “Agendamento solicitado” — Pacote 14.7.1 · Fluxo de caixa: receitas lidas da Agenda, pagamentos, cobranças por e-mail e WhatsApp, comprovante do paciente, despesas e contas a pagar — Pacote 20.0 · recibos e livro caixa: quem precisa de recibo, prévia literal e arquivo de lote do Carnê-Leão · Biblioteca de Escalas e Inventários com "Aplicar a um paciente" — Pacote 19.3 (23/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia e valor por paciente · agendamento do paciente com a aprovação do profissional · Painel de Evolução na tela do profissional — Pacote 19.1 · o pedido de agendamento do paciente aparece como “Agendamento solicitado” — Pacote 14.7.1 · Fluxo de caixa: receitas lidas da Agenda, pagamentos, cobranças por e-mail e WhatsApp, comprovante do paciente, despesas e contas a pagar — Pacote 20.0 · recibos e livro caixa: quem precisa de recibo, prévia literal e arquivo de lote do Carnê-Leão · Biblioteca de Escalas e Inventários com "Aplicar a um paciente" — Pacote 19.3 · sessões com status pendente no Início, a palavra "Status" na sessão e os dois e-mails da agenda ao profissional — Pacote 20.2 (23/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -4488,6 +4488,18 @@ body:has(#sec-prof-financeiro.active) .app,body:has(#sec-prof-financeiro.active)
 .fin-modal a.p5-btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;}
 .fin-acoes{display:flex;flex-wrap:wrap;gap:var(--s-2);align-items:center;margin-top:var(--s-3);}
 .fin-pac-wrap{max-width:560px;margin:0 auto;}
+/* Pacote 20.2 — bloco "Sessões com status pendente" do Início */
+.stp-apoio{font:var(--t-body-sm);color:var(--c-ink-3);margin:0 0 var(--s-2);}
+.stp-dia{display:flex;align-items:center;justify-content:space-between;gap:var(--s-2);flex-wrap:wrap;margin:var(--s-3) 0 var(--s-2);}
+.stp-dia-nome{font:var(--t-label);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--c-ink-3);}
+.stp-linha{display:flex;align-items:center;justify-content:space-between;gap:var(--s-2) var(--s-3);flex-wrap:wrap;padding:var(--s-2) var(--s-3);border:1px solid var(--c-line);border-radius:var(--r-field);background:var(--c-surface);margin-bottom:var(--s-2);}
+.stp-quem{font:var(--t-body);color:var(--c-ink);min-width:0;overflow-wrap:anywhere;}
+.stp-acoes{display:flex;gap:var(--s-2);flex-wrap:wrap;}
+@media (max-width:560px){
+  .stp-acoes{flex:1 1 100%;flex-wrap:nowrap;}
+  .stp-acoes .prof-lem-btn{flex:1 1 auto;padding:0 var(--s-2);}
+}
+.stp-msg{font:var(--t-body-sm);color:var(--c-ink-2);margin:var(--s-2) 0 0;}
 @media print{
   .topbar,.gra-voltar,.fin-abas,.fin-barra,.fin-acoes{display:none !important;}
   .fin-painel,.fin-cartao{box-shadow:none;break-inside:avoid;}
@@ -4893,6 +4905,37 @@ body:has(#sec-prof-financeiro.active) .app,body:has(#sec-prof-financeiro.active)
             <option value="Sim">Ligado</option>
           </select>
           <div class="gra-hint">Desligado, nenhum e-mail de sessão é enviado, mesmo com as caixas marcadas na consulta.</div>
+        </div>
+        <div class="gra-cfg-item">
+          <label for="graCfgEmailStatus">Avisar por e-mail as sessões com status pendente</label>
+          <select id="graCfgEmailStatus">
+            <option value="Nao" selected>Desligado</option>
+            <option value="Sim">Ligado</option>
+          </select>
+          <div class="gra-hint">Uma hora depois da última sessão do dia, se alguma ficou sem status. Vai só para você.</div>
+        </div>
+        <div class="gra-cfg-item">
+          <label for="graCfgEmailAmanha">Enviar por e-mail a agenda do dia seguinte</label>
+          <select id="graCfgEmailAmanha">
+            <option value="Nao" selected>Desligado</option>
+            <option value="Sim">Ligado</option>
+          </select>
+          <div class="gra-hint">Na véspera, com as sessões de amanhã e quem já confirmou. Vai só para você.</div>
+        </div>
+        <div class="gra-cfg-item">
+          <label for="graCfgEmailHora">Horário do envio</label>
+          <select id="graCfgEmailHora">
+            <option value="17:00">17h</option>
+            <option value="18:00">18h</option>
+            <option value="19:00">19h</option>
+            <option value="20:00" selected>20h</option>
+            <option value="21:00">21h</option>
+            <option value="22:00">22h</option>
+          </select>
+          <div class="gra-hint">Vale para o e-mail da agenda do dia seguinte.</div>
+        </div>
+        <div class="gra-cfg-item gra-cfg-largo hidden" id="graCfgEmailTrava">
+          <div class="gra-hint">Os dois e-mails ficam disponíveis quando você conectar a sua conta de e-mail.</div>
         </div>
       </div>
     </div>
@@ -8595,6 +8638,7 @@ var VMC_ACOES_GRAVACAO = [
   'profSalvarCadastroFinanceiro', 'profSalvarConfigFinanceiro', 'profSalvarPagamento', 'profEstornarPagamento', 'profDecidirComprovante', 'profGerarCobrancas', 'profEnviarCobranca',
   'profDescartarCobranca', 'profNaoCobrarSessao', 'profSalvarDespesa', 'profEncerrarDespesaFixa', 'pacienteEnviarComprovante', 'pacientePedirRecibo', // Fase 20
   'profSalvarRecibo', 'profGerarLote', // 20.1
+  'profMarcarStatusLote', // 20.2
   'profDesativarPaciente', 'profReativarPaciente', 'profExcluirPaciente', 'profAlterarSenhaPaciente',
   'admCadastrarProfissional', 'admAtualizarProfissional', 'admTrocarSenhaProfissional',
   'admDesativarProfissional', 'admReativarProfissional',
@@ -9137,6 +9181,8 @@ function abrirSecao(idSecao) {
   if (idSecao === 'sec-menu' && typeof iniAbrir === 'function') {
     iniAbrir();
   }
+  // 20.2: ao voltar para o Início do profissional, os blocos do financeiro e das sessões com status pendente são lidos de novo, em segundo plano
+  if (idSecao === 'sec-prof-dashboard' && typeof finInicioRever_ === 'function') finInicioRever_();
   // Pacote 5: ao abrir a home do Módulo 2, verifica se precisa travar
   if (idSecao === 'sec-automonitoramento' && typeof hubAtualizar === 'function') {
     // 16.5c: a página decide cadeado (D11), humor da checagem e rascunho; aplica já e de novo quando o servidor responder
@@ -10205,7 +10251,7 @@ function profRenderInicio_() {
   var ativos = pacientes.filter(function(p){ return String(p.ativo||'Sim').trim().toLowerCase() !== 'nao'; });
 
   // 19.2.1: Lembretes de hoje e Atrasados entre os alertas e as atualizações
-  container.innerHTML = atalhos + profRenderAlertas_(ativos) + profRenderPedidos_(ativos) + profRenderEventosAgenda_(ativos) + profRenderLembretesHoje_(ativos) + profRenderAtrasados_(ativos) + finInicioHtml_() + profRenderAtualizacoes_(ativos); // Fase 20: blocos do financeiro
+  container.innerHTML = atalhos + profRenderAlertas_(ativos) + stpInicioHtml_() + profRenderPedidos_(ativos) + profRenderEventosAgenda_(ativos) + profRenderLembretesHoje_(ativos) + profRenderAtrasados_(ativos) + finInicioHtml_() + profRenderAtualizacoes_(ativos); // Fase 20: blocos do financeiro
 }
 
 function profSemPacientesHtml_() {
@@ -23370,6 +23416,13 @@ async function graCarregar() {
   }
 
   document.getElementById('graCfgAvisos').value = String(cfg.avisos_sessao || '').toLowerCase() === 'sim' ? 'Sim' : 'Nao'; // 14.3
+  // 20.2: os dois e-mails ao profissional (travados enquanto a conta dele não pode recebê-los)
+  var podeEmail = resp.emails_prof_disponivel === true, selHora = document.getElementById('graCfgEmailHora');
+  document.getElementById('graCfgEmailStatus').value = podeEmail && String(cfg.email_status_pendente || '').toLowerCase() === 'sim' ? 'Sim' : 'Nao';
+  document.getElementById('graCfgEmailAmanha').value = podeEmail && String(cfg.email_agenda_amanha || '').toLowerCase() === 'sim' ? 'Sim' : 'Nao';
+  if (cfg.email_agenda_hora && selHora.querySelector('option[value="' + CSS.escape(String(cfg.email_agenda_hora)) + '"]')) selHora.value = String(cfg.email_agenda_hora);
+  ['graCfgEmailStatus', 'graCfgEmailAmanha', 'graCfgEmailHora'].forEach(function (id) { document.getElementById(id).disabled = !podeEmail; });
+  document.getElementById('graCfgEmailTrava').classList.toggle('hidden', podeEmail);
   // 14.5: endereço do consultório e espelho no Google Calendar (a chave só aparece para a conta que tem o Calendar)
   document.getElementById('graCfgEndereco').value = String(cfg.endereco || '');
   document.getElementById('graCfgEnderecoNovo').value = String(cfg.endereco_novo || '');
@@ -23526,6 +23579,9 @@ async function graSalvar() {
       duracao_slot_min: 60,
       antecedencia_min_horas: Number(document.getElementById('graCfgAntecedencia').value),
       avisos_sessao: document.getElementById('graCfgAvisos').value, // 14.3
+      email_status_pendente: document.getElementById('graCfgEmailStatus').value, // 20.2
+      email_agenda_amanha: document.getElementById('graCfgEmailAmanha').value,
+      email_agenda_hora: document.getElementById('graCfgEmailHora').value,
       endereco: document.getElementById('graCfgEndereco').value, // 14.5
       endereco_novo: document.getElementById('graCfgEnderecoNovo').value,
       endereco_novo_desde: document.getElementById('graCfgEnderecoDesde').value,
@@ -24164,7 +24220,7 @@ function ageRender_() {
     marcas = [s.reposicao_de ? 'Reposição' : '', s.reposta_em ? 'Reposta em ' + lemDataBR_(s.reposta_em, true) : '', s.confirmada ? 'Confirmada pelo paciente' : '', s.serie_id ? 'Série' : '', s.no_calendar ? 'No Google Calendar' : '']
       .filter(String).map(function (t) { return '<span class="cal-ev-marca">' + esc(t) + '</span>'; }).join(' ');
   }
-  var situacao = s ? ageCampo_('Situação', '<select id="ageSit" onchange="ageSituacao_()"><option value="">Sem marcação</option><option value="realizada">Consulta realizada</option><option value="falta">Não compareceu</option></select>', 'ageSit') +
+  var situacao = s ? ageCampo_('Status', '<select id="ageSit" onchange="ageSituacao_()"><option value="">Sem status</option><option value="realizada">Consulta realizada</option><option value="falta">Não compareceu</option></select>', 'ageSit') +
     '<div id="ageSitBox">' + (s.estado === 'falta' ? '<p class="age-texto">Falta cobrada.</p>' : '') +
     (s.pode_repor ? '<button type="button" class="p5-btn p5-btn-secondary age-btn-largo" id="ageBtnRepor" onclick="ageRepor_()">' + (s.estado === 'falta' ? 'Repor em outra data' : 'Agendar reposição') + '</button><p class="age-dica">A reposição usa o valor desta sessão e não gera cobrança nova.</p>' : '') + '</div>' : '';
   var repeticao = p.reposicao_de ? '' : ageCampo_('Repetição',
@@ -24869,7 +24925,7 @@ async function ageConfirmarPorLink_(token) {
    ============================================================ */
 var FIN = { dados: null, carregando: false, erro: '', msg: '', aba: 'resumo', periodo: 'mes', comparar: 'anterior', de: '', ate: '',
   leitura: 'sessoes', granul: 'dia', vista: 'paciente', fSigla: '', fModalidade: '', fSituacao: '', fCob: '', fCategoria: '', fDesp: '',
-  modal: null, grafico: null, ocupado: false, ultima: null, inicio: null, inicioPedido: false, pac: null, pacSigla: '', pacLido: 0, meu: null };
+  modal: null, grafico: null, ocupado: false, ultima: null, inicio: null, inicioPedido: false, inicioLido: 0, stpMsg: '', stpOcupado: false, pac: null, pacSigla: '', pacLido: 0, meu: null };
 var FIN_ABAS = [['resumo', 'Resumo'], ['receitas', 'Receitas'], ['cobrancas', 'Cobranças'], ['despesas', 'Despesas'], ['recibos', 'Recibos'], ['config', 'Configuração']];
 var FIN_PERIODOS = [['mes', 'Este mês'], ['mes_passado', 'Mês passado'], ['semana', 'Esta semana'], ['ano', 'Este ano'], ['12m', 'Últimos 12 meses'], ['personalizado', 'Personalizado']];
 var FIN_MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
@@ -24913,7 +24969,7 @@ function finSitSessao_(s) {
   return s.pago > 0 ? ['atencao', 'Parcial'] : ['aberto', 'Em aberto'];
 }
 function finModalidade_(m) { return m === 'online' ? 'On-line' : 'Presencial'; }
-function finEstado_(s) { return (s.reposicao ? 'Reposição · ' : '') + (({ realizada: 'Realizada', falta: 'Falta', cancelada: 'Cancelada fora do prazo', agendada: 'Agendada', ocorrida: 'Ocorrida, sem situação marcada' })[s.estado] || ''); }
+function finEstado_(s) { return (s.reposicao ? 'Reposição · ' : '') + (({ realizada: 'Realizada', falta: 'Falta', cancelada: 'Cancelada fora do prazo', agendada: 'Agendada', ocorrida: 'Status pendente' })[s.estado] || ''); }
 function finSomas_(d) {
   var s = { sessoes: 0, total: 0, recebido: 0, aberto: 0, atrasado: 0, despTotal: 0, despPago: 0 };
   d.sessoes.forEach(function (x) { if (!x.cobravel) return; s.sessoes++; s.total += x.valor; s.recebido += Math.min(x.pago, x.valor); });
@@ -25237,7 +25293,7 @@ function finModalFechar_() { FIN.modal = null; document.getElementById('finModal
 function finZerar_() {
   if (FIN.grafico) FIN.grafico.destroy();
   finModalFechar_();
-  FIN.dados = null; FIN.grafico = null; FIN.inicio = null; FIN.inicioPedido = false; FIN.pac = null; FIN.pacSigla = ''; FIN.pacLido = 0; FIN.meu = null; FIN.msg = ''; FIN.erro = ''; FIN.aba = 'resumo'; FIN.carregando = false; FIN.ocupado = false;
+  FIN.dados = null; FIN.grafico = null; FIN.inicio = null; FIN.inicioPedido = false; FIN.inicioLido = 0; FIN.stpMsg = ''; FIN.stpOcupado = false; FIN.pac = null; FIN.pacSigla = ''; FIN.pacLido = 0; FIN.meu = null; FIN.msg = ''; FIN.erro = ''; FIN.aba = 'resumo'; FIN.carregando = false; FIN.ocupado = false;
 }
 function finModalErro_(msg) {
   var corpo = document.getElementById('finModalCorpo');
@@ -25510,8 +25566,76 @@ async function finInicioCarregar_() {
   var geracao = VMC_GERACAO_SESSAO;
   var r = await chamarServidor('profLerFinanceiro', { so: 'inicio' });
   if (geracao !== VMC_GERACAO_SESSAO || !r || !r.ok || !r.inicio) return;
-  FIN.inicio = r.inicio;
+  FIN.inicio = r.inicio; FIN.inicioPedido = false; FIN.inicioLido = Date.now(); // 20.2: lida com sucesso, pode ser relida mais tarde
+  if (PROF_SESSAO) profRenderInicio_(); // 20.2: redesenha mesmo com outra tela aberta (o status pode ter mudado na Agenda); ao voltar, o Início já está certo
+}
+
+/* 20.2: voltar para o Início relê os blocos (o status pode ter mudado na Agenda, um comprovante pode ter sido conferido). No login não roda: a primeira leitura é a de sempre. */
+function finInicioRever_() { if (PROF_SESSAO && FIN.inicio) finInicioCarregar_(); }
+
+/* ---- Pacote 20.2: bloco "Sessões com status pendente" do Início (os dados vêm na leitura dos blocos do financeiro) ---- */
+var STP_DIAS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+function stpHora_(h) { var p = String(h || '').split(':'); return p.length < 2 ? '' : String(+p[0]) + 'h' + (p[1] === '00' ? '' : p[1]); }
+function stpDia_(iso) {
+  var p = String(iso || '').split('-');
+  return p.length === 3 ? STP_DIAS[new Date(+p[0], +p[1] - 1, +p[2]).getDay()] + ', ' + p[2] + '/' + p[1] : '';
+}
+function stpInicioHtml_() {
+  if (!FIN.inicio) { finInicioCarregar_(); return ''; }
+  if (Date.now() - FIN.inicioLido > 120000) finInicioCarregar_(); // a sessão de hoje só entra quando a agenda do dia termina: relê em segundo plano
+  var sp = FIN.inicio.status_pendente;
+  if (!sp) return '';
+  var msg = FIN.stpMsg ? '<p class="stp-msg" id="stpMsg" role="status">' + esc(FIN.stpMsg) + '</p>' : '';
+  FIN.stpMsg = '';
+  var h = '<section class="prof-bloco" id="stpBloco"><h3 class="prof-bloco-titulo">Sessões com status pendente</h3>';
+  if (!sp.itens.length) return h + '<p class="prof-bloco-vazio">Nenhuma sessão com status pendente.</p>' + msg + '</section>';
+  h += '<p class="stp-apoio">Sessões de datas que já ocorreram, ainda sem status informado.</p>';
+  var dia = '';
+  sp.itens.forEach(function (x) {
+    if (x.data !== dia) {
+      dia = x.data;
+      var doDia = sp.itens.filter(function (y) { return y.data === dia; }).length;
+      h += '<div class="stp-dia"><span class="stp-dia-nome">' + esc(stpDia_(dia)) + '</span>' +
+        (doDia > 1 ? '<button type="button" class="prof-lem-btn" data-dia="' + esc(dia) + '" onclick="stpTodas_(this.dataset.dia)">Todas realizadas</button>' : '') + '</div>';
+    }
+    h += '<div class="stp-linha"><span class="stp-quem"><strong>' + esc(stpHora_(x.hora)) + '</strong> · ' + esc(x.nome) + '</span><span class="stp-acoes">' +
+      '<button type="button" class="prof-lem-btn" data-id="' + esc(x.id) + '" data-sit="realizada" onclick="stpUma_(this)">Realizada</button>' +
+      '<button type="button" class="prof-lem-btn" data-id="' + esc(x.id) + '" data-sit="falta" onclick="stpUma_(this)">Não compareceu</button>' +
+      '<button type="button" class="prof-lem-btn" data-id="' + esc(x.id) + '" data-dia="' + esc(x.data) + '" onclick="stpOutra_(this.dataset.id, this.dataset.dia)">Outra</button></span></div>';
+  });
+  if (sp.total > sp.itens.length) h += '<p class="stp-apoio">Mostrando as ' + sp.itens.length + ' mais antigas de ' + sp.total + '.</p>';
+  return h + msg + '</section>';
+}
+async function stpMarcar_(ids, situacao) {
+  if (FIN.stpOcupado || !ids.length) return;
+  FIN.stpOcupado = true;
+  var bloco = document.getElementById('stpBloco');
+  if (bloco) bloco.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
+  var geracao = VMC_GERACAO_SESSAO;
+  var r = await chamarServidor('profMarcarStatusLote', { ids: ids, situacao: situacao });
+  FIN.stpOcupado = false;
+  if (geracao !== VMC_GERACAO_SESSAO) return;
+  if (!r || !r.ok || !r.inicio) FIN.stpMsg = (r && r.erro) || 'Não foi possível salvar agora.';
+  else {
+    FIN.inicio = r.inicio; FIN.inicioLido = Date.now(); FIN.dados = null;
+    FIN.stpMsg = r.marcadas === 1 ? 'Status informado.' : (r.marcadas ? 'Status informado em ' + r.marcadas + ' sessões.' : 'Estas sessões já estavam com o status informado.');
+  }
   if (document.getElementById('sec-prof-dashboard').classList.contains('active')) profRenderInicio_();
+}
+function stpUma_(botao) { stpMarcar_([botao.dataset.id], botao.dataset.sit); }
+function stpTodas_(dia) {
+  var sp = (FIN.inicio && FIN.inicio.status_pendente) || { itens: [] };
+  stpMarcar_(sp.itens.filter(function (x) { return x.data === dia; }).map(function (x) { return x.id; }), 'realizada');
+}
+/* "Outra": abre a própria sessão na Agenda (cancelamento, reposição e o resto ficam lá) */
+async function stpOutra_(id, dia) {
+  var p = String(dia || '').split('-');
+  if (p.length !== 3) return;
+  calDataRef = new Date(+p[0], +p[1] - 1, +p[2]);
+  await calAbrirTela();
+  for (var i = 0; i < 150 && AGE.carregando; i++) await new Promise(function (ok) { setTimeout(ok, 100); });
+  if (!CAL_SESSOES.some(function (x) { return x.id === id; })) await ageCarregar_(true, true);
+  if (secaoAtivaId() === 'sec-prof-agenda-cal') ageAbrirSessao_(id);
 }
 
 /* ---- Tela 5: módulo Financeiro do paciente aberto pelo profissional ---- */
