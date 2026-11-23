@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.8.1';
+var VERSAO_PACOTE = '20.2.1';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -9965,6 +9965,10 @@ function _stpHoraCurta_(h) {
   var t = _lemHora_(h);
   return t ? String(+t.slice(0, 2)) + 'h' + (t.slice(3) === '00' ? '' : t.slice(3)) : '';
 }
+/** Numero por extenso, no feminino (conta sessoes), ate vinte; acima disso, em algarismos. Pedido do usuario (23/11/2026) para o e-mail de fim de dia. */
+var STP_EXTENSO = ['zero', 'uma', 'duas', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez', 'onze', 'doze', 'treze', 'catorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove', 'vinte'];
+function _stpExtenso_(n) { var k = parseInt(n, 10); return k >= 0 && k <= 20 ? STP_EXTENSO[k] : String(k); }
+function _stpMaiuscula_(t) { return String(t).charAt(0).toUpperCase() + String(t).slice(1); }
 /** Fim da sessao em minutos do dia (inicio + duracao; sem duracao valida, a padrao). */
 function _stpFimMin_(x, durPadrao) {
   var ini = _ageMin_(x.hora_inicio), dur = parseInt(x.duracao_min, 10);
@@ -10080,7 +10084,9 @@ function montarEmailAgendaProfissional(tipo, p) {
   if (tipo === 'pendente') {
     var antigas = parseInt(p.antigas, 10) || 0;
     t = { assunto: 'Sessões com status pendente — COGNIATIVO', titulo: 'Sessões com status pendente', botao: 'Informar o status', aviso: '',
-      paragrafo: (n === 1 ? '1 sessão de hoje ainda está sem status.' : n + ' sessões de hoje ainda estão sem status.') + (antigas ? ' Há também ' + antigas + ' de dias anteriores.' : ''),
+      // texto revisto pelo usuario (23/11/2026): numeros por extenso e a frase das pendencias antigas dizendo o que sao
+      paragrafo: (n === 1 ? 'Uma sessão de hoje ainda está sem status.' : _stpMaiuscula_(_stpExtenso_(n)) + ' sessões de hoje ainda estão sem status.') +
+        (antigas ? (n === 1 ? ' Além dessa, ' : ' Além dessas, ') + (antigas === 1 ? 'uma sessão de dias anteriores também está sem status.' : _stpExtenso_(antigas) + ' sessões de dias anteriores também estão sem status.') : ''),
       tabela: { cab: ['Data', 'Hora', 'Paciente'], linhas: lista.map(function (x) { return [_ageDiaMes_(x.data), _stpHoraCurta_(x.hora), String(x.paciente || '')]; }) } };
   } else {
     var conf = lista.filter(function (x) { return x.confirmada; }).length, falta = n - conf, dia = _lemDia_(p.data), pedidos = parseInt(p.pedidos, 10) || 0;

@@ -108,7 +108,10 @@ tenta('A', () => {
   const e1 = montar('pendente', { nome: 'Nova', sessoes: [linha('09:00', 'Ana Souza Lima')], antigas: 0 });
   const e3 = montar('pendente', { nome: 'Nova', sessoes: [linha('09:00', 'Ana Souza Lima'), linha('10:30', 'Bruno & <b>"Reis"</b> O\'Costa'), linha('19:00', 'Carla Mendes Dias')], antigas: 2 });
   ok('A13 e-mail de fim de dia: assunto e título aprovados, sem nome de paciente', e3.assunto === 'Sessões com status pendente — COGNIATIVO' && /<h1[^>]*>Sessões com status pendente<\/h1>/.test(e3.html) && e3.assunto.indexOf('Ana') === -1);
-  ok('A14 e-mail de fim de dia: singular e plural; os de dias anteriores entram na frase', e1.texto.indexOf('1 sessão de hoje ainda está sem status.') !== -1 && e1.texto.indexOf('dias anteriores') === -1 && e3.texto.indexOf('3 sessões de hoje ainda estão sem status. Há também 2 de dias anteriores.') !== -1);
+  ok('A14 e-mail de fim de dia: singular e plural, com o número por extenso; as de dias anteriores entram na frase dizendo o que são', e1.texto.indexOf('Uma sessão de hoje ainda está sem status.') !== -1 && e1.texto.indexOf('dias anteriores') === -1 && e3.texto.indexOf('Três sessões de hoje ainda estão sem status. Além dessas, duas sessões de dias anteriores também estão sem status.') !== -1);
+  const ext = (n, antigas) => montar('pendente', { nome: 'Nova', sessoes: Array.from({ length: n }, () => linha('09:00', 'Ana Souza Lima')), antigas: antigas }).texto;
+  ok('A14b variações: uma de hoje e uma antiga ("Além dessa, uma sessão… está"); vinte por extenso e vinte e uma em algarismos',
+    ext(1, 1).indexOf('Uma sessão de hoje ainda está sem status. Além dessa, uma sessão de dias anteriores também está sem status.') !== -1 && ext(20, 0).indexOf('Vinte sessões de hoje ainda estão sem status.') !== -1 && ext(21, 21).indexOf('21 sessões de hoje ainda estão sem status. Além dessas, 21 sessões de dias anteriores também estão sem status.') !== -1, ext(1, 1).split('\n')[4]);
   ok('A15 e-mail de fim de dia: grade com Data, Hora e Paciente (nome completo), botão "Informar o status"', /<th[^>]*>Data<\/th><th[^>]*>Hora<\/th><th[^>]*>Paciente<\/th>/.test(e3.html) && />25\/11<\/td><td[^>]*>9h<\/td><td[^>]*>Ana Souza Lima<\/td>/.test(e3.html) && />10h30<\/td>/.test(e3.html) && e3.html.indexOf('Informar o status') !== -1 && e3.texto.indexOf('25/11 · 9h · Ana Souza Lima') !== -1);
   ok('A16 nome com & < > " \' sai escapado na grade', e3.html.indexOf('<b>"Reis"') === -1 && e3.html.indexOf('Bruno &amp; &lt;b&gt;&quot;Reis&quot;&lt;/b&gt; O&#39;Costa') !== -1, (e3.html.match(/Bruno[^<]{0,80}/) || [''])[0]);
   const am = (ls, pedidos) => montar('amanha', { nome: 'Nova', data: '2026-11-26', sessoes: ls, pedidos: pedidos || 0 });
@@ -200,7 +203,7 @@ tenta('D', () => {
   irPara(2026, 11, 26, 16, 0);
   r = gatilho();
   const e1 = E[0] || {};
-  ok('D3 16:00: sai o e-mail de fim de dia, só para o profissional, com as duas sessões de hoje', E.length === 1 && r.pendente === 1 && e1.to === 'np@exemplo.test' && e1.subject === 'Sessões com status pendente — COGNIATIVO' && String(e1.body).indexOf('2 sessões de hoje ainda estão sem status.') !== -1 &&
+  ok('D3 16:00: sai o e-mail de fim de dia, só para o profissional, com as duas sessões de hoje', E.length === 1 && r.pendente === 1 && e1.to === 'np@exemplo.test' && e1.subject === 'Sessões com status pendente — COGNIATIVO' && String(e1.body).indexOf('Duas sessões de hoje ainda estão sem status.') !== -1 &&
     String(e1.body).indexOf('26/11 · 10h · Carla Mendes Dias') !== -1 && String(e1.body).indexOf('26/11 · 14h · Ana Souza Lima') !== -1 && String(e1.htmlBody).indexOf('Informar o status') !== -1, [E.length, r, String(e1.body).slice(0, 400)]);
   ok('D4 a marca do dia fica na Config_Agenda como texto', cfg().email_status_enviado_em === '2026-11-26');
   irPara(2026, 11, 26, 16, 5);
@@ -236,7 +239,7 @@ tenta('D', () => {
   ok('D11 cota do dia esgotada: nenhum e-mail sai e a marca é desfeita para a rodada seguinte tentar', E.length === 2 && r.sem_cota === 2 && cfg().email_status_enviado_em !== '2026-11-30' && cfg().email_agenda_enviado_em !== '2026-11-30', [r, cfg()]);
   S("PropertiesService.getScriptProperties().setProperty('sessoes:2026-11-30', '0')");
   r = gatilho();
-  ok('D12 com a cota livre, os dois saem na mesma rodada', E.length === 4 && r.pendente === 1 && r.amanha === 1 && E[2].subject.indexOf('status pendente') !== -1 && E[3].subject.indexOf('agenda de amanhã') !== -1 && String(E[2].body).indexOf('1 sessão de hoje ainda está sem status.') !== -1, [E.length, r]);
+  ok('D12 com a cota livre, os dois saem na mesma rodada', E.length === 4 && r.pendente === 1 && r.amanha === 1 && E[2].subject.indexOf('status pendente') !== -1 && E[3].subject.indexOf('agenda de amanhã') !== -1 && String(E[2].body).indexOf('Uma sessão de hoje ainda está sem status.') !== -1, [E.length, r]);
   ok('D13 falha no envio desfaz a marca', (() => {
     irPara(2026, 12, 1, 21, 0);
     sessao(ANA, '2026-12-02', '09:00');
