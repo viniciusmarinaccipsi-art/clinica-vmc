@@ -485,7 +485,7 @@ Em `index-dev.html` cada etapa (os dois tipos) segue `03_componentes.md` da roda
   `autoReaproveitarChecagem` serve ao botão "Fazer um registro completo" da "Checagem enviada"
   (`chkFazerRegistroCompleto`, `CHK_ENV.dados`), que leva à página Automonitoramento com a linha
   HUMOR preenchida.
-- **Edição em Meus Registros (16.5e, débitos 8.24/8.26/8.27c):** `p136RenderGrupo_` monta a linha
+- **(Substituído no 13.7 — ver "Edição do registro pelo fluxo", no fim.)** **Edição em Meus Registros (16.5e, débitos 8.24/8.26/8.27c):** `p136RenderGrupo_` monta a linha
   "Outro:" das etapas já preenchida quando o registro tem "Outro (…)" gravado (texto e nota) e
   `p136ColetarDados_` grava de volta "Outro (texto)[:nota]" como a coleta das etapas
   (`p136OutroInput` aplica a regra §5: texto = marcado); `p136RenderSecao_` usa `--c-reg-neg*`/
@@ -2002,3 +2002,44 @@ Grade (`graCfgEndereco`, `graCfgEnderecoNovo`, `graCfgEnderecoDesde`, `graCfgCal
 
 **Testes.** `scripts/testes/backend_14_5.js` (67 provas, com um Google Calendar simulado) e `..\PACOTE_14_5_fluxo.js`
 (35 por largura).
+
+## Pacotes 14.5.1, 19.2.4 e 13.7 (22/11/2026)
+
+### Link de confirmação diz onde é a sessão (14.5.1)
+
+- `confirmarSessaoPorLink` (ação pública, token assinado) devolve, além de dia, hora e modalidade: `estado`, `endereco` e
+  `mapa` (presencial — o endereço que vale na data, `_ageEndereco_`) ou `meet_link` (on-line). Nenhum nome, sigla ou telefone;
+  a suíte confere a lista exata de chaves.
+- `ageWhatsLink_` deixou de levar o endereço por extenso e o link do mapa: a mensagem tem um link só (o de confirmar) e a
+  página dele usa `ageOndeHtml_` ("Abrir no mapa" / "Abrir o Meet").
+
+### Destino do lembrete (19.2.4)
+
+- Servidor: `_lembreteDestino_(item)` → `auto` | `escala.<SIGLA>` | `''`; `_lembreteLink_(destino)` só monta `SITE_URL?ir=…`
+  quando o destino passa na expressão regular; `montarEmailLembrete(tipo, nome, assinatura, detalhe, destino)`.
+- Cliente: `?ir=` é lido no `DOMContentLoaded`, sai da URL (`history.replaceState`) e vira `VMC_DESTINO` (só em memória);
+  `vmcDestinoLer_` aceita `auto` ou escala do catálogo; `vmcDestinoAbrir_` roda com a sessão aberta ou no fim do
+  `loginConcluir_` do paciente (o do profissional descarta). Registro → `iniNovoRegistro()`; escala → `escAbrirMenu()` e, se
+  liberada, `escClicarCardEscala()` (o mesmo caminho do cartão); não liberada → aviso na tela do menu.
+- Início do paciente: `iniLemRender_` desenha os itens de registro e de escala como `button.ini-lem-item` com `data-ir`.
+- `lemLinkWhats_` leva o mesmo `?ir=`.
+
+### Edição do registro pelo fluxo (13.7)
+
+- Estado único `REG_EDICAO = { idx, timestamp, quem, lados, soChecagem, original, guardado }`. `p136IniciarEdicao` (o botão
+  "Editar" da janela) fecha a janela, marca a presença e chama `regEdicaoAbrir_`: zera o formulário, monta `AUTO_STATE.dados`
+  com as colunas que o formulário conhece (`regEdicaoChaves_`, lidas do DOM), hidrata e guarda `original` = o que a tela
+  devolve depois de hidratada (`regEdicaoColetar_`).
+- Abre a revisão (`revisarAbrir`; `regEdicaoAjustarRevisar_` troca título, botão e, com os dois lados, mostra os 10 blocos) ou,
+  em registro só com checagem, a checagem (`chkEditar`; `regEdicaoAjustarChecagem_`).
+- Ganchos enquanto `REG_EDICAO` existe: `autoSalvarRascunho` e `rascDoFluxoAtivo_` não gravam; `abrirSecao` para fora de
+  `regEdicaoTelas_()` encerra (`regEdicaoLimpar_`); `topbarAtualizar` tira a ação e redireciona o voltar (`regEdicaoBarra_`);
+  `cabEditar` e `chkIniciarNovoRegistro` devolvem à revisão; `confirmarSaida` só pergunta se algo mudou, com o texto da
+  edição; `autoEnviarRegistro` vira `regEdicaoSalvar_`.
+- `regEdicaoSalvar_`: `vmcCamposAlterados_(original, agora)`; etapa cujo prefixo (`neg_emo_`…) mudou passa por
+  `autoValidarSecao`; grava por `pacienteEditarAutomonitoramento` / `profEditarAutomonitoramento` (`campos` + `id_envio`);
+  atualiza `_HIST_REGS`, invalida Painel e Início e volta (`regEdicaoVoltar_`): janela do registro reaberta (paciente) ou
+  `profFluxoEncerrar_` (profissional).
+- `autoHidratarFormulario` repõe também as caixas de texto de Pensamentos (uma por pensamento, `" | "`) e Comportamentos.
+- Saíram: o formulário `p136Render*`, `p136ColetarDados_`, `p136SalvarEdicao`, `P136_ESTADO` e as classes `.p136-form-wrap`,
+  `.p136-humor-*`, `.p136-btn-salvar/-cancelar`, `.auto-sec-header/-icon/-title`.
