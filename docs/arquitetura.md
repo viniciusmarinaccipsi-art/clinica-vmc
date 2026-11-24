@@ -2332,3 +2332,30 @@ Conserto achado na prova do 14.8 com o Google de verdade. Substitui, na seção 
 - **Portão:** o passo da CSP do `portoes.yml` confere também `conectar.html`.
 - **Provas:** `scripts/testes/backend_14_8.js` (bloco B pela ação nova; B17/B17b/B17c), `..\PACOTE_14_8_1_fluxo.js` (a página de
   verdade, com `authuser=1` no endereço) e a prova real com a segunda conta do Google no navegador do usuário.
+
+## Pacote 14.10 — E-mails aos pacientes pela conta do Google que o profissional conectou (23/11/2026)
+
+Terceiro pacote do plano da conta conectada (o 14.9, Outlook, foi adiado pelo usuário para o sistema oficial). Decisões dele: quem não
+permitiu o e-mail não envia e-mail aos pacientes (só WhatsApp); o nome de quem envia é o do cadastro do profissional; senha esquecida por
+paciente de quem não permitiu não gera link (o profissional reenvia o acesso pelo WhatsApp).
+
+- **Permissão:** a mesma conexão do 14.8 pede também `https://www.googleapis.com/auth/gmail.send` (`GCAL_ESCOPO_EMAIL`): só envia, não lê
+  nem apaga. A tela do Google mostra caixas; `_gcalRetorno_` lê o `scope` devolvido e grava o que foi permitido — agenda
+  (`google_calendar = Sim`), e-mails, os dois; nenhum = `negada` e a permissão recebida é devolvida ao Google (`/revoke`).
+- **Quem envia:** `_emailRemetente_(profId)` → `{ modo: 'dono' | 'gmail', nome, conta }` ou `null`. `dono` = o cadastro do profissional é a
+  conta que roda o script (`_calDoDono_`): segue pelo `MailApp`, agora com `name` = nome do cadastro. `gmail` = há permissão guardada com
+  o escopo de envio. `_emailPermitido_(profId)` é o sim/não usado por todos os chamadores; fica na memória da chamada (`_MEMO_.emailDe`).
+- **Envio:** `_enviarEmail_(para, email, profId)`. Sem `profId` é e-mail do sistema (convite e senha do próprio profissional, exemplos):
+  `MailApp`, nome "COGNIATIVO". Com `profId` e sem permissão devolve `false` — nada sai por outro caminho. No modo `gmail`,
+  `_gmailEnviar_` monta a mensagem (`_mimeMontar_`: `multipart/mixed` → `related` → `alternative`; texto, HTML, logo `cid:logo` e o `.ics`,
+  tudo em base64, cabeçalhos só ASCII, quebra de linha removida de nome, destinatário e assunto) e chama
+  `gmail/v1/users/me/messages/send` com o token de `_gcalToken_`. O e-mail fica nos Enviados do profissional e a resposta volta para ele.
+- **Chamadores que passam o profissional:** convite do paciente, redefinição de senha do paciente, lembretes (botão e gatilho), avisos de
+  sessão ao paciente, aviso de movimento ao profissional, cobrança e os dois e-mails do 20.2 (`_stpDisponivel_` = `_emailPermitido_`).
+  Motivo novo `sem_conexao` (botões) e contador `sem_conexao` nos gatilhos, que não gravam marca para quem não conectou.
+- **Tela:** `agenda_externa` ganhou `ligada`, `email`, `email_conta`; a lista do login e `profListarPacientes` levam `email_pacientes`.
+  `profEmailOk_()` usa a leitura da Agenda quando existe, senão o sinal do login. Quadro "Sua conta do Google" (`ageRenderConta_`): duas
+  linhas e "Permitir e-mails" (`ageContaConectar_('email')`, o mesmo `profAgendaConectar`). Frase única em `VMC_MSG_EMAIL_CONECTE`.
+- **Google Cloud:** Gmail API ativada no projeto da chave do botão. A lista de escopos da tela de consentimento não é usada.
+- **Provas:** `scripts/testes/backend_14_10.js`; `scripts/testes/_gmail_de_mentira.js` (lê a mensagem entregue ao Gmail e a devolve no
+  formato do `MailApp`; não é suíte). No arnês `backend_18_10a.js` a profissional de prova é a dona do script.
