@@ -20,6 +20,7 @@ global.Utilities = {
     return d.toISOString();
   },
   getUuid: () => crypto.randomUUID(), sleep: () => {},
+  base64Encode: d => (typeof d === 'string' ? Buffer.from(d, 'utf8') : Buffer.from(d.map(x => (x < 0 ? x + 256 : x)))).toString('base64'), // 14.10: a mensagem que vai ao Gmail
   base64EncodeWebSafe: d => (typeof d === 'string' ? Buffer.from(d, 'utf8') : Buffer.from(d.map(x => (x < 0 ? x + 256 : x)))).toString('base64').replace(/\+/g, '-').replace(/\//g, '_'),
   base64DecodeWebSafe: s => sign(Buffer.from(String(s).replace(/-/g, '+').replace(/_/g, '/'), 'base64')),
   newBlob: b => ({ getDataAsString: () => Buffer.from(b.map(x => (x < 0 ? x + 256 : x))).toString('utf8') })
@@ -96,7 +97,7 @@ global.MailApp = { sendEmail: () => {} };
 global.Logger = { log: () => {} };
 global.ContentService = { MimeType: { JSON: 'JSON' }, createTextOutput: t => ({ setMimeType: () => ({ conteudo: t }) }) };
 global.ScriptApp = { getService: () => ({ getUrl: () => 'https://script.local/exec' }), getProjectTriggers: () => [], newTrigger: () => ({}), deleteTrigger: () => {} };
-global.Session = { getEffectiveUser: () => ({ getEmail: () => 'dono@exemplo.test' }) };
+global.Session = { getEffectiveUser: () => ({ getEmail: () => 'np@exemplo.test' }) }; // 14.10: a profissional das provas e a dona do script (os e-mails aos pacientes saem da conta dela)
 global.UrlFetchApp = { fetch: () => ({ getResponseCode: () => 200, getContentText: () => '{}' }) };
 
 /* ---- instrumentos: contadores de abertura de planilha, busca no Drive, trava e e-mail ---- */

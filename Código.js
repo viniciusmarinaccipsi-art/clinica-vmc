@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '20.2.2';
+var VERSAO_PACOTE = '14.10';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -2087,7 +2087,7 @@ function autenticar(tipo, email, senha, escolha) {
   if (t === 'profissional') {
     try {
       var lista = listarPacientesDoProfissional({ tipo: t, sigla: conta.sigla, profissional_id: conta.profissional_id, nome: reg.nome, email: reg.email });
-      if (lista && lista.ok === true) entrada.pacientes = lista.pacientes;
+      if (lista && lista.ok === true) { entrada.pacientes = lista.pacientes; entrada.email_pacientes = lista.email_pacientes; } // 14.10
     } catch (erroLista) {
       console.error('autenticar: lista de pacientes nao foi junto: ' + String(erroLista && erroLista.message || erroLista).slice(0, 120));
     }
@@ -2120,7 +2120,8 @@ function pedirRedefinicao(tipo, email) {
     var ativas = [];
     for (var i = 0; i < contas.length; i++) {
       var reg = _registroDaConta_(t, contas[i].sigla, contas[i].profissional_id);
-      if (reg && reg.ativo) ativas.push(contas[i]);
+      // 14.10: o e-mail do paciente sai da conta do profissional dele; sem a permissao, nao sai (o profissional reenvia o acesso pelo WhatsApp)
+      if (reg && reg.ativo && (t !== 'paciente' || _emailPermitido_(contas[i].profissional_id))) ativas.push(contas[i]);
     }
     // 18.10: o trecho que grava (cota, links) roda na trava; o piso de tempo fica fora dela
     if (ativas.length) _comTrava_(function () {
@@ -2135,7 +2136,7 @@ function pedirRedefinicao(tipo, email) {
         // 18.10: paciente -> assina o profissional dono; profissional e admin -> o admin do sistema
         var assina = t === 'paciente' ? _assinaturaDoProfissional_(ativas[j].profissional_id) : _assinaturaDoSistema_();
         var link = _criarLinkAtivacao_(t, ativas[j].sigla, ativas[j].profissional_id, 'redefinicao', e);
-        if (!_enviarEmail_(e, montarEmail('redefinicao', '', link, profNome, assina))) _anularLink_(link);
+        if (!_enviarEmail_(e, montarEmail('redefinicao', '', link, profNome, assina), t === 'paciente' ? ativas[j].profissional_id : undefined)) _anularLink_(link);
       }
     });
   } catch (erro) {
@@ -2246,9 +2247,17 @@ function _reservarEmail_(cota, quantos) {
 
 /** Envia um e-mail do COGNIATIVO (a cota ja reservada). Devolve true se enviou.
  *  16.11: o logo vai embutido (inlineImages, cid:logo); sem a imagem o e-mail sai assim mesmo (alt "COGNIATIVO"). */
-function _enviarEmail_(para, email) {
+function _enviarEmail_(para, email, profId) {
   try {
-    var msg = { to: para, subject: email.assunto, body: email.texto, htmlBody: email.html, name: 'COGNIATIVO' };
+    // 14.10: com `profId`, o e-mail e do profissional (aos pacientes dele ou a ele mesmo) e sai da conta DELE —
+    // pela conta do Google que ele conectou; para o dono do script, pelo proprio script. Sem a permissao, nao sai.
+    var de = null;
+    if (profId !== undefined && profId !== null) {
+      de = _emailRemetente_(profId);
+      if (!de) return false;
+      if (de.modo === 'gmail') return _gmailEnviar_(profId, de, para, email);
+    }
+    var msg = { to: para, subject: email.assunto, body: email.texto, htmlBody: email.html, name: de ? de.nome : 'COGNIATIVO' };
     var logo = _logoEmailBlob_();
     if (logo) msg.inlineImages = { logo: logo };
     // 14.5: evento da sessao em anexo (.ics) — o paciente abre e guarda na agenda dele (Google, Outlook, Apple)
@@ -2259,6 +2268,82 @@ function _enviarEmail_(para, email) {
     return true;
   } catch (e) {
     console.error('_enviarEmail_: ' + String(e && e.message || e).slice(0, 200));
+    return false;
+  }
+}
+
+// ---------- 14.10: de onde sai o e-mail do profissional ----------
+var GCAL_ESCOPO_EMAIL = 'https://www.googleapis.com/auth/gmail.send'; // so envia; nao le nem apaga nada da caixa
+var MSG_EMAIL_CONECTE = 'Para enviar e-mails aos seus pacientes, conecte a sua conta do Google na Agenda.';
+
+/**
+ * Por onde sai o e-mail do profissional: { modo: 'dono' | 'gmail', nome, conta } ou null (nao sai).
+ * 'dono' = a conta que roda o script e a dele (MailApp ja sai do Gmail dele); 'gmail' = a conta que ele conectou,
+ * com a permissao de envio. O nome de quem envia e o do cadastro (decisao do usuario, 23/11/2026).
+ */
+function _emailRemetente_(profId) {
+  if (!profId) return null;
+  if (_MEMO_.emailDe === undefined) _MEMO_.emailDe = {};
+  if (_MEMO_.emailDe[profId] !== undefined) return _MEMO_.emailDe[profId];
+  var de = null;
+  try {
+    var prof = buscarProfissional(profId) || {};
+    var nome = String(prof.nome_completo || '').replace(/[\r\n"<>]/g, ' ').trim() || 'COGNIATIVO';
+    var g = _gcalGuardada_(profId);
+    if (_calDoDono_(profId)) de = { modo: 'dono', nome: nome, conta: normalizarEmail(prof.email) };
+    else if (g && g.conta && String(g.escopos || '').indexOf(GCAL_ESCOPO_EMAIL) !== -1) de = { modo: 'gmail', nome: nome, conta: String(g.conta) };
+  } catch (e) { de = null; }
+  _MEMO_.emailDe[profId] = de;
+  return de;
+}
+/** O profissional pode mandar e-mail aos pacientes dele (e receber os do sistema sobre a agenda dele)? */
+function _emailPermitido_(profId) { return !!_emailRemetente_(profId); }
+
+function _mimeB64_(texto) {
+  return Utilities.base64Encode(String(texto), Utilities.Charset.UTF_8);
+}
+function _mimeLinhas_(b64) {
+  return String(b64).replace(/(.{76})/g, '$1\r\n').replace(/\r\n$/, '');
+}
+function _mimePalavra_(texto) {
+  return '=?UTF-8?B?' + _mimeB64_(texto) + '?=';
+}
+/** A mensagem inteira (RFC 2822) como o Gmail a recebe: texto + HTML, o logo embutido (cid:logo) e o anexo, tudo em base64. */
+function _mimeMontar_(de, para, email) {
+  var M = 'cgn-m-' + Utilities.getUuid(), R = 'cgn-r-' + Utilities.getUuid(), A = 'cgn-a-' + Utilities.getUuid(), nl = '\r\n';
+  var limpo = function (x) { return String(x === undefined || x === null ? '' : x).replace(/[\r\n]/g, ' ').trim(); };
+  var parte = function (tipo, b64, extras) {
+    return ['Content-Type: ' + tipo, 'Content-Transfer-Encoding: base64'].concat(extras || []).join(nl) + nl + nl + _mimeLinhas_(b64) + nl;
+  };
+  var linhas = ['From: ' + _mimePalavra_(de.nome) + ' <' + limpo(de.conta) + '>', 'To: ' + limpo(para), 'Subject: ' + _mimePalavra_(limpo(email.assunto)),
+    'MIME-Version: 1.0', 'Content-Type: multipart/mixed; boundary="' + M + '"', '',
+    '--' + M, 'Content-Type: multipart/related; boundary="' + R + '"', '',
+    '--' + R, 'Content-Type: multipart/alternative; boundary="' + A + '"', '',
+    '--' + A, parte('text/plain; charset=UTF-8', _mimeB64_(email.texto || '')),
+    '--' + A, parte('text/html; charset=UTF-8', _mimeB64_(email.html || '')),
+    '--' + A + '--', ''];
+  if (EMAIL_LOGO_PNG_B64) linhas.push('--' + R, parte('image/png; name="cogniativo.png"', EMAIL_LOGO_PNG_B64, ['Content-ID: <logo>', 'Content-Disposition: inline; filename="cogniativo.png"']));
+  linhas.push('--' + R + '--', '');
+  if (email.anexo && email.anexo.texto) {
+    var nome = limpo(email.anexo.nome || 'sessao.ics').replace(/"/g, '');
+    linhas.push('--' + M, parte('text/calendar; charset=UTF-8; name="' + nome + '"', _mimeB64_(email.anexo.texto), ['Content-Disposition: attachment; filename="' + nome + '"']));
+  }
+  linhas.push('--' + M + '--', '');
+  return linhas.join(nl);
+}
+/** Envia pela conta do Google que o profissional conectou (fica nos Enviados dele; a resposta volta para ele). Nunca lanca. */
+function _gmailEnviar_(profId, de, para, email) {
+  try {
+    var token = _gcalToken_(profId);
+    if (!token) return false;
+    var r = UrlFetchApp.fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', { method: 'post', muteHttpExceptions: true,
+      contentType: 'application/json', headers: { Authorization: 'Bearer ' + token },
+      payload: JSON.stringify({ raw: Utilities.base64EncodeWebSafe(_mimeMontar_(de, para, email), Utilities.Charset.UTF_8) }) });
+    if (r.getResponseCode() === 200) return true;
+    console.error('e-mail pela conta conectada: o Google respondeu ' + r.getResponseCode());
+    return false;
+  } catch (e) {
+    console.error('e-mail pela conta conectada: ' + String(e && e.message || e).slice(0, 160));
     return false;
   }
 }
@@ -2338,12 +2423,13 @@ function profEnviarConvite(s, siglaPaciente, canal, contato) {
   var email = normalizarEmail(pac.email);
   if (!email) return { ok: false, erro: 'Cadastre o e-mail do paciente antes do convite.' };
   // 18.1.2: cota conferida antes de criar o link; e-mail que nao sai anula o proprio link
+  if (canal === 'email' && !_emailPermitido_(s.profissional_id)) return { ok: false, codigo: 'sem_conexao', erro: MSG_EMAIL_CONECTE }; // 14.10
   if (canal === 'email' && !_reservarEmail_('convites')) return { ok: false, erro: MSG_COTA_EMAIL };
   var link = _criarLinkAtivacao_('paciente', pac.sigla, s.profissional_id, 'convite', email);
   var enviado = false;
   if (canal === 'email') {
     // 18.10: o convite e assinado pelo profissional dono (nome e CRP da aba Profissionais)
-    enviado = _enviarEmail_(email, montarEmail('convite', primeiroNome(_nomeDoPaciente_(pac)), link, '', _assinaturaDoProfissional_(s.profissional_id)));
+    enviado = _enviarEmail_(email, montarEmail('convite', primeiroNome(_nomeDoPaciente_(pac)), link, '', _assinaturaDoProfissional_(s.profissional_id)), s.profissional_id);
     if (!enviado) { _anularLink_(link); return { ok: false, erro: MSG_COTA_EMAIL }; }
   }
   return { ok: true, link: link, email: email, telefone: normalizarTelefone(pac.telefone), enviado: enviado };
@@ -2519,7 +2605,7 @@ function listarPacientesDoProfissional(s) {
     }
   }
 
-  return { ok: true, pacientes: lista };
+  return { ok: true, pacientes: lista, email_pacientes: _emailPermitido_(s.profissional_id) }; // 14.10: a tela avisa onde o e-mail sairia
 }
 
 /** 18.5: data do aceite ('aaaa-MM-dd HH:mm:ss' em texto, ou Date em linha antiga) como 'DD/MM/AAAA'; vazio quando nao ha. */
@@ -6485,13 +6571,14 @@ function profLembrarAgora(s, siglaPaciente, dados) {
   return _lembreteResposta_(alvo, resp, agora.data);
 }
 
-/** Manda o e-mail de um item ao paciente do `alvo`. Devolve o motivo de nao ter ido ('' = enviado | inativo | sem_email | cota | falha). */
+/** Manda o e-mail de um item ao paciente do `alvo`. Devolve o motivo de nao ter ido ('' = enviado | inativo | sem_email | sem_conexao | cota | falha). */
 function _lembreteMandarEmail_(alvo, item) {
   var email = normalizarEmail(alvo.paciente.email);
   if (!_estaAtivo_(alvo.paciente.ativo)) return 'inativo';
   if (!email) return 'sem_email';
+  if (!_emailPermitido_(alvo.profissionalId)) return 'sem_conexao'; // 14.10
   if (!_reservarEmail_('lembretes')) return 'cota';
-  if (!_enviarEmail_(email, montarEmailLembrete(item.tipo, _lemPrimeiroNome_(alvo.paciente), _assinaturaDoProfissional_(alvo.profissionalId), _lembreteDetalhe_(item), _lembreteDestino_(item)))) return 'falha';
+  if (!_enviarEmail_(email, montarEmailLembrete(item.tipo, _lemPrimeiroNome_(alvo.paciente), _assinaturaDoProfissional_(alvo.profissionalId), _lembreteDetalhe_(item), _lembreteDestino_(item)), alvo.profissionalId)) return 'falha';
   return '';
 }
 
@@ -6649,7 +6736,7 @@ function enviarLembretes_(quando) {
   _memoZerar_(true);
   var agora = _lemAgora_(quando);
   var r = { ok: true, data: agora.data, hora: agora.hora, profissionais: 0, itens: 0, vencendo: 0, enviados: 0,
-    ja_enviados: 0, sem_email: 0, inativos: 0, sem_cota: 0, falhas: 0 };
+    ja_enviados: 0, sem_email: 0, sem_conexao: 0, inativos: 0, sem_cota: 0, falhas: 0 };
   lerAbaComoObjetos(_abrirPlanilha_(SISTEMA_VMC_ID), ABA_PROFISSIONAIS).forEach(function (prof) {
     try {
       if (!prof.profissional_id || !_estaAtivo_(prof.ativo)) return;
@@ -6661,6 +6748,7 @@ function enviarLembretes_(quando) {
       r.itens += itens.length;
       var devidos = itens.filter(function (i) { return _lembreteEmailVence_(i, agora.data, agora.hora); });
       if (!devidos.length) return;
+      if (!_emailPermitido_(prof.profissional_id)) { r.sem_conexao += devidos.length; return; } // 14.10: sem a conta conectada, nenhum e-mail aos pacientes dele
       var pacientes = {};
       lerAbaComoObjetos(controle, ABA_PACIENTES).forEach(function (p) { pacientes[_siglaChave_(p.sigla)] = p; });
       var assinatura = _assinaturaDe_(prof.nome_completo, prof.crp, prof.genero);
@@ -6689,7 +6777,7 @@ function enviarLembretes_(quando) {
         if (reserva === 'ja' || reserva === 'mudou') { r.ja_enviados++; return; }
         if (reserva === 'cota') { r.sem_cota++; return; }
         if (reserva !== 'ok') { r.falhas++; return; }
-        if (_enviarEmail_(email, montarEmailLembrete(item.tipo, _lemPrimeiroNome_(pac), assinatura, _lembreteDetalhe_(item), _lembreteDestino_(item)))) { r.enviados++; return; }
+        if (_enviarEmail_(email, montarEmailLembrete(item.tipo, _lemPrimeiroNome_(pac), assinatura, _lembreteDetalhe_(item), _lembreteDestino_(item)), prof.profissional_id)) { r.enviados++; return; }
         r.falhas++;
         _comTravaSeDer_(function () { aba.getRange(item.__linha, colEnvio).setValue(_lemCelula_(anterior)); });
       });
@@ -7357,7 +7445,7 @@ function montarEmailSessao(tipo, p) {
 /**
  * Manda um aviso de sessao ao PACIENTE. So sai com a chave geral ligada, paciente ativo e com e-mail,
  * cota do dia livre e, quando `caixa` e dada, com a caixa daquele aviso marcada na sessao.
- * Devolve '' (enviado) ou o motivo: desligado | caixa | inativo | sem_email | cota | falha.
+ * Devolve '' (enviado) ou o motivo: desligado | caixa | inativo | sem_email | sem_conexao | cota | falha.
  */
 function _ageAvisarPaciente_(ctx, profId, pac, tipo, sessao, caixa, extra) {
   var forcar = !!(extra && extra.forcar); // 14.4: "Enviar e-mail agora" e decisao do profissional, sessao por sessao — nao depende da chave nem da caixa
@@ -7365,6 +7453,7 @@ function _ageAvisarPaciente_(ctx, profId, pac, tipo, sessao, caixa, extra) {
   if (!forcar && caixa && _ageAvisosLista_(sessao.avisos).indexOf(caixa) === -1) return 'caixa';
   if (!pac || !pac.ativo) return 'inativo';
   if (!pac.email) return 'sem_email';
+  if (!_emailPermitido_(profId)) return 'sem_conexao'; // 14.10
   if (!_reservarEmail_('sessoes')) return 'cota';
   var prof = buscarProfissional(profId) || {};
   var p = { nome: pac.primeiro, profissional: String(prof.nome_completo || '').trim(), sessao: sessao, horas: ctx.cfg.antecedencia_min_horas,
@@ -7383,7 +7472,7 @@ function _ageAvisarPaciente_(ctx, profId, pac, tipo, sessao, caixa, extra) {
     var lista = (p.sessoes && p.sessoes.length) ? p.sessoes : [sessao];
     email.anexo = { nome: 'sessao.ics', metodo: icsDe, texto: _ageIcs_(lista, p.profissional, ctx.cfg, icsDe, _ageAgoraUtc_()) };
   }
-  return _enviarEmail_(pac.email, email) ? '' : 'falha';
+  return _enviarEmail_(pac.email, email, profId) ? '' : 'falha';
 }
 
 /** Avisa o PROFISSIONAL de um movimento feito pelo paciente (mesma chave geral). Nunca derruba a acao que chamou. */
@@ -7393,9 +7482,10 @@ function _ageAvisarProfissional_(ctx, profId, frase) {
     var prof = buscarProfissional(profId) || {};
     var email = normalizarEmail(prof.email);
     if (!email) return 'sem_email';
+    if (!_emailPermitido_(profId)) return 'sem_conexao'; // 14.10: o aviso ao profissional sai da conta dele mesmo
     if (!_reservarEmail_('sessoes')) return 'cota';
     var nome = String(prof.nome_completo || '').trim().split(/\s+/)[0] || '';
-    return _enviarEmail_(email, montarEmailSessao('profissional', { nome: nome, frase: frase, assinatura: [] })) ? '' : 'falha';
+    return _enviarEmail_(email, montarEmailSessao('profissional', { nome: nome, frase: frase, assinatura: [] }), profId) ? '' : 'falha';
   } catch (e) {
     console.error('agenda: aviso ao profissional nao saiu: ' + String(e && e.message || e).slice(0, 160));
     return 'falha';
@@ -8078,7 +8168,7 @@ function _agendaApagarDoPaciente_(controle, sigla) {
  */
 function enviarAvisosSessao_(quando) {
   var agora = _lemAgora_(quando);
-  var r = { profissionais: 0, sessoes: 0, vencendo: 0, enviados: 0, ja_enviados: 0, desligados: 0, sem_email: 0, inativos: 0, sem_cota: 0, falhas: 0, calendar: 0 };
+  var r = { profissionais: 0, sessoes: 0, vencendo: 0, enviados: 0, ja_enviados: 0, desligados: 0, sem_email: 0, sem_conexao: 0, inativos: 0, sem_cota: 0, falhas: 0, calendar: 0 };
   lerAbaComoObjetos(_abrirPlanilha_(SISTEMA_VMC_ID), ABA_PROFISSIONAIS).forEach(function (prof) {
     try {
       if (!prof.profissional_id || !_estaAtivo_(prof.ativo)) return;
@@ -8101,6 +8191,7 @@ function enviarAvisosSessao_(quando) {
       if (!devidas.length) return;
       var cfg = _ageConfig_(controle);
       if (cfg.avisos_sessao !== 'Sim') { r.desligados += devidas.length; return; }
+      if (!_emailPermitido_(prof.profissional_id)) { r.sem_conexao += devidas.length; return; } // 14.10
       var pacs = _agePacientes_(controle);
       var ctx = { cfg: cfg };
       var header = _garantirColunas_(aba, COLUNAS_SESSOES);
@@ -8561,6 +8652,7 @@ function _calOcupados_(profId, cfg, deIso, dias) {
 var GCAL_PROP_ID = 'GOOGLE_OAUTH_CLIENT_ID';
 var GCAL_PROP_SEGREDO = 'GOOGLE_OAUTH_CLIENT_SECRET';
 var GCAL_ESCOPOS = ['openid', 'email', 'https://www.googleapis.com/auth/calendar.app.created']; // so as agendas que o proprio sistema criar
+var GCAL_ESCOPO_AGENDA = 'https://www.googleapis.com/auth/calendar.app.created';
 var GCAL_ESCOPO_OCUPADO = 'https://www.googleapis.com/auth/calendar.freebusy';                   // ver SE esta ocupado, nunca o que e
 var GCAL_ESTADO_MIN = 20;       // validade do pedido de conexao (ida ao Google e volta)
 var GCAL_OCUPADOS_DIAS = 62;    // janela maxima dos compromissos pessoais mostrados na Agenda
@@ -8597,6 +8689,7 @@ function _gcalEsquecer_(profId) {
   try { PropertiesService.getScriptProperties().deleteProperty('gcal:' + profId); } catch (e) { /* nada guardado */ }
   if (_MEMO_.gcal === undefined) _MEMO_.gcal = {};
   _MEMO_.gcal[profId] = null;
+  if (_MEMO_.emailDe) delete _MEMO_.emailDe[profId];
   _cacheEsquecer_(['gcalat:' + profId]);
 }
 /** Retira a permissao no Google e esquece o que estava guardado (desconectar, profissional desativado). Nunca lanca. */
@@ -8636,7 +8729,7 @@ function _gcalVolta_() {
 function _gcalUrl_(profId, ocupado) {
   var cli = _gcalCliente_(), volta = _gcalVolta_();
   if (!cli || !volta) return '';
-  var q = { client_id: cli.id, redirect_uri: volta, response_type: 'code', scope: GCAL_ESCOPOS.concat(ocupado ? [GCAL_ESCOPO_OCUPADO] : []).join(' '),
+  var q = { client_id: cli.id, redirect_uri: volta, response_type: 'code', scope: GCAL_ESCOPOS.concat([GCAL_ESCOPO_EMAIL]).concat(ocupado ? [GCAL_ESCOPO_OCUPADO] : []).join(' '), // 14.10: pede tambem o envio de e-mails
     access_type: 'offline', prompt: 'consent', include_granted_scopes: 'true', state: _gcalEstado_(profId, ocupado, Date.now()) };
   return 'https://accounts.google.com/o/oauth2/v2/auth?' + Object.keys(q).map(function (k) { return k + '=' + encodeURIComponent(q[k]); }).join('&');
 }
@@ -8670,17 +8763,24 @@ function _gcalRetorno_(par) {
     if (r.getResponseCode() !== 200 || !d || !d.refresh_token) { console.error('agenda externa: o Google nao devolveu a permissao (' + r.getResponseCode() + ')'); return 'erro'; }
     var conta = _gcalConta_(d.id_token), escopos = String(d.scope || '');
     var temOcupado = escopos.indexOf(GCAL_ESCOPO_OCUPADO) !== -1;
+    // 14.10: a tela do Google mostra caixas — o profissional pode permitir a agenda, o envio de e-mails, os dois ou nenhum
+    var temAgenda = escopos.indexOf(GCAL_ESCOPO_AGENDA) !== -1, temEmail = escopos.indexOf(GCAL_ESCOPO_EMAIL) !== -1;
+    if (!temAgenda && !temEmail) {
+      try { UrlFetchApp.fetch('https://oauth2.googleapis.com/revoke', { method: 'post', muteHttpExceptions: true, payload: { token: d.refresh_token } }); } catch (erroRevoga) { /* nada a retirar */ }
+      return 'negada';
+    }
     _comTrava_(function () {
       var antes = _gcalGuardada_(est.profId), cfg = _ageConfig_(controle);
       var outraConta = !antes || antes.conta !== conta;
       _gcalGuardar_(est.profId, { rt: d.refresh_token, conta: conta, escopos: escopos });
+      if (_MEMO_.emailDe) delete _MEMO_.emailDe[est.profId];
       if (d.access_token) _cacheGuardar_('gcalat:' + est.profId, d.access_token, Math.max(60, (parseInt(d.expires_in, 10) || 3600) - 300));
-      _ageConfigGravar_(controle, 'google_calendar', 'Sim');
+      _ageConfigGravar_(controle, 'google_calendar', temAgenda ? 'Sim' : 'Nao');
       _ageConfigGravar_(controle, 'agenda_conta', conta);
       _ageConfigGravar_(controle, 'agenda_aviso', '');
-      _ageConfigGravar_(controle, 'agenda_ocupado', temOcupado && (est.ocupado || cfg.agenda_ocupado === 'Sim') ? 'Sim' : 'Nao');
+      _ageConfigGravar_(controle, 'agenda_ocupado', temAgenda && temOcupado && (est.ocupado || cfg.agenda_ocupado === 'Sim') ? 'Sim' : 'Nao');
       if (outraConta) _ageConfigGravar_(controle, 'gcal_id', ''); // conta nova: a agenda do espelho nasce nela
-      _calMarcarFuturas_(controle, outraConta);
+      if (temAgenda) _calMarcarFuturas_(controle, outraConta);
     });
     return 'conectada';
   } catch (e) {
@@ -8748,14 +8848,16 @@ function _calConectada_(profId, cfg) {
   return !!cfg && cfg.google_calendar === 'Sim' && (!!_gcalGuardada_(profId) || _calDoDono_(profId));
 }
 
-/** Como a tela mostra a conta conectada (nenhum segredo): { servico, disponivel, conectada, conta, ocupado, aviso }. */
+/** Como a tela mostra a conta conectada (nenhum segredo): { servico, disponivel, conectada, conta, ocupado, aviso, email, email_conta }.
+ *  14.10: `email` = os e-mails aos pacientes saem da conta dele (`email_conta`); `ligada` = ha permissao guardada (agenda, e-mail ou os dois). */
 function _calEstadoTela_(profId, cfg) {
   var g = _gcalGuardada_(profId), dono = !g && _calDoDono_(profId);
   var conectada = !!cfg && cfg.google_calendar === 'Sim' && (!!g || dono);
   var conta = '';
   if (conectada) { try { conta = g ? String(g.conta || '') : normalizarEmail(Session.getEffectiveUser().getEmail()); } catch (e) { conta = ''; } }
   return { servico: 'google', disponivel: !!g || dono || !!_gcalCliente_(), direta: dono, conectada: conectada, conta: conta, // `direta`: o dono do script liga sem ir ao Google
-    ocupado: conectada && cfg.agenda_ocupado === 'Sim', aviso: conectada ? '' : String((cfg && cfg.agenda_aviso) || '') };
+    ocupado: conectada && cfg.agenda_ocupado === 'Sim', aviso: conectada ? '' : String((cfg && cfg.agenda_aviso) || ''),
+    ligada: !!g, email: _emailPermitido_(profId), email_conta: _emailPermitido_(profId) ? String(_emailRemetente_(profId).conta || '') : '' };
 }
 
 /** Compromissos pessoais do periodo como a Agenda os desenha: [ { data, hora_inicio, hora_fim } ], um pedaco por dia, sem titulo. */
@@ -9508,8 +9610,9 @@ function profEnviarCobranca(s, id, dados, periodo) {
   if (d.canal === 'email') {
     var para = _finPagadores_(c, sig, false).filter(function (x) { return x.email; })[0];
     if (!para) return { ok: false, erro: 'Quem paga não tem e-mail no cadastro. Use o WhatsApp ou complete o cadastro.' };
+    if (!_emailPermitido_(alvo.profissionalId)) return { ok: false, codigo: 'sem_conexao', erro: MSG_EMAIL_CONECTE }; // 14.10
     if (!_reservarEmail_('cobrancas', 1)) return { ok: false, erro: 'O limite de e-mails de cobrança de hoje foi atingido. Tente amanhã ou use o WhatsApp.' };
-    if (!_enviarEmail_(para.email, montarEmailCobranca(texto, _finMesNome_(cb.mes), _assinaturaDoProfissional_(alvo.profissionalId)))) return { ok: false, erro: 'O e-mail não pôde ser enviado agora. Tente de novo.' };
+    if (!_enviarEmail_(para.email, montarEmailCobranca(texto, _finMesNome_(cb.mes), _assinaturaDoProfissional_(alvo.profissionalId)), alvo.profissionalId)) return { ok: false, erro: 'O e-mail não pôde ser enviado agora. Tente de novo.' };
     campos.enviada_em = agora.carimbo; campos.enviada_por = 'email';
   } else if (d.canal === 'marcar') { campos.enviada_em = agora.carimbo; campos.enviada_por = 'whatsapp'; }
   _finGravar_(alvo.controle, ABA_FIN_COBRANCAS, cb.__linha, campos);
@@ -10034,8 +10137,8 @@ function profMarcarStatusLote(s, ids, situacao) {
 
 // ---------- os dois e-mails ao profissional ----------
 
-/** Este profissional pode receber os e-mails do sistema sobre a agenda dele? Hoje: so o dono do script (o e-mail sairia do Gmail dele mesmo). */
-function _stpDisponivel_(profId) { return _calDoDono_(profId); }
+/** Este profissional pode receber os e-mails do sistema sobre a agenda dele? 14.10: o dono do script ou quem conectou a conta com a permissao de envio — o e-mail sai da conta dele mesmo. */
+function _stpDisponivel_(profId) { return _emailPermitido_(profId); }
 
 /** As chaves dos dois e-mails na Config_Agenda (nascem desligadas) e a marca do ultimo envio de cada um ('AAAA-MM-DD'). */
 function _stpConfig_(controle) {
@@ -10149,7 +10252,7 @@ function _stpEnviarDe_(prof, controle, agora) {
       ? montarEmailAgendaProfissional('pendente', { nome: nome, sessoes: d.dados.hoje.map(linha), antigas: d.dados.antigas })
       : montarEmailAgendaProfissional('amanha', { nome: nome, data: d.dados.data, sessoes: d.dados.sessoes.map(linha),
           pedidos: _lembretesLer_(_ageAba_(controle, ABA_PEDIDOS_AGENDA, COLUNAS_PEDIDOS_AGENDA, false)).filter(function (x) { return x.estado === 'pendente'; }).length });
-    if (_enviarEmail_(para, email)) r[d.tipo]++; else { r.falhas++; desfazer(); }
+    if (_enviarEmail_(para, email, prof.profissional_id)) r[d.tipo]++; else { r.falhas++; desfazer(); }
   });
   return r;
 }

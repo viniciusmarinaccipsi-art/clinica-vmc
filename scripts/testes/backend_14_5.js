@@ -36,7 +36,7 @@ global.Utilities.newBlob = (dados, tipo, nome) => (typeof dados === 'string' ? {
 
 // ---------- Google Calendar de mentira ----------
 const G = { chamadas: [], agendas: [{ id: 'primary', summary: 'pessoal' }], eventos: {}, ocupado: [], falhar: 0, seq: 0, token: 0 };
-let DONO = 'dono@exemplo.test';
+let DONO = 'np@exemplo.test'; // 14.10: a profissional das provas é a dona do script desde o começo (os e-mails aos pacientes saem da conta dela)
 global.Session = { getEffectiveUser: () => ({ getEmail: () => DONO }) };
 global.ScriptApp.getOAuthToken = () => { G.token++; return 'tok'; };
 global.UrlFetchApp = { fetch: (url, o) => {
@@ -121,6 +121,7 @@ tenta('A', () => {
 console.log('C. Google Calendar em mão única e Meet por sessão');
 let idC1, idC2, idC3;
 tenta('C', () => {
+  DONO = 'dono@exemplo.test'; // C1 e C2: como fica para quem nao e o dono do script
   ok('C1 com a chave desligada nada vai ao Google', G.chamadas.length === 0 && cel('Sessoes', prof('profLerAgenda', PER).sessoes[0].id, 'gcal_sinc') === 'pendente', G.chamadas.length);
   let r = prof('profAgendaConectar', { periodo: PER }); // 14.8: a chave saiu da Grade; quem não é o dono precisa conectar a própria conta
   ok('C2 quem não é o dono do script e não conectou a conta não liga o espelho (sem a chave do botão, a conexão não está disponível)', r.ok === false && r.codigo === 'indisponivel' && prof('profLerAgenda', PER).agenda_externa.conectada === false && prof('profLerAgenda', PER).agenda_externa.disponivel === false && G.chamadas.length === 0, r);

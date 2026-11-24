@@ -31,6 +31,7 @@ global.Utilities = {
   },
   getUuid: () => crypto.randomUUID(),
   sleep: ms => { global.__sleeps.push(ms); },
+  base64Encode: d => (typeof d === 'string' ? Buffer.from(d, 'utf8') : Buffer.from(d.map(x => (x < 0 ? x + 256 : x)))).toString('base64'), // 14.10: a mensagem que vai ao Gmail
   base64EncodeWebSafe: (dados) => {
     const buf = typeof dados === 'string' ? Buffer.from(dados, 'utf8') : Buffer.from(dados.map(x => (x < 0 ? x + 256 : x)));
     return buf.toString('base64').replace(/\+/g, '-').replace(/\//g, '_');
@@ -129,7 +130,10 @@ global.Logger = { log: () => {} };
 global.ContentService = { MimeType: { JSON: 'JSON' }, createTextOutput: t => ({ setMimeType: () => ({ conteudo: t }) }) };
 global.ScriptApp = { getService: () => ({ getUrl: () => 'https://script.local/exec' }), getProjectTriggers: () => [], newTrigger: () => ({}), deleteTrigger: () => {} };
 global.Session = { getEffectiveUser: () => ({ getEmail: () => 'dono@exemplo.test' }) };
-global.UrlFetchApp = { fetch: () => ({ getResponseCode: () => 200, getContentText: () => '{}' }) };
+// 14.10: o e-mail do paciente sai da conta do Google que o profissional dele conectou — as duas profissionais das provas conectaram
+global.UrlFetchApp = { fetch: require('./_gmail_de_mentira.js').fetchComGmail(ENVIADOS) };
+PROPS.GOOGLE_OAUTH_CLIENT_ID = 'cliente-de-teste'; PROPS.GOOGLE_OAUTH_CLIENT_SECRET = 'chave-de-teste';
+['PROF_ANA', 'PROF_BETO'].forEach(p => { PROPS['gcal:' + p] = JSON.stringify({ rt: 'rt-' + p, conta: p.toLowerCase() + '@exemplo.test', escopos: 'openid https://www.googleapis.com/auth/gmail.send' }); });
 
 /* ============ carrega o Código.js REAL ============ */
 const CODIGO = path.join(__dirname, '..', '..', 'Código.js');

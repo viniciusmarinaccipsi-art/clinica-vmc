@@ -141,7 +141,7 @@ tenta('B', () => {
   const q = par(r.url);
   ok('B2 conectar devolve o endereço da tela de permissão do Google, sem gravar nada', r.ok === true && r.conectada === false && r.url.indexOf('https://accounts.google.com/o/oauth2/v2/auth?') === 0 && cfg().google_calendar === undefined && h.PROPS['gcal:PROF_NP'] === undefined, r);
   ok('B3 o pedido leva o cliente, a volta para a página conectar.html do site (não o /exec do Apps Script), acesso duradouro e a tela de permissão sempre', q.client_id === 'cliente-1.apps.exemplo' && q.redirect_uri === VOLTA && q.redirect_uri === S('SITE_URL').replace('index-dev.html', 'conectar.html') && q.redirect_uri.indexOf('script.') === -1 && q.response_type === 'code' && q.access_type === 'offline' && q.prompt === 'consent', q);
-  ok('B4 a permissão pedida é a menor: só as agendas que o sistema criar (sem ver a agenda pessoal, sem horários ocupados)', q.scope === 'openid email https://www.googleapis.com/auth/calendar.app.created', q.scope);
+  ok('B4 a permissão pedida é a menor: só as agendas que o sistema criar e, desde o 14.10, o envio de e-mails (sem ver a agenda pessoal, sem horários ocupados, sem ler a caixa)', q.scope === 'openid email https://www.googleapis.com/auth/calendar.app.created https://www.googleapis.com/auth/gmail.send', q.scope);
   ok('B5 o segredo da chave nunca vai no endereço', r.url.indexOf('SEGREDO') === -1 && JSON.stringify(r).indexOf('SEGREDO') === -1);
   ok('B6 o estado é assinado: diz de qual profissional é o pedido e vence', !!S('_gcalLerEstado_')(q.state, AGORA) && S('_gcalLerEstado_')(q.state, AGORA).profId === 'PROF_NP' && S('_gcalLerEstado_')(q.state, AGORA + 21 * 60000) === null && S('_gcalLerEstado_')(q.state.replace(/.$/, c => (c === 'a' ? 'b' : 'a')), AGORA) === null && S('_gcalLerEstado_')('', AGORA) === null);
 
@@ -216,7 +216,7 @@ tenta('D', () => {
   ok('D1 opção desligada (padrão): o Google não é consultado, o horário continua livre e a Agenda não mostra ocupados', L.indexOf('2026-12-16 10:00') !== -1 && ag.ocupados.length === 0 && !G.chamadas.some(c => c.u === '/freeBusy'));
   let r = prof('profAgendaOpcao', { dados: { ocupado: true }, periodo: PER });
   const q = r.url ? par(r.url) : {};
-  ok('D2 ligar sem ter dado essa permissão: devolve a tela do Google pedindo também "ver quando estou ocupado"; a opção ainda não liga', r.ok === true && r.precisa_permissao === true && q.scope === 'openid email https://www.googleapis.com/auth/calendar.app.created https://www.googleapis.com/auth/calendar.freebusy' && cfg().agenda_ocupado === 'Nao', r);
+  ok('D2 ligar sem ter dado essa permissão: devolve a tela do Google pedindo também "ver quando estou ocupado"; a opção ainda não liga', r.ok === true && r.precisa_permissao === true && q.scope === 'openid email https://www.googleapis.com/auth/calendar.app.created https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/calendar.freebusy' && cfg().agenda_ocupado === 'Nao', r);
   volta({ state: q.state, code: 'cod:consultorio@gmail.test:occ' });
   ok('D3 na volta, a opção fica ligada e a conta é a mesma (a agenda do espelho não é refeita)', cfg().agenda_ocupado === 'Sim' && cfg().agenda_conta === 'consultorio@gmail.test' && cfg().gcal_id !== '' && externa().ocupado === true, cfg());
   CACHE.clear(); G.chamadas.length = 0;
@@ -304,7 +304,7 @@ console.log('T. Listas e versão');
 tenta('T', () => {
   const novas = ['profAgendaConectar', 'profAgendaDesconectar', 'profAgendaOpcao'];
   ok('T1 as três ações novas estão na trava, exigem crachá e não são leitura', novas.every(a => S('ACOES_COM_TRAVA').indexOf(a) !== -1 && S('ACOES_PUBLICAS').indexOf(a) === -1 && S('ACOES_SO_LEITURA').indexOf(a) === -1));
-  ok('T2 VERSAO_PACOTE = 14.8.1', S('VERSAO_PACOTE') === '14.8.1');
+  ok('T2 VERSAO_PACOTE do 14.8.1 em diante (o número exato é conferido em backend_16_11.js)', /^(14\.(8\.[1-9]|9|\d{2})|[12]\d\.)/.test(S('VERSAO_PACOTE')), S('VERSAO_PACOTE'));
   ok('T3 nenhuma coluna nova nas abas da agenda (a conexão mora na Config_Agenda e no cofre do script)', S('COLUNAS_SESSOES').slice(-3).join(',') === 'gcal_evento,gcal_sinc,meet_link' && S('COLUNAS_PEDIDOS_AGENDA').slice(-2).join(',') === 'sugestao,modalidade');
   const esperados = logServidor.filter(l => /agenda externa: o Google nao devolveu a permissao \(400\)/.test(l)).length;
   const inesperados = logServidor.filter(l => !/^trava de gravacao: nao obtida/.test(l) && !/agenda externa: o Google nao devolveu a permissao \(400\)/.test(l));

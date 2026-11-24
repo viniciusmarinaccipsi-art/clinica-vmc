@@ -259,7 +259,7 @@ tenta('T', () => {
   const js = fs.readFileSync(path.join(__dirname, '..', '..', 'Código.js'), 'utf8');
   const bloco = js.slice(js.indexOf('// PACOTE 20.2 — STATUS DAS SESSOES'), js.indexOf('// Auxiliares do ping (Pacote E3'));
   ok('T1 a ação nova está no despachante e na lista das que gravam com trava', /case 'profMarcarStatusLote':/.test(js) && S('ACOES_COM_TRAVA').indexOf('profMarcarStatusLote') !== -1);
-  ok('T2 o bloco não envia e-mail por fora: nenhum MailApp direto; tudo passa por _reservarEmail_ e _enviarEmail_', bloco.length > 2000 && bloco.indexOf('MailApp') === -1 && /_reservarEmail_\('sessoes'\)/.test(bloco) && /_enviarEmail_\(para, email\)/.test(bloco));
+  ok('T2 o bloco não envia e-mail por fora: nenhum MailApp direto; tudo passa por _reservarEmail_ e _enviarEmail_', bloco.length > 2000 && bloco.indexOf('MailApp') === -1 && /_reservarEmail_\('sessoes'\)/.test(bloco) && /_enviarEmail_\(para, email, prof\.profissional_id\)/.test(bloco));
   ok('T3 o gatilho dos lembretes chama os e-mails do profissional dentro de try/catch, depois dos avisos de sessão', /r\.sessoes = enviarAvisosSessao_\(quando\);[\s\S]{0,400}try \{\s*r\.agenda_prof = enviarEmailsProfissional_\(quando\);\s*\} catch \(erroProf\)/.test(js));
   ok('T4 a trava da conta é uma função só, usada na Grade (ler e salvar) e no gatilho', (js.match(/_stpDisponivel_\(/g) || []).length === 4);
   const ind = js.indexOf("case 'profMarcarStatusLote':");

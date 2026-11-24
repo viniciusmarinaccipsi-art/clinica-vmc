@@ -95,7 +95,7 @@ global.MailApp = { sendEmail: () => {} };
 global.Logger = { log: () => {} };
 global.ContentService = { MimeType: { JSON: 'JSON' }, createTextOutput: t => ({ setMimeType: () => ({ conteudo: t }) }) };
 global.ScriptApp = { getService: () => ({ getUrl: () => 'https://script.local/exec' }), getProjectTriggers: () => [], newTrigger: () => ({}), deleteTrigger: () => {} };
-global.Session = { getEffectiveUser: () => ({ getEmail: () => 'dono@exemplo.test' }) };
+global.Session = { getEffectiveUser: () => ({ getEmail: () => 'np@exemplo.test' }) }; // 14.10: a profissional das provas e a dona do script (os e-mails aos pacientes saem da conta dela)
 global.UrlFetchApp = { fetch: () => ({ getResponseCode: () => 200, getContentText: () => '{}' }) };
 
 /* ---- instrumentos: contadores de abertura de planilha, busca no Drive, trava e e-mail ---- */
