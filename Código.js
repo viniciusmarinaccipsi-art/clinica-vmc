@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.10';
+var VERSAO_PACOTE = '14.10.1';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -1162,7 +1162,7 @@ var EMAIL_HTML = {
   redefinicao: { titulo: 'Redefinir a sua senha', previa: 'Crie uma senha nova. O link vale por 48 horas.', botao: 'Criar senha nova' }
 };
 var EMAIL_LINK_RESERVA = 'Se o botão não abrir, copie este endereço no navegador:';
-var EMAIL_RODAPE = 'E-mail automático do COGNIATIVO. Não é preciso responder.';
+var EMAIL_RODAPE = 'E-mail automático do COGNIATIVO.'; // 14.10.1: saiu "Não é preciso responder." — a resposta do paciente agora chega ao profissional
 // 18.10: a assinatura deixou de ser fixa — e o nome (e o CRP, se houver) de quem assina,
 // lido da planilha (_assinaturaDe_). 18.8.1: as linhas de formacao fixas sairam de todos os
 // e-mails (decisao do usuario, 05/10): a assinatura e so nome + "Psicologo/Psicologa — CRP".

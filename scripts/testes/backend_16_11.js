@@ -50,7 +50,7 @@ const monta = a => ctx.montarEmail.apply(null, a);
 console.log('H. texto puro e assunto não mudam');
 ok('H1 texto puro idêntico ao da v16.10 nos 6 casos', casos.every(a => monta(a).texto === montarAntigo.apply(null, a).texto));
 ok('H2 assuntos idênticos', casos.every(a => monta(a).assunto === montarAntigo.apply(null, a).assunto));
-ok('H3 VERSAO_PACOTE = 14.10', G('VERSAO_PACOTE') === '14.10');
+ok('H3 VERSAO_PACOTE = 14.10.1', G('VERSAO_PACOTE') === '14.10.1');
 
 console.log('T. textos no HTML, letra por letra');
 const conv = monta(casos[0]), red = monta(casos[4]);
@@ -58,7 +58,7 @@ const fixosConv = ['Olá, Ana.', 'Seu acesso ao COGNIATIVO, o sistema de acompan
   'Se você não esperava este e-mail, ignore-o. Nada será alterado.', 'Seu acesso está pronto', 'Criar minha senha', 'Crie sua senha para começar. O link vale por 48 horas.'];
 const fixosRed = ['Olá.', 'Recebemos um pedido para redefinir a sua senha no COGNIATIVO. Para criar uma senha nova, abra este link (vale por 48 horas e só funciona uma vez):',
   'Se você não pediu isso, ignore este e-mail. Sua senha atual continua a mesma.', 'Redefinir a sua senha', 'Criar senha nova', 'Acompanhamento com: Dr. Beto de Prova', 'Crie uma senha nova. O link vale por 48 horas.'];
-const comuns = ['COGNIATIVO — Psicoterapia para além das sessões, com intervenções cognitivo-comportamentais no dia a dia.', 'E-mail automático do COGNIATIVO. Não é preciso responder.',
+const comuns = ['COGNIATIVO — Psicoterapia para além das sessões, com intervenções cognitivo-comportamentais no dia a dia.', 'E-mail automático do COGNIATIVO.',
   'Se o botão não abrir, copie este endereço no navegador:', 'Fulana de Tal', 'Psicóloga — CRP 06/1'];
 ok('T1 convite: todos os textos fixos e novos aprovados', fixosConv.concat(comuns).every(t => visivel(conv.html).indexOf(t) !== -1), fixosConv.concat(comuns).filter(t => visivel(conv.html).indexOf(t) === -1));
 ok('T2 redefinição: todos os textos fixos e novos aprovados', fixosRed.concat(comuns).every(t => visivel(red.html).indexOf(t) !== -1), fixosRed.concat(comuns).filter(t => visivel(red.html).indexOf(t) === -1));
