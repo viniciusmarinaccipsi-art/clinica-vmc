@@ -1,6 +1,6 @@
 # Lições Aprendidas — Referência
 
-130 lições acumuladas no desenvolvimento (numeração original preservada —
+179 lições acumuladas no desenvolvimento (numeração original preservada —
 as conversas citam "lição #N"). Consultar antes de decisões não-triviais.
 Lições novas nascem na seção 8 do status_projeto_vmc.md e entram aqui na
 regeneração seguinte da skill clinica-vmc.
@@ -401,3 +401,105 @@ usados ao criar planilha nova — adicionar coluna = atualizar o array.
 **129. Regra de data se escreve sobre texto, não sobre `Date` de célula.** Na aba `Lembretes` toda célula é texto literal (apóstrofo) lida por `getDisplayValues`, a regra trabalha com `AAAA-MM-DD` e `HH:mm` e o "agora" entra por parâmetro. A mesma suíte passa em São Paulo e em UTC (o portão do GitHub roda em UTC) e o Sheets real não retipou nada na prova. (19.2.1)
 
 **130. Gravação do profissional esvazia a memória do paciente aberto (18.11): a tela nova se atualiza com a resposta da própria ação.** A primeira versão do módulo de lembretes contava com `PROF_PACIENTES_MEM` depois de gravar e o cadeado da escala não acompanhava; o roteiro pegou. A resposta da ação passou a trazer o plano e os itens do Início, e a tela reaproveita `profAtualizarCadeados_`. (19.2.1)
+
+## Fase 19 (fechamento), Agenda, Fluxo de caixa e conversas em paralelo (lições 131–179, de 22 a 23/11/2026)
+
+Numeração: 131–151 seguem os números que o status já indicava; 152–179 são as lições que o status trazia sem número ("(a)", "(b)"…), numeradas na regeneração de 24/11/2026 pela ordem de publicação dos pacotes (14.7, 20.0, 20.1, 14.8, 20.2, 14.8.1, 20.2.1).
+
+**131. Gráfico se prova lendo o gráfico, não só olhando.** O roteiro lê o `Chart` vivo de cada canvas (`Chart.getChart`: pontos, eixos, cor) e a cor do pixel da banda contra o token, nos dois temas; o olhar nas capturas fica para o que o script não mede — e foi ele que pegou o eixo descendo abaixo de zero e a data futura na ponta do eixo. As primeiras nove falhas do roteiro eram contas erradas do próprio roteiro: conferir a expectativa antes de mexer no código. (19.0)
+
+**132. Evento de `prefers-color-scheme` só chega quando a janela pinta um quadro.** Com a janela do Playwright encoberta, a troca de tema demorou 1,5 s numa rodada e não chegou em 0,7 s em outra; o teste espera pela condição (o gráfico redesenhado), nunca por tempo fixo — e isso não é defeito da página. (19.0)
+
+**133. O HEAD do Apps Script é um só para todas as conversas, e o `clasp deploy` fotografa o que estiver nele.** Duas sessões fizeram `clasp push` com minutos de diferença; o `clasp deploy` do 14.3 criou a versão 56 com o código do 19.2.3 (e as funções temporárias da prova), e o do 19.2.3 quase ficou por baixo. O que mostrou: `clasp versions` com um número a mais do que o esperado e `clasp pull --versionNumber 56` com `VERSAO_PACOTE` de outro pacote. Regra: logo antes do `clasp deploy`, `clasp pull` numa pasta à parte e diff = 0 contra o commit; logo depois, `clasp pull --versionNumber <N>` = o commit; avisar a outra sessão (SendMessage + pasta de notas) antes de usar o HEAD; worktree separa o git, não separa o servidor. (19.2.3)
+
+**134. "Sai no horário escolhido" com gatilho de hora em hora é, para quem testa, "não funciona".** O usuário criou um lembrete para dali a dois minutos e esperou o e-mail; o desenho aprovado dizia "até uma hora depois", mas ninguém testa esperando uma hora. Funcionalidade com hora marcada se prova como o usuário vai testar: criar pela tela para agora e esperar chegar. (19.2.3)
+
+**135. Tela nova se mostra ao usuário antes de publicar.** A primeira versão pôs WhatsApp e E-mail na linha do lembrete; a captura do roteiro, vista por ele no meio do trabalho, bastou para a correção ("dentro do Editar") antes de qualquer publicação. Em pacote que muda o lugar de um botão, mandar a captura assim que o roteiro passa. (19.2.3)
+
+**136. Regra de classificação se busca na fonte antes de propor atalho.** Para dizer o estágio da URICA o Code propôs "a subescala de maior média"; a regra oficial existia (folha de correção do GAAPCC na página do grupo, normas por escore T em dois artigos, cortes numa tese, a página do laboratório do autor) e dava outro resultado no exemplo do usuário. A busca completa (cache → bases em paralelo → página do grupo que validou → repositório da universidade → pasta do usuário) vem antes de qualquer proposta de conteúdo clínico. E nota antiga do próprio projeto também se confere: o catálogo dizia que os cortes 8 e 11 valiam só para a versão de 32 itens, e a fonte os aplica à de 24. (19.0.1)
+
+**137. Frase copiada carrega o tom.** As faixas graves das escalas novas herdaram "entre em contato com seu terapeuta o quanto antes" do PHQ-9 e do GAD-7; o usuário viu no BAI e achou que era só dele. Auditoria de texto se faz por padrão no catálogo inteiro (script), nunca pelo exemplo que apareceu. (19.0.1)
+
+**138. Com várias conversas, a `main` anda enquanto os portões rodam.** O envio do branch para a `main` foi recusado duas vezes porque outra conversa publicou documentos no intervalo. O que funcionou: juntar a `main`, enviar o branch, esperar o run do `head_sha` e, no mesmo comando, `git fetch` + conferir que a `main` é ancestral + `git push origin <branch>:main`; a fumaça só depois de `git ls-remote` mostrar o commit na `main`. (19.0.1)
+
+**139. A pasta separada isola os arquivos, não o servidor.** O 14.3 nasceu em worktree próprio e mesmo assim o `clasp deploy` dele fotografou o HEAD de outra conversa (a @56). O que passou a valer: arquivo `..\CLASP_EM_USO.md` criado antes de qualquer `clasp push`, `clasp run` ou `clasp deploy` e apagado ao fim; `clasp pull` numa pasta vazia e `diff` contra o `Código.js` do branch logo antes do deploy; `ping` logo depois — versão errada no `ping` = voltar a implantação à versão anterior na hora (`clasp deploy --versionNumber <n>`) e avisar as outras conversas. Irmã da 133. (14.3)
+
+**140. Link sem senha que passa a mostrar mais coisa ganha prova própria do que NÃO mostra.** O link de confirmação passou a devolver o endereço do consultório; a suíte confere a lista exata de chaves da resposta (nenhum nome, sigla ou telefone). (14.5.1)
+
+**141. Destino em link é uma lista fechada, dos dois lados.** O servidor só monta `?ir=` no formato conferido por expressão regular e o cliente só aceita `auto` ou uma escala que exista no catálogo (`hasOwnProperty`); o parâmetro sai da URL na hora, como o `?ativar=` e o `?confirmar=`. (19.2.4)
+
+**142. Modo novo de uma tela existente = uma variável de estado e ganchos nos pontos de saída, não uma cópia da tela.** A edição do registro (13.7) reaproveita revisão, etapas e checagem com `REG_EDICAO`; os ganchos ficam onde o fluxo grava rascunho, navega e envia (`autoSalvarRascunho`, `rascDoFluxoAtivo_`, `abrirSecao`, `topbarAtualizar`, `confirmarSaida`, `autoEnviarRegistro`). O formulário à parte (13.6) tinha envelhecido justamente por ser cópia. (13.7)
+
+**143. Os arquivos têm quebras de linha misturadas (CRLF e LF no mesmo arquivo).** Script de substituição exata tenta o trecho como está e, se não achar, com CRLF; e heredoc do Bash come `\n` e `\r` — script com escape vai para arquivo pela ferramenta de escrita. Achado no caminho (corrigido no 13.7): `autoHidratarFormulario` não repunha as caixas de texto de Pensamentos e Comportamentos — um rascunho retomado depois de recarregar a página perdia esses dois textos. (13.7)
+
+**144. Prova no publicado com a página recém-carregada acha o que o roteiro local não acha.** Os roteiros locais do 14.3 ao 14.5.2 sempre abriam a Agenda antes de decidir um pedido pelo Início; a prova no site publicado entrou e decidiu direto, como o usuário faz, e a tela quebrou (`calMiniMes` nulo). Roteiro de tela novo começa pelo caminho mais curto do usuário, com a página recém-carregada. (fechamento da Agenda, 14.5.3)
+
+**145. Carimbo de hora com precisão de minuto não serve para dizer "foi o mesmo ato".** A primeira versão do 14.5.2 reconhecia a confirmação feita pela aprovação comparando `confirmada_em` com `decidido_em`; a própria suíte mostrou que a confirmação do paciente no mesmo minuto sumiria do sino. Marca própria (`confirmou_sessao`), não comparação de horas. (14.5.2; a coluna saiu no 14.5.4 — a lição continua valendo como método)
+
+**146. Prova no servidor real nunca chama o gatilho de todas as contas quando alguma conta real tem os avisos ligados** — conta-se antes (`contar14_3`) e, havendo, a prova não chama `enviarAvisosSessao_`; e o envio de e-mail da prova passa por um filtro que só deixa sair o endereço de teste (os demais são contados, não enviados). (fechamento da Agenda)
+
+**147. "Decisão do usuário" escrita por outro chat se confere na frase dele antes de construir.** O prompt de fechamento da Agenda trazia como fechada a regra "pedido aprovado no horário que o paciente pediu já nasce confirmado", com citações do usuário; ele aprovou o plano inteiro e, ao ler o resultado, disse o contrário ("ele deve confirmar posteriormente"). Custou um pacote para fazer e outro para desfazer. Regra de produto que muda o que o paciente vê ou recebe: repetir a regra ao usuário em uma frase, com um exemplo ("o paciente pede 15h, você aprova 15h: a sessão já fica confirmada, sem ele clicar"), e esperar a resposta a ESSA frase — a aprovação de um plano longo não vale como resposta. (14.5.4)
+
+**148. Relógio fixo no roteiro congela o gráfico; a falha é do roteiro, não da página.** `page.clock.setFixedTime` para o `Date.now()` que o Chart.js usa para animar: o gráfico fica no primeiro quadro (barra com largura zero, linha no chão), o toque numa barra não acerta nada e a captura "igual antes × depois" compara dois quadros vazios. E a captura de página inteira muda a largura útil no meio da foto (a barra de rolagem some), então parte dos gráficos se redesenha mais larga e o hash varia sozinho. No roteiro: `chart.stop(); chart.resize(); chart.update('none'); chart.draw()` antes de fotografar ou tocar (só o `update('none')` não basta: a animação parada continua valendo) e navegador com `--hide-scrollbars`. Antes de concluir que a tela quebrou, abrir a captura e reproduzir fora do roteiro. (19.1)
+
+**149. Tela nova que reaproveita um componente convive com a tela antiga na mesma página.** As telas do sistema ficam todas no documento, só uma visível: o módulo Escalas do último paciente aberto continua lá quando a Biblioteca abre. Componente com `id` fixo ou com seletor preso a uma tela (a busca das escalas filtrava `#profModEscBody`) passa a trabalhar pelo contêiner de quem o chamou, e o roteiro prova o isolamento nos dois sentidos — filtrar numa tela não esconde cartão da outra. E componente que dependia de "há um paciente aberto" (a ficha lia os itens com a sigla do paciente) se confere no servidor antes de adaptar: para o profissional a leitura já vinha do crachá. (19.3)
+
+**150. Tag diz o assunto da escala; o que toda escala faz não é tag — e filtro que ocupa a tela fica recolhido.** "Mensuração" estava em 24 das 40 fichas e o usuário a chamou de ridícula: toda escala mede. Ao escrever a ficha de uma escala nova, cada tag passa por duas perguntas: separa esta escala de outras? repete outra tag que já existe? E componente reaproveitado numa tela nova se olha na tela nova: as 47 tags cabiam dentro do módulo do paciente, mas na Biblioteca empurravam o primeiro cartão para fora da primeira tela do celular (1.029 px); a captura do roteiro mostrava, e o Code só avisou no fechamento em vez de propor antes de publicar. (19.3.1)
+
+**151. Pedido dele para "ver se não tem outra" é pedido para resolver, e texto fora da regra do projeto se conserta sem perguntar.** Ele mandou tirar a tag "Mensuração" e "ver se não tem outra"; o Code entregou um levantamento e ficou esperando resposta. Depois viu "emoções positivas" na tela do paciente (a regra escrita é "agradáveis") e também deixou "esperando a palavra dele". Ele cobrou: "já deveria ter feito tudo isso". Regra: quando ele manda procurar o mesmo defeito em outros lugares, o Code conserta os que achar e mostra a lista do que fez (o que for duvidoso vai junto, já com a escolha feita e dita); texto que contraria regra escrita do projeto é defeito, não decisão nova. Pergunta só para o que nenhuma regra nem palavra dele cobre. (19.3.2)
+
+**152. Antes de explicar uma regra nova, conferir se o usuário sabe como a parte anterior funciona.** O limite de agendamentos do 14.6 foi construído sobre "o paciente agenda sozinho"; o usuário achava que todo agendamento já dependia da aprovação dele. Um pacote foi feito e, no seguinte, desfeito. A cena ("hoje a paciente toca em Agendar, escolhe quinta 10h e a sessão já fica marcada") vem antes da proposta. (14.7)
+
+**153. Três conversas no mesmo repositório pedem regra escrita e fila.** `..\ORQUESTRA_SESSOES.md` diz quem mexe em quê, os pontos em que as três se encostam (linha 2, `VMC_ACOES_GRAVACAO`, `_despachar_`, `VERSAO_PACOTE`, testes que guardam número, status) e a fila de publicação com o arquivo `PUBLICANDO.md` (uma conversa por vez, do merge da `main` até a cópia do status no Projeto). (14.7)
+
+**154. Prova no publicado que repete em duas larguras na mesma conta precisa contar só o que é da rodada** (o recusado da primeira largura aparece, com razão, na segunda). (14.7)
+
+**155. Lista digitada "separada por vírgula" quebra o nome que tem vírgula.** A categoria padrão "Contas (água, luz, internet)" virou três; quem achou foi o roteiro, ao escolher a categoria na tela. Listas de configuração são uma por linha. (20.0)
+
+**156. A prova "igual à de antes" precisa de uma referência que não ande.** O roteiro comparava as chamadas do login com a pasta da `main`; depois da publicação a `main` já era a nova e a prova falhou sem defeito nenhum. Referência fixa: a tag ou a lista escrita. (20.0)
+
+**157. Prova no servidor real lê a célula antes do passo seguinte.** A prova do comprovante lia a situação depois de já ter confirmado e deu falso; o defeito era da prova. (20.0)
+
+**158. Plano escrito por outro chat se confere contra o código e contra a palavra do usuário antes de construir.** Três regras do plano mudaram (pagamento por mês, sessão desmarcada na cobrança, começo em dezembro) e as três foram ditas ao usuário em uma frase com exemplo, no plano que ele aprovou. Irmã da 147. (20.0)
+
+**159. Formato que outro sistema lê se prova contra quem já acerta.** O gabarito do lote foi gerado pelo gerador que o usuário usa hoje, com entradas inventadas, e a suíte exige igualdade byte a byte; no PC, o mesmo código foi conferido contra os lotes já aceitos pelo site, imprimindo só contagens (nenhuma linha, nome, CPF ou valor saiu da pasta dele). (20.1)
+
+**160. Caractere invisível não se escreve no código-fonte.** Uma expressão regular com os separadores de linha U+2028 e U+2029 quebrou o `node --check` porque a ferramenta de escrita os gravou de verdade; lista de códigos (`charCodeAt`) no lugar. (20.1)
+
+**161. Campo que liga uma função não pode depender dela ligada.** O CPF de quem emite só aparecia com os recibos ligados, e o servidor recusava ligar sem o CPF — os campos ficam sempre visíveis. (20.1)
+
+**162. Conversa que para no meio da publicação deixa escrito onde parou.** A sessão caiu por limite de uso com as funções temporárias no HEAD do Apps Script e as travas presas; a retomada conferiu trava, HEAD e conta descartável antes de qualquer comando, e as outras conversas esperaram porque os dois arquivos de trava diziam o que estava no HEAD. (20.1)
+
+**163. Proposta de recurso de integração começa pelo que os sistemas do mercado usam**, com o nome que o usuário reconhece ("conectar a conta", "convite de agenda"); a saída caseira entra como complemento. (14.8)
+
+**164. Limitação do tipo "só vale para a sua conta" vem com a consequência para os outros profissionais e com a saída**, na mesma frase. (14.8)
+
+**165. Fluxo que sai do site e volta (tela de permissão do Google) abre em outra aba.** A sessão do profissional mora só na memória da página (lição 23) e se perderia na ida; a aba nasce no próprio clique, antes do `await`, e a página original relê o estado ao voltar a ser vista. (14.8)
+
+**166. Permissão guardada de terceiros (refresh token) fica no cofre do script**, nunca em planilha, resposta ou log, e a chave do aplicativo são propriedades que só o usuário preenche — a suíte confere que o código não as contém e que o token do script continua pedido num lugar só. (14.8)
+
+**167. Regra CSS nova declarada antes da antiga com a mesma especificidade perde** (lição 92 de novo, na caixa de marcar do quadro): seletor composto. (14.8)
+
+**168. Palavra de tela se confere contra o que ela já quer dizer no sistema.** "Sessões a marcar" foi recusado pelo usuário na hora: "marcar" já é agendar. A palavra certa veio dele ("status") e valeu para o sistema inteiro. (20.2)
+
+**169. E-mail com tabela se prova na largura do telefone.** A grade de cinco colunas passava no computador e estourava em 390 px; quem achou foi o roteiro, que monta o e-mail pelo gatilho de verdade e mede a largura. (20.2)
+
+**170. Dado que muda em outra tela precisa de um gancho de volta.** O bloco do Início ficava velho depois de mudar o status pela Agenda; a leitura "quando ficar velha" não bastava. A saída foi reler ao abrir o Início (`abrirSecao`), não espalhar invalidações. (20.2)
+
+**171. Decisão de outra conversa que muda o pacote vai ao usuário em uma frase, com o caminho.** A regra do remetente (ele não quer e-mail de outro profissional saindo do Gmail dele) chegou pela coordenadora no meio da proposta; a resposta foi a trava numa função só, dita a ele antes de construir. (20.2)
+
+**172. Substituir uma função do simulador pode quebrar outra coisa que a usa** (`Utilities.newBlob` sem `getDataAsString` derrubou a leitura do crachá): acrescentar o que falta, nunca trocar o que existe. (20.2)
+
+**173. Página de retorno de permissão (OAuth) nunca mora no `/exec` do Apps Script.** Com mais de uma conta do Google no navegador o Google acrescenta `authuser=N` e o Apps Script não abre a página; a volta é uma página do próprio site, que entrega o resultado ao servidor por POST (o POST não leva conta nenhuma do navegador). (14.8.1)
+
+**174. Integração com serviço de fora só está provada com o serviço de verdade.** 63 provas e 39 de tela com um Google de mentira passaram, e a primeira tentativa real falhou num caso comum; o pacote só é "concluído" depois dessa prova. (14.8.1)
+
+**175. Segredo que vai aparecer numa tela se avisa antes.** Dizer ao usuário, antes de a janela abrir, que ela não deve ser fotografada nem colada no chat; a conferência do que ele colou é por sim/não (existe, formato, lido pelo sistema), nunca pelo valor. (14.8.1)
+
+**176. Com o Chrome minimizado a extensão não captura a tela**, mas lê e clica pelos elementos da página: seguir por eles e conferir o resultado relendo a página. (14.8.1)
+
+**177. Texto se revisa vendo onde ele aparece.** A lista só de frases não bastou ("mostra em imagem, o local e a parte exata do app"); a página com o recorte de tela de cada texto, contornado, e o campo de troca na mesma linha resolveu em uma passada, e a marcação fica no banco da página, lida pelo Code. (20.2.1)
+
+**178. Quando ele pergunta "a que se refere?", o texto está ruim** — "Há também 2 de dias anteriores." virou uma frase que diz o que são. (20.2.1)
+
+**179. Não discutir a palavra que ele escolheu.** "Próximas sessões" foi contestada pelo Code e ele já tinha pensado nisso (quem paga por mês usa o crédito no mês seguinte). (20.2.1)
