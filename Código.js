@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.17';
+var VERSAO_PACOTE = '19.7.1';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -8394,7 +8394,8 @@ function pacientePedirAgenda(sigla, dados) {
 function _ageInicio_(controle) {
   var r = { pedidos: {}, eventos: {} };
   if (!controle || !controle.getSheetByName(ABA_SESSOES)) return r;
-  var ctx = _ageCtx_(controle, false);
+  // 19.7.1: pedidos e eventos saem so das abas de sessoes e de pedidos — sem a configuracao, as series e os bloqueios do _ageCtx_ (tres leituras a menos)
+  var ctx = { controle: controle, sessoes: _ageLer_(_ageAba_(controle, ABA_SESSOES, COLUNAS_SESSOES, false)), pedidos: _ageLer_(_ageAba_(controle, ABA_PEDIDOS_AGENDA, COLUNAS_PEDIDOS_AGENDA, false)) };
   _agePedidosPendentes_(ctx, {}).forEach(function (p) { var k = _siglaChave_(p.sigla); (r.pedidos[k] = r.pedidos[k] || []).push(p); });
   _ageEventos_(ctx, {}, _lemAgora_()).forEach(function (e) { var k = _siglaChave_(e.sigla); (r.eventos[k] = r.eventos[k] || []).push(e); });
   return r;
