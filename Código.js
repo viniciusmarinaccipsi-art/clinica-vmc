@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '19.6';
+var VERSAO_PACOTE = '14.15';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -7745,6 +7745,11 @@ function profSalvarSessao(s, dados, periodo) {
       var marcas = _ageMarcasLembrete_(v.data, v.hora, agora);
       campos.confirmada_em = ''; campos.ultimo_aviso_em = marcas.ultimo_aviso_em; campos.lembrete48_em = marcas.lembrete48_em;
     }
+    if (d.situacao !== undefined) { // 14.15: o status vem junto com o Salvar (nada grava antes dele)
+      var st = _ageStatusCampos_(ctx, existente, d.situacao);
+      if (!st.ok) return st;
+      if (st.campos) { campos.estado = st.campos.estado; campos.cobrada = st.campos.cobrada; }
+    }
     _ageGravar_(ctx.abaS, COLUNAS_SESSOES, existente.__linha, campos);
     var naoAlteradas = plano.puladas;
     plano.movidas.forEach(function (m) {
@@ -7830,36 +7835,49 @@ function profEditarSerie(s, dados, periodo) {
   var agora = _lemAgora_();
   var ref = ctx.sessoes.filter(function (x) { return x.id === String(d.sessao_id || '').trim(); })[0];
   if (!ref || !_ageAtiva_(ref)) return { ok: false, erro: MSG_AGE_NAO_ACHEI };
-  var rg = _ageRegra_(d.repeticao);
+  var desfazer = d.desfazer === true; // 14.15: a sessao deixa de se repetir — as seguintes saem, esta fica
+  if (desfazer && !ref.serie_id) {
+    return simular ? { ok: true, simulacao: { datas: [ref.data], puladas: [], feriados: [], pulados_feriado: [], fora_grade: [], passado: [], mantidas: [], novas: [], retiradas: [] } }
+      : _ageResposta_(alvo, { ok: true, duplicado: true }, periodo, agora);
+  }
+  var rg = desfazer ? { ok: true, regra: null } : _ageRegra_(d.repeticao);
   if (!rg.ok) return rg;
   var novaId = 'serie-' + id.slice(0, 50);
   if (ctx.series.some(function (x) { return x.id === novaId; })) return _ageResposta_(alvo, { ok: true, duplicado: true }, periodo, agora);
   var saem = ref.serie_id ? ctx.sessoes.filter(function (x) { return x.serie_id === ref.serie_id && x.id !== ref.id && x.data > ref.data && x.estado === 'agendada'; }) : [];
   var fora = {}; fora[ref.id] = true; saem.forEach(function (x) { fora[x.id] = true; });
   var hora = _lemHora_(ref.hora_inicio), dur = _ageDur_(ref.duracao_min, ctx.cfg.duracao_slot_min);
-  var serie = _ageSerie_(rg.regra, ref.data, function (iso) { return !!_ageOcupado_(ctx, iso, hora, dur, fora); });
+  var serie = desfazer ? { ok: true, datas: [ref.data], puladas: [], feriados: [], pulados_feriado: [] }
+    : _ageSerie_(rg.regra, ref.data, function (iso) { return !!_ageOcupado_(ctx, iso, hora, dur, fora); });
   if (!serie.ok) return serie;
+  // 14.15: a sessao que ja existe numa data que continua na regra nao e tocada — guarda a confirmacao do paciente e o pedido pendente
+  var naRegra = {}; serie.datas.forEach(function (iso) { naRegra[iso] = true; });
+  var ficam = saem.filter(function (x) { return naRegra[x.data]; }), retiradas = saem.filter(function (x) { return !naRegra[x.data]; });
+  var jaTem = {}; ficam.forEach(function (x) { jaTem[x.data] = true; });
+  var novas = serie.datas.filter(function (iso) { return iso !== ref.data && !jaTem[iso]; });
   var janelas = _ageJanelas_(alvo.controle);
   var sim = { datas: serie.datas, puladas: serie.puladas, feriados: serie.feriados, pulados_feriado: serie.pulados_feriado,
-    fora_grade: serie.datas.filter(function (iso) { return !_ageNaGrade_(janelas, iso, _ageMin_(hora), dur); }), passado: [] };
+    fora_grade: serie.datas.filter(function (iso) { return !_ageNaGrade_(janelas, iso, _ageMin_(hora), dur); }), passado: [],
+    mantidas: ficam.map(function (x) { return x.data; }), novas: novas, retiradas: retiradas.map(function (x) { return x.data; }) };
   if (simular) return { ok: true, simulacao: sim };
-  saem.forEach(function (x) {
+  retiradas.forEach(function (x) {
     _ageGravar_(ctx.abaS, COLUNAS_SESSOES, x.__linha, { estado: 'cancelada', cancelada_em: agora.carimbo, cancelada_por: 'edicao_serie', cobrada: 'Nao', atualizado_em: agora.carimbo });
+    _agePedidosFechar_(ctx, x.id, agora, 'sem_efeito');
   });
   var antiga = ref.serie_id ? ctx.series.filter(function (x) { return x.id === ref.serie_id; })[0] : null;
   if (antiga && !antiga.encerrada_em) _ageGravar_(ctx.abaR, COLUNAS_SERIES, antiga.__linha, { encerrada_em: agora.carimbo });
-  _ageGravar_(ctx.abaR, COLUNAS_SERIES, 0, { id: novaId, sigla: ref.sigla, cada: String(rg.regra.cada), unidade: rg.regra.unidade, dias_semana: rg.regra.dias_semana.join(','),
+  if (!desfazer) _ageGravar_(ctx.abaR, COLUNAS_SERIES, 0, { id: novaId, sigla: ref.sigla, cada: String(rg.regra.cada), unidade: rg.regra.unidade, dias_semana: rg.regra.dias_semana.join(','),
     modo_mes: rg.regra.modo_mes, fim_tipo: rg.regra.fim_tipo, fim_n: rg.regra.fim_n ? String(rg.regra.fim_n) : '', fim_data: rg.regra.fim_data, ocupado: 'pular', criada_em: agora.carimbo });
-  _ageGravar_(ctx.abaS, COLUNAS_SESSOES, ref.__linha, { serie_id: novaId, atualizado_em: agora.carimbo });
+  _ageGravar_(ctx.abaS, COLUNAS_SESSOES, ref.__linha, { serie_id: desfazer ? '' : novaId, atualizado_em: agora.carimbo });
+  ficam.forEach(function (x) { _ageGravar_(ctx.abaS, COLUNAS_SESSOES, x.__linha, { serie_id: novaId, atualizado_em: agora.carimbo }); });
   var n = 0;
-  serie.datas.forEach(function (iso) {
-    if (iso === ref.data) return;
+  novas.forEach(function (iso) {
     n++;
     _ageNovaSessao_(ctx, agora, { id: id.slice(0, 58) + '-' + n, sigla: ref.sigla, data: iso, hora_inicio: hora, duracao_min: String(dur), modalidade: ref.modalidade,
       valor: ref.valor, notas: ref.notas, serie_id: novaId, estado: 'agendada', origem: 'profissional', avisos: ref.avisos,
       criado_em: agora.carimbo, criado_por: String(alvo.nome || ''), atualizado_em: agora.carimbo });
   });
-  return _ageResposta_(alvo, { ok: true, criadas: n, retiradas: saem.length, simulacao: sim }, periodo, agora);
+  return _ageResposta_(alvo, { ok: true, criadas: n, retiradas: retiradas.length, mantidas: ficam.length, simulacao: sim }, periodo, agora);
 }
 
 /**
@@ -7895,9 +7913,10 @@ function profCancelarSessao(s, id, opcoes, periodo) {
 }
 
 /** Pedidos pendentes de uma sessao que deixou de existir como estava: recusados. */
-function _agePedidosFechar_(ctx, sessaoId, agora) {
+function _agePedidosFechar_(ctx, sessaoId, agora, estado) {
+  var fim = estado || 'recusado'; // 14.15: 'sem_efeito' quando a sessao saiu porque as recorrentes mudaram (ninguem recusou nada)
   ctx.pedidos.forEach(function (p) {
-    if (p.sessao_id === sessaoId && p.estado === 'pendente') { _ageGravar_(ctx.abaP, COLUNAS_PEDIDOS_AGENDA, p.__linha, { estado: 'recusado', decidido_em: agora.carimbo }); p.estado = 'recusado'; }
+    if (p.sessao_id === sessaoId && p.estado === 'pendente') { _ageGravar_(ctx.abaP, COLUNAS_PEDIDOS_AGENDA, p.__linha, { estado: fim, decidido_em: agora.carimbo }); p.estado = fim; }
   });
 }
 
@@ -7909,10 +7928,18 @@ function profMarcarSituacao(s, id, situacao, periodo) {
   var agora = _lemAgora_();
   var x = ctx.sessoes.filter(function (y) { return y.id === String(id || '').trim(); })[0];
   if (!x || !_ageAtiva_(x)) return { ok: false, erro: MSG_AGE_NAO_ACHEI };
-  var estado = situacao === 'realizada' ? 'realizada' : (situacao === 'falta' ? 'falta' : 'agendada');
-  if (estado === 'agendada' && _ageRepostaEm_(ctx, x.id)) return { ok: false, erro: 'Esta sessão já foi reposta. Cancele a reposição antes de mudar o status.' };
-  _ageGravar_(ctx.abaS, COLUNAS_SESSOES, x.__linha, { estado: estado, cobrada: estado === 'agendada' ? (x.reposicao_de ? 'Nao' : '') : _ageCobrada_(estado, true, !!x.reposicao_de), atualizado_em: agora.carimbo });
+  var st = _ageStatusCampos_(ctx, x, situacao, true);
+  if (!st.ok) return st;
+  _ageGravar_(ctx.abaS, COLUNAS_SESSOES, x.__linha, { estado: st.campos.estado, cobrada: st.campos.cobrada, atualizado_em: agora.carimbo });
   return _ageResposta_(alvo, { ok: true }, periodo, agora);
+}
+
+/** O que o status muda na linha da sessao. `campos` vem nulo quando o status pedido ja e o da sessao (a nao ser com `sempre`). */
+function _ageStatusCampos_(ctx, x, situacao, sempre) {
+  var estado = situacao === 'realizada' ? 'realizada' : (situacao === 'falta' ? 'falta' : 'agendada');
+  if (!sempre && estado === (x.estado || 'agendada')) return { ok: true, campos: null };
+  if (estado === 'agendada' && _ageRepostaEm_(ctx, x.id)) return { ok: false, erro: 'Esta sessão já foi reposta. Cancele a reposição antes de mudar o status.' };
+  return { ok: true, campos: { estado: estado, cobrada: estado === 'agendada' ? (x.reposicao_de ? 'Nao' : '') : _ageCobrada_(estado, true, !!x.reposicao_de) } };
 }
 
 /** Cria ou edita um bloqueio. `dados`: { id, data_inicio, hora_inicio, data_fim, hora_fim, dia_todo, nome }. */

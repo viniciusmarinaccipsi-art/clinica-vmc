@@ -174,7 +174,7 @@ tenta('S', () => {
   ok('S6 editar a repetição, simulação: as seguintes da própria série não contam como ocupadas', r.ok && igual(r.simulacao.datas, ['2026-12-24', '2027-01-07', '2027-01-21']) && r.simulacao.puladas.length === 0, r);
   r = prof('profEditarSerie', { periodo: PER, dados: { id: idE, sessao_id: seg.id, repeticao: { cada: 2, unidade: 'semana', dias_semana: [4], fim_tipo: 'n', fim_n: 3 } } });
   const nova = r.agenda.sessoes.filter(x => x.serie_id && x.serie_id !== serieId && x.sigla === P2);
-  ok('S7 editar a repetição: as seguintes saem, as novas entram, a primeira da série antiga fica', r.ok && r.retiradas === 2 && r.criadas === 2 && igual(nova.map(x => x.data), ['2026-12-24', '2027-01-07', '2027-01-21']) && r.agenda.sessoes.filter(x => x.serie_id === serieId).length === 1 && linhas('Series') === 2 && cel('Series', serieId, 'encerrada_em') !== '', r);
+  ok('S7 editar a repetição: sai a que deixou a regra, fica a que continua nela (14.15), entra a nova, a primeira da série antiga fica', r.ok && r.retiradas === 1 && r.mantidas === 1 && r.criadas === 1 && igual(nova.map(x => x.data), ['2026-12-24', '2027-01-07', '2027-01-21']) && r.agenda.sessoes.filter(x => x.serie_id === serieId).length === 1 && linhas('Series') === 2 && cel('Series', serieId, 'encerrada_em') !== '', r);
   r = prof('profEditarSerie', { periodo: PER, dados: { id: idE, sessao_id: seg.id, repeticao: { cada: 2, unidade: 'semana', dias_semana: [4], fim_tipo: 'n', fim_n: 3 } } });
   ok('S8 repetir o mesmo pedido de editar a repetição não cria nada de novo', r.ok && r.duplicado === true && linhas('Series') === 2, r);
 });
