@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.15';
+var VERSAO_PACOTE = '14.16';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -7535,10 +7535,13 @@ function _ageLeitura_(ctx, de, ate, pacs, agora) {
       modo_mes: r.modo_mes, fim_tipo: r.fim_tipo, fim_n: parseInt(r.fim_n, 10) || 0, fim_data: r.fim_data };
   });
   var externa = ctx.profId ? _calEstadoTela_(ctx.profId, ctx.cfg) : null; // 14.8
-  var bloqueios = ctx.bloqueios.filter(function (x) { return x.data_inicio <= ateIso && (x.data_fim || x.data_inicio) >= deIso; })
-    .map(function (x) { return { id: x.id, data_inicio: x.data_inicio, hora_inicio: _lemHora_(x.hora_inicio), data_fim: x.data_fim || x.data_inicio,
-      hora_fim: _lemHora_(x.hora_fim), dia_todo: String(x.dia_todo || '').toLowerCase() === 'sim', nome: x.nome }; });
-  return { de: deIso, ate: ateIso, hoje: hoje, agora_hora: agora.hora, config: ctx.cfg, sessoes: sessoes, series: series, bloqueios: bloqueios,
+  var bloqSaida = function (x) { return { id: x.id, data_inicio: x.data_inicio, hora_inicio: _lemHora_(x.hora_inicio), data_fim: x.data_fim || x.data_inicio,
+    hora_fim: _lemHora_(x.hora_fim), dia_todo: String(x.dia_todo || '').toLowerCase() === 'sim', nome: x.nome }; };
+  var bloqueios = ctx.bloqueios.filter(function (x) { return x.data_inicio <= ateIso && (x.data_fim || x.data_inicio) >= deIso; }).map(bloqSaida);
+  // 14.16: a tela "Bloquear datas" lista todos os bloqueios de hoje em diante, e nao so os do periodo mostrado na grade
+  var bloqFuturos = ctx.bloqueios.filter(function (x) { return (x.data_fim || x.data_inicio) >= hoje; }).map(bloqSaida)
+    .sort(function (a, b) { var p = a.data_inicio + ' ' + a.hora_inicio, q = b.data_inicio + ' ' + b.hora_inicio; return p < q ? -1 : (p > q ? 1 : 0); });
+  return { de: deIso, ate: ateIso, hoje: hoje, agora_hora: agora.hora, config: ctx.cfg, sessoes: sessoes, series: series, bloqueios: bloqueios, bloqueios_futuros: bloqFuturos,
     feriados: _ageFeriadosEntre_(deIso, ateIso), pedidos: _agePedidosPendentes_(ctx, pacs),
     eventos: _ageEventos_(ctx, pacs, agora), eventos_vistos_ate: ctx.cfg.agenda_vistos_ate || '', // 14.4
     agenda_externa: externa, ocupados: (externa && externa.ocupado) ? _calOcupadosTela_(ctx.profId, ctx.cfg, deIso, ateIso) : [] }; // 14.8
