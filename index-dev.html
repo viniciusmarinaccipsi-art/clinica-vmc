@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia e valor por paciente · agendamento do paciente com a aprovação do profissional · Painel de Evolução na tela do profissional — Pacote 19.1 · o pedido de agendamento do paciente aparece como “Agendamento solicitado” — Pacote 14.7.1 · Fluxo de caixa: receitas lidas da Agenda, pagamentos, cobranças por e-mail e WhatsApp, comprovante do paciente, despesas e contas a pagar — Pacote 20.0 · recibos e livro caixa: quem precisa de recibo, prévia literal e arquivo de lote do Carnê-Leão · Biblioteca de Escalas e Inventários com "Aplicar a um paciente" — Pacote 19.3 · tags da busca das escalas recolhidas atrás de um botão; saiu a tag "Mensuração" — Pacote 19.3.1 · cada profissional conecta a própria Google Agenda, com a opção dos compromissos pessoais — Pacote 14.8 · sessões com status pendente no Início, a palavra "Status" na sessão e os dois e-mails da agenda ao profissional — Pacote 20.2 (23/11/2026) · na tela do profissional, os subtítulos do Painel de Evolução falam do paciente — Pacote 19.1.1 (23/11/2026) · a volta da permissão do Google passa por uma página do próprio site — Pacote 14.8.1 (23/11/2026) · tags das escalas: saem Monitoramento, Diagnóstico e Processo e juntam-se as repetidas; "emoções agradáveis" na tela do paciente — Pacote 19.3.2 · três textos revistos pelo usuário (crédito nas próximas sessões, aviso da Grade e e-mail de fim de dia) — Pacote 20.2.1 (23/11/2026) · os e-mails aos pacientes saem da conta do Google que o profissional conectou — Pacote 14.10 (23/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia e valor por paciente · agendamento do paciente com a aprovação do profissional · Painel de Evolução na tela do profissional — Pacote 19.1 · o pedido de agendamento do paciente aparece como “Agendamento solicitado” — Pacote 14.7.1 · Fluxo de caixa: receitas lidas da Agenda, pagamentos, cobranças por e-mail e WhatsApp, comprovante do paciente, despesas e contas a pagar — Pacote 20.0 · recibos e livro caixa: quem precisa de recibo, prévia literal e arquivo de lote do Carnê-Leão · Biblioteca de Escalas e Inventários com "Aplicar a um paciente" — Pacote 19.3 · tags da busca das escalas recolhidas atrás de um botão; saiu a tag "Mensuração" — Pacote 19.3.1 · cada profissional conecta a própria Google Agenda, com a opção dos compromissos pessoais — Pacote 14.8 · sessões com status pendente no Início, a palavra "Status" na sessão e os dois e-mails da agenda ao profissional — Pacote 20.2 (23/11/2026) · na tela do profissional, os subtítulos do Painel de Evolução falam do paciente — Pacote 19.1.1 (23/11/2026) · a volta da permissão do Google passa por uma página do próprio site — Pacote 14.8.1 (23/11/2026) · tags das escalas: saem Monitoramento, Diagnóstico e Processo e juntam-se as repetidas; "emoções agradáveis" na tela do paciente — Pacote 19.3.2 · três textos revistos pelo usuário (crédito nas próximas sessões, aviso da Grade e e-mail de fim de dia) — Pacote 20.2.1 (23/11/2026) · os e-mails aos pacientes saem da conta do Google que o profissional conectou — Pacote 14.10 (23/11/2026) · botões de aviso em dupla e com ícone, valor da sessão só no Financeiro, cartão da escala com tempo, perguntas e tags, tema claro, escuro ou automático — Pacote 19.4 (25/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -14,6 +14,17 @@
 <link rel="apple-touch-icon" href="marca/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4" crossorigin="anonymous"></script>
+<!-- Pacote 19.4: tema claro, escuro ou automático. Roda antes do CSS para a página (login incluído) já nascer no tema certo.
+     Só a palavra da escolha fica guardada no aparelho (localStorage 'vmc_tema'); nenhum dado de sessão ou de paciente. -->
+<script data-vmc="tema">
+var VMC_TEMA_MQ = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+function vmcTemaLer_() { try { var t = localStorage.getItem('vmc_tema'); return (t === 'claro' || t === 'escuro') ? t : 'auto'; } catch (e) { return 'auto'; } }
+function vmcTemaAplicar_() {
+  var t = vmcTemaLer_();
+  document.documentElement.setAttribute('data-tema', (t === 'escuro' || (t === 'auto' && VMC_TEMA_MQ && VMC_TEMA_MQ.matches)) ? 'escuro' : 'claro');
+}
+vmcTemaAplicar_();
+</script>
 <style>
 /* Pacote 16.0 — tokens do redesenho (docs/design/tokens.css) substituem o :root antigo de 31 variáveis */
 /* ==========================================================================
@@ -214,9 +225,10 @@
   --cal-ev-lilas:  var(--c-action-tint);
 }
 
-/* ---------- Tema escuro ---------- */
-@media (prefers-color-scheme: dark) {
-  :root {
+/* ---------- Tema escuro ----------
+   Pacote 19.4: vale pelo atributo data-tema da raiz, posto por vmcTemaAplicar_ (escolha da pessoa ou, em "Automático",
+   o tema do aparelho). Era @media (prefers-color-scheme: dark); os valores são os mesmos. */
+  :root[data-tema="escuro"] {
     --c-bg:          #14131C;
     --c-bg-deep:     #0F0E16;
     --c-surface:     #1E1C29;
@@ -292,7 +304,6 @@
     --sh-2: 0 6px 18px rgba(0,0,0,.45);
     --sh-3: 0 18px 44px rgba(0,0,0,.55);
   }
-}
 
 /* ---------- Pacote 16.2 · máscaras dos pseudo-elementos que eram emoji (traço preto = só forma; a cor vem de currentColor) ---------- */
 :root {
@@ -790,12 +801,24 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 .prof-lem-botoes{display:flex;gap:var(--s-2);flex-wrap:wrap;}
 .prof-lem-enviar{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s-2);margin:var(--s-3) 0;text-align:left;}
 .prof-lem-enviar-rotulo{flex-basis:100%;font:var(--t-label);color:var(--c-ink-2);}
-.prof-lem-btn{display:inline-flex;align-items:center;justify-content:center;min-height:var(--hit-min);padding:0 var(--s-3);border:1px solid var(--c-line-strong);border-radius:var(--r-field);background:var(--c-surface);color:var(--c-ink);font:var(--t-action);text-decoration:none;cursor:pointer;}
+.prof-lem-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:var(--hit-min);padding:0 var(--s-3);border:1px solid var(--c-line-strong);border-radius:var(--r-field);background:var(--c-surface);color:var(--c-ink);font:var(--t-action);text-decoration:none;cursor:pointer;}
 .prof-lem-btn:hover{background:var(--c-surface-sub);}
 .prof-lem-btn:focus-visible{outline:2px solid var(--c-action);outline-offset:2px;}
-.prof-lem-linha{display:flex;gap:var(--s-2);align-items:stretch;}
+.prof-lem-linha{display:flex;flex-wrap:wrap;gap:var(--s-2);align-items:stretch;}
 .prof-lem-linha .prof-ev{flex:1 1 0;min-width:0;}
+/* Pacote 19.4 — escolha do tema: três botões (Claro, Escuro, Automático) em "Meus dados" do profissional e no fim do Início do paciente */
+.tema-escolha{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s-2);margin:var(--s-4) 0 0;text-align:left;}
+.tema-rotulo{flex-basis:100%;font:var(--t-label);color:var(--c-ink-2);}
+.tema-op{min-height:var(--hit-min);padding:0 var(--s-3);border:1.5px solid var(--c-line);border-radius:var(--r-field);background:var(--c-surface);color:var(--c-ink-2);font:var(--t-action);cursor:pointer;}
+.tema-op[aria-pressed="true"]{background:var(--c-action);border-color:var(--c-action);color:var(--c-ink-inv);}
+.tema-op:focus-visible{outline:2px solid var(--c-action);outline-offset:2px;}
+/* Pacote 19.4 — os dois botões de aviso (WhatsApp e E-mail) ao lado do item; no celular descem para baixo dele */
+.prof-lem-dupla{display:flex;gap:var(--s-2);align-items:stretch;}
+.prof-lem-ini-aviso{flex-basis:100%;margin:0;font:var(--t-body-sm);color:var(--c-ink-2);text-align:left;}
 @media (max-width:599px){
+  .prof-lem-linha .prof-ev{flex-basis:100%;}
+  .prof-lem-dupla{flex-basis:100%;}
+  .prof-lem-dupla .prof-lem-btn{flex:1 1 0;}
   /* no celular a marca (e-mail, atraso) desce para baixo do texto: ao lado, com o botão WhatsApp, o nome quebrava letra a letra */
   .prof-lem-linha .prof-ev{grid-template-columns:minmax(0,1fr);}
   .prof-lem-linha .prof-ev-quando{grid-column:1;grid-row:auto;text-align:left;}
@@ -1099,7 +1122,7 @@ body.vmc-largo .topbar-in{max-width:1360px;}
 /* Pacote 18.1: convite do paciente (cadastro e editor do profissional) */
 .prof-convite{margin:var(--s-3) 0 var(--s-2);}
 .prof-convite-acoes{display:flex;gap:var(--s-2);flex-wrap:wrap;}
-.prof-convite-acoes .p5-btn{flex:1 1 0;min-width:0;min-height:var(--hit-min);text-decoration:none;display:inline-flex;align-items:center;justify-content:center;}
+.prof-convite-acoes .p5-btn{flex:1 1 0;min-width:0;min-height:var(--hit-min);text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
 .prof-convite-acoes .prof-btn-whats{border:1px solid var(--c-line-strong);}
 .prof-btn-whats[aria-disabled="true"]{opacity:.5;cursor:not-allowed;}
 .prof-convite-msg{font:var(--t-body-sm);color:var(--c-pos-ink);margin-top:var(--s-2);}
@@ -3442,6 +3465,15 @@ button.cab-no-item{cursor:pointer;}
 #bibConteudo{text-align:left;}
 .bib-cab{display:flex;align-items:center;gap:10px;padding:14px 16px 10px;}
 .bib-acoes{display:flex;gap:var(--s-2);flex-wrap:wrap;padding:0 16px 14px;}
+/* Pacote 19.4 — cartão da escala: informações junto do nome e botões encostados na direita (no celular descem) */
+.bib-cartao .bib-cab{align-items:flex-start;}
+.bib-info{display:flex;flex-direction:column;gap:4px;min-width:0;}
+.bib-meta{font:var(--t-body-sm);color:var(--c-ink-2);}
+@media (min-width:721px){
+  .bib-cartao{display:flex;align-items:center;}
+  .bib-cartao .bib-cab{flex:1 1 0;min-width:0;padding-bottom:14px;}
+  .bib-cartao .bib-acoes{flex:0 0 auto;flex-wrap:nowrap;padding:14px 16px 14px 0;}
+}
 .bib-pergunta{font:600 16px/1.3 var(--f-title);color:var(--c-ink);margin:0 0 var(--s-3);overflow-wrap:anywhere;}
 .bib-lista{display:flex;flex-direction:column;gap:var(--s-2);}
 .bib-pac{display:flex;align-items:center;justify-content:space-between;gap:var(--s-3);width:100%;min-height:var(--hit-min);padding:var(--s-2) var(--s-3);
@@ -4257,8 +4289,6 @@ button.cab-no-item{cursor:pointer;}
 .cal-ev-cancelada{border:1px dashed var(--c-ink-3);border-left:4px solid var(--c-ink-3);background:var(--c-surface-sub);width:calc(100% - 6px);text-align:left;color:var(--c-ink-3);font-family:var(--f-text);display:block;z-index:2;box-shadow:none;}
 .cal-ev-cancelada .cal-ev-nome{text-decoration:line-through;}
 .cal-ev-lado{left:auto;right:2px;width:42%;z-index:4;}
-.prof-valor{display:flex;align-items:center;gap:var(--s-2);flex-wrap:wrap;margin-top:var(--s-2);font:var(--t-body-sm);color:var(--c-ink-inv);} /* o cabeçalho do paciente é índigo: texto claro */
-.prof-valor input{width:120px;min-height:var(--hit-min);padding:6px 10px;border:1px solid var(--c-line);border-radius:var(--r-field);font:var(--t-body);color:var(--c-ink);background:var(--c-surface);}
 /* Pacote 14.4 — sino da Agenda e cartão "Avisar o paciente" */
 .cal-sino{position:relative;}
 .cal-sino-num{position:absolute;top:2px;right:2px;min-width:18px;height:18px;padding:0 4px;border-radius:var(--r-chip);background:var(--c-risk);color:var(--c-ink-inv);font:var(--t-label);line-height:18px;text-align:center;}
@@ -4501,7 +4531,7 @@ body:has(#sec-prof-financeiro.active) .app,body:has(#sec-prof-financeiro.active)
 .fin-dados{white-space:pre-wrap;font:var(--t-body);color:var(--c-ink);background:var(--c-surface-sub);border-radius:var(--r-field);padding:var(--s-3);margin:0 0 var(--s-3);}
 .fin-lote{font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--c-ink);background:var(--c-surface-sub);border-radius:var(--r-field);padding:var(--s-3);white-space:pre;overflow-x:auto;margin:0 0 var(--s-3);}
 .fin-modal{max-width:560px;}
-.fin-modal a.p5-btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;}
+.fin-modal a.p5-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;}
 .fin-acoes{display:flex;flex-wrap:wrap;gap:var(--s-2);align-items:center;margin-top:var(--s-3);}
 .fin-pac-wrap{max-width:560px;margin:0 auto;}
 /* Pacote 20.2 — bloco "Sessões com status pendente" do Início */
@@ -4565,6 +4595,8 @@ body:has(#sec-prof-financeiro.active) .app,body:has(#sec-prof-financeiro.active)
   <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></symbol>
   <symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol>
   <symbol id="i-message" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 21l1.8-4.5A8 8 0 1 1 21 12z"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 7.5l8.5 6 8.5-6"/></symbol>
+  <symbol id="i-whats" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 21l1.8-4.5A8 8 0 1 1 21 12z"/><path d="M9.6 8.4c-.4 2.9 2.2 5.7 5.1 6l1.1-1.4-1.8-1-.8.7c-.9-.4-1.6-1.2-2-2l.7-.8-1-1.8z"/></symbol>
   <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7M12 17h.01"/></symbol>
   <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M3 13l2.5-8h13L21 13v6H3z"/><path d="M3 13h5l1.5 3h5L16 13h5"/></symbol>
   <symbol id="i-archive" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v11h14V9M10 13h4"/></symbol>
@@ -5060,6 +5092,13 @@ body:has(#sec-prof-financeiro.active) .app,body:has(#sec-prof-financeiro.active)
           <input type="text" id="profMdCrp" maxlength="120">
           <div class="prof-md-pend" id="profMdPendCrp"></div>
         </div>
+        <!-- Pacote 19.4: a escolha vale na hora e fica neste aparelho; não passa pelo Salvar -->
+        <div class="tema-escolha" role="group" aria-label="Tema">
+          <span class="tema-rotulo">Tema</span>
+          <button type="button" class="tema-op" data-tema-op="claro" aria-pressed="false" onclick="vmcTemaEscolher_(this.dataset.temaOp)">Claro</button>
+          <button type="button" class="tema-op" data-tema-op="escuro" aria-pressed="false" onclick="vmcTemaEscolher_(this.dataset.temaOp)">Escuro</button>
+          <button type="button" class="tema-op" data-tema-op="auto" aria-pressed="false" onclick="vmcTemaEscolher_(this.dataset.temaOp)">Automático (segue o aparelho)</button>
+        </div>
       </div>
       <div class="p5-modal-acoes">
         <button class="p5-btn p5-btn-secondary" type="button" onclick="profFecharMeusDados()">Fechar</button>
@@ -5095,8 +5134,8 @@ body:has(#sec-prof-financeiro.active) .app,body:has(#sec-prof-financeiro.active)
           <div class="alert alert-success" id="profCadOk" role="status"></div>
           <div class="prof-convite">
             <div class="prof-convite-acoes">
-              <button class="p5-btn p5-btn-primary" type="button" id="profCadBtnConvite" onclick="profEnviarConviteEmail_('cad')">Enviar convite</button>
-              <a class="p5-btn p5-btn-secondary prof-btn-whats" id="profCadBtnWhats" target="_blank" rel="noopener" aria-disabled="true" onclick="return profWhatsClicar_(this)">WhatsApp</a>
+              <button class="p5-btn p5-btn-primary" type="button" id="profCadBtnConvite" onclick="profEnviarConviteEmail_('cad')"><svg class="ico" aria-hidden="true"><use href="#i-mail"/></svg> Enviar convite</button>
+              <a class="p5-btn p5-btn-secondary prof-btn-whats" id="profCadBtnWhats" target="_blank" rel="noopener" aria-disabled="true" onclick="return profWhatsClicar_(this)"><svg class="ico" aria-hidden="true"><use href="#i-whats"/></svg> WhatsApp</a>
             </div>
             <div class="prof-convite-msg" id="profCadConviteMsg" role="status"></div>
           </div>
@@ -5344,6 +5383,14 @@ body:has(#sec-prof-financeiro.active) .app,body:has(#sec-prof-financeiro.active)
     </div>
 
     <div class="ini-breve">Em breve: Formulação Cognitivo-Comportamental · Psicoeducação · Intervenções Cognitivas e Comportamentais</div>
+
+    <!-- Pacote 19.4: o paciente não tem "Meus dados"; a escolha do tema fica no fim do Início dele -->
+    <div class="tema-escolha" role="group" aria-label="Tema">
+      <span class="tema-rotulo">Tema</span>
+      <button type="button" class="tema-op" data-tema-op="claro" aria-pressed="false" onclick="vmcTemaEscolher_(this.dataset.temaOp)">Claro</button>
+      <button type="button" class="tema-op" data-tema-op="escuro" aria-pressed="false" onclick="vmcTemaEscolher_(this.dataset.temaOp)">Escuro</button>
+      <button type="button" class="tema-op" data-tema-op="auto" aria-pressed="false" onclick="vmcTemaEscolher_(this.dataset.temaOp)">Automático (segue o aparelho)</button>
+    </div>
   </div>
 
   <!-- ANAMNESE -->
@@ -8384,11 +8431,27 @@ function vmcTok(nome) {
   if (!(nome in VMC_TOK_CACHE)) VMC_TOK_CACHE[nome] = getComputedStyle(document.documentElement).getPropertyValue(nome).trim();
   return VMC_TOK_CACHE[nome];
 }
-if (window.matchMedia) {
-  // 18.7 (C8): com o Painel de Evolução na tela, trocar o tema redesenha os gráficos com as cores novas
-  try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () { VMC_TOK_CACHE = {}; if (typeof pevRenderizar === 'function' && secaoAtivaId() === 'sec-auto-painel' && document.getElementById('pevChartHumor')) pevRenderizar();
-    if (typeof escPainelRenderizar === 'function' && secaoAtivaId() === 'sec-escalas-painel') escPainelRenderizar(); /* 19.0 */ }); } catch (e) {}
+// 18.7 (C8): com o Painel de Evolução na tela, trocar o tema redesenha os gráficos com as cores novas
+// 19.4: o tema vem do atributo data-tema (vmcTemaAplicar_, no <head>); vale para a troca do aparelho em "Automático" e para a escolha da pessoa
+function vmcTemaMudou_() {
+  vmcTemaAplicar_();
+  VMC_TOK_CACHE = {};
+  if (typeof pevRenderizar === 'function' && secaoAtivaId() === 'sec-auto-painel' && document.getElementById('pevChartHumor')) pevRenderizar();
+  if (typeof escPainelRenderizar === 'function' && secaoAtivaId() === 'sec-escalas-painel') escPainelRenderizar(); /* 19.0 */
+  vmcTemaPintar_();
 }
+/* Marca, nos dois lugares da escolha (Meus dados do profissional e Início do paciente), a opção em vigor */
+function vmcTemaPintar_() {
+  var t = vmcTemaLer_();
+  Array.prototype.forEach.call(document.querySelectorAll('[data-tema-op]'), function (b) { b.setAttribute('aria-pressed', b.dataset.temaOp === t ? 'true' : 'false'); });
+}
+/* Guarda só a palavra da escolha, neste aparelho ("Automático" apaga a chave); se o navegador não deixar guardar, vale até fechar a página */
+function vmcTemaEscolher_(t) {
+  try { if (t === 'claro' || t === 'escuro') localStorage.setItem('vmc_tema', t); else localStorage.removeItem('vmc_tema'); } catch (e) {}
+  vmcTemaMudou_();
+}
+if (VMC_TEMA_MQ) { try { VMC_TEMA_MQ.addEventListener('change', vmcTemaMudou_); } catch (e) {} }
+document.addEventListener('DOMContentLoaded', vmcTemaPintar_);
 /* ============================================================
    SISTEMA CLÍNICO DIGITAL — v2
    ============================================================ */
@@ -10433,13 +10496,38 @@ function lemLinkWhats_(telefone, tipo, nomePaciente, detalhe) {
 /** Botão WhatsApp (ou o aviso de cadastro sem telefone). `l` = o lembrete ({ tipo, instrumento, texto }); `rotulo` é texto fixo da tela. */
 function lemBotaoWhats_(telefone, l, nomePaciente, rotulo) {
   if (!String(telefone || '').replace(/\D/g, '')) return '<span class="prof-lem-sem">Sem telefone no cadastro</span>';
-  return '<a class="prof-lem-btn" data-lem-whats="' + esc(l.tipo) + '" href="' + esc(lemLinkWhats_(telefone, l.tipo, nomePaciente, lemDetalhe_(l))) + '" target="_blank" rel="noopener">' + rotulo + '</a>';
+  return '<a class="prof-lem-btn" data-lem-whats="' + esc(l.tipo) + '" href="' + esc(lemLinkWhats_(telefone, l.tipo, nomePaciente, lemDetalhe_(l))) + '" target="_blank" rel="noopener">' + VMC_ICO_WHATS + rotulo + '</a>';
 }
+/* Pacote 19.4 — todo botão de aviso leva o seu ícone (decisão do usuário, 24/11/2026): HTML fixo do sprite, nunca entrada de usuário */
+var VMC_ICO_WHATS = '<svg class=ico aria-hidden=true><use href=#i-whats></use></svg> ';
+var VMC_ICO_MAIL = '<svg class=ico aria-hidden=true><use href=#i-mail></use></svg> ';
+var PROF_LEM_INI = { sigla: '', id: '', texto: '' }; // o que o servidor respondeu ao último "E-mail" tocado no Início (aparece na linha do item)
 
-/* ---- Início do profissional: uma linha = o item clicável do bloco (abre o paciente) + o botão WhatsApp ---- */
-function profLemLinhaHtml_(p, l, texto, quando) {
+/* ---- Início do profissional: uma linha = o item clicável do bloco (abre o paciente) + os botões WhatsApp e E-mail ----
+   19.4: `comEmail` diz se o E-mail cabe naquela linha (em "Lembretes de hoje" some depois que o e-mail do dia saiu, para não ir repetido). */
+function profLemLinhaHtml_(p, l, texto, quando, comEmail) {
+  var aviso = (PROF_LEM_INI.id === l.id && PROF_LEM_INI.sigla === p.sigla) ? '<p class="prof-lem-ini-aviso" role="status">' + esc(PROF_LEM_INI.texto) + '</p>' : '';
   return '<div class="prof-lem-linha" data-lem-id="' + esc(l.id) + '">' + profEvHtml_(p, 'lembrete', texto, quando, false) +
-    lemBotaoWhats_(p.telefone, l, p.nome_completo, 'WhatsApp') + '</div>';
+    '<div class="prof-lem-dupla">' + lemBotaoWhats_(p.telefone, l, p.nome_completo, 'WhatsApp') +
+    (comEmail && p.tem_email ? '<button type="button" class="prof-lem-btn" data-sigla="' + esc(p.sigla) + '" data-id="' + esc(l.id) + '" data-lem-email="1" onclick="profIniLemEmail_(this)">' + VMC_ICO_MAIL + 'E-mail</button>' : '') +
+    '</div>' + aviso + '</div>';
+}
+/* 19.4 — botão "E-mail" de um item do Início: o mesmo envio do Editar do lembrete (profLembrarAgora com enviar_id; nenhuma ação nova).
+   O servidor marca o envio, então o gatilho não repete o item no mesmo dia; a resposta já traz os itens do Início. */
+async function profIniLemEmail_(btn) {
+  var sigla = btn.dataset.sigla, id = btn.dataset.id;
+  if (!sigla || !id || btn.disabled) return;
+  btn.disabled = true; btn.textContent = 'Aguarde…';
+  var resp = await chamarServidor('profLembrarAgora', { siglaPaciente: sigla, dados: { enviar_id: id } });
+  if (!PROF_SESSAO || (resp && resp.codigo === 'sessao_expirada')) return;
+  PROF_LEM_INI = { sigla: sigla, id: id, texto: (resp && resp.ok) ? profLemAvisoEmail_(resp) : ((resp && resp.erro) || 'Tente novamente.') };
+  if (resp && resp.ok && resp.inicio) {
+    PROF_LISTA.forEach(function (p) {
+      if (p.sigla !== sigla) return;
+      p.lembretes = resp.inicio.lembretes || []; p.telefone = resp.inicio.telefone; p.tem_email = resp.inicio.tem_email;
+    });
+  }
+  profRenderInicio_();
 }
 /* O que o plano prevê para hoje, por hora; a marca diz em que pé está o e-mail */
 function profRenderLembretesHoje_(ativos) {
@@ -10451,7 +10539,7 @@ function profRenderLembretesHoje_(ativos) {
         : (!p.tem_email ? 'Sem e-mail no cadastro' : (l.email_hoje ? 'E-mail enviado às ' + l.email_hoje : (!profEmailOk_() ? 'Sem conta do Google conectada' : 'E-mail às ' + l.hora)));
       var minutos = parseInt(String(l.hora).slice(0, 2), 10) * 60 + parseInt(String(l.hora).slice(3, 5), 10);
       itens.push({ dias: isNaN(minutos) ? 0 : minutos, nome: p.nome_completo || p.sigla || '', ordem: 0,
-        html: profLemLinhaHtml_(p, l, esc(lemOQue_(l)) + ' · ' + esc(l.hora), marca) });
+        html: profLemLinhaHtml_(p, l, esc(lemOQue_(l)) + ' · ' + esc(l.hora), marca, !l.email_hoje && !l.respondido_hoje) });
     });
   });
   return profBlocoHtml_('profBlocoLembretesHoje', 'Lembretes de hoje', itens, 'Nenhum lembrete previsto para hoje.');
@@ -10464,7 +10552,7 @@ function profRenderAtrasados_(ativos) {
       if (!l.atrasado) return;
       var dias = iniDiasDesde(l.atrasado);
       itens.push({ dias: dias === null ? 99999 : dias, nome: p.nome_completo || p.sigla || '', ordem: 0,
-        html: profLemLinhaHtml_(p, l, esc(lemOQue_(l)) + ' · previsto para ' + esc(lemDataBR_(l.atrasado, true)), iniTextoDias(dias)) });
+        html: profLemLinhaHtml_(p, l, esc(lemOQue_(l)) + ' · previsto para ' + esc(lemDataBR_(l.atrasado, true)), iniTextoDias(dias), true) });
     });
   });
   return profBlocoHtml_('profBlocoAtrasados', 'Atrasados', itens, 'Nenhum lembrete atrasado.');
@@ -10560,7 +10648,7 @@ function profLemAbrirForm_(id) {
   // 19.2.3: na edição, as duas formas de enviar este lembrete agora (o item como está gravado)
   if (l) el('profLemEnviarBox').innerHTML = '<div class="prof-lem-enviar" id="profLemEnviar"><span class="prof-lem-enviar-rotulo">Enviar agora</span>' +
     lemBotaoWhats_(PROF_PACIENTE_SEL.contato && PROF_PACIENTE_SEL.contato.telefone, l, PROF_PACIENTE_SEL.nome, 'WhatsApp') +
-    '<button type="button" class="prof-lem-btn" data-id="' + esc(l.id) + '" data-lem-email="1" onclick="profLemEnviarEmail_(this)">E-mail</button></div>';
+    '<button type="button" class="prof-lem-btn" data-id="' + esc(l.id) + '" data-lem-email="1" onclick="profLemEnviarEmail_(this)">' + VMC_ICO_MAIL + 'E-mail</button></div>';
   profLemAjustarForm_();
   el('profLemOque').focus();
 }
@@ -10646,12 +10734,11 @@ function profLemAvisoEmail_(resp) {
 async function profLemEnviarEmail_(btn) {
   var sigla = PROF_PACIENTE_SEL && PROF_PACIENTE_SEL.sigla;
   if (!sigla || btn.disabled) return;
-  var rotulo = btn.textContent;
   btn.disabled = true; btn.textContent = 'Aguarde…';
   var resp = await chamarServidor('profLembrarAgora', { siglaPaciente: sigla, dados: { enviar_id: btn.dataset.id } });
   if (!PROF_PACIENTE_SEL || PROF_PACIENTE_SEL.sigla !== sigla) return; // saiu do paciente enquanto enviava
   if (!resp || !resp.ok) {
-    if (document.body.contains(btn)) { btn.disabled = false; btn.textContent = rotulo; }
+    if (document.body.contains(btn)) { btn.disabled = false; btn.innerHTML = VMC_ICO_MAIL + 'E-mail'; } // 19.4: o rótulo volta com o ícone
     var erro = document.getElementById('profLemErro');
     if (erro) { erro.textContent = (resp && resp.erro) || 'Tente novamente.'; erro.classList.add('visivel'); }
     return;
@@ -11279,12 +11366,7 @@ function profBuildHeader_(iniciais, nome, sub) {
       acoesHtml += '<button class="p135-btn p135-btn-desativar" data-sigla="' + esc(PROF_PACIENTE_SEL.sigla) + '" onclick="p135AbrirDesativar(this.dataset.sigla)"><svg class=ico aria-hidden=true><use href=#i-pause></use></svg> Desativar</button>';
       acoesHtml += '<button class="p135-btn p135-btn-senha" data-sigla="' + esc(PROF_PACIENTE_SEL.sigla) + '" onclick="p137AbrirSenha(this.dataset.sigla)"><svg class=ico aria-hidden=true><use href=#i-key></use></svg> Senha</button>';
     }
-    acoesHtml += '</div>';
-    if (ativoAtual !== 'nao' && /^Paciente · /.test(String(sub || ''))) { // 14.6: valor da sessão do cadastro (a nova consulta abre com ele)
-      acoesHtml += '<div class="prof-valor"><label for="profValorSessao">Valor da sessão (R$)</label><input type="text" id="profValorSessao" maxlength="12" inputmode="decimal" autocomplete="off">' +
-        '<button type="button" class="prof-lem-btn" id="profValorSalvar" onclick="profValorSalvar_()">Salvar</button><span id="profValorMsg" role="status"></span></div>';
-      setTimeout(profValorPintar_, 0); // o valor entra por .value, depois de o cabeçalho estar na tela
-    }
+    acoesHtml += '</div>'; // 19.4: o valor da sessão saiu do cabeçalho (decisão do usuário, 24/11/2026) — fica só no módulo Financeiro do paciente
   }
   return '<div class="prof-pv-header">' +
     '<div class="prof-pv-avatar">' + profEscHtml_(iniciais) + '</div>' +
@@ -11295,28 +11377,6 @@ function profBuildHeader_(iniciais, nome, sub) {
     '</div>' +
     '<button class="prof-pv-back" onclick="profVoltarDashboard()">← Voltar</button>' +
   '</div>';
-}
-
-/* 14.6: valor da sessão do paciente aberto (vem na lista do login; grava no cadastro) */
-function profValorPintar_() {
-  var campo = document.getElementById('profValorSessao');
-  if (!campo || !PROF_PACIENTE_SEL) return;
-  var item = PROF_LISTA.filter(function (x) { return x.sigla === PROF_PACIENTE_SEL.sigla; })[0];
-  campo.value = (item && item.valor_sessao) || '';
-}
-async function profValorSalvar_() {
-  var campo = document.getElementById('profValorSessao'), msg = document.getElementById('profValorMsg'), btn = document.getElementById('profValorSalvar');
-  if (!campo || !PROF_PACIENTE_SEL || btn.disabled) return;
-  var sigla = PROF_PACIENTE_SEL.sigla;
-  btn.disabled = true; msg.textContent = '';
-  var r = await chamarServidor('profSalvarValorSessao', { siglaPaciente: sigla, valor: campo.value });
-  btn = document.getElementById('profValorSalvar'); msg = document.getElementById('profValorMsg'); campo = document.getElementById('profValorSessao');
-  if (btn) btn.disabled = false;
-  if (!r || !r.ok) { if (msg && r && r.codigo !== 'sessao_expirada') msg.textContent = (r && r.erro) || 'Não foi possível salvar agora.'; return; }
-  var item = PROF_LISTA.filter(function (x) { return x.sigla === sigla; })[0];
-  if (item) item.valor_sessao = r.valor_sessao;
-  if (campo) campo.value = r.valor_sessao;
-  if (msg) msg.textContent = 'Valor salvo.';
 }
 
 /* Abre/fecha um card-módulo */
@@ -11975,8 +12035,8 @@ function profRenderizarAnamneseEditavel_(d) {
   html += '<div class="prof-edit-field"><label for="profEdContatoTel">Telefone (WhatsApp)</label>' +
     '<input type="tel" id="profEdContatoTel" inputmode="numeric" maxlength="13" oninput="profContatoMascara_(this)"></div>';
   html += '<div class="prof-convite"><div class="prof-convite-acoes">' +
-    '<button class="p5-btn p5-btn-primary" type="button" id="profEdBtnConvite" onclick="profEnviarConviteEmail_(\'ed\')">Enviar convite</button>' +
-    '<a class="p5-btn p5-btn-secondary prof-btn-whats" id="profEdBtnWhats" target="_blank" rel="noopener" aria-disabled="true" onclick="return profWhatsClicar_(this)">WhatsApp</a>' +
+    '<button class="p5-btn p5-btn-primary" type="button" id="profEdBtnConvite" onclick="profEnviarConviteEmail_(\'ed\')">' + VMC_ICO_MAIL + 'Enviar convite</button>' +
+    '<a class="p5-btn p5-btn-secondary prof-btn-whats" id="profEdBtnWhats" target="_blank" rel="noopener" aria-disabled="true" onclick="return profWhatsClicar_(this)">' + VMC_ICO_WHATS + 'WhatsApp</a>' +
     '</div><div class="prof-convite-msg" id="profEdConviteMsg" role="status"></div></div>';
   html += inp('Escolaridade', 'escolaridade');
   html += inp('Profissão', 'profissao') + inp('Estado civil', 'estado_civil');
@@ -12357,7 +12417,7 @@ function sairDoSistema(opcoes) {
   INI_STATE.carregado = false; INI_STATE.carregando = false; INI_STATE.invalido = true; INI_STATE.dados = null;
   RASC_SERVIDOR = { carregado: false, carregando: false, lista: [] }; iniRascunhoRender(); // 18.10b
   INI_LEM = { carregado: false, carregando: false, hoje: '', lista: [], proxima: null }; iniLemRender_();
-  SES = { dados: null, carregando: false, vista: 'lista', alvo: '', livres: null, de: '', escolhido: null, msg: '', erro: '', idEnvio: '', ocupado: false }; // 14.3 PROF_LEM = { editando: '', idNovo: '', encerrar: '' }; // 19.2.1
+  SES = { dados: null, carregando: false, vista: 'lista', alvo: '', livres: null, de: '', escolhido: null, msg: '', erro: '', idEnvio: '', ocupado: false }; // 14.3 PROF_LEM = { editando: '', idNovo: '', encerrar: '' }; PROF_LEM_INI = { sigla: '', id: '', texto: '' }; // 19.2.1 e 19.4
   regEdicaoLimpar_(true); // 13.7: a presença não é limpa (o crachá já não vale)
   HIST_FILTRO = 'todos'; HIST_MESES_ABERTOS = {}; CHK_ENV.periodo = null;
   ['profDashboardConteudo', 'profPacientesConteudo', 'profPacienteConteudo', 'autoHistLista', 'pevConteudo', 'eschConteudo', 'anamConteudo', 'iniContinuidade', 'graDias'].forEach(function (id) {
@@ -23180,15 +23240,27 @@ function bibRender_() {
   ESC_HIST_ORDEM.forEach(function (cod) {
     var def = ESC_ESCALAS[cod];
     if (!def) return;
-    html += '<div class="esch-bloco ' + def.corPrefix + '" data-esc="' + escapeHtmlAuto(cod) + '">' +
+    // 19.4: nome e tradução à esquerda; logo abaixo, tempo médio, número de perguntas e as tags da escala; botões à direita (no celular, embaixo)
+    html += '<div class="esch-bloco bib-cartao ' + def.corPrefix + '" data-esc="' + escapeHtmlAuto(cod) + '">' +
       // def.emoji é HTML do sprite (literal do catálogo, nunca entrada do usuário) — não escapar
       '<div class="bib-cab"><span class="esch-bloco-icone">' + (def.emoji || '<svg class=ico aria-hidden=true><use href=#i-chart></use></svg>') + '</span>' +
-      '<span class="esch-bloco-titulo">' + escNomeHtml_(def, cod) + '</span></div>' +
+      '<div class="bib-info"><span class="esch-bloco-titulo">' + escNomeHtml_(def, cod) + '</span>' + bibMetaHtml_(def) + '</div></div>' +
       '<div class="bib-acoes">' + fichaHtmlBotao_(cod) +
       '<button type="button" class="prof-btn-acao bib-aplicar" data-esc="' + escapeHtmlAuto(cod) + '" onclick="bibAbrir_(this.dataset.esc)">' +
       '<svg class=ico aria-hidden=true><use href=#i-user></use></svg> Aplicar a um paciente</button></div></div>';
   });
   cont.innerHTML = html;
+}
+/* 19.4 — o que o cartão diz da escala sem abrir a ficha: tudo vem do catálogo (ficha.tempo, itens, ficha.tags), nenhuma lista nova */
+function bibMetaHtml_(def) {
+  var f = def.ficha || {}, partes = [];
+  var tempo = String(f.tempo || '').trim().replace(/\.$/, '');
+  if (tempo) partes.push(tempo);
+  var n = (def.itens || []).length;
+  if (n) partes.push(n + (n === 1 ? ' pergunta' : ' perguntas'));
+  var tags = (f.tags || []).map(function (t) { return '<span class="ficha-tag">' + escapeHtmlAuto(t) + '</span>'; }).join('');
+  return (partes.length ? '<span class="bib-meta">' + escapeHtmlAuto(partes.join(' · ')) + '</span>' : '') +
+    (tags ? '<div class="ficha-tags">' + tags + '</div>' : '');
 }
 function bibNomeEscala_(cod) { var d = ESC_ESCALAS[cod] || {}; return d.nomeCurto || cod; }
 function bibPaciente_(sigla) {
@@ -25554,8 +25626,8 @@ function finCobModal_(d, m) {
   if (nova && p.recibo) corpo += '<label class="fin-ses"><input type="checkbox" id="finCobRecibo" onchange="finCobRecibo_(this.checked)"><span class="fin-ses-txt">O recibo deste mês já foi emitido<span class="fin-sub">Marcado, a mensagem avisa quem paga.</span></span></label>';
   corpo += '<div class="fin-form fin-duas"><div class="fin-campo"><label for="finCobVence">Vence em</label><input type="date" id="finCobVence"></div></div>' +
     '<div class="fin-campo"><label for="finCobTexto">Revise a mensagem antes de enviar</label><textarea id="finCobTexto" rows="17"></textarea></div>';
-  var acoes = '<button type="button" class="p5-btn p5-btn-primary" onclick="finCobEnviar_(\'email\')">Enviar por e-mail</button>' +
-    (fone ? '<a class="p5-btn p5-btn-secondary" id="finCobWhats" target="_blank" rel="noopener" href="#" data-fone="' + esc(fone) + '" onclick="finCobWhats_(this)">Abrir no WhatsApp</a>' : '') +
+  var acoes = '<button type="button" class="p5-btn p5-btn-primary" onclick="finCobEnviar_(\'email\')">' + VMC_ICO_MAIL + 'Enviar por e-mail</button>' +
+    (fone ? '<a class="p5-btn p5-btn-secondary" id="finCobWhats" target="_blank" rel="noopener" href="#" data-fone="' + esc(fone) + '" onclick="finCobWhats_(this)">' + VMC_ICO_WHATS + 'Abrir no WhatsApp</a>' : '') +
     '<button type="button" class="p5-btn p5-btn-secondary" onclick="finCobEnviar_(\'marcar\')">Marcar como enviada</button>' +
     (nova ? '<button type="button" class="p5-btn p5-btn-secondary" onclick="finCobDescartar_()">Descartar</button>' : '');
   return { titulo: nova ? 'Revisar e enviar' : 'Cobrança de ' + finPrimeiroNome_(p.nome), corpo: corpo, acoes: acoes, fechar: 'Fechar',
@@ -25850,7 +25922,7 @@ async function finPacSalvar_() {
     FIN.pac = r.paciente; FIN.dados = null; // a página Fluxo de caixa relê na próxima abertura
     document.getElementById('profModFinBody').innerHTML = finPacCorpoHtml_(); msg = document.getElementById('finPacMsg');
     var naLista = (PROF_LISTA || []).filter(function (p) { return p.sigla === FIN.pacSigla; })[0]; // o campo do cabeçalho (14.6) mostra o mesmo valor
-    if (naLista) { naLista.valor_sessao = r.paciente.cadastro.valor ? finBRL_(r.paciente.cadastro.valor).replace('R$ ', '') : ''; profValorPintar_(); }
+    if (naLista) { naLista.valor_sessao = r.paciente.cadastro.valor ? finBRL_(r.paciente.cadastro.valor).replace('R$ ', '') : ''; }
   }
   msg.textContent = r && r.ok ? 'Cadastro salvo.' : ((r && r.erro) || 'Não foi possível salvar agora.');
 }

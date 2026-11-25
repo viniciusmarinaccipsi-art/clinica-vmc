@@ -130,7 +130,8 @@ def spans_root(texto, styles):
     spans = []
     for _, _, a, b in styles:
         css = texto[a:b]
-        for m in re.finditer(r':root\s*\{', css):
+        # 19.4: o bloco escuro passou a ser `:root[data-tema="escuro"] { … }` (tema escolhido pela pessoa)
+        for m in re.finditer(r':root(?:\[[^\]]*\])?\s*\{', css):
             fim = fechar_chave(css, m.end() - 1)
             spans.append((a + m.start(), a + fim + 1))
     return spans

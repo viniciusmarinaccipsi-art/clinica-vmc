@@ -105,3 +105,5 @@ Os nomes dos níveis seguem `HUMOR_NOMES` (16.5c, D6): Muito mal · Mal · Mais 
 **Pacote 14.3 (22/11/2026):** `#i-repeat` (sessão de série) e `#i-video` (sessão on-line) na Agenda, sem emoji de origem. O sprite passa a ter 64 símbolos + `#i-marca`.
 
 **Pacote 19.3.1 (23/11/2026):** `#i-tag` — botão que abre e fecha as tags da busca das escalas (`profAlternarTags_`), sem emoji de origem.
+
+**Pacote 19.4 (25/11/2026):** `#i-mail` (carta) e `#i-whats` (balão com telefone) — todo botão de aviso leva o seu ícone (`VMC_ICO_MAIL`, `VMC_ICO_WHATS`), sem emoji de origem. Os botões de aviso da Agenda usam os mesmos dois símbolos.

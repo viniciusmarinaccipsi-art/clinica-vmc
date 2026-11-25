@@ -470,7 +470,7 @@ RE_TOKEN = re.compile(r'(--[\w-]+)\s*:\s*([^;]+);')
 
 def blocos_tokens(css):
     """Devolve (claro, escuro): dicionários nome→valor."""
-    m_dark = re.search(r'@media\s*\(prefers-color-scheme:\s*dark\)\s*\{', css)
+    m_dark = re.search(r':root\[data-tema="escuro"\]\s*\{', css)  # 19.4: o bloco escuro vale pelo atributo data-tema (era @media dark)
     if not m_dark:
         raise SystemExit('tokens: bloco escuro não encontrado')
     claro_txt = css[:m_dark.start()]
