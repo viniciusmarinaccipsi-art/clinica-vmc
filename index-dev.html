@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia e valor por paciente · agendamento do paciente com a aprovação do profissional · Painel de Evolução na tela do profissional — Pacote 19.1 · o pedido de agendamento do paciente aparece como “Agendamento solicitado” — Pacote 14.7.1 · Fluxo de caixa: receitas lidas da Agenda, pagamentos, cobranças por e-mail e WhatsApp, comprovante do paciente, despesas e contas a pagar — Pacote 20.0 · recibos e livro caixa: quem precisa de recibo, prévia literal e arquivo de lote do Carnê-Leão · Biblioteca de Escalas e Inventários com "Aplicar a um paciente" — Pacote 19.3 · tags da busca das escalas recolhidas atrás de um botão; saiu a tag "Mensuração" — Pacote 19.3.1 · cada profissional conecta a própria Google Agenda, com a opção dos compromissos pessoais — Pacote 14.8 · sessões com status pendente no Início, a palavra "Status" na sessão e os dois e-mails da agenda ao profissional — Pacote 20.2 (23/11/2026) · na tela do profissional, os subtítulos do Painel de Evolução falam do paciente — Pacote 19.1.1 (23/11/2026) · a volta da permissão do Google passa por uma página do próprio site — Pacote 14.8.1 (23/11/2026) · tags das escalas: saem Monitoramento, Diagnóstico e Processo e juntam-se as repetidas; "emoções agradáveis" na tela do paciente — Pacote 19.3.2 · três textos revistos pelo usuário (crédito nas próximas sessões, aviso da Grade e e-mail de fim de dia) — Pacote 20.2.1 (23/11/2026) · os e-mails aos pacientes saem da conta do Google que o profissional conectou — Pacote 14.10 (23/11/2026) · botões de aviso em dupla e com ícone, valor da sessão só no Financeiro, cartão da escala com tempo, perguntas e tags, tema claro, escuro ou automático — Pacote 19.4 (25/11/2026) · Encaminhamento com item, subitem e nome de quem indicou, e gráfico das fontes em barras e pizza, em dois níveis — Pacote 19.5 (25/11/2026) · e-mail de sessão só com o clique do profissional e Agenda que se atualiza em silêncio — Pacote 14.13 (25/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia e valor por paciente · agendamento do paciente com a aprovação do profissional · Painel de Evolução na tela do profissional — Pacote 19.1 · o pedido de agendamento do paciente aparece como “Agendamento solicitado” — Pacote 14.7.1 · Fluxo de caixa: receitas lidas da Agenda, pagamentos, cobranças por e-mail e WhatsApp, comprovante do paciente, despesas e contas a pagar — Pacote 20.0 · recibos e livro caixa: quem precisa de recibo, prévia literal e arquivo de lote do Carnê-Leão · Biblioteca de Escalas e Inventários com "Aplicar a um paciente" — Pacote 19.3 · tags da busca das escalas recolhidas atrás de um botão; saiu a tag "Mensuração" — Pacote 19.3.1 · cada profissional conecta a própria Google Agenda, com a opção dos compromissos pessoais — Pacote 14.8 · sessões com status pendente no Início, a palavra "Status" na sessão e os dois e-mails da agenda ao profissional — Pacote 20.2 (23/11/2026) · na tela do profissional, os subtítulos do Painel de Evolução falam do paciente — Pacote 19.1.1 (23/11/2026) · a volta da permissão do Google passa por uma página do próprio site — Pacote 14.8.1 (23/11/2026) · tags das escalas: saem Monitoramento, Diagnóstico e Processo e juntam-se as repetidas; "emoções agradáveis" na tela do paciente — Pacote 19.3.2 · três textos revistos pelo usuário (crédito nas próximas sessões, aviso da Grade e e-mail de fim de dia) — Pacote 20.2.1 (23/11/2026) · os e-mails aos pacientes saem da conta do Google que o profissional conectou — Pacote 14.10 (23/11/2026) · botões de aviso em dupla e com ícone, valor da sessão só no Financeiro, cartão da escala com tempo, perguntas e tags, tema claro, escuro ou automático — Pacote 19.4 (25/11/2026) · Encaminhamento com item, subitem e nome de quem indicou, e gráfico das fontes em barras e pizza, em dois níveis — Pacote 19.5 (25/11/2026) · e-mail de sessão só com o clique do profissional e Agenda que se atualiza em silêncio — Pacote 14.13 (25/11/2026) · Agenda: on-line azul, presencial laranja, barra do cartão só depois do status, legenda em grupos, linha da hora e ícones nos avisos — Pacote 14.14 (25/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -221,14 +221,23 @@ vmcTemaAplicar_();
 
   /* ---------- Agenda visual (Pacote 14.2) · sem token no Design; apelidos para manter declarado ---------- */
   --cal-disp:      var(--c-surface-sub);
-  --cal-ev-verde:  var(--c-pos-tint);
-  --cal-ev-lilas:  var(--c-action-tint);
+  /* 14.14 (paleta escolhida pelo usuário em 25/11/2026): on-line azul, presencial laranja; ocupado em cinza listrado */
+  --cal-ev-online:     #D8E8FB;
+  --cal-ev-presencial: #FDE4CB;
+  --cal-ocup-a:        #EEEDF3;
+  --cal-ocup-b:        #E1DFEA;
+  --cal-ocup-linha:    #C9C6D8;
 }
 
 /* ---------- Tema escuro ----------
    Pacote 19.4: vale pelo atributo data-tema da raiz, posto por vmcTemaAplicar_ (escolha da pessoa ou, em "Automático",
    o tema do aparelho). Era @media (prefers-color-scheme: dark); os valores são os mesmos. */
   :root[data-tema="escuro"] {
+    --cal-ev-online:     #1B2C45;
+    --cal-ev-presencial: #3D2B17;
+    --cal-ocup-a:        #252333;
+    --cal-ocup-b:        #2E2B40;
+    --cal-ocup-linha:    #454260;
     --c-bg:          #14131C;
     --c-bg-deep:     #0F0E16;
     --c-surface:     #1E1C29;
@@ -4282,9 +4291,21 @@ button.cab-no-item{cursor:pointer;}
 .cal-ev .cal-ev-nome{font-weight:700;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;}
 /* Pacote 14.3 — Agenda completa: sessões reais na grade, bloqueio, feriado, painel da consulta, pedidos e Minhas sessões */
 .cal-dia-col{cursor:pointer;}
-.cal-ev-presencial,.cal-ev-online{border:0;border-left:4px solid var(--c-dass21-ink);width:calc(100% - 6px);text-align:left;color:var(--c-ink);font-family:var(--f-text);display:block;z-index:3;}
-.cal-ev-presencial{background:var(--cal-ev-lilas);} /* 14.4: presencial em lilás, on-line em verde (decisão do usuário, 22/11/2026) */
-.cal-ev-online{background:var(--cal-ev-verde);border-left-color:var(--c-pos);}
+.cal-ev-presencial,.cal-ev-online{border:0;width:calc(100% - 6px);text-align:left;color:var(--c-ink);font-family:var(--f-text);display:block;z-index:3;}
+.cal-ev-presencial{background:var(--cal-ev-presencial);} /* 14.14: presencial em laranja, on-line em azul (decisão do usuário, 25/11/2026; substitui a de 22/11) */
+.cal-ev-online{background:var(--cal-ev-online);}
+/* 14.14: a barra lateral só aparece depois do status — verde na realizada, vermelha na falta */
+.cal-ev-presencial.cal-ev-realizada,.cal-ev-online.cal-ev-realizada{border-left:4px solid var(--c-pos);}
+.cal-ev-presencial.cal-ev-falta,.cal-ev-online.cal-ev-falta{border-left:4px solid var(--c-risk);}
+/* 14.14: linha da hora atual, no dia de hoje */
+.cal-agora{position:absolute;left:0;right:0;height:2px;background:var(--c-risk);z-index:5;pointer-events:none;}
+/* 14.14: legenda em grupos */
+.cal-leg-grupo{font:var(--t-label);color:var(--c-ink-2);margin:10px 0 6px;}
+.cal-leg-cor.cal-leg-on{background:var(--cal-ev-online);border:1px solid var(--c-line-strong);}
+.cal-leg-cor.cal-leg-pres{background:var(--cal-ev-presencial);border:1px solid var(--c-line-strong);}
+.cal-leg-cor.cal-leg-ocup{background:repeating-linear-gradient(135deg,var(--cal-ocup-a) 0 3px,var(--cal-ocup-b) 3px 6px);border:1px solid var(--cal-ocup-linha);}
+.cal-leg-cor.cal-leg-real{background:var(--cal-ev-presencial);border-left:4px solid var(--c-pos);}
+.cal-leg-cor.cal-leg-falta{background:var(--cal-ev-presencial);border-left:4px solid var(--c-risk);}
 /* Pacote 14.6 — sessão cancelada e cobrada: continua na grade, apagada e tracejada, sem ocupar o horário; ao lado quando há outra sessão no mesmo horário */
 .cal-ev-cancelada{border:1px dashed var(--c-ink-3);border-left:4px solid var(--c-ink-3);background:var(--c-surface-sub);width:calc(100% - 6px);text-align:left;color:var(--c-ink-3);font-family:var(--f-text);display:block;z-index:2;box-shadow:none;}
 .cal-ev-cancelada .cal-ev-nome{text-decoration:line-through;}
@@ -4304,7 +4325,6 @@ button.cab-no-item{cursor:pointer;}
 .age-aviso-acoes{display:flex;gap:var(--s-2);flex-wrap:wrap;margin-top:var(--s-3);}
 .age-aviso-estado{font:var(--t-body);color:var(--c-ink-2);margin:0 0 var(--s-2);}
 .cal-ev-realizada{opacity:.72;}
-.cal-ev-falta{border-left-color:var(--c-risk);}
 .cal-ev .cal-ev-hora,.cal-ev .cal-ev-nome{display:block;}
 .cal-ev .cal-ev-hora{display:flex;gap:4px;white-space:nowrap;overflow:hidden;}
 .cal-ev .cal-ev-hora .ico{width:1.05em;height:1.05em;}
@@ -4312,11 +4332,11 @@ button.cab-no-item{cursor:pointer;}
 .cal-ev .cal-ev-sit{display:inline;}
 .cal-ev .cal-ev-linha{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cal-ev .cal-ev-sit{font:var(--t-body-sm);color:var(--c-ink-2);}
-.cal-ev-marca{display:inline-block;font:var(--t-label);border-radius:var(--r-chip);padding:2px 8px;background:var(--c-warn-tint);color:var(--c-warn-ink);}
+.cal-ev-marca{display:inline-block;font:var(--t-label);border-radius:var(--r-chip);padding:1px 8px;background:transparent;border:1px solid var(--c-ink-3);color:var(--c-ink-2);} /* 14.14: só contorno */
 .cal-bloq{position:absolute;left:0;width:100%;border:1px dashed var(--c-ink-3);border-radius:6px;background:var(--c-surface-sub);color:var(--c-ink-2);
   font:var(--t-body-sm);text-align:left;padding:4px 6px;overflow:hidden;cursor:pointer;z-index:2;}
 /* 14.8: compromisso da agenda pessoal (só com a opção ligada) — avisa, não trava: o clique passa para a grade */
-.cal-ocup{position:absolute;left:0;width:100%;border:1px dotted var(--c-ink-3);border-radius:6px;background:var(--c-surface-sub);color:var(--c-ink-2);
+.cal-ocup{position:absolute;left:0;width:100%;border:1px solid var(--cal-ocup-linha);border-radius:6px;background:repeating-linear-gradient(135deg,var(--cal-ocup-a) 0 6px,var(--cal-ocup-b) 6px 12px);color:var(--c-ink-2);
   font:var(--t-body-sm);text-align:left;padding:4px 6px;overflow:hidden;pointer-events:none;z-index:1;}
 .cal-btn-ligado{border-color:var(--c-pos);color:var(--c-pos-ink);}
 .age-check.age-check-longo{flex-wrap:nowrap;align-items:flex-start;}
@@ -4910,17 +4930,20 @@ button.fin-enc-lin:focus-visible{outline:2px solid var(--c-action);outline-offse
         </div>
         <div class="cal-legenda">
           <b>Legenda</b>
-          <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-disp);border:1px solid var(--c-action);"></span> Horário aberto p/ atendimento</div>
-          <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-ev-lilas);border:1px solid var(--c-dass21-ink);"></span> Sessão presencial</div>
-          <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-ev-verde);border:1px solid var(--c-pos);"></span> Sessão on-line</div>
+          <div class="cal-leg-grupo">Tipo de sessão</div>
+          <div class="cal-leg-item"><span class="cal-leg-cor cal-leg-pres"></span> Sessão presencial</div>
+          <div class="cal-leg-item"><span class="cal-leg-cor cal-leg-on"></span> Sessão on-line</div>
+          <div class="cal-leg-grupo">Marcas</div>
           <div class="cal-leg-item"><span><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg></span> Confirmada pelo paciente</div>
-          <div class="cal-leg-item"><span><svg class="ico" aria-hidden="true"><use href="#i-repeat"/></svg></span> Série</div>
+          <div class="cal-leg-item"><span><svg class="ico" aria-hidden="true"><use href="#i-repeat"/></svg></span> Sessões recorrentes</div>
           <div class="cal-leg-item"><span class="cal-ev-marca">Reposição</span></div>
           <div class="cal-leg-item"><span><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg></span> Bloqueado</div>
-          <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--c-surface-sub);border:1px dotted var(--c-ink-3);"></span> Ocupado · agenda pessoal</div>
+          <div class="cal-leg-item"><span class="cal-leg-cor cal-leg-ocup"></span> Ocupado · agenda pessoal</div>
           <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--c-warn-tint);border:1px solid var(--c-warn);"></span> Feriado</div>
-          <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-ev-lilas);border:1px solid var(--c-dass21-ink);opacity:.72;"></span> Consulta realizada</div>
-          <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-ev-lilas);border:1px solid var(--c-risk);border-left-width:4px;"></span> Não compareceu</div>
+          <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--cal-disp);border:1px solid var(--c-action);"></span> Horário aberto p/ atendimento</div>
+          <div class="cal-leg-grupo">Status</div>
+          <div class="cal-leg-item"><span class="cal-leg-cor cal-leg-real"></span> Consulta realizada</div>
+          <div class="cal-leg-item"><span class="cal-leg-cor cal-leg-falta"></span> Não compareceu</div>
           <div class="cal-leg-item"><span class="cal-leg-cor" style="background:var(--c-surface-sub);border:1px dashed var(--c-ink-3);"></span> Cancelada · cobrada</div>
         </div>
       </div>
@@ -23777,6 +23800,9 @@ function calRender() {
       CAL_MESES_NOMES[calDataRef.getMonth()] + ', ' + calDataRef.getFullYear();
   }
 
+  calFaixaHoras_(dias); // 14.14: sessão antes das 6h ou depois das 22h — a grade se estende até ela
+  CAL_DIAS_VISTOS = dias;
+
   // Canto + cabeçalhos
   var canto = document.createElement('div');
   canto.className = 'cal-col-head';
@@ -23833,8 +23859,41 @@ function calRender() {
     grid.appendChild(col);
   });
 
+  calAgoraDesenhar_(); // 14.14
   calRenderMini_();
 }
+/* 14.14: a grade vai das 6h às 22h; se houver sessão fora disso nos dias mostrados, ela se estende até a sessão */
+var CAL_DIAS_VISTOS = [];
+function calFaixaHoras_(dias) {
+  var ini = 6, fim = 22, isos = {};
+  dias.forEach(function (d) { isos[ageIso_(d)] = true; });
+  (CAL_SESSOES || []).forEach(function (x) {
+    if (!isos[x.data]) return;
+    var m = ageMin_(x.hora);
+    if (m === null || isNaN(m)) return;
+    ini = Math.min(ini, Math.floor(m / 60));
+    fim = Math.max(fim, Math.min(24, Math.ceil((m + (x.duracao_min || 60)) / 60)));
+  });
+  CAL_HORA_INI = Math.max(0, ini); CAL_HORA_FIM = fim;
+}
+/* 14.14: linha vermelha da hora atual no dia de hoje; desce sozinha (relógio de 1 minuto) */
+function calAgoraDesenhar_() {
+  var grid = document.getElementById('calGrid');
+  if (!grid) return;
+  Array.prototype.forEach.call(grid.querySelectorAll('.cal-agora'), function (e) { e.remove(); });
+  var agora = new Date(), hoje = new Date(agora); hoje.setHours(0, 0, 0, 0);
+  var min = agora.getHours() * 60 + agora.getMinutes();
+  if (min < CAL_HORA_INI * 60 || min >= CAL_HORA_FIM * 60) return;
+  var cols = grid.querySelectorAll('.cal-dia-col');
+  CAL_DIAS_VISTOS.forEach(function (d, i) {
+    if (!calMesmaData_(d, hoje) || !cols[i]) return;
+    var linha = document.createElement('div');
+    linha.className = 'cal-agora'; linha.id = 'calAgora';
+    linha.style.top = ((min - CAL_HORA_INI * 60) / 60 * CAL_ALT_HORA) + 'px';
+    cols[i].appendChild(linha);
+  });
+}
+setInterval(calAgoraDesenhar_, 60000);
 
 /* ---------- Mini-calendário ---------- */
 function calRenderMini_() {
@@ -24017,7 +24076,7 @@ function ageDesenharDia_(col, iso) {
       (s.confirmada ? '<svg class=ico aria-hidden=true><use href=#i-check></use></svg>' : '');
     el.title = s.hora + ' – ' + ageHora_(ini + dur) + ' · ' + s.nome + ' · ' + ageModNome_(s.modalidade) + (sit ? ' · ' + sit : '') +
       (s.reposicao_de ? ' · Reposição' : '') + (s.reposta_em ? ' · Reposta em ' + lemDataBR_(s.reposta_em, true) : '') +
-      (s.confirmada ? ' · Confirmada pelo paciente' : '') + (s.serie_id ? ' · Série' : '');
+      (s.confirmada ? ' · Confirmada pelo paciente' : '') + (s.serie_id ? ' · Sessões recorrentes' : '');
     el.innerHTML = '<span class="cal-ev-hora"><span>' + esc(s.hora) + ' – ' + ageHora_(ini + dur) + '</span><span>' + icones + '</span></span>' +
       '<span class="cal-ev-nome">' + esc(s.nome) + '</span>' +
       '<span class="cal-ev-linha">' + (s.reposicao_de ? '<span class="cal-ev-marca">Reposição</span>' : '') +
@@ -24109,7 +24168,7 @@ function ageWhatsLink_(tipo, s, anterior) {
 }
 function ageWhatsBotao_(tipo, s, anterior) {
   if (!String(s.telefone || '').replace(/\D/g, '')) return '<span class="prof-lem-sem">Sem telefone no cadastro</span>';
-  return '<a class="prof-lem-btn" data-age-whats="' + tipo + '" href="' + esc(ageWhatsLink_(tipo, s, anterior)) + '" target="_blank" rel="noopener">Avisar pelo WhatsApp</a>';
+  return '<a class="prof-lem-btn" data-age-whats="' + tipo + '" href="' + esc(ageWhatsLink_(tipo, s, anterior)) + '" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-whats"/></svg> Avisar pelo WhatsApp</a>';
 }
 
 /* ---------- painel: abrir ---------- */
@@ -24320,7 +24379,7 @@ function ageRender_() {
   }
   var marcas = '';
   if (s) {
-    marcas = [s.reposicao_de ? 'Reposição' : '', s.reposta_em ? 'Reposta em ' + lemDataBR_(s.reposta_em, true) : '', s.confirmada ? 'Confirmada pelo paciente' : '', s.serie_id ? 'Série' : '', s.no_calendar ? 'No Google Calendar' : '']
+    marcas = [s.reposicao_de ? 'Reposição' : '', s.reposta_em ? 'Reposta em ' + lemDataBR_(s.reposta_em, true) : '', s.confirmada ? 'Confirmada pelo paciente' : '', s.serie_id ? 'Sessões recorrentes' : '', s.no_calendar ? 'No Google Calendar' : '']
       .filter(String).map(function (t) { return '<span class="cal-ev-marca">' + esc(t) + '</span>'; }).join(' ');
   }
   var situacao = s ? ageCampo_('Status', '<select id="ageSit" onchange="ageSituacao_()"><option value="">Sem status</option><option value="realizada">Consulta realizada</option><option value="falta">Não compareceu</option></select>', 'ageSit') +
@@ -24345,7 +24404,7 @@ function ageRender_() {
     }).join('') + '</fieldset>' +
     ((s && s.serie_id) ? ageCampo_('Alterar', '<select id="ageEscopo"><option value="esta">Só esta consulta</option><option value="seguintes">Esta consulta e as seguintes</option></select>', 'ageEscopo') : '') +
     '<div id="ageAvisosBox"></div>' + erro +
-    ((s && s.estado === 'agendada' && ageMinutosAte_(s.data, s.hora) > 0) ? '<div class="age-whats age-aviso-acoes"><button type="button" class="prof-lem-btn" id="ageBtnEmailAgora" onclick="ageEmailAgora_()">Enviar e-mail agora</button>' + ageWhatsBotao_(ageMinutosAte_(s.data, s.hora) <= 2880 ? 'lembrete' : 'confirmacao', s) + '</div><p class="age-dica hidden" id="ageEmailEstado" role="status"></p>' : '');
+    ((s && s.estado === 'agendada' && ageMinutosAte_(s.data, s.hora) > 0) ? '<div class="age-whats age-aviso-acoes"><button type="button" class="prof-lem-btn" id="ageBtnEmailAgora" onclick="ageEmailAgora_()"><svg class="ico" aria-hidden="true"><use href="#i-mail"/></svg> <span class="age-btn-rot">Enviar e-mail agora</span></button>' + ageWhatsBotao_(ageMinutosAte_(s.data, s.hora) <= 2880 ? 'lembrete' : 'confirmacao', s) + '</div><p class="age-dica hidden" id="ageEmailEstado" role="status"></p>' : '');
   document.getElementById('ageData').value = p.data; document.getElementById('ageHoraCampo').value = p.hora;
   document.getElementById('ageMod').value = p.modalidade; document.getElementById('ageDur').value = p.dur;
   document.getElementById('ageValor').value = p.valor; document.getElementById('ageNotas').value = p.notas;
@@ -24555,7 +24614,7 @@ function ageRenderCancelar_(titulo, corpo, acoes, erro) {
     '<fieldset class="age-fieldset"><legend>Quem pediu o cancelamento?</legend>' +
       '<label class="age-check"><input type="radio" name="ageCQuem" id="ageCQuemPac" onchange="ageCancPrazo_()"> <span>O paciente</span></label>' +
       '<label class="age-check"><input type="radio" name="ageCQuem" id="ageCQuemEu" onchange="ageCancPrazo_()"> <span>Eu</span></label></fieldset>' +
-    (s.serie_id ? '<fieldset class="age-fieldset"><legend class="age-sr">Série</legend>' +
+    (s.serie_id ? '<fieldset class="age-fieldset"><legend class="age-sr">Sessões recorrentes</legend>' +
       '<label class="age-check"><input type="radio" name="ageCEsc" id="ageCEscEsta"> <span>Só esta consulta</span></label>' +
       '<label class="age-check"><input type="radio" name="ageCEsc" id="ageCEscSeg"> <span>Esta consulta e as seguintes</span></label></fieldset>' : '') +
     '<p class="age-aviso hidden" id="ageCPrazo">Faltam menos de ' + ageHoras_() + ' horas: a sessão fica como cobrada.</p>' + erro;
@@ -24809,7 +24868,7 @@ function ageRenderAvisar_(titulo, corpo, acoes) {
   corpo.innerHTML = '<p class="age-texto" id="ageAvisoMsg">' + esc(a.msg) + '</p>' +
     '<p class="age-texto"><strong>' + esc(s.nome) + '</strong> · ' + esc(ageQuandoCurto_(s.data, s.hora)) + '</p>' +
     '<p class="age-aviso-estado" id="ageAvisoEstado" role="status">' + esc(ageAvisoEstadoTexto_(a.estado, a.hora)) + '</p>' +
-    '<div class="age-aviso-acoes"><button type="button" class="prof-lem-btn" id="ageBtnEmailAgora" onclick="ageEmailAgora_()">' + (a.enviado ? 'Reenviar e-mail' : 'Enviar e-mail agora') + '</button>' +
+    '<div class="age-aviso-acoes"><button type="button" class="prof-lem-btn" id="ageBtnEmailAgora" onclick="ageEmailAgora_()"><svg class="ico" aria-hidden="true"><use href="#i-mail"/></svg> <span class="age-btn-rot">' + (a.enviado ? 'Reenviar e-mail' : 'Enviar e-mail agora') + '</span></button>' +
     ageWhatsBotao_(a.tipo, s, a.anterior) +
     (a.repor ? '<button type="button" class="prof-lem-btn" id="ageBtnReporCartao" onclick="ageReporCancelada_()">Agendar reposição</button>' : '') + '</div>';
   acoes.innerHTML = ageBtn_('Fechar', 'ageFechar()', true, 'ageBtnOk');
@@ -24827,14 +24886,14 @@ async function ageEmailAgora_() {
   AGE.ocupado = false; if (btn) btn.disabled = false;
   var texto = !r.ok ? (r.erro || 'Não foi possível enviar agora.')
     : (r.enviado ? 'E-mail enviado.' : (r.motivo === 'sem_conexao' ? VMC_MSG_EMAIL_CONECTE : (r.motivo === 'sem_email' ? 'Sem e-mail no cadastro.' : (r.motivo === 'cota' ? 'Limite de e-mails de hoje atingido.' : 'E-mail não enviado.'))));
-  if (noCartao && r.ok && r.enviado) { texto = 'E-mail enviado às ' + r.hora + '.'; p.aviso.estado = ''; p.aviso.hora = r.hora; p.aviso.enviado = true; if (btn) btn.textContent = 'Reenviar e-mail'; } // 14.13
+  if (noCartao && r.ok && r.enviado) { texto = 'E-mail enviado às ' + r.hora + '.'; p.aviso.estado = ''; p.aviso.hora = r.hora; p.aviso.enviado = true; if (btn) ageBtnRotulo_(btn, 'Reenviar e-mail'); } // 14.13
   var el = document.getElementById(noCartao ? 'ageAvisoEstado' : 'ageEmailEstado');
   if (el) { el.textContent = texto; el.classList.remove('hidden'); }
 }
 /* 14.13: resposta a um pedido (aprovado ou recusado) — o e-mail ao paciente também só sai com o clique */
 function agePedidoAvisoHtml_(pedido) {
   return '<span class="age-ped-email" id="agePedEmailEstado" role="status">E-mail ainda não enviado.</span> ' +
-    '<button type="button" class="prof-lem-btn" id="agePedEmailBtn" data-pedido="' + esc(pedido) + '" onclick="agePedidoEmail_(this)">Enviar e-mail agora</button>';
+    '<button type="button" class="prof-lem-btn" id="agePedEmailBtn" data-pedido="' + esc(pedido) + '" onclick="agePedidoEmail_(this)"><svg class="ico" aria-hidden="true"><use href="#i-mail"/></svg> <span class="age-btn-rot">Enviar e-mail agora</span></button>';
 }
 async function agePedidoEmail_(btn) {
   if (!btn || AGE.ocupado) return;
@@ -24845,7 +24904,12 @@ async function agePedidoEmail_(btn) {
   var texto = !r.ok ? (r.erro || 'Não foi possível enviar agora.')
     : (r.enviado ? 'E-mail enviado às ' + r.hora + '.' : (r.motivo === 'sem_conexao' ? VMC_MSG_EMAIL_CONECTE : (r.motivo === 'sem_email' ? 'Sem e-mail no cadastro.' : (r.motivo === 'cota' ? 'Limite de e-mails de hoje atingido.' : 'E-mail não enviado.'))));
   if (est) est.textContent = texto;
-  if (r.ok && r.enviado) btn.textContent = 'Reenviar e-mail';
+  if (r.ok && r.enviado) ageBtnRotulo_(btn, 'Reenviar e-mail');
+}
+/* 14.14: troca só o texto do botão; o ícone fica */
+function ageBtnRotulo_(btn, texto) {
+  var rot = btn.querySelector('.age-btn-rot');
+  if (rot) rot.textContent = texto; else btn.textContent = texto;
 }
 
 /* ============================================================

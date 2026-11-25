@@ -2394,3 +2394,15 @@ Segunda parte da etapa 1 do plano de correções (decisões do usuário de 24 e 
 - **Atualização automática.** `ageCarregar_(forcar, quieto)` e `sesCarregar_(quieto)` usam `iniLerQuieto` quando a releitura é automática: não cobrem a tela; se uma janela abriu enquanto a leitura andava, o resultado é descartado.
 - **Ficou para a etapa 4:** as caixas "confirmação" e "mudança ou cancelamento" de "Quais avisos enviamos?" deixaram de ter efeito (os dois e-mails agora dependem do clique); a etapa 4 decide o que fazer com as caixas e com a chave geral.
 - Suíte `scripts/testes/backend_14_13.js`; roteiro de tela `..\PACOTE_14_13_fluxo.js`.
+
+## Pacote 14.14 — Visual da Agenda (etapa 2 do plano de correções, parte 1 — 25/11/2026)
+
+Só `index-dev.html`. Paleta escolhida pelo usuário em 25/11/2026 (a "alternativa 2"); substitui a decisão de 22/11 (presencial lilás, on-line verde).
+
+- **Tokens** (bloco de apelidos do `:root` claro e bloco `data-tema="escuro"`): `--cal-ev-online`, `--cal-ev-presencial`, `--cal-ocup-a`, `--cal-ocup-b`, `--cal-ocup-linha`. Saíram `--cal-ev-verde` e `--cal-ev-lilas`.
+- **Cartão:** `.cal-ev-presencial` laranja, `.cal-ev-online` azul, sem barra lateral; a barra de 4 px só entra com o status (`.cal-ev-realizada` verde, `.cal-ev-falta` vermelha). `.cal-ocup` em cinza listrado. `.cal-ev-marca` só com contorno.
+- **Legenda** em três grupos (`.cal-leg-grupo`): Tipo de sessão, Marcas, Status. "Série" passou a "Sessões recorrentes" (legenda, título do cartão e marcas do painel). Os nomes "Consulta realizada" e "Não compareceu" ficam até a etapa 3.
+- **Linha da hora atual:** `calAgoraDesenhar_()` desenha `.cal-agora` na coluna de hoje (chamada no fim de `calRender` e por um relógio de 1 minuto).
+- **Grade que se estende:** `calFaixaHoras_(dias)` recalcula `CAL_HORA_INI` e `CAL_HORA_FIM` a cada `calRender` — 6h às 22h, ou até a sessão que estiver fora disso nos dias mostrados (fecha o débito 8.95-3).
+- **Ícones nos botões de aviso:** `#i-mail` em "Enviar e-mail agora" e `#i-whats` em "Avisar pelo WhatsApp" (símbolos criados pela Frente B no 19.4); o texto do botão troca por `ageBtnRotulo_`, que preserva o ícone.
+- Roteiro de tela `..\PACOTE_14_14_fluxo.js` (390 e 1280, temas claro e escuro).
