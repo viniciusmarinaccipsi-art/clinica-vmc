@@ -146,7 +146,7 @@ tenta('C', () => {
   const l1 = cel('Sessoes', idC1, 'meet_link'), l2 = cel('Sessoes', idC2, 'meet_link');
   ok('C9 sessão on-line nova: espelhada na própria ação, com link do Meet', r.ok && r2.ok && /^https:\/\/meet/.test(l1) && /^https:\/\/meet/.test(l2) && lida(idC1).meet_link === l1 && lida(idC1).no_calendar === true);
   ok('C10 um link por sessão, nunca o mesmo (cada evento pede a sua sala)', l1 !== l2 && (() => { const ps = chamadasEv().filter(c => c.metodo === 'post' && c.corpo.conferenceData).map(c => c.corpo.conferenceData.createRequest.requestId); return new Set(ps).size === ps.length; })(), [l1, l2]);
-  ok('C11 o e-mail de confirmação da sessão on-line leva o link do Meet daquela sessão', h.EMAILS.length === 2 && h.EMAILS[0].body.indexOf('Entrar na sessão on-line: ' + l1) !== -1 && html(h.EMAILS[0]).indexOf(l1) !== -1 && h.EMAILS[1].body.indexOf(l2) !== -1 && h.EMAILS[0].body.indexOf(l2) === -1, h.EMAILS[0] && h.EMAILS[0].body);
+  ok('C11 o e-mail de confirmação da sessão on-line leva o link do Meet daquela sessão', h.EMAILS.length === 2 && h.EMAILS[0].body.indexOf('Iniciar sessão on-line: ' + l1) !== -1 && html(h.EMAILS[0]).indexOf(l1) !== -1 && h.EMAILS[1].body.indexOf(l2) !== -1 && h.EMAILS[0].body.indexOf(l2) === -1, h.EMAILS[0] && h.EMAILS[0].body);
   ok('C12 o paciente vê o link do Meet da própria sessão', minha(P1, idC1).meet_link === l1 && minha(P2, idC2).meet_link === l2);
   let n = chamadasEv().length;
   r = sessao(P1, { id: idC1, data: '2026-12-04', hora: '15:00', modalidade: 'online' });

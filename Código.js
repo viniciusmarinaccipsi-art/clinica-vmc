@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '19.7';
+var VERSAO_PACOTE = '14.17';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -7631,7 +7631,7 @@ function montarEmailSessao(tipo, p) {
   // 14.5: onde a sessao acontece — endereco (com link do mapa) na presencial, sala do Meet na on-line
   var extra = null;
   if (['confirmacao', 'serie', 'lembrete48', 'lembrete', 'remarcacao', 'pedido_aprovado'].indexOf(tipo) !== -1) {
-    if (x.modalidade === 'online' && p.meet) { t.paragrafo += ' A sessão acontece pelo Google Meet.'; extra = { rotulo: 'Entrar na sessão on-line', url: p.meet }; }
+    if (x.modalidade === 'online' && p.meet) { t.paragrafo += ' A sessão acontece pelo Google Meet.'; extra = { rotulo: 'Iniciar sessão on-line', url: p.meet }; } // 14.17: o mesmo nome para o profissional e para o paciente
     else if (x.modalidade !== 'online' && p.endereco) { t.paragrafo += ' Endereço: ' + p.endereco + '.'; extra = { rotulo: 'Abrir o endereço no mapa', url: _ageMapa_(p.endereco) }; }
   }
   if (tipo === 'pedido_recusado' && !x.data) t.paragrafo = prof + ' não pôde atender ao horário que você sugeriu. Veja outros horários em Minhas sessões ou fale diretamente com ' + prof + '.';
@@ -9709,7 +9709,7 @@ function _finInicio_(c, agora) {
     var l = c.cadastros[sig], p = c.pacs[sig];
     if (p && p.ativo && String(l.recibo_pedido_em || '').slice(0, 7) === mes) recibos.push({ sigla: sig, nome: p.nome, data: String(l.recibo_pedido_em).slice(0, 10) });
   });
-  return { comprovantes: _finComprovantes_(c), recibos: recibos, status_pendente: _stpVisao_(c, agora), // 20.2
+  return { comprovantes: _finComprovantes_(c), recibos: recibos, status_pendente: _stpVisao_(c, agora), sessoes_hoje: _hojeVisao_(c, agora), // 20.2; 14.17
     contas: _finDespesas_(c, mes + '-01', ate > _finFimDoMes_(mes) ? ate : _finFimDoMes_(mes), agora.data).filter(function (d) { return d.situacao === 'a_pagar' && d.vence <= ate; })
       .map(function (d) { return { nome: d.nome, valor: d.valor, vence: d.vence }; }) };
 }
@@ -10480,6 +10480,15 @@ function _stpPendentes_(sessoes, agora, durPadrao) {
   });
 }
 /** O bloco do Inicio: o total e as primeiras linhas (id, paciente, data, hora). `c` e o contexto do financeiro, que ja leu as sessoes. */
+/** 14.17 — bloco "Sessoes de hoje" do Inicio: as sessoes do dia que nao foram canceladas, em ordem de hora; a sala so na on-line ainda agendada. */
+function _hojeVisao_(c, agora) {
+  return (c.sessoes || []).filter(function (x) { return x.data === agora.data && x.estado !== 'cancelada'; })
+    .map(function (x) {
+      var p = c.pacs[_siglaChave_(x.sigla)], online = x.modalidade === 'online', agendada = x.estado === 'agendada' || x.estado === '';
+      return { id: x.id, nome: p ? p.nome : x.sigla, data: x.data, hora: _lemHora_(x.hora_inicio), modalidade: online ? 'online' : 'presencial',
+        estado: agendada ? 'agendada' : x.estado, confirmada: !!x.confirmada_em, meet_link: (online && agendada) ? String(x.meet_link || '') : '' };
+    }).sort(function (a, b) { return a.hora < b.hora ? -1 : (a.hora > b.hora ? 1 : 0); });
+}
 function _stpVisao_(c, agora) {
   var todas = _stpPendentes_(c.sessoes, agora, c.cfgAgenda.duracao_slot_min);
   return { total: todas.length, itens: todas.slice(0, STP_LISTA_MAX).map(function (x) {
