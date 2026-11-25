@@ -61,7 +61,7 @@ tenta('C', () => {
   const c = r.agenda.sessoes.filter(x => x.id === idC)[0];
   ok('C1 cancelada a pedido do paciente com menos de 24 h: cobrada, e continua na leitura da agenda como "cancelada"', r.ok === true && cel('Sessoes', idC, 'cobrada') === 'Sim' && !!c && c.estado === 'cancelada' && c.cobrada === 'Sim' && c.pode_repor === true && c.link_confirmar === '', c);
   r = prof('profCancelarSessao', { id: idN, opcoes: { quem: 'profissional', avisar: false }, periodo: PER });
-  ok('C2 cancelada sem cobrança (pelo profissional) sai da grade, como antes', r.ok === true && cel('Sessoes', idN, 'cobrada') !== 'Sim' && r.agenda.sessoes.filter(x => x.id === idN).length === 0);
+  ok('C2 cancelada sem cobrança (pelo profissional) fica na grade como cancelada, sem poder repor (14.19)', r.ok === true && cel('Sessoes', idN, 'cobrada') !== 'Sim' && r.agenda.sessoes.filter(x => x.id === idN && x.estado === 'cancelada' && x.pode_repor === false).length === 1);
   const idOutra = uuid();
   r = sessao(P2, { id: idOutra, data: '2026-11-26', hora: '10:00' });
   ok('C3 a cancelada e cobrada não ocupa o horário: outro paciente é marcado no mesmo dia e hora', r.ok === true && !!lida(idOutra) && !!lida(idC), r && r.erro);
@@ -161,7 +161,7 @@ tenta('V', () => {
 console.log('T. Listas e versão');
 tenta('T', () => {
   ok('T1 a ação nova está na trava e não é pública nem só leitura', S('ACOES_COM_TRAVA').indexOf('profSalvarValorSessao') !== -1 && S('ACOES_PUBLICAS').indexOf('profSalvarValorSessao') === -1 && S('ACOES_SO_LEITURA').indexOf('profSalvarValorSessao') === -1);
-  ok('T2 nenhuma coluna nova em Sessoes (o valor é coluna do cadastro)', S('COLUNAS_SESSOES').slice(-3).join(',') === 'gcal_evento,gcal_sinc,meet_link');
+  ok('T2 o valor é coluna do cadastro, não de Sessoes', S('COLUNAS_SESSOES').indexOf('valor_sessao') === -1);
   const inesperados = logServidor.filter(l => !/^trava de gravacao: nao obtida/.test(l));
   ok('T3 o servidor não registrou nenhum erro', inesperados.length === 0, inesperados.slice(0, 5));
 });

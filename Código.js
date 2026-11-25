@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '19.7.1';
+var VERSAO_PACOTE = '14.19';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -6997,7 +6997,8 @@ var COLUNAS_SESSOES = ['id', 'sigla', 'data', 'hora_inicio', 'duracao_min', 'mod
   'estado', 'cobrada', 'reposicao_de', 'origem', 'confirmada_em', 'cancelada_em', 'cancelada_por', 'avisos',
   'ultimo_aviso_em', 'criado_em', 'criado_por', 'atualizado_em',
   'lembrete48_em', // 14.4: marca do lembrete de 48 h (ultimo_aviso_em e a do de 24 h); 'dispensado' = a sessao nasceu ja dentro do prazo
-  'gcal_evento', 'gcal_sinc', 'meet_link']; // 14.5: id do evento no Google Calendar, 'pendente' enquanto o espelho nao foi feito, link do Meet da sessao on-line
+  'gcal_evento', 'gcal_sinc', 'meet_link', // 14.5: id do evento no Google Calendar, 'pendente' enquanto o espelho nao foi feito, link do Meet da sessao on-line
+  'cancel_motivo', 'cancel_avisou_em']; // 14.19: motivo do cancelamento (so para o profissional) e quando o paciente avisou ('AAAA-MM-DD HH:mm')
 var COLUNAS_SERIES = ['id', 'sigla', 'cada', 'unidade', 'dias_semana', 'modo_mes', 'fim_tipo', 'fim_n', 'fim_data',
   'ocupado', 'criada_em', 'encerrada_em'];
 var COLUNAS_BLOQUEIOS = ['id', 'data_inicio', 'hora_inicio', 'data_fim', 'hora_fim', 'dia_todo', 'nome'];
@@ -7428,6 +7429,19 @@ function _ageCtx_(controle, criar) {
 function _ageAtiva_(x) { return x.estado !== 'cancelada'; }
 /** 14.6: sessao cancelada e COBRADA — continua na grade do profissional (apagada, sem ocupar o horario) para poder ser reposta. */
 function _ageCanceladaCobrada_(x) { return x.estado === 'cancelada' && x.cobrada === 'Sim' && x.cancelada_por !== 'edicao_serie'; }
+/** 14.19: toda sessao cancelada por alguem (paciente ou profissional) continua na grade, apagada e sem ocupar o horario, com a etiqueta. */
+function _ageCanceladaVisivel_(x) { return x.estado === 'cancelada' && x.cancelada_por !== 'edicao_serie'; }
+/** 14.19: o momento que conta para o prazo do cancelamento — quando o paciente avisou ('AAAA-MM-DD HH:mm'), nunca depois de agora. */
+function _ageAvisouEm_(texto, agora) {
+  var m = /^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2})$/.exec(String(texto || '').trim());
+  if (!m || _lemDia_(m[1]) === null || _ageMin_(m[2]) === null) return { data: agora.data, hora: agora.hora, carimbo: agora.carimbo };
+  var antes = m[1] < agora.data || (m[1] === agora.data && m[2] <= agora.hora);
+  return antes ? { data: m[1], hora: m[2], carimbo: m[1] + ' ' + m[2] } : { data: agora.data, hora: agora.hora, carimbo: agora.carimbo };
+}
+/** 14.19: o paragrafo do e-mail de cancelamento (um lugar so: o e-mail e a previa que a janela mostra antes de salvar). */
+function _ageTextoCancelamento_(x, prof) {
+  return 'A sessão de ' + _ageDataBR_(x.data) + ' às ' + _lemHora_(x.hora_inicio) + ' com ' + prof + ' foi cancelada. Para marcar outra data, acesse Minhas sessões.';
+}
 
 /** O bloqueio pega o intervalo [ini, ini + dur) do dia `dataIso`? */
 function _ageBloqueioPega_(b, dataIso, ini, dur) {
@@ -7502,6 +7516,7 @@ function _ageSessaoProf_(ctx, x, pacs) {
     valor: x.valor, notas: x.notas, serie_id: x.serie_id, estado: x.estado || 'agendada', cobrada: x.cobrada,
     reposicao_de: x.reposicao_de, reposta_em: _ageRepostaEm_(ctx, x.id), pode_repor: _agePodeRepor_(ctx, x), origem: x.origem || 'profissional',
     confirmada: !!x.confirmada_em, avisos: _ageAvisosLista_(x.avisos), cancelada_por: x.cancelada_por,
+    cancel_motivo: x.cancel_motivo || '', cancel_avisou_em: x.cancel_avisou_em || '', cancelada_em: x.cancelada_em || '', // 14.19
     link_confirmar: ((x.estado === 'agendada' || x.estado === '') && ctx.profId) ? _ageLinkConfirmar_(ctx.profId, x.id) : '', // 14.4
     meet_link: x.modalidade === 'online' ? (x.meet_link || '') : '', endereco: x.modalidade === 'online' ? '' : _ageEndereco_(ctx.cfg, x.data), // 14.5
     mapa: x.modalidade === 'online' ? '' : _ageMapa_(_ageEndereco_(ctx.cfg, x.data)), no_calendar: !!x.gcal_evento,
@@ -7527,7 +7542,7 @@ function _ageLeitura_(ctx, de, ate, pacs, agora) {
   if (b === null || b < a) b = a + 41;
   if (b - a > AGENDA_LEITURA_DIAS) b = a + AGENDA_LEITURA_DIAS;
   var deIso = _lemIso_(a), ateIso = _lemIso_(b);
-  var sessoes = ctx.sessoes.filter(function (x) { return x.data >= deIso && x.data <= ateIso && (_ageAtiva_(x) || _ageCanceladaCobrada_(x)); })
+  var sessoes = ctx.sessoes.filter(function (x) { return x.data >= deIso && x.data <= ateIso && (_ageAtiva_(x) || _ageCanceladaVisivel_(x)); })
     .map(function (x) { return _ageSessaoProf_(ctx, x, pacs); });
   var series = {};
   sessoes.forEach(function (x) {
@@ -7615,7 +7630,7 @@ function montarEmailSessao(tipo, p) {
   else if (tipo === 'lembrete') t = { assunto: 'Lembrete de sessão — COGNIATIVO', titulo: 'Sua sessão está chegando',
     paragrafo: 'Lembrete da sua sessão com ' + prof + ': ' + _ageQuando_(x) + '.', botao: 'Confirmar presença', aviso: '', sob: sobConfirmar, confirma: true };
   else if (tipo === 'cancelamento') t = { assunto: 'Sessão cancelada — COGNIATIVO', titulo: 'Sessão cancelada',
-    paragrafo: 'A sessão de ' + _ageDataBR_(x.data) + ' às ' + _lemHora_(x.hora_inicio) + ' com ' + prof + ' foi cancelada. Para marcar outra data, acesse Minhas sessões.', botao: 'Ver minhas sessões', aviso: '' };
+    paragrafo: _ageTextoCancelamento_(x, prof), botao: 'Ver minhas sessões', aviso: '' };
   else if (tipo === 'remarcacao') t = { assunto: 'Sessão remarcada — COGNIATIVO', titulo: 'Sua sessão mudou de horário',
     paragrafo: 'Sua sessão com ' + prof + ' passou de ' + _ageDataBR_(p.anterior.data) + ' às ' + _lemHora_(p.anterior.hora_inicio) + ' para ' + _ageDataBR_(x.data) + ' às ' + _lemHora_(x.hora_inicio) + ' (' + _ageModNome_(x.modalidade) + ').', botao: 'Confirmar presença', aviso: '', sob: sobConfirmar, confirma: true }; // 14.5.2: remarcada, a sessao volta a pedir a confirmacao
   else if (tipo === 'pedido_aprovado') t = { assunto: 'Pedido aprovado — COGNIATIVO', titulo: 'Seu pedido foi aprovado',
@@ -7751,7 +7766,7 @@ function profSalvarSessao(s, dados, periodo) {
       campos.confirmada_em = ''; campos.ultimo_aviso_em = marcas.ultimo_aviso_em; campos.lembrete48_em = marcas.lembrete48_em;
     }
     if (d.situacao !== undefined) { // 14.15: o status vem junto com o Salvar (nada grava antes dele)
-      var st = _ageStatusCampos_(ctx, existente, d.situacao);
+      var st = _ageStatusCampos_(ctx, existente, d.situacao, false, d.cobrar);
       if (!st.ok) return st;
       if (st.campos) { campos.estado = st.campos.estado; campos.cobrada = st.campos.cobrada; }
     }
@@ -7893,26 +7908,43 @@ function profCancelarSessao(s, id, opcoes, periodo) {
   var o = opcoes && typeof opcoes === 'object' ? opcoes : {};
   var alvo = _ageProf_(s);
   if (!alvo.ok) return alvo;
-  var ctx = _ageCtx_(alvo.controle, false);
+  var simular = o.simular === true; // 14.19: a janela mostra as tres linhas e a previa antes do Salvar
+  var ctx = _ageCtx_(alvo.controle, !simular);
   var agora = _lemAgora_();
   var ref = ctx.sessoes.filter(function (x) { return x.id === String(id || '').trim(); })[0];
   if (!ref) return { ok: false, erro: MSG_AGE_NAO_ACHEI };
-  if (ref.estado === 'cancelada') return _ageResposta_(alvo, { ok: true, duplicado: true, canceladas: 0 }, periodo, agora);
+  if (ref.estado === 'cancelada') return simular ? { ok: false, erro: MSG_AGE_NAO_ACHEI } : _ageResposta_(alvo, { ok: true, duplicado: true, canceladas: 0 }, periodo, agora);
   if (ref.estado !== 'agendada' && ref.estado !== '') return { ok: false, erro: 'Esta consulta já tem situação marcada e não pode ser cancelada.' };
   var quem = o.quem === 'paciente' ? 'paciente' : 'profissional';
+  // 14.19: o prazo conta de quando o paciente avisou (padrao: agora); o motivo fica so para o profissional;
+  // `cobrar` (true/false) e o clique do profissional sobre o que a regra propos — so vale para a sessao aberta e so quando foi o paciente
+  var avisou = quem === 'paciente' ? _ageAvisouEm_(o.avisou_em, agora) : agora;
+  var motivo = String(o.motivo === undefined || o.motivo === null ? '' : o.motivo).replace(/\s+/g, ' ').trim().slice(0, 200);
   var lista = [ref];
   if (o.escopo === 'seguintes' && ref.serie_id) {
     ctx.sessoes.forEach(function (x) { if (x.serie_id === ref.serie_id && x.id !== ref.id && x.data > ref.data && x.estado === 'agendada') lista.push(x); });
+  }
+  var cobrancaDe = function (x) {
+    var noPrazo = _ageNoPrazo_(x.data, x.hora_inicio, avisou, ctx.cfg.antecedencia_min_horas);
+    var proposta = _ageCobrada_(quem === 'paciente' ? 'cancel_paciente' : 'cancel_profissional', noPrazo, !!x.reposicao_de);
+    var final = (x === ref && quem === 'paciente' && !x.reposicao_de && (o.cobrar === true || o.cobrar === false)) ? (o.cobrar ? 'Sim' : 'Nao') : proposta;
+    return { no_prazo: noPrazo, proposta: proposta, cobrada: final };
+  };
+  var cRef = cobrancaDe(ref);
+  if (simular) {
+    return { ok: true, simulacao: { quem: quem, horas: ctx.cfg.antecedencia_min_horas, no_prazo: cRef.no_prazo, proposta: cRef.proposta, cobrada: cRef.cobrada,
+      pode_trocar: quem === 'paciente' && !ref.reposicao_de, quantas: lista.length, previa: _ageTextoCancelamento_(ref, String(alvo.nome || '')) } };
+  }
+  if (lista.length > 1) {
     var regra = ctx.series.filter(function (x) { return x.id === ref.serie_id; })[0];
     if (regra && !regra.encerrada_em) _ageGravar_(ctx.abaR, COLUNAS_SERIES, regra.__linha, { encerrada_em: agora.carimbo });
   }
   lista.forEach(function (x) {
-    var noPrazo = _ageNoPrazo_(x.data, x.hora_inicio, agora, ctx.cfg.antecedencia_min_horas);
     _ageGravar_(ctx.abaS, COLUNAS_SESSOES, x.__linha, { estado: 'cancelada', cancelada_em: agora.carimbo, cancelada_por: quem,
-      cobrada: _ageCobrada_(quem === 'paciente' ? 'cancel_paciente' : 'cancel_profissional', noPrazo, !!x.reposicao_de), atualizado_em: agora.carimbo });
+      cobrada: cobrancaDe(x).cobrada, cancel_motivo: motivo, cancel_avisou_em: quem === 'paciente' ? avisou.carimbo : '', atualizado_em: agora.carimbo });
     _agePedidosFechar_(ctx, x.id, agora);
   });
-  var resp = { ok: true, canceladas: lista.length };
+  var resp = { ok: true, canceladas: lista.length, cobrada: cRef.cobrada };
   resp.aviso = !AGE_EMAIL_AUTOMATICO ? 'clique' : (o.avisar === true ? _ageAvisarPaciente_(ctx, alvo.profissionalId, _agePacientes_(alvo.controle)[_siglaChave_(ref.sigla)], 'cancelamento', ref, '') : 'caixa'); // 14.13
   return _ageResposta_(alvo, resp, periodo, agora);
 }
@@ -7940,11 +7972,16 @@ function profMarcarSituacao(s, id, situacao, periodo) {
 }
 
 /** O que o status muda na linha da sessao. `campos` vem nulo quando o status pedido ja e o da sessao (a nao ser com `sempre`). */
-function _ageStatusCampos_(ctx, x, situacao, sempre) {
+function _ageStatusCampos_(ctx, x, situacao, sempre, cobrar) {
   var estado = situacao === 'realizada' ? 'realizada' : (situacao === 'falta' ? 'falta' : 'agendada');
-  if (!sempre && estado === (x.estado || 'agendada')) return { ok: true, campos: null };
+  // 14.19: na falta, `cobrar` (true/false) e o clique do profissional sobre o que a regra propos (nunca em reposicao)
+  var clique = estado === 'falta' && !x.reposicao_de && (cobrar === true || cobrar === false);
+  if (!sempre && !clique && estado === (x.estado || 'agendada')) return { ok: true, campos: null };
   if (estado === 'agendada' && _ageRepostaEm_(ctx, x.id)) return { ok: false, erro: 'Esta sessão já foi reposta. Cancele a reposição antes de mudar o status.' };
-  return { ok: true, campos: { estado: estado, cobrada: estado === 'agendada' ? (x.reposicao_de ? 'Nao' : '') : _ageCobrada_(estado, true, !!x.reposicao_de) } };
+  if (clique && !cobrar && _ageRepostaEm_(ctx, x.id)) return { ok: false, erro: 'Esta sessão já foi reposta. Cancele a reposição antes de deixar de cobrar.' };
+  var cobrada = estado === 'agendada' ? (x.reposicao_de ? 'Nao' : '') : _ageCobrada_(estado, true, !!x.reposicao_de);
+  if (clique) cobrada = cobrar ? 'Sim' : 'Nao';
+  return { ok: true, campos: { estado: estado, cobrada: cobrada } };
 }
 
 /** Cria ou edita um bloqueio. `dados`: { id, data_inicio, hora_inicio, data_fim, hora_fim, dia_todo, nome }. */

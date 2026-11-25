@@ -426,7 +426,7 @@ tenta('T', () => {
   const src = fs.readFileSync(path.join(__dirname, '..', '..', 'Código.js'), 'utf8');
   ok('T1 profLerHorariosLivres é leitura (fora da trava) e exige crachá', S('ACOES_SO_LEITURA').indexOf('profLerHorariosLivres') !== -1 && S('ACOES_COM_TRAVA').indexOf('profLerHorariosLivres') === -1 && S('ACOES_PUBLICAS').indexOf('profLerHorariosLivres') === -1 && h.post({ acao: 'profLerHorariosLivres' }).ok === false);
   ok('T2 um paciente não lê os horários livres do profissional', pac(P1, 'profLerHorariosLivres', {}).ok === false);
-  ok('T3 colunas novas no fim e criadas na planilha', S('COLUNAS_SESSOES').slice(-3).join(',') === 'gcal_evento,gcal_sinc,meet_link' && S('COLUNAS_PEDIDOS_AGENDA').slice(-2).join(',') === 'sugestao,modalidade' && h.cab(aba('Sessoes')).indexOf('meet_link') !== -1 && h.cab(aba('Pedidos_Agenda')).indexOf('sugestao') !== -1);
+  ok('T3 colunas novas no fim e criadas na planilha', S('COLUNAS_SESSOES').indexOf('meet_link') === S('COLUNAS_SESSOES').indexOf('gcal_evento') + 2 && S('COLUNAS_PEDIDOS_AGENDA').slice(-2).join(',') === 'sugestao,modalidade' && h.cab(aba('Sessoes')).indexOf('meet_link') !== -1 && h.cab(aba('Pedidos_Agenda')).indexOf('sugestao') !== -1);
   ok('T5 o manifesto pede o Calendar', JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'appsscript.json'), 'utf8')).oauthScopes.indexOf('https://www.googleapis.com/auth/calendar') !== -1);
   ok('T6 o token do Google nunca vai para o log nem para a resposta', src.indexOf('getOAuthToken()') === src.lastIndexOf('getOAuthToken()') && logServidor.join(' ').indexOf('tok') === -1);
   const inesperados = logServidor.filter(l => !/^trava de gravacao: nao obtida/.test(l));

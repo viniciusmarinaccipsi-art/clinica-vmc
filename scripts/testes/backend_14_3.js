@@ -186,7 +186,7 @@ tenta('C', () => {
   const criar = (sigla, d) => { const id = uuid(); const r = sessao(sigla, Object.assign({ id: id }, d)); if (!r.ok) throw new Error(JSON.stringify(r)); return id; };
   let id = criar(P1, { data: '2026-12-02', hora: '10:00' });
   let r = prof('profCancelarSessao', { id: id, opcoes: { escopo: 'esta', quem: 'profissional' }, periodo: PER });
-  ok('C1 cancelada pelo profissional: não cobrada, some da agenda e fica guardada na aba', r.ok && r.canceladas === 1 && !lista().some(x => x.id === id) && cel('Sessoes', id, 'estado') === 'cancelada' && cel('Sessoes', id, 'cobrada') === 'Nao' && cel('Sessoes', id, 'cancelada_por') === 'profissional', r);
+  ok('C1 cancelada pelo profissional: não cobrada, fica na agenda como cancelada (14.19) e guardada na aba', r.ok && r.canceladas === 1 && lista().filter(x => x.id === id && x.estado === 'cancelada').length === 1 && cel('Sessoes', id, 'estado') === 'cancelada' && cel('Sessoes', id, 'cobrada') === 'Nao' && cel('Sessoes', id, 'cancelada_por') === 'profissional', r);
   ok('C2 o horário cancelado volta a ficar livre', sessao(P2, { data: '2026-12-02', hora: '10:00' }).ok === true);
   id = criar(P1, { data: '2026-12-03', hora: '16:00' });
   r = prof('profCancelarSessao', { id: id, opcoes: { quem: 'paciente' }, periodo: PER });
@@ -205,9 +205,9 @@ tenta('C', () => {
   const serie = cel('Sessoes', idC, 'serie_id');
   const segunda = lista().filter(x => x.serie_id === serie)[1];
   r = prof('profCancelarSessao', { id: segunda.id, opcoes: { escopo: 'seguintes', quem: 'profissional' }, periodo: PER });
-  ok('C7 "esta consulta e as seguintes": a primeira fica, três saem, a série é encerrada', r.ok && r.canceladas === 3 && lista().filter(x => x.serie_id === serie).length === 1 && cel('Series', serie, 'encerrada_em') !== '', r);
+  ok('C7 "esta consulta e as seguintes": a primeira fica, três saem, a série é encerrada', r.ok && r.canceladas === 3 && lista().filter(x => x.serie_id === serie && x.estado !== 'cancelada').length === 1 && cel('Series', serie, 'encerrada_em') !== '', r);
   r = prof('profCancelarSessao', { id: idC, opcoes: { escopo: 'esta', quem: 'profissional' }, periodo: PER });
-  ok('C8 "só esta" em sessão de série cancela uma', r.ok && r.canceladas === 1 && lista().filter(x => x.serie_id === serie).length === 0, r);
+  ok('C8 "só esta" em sessão de série cancela uma', r.ok && r.canceladas === 1 && lista().filter(x => x.serie_id === serie && x.estado !== 'cancelada').length === 0, r);
   ok('C9 cancelar id que não existe: recusado', prof('profCancelarSessao', { id: 'nao-existe-0001', opcoes: {}, periodo: PER }).ok === false);
   globalThis.__idCobradaCancelada = idFora;
 });
