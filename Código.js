@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '19.7.1';
+var VERSAO_PACOTE = '19.8';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -448,7 +448,7 @@ function _despachar_(acao, payload, s) {
 
       // Pacote 14.3 - Agenda completa (profissional)
       case 'profLerAgenda':
-        resposta = profLerAgenda(s, payload.de, payload.ate);
+        resposta = profLerAgenda(s, payload.de, payload.ate, payload.siglaPaciente);
         break;
 
       case 'profSalvarSessao':
@@ -7350,7 +7350,7 @@ function _ageEventos_(ctx, pacs, agora) {
   var nome = function (sigla) { var p = pacs[_siglaChave_(sigla)]; return p ? p.nome : sigla; };
   var ev = function (tipo, x, em) {
     if (!em || em.slice(0, 10) < corte) return;
-    var e = { tipo: tipo, sigla: x.sigla, nome: nome(x.sigla), data: x.data, hora: _lemHora_(x.hora_inicio), em: em };
+    var e = { tipo: tipo, sigla: x.sigla, nome: nome(x.sigla), data: x.data, hora: _lemHora_(x.hora_inicio), em: em, sessao: x.id || '' }; // 19.8: o sino abre a sessao
     lista.push(e);
     return e;
   };
@@ -7367,7 +7367,7 @@ function _ageEventos_(ctx, pacs, agora) {
     // remarcacao: o evento mostra o horario PEDIDO (depois de aprovado, a sessao ja esta nele e a data antiga nao existe mais)
     if (p.tipo === 'repor') ev('repor', x, p.criado_em);
     else { // 14.5: pedido com "horario ideal" (sem horario ate o profissional escolher) leva a sugestao
-      var e = ev('remarcar', p.data ? { sigla: x.sigla, data: p.data, hora_inicio: p.hora } : x, p.criado_em);
+      var e = ev('remarcar', p.data ? { sigla: x.sigla, data: p.data, hora_inicio: p.hora, id: x.id } : x, p.criado_em);
       if (e && p.sugestao) { e.sugestao = p.sugestao; e.sem_horario = !p.data; }
     }
   });
@@ -7696,14 +7696,34 @@ function _ageAvisarProfissional_(ctx, profId, frase) {
 // ---------- acoes do profissional ----------
 
 /** Agenda do periodo (padrao: de 7 dias atras a 5 semanas a frente). */
-function profLerAgenda(s, de, ate) {
+function profLerAgenda(s, de, ate, siglaPaciente) {
   var alvo = _ageProf_(s);
   if (!alvo.ok) return alvo;
+  if (siglaPaciente) return _ageHistorico_(alvo.controle, siglaPaciente); // 19.8: "Historico de sessoes" do paciente aberto
   var ctx = _ageCtx_(alvo.controle, false);
   ctx.profId = alvo.profissionalId;
   var r = _ageLeitura_(ctx, de, ate, _agePacientes_(alvo.controle), _lemAgora_());
   r.ok = true;
   return r;
+}
+
+/**
+ * 19.8: todas as sessoes de UM paciente do profissional, da mais recente para a mais antiga — so a aba de sessoes e a de pacientes.
+ * Sai a sessao que uma edicao das recorrentes tirou (nunca existiu para o paciente). O valor e o da sessao; sem ele, o do cadastro
+ * (reposicao nao tem valor). A tela separa as proximas das anteriores.
+ */
+function _ageHistorico_(controle, siglaPaciente) {
+  var sig = _siglaChave_(siglaPaciente), pac = _agePacientes_(controle)[sig];
+  if (!sig || !pac || pac.excluido) return { ok: false, erro: 'Este paciente nao pertence a voce' };
+  var agora = _lemAgora_();
+  var lista = _ageLer_(_ageAba_(controle, ABA_SESSOES, COLUNAS_SESSOES, false)).filter(function (x) {
+    return _siglaChave_(x.sigla) === sig && x.cancelada_por !== 'edicao_serie';
+  }).map(function (x) {
+    return { id: x.id, data: x.data, hora: _lemHora_(x.hora_inicio), modalidade: x.modalidade === 'online' ? 'online' : 'presencial',
+      valor: x.reposicao_de ? '' : (String(x.valor === undefined || x.valor === null ? '' : x.valor).trim() || pac.valor || ''),
+      estado: x.estado || 'agendada', confirmada: !!x.confirmada_em, reposicao: !!x.reposicao_de };
+  }).sort(function (a, b) { var ka = a.data + ' ' + a.hora, kb = b.data + ' ' + b.hora; return ka < kb ? 1 : (ka > kb ? -1 : 0); });
+  return { ok: true, historico: lista, hoje: agora.data, hora: agora.hora };
 }
 
 /**
