@@ -279,7 +279,7 @@ tenta('T', () => {
   ok('T3 o Gmail só é chamado em _gmailEnviar_, e só para enviar', (src.match(/gmail\.googleapis\.com/g) || []).length === 1 && src.indexOf('gmail/v1/users/me/messages/send') !== -1);
   ok('T4 a permissão pedida ao Google não inclui ler nem apagar e-mails', src.indexOf('gmail.readonly') === -1 && src.indexOf('gmail.modify') === -1 && src.indexOf('mail.google.com') === -1 && src.indexOf('gmail.compose') === -1);
   ok('T5 todo e-mail a paciente passa o profissional a _enviarEmail_ (convite, senha, lembretes, sessão, cobrança)', ['_assinaturaDoProfissional_(s.profissional_id)), s.profissional_id)', "t === 'paciente' ? ativas[j].profissional_id : undefined)", '_lembreteDestino_(item)), alvo.profissionalId)', '_lembreteDestino_(item)), prof.profissional_id)', '_enviarEmail_(pac.email, email, profId)', '_assinaturaDoProfissional_(alvo.profissionalId)), alvo.profissionalId)'].every(t => src.indexOf(t) !== -1));
-  ok('T6 nenhuma ação nova no servidor (a conexão e o envio usam as que já existiam)', (src.match(/\n      case '/g) || []).length === 95, (src.match(/\n      case '/g) || []).length);
+  ok('T6 nenhuma ação nova no servidor (a conexão e o envio usam as que já existiam)', (src.match(/\n      case '/g) || []).length === 96, (src.match(/\n      case '/g) || []).length);
   ok('T7 o servidor não registrou erro fora dos provocados (Gmail recusando e permissão caída)', logServidor.every(l => /e-mail pela conta conectada|agenda externa/.test(l)), logServidor);
 });
 

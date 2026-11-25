@@ -217,7 +217,7 @@ tenta('L', () => {
   const abertasPac = ABERTURAS.filter(id => id !== SISTEMA_VMC_ID && id !== ctrl.id);
   ok('L1 lista com indicadores em dia não abre nenhuma planilha de paciente', nova.ok && nova.pacientes.length === 2 && abertasPac.length === 0, ABERTURAS);
   const base = BASE.listarPacientesDoProfissional(sProf);
-  const semNovo = l => l.map(p => { const c = Object.assign({}, p); delete c.ind_total_escalas; delete c.aceite_em; /* 18.5: campo novo da lista */ delete c.lembretes; /* 19.2.1: lembretes de hoje e atrasados */ delete c.valor_sessao; /* 14.6: valor da sessão do cadastro */ return c; });
+  const semNovo = l => l.map(p => { const c = Object.assign({}, p); delete c.ind_total_escalas; delete c.aceite_em; /* 18.5: campo novo da lista */ delete c.lembretes; /* 19.2.1: lembretes de hoje e atrasados */ delete c.valor_sessao; /* 14.6: valor da sessão do cadastro */ delete c.email; /* 19.6: e-mail, para distinguir homônimos sem a sigla */ return c; });
   ok('L2 mesmo conteúdo da lista da @33 (que abria cada planilha), campo a campo', JSON.stringify(semNovo(nova.pacientes)) === JSON.stringify(base.pacientes), { nova: semNovo(nova.pacientes), base: base.pacientes });
   ok('L3 a lista traz o nome da anamnese, o alerta e os dias desde o último registro', nova.pacientes[0].nome_completo === 'Nome Pelo Profissional' && nova.pacientes[0].ind_alertas.length === 1 && typeof nova.pacientes[0].ind_dias_desde_auto === 'number' && nova.pacientes[1].ind_alertas.length === 0 && nova.pacientes[1].nome_completo === 'Paciente Dois de Prova');
   // recálculo preguiçoso: paciente antigo (sem ind_atualizado_em) com dados na planilha

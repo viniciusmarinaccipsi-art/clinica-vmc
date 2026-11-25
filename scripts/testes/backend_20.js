@@ -543,5 +543,71 @@ tenta('E19', () => {
     !fin().financeiro.resumo.encaminhamento.some(e => e.item === 'outro'), c);
 });
 
+/* ---------------------------------------------------------------- X19 (Pacote 19.6) */
+console.log('X19. Editar e excluir paciente');
+tenta('X19', () => {
+  const conta = (nomeAba, col, sig) => { const a = aba(nomeAba); if (!a) return 0; const v = a.getDataRange().getDisplayValues(), i = v[0].indexOf(col); return v.slice(1).filter(l => String(l[i]).toUpperCase() === sig).length; };
+  const cel = (sig, col) => h.celula(h.abaPac, h.linhaDe(h.abaPac, 'sigla', sig), col);
+  const editar = (sig, dados) => prof('profEditarPaciente', Object.assign({ siglaPaciente: sig }, dados ? { dados: dados, id_envio: uuid() } : {}));
+  const noIndice = sig => { h.memo(); return S('_lerIndice_')().linhas.filter(l => l.tipo === 'paciente' && l.sigla === sig)[0]; };
+  // ---- editar ----
+  let r = editar(CARLA);
+  ok('X1 sem dados a ação só lê: nome, e-mail, telefone e CPF do cadastro', r.ok === true && r.cadastro.nome === 'Carla Nogueira' && r.cadastro.email === 'carla@exemplo.test' && r.cadastro.cpf === '' && r.cadastro.tem_anamnese === false, r);
+  r = editar(CARLA, { nome: '  Carla   Nogueira Prado ', email: 'carla@exemplo.test', telefone: '(11) 98888-7777', cpf: CPF_OK });
+  ok('X2 gravar nome, telefone e CPF: a resposta e a planilha trazem o que ficou (CPF só com os dígitos, como texto)', r.ok === true && r.email_mudou === false && r.convite === undefined &&
+    r.cadastro.nome === 'Carla Nogueira Prado' && r.cadastro.telefone === '11988887777' && r.cadastro.cpf === '52998224725' &&
+    String(cel(CARLA, 'nome')) === 'Carla Nogueira Prado' && String(cel(CARLA, 'cpf')) === '52998224725' && String(cel(CARLA, 'telefone')).replace(/\D/g, '') === '11988887777', [r, cel(CARLA, 'cpf')]);
+  ok('X3 a leitura seguinte e o Fluxo de caixa mostram o nome novo', editar(CARLA).cadastro.nome === 'Carla Nogueira Prado' && doPac(fin().financeiro, CARLA).nome === 'Carla Nogueira Prado');
+  ok('X4 recusas: nome vazio, e-mail vazio, e-mail inválido, CPF que não confere, CPF com tamanho errado, e-mail de outro paciente do mesmo profissional',
+    editar(CARLA, { nome: ' ', email: 'carla@exemplo.test', telefone: '', cpf: '' }).ok === false && editar(CARLA, { nome: 'Carla', email: '', telefone: '', cpf: '' }).ok === false &&
+    editar(CARLA, { nome: 'Carla', email: 'nao-e-email', telefone: '', cpf: '' }).ok === false && editar(CARLA, { nome: 'Carla', email: 'carla@exemplo.test', telefone: '', cpf: '529.982.247-26' }).ok === false &&
+    editar(CARLA, { nome: 'Carla', email: 'carla@exemplo.test', telefone: '', cpf: CNPJ_OK }).ok === false && editar(CARLA, { nome: 'Carla', email: 'diego@exemplo.test', telefone: '', cpf: '' }).ok === false &&
+    String(cel(CARLA, 'nome')) === 'Carla Nogueira Prado' && noIndice(CARLA).email === 'carla@exemplo.test');
+  r = editar(CARLA, { nome: 'Carla Nogueira Prado', email: 'Carla.Nova@Exemplo.test', telefone: '(11) 98888-7777', cpf: CPF_OK, enviar_convite: true });
+  ok('X5 trocar o e-mail: grava no cadastro e no índice (é o login), avisa que mudou e manda o convite quando pedido', r.ok === true && r.email_mudou === true && r.cadastro.email === 'carla.nova@exemplo.test' &&
+    String(cel(CARLA, 'email')) === 'carla.nova@exemplo.test' && noIndice(CARLA).email === 'carla.nova@exemplo.test' && !!r.convite && r.convite.enviado === true, r);
+  r = editar(CARLA, { nome: 'Carla Nogueira Prado', email: 'carla.nova2@exemplo.test', telefone: '', cpf: '' });
+  ok('X6 trocar o e-mail sem pedir convite não envia nada; CPF e telefone em branco apagam o que havia', r.ok === true && r.email_mudou === true && r.convite === undefined && String(cel(CARLA, 'cpf')) === '' && r.cadastro.telefone === '');
+  ok('X7 só o profissional dono edita: crachá de paciente, sem crachá e paciente que não existe são recusados', pac(CARLA, 'profEditarPaciente', { siglaPaciente: CARLA, dados: { nome: 'X', email: 'x@exemplo.test' } }).ok === false &&
+    h.post({ acao: 'profEditarPaciente', siglaPaciente: CARLA, dados: { nome: 'X', email: 'x@exemplo.test' } }).ok === false && editar('ZZZ', { nome: 'X', email: 'x@exemplo.test' }).ok === false && String(cel(CARLA, 'nome')) === 'Carla Nogueira Prado');
+  const falsaAnam = { getLastRow: () => 2, getLastColumn: () => 3, getRange: () => ({ getValues: () => [['nome_completo', 'cpf', 'outra']], getDisplayValues: () => [['Nome da Anamnese', '529.982.247-25', '']] }) };
+  const juntos = S('_cadastroDoPaciente_')({ nome: 'Nome do Cadastro', email: 'A@B.test', telefone: '11 99999-0000', cpf: '' }, falsaAnam);
+  ok('X8 com anamnese preenchida, o nome e o CPF dela são os que a janela mostra (é um dado só)', juntos.tem_anamnese === true && juntos.nome === 'Nome da Anamnese' && juntos.cpf === '52998224725' && juntos.email === 'a@b.test');
+  // ---- excluir ----
+  const D = S('DriveApp'), pegar = D.getFileById; D.getFileById = function (id) { let o; try { o = pegar.call(D, id); } catch (e) { o = null; } o = o || {}; if (!o.setTrashed) o.setTrashed = function () { return o; }; return o; };
+  const resumo = () => { const f = prof('profLerFinanceiro', { periodo: 'personalizado', de: '2026-09-01', ate: '2026-12-31' }).financeiro; return { entrada: f.resumo.recebido_entrada, pago: f.sessoes.filter(x => x.cobravel).reduce((a, x) => a + x.pago, 0), f: f }; };
+  const linhasAna = () => ({ sessoes: conta('Sessoes', 'sigla', ANA), cadastro: conta('Fin_Cadastro', 'id', ANA), cobrancas: conta('Fin_Cobrancas', 'sigla', ANA), pagamentos: conta('Fin_Pagamentos', 'sigla', ANA), recibos: conta('Fin_Recibos', 'sigla', ANA), lembretes: conta('Lembretes', 'sigla', ANA) });
+  const nomeAna = String(cel(ANA, 'nome')), antes = linhasAna(), resAntes = resumo();
+  r = prof('profExcluirPaciente', { siglaPaciente: ANA, simular: true });
+  const sim = r.simulacao || { ficam: {} };
+  ok('X9 simular diz o que sai e o que fica e não apaga nada', r.ok === true && sim.nome === nomeAna && sim.ficam.pagamentos === antes.pagamentos && sim.ficam.recibos === antes.recibos && sim.ficam.sessoes > 0 &&
+    sim.sessoes_saem + sim.ficam.sessoes === antes.sessoes && sim.fica_algo === true && JSON.stringify(linhasAna()) === JSON.stringify(antes) && !!cel(ANA, 'nome'), [sim, antes]);
+  ok('X10 sem a confirmação a exclusão é recusada', prof('profExcluirPaciente', { siglaPaciente: ANA }).ok === false && prof('profExcluirPaciente', { siglaPaciente: ANA, confirmacaoSigla: 'outra' }).ok === false && JSON.stringify(linhasAna()) === JSON.stringify(antes));
+  r = prof('profExcluirPaciente', { siglaPaciente: ANA, confirmacaoSigla: true });
+  const depois = linhasAna(), resDepois = resumo();
+  ok('X11 a lixeira vale para paciente ativo, direto (sem desativar antes e sem digitar a sigla)', r.ok === true && r.ficou === true && r.nome === nomeAna && h.linhaDe(h.abaPac, 'sigla', ANA) === 0 && !noIndice(ANA), r);
+  ok('X12 saem as sessões sem cobrança e as cobranças; ficam as sessões cobradas ou pagas, os pagamentos, os recibos e o modo de cobrança que dizia o que era cobrável',
+    depois.sessoes === sim.ficam.sessoes && depois.cadastro === 1 && depois.cobrancas === 0 && depois.pagamentos === antes.pagamentos && depois.recibos === antes.recibos, [antes, depois, sim]);
+  ok('X13 o dinheiro continua batendo: o recebido pela data de entrada e o pago nas sessões são os mesmos de antes da exclusão', resDepois.entrada === resAntes.entrada && resDepois.pago === resAntes.pago, [resAntes.entrada, resDepois.entrada, resAntes.pago, resDepois.pago]);
+  h.memo();
+  const mapa = S('_agePacientes_')(h.ctrl), doExcluido = mapa[ANA] || {};
+  ok('X14 o nome fica guardado e aparece marcado como excluído, sem e-mail e sem telefone', doExcluido.nome === nomeAna + ' (excluído)' && doExcluido.excluido === true && doExcluido.email === '' && doExcluido.telefone === '' && doExcluido.ativo === false &&
+    conta('Excluidos', 'id', ANA) === 1 && resDepois.f.sessoes.filter(x => x.sigla === ANA).length === sim.ficam.sessoes, doExcluido);
+  ok('X15 nada mais se faz com o excluído: abrir, editar, agendar e excluir de novo são recusados', prof('profLerDadosPaciente', { siglaPaciente: ANA }).ok === false && editar(ANA).ok === false &&
+    prof('profExcluirPaciente', { siglaPaciente: ANA, confirmacaoSigla: true }).ok === false && prof('profEnviarConvite', { siglaPaciente: ANA, canal: 'link' }).ok === false);
+  const homonimo = novo(nomeAna, 'homonimo@exemplo.test');
+  const fNovo = prof('profLerFinanceiro', { siglaPaciente: homonimo }).paciente;
+  ok('X16 um paciente novo com o mesmo nome recebe outra sigla e não herda sessão, pagamento nem recibo', homonimo !== ANA && fNovo.extrato.length === 0 && fNovo.credito === 0 &&
+    conta('Fin_Pagamentos', 'sigla', homonimo) === 0 && conta('Fin_Recibos', 'sigla', homonimo) === 0, [homonimo === ANA, fNovo.extrato.length]);
+  // quem não deixou dinheiro sai inteiro e a sigla volta a ficar livre
+  const semDinheiro = novo('Zuleica Sem Nada', 'zuleica@exemplo.test');
+  const simZ = prof('profExcluirPaciente', { siglaPaciente: semDinheiro, simular: true }).simulacao;
+  r = prof('profExcluirPaciente', { siglaPaciente: semDinheiro, confirmacaoSigla: true });
+  ok('X17 paciente sem nada no Fluxo de caixa sai inteiro: nada fica guardado e a sigla volta a ficar livre', simZ.fica_algo === false && r.ok === true && r.ficou === false && conta('Excluidos', 'id', semDinheiro) === 0 && novo('Zuleica Sem Nada', 'zuleica2@exemplo.test') === semDinheiro, [simZ, r]);
+  ok('X18 nenhum CPF foi para o log do servidor', logServidor.join(' ').indexOf('52998224725') === -1);
+  const inesperados = logServidor.filter(l => !/^trava de gravacao: nao obtida/.test(l));
+  ok('X19 o servidor não registrou nenhum erro', inesperados.length === 0, inesperados.slice(0, 5));
+});
+
 console.log('\nRESULTADO (' + process.env.VMC_FUSO_20 + '): ' + (falhas ? falhas + ' FALHA(S) em ' + passo + ' provas' : 'OK — ' + passo + '/' + passo + ' provas'));
 process.exit(falhas ? 1 : 0);

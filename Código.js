@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.13';
+var VERSAO_PACOTE = '19.6';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -401,7 +401,11 @@ function _despachar_(acao, payload, s) {
         break;
 
       case 'profExcluirPaciente':
-        resposta = profExcluirPaciente(s, payload.siglaPaciente, payload.confirmacaoSigla);
+        resposta = profExcluirPaciente(s, payload.siglaPaciente, payload.confirmacaoSigla, payload.simular);
+        break;
+
+      case 'profEditarPaciente': // 19.6
+        resposta = profEditarPaciente(s, payload.siglaPaciente, payload.dados, payload.id_envio);
         break;
 
       case 'profAlterarSenhaPaciente':
@@ -863,7 +867,7 @@ var ACOES_COM_TRAVA = [
   'profLiberarEscala', // 17.1.2
   'profMarcarEditandoAuto', 'profLimparEditandoAuto', 'profEditarAutomonitoramento',
   'profCriarAutomonitoramento', 'profCriarEscala', 'profEditarEscala', // 18.5
-  'profDesativarPaciente', 'profReativarPaciente', 'profExcluirPaciente', 'profAlterarSenhaPaciente',
+  'profDesativarPaciente', 'profReativarPaciente', 'profExcluirPaciente', 'profAlterarSenhaPaciente', 'profEditarPaciente', // 19.6
   'profSalvarGrade',
   'admCadastrarProfissional', 'admAtualizarProfissional', 'admTrocarSenhaProfissional',
   'admDesativarProfissional', 'admReativarProfissional', 'admEnviarConvite',
@@ -2633,7 +2637,8 @@ function listarPacientesDoProfissional(s) {
       ind_ultima_escala_data: String(ultimaEscala.data || ''),
       ind_alertas: alerta.instrumento !== undefined ? [alerta] : [],
       lembretes: [], // 19.2.1
-      valor_sessao: idxValorSessao >= 0 ? String(row[idxValorSessao] === undefined || row[idxValorSessao] === null ? '' : row[idxValorSessao]).trim() : '' // 14.6
+      valor_sessao: idxValorSessao >= 0 ? String(row[idxValorSessao] === undefined || row[idxValorSessao] === null ? '' : row[idxValorSessao]).trim() : '', // 14.6
+      email: idxEmailCad >= 0 ? normalizarEmail(row[idxEmailCad]) : '' // 19.6: sem a sigla na tela, o e-mail distingue dois pacientes de mesmo nome
     });
     // 19.2.1: so paciente ativo e com lembrete de hoje ou atrasado leva os itens e o contato do botao WhatsApp
     if (pedidosPorSigla[_siglaChave_(siglaPac)]) lista[lista.length - 1].pedidos_agenda = pedidosPorSigla[_siglaChave_(siglaPac)]; // 14.3
@@ -2895,6 +2900,7 @@ function lerDadosPaciente(s, siglaPaciente) {
     // Pacote 18.1: contato do cadastro (Controle), unica fonte de e-mail e telefone
     contato: { email: normalizarEmail(paciente.email), telefone: normalizarTelefone(paciente.telefone) },
     nome_cadastro: String(paciente.nome || ''),
+    cpf_cadastro: String(paciente.cpf === undefined || paciente.cpf === null ? '' : paciente.cpf).replace(/\D/g, ''), // 19.6: Dados Cadastrais nascem com o cadastro
     escalas_liberadas: _escalasLiberadasLista_(paciente.escalas_liberadas), // 17.1.2: BSS liberada por paciente
     lembretes: _lembretesDoPaciente_(abrirControleDoProfissional(profissionalId), siglaPaciente, _lemAgora_().data) // 19.2.1: plano de lembretes
   };
@@ -3863,6 +3869,7 @@ function cadastrarPaciente(s, dados) {
     }
     siglasPac.push(indice[n].sigla);
   }
+  Object.keys(_excluidosLer_(abrirControleDoProfissional(profissionalId))).forEach(function (sx) { siglasPac.push(sx); }); // 19.6
   var sigla = gerarSiglaPaciente(nome, siglasPac);
   if (!sigla || !/^[A-Z0-9_]{2,10}$/.test(sigla)) return { ok: false, erro: 'Nao foi possivel gerar a sigla do paciente.' };
 
@@ -4837,16 +4844,18 @@ function profReativarPaciente(s, siglaPaciente) {
  * Confirmacao dupla: confirmacaoSigla deve ser igual a siglaPaciente.
  * Move planilha para lixeira, remove da Controle e do Indice_Siglas.
  */
-function profExcluirPaciente(s, siglaPaciente, confirmacaoSigla) {
+function profExcluirPaciente(s, siglaPaciente, confirmacaoSigla, simular) {
   var authResult = _authProfissional_(s);
   if (!authResult.ok) return authResult;
   var profissionalId = authResult.profissional.profissional_id;
 
   if (!siglaPaciente) return { ok: false, erro: 'Sigla do paciente obrigatoria' };
 
-  // Validar confirmacao dupla
-  if (String(confirmacaoSigla || '').trim().toUpperCase() !== String(siglaPaciente).trim().toUpperCase()) {
-    return { ok: false, erro: 'Confirmacao incorreta. Digite exatamente a sigla do paciente.' };
+  // 19.6 (decisao do usuario, 25/11/2026): a lixeira vale para qualquer paciente, direto — sem desativar antes e sem digitar a sigla.
+  // A confirmacao sao as duas janelas da tela; `confirmacaoSigla` = true (tela nova) ou a propria sigla (chamadas antigas).
+  // `simular` devolve so o que sai e o que fica, sem apagar nada (e o que a segunda janela mostra).
+  if (simular !== true && confirmacaoSigla !== true && String(confirmacaoSigla || '').trim().toUpperCase() !== String(siglaPaciente).trim().toUpperCase()) {
+    return { ok: false, erro: 'Confirme a exclusão do paciente.' };
   }
 
   var profIdDono = resolverProfissionalIdPorSigla(siglaPaciente, 'paciente');
@@ -4856,12 +4865,11 @@ function profExcluirPaciente(s, siglaPaciente, confirmacaoSigla) {
   var paciente = buscarPaciente(siglaPaciente);
   if (!paciente) return { ok: false, erro: 'Dados do paciente nao encontrados' };
 
-  // So permite excluir pacientes desativados
-  if (_estaAtivo_(paciente.ativo)) {
-    return { ok: false, erro: 'So e possivel excluir pacientes desativados. Desative primeiro.' };
-  }
-
   var planilhaId = extrairIdDaUrl(String(paciente.link_planilha_individual || ''));
+  var controlePlano = abrirControleDoProfissional(profissionalId);
+  if (!controlePlano) return { ok: false, erro: 'Controle do profissional não encontrada.' };
+  var pl = _excluirPlano_(controlePlano, paciente);
+  if (simular === true) return { ok: true, simulacao: pl.plano };
 
   try {
     // 1. Mover planilha para lixeira do Drive
@@ -4885,8 +4893,13 @@ function profExcluirPaciente(s, siglaPaciente, confirmacaoSigla) {
         }
       }
       _lembretesApagarDoPaciente_(controle, siglaPaciente); // 19.2.1: o plano de lembretes sai com o paciente
-      _agendaApagarDoPaciente_(controle, siglaPaciente); // 14.3: sessoes, series e pedidos tambem
-      _finApagarDoPaciente_(controle, siglaPaciente); // Fase 20: cadastro financeiro, quem paga e cobrancas
+      // 19.6: a sessao que fica e nao tinha valor proprio guarda o valor do cadastro que esta saindo (senao passaria a valer o valor padrao)
+      var valorDoCadastro = String(paciente.valor_sessao === undefined || paciente.valor_sessao === null ? '' : paciente.valor_sessao).replace(/[^0-9.,]/g, '').slice(0, 12);
+      if (valorDoCadastro && pl.semValor.length) { var abaSes = _ageAba_(controle, ABA_SESSOES, COLUNAS_SESSOES, false); pl.semValor.forEach(function (x) { _ageGravar_(abaSes, COLUNAS_SESSOES, x.__linha, { valor: valorDoCadastro }); }); }
+      _agendaApagarDoPaciente_(controle, siglaPaciente, pl.guardar); // 14.3: sessoes, series e pedidos tambem; 19.6: a sessao cobrada ou paga fica
+      // 19.6: o que ja virou dinheiro continua no Fluxo de caixa com o nome marcado, e a sigla nao volta a ser usada neste consultorio
+      if (pl.plano.fica_algo) _ageGravar_(_ageAba_(controle, ABA_EXCLUIDOS, COLUNAS_EXCLUIDOS, true), COLUNAS_EXCLUIDOS, 0, { id: String(siglaPaciente).trim().toUpperCase(), nome: pl.plano.nome, excluido_em: _lemAgora_().carimbo });
+      _finApagarDoPaciente_(controle, siglaPaciente, pl.plano.fica_algo); // Fase 20: cadastro financeiro, quem paga e cobrancas
     }
 
     // 3. Remover linha do Indice_Siglas
@@ -4909,10 +4922,115 @@ function profExcluirPaciente(s, siglaPaciente, confirmacaoSigla) {
     // 18.11: conta excluida — portao, dono e planilha saem do cache na hora
     _portaoEsquecer_([{ tipo: 'paciente', sigla: siglaPaciente, profissional_id: profissionalId, excluida: true }]);
     _invalidarLinks_('paciente', siglaPaciente);
-    return { ok: true, mensagem: 'Paciente excluido permanentemente' };
+    return { ok: true, mensagem: 'Paciente excluido permanentemente', ficou: pl.plano.fica_algo, nome: pl.plano.nome };
   } catch (e) {
     return { ok: false, erro: 'Erro ao excluir paciente: ' + String(e) };
   }
+}
+
+/* ============================================================
+   PACOTE 19.6 — Editar e excluir paciente (etapa 7 do plano de correcoes de 24/11/2026)
+   ============================================================ */
+var ABA_EXCLUIDOS = 'Excluidos';
+var COLUNAS_EXCLUIDOS = ['id', 'nome', 'excluido_em']; // id = a sigla do paciente (a leitura das abas em texto literal exige a coluna id); // so de quem deixou sessao cobrada, pagamento ou recibo no Fluxo de caixa
+var MARCA_EXCLUIDO = ' (excluído)';
+
+/** Quem foi excluido e deixou dinheiro registrado: { SIGLA: nome }. A aba so nasce na primeira exclusao desse tipo. */
+function _excluidosLer_(controle) {
+  var mapa = {}, aba = controle ? controle.getSheetByName(ABA_EXCLUIDOS) : null;
+  if (!aba || aba.getLastRow() < 2) return mapa;
+  _lembretesLer_(aba).forEach(function (l) { var sig = _siglaChave_(l.id); if (sig) mapa[sig] = String(l.nome || '').trim() || sig; });
+  return mapa;
+}
+
+/** Os dados de cadastro que o lapis edita: nome, e-mail, telefone e CPF. O CPF e o nome da anamnese valem quando ela existe. */
+function _cadastroDoPaciente_(paciente, abaAnam) {
+  var o = { nome: String(paciente.nome || '').trim(), email: normalizarEmail(paciente.email), telefone: normalizarTelefone(paciente.telefone),
+    cpf: String(paciente.cpf === undefined || paciente.cpf === null ? '' : paciente.cpf).replace(/\D/g, ''), tem_anamnese: false };
+  if (abaAnam && abaAnam.getLastRow() >= 2) {
+    var cab = abaAnam.getRange(1, 1, 1, abaAnam.getLastColumn()).getValues()[0], lin = abaAnam.getRange(2, 1, 1, cab.length).getDisplayValues()[0];
+    var de = function (col) { return cab.indexOf(col) >= 0 ? String(lin[cab.indexOf(col)] || '').trim() : ''; };
+    o.tem_anamnese = true;
+    o.nome_anamnese = de('nome_completo'); o.cpf_anamnese = de('cpf').replace(/\D/g, '');
+    if (o.nome_anamnese) o.nome = o.nome_anamnese;
+    if (o.cpf_anamnese) o.cpf = o.cpf_anamnese;
+  }
+  return o;
+}
+
+/**
+ * Lapis "Editar" do paciente: nome, e-mail, telefone e CPF num lugar so.
+ *  - sem `dados`: so le o cadastro (a janela abre preenchida, tambem pelo cartao da lista);
+ *  - com `dados`: grava no cadastro (Controle) e, se a anamnese ja existe, nos mesmos campos dela — e um dado so;
+ *    o e-mail e o login: trocar invalida os links antigos e o portao (_atualizarContatoPaciente_);
+ *    `dados.enviar_convite` manda o convite para o e-mail novo (so quando o e-mail mudou).
+ * O CPF nunca vai para log; volta so nesta leitura, para o profissional dono.
+ */
+function profEditarPaciente(s, siglaPaciente, dados, idEnvio) {
+  var auth = _authProfissional_(s);
+  if (!auth.ok) return auth;
+  if (!siglaPaciente || resolverProfissionalIdPorSigla(siglaPaciente, 'paciente') !== s.profissional_id) return { ok: false, erro: 'Este paciente nao pertence a voce' };
+  var pac = buscarPaciente(siglaPaciente);
+  if (!pac) return { ok: false, erro: 'Paciente nao encontrado' };
+  var abaAnam = null;
+  try { abaAnam = _abrirPlanilha_(extrairIdDaUrl(pac.link_planilha_individual)).getSheetByName(ABA_ANAMNESE); } catch (e) { abaAnam = null; }
+  var atual = _cadastroDoPaciente_(pac, abaAnam);
+  var saida = function (c) { return { nome: c.nome, email: c.email, telefone: c.telefone, cpf: c.cpf, tem_anamnese: c.tem_anamnese }; };
+  if (!dados || typeof dados !== 'object') return { ok: true, cadastro: saida(atual) };
+
+  var nome = String(dados.nome || '').replace(/\s+/g, ' ').trim().slice(0, 120);
+  if (!nome) return { ok: false, erro: 'Informe o nome do paciente.' };
+  var contato = normalizarContato({ email: dados.email, telefone: dados.telefone });
+  if (contato.erro) return { ok: false, erro: contato.erro };
+  if (!contato.email) return { ok: false, erro: 'E-mail do paciente obrigatório.' };
+  var cpf = String(dados.cpf || '').replace(/\D/g, '');
+  if (String(dados.cpf || '').trim() && (cpf.length !== 11 || _finDocumento_(cpf) === null)) return { ok: false, erro: 'O CPF não confere. Revise os números.' };
+
+  var emailMudou = contato.email !== atual.email;
+  if (emailMudou || contato.telefone !== atual.telefone) {
+    var rc = _atualizarContatoPaciente_(siglaPaciente, contato);
+    if (!rc.ok) return rc;
+  }
+  var controle = abrirControleDoProfissional(s.profissional_id);
+  if (!controle || !_atualizarLinhaPorChave_(controle.getSheetByName(ABA_PACIENTES), 'sigla', siglaPaciente, { nome: nome, cpf: cpf })) return { ok: false, erro: 'Paciente não encontrado na Controle.' };
+  if (atual.tem_anamnese) {
+    var campos = {};
+    if (nome !== atual.nome_anamnese) campos.nome_completo = nome;
+    if (cpf !== atual.cpf_anamnese) campos.cpf = cpf;
+    if (Object.keys(campos).length) {
+      var ra = profSalvarAnamnese(s, siglaPaciente, null, campos, idEnvio);
+      if (!ra || !ra.ok) return { ok: false, erro: (ra && ra.erro) || 'Não foi possível gravar na anamnese.' };
+    }
+    if (emailMudou || contato.telefone !== atual.telefone) { // o e-mail e o telefone da anamnese espelham o cadastro
+      _atualizarCamposLinha_(abaAnam, 2, abaAnam.getRange(1, 1, 1, abaAnam.getLastColumn()).getValues()[0], { email: contato.email, telefone: contato.telefone });
+    }
+  }
+  var resp = { ok: true, cadastro: { nome: nome, email: contato.email, telefone: contato.telefone, cpf: cpf, tem_anamnese: atual.tem_anamnese }, email_mudou: emailMudou };
+  if (emailMudou && dados.enviar_convite === true) {
+    var rv = profEnviarConvite(s, siglaPaciente, 'email');
+    resp.convite = (rv && rv.ok && rv.enviado) ? { enviado: true } : { enviado: false, codigo: (rv && rv.codigo) || '', erro: (rv && rv.erro) || 'Não foi possível enviar o convite agora.' };
+  }
+  return resp;
+}
+
+/**
+ * O que a exclusao de um paciente apaga e o que fica (a segunda confirmacao mostra isto, e a exclusao segue isto).
+ * Fica o que ja virou dinheiro: sessao cobrada ou com pagamento alocado, os pagamentos e os recibos. O resto sai.
+ */
+function _excluirPlano_(controle, paciente) {
+  var sig = _siglaChave_(paciente.sigla), doPac = function (l) { return _siglaChave_(l.sigla) === sig; };
+  var ler = function (nome) { var aba = controle.getSheetByName(nome); return aba ? _lembretesLer_(aba).filter(doPac) : []; };
+  var alocado = {};
+  ler(ABA_FIN_ALOCACOES).forEach(function (a) { alocado[a.sessao_id] = (alocado[a.sessao_id] || 0) + (parseInt(a.valor, 10) || 0); });
+  var sessoes = ler(ABA_SESSOES), guardar = {}, ficam = 0;
+  sessoes.forEach(function (x) { if (x.cobrada === 'Sim' || alocado[x.id] > 0) { guardar[x.id] = true; ficam++; } });
+  var p = { nome: String(paciente.ind_nome || paciente.nome || '').trim() || String(paciente.sigla),
+    anamnese: !!String(paciente.data_anamnese || '').trim() || !!String(paciente.ind_nome || '').trim(),
+    registros: parseInt(paciente.ind_total_auto, 10) || 0, escalas: parseInt(paciente.ind_total_escalas, 10) || 0,
+    sessoes_saem: sessoes.length - ficam, lembretes: ler(ABA_LEMBRETES).length,
+    ficam: { sessoes: ficam, pagamentos: ler(ABA_FIN_PAGAMENTOS).length, recibos: ler(ABA_FIN_RECIBOS).length } };
+  p.fica_algo = p.ficam.sessoes + p.ficam.pagamentos + p.ficam.recibos > 0;
+  return { plano: p, guardar: guardar, semValor: sessoes.filter(function (x) { return guardar[x.id] && !_finCent_(x.valor); }) };
 }
 
 /**
@@ -7349,6 +7467,8 @@ function _agePacientes_(controle) {
       email: normalizarEmail(p.email), ativo: _estaAtivo_(p.ativo),
       valor: String(p.valor_sessao === undefined || p.valor_sessao === null ? '' : p.valor_sessao).replace(/[^0-9.,]/g, '').slice(0, 12) }; // 14.7: a sessao aprovada nasce com o valor do cadastro
   });
+  var excluidos = _excluidosLer_(controle); // 19.6
+  Object.keys(excluidos).forEach(function (sig) { if (!mapa[sig]) mapa[sig] = { nome: excluidos[sig] + MARCA_EXCLUIDO, primeiro: '', telefone: '', email: '', ativo: false, valor: '', excluido: true }; });
   return mapa;
 }
 
@@ -8249,12 +8369,12 @@ function _ageInicio_(controle) {
 }
 
 /** Paciente excluido: sessoes e pedidos dele saem (a sigla pode voltar a ser usada por outro paciente). */
-function _agendaApagarDoPaciente_(controle, sigla) {
-  var alvo = _siglaChave_(sigla);
+function _agendaApagarDoPaciente_(controle, sigla, guardar) {
+  var alvo = _siglaChave_(sigla), fica = guardar || {}; // 19.6: `guardar` = { id da sessao: true } — so vale para a aba Sessoes
   [[ABA_SESSOES, COLUNAS_SESSOES], [ABA_SERIES, COLUNAS_SERIES], [ABA_PEDIDOS_AGENDA, COLUNAS_PEDIDOS_AGENDA]].forEach(function (par) {
     var aba = _ageAba_(controle, par[0], par[1], false);
     if (!aba) return;
-    _lembretesLer_(aba).reverse().forEach(function (x) { if (_siglaChave_(x.sigla) === alvo) aba.deleteRow(x.__linha); });
+    _lembretesLer_(aba).reverse().forEach(function (x) { if (_siglaChave_(x.sigla) === alvo && !(par[0] === ABA_SESSOES && fica[x.id])) aba.deleteRow(x.__linha); });
     _ageEsquecer_(aba); // 14.12
   });
 }
@@ -10004,9 +10124,10 @@ function pacientePedirRecibo(sigla) {
 }
 
 /** Excluir o paciente: saem o cadastro financeiro, quem paga e as cobrancas dele. Pagamentos ficam (sao o caixa do profissional). */
-function _finApagarDoPaciente_(controle, sigla) {
+function _finApagarDoPaciente_(controle, sigla, manterCadastro) {
   var alvo = _siglaChave_(sigla);
-  [[ABA_FIN_CADASTRO, 'id'], [ABA_FIN_PESSOAS, 'sigla'], [ABA_FIN_COBRANCAS, 'sigla']].forEach(function (par) {
+  // 19.6: quando ficam sessoes, pagamentos ou recibos do excluido, o modo de cobranca dele fica junto (e ele que diz o que era cobravel); quem paga e as cobrancas saem sempre
+  [[ABA_FIN_CADASTRO, 'id'], [ABA_FIN_PESSOAS, 'sigla'], [ABA_FIN_COBRANCAS, 'sigla']].filter(function (par) { return !(manterCadastro && par[0] === ABA_FIN_CADASTRO); }).forEach(function (par) {
     var aba = _finAba_(controle, par[0], false);
     _lembretesLer_(aba).reverse().forEach(function (l) { if (_siglaChave_(l[par[1]]) === alvo) aba.deleteRow(l.__linha); });
   });
