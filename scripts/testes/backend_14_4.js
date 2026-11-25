@@ -33,6 +33,7 @@ global.CacheService = { getScriptCache: () => cacheObj };
 global.Utilities.base64Decode = s => Array.from(Buffer.from(String(s), 'base64')).map(x => (x > 127 ? x - 256 : x));
 const h = av('({ post: post, cracha: cracha, novoPaciente: novoPaciente, celula: celula, linhaDe: linhaDe, cab: cab, abaPac: abaPac, ctrl: ctrl, sProf: sProf, EMAILS: EMAILS, PROPS: PROPS, TRAVA: TRAVA, memo: _memoZerar_, aceite: _gravarAceitePolitica_, hashProf: hashProf })');
 const S = nome => av(nome);
+av('AGE_EMAIL_AUTOMATICO = true'); // 14.13: esta suíte confere o conteúdo dos e-mails pelo caminho de antes (envio na própria gravação); em produção a chave é false
 
 let passo = 0, falhas = 0;
 const ok = (n, c, x) => { passo++; if (c) console.log('  ok   ' + n); else { falhas++; console.log('  FALHA ' + n + (x !== undefined ? '  → ' + JSON.stringify(x).slice(0, 500) : '')); } };

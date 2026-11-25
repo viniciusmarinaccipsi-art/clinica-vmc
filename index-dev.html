@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia e valor por paciente · agendamento do paciente com a aprovação do profissional · Painel de Evolução na tela do profissional — Pacote 19.1 · o pedido de agendamento do paciente aparece como “Agendamento solicitado” — Pacote 14.7.1 · Fluxo de caixa: receitas lidas da Agenda, pagamentos, cobranças por e-mail e WhatsApp, comprovante do paciente, despesas e contas a pagar — Pacote 20.0 · recibos e livro caixa: quem precisa de recibo, prévia literal e arquivo de lote do Carnê-Leão · Biblioteca de Escalas e Inventários com "Aplicar a um paciente" — Pacote 19.3 · tags da busca das escalas recolhidas atrás de um botão; saiu a tag "Mensuração" — Pacote 19.3.1 · cada profissional conecta a própria Google Agenda, com a opção dos compromissos pessoais — Pacote 14.8 · sessões com status pendente no Início, a palavra "Status" na sessão e os dois e-mails da agenda ao profissional — Pacote 20.2 (23/11/2026) · na tela do profissional, os subtítulos do Painel de Evolução falam do paciente — Pacote 19.1.1 (23/11/2026) · a volta da permissão do Google passa por uma página do próprio site — Pacote 14.8.1 (23/11/2026) · tags das escalas: saem Monitoramento, Diagnóstico e Processo e juntam-se as repetidas; "emoções agradáveis" na tela do paciente — Pacote 19.3.2 · três textos revistos pelo usuário (crédito nas próximas sessões, aviso da Grade e e-mail de fim de dia) — Pacote 20.2.1 (23/11/2026) · os e-mails aos pacientes saem da conta do Google que o profissional conectou — Pacote 14.10 (23/11/2026) · botões de aviso em dupla e com ícone, valor da sessão só no Financeiro, cartão da escala com tempo, perguntas e tags, tema claro, escuro ou automático — Pacote 19.4 (25/11/2026) · Encaminhamento com item, subitem e nome de quem indicou, e gráfico das fontes em barras e pizza, em dois níveis — Pacote 19.5 (25/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia e valor por paciente · agendamento do paciente com a aprovação do profissional · Painel de Evolução na tela do profissional — Pacote 19.1 · o pedido de agendamento do paciente aparece como “Agendamento solicitado” — Pacote 14.7.1 · Fluxo de caixa: receitas lidas da Agenda, pagamentos, cobranças por e-mail e WhatsApp, comprovante do paciente, despesas e contas a pagar — Pacote 20.0 · recibos e livro caixa: quem precisa de recibo, prévia literal e arquivo de lote do Carnê-Leão · Biblioteca de Escalas e Inventários com "Aplicar a um paciente" — Pacote 19.3 · tags da busca das escalas recolhidas atrás de um botão; saiu a tag "Mensuração" — Pacote 19.3.1 · cada profissional conecta a própria Google Agenda, com a opção dos compromissos pessoais — Pacote 14.8 · sessões com status pendente no Início, a palavra "Status" na sessão e os dois e-mails da agenda ao profissional — Pacote 20.2 (23/11/2026) · na tela do profissional, os subtítulos do Painel de Evolução falam do paciente — Pacote 19.1.1 (23/11/2026) · a volta da permissão do Google passa por uma página do próprio site — Pacote 14.8.1 (23/11/2026) · tags das escalas: saem Monitoramento, Diagnóstico e Processo e juntam-se as repetidas; "emoções agradáveis" na tela do paciente — Pacote 19.3.2 · três textos revistos pelo usuário (crédito nas próximas sessões, aviso da Grade e e-mail de fim de dia) — Pacote 20.2.1 (23/11/2026) · os e-mails aos pacientes saem da conta do Google que o profissional conectou — Pacote 14.10 (23/11/2026) · botões de aviso em dupla e com ícone, valor da sessão só no Financeiro, cartão da escala com tempo, perguntas e tags, tema claro, escuro ou automático — Pacote 19.4 (25/11/2026) · Encaminhamento com item, subitem e nome de quem indicou, e gráfico das fontes em barras e pizza, em dois níveis — Pacote 19.5 (25/11/2026) · e-mail de sessão só com o clique do profissional e Agenda que se atualiza em silêncio — Pacote 14.13 (25/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -23937,9 +23937,11 @@ async function ageCarregar_(forcar, quieto) {
   if (!PROF_SESSAO || AGE.carregando || (!forcar && ageDentro_())) return;
   var geracao = VMC_GERACAO_SESSAO;
   AGE.carregando = true;
-  var r = await chamarServidor('profLerAgenda', agePeriodo_());
+  // 14.13: a releitura automática (quieto) não cobre a tela; se uma janela abriu enquanto ela andava, o resultado é descartado
+  var r = quieto ? await iniLerQuieto('profLerAgenda', agePeriodo_()) : await chamarServidor('profLerAgenda', agePeriodo_());
   AGE.carregando = false;
   if (geracao !== VMC_GERACAO_SESSAO) return;
+  if (quieto && (AGE.p || AGE.ocupado)) return;
   if (!r || !r.ok) { if (!quieto) ageMsg_((r && r.erro) || 'Não foi possível ler a agenda agora.', true); return; }
   ageAplicar_({ agenda: r });
 }
@@ -24079,9 +24081,10 @@ async function ageDecidir_(btn) {
     : (r.aprovado ? 'Pedido aprovado. Sessão marcada para ' + lemDataBR_(r.data, true) + ' às ' + r.hora + '.' : 'Pedido recusado.');
   if (r.ok) ageAplicar_(r); else btn.disabled = false;
   var alvo = document.getElementById(idBloco);
-  if (!alvo && idBloco === 'calBlocoPedidos') { ageMsg_(texto, !r.ok); return; }
+  var emailHtml = (r.ok && r.pedido && r.aviso === 'clique') ? agePedidoAvisoHtml_(r.pedido) : ''; // 14.13
+  if (!alvo && idBloco === 'calBlocoPedidos') { ageMsg_(texto, !r.ok, emailHtml); return; }
   var msg = alvo && alvo.querySelector('.age-ped-msg');
-  if (msg) { msg.textContent = texto; msg.classList.remove('hidden'); msg.classList.toggle('age-msg-erro', !r.ok); }
+  if (msg) { msg.textContent = texto; msg.classList.remove('hidden'); msg.classList.toggle('age-msg-erro', !r.ok); if (emailHtml) msg.insertAdjacentHTML('beforeend', ' ' + emailHtml); }
 }
 
 /* ---------- WhatsApp (mensagens aprovadas; quem envia é o profissional) ---------- */
@@ -24116,7 +24119,7 @@ function agePainelNovo_(iso, hora) {
     modalidade: 'presencial', valor: '', notas: '', avisos: { confirmacao: true, lembrete48: true, lembrete: true, cancelamento: true }, repLigada: false, rep: null,
     reposicao_de: '', sessao: null, escopo: 'esta', erro: '',
     bloq: { id: vmcNovoIdEnvio_(), existente: false, data_inicio: iso, hora_inicio: hora, data_fim: iso, hora_fim: ageHora_(Math.min(ageMin_(hora) + 60, 1439)), dia_todo: false, nome: '' },
-    canc: { quem: 'profissional', escopo: 'esta', avisar: true } };
+    canc: { quem: 'profissional', escopo: 'esta' } };
 }
 function ageFoto_(p) { return JSON.stringify([p.aba, p.sigla, p.data, p.hora, p.dur, p.modalidade, p.valor, p.notas, p.avisos, p.repLigada, p.rep, p.bloq]); }
 function ageMostrar_(p, vista) {
@@ -24142,7 +24145,6 @@ function ageAbrirSessao_(id) {
   p.avisos = {}; AGE_AVISOS.forEach(function (a) { p.avisos[a[0]] = s.avisos.indexOf(a[0]) !== -1; });
   p.repLigada = !!s.serie_id;
   p.rep = (s.serie_id && AGE.agenda.series[s.serie_id]) ? JSON.parse(JSON.stringify(AGE.agenda.series[s.serie_id])) : null;
-  p.canc.avisar = p.avisos.cancelamento;
   ageMostrar_(p);
 }
 function ageAbrirBloqueio_(id) {
@@ -24211,7 +24213,6 @@ function ageLer_() {
   } else if (AGE.vista === 'cancelar') {
     p.canc.quem = c('ageCQuemPac') ? 'paciente' : 'profissional';
     if (c('ageCEscSeg') !== null) p.canc.escopo = c('ageCEscSeg') ? 'seguintes' : 'esta';
-    p.canc.avisar = !!c('ageCAvisar');
   }
 }
 function ageRepPadrao_(p) {
@@ -24483,7 +24484,7 @@ async function ageCriarSerie_() {
   ageAplicar_(r);
   var msgSerie = n + ' sessões criadas.' + (puladas.length ? ' Puladas: ' + ageListaDatas_(puladas) + '.' : '');
   var primeira = p.modo === 'editar' ? null : CAL_SESSOES.filter(function (x) { return x.id === p.id; })[0];
-  if (primeira && r.aviso !== undefined) { ageAbrirAviso_({ tipo: 'confirmacao', sessao: primeira, estado: r.aviso, msg: msgSerie }); return; }
+  if (primeira && r.aviso !== undefined) { ageAbrirAviso_({ tipo: 'confirmacao', emailTipo: n > 1 ? 'serie' : 'confirmacao', sessao: primeira, estado: r.aviso, msg: msgSerie }); return; }
   ageFecharDeVez_();
   ageMsg_(msgSerie);
 }
@@ -24557,11 +24558,9 @@ function ageRenderCancelar_(titulo, corpo, acoes, erro) {
     (s.serie_id ? '<fieldset class="age-fieldset"><legend class="age-sr">Série</legend>' +
       '<label class="age-check"><input type="radio" name="ageCEsc" id="ageCEscEsta"> <span>Só esta consulta</span></label>' +
       '<label class="age-check"><input type="radio" name="ageCEsc" id="ageCEscSeg"> <span>Esta consulta e as seguintes</span></label></fieldset>' : '') +
-    '<p class="age-aviso hidden" id="ageCPrazo">Faltam menos de ' + ageHoras_() + ' horas: a sessão fica como cobrada.</p>' +
-    '<label class="age-check"><input type="checkbox" id="ageCAvisar"> <span>Avisar o paciente por e-mail</span></label>' + erro;
+    '<p class="age-aviso hidden" id="ageCPrazo">Faltam menos de ' + ageHoras_() + ' horas: a sessão fica como cobrada.</p>' + erro;
   document.getElementById(p.canc.quem === 'paciente' ? 'ageCQuemPac' : 'ageCQuemEu').checked = true;
   if (s.serie_id) document.getElementById(p.canc.escopo === 'seguintes' ? 'ageCEscSeg' : 'ageCEscEsta').checked = true;
-  document.getElementById('ageCAvisar').checked = !!p.canc.avisar;
   ageCancPrazo_();
   acoes.innerHTML = ageBtn_('Voltar', 'ageVoltarPainel_()', false) + ageBtn_('Cancelar consulta', 'ageCancelar_()', true, 'ageBtnOk');
 }
@@ -24617,13 +24616,14 @@ function sesAbrirTela() {
   sesRender_();
   sesCarregar_();
 }
-async function sesCarregar_() {
+async function sesCarregar_(quieto) {
   if (SES.carregando) return;
   var geracao = VMC_GERACAO_SESSAO;
   SES.carregando = true;
-  var r = await chamarServidor('lerMinhasSessoes', {});
+  var r = quieto ? await iniLerQuieto('lerMinhasSessoes', {}) : await chamarServidor('lerMinhasSessoes', {}); // 14.13: a releitura automática não cobre a tela
   SES.carregando = false;
   if (geracao !== VMC_GERACAO_SESSAO) return;
+  if (quieto && (!r || !r.ok || SES.vista !== 'lista' || SES.ocupado)) return;
   if (r && r.ok) SES.dados = r; else SES.erro = (r && r.erro) || 'Não foi possível ler suas sessões agora.';
   sesRender_();
 }
@@ -24788,6 +24788,7 @@ function sesEnviar_() {
 /* ---------- cartão "Avisar o paciente" (depois de criar, mudar ou cancelar) ---------- */
 function ageAvisoEstadoTexto_(estado, hora) {
   if (estado === '') return 'E-mail enviado às ' + hora + '.';
+  if (estado === 'clique') return 'E-mail ainda não enviado.'; // 14.13: o e-mail só sai com o clique
   if (estado === 'desligado') return 'E-mail não enviado: avisos desligados na Grade de Atendimento.';
   if (estado === 'sem_email') return 'E-mail não enviado: sem e-mail no cadastro.';
   if (estado === 'sem_conexao') return VMC_MSG_EMAIL_CONECTE; // 14.10
@@ -24808,7 +24809,7 @@ function ageRenderAvisar_(titulo, corpo, acoes) {
   corpo.innerHTML = '<p class="age-texto" id="ageAvisoMsg">' + esc(a.msg) + '</p>' +
     '<p class="age-texto"><strong>' + esc(s.nome) + '</strong> · ' + esc(ageQuandoCurto_(s.data, s.hora)) + '</p>' +
     '<p class="age-aviso-estado" id="ageAvisoEstado" role="status">' + esc(ageAvisoEstadoTexto_(a.estado, a.hora)) + '</p>' +
-    '<div class="age-aviso-acoes"><button type="button" class="prof-lem-btn" id="ageBtnEmailAgora" onclick="ageEmailAgora_()">Enviar e-mail agora</button>' +
+    '<div class="age-aviso-acoes"><button type="button" class="prof-lem-btn" id="ageBtnEmailAgora" onclick="ageEmailAgora_()">' + (a.enviado ? 'Reenviar e-mail' : 'Enviar e-mail agora') + '</button>' +
     ageWhatsBotao_(a.tipo, s, a.anterior) +
     (a.repor ? '<button type="button" class="prof-lem-btn" id="ageBtnReporCartao" onclick="ageReporCancelada_()">Agendar reposição</button>' : '') + '</div>';
   acoes.innerHTML = ageBtn_('Fechar', 'ageFechar()', true, 'ageBtnOk');
@@ -24819,15 +24820,32 @@ async function ageEmailAgora_() {
   if (!p || AGE.ocupado) return;
   var noCartao = p.modo === 'aviso';
   var s = noCartao ? p.aviso.sessao : p.sessao;
-  var dados = noCartao ? { tipo: p.aviso.tipo, anterior: p.aviso.anterior || null }
+  var dados = noCartao ? { tipo: p.aviso.emailTipo || p.aviso.tipo, anterior: p.aviso.anterior || null }
     : { tipo: ageMinutosAte_(s.data, s.hora) <= 2880 ? 'lembrete' : 'confirmacao' };
   AGE.ocupado = true; if (btn) btn.disabled = true;
   var r = await chamarServidor('profAvisarSessao', { id: s.id, dados: dados });
   AGE.ocupado = false; if (btn) btn.disabled = false;
   var texto = !r.ok ? (r.erro || 'Não foi possível enviar agora.')
     : (r.enviado ? 'E-mail enviado.' : (r.motivo === 'sem_conexao' ? VMC_MSG_EMAIL_CONECTE : (r.motivo === 'sem_email' ? 'Sem e-mail no cadastro.' : (r.motivo === 'cota' ? 'Limite de e-mails de hoje atingido.' : 'E-mail não enviado.'))));
+  if (noCartao && r.ok && r.enviado) { texto = 'E-mail enviado às ' + r.hora + '.'; p.aviso.estado = ''; p.aviso.hora = r.hora; p.aviso.enviado = true; if (btn) btn.textContent = 'Reenviar e-mail'; } // 14.13
   var el = document.getElementById(noCartao ? 'ageAvisoEstado' : 'ageEmailEstado');
   if (el) { el.textContent = texto; el.classList.remove('hidden'); }
+}
+/* 14.13: resposta a um pedido (aprovado ou recusado) — o e-mail ao paciente também só sai com o clique */
+function agePedidoAvisoHtml_(pedido) {
+  return '<span class="age-ped-email" id="agePedEmailEstado" role="status">E-mail ainda não enviado.</span> ' +
+    '<button type="button" class="prof-lem-btn" id="agePedEmailBtn" data-pedido="' + esc(pedido) + '" onclick="agePedidoEmail_(this)">Enviar e-mail agora</button>';
+}
+async function agePedidoEmail_(btn) {
+  if (!btn || AGE.ocupado) return;
+  var est = btn.parentNode ? btn.parentNode.querySelector('.age-ped-email') : null;
+  AGE.ocupado = true; btn.disabled = true;
+  var r = await chamarServidor('profAvisarSessao', { id: '', dados: { pedido: btn.dataset.pedido } });
+  AGE.ocupado = false; btn.disabled = false;
+  var texto = !r.ok ? (r.erro || 'Não foi possível enviar agora.')
+    : (r.enviado ? 'E-mail enviado às ' + r.hora + '.' : (r.motivo === 'sem_conexao' ? VMC_MSG_EMAIL_CONECTE : (r.motivo === 'sem_email' ? 'Sem e-mail no cadastro.' : (r.motivo === 'cota' ? 'Limite de e-mails de hoje atingido.' : 'E-mail não enviado.'))));
+  if (est) est.textContent = texto;
+  if (r.ok && r.enviado) btn.textContent = 'Reenviar e-mail';
 }
 
 /* ============================================================
@@ -25108,7 +25126,7 @@ function ageAtualizarSozinha_(motivo) {
     if (!calDataRef) { calDataRef = new Date(); calDataRef.setHours(0, 0, 0, 0); }
     ageCarregar_(true, true);
   } else if (ativa === 'sec-sessoes' && SES.vista === 'lista' && !SES.ocupado) {
-    sesCarregar_();
+    sesCarregar_(true);
   }
 }
 document.addEventListener('visibilitychange', function () { ageAtualizarSozinha_('retorno'); });

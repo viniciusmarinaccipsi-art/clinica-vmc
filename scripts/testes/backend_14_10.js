@@ -90,6 +90,7 @@ const doCalendar = () => G.chamadas.filter(c => c.u !== '/token' && c.u !== '/re
 
 const h = av('({ post: post, cracha: cracha, novoPaciente: novoPaciente, celula: celula, linhaDe: linhaDe, cab: cab, abaPac: abaPac, ctrl: ctrl, EMAILS: EMAILS, memo: _memoZerar_, aceite: _gravarAceitePolitica_, hashProf: hashProf, PROPS: PROPS })');
 const S = nome => av(nome);
+av('AGE_EMAIL_AUTOMATICO = true'); // 14.13: esta suíte confere o conteúdo dos e-mails pelo caminho de antes (envio na própria gravação); em produção a chave é false
 let falhas = 0, passo = 0;
 const ok = (n, c, x) => { passo++; if (c) console.log('  ok   ' + n); else { falhas++; console.log('  FALHA ' + n + (x !== undefined ? '  → ' + JSON.stringify(x).slice(0, 700) : '')); } };
 const tenta = (n, f) => { try { f(); } catch (e) { ok(n + ' (exceção)', false, String(e && e.stack || e).slice(0, 700)); } };

@@ -50,7 +50,7 @@ const monta = a => ctx.montarEmail.apply(null, a);
 console.log('H. texto puro e assunto não mudam');
 ok('H1 texto puro idêntico ao da v16.10 nos 6 casos', casos.every(a => monta(a).texto === montarAntigo.apply(null, a).texto));
 ok('H2 assuntos idênticos', casos.every(a => monta(a).assunto === montarAntigo.apply(null, a).assunto));
-ok('H3 VERSAO_PACOTE = 19.5', G('VERSAO_PACOTE') === '19.5');
+ok('H3 VERSAO_PACOTE = 14.13', G('VERSAO_PACOTE') === '14.13');
 
 console.log('T. textos no HTML, letra por letra');
 const conv = monta(casos[0]), red = monta(casos[4]);

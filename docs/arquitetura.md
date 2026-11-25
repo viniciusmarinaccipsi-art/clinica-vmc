@@ -2384,3 +2384,13 @@ A memória da chamada (`_MEMO_`, 18.10) ganhou a gaveta `_MEMO_.age`, que só ex
 - `buscarProfissional` guarda o cadastro em `_MEMO_.profs` nas ações de `ACOES_DA_AGENDA` (nenhuma delas muda a aba Profissionais).
 
 Regra para quem mexer na Agenda: **gravação nova em aba da Agenda passa por `_ageGravar_`**; se não passar, chama `_ageEsquecer_`. A suíte `scripts/testes/backend_14_12.js` confere, depois de cada gravação, que a agenda devolvida (montada com a memória) é igual à planilha lida de novo.
+
+## Pacote 14.13 — E-mail de sessão só com o clique e Agenda que se atualiza em silêncio (25/11/2026)
+
+Segunda parte da etapa 1 do plano de correções (decisões do usuário de 24 e 25/11/2026).
+
+- **Servidor.** `profSalvarSessao` (criar, mudar, recorrentes), `profCancelarSessao` e `profDecidirPedido` (aprovar e recusar) deixaram de enviar e-mail: devolvem `aviso: 'clique'` (e `pedido`, na decisão). Quem envia é `profAvisarSessao`, sempre por clique: sessão avulsa, remarcação, cancelamento, `tipo: 'serie'` (um e-mail para as sessões recorrentes, desta em diante) e `dados.pedido` (pedido aprovado ou recusado). Nenhuma ação nova. Os lembretes do gatilho continuam automáticos. A chave `AGE_EMAIL_AUTOMATICO` é sempre `false` em produção; existe só para as suítes 14.3, 14.4, 14.5, 14.7 e 14.10, que conferem o conteúdo dos e-mails pelo caminho de antes — sai quando a etapa 4 (avisos ao paciente) reescrever os e-mails.
+- **Tela.** O cartão "Avisar o paciente" mostra "E-mail ainda não enviado." e, depois do clique, "E-mail enviado às HH:mm." com o botão "Reenviar e-mail". A decisão de um pedido (no Início e na Agenda) ganha o mesmo estado e o mesmo botão (`agePedidoAvisoHtml_`, `agePedidoEmail_`). A janela de cancelar perdeu a caixa "Avisar o paciente por e-mail".
+- **Atualização automática.** `ageCarregar_(forcar, quieto)` e `sesCarregar_(quieto)` usam `iniLerQuieto` quando a releitura é automática: não cobrem a tela; se uma janela abriu enquanto a leitura andava, o resultado é descartado.
+- **Ficou para a etapa 4:** as caixas "confirmação" e "mudança ou cancelamento" de "Quais avisos enviamos?" deixaram de ter efeito (os dois e-mails agora dependem do clique); a etapa 4 decide o que fazer com as caixas e com a chave geral.
+- Suíte `scripts/testes/backend_14_13.js`; roteiro de tela `..\PACOTE_14_13_fluxo.js`.

@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '19.5';
+var VERSAO_PACOTE = '14.13';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -6896,6 +6896,10 @@ var AGENDA_SUGESTAO_MAX = 200;
 var CAL_NOME_PADRAO = 'Cogniativo: Agenda Consultório'; // 14.5: agenda do Google que recebe o espelho (decisao do usuario de 22/11/2026)
 var CAL_COR = { presencial: '1', online: '2' };         // cores do Google Calendar: 1 = lavanda (lilas), 2 = salvia (verde)
 var CAL_SINC_RODADA = 20;         // eventos espelhados por rodada do gatilho, por profissional
+// 14.13 (decisao do usuario, 24/11/2026): o e-mail de criar, mudar, cancelar e responder pedido SO sai com o clique do
+// profissional (profAvisarSessao). As gravacoes devolvem aviso = 'clique' e nao enviam nada. A chave abaixo existe so
+// para as suites antigas, que conferem o conteudo dos e-mails pelo caminho de antes; em producao ela e sempre false.
+var AGE_EMAIL_AUTOMATICO = false;
 var CAL_LISTA_PAGINAS = 4;        // 14.11: paginas (2500 eventos cada) lidas para saber que eventos existem no Google
 var CAL_LIVRES_DIAS_PROF = 14;    // dias da lista de horarios livres do profissional
 
@@ -7641,7 +7645,7 @@ function profSalvarSessao(s, dados, periodo) {
     }
     var resp = { ok: true, editada: true, remarcada: mudouQuando, nao_alteradas: naoAlteradas, movidas: plano.movidas.length };
     if (mudouQuando && (existente.data !== v.data || _lemHora_(existente.hora_inicio) !== v.hora)) {
-      resp.aviso = _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, 'remarcacao', { id: id, data: v.data, hora_inicio: v.hora, modalidade: v.modalidade, avisos: v.avisos, duracao_min: String(v.dur) }, 'cancelamento', { anterior: anterior }); // 14.4: caixa "mudanca ou cancelamento"
+      resp.aviso = AGE_EMAIL_AUTOMATICO ? _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, 'remarcacao', { id: id, data: v.data, hora_inicio: v.hora, modalidade: v.modalidade, avisos: v.avisos, duracao_min: String(v.dur) }, 'cancelamento', { anterior: { data: existente.data, hora_inicio: existente.hora_inicio } }) : 'clique'; // 14.13
     }
     return _ageResposta_(alvo, resp, periodo, agora);
   }
@@ -7675,7 +7679,7 @@ function profSalvarSessao(s, dados, periodo) {
       _ageNovaSessao_(ctx, agora, linha);
     });
     var respS = { ok: true, criadas: serie.datas.length, simulacao: sim };
-    respS.aviso = _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, serie.datas.length > 1 ? 'serie' : 'confirmacao',
+    respS.aviso = !AGE_EMAIL_AUTOMATICO ? 'clique' : _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, serie.datas.length > 1 ? 'serie' : 'confirmacao', // 14.13
       { id: id, data: serie.datas[0], hora_inicio: v.hora, modalidade: v.modalidade, avisos: v.avisos, duracao_min: String(v.dur) }, 'confirmacao',
       { n: serie.datas.length, sessoes: serie.datas.map(function (iso, i) { return { id: i === 0 ? id : id.slice(0, 58) + '-' + (i + 1), data: iso, hora_inicio: v.hora, modalidade: v.modalidade, duracao_min: String(v.dur) }; }) }); // 14.5: o anexo leva todas as datas
     return _ageResposta_(alvo, respS, periodo, agora);
@@ -7687,7 +7691,7 @@ function profSalvarSessao(s, dados, periodo) {
   base.id = id; base.data = v.data;
   _ageNovaSessao_(ctx, agora, base);
   var respN = { ok: true, criadas: 1 };
-  if (_ageMinutosAte_(v.data, v.hora, agora) >= 0) respN.aviso = _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, 'confirmacao', { id: id, data: v.data, hora_inicio: v.hora, modalidade: v.modalidade, avisos: v.avisos, duracao_min: String(v.dur) }, 'confirmacao');
+  if (_ageMinutosAte_(v.data, v.hora, agora) >= 0) respN.aviso = !AGE_EMAIL_AUTOMATICO ? 'clique' : _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, 'confirmacao', { id: id, data: v.data, hora_inicio: v.hora, modalidade: v.modalidade, avisos: v.avisos, duracao_min: String(v.dur) }, 'confirmacao'); // 14.13
   return _ageResposta_(alvo, respN, periodo, agora);
 }
 
@@ -7766,7 +7770,7 @@ function profCancelarSessao(s, id, opcoes, periodo) {
     _agePedidosFechar_(ctx, x.id, agora);
   });
   var resp = { ok: true, canceladas: lista.length };
-  resp.aviso = o.avisar === true ? _ageAvisarPaciente_(ctx, alvo.profissionalId, _agePacientes_(alvo.controle)[_siglaChave_(ref.sigla)], 'cancelamento', ref, '') : 'caixa';
+  resp.aviso = !AGE_EMAIL_AUTOMATICO ? 'clique' : (o.avisar === true ? _ageAvisarPaciente_(ctx, alvo.profissionalId, _agePacientes_(alvo.controle)[_siglaChave_(ref.sigla)], 'cancelamento', ref, '') : 'caixa'); // 14.13
   return _ageResposta_(alvo, resp, periodo, agora);
 }
 
@@ -7845,8 +7849,8 @@ function profDecidirPedido(s, id, aprovar, periodo, quando) {
   var hora = escolheu ? _lemHora_(q.hora) : _lemHora_(p.hora);
   if (aprovar !== true) {
     _ageGravar_(ctx.abaP, COLUNAS_PEDIDOS_AGENDA, p.__linha, { estado: 'recusado', decidido_em: agora.carimbo });
-    var av = _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, 'pedido_recusado', { data: p.data, hora_inicio: _lemHora_(p.hora), modalidade: ehAgendar ? p.modalidade : (x ? x.modalidade : ''), avisos: '' }, '');
-    return _ageResposta_(alvo, { ok: true, aprovado: false, aviso: av }, periodo, agora);
+    var av = !AGE_EMAIL_AUTOMATICO ? 'clique' : _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, 'pedido_recusado', { data: p.data, hora_inicio: _lemHora_(p.hora), modalidade: ehAgendar ? p.modalidade : (x ? x.modalidade : ''), avisos: '' }, ''); // 14.13
+    return _ageResposta_(alvo, { ok: true, aprovado: false, aviso: av, pedido: p.id }, periodo, agora);
   }
   if (ehAgendar) {
     // 14.7: aprovado (no horario pedido ou em outro), a sessao nasce A CONFIRMAR (14.5.4) e o e-mail "Pedido aprovado" leva o botao "Confirmar presenca"
@@ -7866,8 +7870,8 @@ function profDecidirPedido(s, id, aprovar, periodo, quando) {
       estado: 'agendada', origem: 'pedido', avisos: AGENDA_AVISOS.join(','), criado_em: agora.carimbo, criado_por: String(alvo.nome || ''), atualizado_em: agora.carimbo };
     _ageNovaSessao_(ctx, agora, nova);
     _ageGravar_(ctx.abaP, COLUNAS_PEDIDOS_AGENDA, p.__linha, { estado: 'aprovado', decidido_em: agora.carimbo, sessao_id: idS, data: dataPed, hora: hora });
-    var avG = _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, 'pedido_aprovado', nova, '');
-    return _ageResposta_(alvo, { ok: true, aprovado: true, data: dataPed, hora: hora, aviso: avG }, periodo, agora);
+    var avG = !AGE_EMAIL_AUTOMATICO ? 'clique' : _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, 'pedido_aprovado', nova, ''); // 14.13
+    return _ageResposta_(alvo, { ok: true, aprovado: true, data: dataPed, hora: hora, aviso: avG, pedido: p.id }, periodo, agora);
   }
   if (!x) return { ok: false, erro: MSG_AGE_NAO_ACHEI };
   if (_lemDia_(dataPed) === null || !hora) return { ok: false, codigo: 'sem_horario', erro: 'Escolha o horário.' };
@@ -7891,8 +7895,8 @@ function profDecidirPedido(s, id, aprovar, periodo, quando) {
       criado_em: agora.carimbo, criado_por: String(alvo.nome || ''), atualizado_em: agora.carimbo });
   }
   _ageGravar_(ctx.abaP, COLUNAS_PEDIDOS_AGENDA, p.__linha, escolheu ? { estado: 'aprovado', decidido_em: agora.carimbo, data: dataPed, hora: hora } : { estado: 'aprovado', decidido_em: agora.carimbo });
-  var avA = _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, 'pedido_aprovado', { id: p.tipo === 'remarcar' ? x.id : 'rep-' + p.id.slice(0, 56), data: dataPed, hora_inicio: hora, modalidade: x.modalidade, avisos: '', duracao_min: String(dur) }, '');
-  return _ageResposta_(alvo, { ok: true, aprovado: true, data: dataPed, hora: hora, aviso: avA }, periodo, agora);
+  var avA = !AGE_EMAIL_AUTOMATICO ? 'clique' : _ageAvisarPaciente_(ctx, alvo.profissionalId, pac, 'pedido_aprovado', { id: p.tipo === 'remarcar' ? x.id : 'rep-' + p.id.slice(0, 56), data: dataPed, hora_inicio: hora, modalidade: x.modalidade, avisos: '', duracao_min: String(dur) }, ''); // 14.13
+  return _ageResposta_(alvo, { ok: true, aprovado: true, data: dataPed, hora: hora, aviso: avA, pedido: p.id }, periodo, agora);
 }
 
 /**
@@ -7955,11 +7959,33 @@ function profAvisarSessao(s, id, dados) {
   var alvo = _ageProf_(s);
   if (!alvo.ok) return alvo;
   var ctx = _ageCtx_(alvo.controle, false), agora = _lemAgora_();
+  // 14.13: a resposta a um pedido (aprovado ou recusado) tambem so sai com o clique: `dados.pedido` = id do pedido
+  if (d.pedido) {
+    var ped = ctx.pedidos.filter(function (y) { return y.id === String(d.pedido).trim(); })[0];
+    if (!ped || (ped.estado !== 'aprovado' && ped.estado !== 'recusado')) return { ok: false, erro: 'Pedido não encontrado.' };
+    var pacPed = _agePacientes_(alvo.controle)[_siglaChave_(ped.sigla)], motPed;
+    if (ped.estado === 'recusado') {
+      var orig = ped.tipo === 'agendar' ? null : ctx.sessoes.filter(function (y) { return y.id === ped.sessao_id; })[0];
+      motPed = _ageAvisarPaciente_(ctx, alvo.profissionalId, pacPed, 'pedido_recusado', { data: ped.data, hora_inicio: _lemHora_(ped.hora), modalidade: ped.tipo === 'agendar' ? ped.modalidade : (orig ? orig.modalidade : ''), avisos: '' }, '', { forcar: true });
+      return { ok: true, enviado: motPed === '', motivo: motPed, hora: agora.hora, tipo: 'pedido_recusado' };
+    }
+    var idPed = ped.tipo === 'repor' ? 'rep-' + ped.id.slice(0, 56) : (ped.tipo === 'agendar' ? 'ag-' + ped.id.slice(0, 56) : ped.sessao_id);
+    var sPed = ctx.sessoes.filter(function (y) { return y.id === idPed; })[0];
+    if (!sPed || sPed.estado === 'cancelada') return { ok: false, erro: MSG_AGE_NAO_ACHEI };
+    motPed = _ageAvisarPaciente_(ctx, alvo.profissionalId, pacPed, 'pedido_aprovado', sPed, '', { forcar: true });
+    return { ok: true, enviado: motPed === '', motivo: motPed, hora: agora.hora, tipo: 'pedido_aprovado' };
+  }
   var x = ctx.sessoes.filter(function (y) { return y.id === String(id || '').trim(); })[0];
   if (!x) return { ok: false, erro: MSG_AGE_NAO_ACHEI };
   var tipo = ['confirmacao', 'lembrete', 'remarcacao', 'cancelamento'].indexOf(d.tipo) !== -1 ? d.tipo : 'confirmacao';
   if ((tipo === 'cancelamento') !== (x.estado === 'cancelada')) tipo = x.estado === 'cancelada' ? 'cancelamento' : 'confirmacao';
   var extra = { forcar: true };
+  // 14.13: sessoes recorrentes — um e-mail so, com a lista das datas (desta em diante)
+  if (d.tipo === 'serie' && x.serie_id && x.estado !== 'cancelada') {
+    var irmas = ctx.sessoes.filter(function (y) { return y.serie_id === x.serie_id && _ageAtiva_(y) && y.data >= x.data; })
+      .sort(function (a, b) { return a.data < b.data ? -1 : (a.data > b.data ? 1 : 0); });
+    if (irmas.length > 1) { tipo = 'serie'; extra.n = irmas.length; extra.sessoes = irmas; }
+  }
   if (tipo === 'remarcacao') {
     var ant = d.anterior && typeof d.anterior === 'object' ? d.anterior : {};
     if (_lemDia_(ant.data) === null || !_lemHora_(ant.hora)) tipo = 'confirmacao';
