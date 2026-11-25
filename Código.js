@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.11';
+var VERSAO_PACOTE = '19.5';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -9031,7 +9031,7 @@ var ABA_FIN_DESPESAS = 'Fin_Despesas';
 var ABA_FIN_CONFIG = 'Config_Financeiro';
 var ABA_FIN_RECIBOS = 'Fin_Recibos'; // 20.1
 var COLUNAS_FIN = {};
-COLUNAS_FIN[ABA_FIN_CADASTRO] = ['id', 'modo', 'n', 'quando', 'pagador', 'recibo', 'titular', 'canal', 'encaminhamento', 'recibo_pedido_em', 'atualizado_em']; // id = sigla do paciente
+COLUNAS_FIN[ABA_FIN_CADASTRO] = ['id', 'modo', 'n', 'quando', 'pagador', 'recibo', 'titular', 'canal', 'encaminhamento', 'recibo_pedido_em', 'atualizado_em', 'enc_item', 'enc_sub', 'enc_texto', 'enc_nome']; // id = sigla do paciente; 19.5: encaminhamento em item e subitem (as quatro ultimas, aditivas)
 COLUNAS_FIN[ABA_FIN_PESSOAS] = ['id', 'sigla', 'papel', 'nome', 'documento', 'telefone', 'email', 'criado_em'];
 COLUNAS_FIN[ABA_FIN_PAGAMENTOS] = ['id', 'sigla', 'data', 'valor', 'forma', 'quem', 'origem', 'situacao', 'obs', 'arquivo_id', 'arquivo_nome', 'arquivo_tipo', 'criado_em', 'decidido_em'];
 COLUNAS_FIN[ABA_FIN_ALOCACOES] = ['id', 'pagamento_id', 'sessao_id', 'sigla', 'valor', 'criado_em'];
@@ -9044,7 +9044,30 @@ var FIN_CONFIG_PADRAO = { dados_receber: '', formas: 'Pix|Dinheiro|Transferênci
   texto_cobranca: '{nome}, {saudacao}. Como vai?\n\nSegue o demonstrativo das sessões de {mes}.\n\n{demonstrativo}\n\n*Total: {total}*\n\nDados para o pagamento:\n*{dados}*',
   categorias: 'Aluguel|Contas (água, luz, internet)|Sistemas e assinaturas|Material|Serviços de terceiros|Formação e supervisão|Impostos e taxas|Outras',
   fiscal: 'Nao', cpf_emissor: '', cod_rendimento: 'R01.001.001', cod_ocupacao: '255' }; // 20.1: camada fiscal (desligada por padrao)
-var FIN_CADASTRO_PADRAO = { modo: 'sessao', n: '', quando: '', pagador: 'paciente', recibo: 'Nao', titular: 'paciente', canal: 'ambos', encaminhamento: '', recibo_pedido_em: '' };
+var FIN_CADASTRO_PADRAO = { modo: 'sessao', n: '', quando: '', pagador: 'paciente', recibo: 'Nao', titular: 'paciente', canal: 'ambos', encaminhamento: '', recibo_pedido_em: '', enc_item: '', enc_sub: '', enc_texto: '', enc_nome: '' };
+/* 19.5 — Encaminhamento em item e subitem. A lista e a que o usuario aprovou em 25/11/2026 (onze itens; subitem so em rede
+   social, medico e outro profissional de saude). Aqui ficam so as chaves; os rotulos sao da tela (FIN_ENC_ROTULOS, index-dev.html).
+   Gravam-se item, subitem, texto do "outro" e nome em colunas separadas, para o grafico contar sem ler texto livre. */
+var FIN_ENC = { rede_social: ['instagram', 'tiktok', 'facebook', 'youtube', 'outra'], busca: [], plataforma: [], paciente: [], colega: [],
+  medico: ['psiquiatra', 'neurologista', 'cardiologista', 'clinico_geral', 'outra'],
+  outro_prof: ['nutricionista', 'fisioterapeuta', 'fonoaudiologo', 'terapeuta_ocupacional', 'outro'], convenio: [], familiar: [], espontanea: [], outro: [] };
+var FIN_ENC_TEXTO = { plataforma: true, outro: true };                       // itens com caixa de texto propria (o subitem "outra"/"outro" tambem abre a caixa)
+var FIN_ENC_NOME = { colega: true, medico: true, outro_prof: true, convenio: true }; // itens com o nome de quem indicou (pode ficar em branco e ser preenchido depois)
+/** Pura: o que a tela mandou vira os quatro campos validos; chave desconhecida vira vazio, e campo que nao cabe naquele item sai. */
+function _finEnc_(d) {
+  var tem = function (o, k) { return Object.prototype.hasOwnProperty.call(o, k); };
+  var item = tem(FIN_ENC, String(d.enc_item || '')) ? String(d.enc_item) : '';
+  var sub = item && FIN_ENC[item].indexOf(String(d.enc_sub || '')) !== -1 ? String(d.enc_sub) : '';
+  return { enc_item: item, enc_sub: sub,
+    enc_texto: (item && (tem(FIN_ENC_TEXTO, item) || sub === 'outra' || sub === 'outro')) ? _finTxt_(d.enc_texto, 80) : '',
+    enc_nome: (item && tem(FIN_ENC_NOME, item)) ? _finTxt_(d.enc_nome, 100) : '' };
+}
+/** Pura: o encaminhamento de um cadastro. O texto livre de antes do 19.5 (coluna `encaminhamento`) aparece como "Outro" com aquele texto — nada se perde. */
+function _finEncDoCad_(cad) {
+  var o = _finEnc_(cad || {});
+  if (!o.enc_item && String((cad || {}).encaminhamento || '').trim()) o = { enc_item: 'outro', enc_sub: '', enc_texto: String(cad.encaminhamento).trim(), enc_nome: '' };
+  return o;
+}
 var FIN_MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 var FIN_ARQUIVO_MAX_B64 = 7200000;      // ~5,4 MB em base64 (o limite dito na tela e 5 MB)
 var FIN_ARQUIVO_TIPOS = ['image/jpeg', 'image/png', 'application/pdf'];
@@ -9364,11 +9387,19 @@ function _finResumo_(c, e, per, agora) {
     if (temNoPeriodo[sig]) { if (primeira[sig] >= per.de) pc.novos++; else pc.regulares++; }
     else if (temAntes[sig] && !temDepois[sig]) pc.sairam++;
     else if (p.ativo) pc.sem_sessao++;
-    var origem = _finCad_(c, sig).encaminhamento;
-    if (p.ativo && origem) enc[origem] = (enc[origem] || 0) + 1;
+    // 19.5: conta todo paciente com encaminhamento informado, ativo ou nao (palavra do usuario: "de onde veio mais pacientes"), no item e no subitem
+    var origem = _finEncDoCad_(_finCad_(c, sig));
+    if (origem.enc_item) {
+      var g = enc[origem.enc_item] || (enc[origem.enc_item] = { n: 0, subs: {} });
+      g.n++;
+      if (origem.enc_sub) g.subs[origem.enc_sub] = (g.subs[origem.enc_sub] || 0) + 1;
+    }
   });
   r.pacientes = pc;
-  r.encaminhamento = Object.keys(enc).map(function (k) { return { nome: k, n: enc[k] }; }).sort(function (x, y) { return y.n - x.n || x.nome.localeCompare(y.nome); });
+  var porN = function (x, y) { return y.n - x.n || String(x.item || x.sub).localeCompare(String(y.item || y.sub)); };
+  r.encaminhamento = Object.keys(enc).map(function (k) {
+    return { item: k, n: enc[k].n, subs: Object.keys(enc[k].subs).map(function (s) { return { sub: s, n: enc[k].subs[s] }; }).sort(porN) };
+  }).sort(porN);
   return r;
 }
 function _finComprovantes_(c) {
@@ -9414,7 +9445,8 @@ function _finPaciente_(c, sigla, agora) {
     if (linha) anam = { nome: String(linha.nome_completo || '').trim(), cpf: _finDocMascara_(linha.cpf) };
   } catch (erroAnamnese) { /* sem a anamnese o cadastro abre assim mesmo */ }
   var titular = c.pessoas.filter(function (x) { return _siglaChave_(x.sigla) === sig && x.papel === 'recibo'; })[0];
-  return { cadastro: { valor: _finCent_(pc.valor), encaminhamento: cad.encaminhamento, modo: cad.modo, n: cad.n, quando: cad.quando, pagador: cad.pagador, recibo: cad.recibo, titular: cad.titular, canal: cad.canal,
+  var encPac = _finEncDoCad_(cad); // 19.5
+  return { cadastro: { valor: _finCent_(pc.valor), enc_item: encPac.enc_item, enc_sub: encPac.enc_sub, enc_texto: encPac.enc_texto, enc_nome: encPac.enc_nome, modo: cad.modo, n: cad.n, quando: cad.quando, pagador: cad.pagador, recibo: cad.recibo, titular: cad.titular, canal: cad.canal,
       pagadores: cad.pagador === 'outro' ? _finPagadores_(c, sig, true).filter(function (x) { return x.documento !== undefined; }) : [],
       titular_nome: titular ? titular.nome : '', titular_documento: titular ? titular.documento : '' },
     anamnese: anam, em_aberto: emAberto, credito: Math.max(0, e.credito[sig] || 0), valor_padrao: c.config.valor_padrao, extrato: extrato,
@@ -9460,7 +9492,11 @@ function profSalvarCadastroFinanceiro(s, siglaPaciente, dados) {
   if (!sig) return { ok: false, erro: 'Este paciente nao pertence a voce' };
   var um = function (v, lista, padrao) { return lista.indexOf(v) !== -1 ? v : padrao; };
   var cad = { id: sig, modo: um(d.modo, ['sessao', 'n', 'mensal'], 'sessao'), pagador: um(d.pagador, ['paciente', 'outro'], 'paciente'), recibo: d.recibo === 'Sim' ? 'Sim' : 'Nao',
-    titular: um(d.titular, ['paciente', 'pagador', 'outro'], 'paciente'), canal: um(d.canal, ['email', 'whatsapp', 'ambos'], 'ambos'), encaminhamento: _finTxt_(d.encaminhamento, 80), atualizado_em: agora.carimbo };
+    titular: um(d.titular, ['paciente', 'pagador', 'outro'], 'paciente'), canal: um(d.canal, ['email', 'whatsapp', 'ambos'], 'ambos'), atualizado_em: agora.carimbo };
+  // 19.5: a tela nova manda item, subitem, texto e nome; o texto livre antigo sai da coluna velha (ja veio na tela como "Outro" + texto).
+  // Quem ainda mandar so `encaminhamento` (pagina aberta de antes do pacote) grava como antes e nao toca nos campos novos.
+  if (d.enc_item !== undefined) { var encNovo = _finEnc_(d); cad.enc_item = encNovo.enc_item; cad.enc_sub = encNovo.enc_sub; cad.enc_texto = encNovo.enc_texto; cad.enc_nome = encNovo.enc_nome; cad.encaminhamento = ''; }
+  else cad.encaminhamento = _finTxt_(d.encaminhamento, 80);
   cad.n = cad.modo === 'n' ? String(Math.min(12, Math.max(2, parseInt(d.n, 10) || 2))) : '';
   cad.quando = cad.modo === 'mensal' ? um(d.quando, ['adiantado', 'f1', 'f2', 'f3', 'seguinte'], 'f1') : '';
   var pessoas = [];

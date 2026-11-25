@@ -379,7 +379,7 @@ tenta('H', () => {
   ok('H2 recebido pela data de entrada soma os pagamentos confirmados do período (o desfeito, o recusado e o aguardando ficam fora)', r.recebido_entrada === 60000 + 50000 + 28000 + 28000 + 40000, r.recebido_entrada);
   ok('H3 recebido pelo mês das sessões: o pagamento que quitou a sessão de outubro conta em outubro (comparação), não em novembro', recebido === r.recebido_entrada - 30000 && r.anterior.recebido === 30000, [recebido, r.anterior]);
   ok('H4 agenda do período: realizadas, faltas e cancelamentos por quem cancelou, com as porcentagens', r.agenda.faltas === 2 && r.agenda.canc_pac === 1 && r.agenda.canc_prof === 1 && r.agenda.realizadas >= 10 && r.agenda.online + r.agenda.presencial === r.agenda.realizadas + r.agenda.faltas + f.sessoes.filter(x => x.estado === 'agendada').length, r.agenda);
-  ok('H5 pacientes: todos os sete são novos no período (primeira sessão em novembro, menos a Ana, que vem de outubro) e o ranking de encaminhamento conta os ativos', r.pacientes.novos === 6 && r.pacientes.regulares === 1 && r.encaminhamento[0].nome === 'Indicação de paciente' && r.encaminhamento[0].n === 2, [r.pacientes, r.encaminhamento]);
+  ok('H5 pacientes: todos os sete são novos no período (primeira sessão em novembro, menos a Ana, que vem de outubro) e o encaminhamento em texto livre (de antes do 19.5) conta como "Outro"', r.pacientes.novos === 6 && r.pacientes.regulares === 1 && r.encaminhamento[0].item === 'outro' && r.encaminhamento[0].n === 3 && r.encaminhamento[0].subs.length === 0, [r.pacientes, r.encaminhamento]); // 19.5: o texto livre antigo conta como "Outro"
   ok('H6 no ano: faturamento = soma do que é cobrável no ano, com e sem recibo somando o total, média mensal e projeção', r.ano.faturamento === r.ano.com_recibo + r.ano.sem_recibo && r.ano.faturamento >= total && r.ano.projecao === r.ano.media_mensal * 12 && r.ano.valor_medio > 0, r.ano);
   const ano = prof('profLerFinanceiro', { periodo: 'ano' }).financeiro;
   ok('H7 período longo (o ano): o gráfico vem por mês, com 12 pontos', ano.resumo.granul === 'mes' && ano.resumo.serie.length === 12 && ano.periodo.rotulo === 'Ano de 2026');
@@ -495,6 +495,52 @@ tenta('T', () => {
     [linhas('Fin_Pessoas'), linhas('Fin_Cadastro')]);
   const inesperados = logServidor.filter(l => !/^trava de gravacao: nao obtida/.test(l));
   ok('T8 o servidor não registrou nenhum erro', inesperados.length === 0, inesperados.slice(0, 5));
+});
+
+/* ---------------------------------------------------------------- E19 (Pacote 19.5) */
+console.log('E19. Encaminhamento em item e subitem');
+tenta('E19', () => {
+  const lerPac = s => prof('profLerFinanceiro', { siglaPaciente: s }).paciente.cadastro;
+  const E = S('_finEnc_'), FE = S('FIN_ENC');
+  ok('E1 a lista tem os onze itens aprovados e subitem só em rede social, médico e outro profissional de saúde (quatro opções + outra)',
+    Object.keys(FE).join(',') === 'rede_social,busca,plataforma,paciente,colega,medico,outro_prof,convenio,familiar,espontanea,outro' &&
+    Object.keys(FE).filter(k => FE[k].length).join(',') === 'rede_social,medico,outro_prof' && ['rede_social', 'medico', 'outro_prof'].every(k => FE[k].length === 5), FE);
+  ok('E2 pura: chave desconhecida vira vazio (inclusive "constructor"), subitem de outro item sai, texto e nome só onde cabem',
+    JSON.stringify(E({ enc_item: 'constructor', enc_sub: 'x', enc_texto: 't', enc_nome: 'n' })) === JSON.stringify({ enc_item: '', enc_sub: '', enc_texto: '', enc_nome: '' }) &&
+    JSON.stringify(E({ enc_item: 'rede_social', enc_sub: 'psiquiatra', enc_texto: 't', enc_nome: 'n' })) === JSON.stringify({ enc_item: 'rede_social', enc_sub: '', enc_texto: '', enc_nome: '' }) &&
+    JSON.stringify(E({ enc_item: 'rede_social', enc_sub: 'outra', enc_texto: 'Kwai', enc_nome: 'n' })) === JSON.stringify({ enc_item: 'rede_social', enc_sub: 'outra', enc_texto: 'Kwai', enc_nome: '' }) &&
+    JSON.stringify(E({ enc_item: 'plataforma', enc_texto: 'Uma plataforma', enc_nome: 'n' })) === JSON.stringify({ enc_item: 'plataforma', enc_sub: '', enc_texto: 'Uma plataforma', enc_nome: '' }) &&
+    JSON.stringify(E({ enc_item: 'colega', enc_texto: 't', enc_nome: 'Fulano' })) === JSON.stringify({ enc_item: 'colega', enc_sub: '', enc_texto: '', enc_nome: 'Fulano' }));
+  let c = lerPac(CARLA);
+  ok('E3 o texto livre de antes do pacote aparece como "Outro" com aquele texto (nada se perde) e a leitura não devolve mais o campo antigo',
+    c.enc_item === 'outro' && c.enc_sub === '' && c.enc_texto === 'Doctoralia' && c.enc_nome === '' && c.encaminhamento === undefined, c);
+  let r = cadastro(CARLA, { valor: 30000, enc_item: 'rede_social', enc_sub: 'instagram', enc_texto: 'sobra', enc_nome: 'sobra' });
+  c = lerPac(CARLA);
+  ok('E4 gravar rede social + Instagram: item e subitem ficam; texto e nome, que não cabem, saem; o texto antigo não volta',
+    r.ok === true && c.enc_item === 'rede_social' && c.enc_sub === 'instagram' && c.enc_texto === '' && c.enc_nome === '' && r.paciente.cadastro.enc_sub === 'instagram', c);
+  cadastro(ANA, { valor: 30000, modo: 'mensal', quando: 'f3', enc_item: 'medico', enc_sub: 'outra', enc_texto: 'Geriatra', enc_nome: '' });
+  c = lerPac(ANA);
+  ok('E5 médico + outra especialidade com texto; o nome pode ficar em branco', c.enc_item === 'medico' && c.enc_sub === 'outra' && c.enc_texto === 'Geriatra' && c.enc_nome === '', c);
+  cadastro(ANA, { valor: 30000, modo: 'mensal', quando: 'f3', enc_item: 'medico', enc_sub: 'psiquiatra', enc_texto: 'Geriatra', enc_nome: 'Dra. Nome de Teste' });
+  c = lerPac(ANA);
+  ok('E6 o nome entra depois; trocar para psiquiatra tira o texto do "outra"', c.enc_sub === 'psiquiatra' && c.enc_texto === '' && c.enc_nome === 'Dra. Nome de Teste', c);
+  cadastro(DIEGO, { valor: 28000, modo: 'n', n: '2', enc_item: 'rede_social', enc_sub: 'tiktok' });
+  cadastro(ELISA, { enc_item: 'rede_social' });
+  cadastro(FABIO, { enc_item: 'busca' });
+  cadastro(GUI, { encaminhamento: 'Texto de página antiga' }); // página aberta de antes do pacote: manda só o campo antigo
+  c = lerPac(GUI);
+  ok('E7 quem ainda manda só o campo antigo grava como antes e aparece como "Outro" + texto', c.enc_item === 'outro' && c.enc_texto === 'Texto de página antiga', c);
+  prof('profDesativarPaciente', { siglaPaciente: FABIO });
+  const enc = fin().financeiro.resumo.encaminhamento, de = k => enc.filter(e => e.item === k)[0] || { n: 0, subs: [] };
+  ok('E8 o resumo conta por item, do maior para o menor, e por subitem dentro do item',
+    enc[0].item === 'rede_social' && enc[0].n === 3 && JSON.stringify(enc[0].subs) === JSON.stringify([{ sub: 'instagram', n: 1 }, { sub: 'tiktok', n: 1 }]) &&
+    de('medico').n === 1 && JSON.stringify(de('medico').subs) === JSON.stringify([{ sub: 'psiquiatra', n: 1 }]) && de('outro').n === 1 && de('outro').subs.length === 0, enc);
+  ok('E9 o paciente desativado continua na conta (de onde vieram os pacientes, ativos ou não)', de('busca').n === 1, enc);
+  ok('E10 o resumo não leva nome de quem indicou nem texto digitado', JSON.stringify(enc).indexOf('Nome de Teste') === -1 && JSON.stringify(enc).indexOf('antiga') === -1);
+  cadastro(GUI, { enc_item: '' });
+  c = lerPac(GUI);
+  ok('E11 voltar para "Selecione" limpa o encaminhamento (o texto antigo não reaparece) e ele sai da conta', c.enc_item === '' && c.enc_texto === '' &&
+    !fin().financeiro.resumo.encaminhamento.some(e => e.item === 'outro'), c);
 });
 
 console.log('\nRESULTADO (' + process.env.VMC_FUSO_20 + '): ' + (falhas ? falhas + ' FALHA(S) em ' + passo + ' provas' : 'OK — ' + passo + '/' + passo + ' provas'));

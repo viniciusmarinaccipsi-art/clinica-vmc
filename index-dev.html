@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia e valor por paciente · agendamento do paciente com a aprovação do profissional · Painel de Evolução na tela do profissional — Pacote 19.1 · o pedido de agendamento do paciente aparece como “Agendamento solicitado” — Pacote 14.7.1 · Fluxo de caixa: receitas lidas da Agenda, pagamentos, cobranças por e-mail e WhatsApp, comprovante do paciente, despesas e contas a pagar — Pacote 20.0 · recibos e livro caixa: quem precisa de recibo, prévia literal e arquivo de lote do Carnê-Leão · Biblioteca de Escalas e Inventários com "Aplicar a um paciente" — Pacote 19.3 · tags da busca das escalas recolhidas atrás de um botão; saiu a tag "Mensuração" — Pacote 19.3.1 · cada profissional conecta a própria Google Agenda, com a opção dos compromissos pessoais — Pacote 14.8 · sessões com status pendente no Início, a palavra "Status" na sessão e os dois e-mails da agenda ao profissional — Pacote 20.2 (23/11/2026) · na tela do profissional, os subtítulos do Painel de Evolução falam do paciente — Pacote 19.1.1 (23/11/2026) · a volta da permissão do Google passa por uma página do próprio site — Pacote 14.8.1 (23/11/2026) · tags das escalas: saem Monitoramento, Diagnóstico e Processo e juntam-se as repetidas; "emoções agradáveis" na tela do paciente — Pacote 19.3.2 · três textos revistos pelo usuário (crédito nas próximas sessões, aviso da Grade e e-mail de fim de dia) — Pacote 20.2.1 (23/11/2026) · os e-mails aos pacientes saem da conta do Google que o profissional conectou — Pacote 14.10 (23/11/2026) · botões de aviso em dupla e com ícone, valor da sessão só no Financeiro, cartão da escala com tempo, perguntas e tags, tema claro, escuro ou automático — Pacote 19.4 (25/11/2026) -->
+<!-- Sistema Clínico Digital VMC — index-dev.html, index oficial desde 07/10/2026 (tema G) — Agenda: endereço do consultório com link do mapa, espelho no Google Calendar, link do Meet por sessão on-line, evento da sessão em anexo no e-mail, horários livres para repor e remarcar e horário ideal do paciente (40 escalas, todas com ficha) · WhatsApp da sessão com um link só · lembrete abre direto o registro ou a escala · editar registro pelo fluxo de preenchimento · confirmação da sessão conforme quem mudou o horário · decidir pedido pelo Início sem abrir a Agenda · cancelada e cobrada na grade, série com o dia e valor por paciente · agendamento do paciente com a aprovação do profissional · Painel de Evolução na tela do profissional — Pacote 19.1 · o pedido de agendamento do paciente aparece como “Agendamento solicitado” — Pacote 14.7.1 · Fluxo de caixa: receitas lidas da Agenda, pagamentos, cobranças por e-mail e WhatsApp, comprovante do paciente, despesas e contas a pagar — Pacote 20.0 · recibos e livro caixa: quem precisa de recibo, prévia literal e arquivo de lote do Carnê-Leão · Biblioteca de Escalas e Inventários com "Aplicar a um paciente" — Pacote 19.3 · tags da busca das escalas recolhidas atrás de um botão; saiu a tag "Mensuração" — Pacote 19.3.1 · cada profissional conecta a própria Google Agenda, com a opção dos compromissos pessoais — Pacote 14.8 · sessões com status pendente no Início, a palavra "Status" na sessão e os dois e-mails da agenda ao profissional — Pacote 20.2 (23/11/2026) · na tela do profissional, os subtítulos do Painel de Evolução falam do paciente — Pacote 19.1.1 (23/11/2026) · a volta da permissão do Google passa por uma página do próprio site — Pacote 14.8.1 (23/11/2026) · tags das escalas: saem Monitoramento, Diagnóstico e Processo e juntam-se as repetidas; "emoções agradáveis" na tela do paciente — Pacote 19.3.2 · três textos revistos pelo usuário (crédito nas próximas sessões, aviso da Grade e e-mail de fim de dia) — Pacote 20.2.1 (23/11/2026) · os e-mails aos pacientes saem da conta do Google que o profissional conectou — Pacote 14.10 (23/11/2026) · botões de aviso em dupla e com ícone, valor da sessão só no Financeiro, cartão da escala com tempo, perguntas e tags, tema claro, escuro ou automático — Pacote 19.4 (25/11/2026) · Encaminhamento com item, subitem e nome de quem indicou, e gráfico das fontes em barras e pizza, em dois níveis — Pacote 19.5 (25/11/2026) -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -4479,10 +4479,22 @@ body:has(#sec-prof-financeiro.active) .app,body:has(#sec-prof-financeiro.active)
 .fin-linha:last-child{border-bottom:0;}
 .fin-linha b{font-weight:600;color:var(--c-ink);font-variant-numeric:tabular-nums;white-space:nowrap;}
 .fin-linha.fin-total{border-top:2px solid var(--c-line-strong);border-bottom:0;font-weight:600;color:var(--c-ink);}
-.fin-rank{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px var(--s-3);align-items:center;padding:7px 0;font:var(--t-body);color:var(--c-ink-2);}
-.fin-rank b{font-weight:600;color:var(--c-ink);font-variant-numeric:tabular-nums;}
-.fin-rank-barra{grid-column:1 / -1;height:8px;border-radius:var(--r-chip);background:var(--c-action-tint);overflow:hidden;}
-.fin-rank-barra i{display:block;height:100%;border-radius:var(--r-chip);background:var(--c-action);}
+/* Pacote 19.5 — quadro do Encaminhamento: barras e pizza lado a lado (no celular, a pizza desce) */
+.fin-enc-duas{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--s-4);align-items:center;}
+@media (min-width:700px){ .fin-enc-duas{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);} }
+.fin-enc-lin{display:grid;grid-template-columns:12px minmax(0,1.1fr) minmax(0,1fr) auto;gap:var(--s-2);align-items:center;width:100%;min-height:var(--hit-min);padding:6px var(--s-2);border:0;border-radius:var(--r-field);background:transparent;color:var(--c-ink-2);font:var(--t-body-sm);text-align:left;}
+button.fin-enc-lin{cursor:pointer;}
+button.fin-enc-lin:hover{background:var(--c-surface-sub);}
+button.fin-enc-lin[aria-pressed="true"]{background:var(--c-action-tint);color:var(--c-ink);}
+button.fin-enc-lin:focus-visible{outline:2px solid var(--c-action);outline-offset:2px;}
+.fin-enc-lin b{font-weight:600;color:var(--c-ink);font-variant-numeric:tabular-nums;min-width:2ch;text-align:right;}
+.fin-enc-pt{width:10px;height:10px;border-radius:2px;}
+.fin-enc-nome{overflow-wrap:anywhere;}
+.fin-enc-trilho{height:10px;border-radius:var(--r-chip);background:var(--c-surface-sub);overflow:hidden;}
+.fin-enc-trilho i{display:block;height:100%;border-radius:var(--r-chip);}
+.fin-enc-pz{position:relative;height:230px;}
+.fin-enc-det{border-top:1px solid var(--c-line);margin-top:var(--s-3);padding-top:var(--s-3);}
+.fin-enc-det-tit{font:var(--t-body);font-weight:600;color:var(--c-ink);margin:0 0 var(--s-2);}
 .fin-tabela{width:100%;border-collapse:collapse;font:var(--t-body);text-align:left;}
 .fin-tabela th{font:var(--t-label);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--c-ink-3);padding:8px 10px;border-bottom:1.5px solid var(--c-line-strong);white-space:nowrap;}
 .fin-tabela td{padding:10px;border-bottom:1px solid var(--c-line-soft);color:var(--c-ink);vertical-align:middle;overflow-wrap:anywhere;}
@@ -25139,6 +25151,33 @@ var FIN_MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'ju
 var FIN_SIT_COB = { a_enviar: ['aberto', 'A enviar'], enviada: ['', 'Enviada'], paga: ['ok', 'Paga'], parcial: ['atencao', 'Parcial'], atrasada: ['atencao', 'Atrasada'] };
 var FIN_SIT_REC = { a_emitir: ['aberto', 'A emitir'], no_lote: ['', 'No lote'], emitido: ['ok', 'Emitido'], cancelado: ['atencao', 'Cancelado'] };
 var FIN_MODOS = [['sessao', 'Por sessão'], ['n', 'A cada … sessões'], ['mensal', 'Mensal']];
+/* Pacote 19.5 — Encaminhamento em item e subitem: a lista que o usuário aprovou em 25/11/2026 (onze itens; subitem só em rede social,
+   médico e outro profissional de saúde). As chaves são as de FIN_ENC no Código.js; aqui ficam os rótulos. Não acrescentar item nem subitem
+   sem a palavra dele, e nenhum nome de plataforma de agendamento (decisão dele). */
+var FIN_ENC_ROTULOS = [
+  ['rede_social', 'Rede social', [['instagram', 'Instagram'], ['tiktok', 'TikTok'], ['facebook', 'Facebook'], ['youtube', 'YouTube'], ['outra', 'Outra']]],
+  ['busca', 'Busca na internet'],
+  ['plataforma', 'Plataforma de agendamento'],
+  ['paciente', 'Indicação de paciente ou ex-paciente'],
+  ['colega', 'Indicação de colega psicólogo'],
+  ['medico', 'Indicação de médico', [['psiquiatra', 'Psiquiatra'], ['neurologista', 'Neurologista'], ['cardiologista', 'Cardiologista'], ['clinico_geral', 'Clínico geral'], ['outra', 'Outra']]],
+  ['outro_prof', 'Indicação de outro profissional de saúde', [['nutricionista', 'Nutricionista'], ['fisioterapeuta', 'Fisioterapeuta'], ['fonoaudiologo', 'Fonoaudiólogo'], ['terapeuta_ocupacional', 'Terapeuta ocupacional'], ['outro', 'Outro']]],
+  ['convenio', 'Convênio ou empresa'],
+  ['familiar', 'Familiar ou amigo'],
+  ['espontanea', 'Demanda espontânea'],
+  ['outro', 'Outro']
+];
+var FIN_ENC_TXT = { plataforma: 'Qual plataforma', outro: 'Qual' };                                 // itens com caixa de texto própria
+var FIN_ENC_NOME = { colega: 'Nome do colega', medico: 'Nome do médico', outro_prof: 'Nome do profissional', convenio: 'Nome do convênio ou da empresa' };
+var FIN_ENC_CORES = ['--c-action', '--c-pos', '--c-reg-neg', '--c-warn', '--c-bdi2-ink', '--c-urica-ink', '--c-trauma-ink', '--c-bemestar-ink', '--c-processo-ink', '--c-bai-ink', '--c-ink-3']; // uma por fatia, dos tokens
+function finEncDef_(item) { return FIN_ENC_ROTULOS.filter(function (it) { return it[0] === item; })[0] || null; }
+function finEncRotulo_(item, sub) {
+  var d = finEncDef_(item);
+  if (!d) return item || '';
+  if (sub === undefined) return d[1];
+  var s = (d[2] || []).filter(function (x) { return x[0] === sub; })[0];
+  return s ? s[1] : (sub || '');
+}
 var FIN_CONTAS = [['P10.01.00001', 'Água'], ['P10.01.00002', 'Aluguel'], ['P10.01.00003', 'Condomínio'], ['P10.01.00004', 'Contribuições a entidades de classe'], ['P10.01.00005', 'Cópia e autenticação'], ['P10.01.00006', 'Emolumentos'], ['P10.01.00007', 'Energia'],
   ['P10.01.00008', 'Gás'], ['P10.01.00009', 'IPTU'], ['P10.01.00010', 'ISS'], ['P10.01.00011', 'Conservação e limpeza'], ['P10.01.00012', 'Material de escritório'], ['P10.01.00013', 'Remuneração a terceiros com vínculo'], ['P10.01.00014', 'Telefone']]; // sugestões; a conta pode ser digitada
 var FIN_QUANDO = [['adiantado', 'Adiantado'], ['f1', 'Do dia 1 ao 10'], ['f2', 'Do dia 11 ao 20'], ['f3', 'Do dia 21 ao fim do mês'], ['seguinte', 'No mês seguinte']];
@@ -25218,6 +25257,8 @@ function finRender_() {
   var c = document.getElementById('finConteudo');
   if (!c) return;
   if (FIN.grafico) { FIN.grafico.destroy(); FIN.grafico = null; }
+  if (FIN.encPz) { FIN.encPz.destroy(); FIN.encPz = null; } // 19.5: as duas pizzas do Encaminhamento
+  if (FIN.encDetPz) { FIN.encDetPz.destroy(); FIN.encDetPz = null; }
   var d = FIN.dados;
   var telas = { resumo: finResumoHtml_, receitas: finReceitasHtml_, cobrancas: finCobrancasHtml_, despesas: finDespesasHtml_, recibos: finRecibosHtml_, config: finConfigHtml_ };
   var h = '<div class="fin-abas" role="tablist" aria-label="Partes do fluxo de caixa">' + FIN_ABAS.filter(function (a) { return a[0] !== 'recibos' || (d && d.config.fiscal); }).map(function (a) {
@@ -25266,20 +25307,96 @@ function finResumoHtml_(d) {
   h += '<div class="fin-painel"><div class="fin-painel-topo"><h3 class="fin-painel-tit">Sessões e valor</h3>' + (r.granul === 'dia' ? finSeg_('granul', [['dia', 'Por dia'], ['semana', 'Por semana']], FIN.granul, 'Agrupar o gráfico') : '<span class="fin-sub">Por mês</span>') + '</div>' +
     (r.serie.length ? '<div class="fin-grafico"><canvas id="finGrafico" role="img" aria-label="Sessões e valor no período"></canvas></div><div class="fin-legenda"><span><i></i>Sessões</span><span><i class="fin-leg-linha"></i>Valor das sessões (R$)</span></div>'
                     : '<p class="fin-nota">Nenhuma sessão neste período.</p>') + '</div>';
-  var a = r.agenda, p = r.pacientes, ano = r.ano, maior = Math.max.apply(null, r.encaminhamento.map(function (e) { return e.n; }).concat([1]));
+  var a = r.agenda, p = r.pacientes, ano = r.ano;
   h += '<div class="fin-grade">' +
     '<div class="fin-painel"><h3 class="fin-painel-tit">No ano</h3>' + finLinhas_([['Faturamento', finBRL_(ano.faturamento)], ['Valor médio da sessão', finBRL_(ano.valor_medio)], ['Acumulado (recebido)', finBRL_(ano.acumulado)],
       ['Média mensal', finBRL_(ano.media_mensal)], ['Com recibo', finBRL_(ano.com_recibo)], ['Sem recibo', finBRL_(ano.sem_recibo)], ['Projeção do ano', finBRL_(ano.projecao)]]) + '</div>' +
     '<div class="fin-painel"><h3 class="fin-painel-tit">Agenda no período</h3>' + finLinhas_([['Sessões realizadas', String(a.realizadas)], ['Faltas', a.faltas + ' (' + a.pct_faltas + '%)'],
       ['Canceladas por você', a.canc_prof + ' (' + a.pct_canc_prof + '%)'], ['Canceladas pelo paciente', a.canc_pac + ' (' + a.pct_canc_pac + '%)'], ['On-line', String(a.online)], ['Presencial', String(a.presencial)]]) + '</div>' +
     '<div class="fin-painel"><h3 class="fin-painel-tit">Pacientes</h3>' + finLinhas_([['Novos', String(p.novos)], ['Regulares', String(p.regulares)], ['Sem sessão no período', String(p.sem_sessao)], ['Saíram', String(p.sairam)], ['Com saldo em aberto', String(p.com_saldo)]]) + '</div>' +
-    '<div class="fin-painel"><h3 class="fin-painel-tit">Encaminhamento</h3><p class="fin-nota">Por onde os pacientes chegaram.</p>' + r.encaminhamento.map(function (e) {
-      return '<div class="fin-rank"><span>' + esc(e.nome) + '</span><b>' + e.n + '</b><div class="fin-rank-barra"><i style="width:' + Math.round(e.n * 100 / maior) + '%"></i></div></div>';
-    }).join('') + '</div></div>';
+    '</div>' + finEncPainelHtml_(r.encaminhamento || []); // 19.5: o Encaminhamento virou um quadro inteiro, com barras e pizza em dois níveis
   h += '<div class="fin-acoes"><button type="button" class="prof-lem-btn" onclick="finExportar_()">Exportar lista</button><button type="button" class="prof-lem-btn" onclick="window.print()">Salvar em PDF</button></div>';
   return h;
 }
+/* ---- Pacote 19.5 — quadro "Encaminhamento" do Resumo: de onde vieram mais pacientes (geral) e, dentro do item tocado, qual subitem
+   pesou mais. Barras (número de pacientes) e pizza (percentual), nos dois níveis. Conta todo paciente com encaminhamento informado,
+   ativo ou não (o servidor já manda assim). Tocar numa barra ou numa fatia abre o detalhe daquele item. ---- */
+function finEncCor_(i) { return vmcTok(FIN_ENC_CORES[i % FIN_ENC_CORES.length]); }
+function finEncLinhasHtml_(linhas, clicavel) {
+  var maior = Math.max.apply(null, linhas.map(function (l) { return l.n; }).concat([1]));
+  return linhas.map(function (l, i) {
+    var miolo = '<span class="fin-enc-pt" style="background:' + finEncCor_(i) + '"></span><span class="fin-enc-nome">' + esc(l.rotulo) + '</span>' +
+      '<span class="fin-enc-trilho"><i style="width:' + Math.round(l.n * 100 / maior) + '%;background:' + finEncCor_(i) + '"></i></span><b>' + l.n + '</b>';
+    return clicavel ? '<button type="button" class="fin-enc-lin" data-enc-item="' + esc(l.chave) + '" aria-pressed="' + (FIN.encSel === l.chave) + '" onclick="finEncAbrir_(this.dataset.encItem)">' + miolo + '</button>'
+                    : '<div class="fin-enc-lin">' + miolo + '</div>';
+  }).join('');
+}
+function finEncPainelHtml_(enc) {
+  var total = enc.reduce(function (s, e) { return s + e.n; }, 0);
+  var h = '<div class="fin-painel fin-enc"><h3 class="fin-painel-tit">Encaminhamento</h3>';
+  if (!total) return h + '<p class="fin-nota">Por onde os pacientes chegaram.</p><p class="fin-nota">Nenhum paciente com o encaminhamento informado ainda.</p></div>';
+  if (!enc.some(function (e) { return e.item === FIN.encSel; })) FIN.encSel = enc[0].item;
+  return h + '<p class="fin-nota">Por onde os pacientes chegaram · ' + total + (total === 1 ? ' paciente' : ' pacientes') + ' · toque numa barra ou numa fatia.</p>' +
+    '<div class="fin-enc-duas"><div id="finEncBar">' + finEncLinhasHtml_(enc.map(function (e) { return { chave: e.item, rotulo: finEncRotulo_(e.item), n: e.n }; }), true) + '</div>' +
+    '<div class="fin-enc-pz"><canvas id="finEncPz" role="img" aria-label="Percentual de pacientes por fonte de encaminhamento"></canvas></div></div>' +
+    '<div class="fin-enc-det" id="finEncDet">' + finEncDetHtml_(enc, total) + '</div></div>';
+}
+/* As linhas de dentro do item escolhido; quem não teve o subitem informado entra como "Não informado" */
+function finEncSubs_(e) {
+  var subs = (e.subs || []).map(function (s) { return { chave: s.sub, rotulo: finEncRotulo_(e.item, s.sub), n: s.n }; });
+  var resto = e.n - subs.reduce(function (t, s) { return t + s.n; }, 0);
+  if (subs.length && resto > 0) subs.push({ chave: '', rotulo: 'Não informado', n: resto });
+  return subs;
+}
+function finEncDetHtml_(enc, total) {
+  var e = enc.filter(function (x) { return x.item === FIN.encSel; })[0];
+  if (!e) return '';
+  var subs = finEncSubs_(e), nome = finEncRotulo_(e.item);
+  if (!subs.length) return '<p class="fin-nota">' + esc(nome) + ': este item não tem subitens (' + e.n + ' de ' + total + (total === 1 ? ' paciente' : ' pacientes') + ', ' + Math.round(e.n * 100 / total) + '%).</p>';
+  return '<p class="fin-enc-det-tit">Dentro de ' + esc(nome.charAt(0).toLowerCase() + nome.slice(1)) + ' · ' + e.n + (e.n === 1 ? ' paciente' : ' pacientes') + '</p>' +
+    '<div class="fin-enc-duas"><div>' + finEncLinhasHtml_(subs, false) + '</div>' +
+    '<div class="fin-enc-pz"><canvas id="finEncDetPz" role="img" aria-label="Percentual de cada subitem dentro do item escolhido"></canvas></div></div>';
+}
+/* Uma pizza com o percentual escrito na fatia (fatia abaixo de 6% mostra o percentual só ao passar o dedo ou o mouse) */
+function finEncPizza_(canvas, linhas, aoTocar) {
+  if (!canvas || typeof Chart === 'undefined') return null;
+  var total = linhas.reduce(function (s, l) { return s + l.n; }, 0) || 1, tinta = vmcTok('--c-ink-inv'), borda = vmcTok('--c-surface');
+  return new Chart(canvas.getContext('2d'), { type: 'pie',
+    data: { labels: linhas.map(function (l) { return l.rotulo; }), datasets: [{ data: linhas.map(function (l) { return l.n; }), backgroundColor: linhas.map(function (l, i) { return finEncCor_(i); }), borderColor: borda, borderWidth: 1 }] },
+    plugins: [{ id: 'finEncPct', afterDatasetsDraw: function (ch) {
+      var x = ch.ctx; x.save(); x.font = '600 13px Figtree, sans-serif'; x.fillStyle = tinta; x.textAlign = 'center'; x.textBaseline = 'middle';
+      ch.getDatasetMeta(0).data.forEach(function (arco, i) { var pct = Math.round(linhas[i].n * 100 / total); if (pct < 6) return; var pos = arco.tooltipPosition(); x.fillText(pct + '%', pos.x, pos.y); });
+      x.restore();
+    } }],
+    options: { responsive: true, maintainAspectRatio: false, animation: false,
+      onClick: function (ev, els) { if (aoTocar && els.length) aoTocar(linhas[els[0].index].chave); },
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (it) { return it.label + ': ' + Math.round(it.parsed * 100 / total) + '% (' + it.parsed + ')'; } } } } }
+  });
+}
+function finEncDesenhar_(d) {
+  var enc = (d.resumo && d.resumo.encaminhamento) || [];
+  if (FIN.encPz) { FIN.encPz.destroy(); FIN.encPz = null; }
+  if (FIN.encDetPz) { FIN.encDetPz.destroy(); FIN.encDetPz = null; }
+  if (!enc.length) return;
+  FIN.encPz = finEncPizza_(document.getElementById('finEncPz'), enc.map(function (e) { return { chave: e.item, rotulo: finEncRotulo_(e.item), n: e.n }; }), finEncAbrir_);
+  var e = enc.filter(function (x) { return x.item === FIN.encSel; })[0];
+  if (e && document.getElementById('finEncDetPz')) FIN.encDetPz = finEncPizza_(document.getElementById('finEncDetPz'), finEncSubs_(e), null);
+}
+/* Tocar numa barra ou numa fatia: marca o item e troca só o detalhe (as barras e a pizza do geral ficam como estão) */
+function finEncAbrir_(item) {
+  var d = FIN.dados, enc = d && d.resumo ? (d.resumo.encaminhamento || []) : [];
+  if (!enc.some(function (e) { return e.item === item; })) return;
+  FIN.encSel = item;
+  Array.prototype.forEach.call(document.querySelectorAll('#finEncBar .fin-enc-lin'), function (b) { b.setAttribute('aria-pressed', b.dataset.encItem === item ? 'true' : 'false'); });
+  var det = document.getElementById('finEncDet');
+  if (!det) return;
+  if (FIN.encDetPz) { FIN.encDetPz.destroy(); FIN.encDetPz = null; }
+  det.innerHTML = finEncDetHtml_(enc, enc.reduce(function (s, e) { return s + e.n; }, 0));
+  var e = enc.filter(function (x) { return x.item === item; })[0];
+  if (document.getElementById('finEncDetPz')) FIN.encDetPz = finEncPizza_(document.getElementById('finEncDetPz'), finEncSubs_(e), null);
+}
 function finGraficoDesenhar_(d) {
+  finEncDesenhar_(d); // 19.5
   var canvas = document.getElementById('finGrafico');
   if (!canvas || typeof Chart === 'undefined') return;
   var pontos = d.resumo.serie;
@@ -25499,6 +25616,9 @@ function finModalFechar_() { FIN.modal = null; document.getElementById('finModal
 /* Ao sair, nada do financeiro fica na memória da página */
 function finZerar_() {
   if (FIN.grafico) FIN.grafico.destroy();
+  if (FIN.encPz) FIN.encPz.destroy(); // 19.5
+  if (FIN.encDetPz) FIN.encDetPz.destroy();
+  FIN.encPz = null; FIN.encDetPz = null; FIN.encSel = '';
   finModalFechar_();
   FIN.dados = null; FIN.grafico = null; FIN.inicio = null; FIN.inicioPedido = false; FIN.inicioLido = 0; FIN.stpMsg = ''; FIN.stpOcupado = false; FIN.pac = null; FIN.pacSigla = ''; FIN.pacLido = 0; FIN.meu = null; FIN.msg = ''; FIN.erro = ''; FIN.aba = 'resumo'; FIN.carregando = false; FIN.ocupado = false;
 }
@@ -25870,7 +25990,15 @@ function finPacCorpoHtml_() {
     return '<div class="fin-opcoes">' + pares.map(function (o) { return '<label class="fin-opcao"><input type="radio" name="' + nome + '" value="' + o[0] + '"' + (o[0] === atual ? ' checked' : '') + ' onchange="finPacAlternar_()"> ' + esc(o[1]) + '</label>'; }).join('') + '</div>';
   };
   var h = '<div class="fin-form fin-duas"><div class="fin-campo"><label for="finPacValor">Valor da sessão (R$)</label><input type="text" inputmode="decimal" id="finPacValor" autocomplete="off"><span class="fin-sub">O novo valor vale para as próximas sessões ainda não pagas.' + (!c.valor && x.valor_padrao ? ' Em branco, vale o seu valor padrão (' + finBRL_(x.valor_padrao) + ').' : '') + '</span></div>' +
-    '<div class="fin-campo"><label for="finPacEnc">Encaminhamento</label><input type="text" id="finPacEnc" maxlength="80"><span class="fin-sub">Por onde o paciente chegou.</span></div></div>';
+    '<div class="fin-campo"><label for="finPacEncItem">Encaminhamento</label><select id="finPacEncItem" onchange="finPacAlternar_()"><option value="">Selecione</option>' +
+      FIN_ENC_ROTULOS.map(function (it) { return '<option value="' + it[0] + '"' + (it[0] === c.enc_item ? ' selected' : '') + '>' + esc(it[1]) + '</option>'; }).join('') + '</select><span class="fin-sub">Por onde o paciente chegou.</span></div></div>';
+  // 19.5: subitem, caixa de texto do "outro" e nome de quem indicou — só os que valem para o item escolhido (lista aprovada pelo usuário em 25/11/2026)
+  var encDef = finEncDef_(c.enc_item), encSubs = encDef ? (encDef[2] || []) : [], encOutro = c.enc_sub === 'outra' || c.enc_sub === 'outro';
+  var encExtra = (encSubs.length ? '<div class="fin-campo"><label for="finPacEncSub">' + (c.enc_item === 'rede_social' ? 'Qual rede' : 'Especialidade') + '</label><select id="finPacEncSub" onchange="finPacAlternar_()"><option value="">Selecione</option>' +
+      encSubs.map(function (s) { return '<option value="' + s[0] + '"' + (s[0] === c.enc_sub ? ' selected' : '') + '>' + esc(s[1]) + '</option>'; }).join('') + '</select></div>' : '') +
+    ((FIN_ENC_TXT[c.enc_item] || (encSubs.length && encOutro)) ? '<div class="fin-campo"><label for="finPacEncTexto">' + esc(FIN_ENC_TXT[c.enc_item] || 'Qual') + '</label><input type="text" id="finPacEncTexto" maxlength="80" autocomplete="off"></div>' : '') +
+    (FIN_ENC_NOME[c.enc_item] ? '<div class="fin-campo"><label for="finPacEncNome">' + esc(FIN_ENC_NOME[c.enc_item]) + '</label><input type="text" id="finPacEncNome" maxlength="100" autocomplete="off"><span class="fin-sub">Pode ser preenchido depois.</span></div>' : '');
+  if (encExtra) h += '<div class="fin-form fin-duas" id="finPacEncExtra">' + encExtra + '</div>';
   h += '<fieldset class="fin-fieldset"><legend>Cobrança — de quanto em quanto</legend>' + radio('finPacModo', FIN_MODOS, c.modo) + '</fieldset>' +
     '<div class="fin-form fin-duas' + (c.modo === 'n' ? '' : ' hidden') + '" id="finPacNWrap"><div class="fin-campo"><label for="finPacN">A cada quantas sessões</label><input type="text" inputmode="numeric" id="finPacN"></div></div>' +
     '<fieldset class="fin-fieldset' + (c.modo === 'mensal' ? '' : ' hidden') + '" id="finPacQuandoWrap"><legend>Quando (mensal)</legend>' + radio('finPacQuando', FIN_QUANDO, c.quando) + '</fieldset>';
@@ -25893,7 +26021,7 @@ function finPacCorpoHtml_() {
   }).join('') : '<p class="fin-nota">Nenhuma sessão cobrada ainda.</p>';
   setTimeout(function () {
     var campo = function (id, v) { var el = document.getElementById(id); if (el) el.value = v || ''; };
-    campo('finPacValor', c.valor ? finBRL_(c.valor).replace('R$ ', '') : ''); campo('finPacEnc', c.encaminhamento); campo('finPacN', c.n); campo('finPacTitNome', c.titular_nome); campo('finPacTitDoc', c.titular_documento);
+    campo('finPacValor', c.valor ? finBRL_(c.valor).replace('R$ ', '') : ''); campo('finPacEncTexto', c.enc_texto); campo('finPacEncNome', c.enc_nome); campo('finPacN', c.n); campo('finPacTitNome', c.titular_nome); campo('finPacTitDoc', c.titular_documento);
     c.pagadores.forEach(function (pg, i) { document.querySelectorAll('[data-fin-pagador="' + i + '"] [data-fin-pg]').forEach(function (el) { el.value = pg[el.dataset.finPg] || ''; }); });
   }, 0);
   return h;
@@ -25901,7 +26029,13 @@ function finPacCorpoHtml_() {
 function finPacLer_() {
   var marcado = function (nome) { var el = document.querySelector('input[name="' + nome + '"]:checked'); return el ? el.value : ''; };
   var c = FIN.pac.cadastro;
-  c.valor = finCentavos_(document.getElementById('finPacValor').value); c.encaminhamento = document.getElementById('finPacEnc').value.trim(); c.n = document.getElementById('finPacN').value.trim();
+  c.valor = finCentavos_(document.getElementById('finPacValor').value); c.n = document.getElementById('finPacN').value.trim();
+  // 19.5: encaminhamento — trocar o item zera o subitem (as opções são outras); texto e nome só existem quando o item pede
+  var encItem = document.getElementById('finPacEncItem').value, encSub = document.getElementById('finPacEncSub'), encTexto = document.getElementById('finPacEncTexto'), encNome = document.getElementById('finPacEncNome');
+  c.enc_sub = (encItem === (c.enc_item || '') && encSub) ? encSub.value : '';
+  c.enc_item = encItem;
+  if (encTexto) c.enc_texto = encTexto.value.trim();
+  if (encNome) c.enc_nome = encNome.value.trim();
   c.modo = marcado('finPacModo'); c.quando = marcado('finPacQuando'); c.pagador = marcado('finPacPagador'); c.recibo = marcado('finPacRecibo'); c.titular = marcado('finPacTitular'); c.canal = marcado('finPacCanal');
   var tn = document.getElementById('finPacTitNome'), td = document.getElementById('finPacTitDoc');
   if (tn) { c.titular_nome = tn.value.trim(); c.titular_documento = td.value.trim(); }
