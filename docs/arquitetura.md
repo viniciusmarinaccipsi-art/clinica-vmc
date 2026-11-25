@@ -2369,3 +2369,18 @@ Só servidor; nenhuma ação nova. O COGNIATIVO continua sendo a fonte e o Googl
 - **Como o evento volta.** `_calSincronizar_` manda o `patch` com `status: 'confirmed'` (o próprio evento sai da lixeira do Google, com a sala do Meet que tinha); se o evento não volta (404, 410 ou continua `cancelled`), nasce outro — e, em sessão on-line, o evento novo não pede sala nova: o link que o paciente já recebeu vai escrito no local do evento e `meet_link` não muda.
 - **Fora do pacote:** evento mudado de horário direto no Google não é desfeito.
 - Suíte: `scripts/testes/backend_14_11.js` (Google de mentira com lixeira). As suítes 14.5, 14.8 e 14.10 ganharam a resposta da lista de eventos no Google de mentira.
+
+## Pacote 14.12 — Lentidão: cada coisa é lida uma vez por ação (25/11/2026)
+
+Só servidor; nenhuma ação nova, nenhuma regra mudou. A medição de 25/11/2026 (`..\VMC-offline\medicao_etapa_1\`) mostrou que criar uma sessão gastava cerca de 7 dos 10 segundos do servidor relendo as mesmas abas (Sessoes, Config_Agenda e Pacientes três vezes; as outras, duas), o cadastro do profissional (sete vezes) e os cabeçalhos (sete vezes). E-mail e Google Calendar pesavam cerca de 1 segundo.
+
+A memória da chamada (`_MEMO_`, 18.10) ganhou a gaveta `_MEMO_.age`, que só existe com a memória ativa (dentro do `doPost` e do gatilho dos lembretes):
+
+- `_ageAba_` devolve a mesma instância da aba durante a chamada; é ela a chave das outras gavetas (`Map` por objeto).
+- `_garantirColunas_` lê o cabeçalho de cada aba uma vez.
+- `_ageLer_(aba)` é o `_lembretesLer_` com memória, para Sessoes, Series, Bloqueios e Pedidos_Agenda (`_ageCtx_` e `_calSincronizar_`). Quem chama recebe cópias. `_ageGravar_` mantém a memória igual à planilha (linha nova e campo alterado); **quem apaga linha ou grava direto na célula chama `_ageEsquecer_(aba)`**.
+- `_ageConfig_` lê a `Config_Agenda` uma vez (`_ageConfigLer_` é a leitura); `_ageConfigGravar_` e a Grade esquecem a guardada.
+- `_agePacientes_` lê a aba Pacientes uma vez; `_memoEsquecerPacientes_()` é chamada em `_anexarPorCabecalho_`, `_atualizarLinhaPorChave_` e `_atualizarIndicadores_`.
+- `buscarProfissional` guarda o cadastro em `_MEMO_.profs` nas ações de `ACOES_DA_AGENDA` (nenhuma delas muda a aba Profissionais).
+
+Regra para quem mexer na Agenda: **gravação nova em aba da Agenda passa por `_ageGravar_`**; se não passar, chama `_ageEsquecer_`. A suíte `scripts/testes/backend_14_12.js` confere, depois de cada gravação, que a agenda devolvida (montada com a memória) é igual à planilha lida de novo.
