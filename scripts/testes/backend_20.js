@@ -635,5 +635,29 @@ tenta('Y19', () => {
   ok('Y9 o servidor não registrou nenhum erro', inesperados.length === 0, inesperados.slice(0, 5));
 });
 
+/* ---------------------------------------------------------------- Z19 (Pacote 19.8) */
+console.log('Z19. Histórico de sessões do paciente e evento com a sessão');
+tenta('Z19', () => {
+  const sLinhas = () => { const a = aba('Sessoes'), n = a.getLastRow() - 1, c = h.cab(a), v = n > 0 ? a.getRange(2, 1, n, c.length).getDisplayValues() : []; return v.map(l => { const o = {}; c.forEach((k, i) => { o[k] = l[i]; }); return o; }); };
+  const daPlanilha = sig => sLinhas().filter(x => String(x.sigla).trim().toUpperCase() === sig && x.cancelada_por !== 'edicao_serie');
+  const r = prof('profLerAgenda', { siglaPaciente: BRUNO }), plan = daPlanilha(BRUNO);
+  ok('Z1 a leitura devolve todas as sessões do paciente, e só as dele', r.ok === true && Array.isArray(r.historico) && r.historico.length === plan.length && plan.length >= 3 &&
+    r.historico.every(x => plan.some(p => p.id === x.id)) && /^\d{4}-\d{2}-\d{2}$/.test(r.hoje) && /^\d{2}:\d{2}$/.test(r.hora), [r.ok, (r.historico || []).length, plan.length]);
+  const chaves = r.historico.map(x => x.data + ' ' + x.hora);
+  ok('Z2 da mais recente para a mais antiga', chaves.every((k, i) => i === 0 || chaves[i - 1] >= k), chaves.slice(0, 5));
+  ok('Z3 cada linha traz só o que a tela mostra: dia, hora, modalidade, valor, status, confirmação e se é reposição', r.historico.every(x => Object.keys(x).sort().join() === 'confirmada,data,estado,hora,id,modalidade,reposicao,valor' &&
+    ['presencial', 'online'].indexOf(x.modalidade) !== -1 && ['agendada', 'realizada', 'falta', 'cancelada'].indexOf(x.estado) !== -1), r.historico[0]);
+  const semValor = plan.filter(p => !String(p.valor).trim() && !p.reposicao_de)[0];
+  ok('Z4 sessão sem valor próprio mostra o valor do cadastro do paciente; reposição não mostra valor', (!semValor || r.historico.filter(x => x.id === semValor.id)[0].valor !== '') && r.historico.filter(x => x.reposicao).every(x => x.valor === ''));
+  ok('Z5 paciente excluído, paciente que não existe e sigla vazia: recusado ou leitura normal da Agenda', prof('profLerAgenda', { siglaPaciente: ANA }).ok === false && prof('profLerAgenda', { siglaPaciente: 'ZZZ9' }).ok === false &&
+    Array.isArray(prof('profLerAgenda', { de: PER.de, ate: PER.ate, siglaPaciente: '' }).sessoes));
+  ok('Z6 crachá de paciente não lê o histórico; sem crachá, recusado', pac(BRUNO, 'profLerAgenda', { siglaPaciente: BRUNO }).ok === false && h.post({ acao: 'profLerAgenda', siglaPaciente: BRUNO }).ok === false);
+  const age = prof('profLerAgenda', { de: PER.de, ate: PER.ate });
+  const evs = age.eventos || [];
+  ok('Z7 todo evento do sino vindo de uma sessão diz qual é a sessão; o pedido de agendamento não tem sessão', evs.length >= 1 && evs.every(e => e.tipo === 'agendar' ? e.sessao === '' : (typeof e.sessao === 'string' && e.sessao !== '' && sLinhas().some(p => p.id === e.sessao))), evs.slice(0, 4));
+  const inesperados = logServidor.filter(l => !/^trava de gravacao: nao obtida/.test(l));
+  ok('Z8 o servidor não registrou nenhum erro', inesperados.length === 0, inesperados.slice(0, 5));
+});
+
 console.log('\nRESULTADO (' + process.env.VMC_FUSO_20 + '): ' + (falhas ? falhas + ' FALHA(S) em ' + passo + ' provas' : 'OK — ' + passo + '/' + passo + ' provas'));
 process.exit(falhas ? 1 : 0);
