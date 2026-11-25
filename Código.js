@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.11';
+var VERSAO_PACOTE = '14.12';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -218,6 +218,7 @@ function doPost(e) {
     // sao lidas uma vez (o portao do cracha e a acao pediam a mesma linha, cada um a sua leitura)
     // 18.11: o mesmo vale para as leituras do profissional e do admin (nenhuma delas muda conta)
     if (ACOES_SO_LEITURA.indexOf(acao) !== -1) _MEMO_.linhas = {};
+    if (ACOES_DA_AGENDA.indexOf(acao) !== -1) _MEMO_.profs = {}; // 14.12
 
     // Pacote 18.1: toda acao fora de ACOES_PUBLICAS exige o cracha de sessao.
     // Sigla e profissional saem do cracha (payload.sigla e ignorado);
@@ -669,6 +670,31 @@ var _MEMO_ = { ativo: false, planilhas: {}, controles: {}, indice: null, cache: 
 
 function _memoZerar_(ativo) {
   _MEMO_ = { ativo: ativo === true, planilhas: {}, controles: {}, indice: null, cache: {} };
+  // 14.12: dentro do doPost, cada aba da Agenda, a configuracao, a lista de pacientes e os cabecalhos sao lidos uma vez
+  // por chamada. As chaves sao os proprios objetos da planilha e da aba (a mesma instancia durante a chamada).
+  if (_MEMO_.ativo) _MEMO_.age = { abas: new Map(), cabs: new Map(), linhas: new Map(), cfg: new Map(), pacs: new Map() };
+}
+
+/** 14.12: a lista de pacientes da Agenda mudou nesta chamada (cadastro, valor da sessao, nome, ativo): a proxima leitura vai a planilha. */
+function _memoEsquecerPacientes_() {
+  if (_MEMO_.age) _MEMO_.age.pacs = new Map();
+}
+
+/** 14.12: as linhas de uma aba da Agenda mudaram por fora de _ageGravar_ (linha apagada): a proxima leitura vai a planilha. */
+function _ageEsquecer_(aba) {
+  if (_MEMO_.age && aba) _MEMO_.age.linhas.delete(aba);
+}
+
+/**
+ * 14.12: _lembretesLer_ com memoria da chamada, para as abas da Agenda (Sessoes, Series, Bloqueios, Pedidos_Agenda).
+ * Quem chama recebe sempre copias: mexer num item lido nao muda o que a memoria guarda. _ageGravar_ mantem a memoria
+ * igual a planilha; quem apaga linha chama _ageEsquecer_.
+ */
+function _ageLer_(aba) {
+  if (!_MEMO_.age || !aba) return _lembretesLer_(aba);
+  var guardado = _MEMO_.age.linhas.get(aba);
+  if (!guardado) { guardado = _lembretesLer_(aba); _MEMO_.age.linhas.set(aba, guardado); }
+  return guardado.map(function (o) { var c = {}; for (var k in o) c[k] = o[k]; return c; });
 }
 
 // 18.11: leituras em que a linha do paciente e a do profissional sao lidas uma vez por chamada
@@ -678,6 +704,11 @@ var ACOES_SO_LEITURA = ['lerHistorico', 'lerEscalas', 'lerRascunhos', 'lerEditan
   'profLerAgenda', 'lerMinhasSessoes', 'lerHorariosLivres', // 14.3
   'profLerFinanceiro', 'lerMeuFinanceiro', 'lerArquivoFinanceiro', // Fase 20
   'profLerHorariosLivres']; // 14.5
+
+// 14.12: gravacoes da Agenda — nenhuma delas muda a aba Profissionais, entao o cadastro do profissional e lido uma vez por chamada
+var ACOES_DA_AGENDA = ['profSalvarSessao', 'profEditarSerie', 'profCancelarSessao', 'profMarcarSituacao', 'profSalvarBloqueio', 'profApagarBloqueio',
+  'profDecidirPedido', 'profAvisarSessao', 'profMarcarEventosVistos', 'profMarcarStatusLote',
+  'pacienteAgendarSessao', 'pacienteConfirmarSessao', 'pacienteCancelarSessao', 'pacientePedirAgenda', 'confirmarSessaoPorLink'];
 
 // ---------- 18.11: cache do script (CacheService) ----------
 // Tres coisas moram no cache do script, para a chamada comum nao abrir a Sistema_VMC:
@@ -918,6 +949,7 @@ function buscarProfissional(profissionalId) {
   if (!profissionalId) return null;
   var chaveMemo = 'prof:' + String(profissionalId).trim();
   if (_MEMO_.linhas && _MEMO_.linhas[chaveMemo]) return _MEMO_.linhas[chaveMemo];
+  if (_MEMO_.profs && _MEMO_.profs[chaveMemo]) return _MEMO_.profs[chaveMemo]; // 14.12
 
   var planilha = _abrirPlanilha_(SISTEMA_VMC_ID);
   var aba = planilha.getSheetByName(ABA_PROFISSIONAIS);
@@ -937,6 +969,7 @@ function buscarProfissional(profissionalId) {
         obj[cabecalhos[j]] = dados[i][j];
       }
       if (_MEMO_.linhas) _MEMO_.linhas[chaveMemo] = obj;
+      if (_MEMO_.profs) _MEMO_.profs[chaveMemo] = obj; // 14.12
       return obj;
     }
   }
@@ -1603,9 +1636,15 @@ function _formatarColunasTexto_(aba, header) {
 
 /** Garante as colunas em `lista` no cabecalho da aba (aditivo); devolve o cabecalho. */
 function _garantirColunas_(aba, lista) {
-  var ultima = Math.max(aba.getLastColumn(), 1);
-  var header = aba.getRange(1, 1, 1, ultima).getValues()[0];
-  if (header.length === 1 && header[0] === '') header = [];
+  // 14.12: o cabecalho de cada aba e lido uma vez por chamada (a memoria so acerta com a mesma instancia da aba — ver _ageAba_)
+  var guardado = _MEMO_.age ? _MEMO_.age.cabs.get(aba) : null;
+  var header = guardado;
+  if (!header) {
+    var ultima = Math.max(aba.getLastColumn(), 1);
+    header = aba.getRange(1, 1, 1, ultima).getValues()[0];
+    if (header.length === 1 && header[0] === '') header = [];
+    if (_MEMO_.age) _MEMO_.age.cabs.set(aba, header);
+  }
   lista.forEach(function (col) {
     if (header.indexOf(col) === -1) {
       header.push(col);
@@ -1619,6 +1658,7 @@ function _garantirColunas_(aba, lista) {
 
 /** Grava uma linha nova pelo nome do cabecalho (campos ausentes ficam vazios). */
 function _anexarPorCabecalho_(aba, header, valores) {
+  _memoEsquecerPacientes_(); // 14.12: linha nova (pode ser um paciente)
   aba.appendRow(header.map(function (col) { return valores[col] !== undefined ? _celulaTexto_(col, valores[col]) : ''; }));
 }
 
@@ -1721,6 +1761,7 @@ function _gravarEmailIndice_(sigla, tipo, email) {
  * apostrofo (aceite da politica) — a trava lhe daria um segundo.
  */
 function _atualizarLinhaPorChave_(aba, colChave, valorChave, campos, camposServidor) {
+  _memoEsquecerPacientes_(); // 14.12: a linha de um cadastro mudou
   var doServidor = camposServidor || {};
   var header = _garantirColunas_(aba, Object.keys(campos).concat(Object.keys(doServidor)));
   var dados = aba.getDataRange().getValues();
@@ -2730,6 +2771,7 @@ function _calcularIndicadores_(planilha) {
  * Devolve os indicadores calculados, ou null se a linha do paciente nao foi achada.
  */
 function _atualizarIndicadores_(profissionalId, sigla, planilha, tolerante) {
+  _memoEsquecerPacientes_(); // 14.12: o nome da anamnese (ind_nome) pode mudar aqui
   var controle = abrirControleDoProfissional(profissionalId);
   if (!controle) return null;
   var aba = controle.getSheetByName(ABA_PACIENTES);
@@ -5505,6 +5547,7 @@ function salvarGradeAtendimento(s, config, grade) {
   }
 
   // 3. Gravar Config_Agenda (upsert chave -> valor)
+  if (_MEMO_.age) _MEMO_.age.cfg = new Map(); // 14.12: a Grade vai gravar a configuracao
   var abaCfg = _gradeObterOuCriarAba_(controle, GRADE_ABA_CONFIG, ['chave', 'valor']);
   var cfgGravar = {
     duracao_slot_min: Number(config.duracao_slot_min) || GRADE_CONFIG_PADRAO.duracao_slot_min,
@@ -7046,8 +7089,11 @@ function _ageCobrada_(evento, noPrazo, ehReposicao) {
 
 function _ageAba_(controle, nome, colunas, criar) {
   if (!controle) return null;
-  var aba = controle.getSheetByName(nome);
+  var mapa = null, aba = null;
+  if (_MEMO_.age) { mapa = _MEMO_.age.abas.get(controle); if (!mapa) { mapa = {}; _MEMO_.age.abas.set(controle, mapa); } aba = mapa[nome] || null; } // 14.12
+  if (!aba) aba = controle.getSheetByName(nome);
   if (!aba && criar) aba = controle.insertSheet(nome);
+  if (aba && mapa) mapa[nome] = aba;
   if (aba && criar) _garantirColunas_(aba, colunas);
   return aba;
 }
@@ -7057,18 +7103,40 @@ function _ageGravar_(aba, colunas, linha, campos) {
   if (colunas === COLUNAS_SESSOES && campos.gcal_sinc === undefined && (!linha || campos.data !== undefined || campos.hora_inicio !== undefined ||
       campos.duracao_min !== undefined || campos.modalidade !== undefined || campos.estado === 'cancelada')) campos.gcal_sinc = 'pendente'; // 14.5
   var header = _garantirColunas_(aba, colunas);
+  var guardado = _MEMO_.age ? _MEMO_.age.linhas.get(aba) : null; // 14.12: a memoria da chamada acompanha a gravacao
+  var texto = function (v) { return String(v === undefined || v === null ? '' : v).trim(); };
   if (!linha) {
     aba.appendRow(header.map(function (col) { return campos[col] !== undefined ? _lemCelula_(campos[col]) : ''; }));
+    if (guardado) {
+      var novo = { __linha: aba.getLastRow() };
+      header.forEach(function (col) { if (col !== '') novo[col] = texto(campos[col]); });
+      if (novo.id) guardado.push(novo); else _ageEsquecer_(aba);
+    }
     return;
   }
+  var item = null;
+  if (guardado) { item = guardado.filter(function (o) { return o.__linha === linha; })[0] || null; if (!item) _ageEsquecer_(aba); }
   for (var col in campos) {
     var i = header.indexOf(col);
-    if (i >= 0) aba.getRange(linha, i + 1).setValue(_lemCelula_(campos[col]));
+    if (i >= 0) { aba.getRange(linha, i + 1).setValue(_lemCelula_(campos[col])); if (item) item[col] = texto(campos[col]); }
   }
+  if (item && !item.id) _ageEsquecer_(aba);
 }
 
 /** Config_Agenda como a agenda a usa (padroes da Grade + a chave dos avisos, que nasce 'Nao'). */
 function _ageConfig_(controle) {
+  // 14.12: uma leitura por chamada; quem recebe leva uma copia, e _ageConfigGravar_ e a Grade esquecem a guardada
+  if (_MEMO_.age && controle) {
+    var pronta = _MEMO_.age.cfg.get(controle);
+    if (!pronta) { pronta = _ageConfigLer_(controle); _MEMO_.age.cfg.set(controle, pronta); }
+    var copia = {};
+    for (var k in pronta) copia[k] = pronta[k];
+    return copia;
+  }
+  return _ageConfigLer_(controle);
+}
+
+function _ageConfigLer_(controle) {
   var cfg = { duracao_slot_min: GRADE_CONFIG_PADRAO.duracao_slot_min, antecedencia_min_horas: GRADE_CONFIG_PADRAO.antecedencia_min_horas, avisos_sessao: 'Nao' };
   var aba = controle ? controle.getSheetByName(GRADE_ABA_CONFIG) : null;
   if (!aba) return cfg;
@@ -7184,6 +7252,7 @@ function _ageEventos_(ctx, pacs, agora) {
 
 /** Grava uma chave da Config_Agenda (cria a aba se preciso). */
 function _ageConfigGravar_(controle, chave, valor) {
+  if (_MEMO_.age) _MEMO_.age.cfg = new Map(); // 14.12
   var aba = _gradeObterOuCriarAba_(controle, GRADE_ABA_CONFIG, ['chave', 'valor']);
   var v = aba.getDataRange().getDisplayValues();
   for (var i = 1; i < v.length; i++) {
@@ -7225,10 +7294,10 @@ function _ageCtx_(controle, criar) {
   c.abaR = _ageAba_(controle, ABA_SERIES, COLUNAS_SERIES, criar);
   c.abaB = _ageAba_(controle, ABA_BLOQUEIOS, COLUNAS_BLOQUEIOS, criar);
   c.abaP = _ageAba_(controle, ABA_PEDIDOS_AGENDA, COLUNAS_PEDIDOS_AGENDA, criar);
-  c.sessoes = _lembretesLer_(c.abaS);
-  c.series = _lembretesLer_(c.abaR);
-  c.bloqueios = _lembretesLer_(c.abaB);
-  c.pedidos = _lembretesLer_(c.abaP);
+  c.sessoes = _ageLer_(c.abaS); // 14.12: cada aba da Agenda e lida uma vez por chamada
+  c.series = _ageLer_(c.abaR);
+  c.bloqueios = _ageLer_(c.abaB);
+  c.pedidos = _ageLer_(c.abaP);
   return c;
 }
 
@@ -7265,7 +7334,9 @@ function _ageRecusa_(motivo) {
 
 /** Pacientes da Controle por sigla: { nome, primeiro, telefone, email, ativo }. */
 function _agePacientes_(controle) {
+  if (_MEMO_.age && controle && _MEMO_.age.pacs.get(controle)) return _MEMO_.age.pacs.get(controle); // 14.12
   var mapa = {};
+  if (_MEMO_.age && controle) _MEMO_.age.pacs.set(controle, mapa);
   lerAbaComoObjetos(controle, ABA_PACIENTES).forEach(function (p) {
     var sigla = _siglaChave_(p.sigla);
     if (!sigla) return;
@@ -7751,7 +7822,7 @@ function profApagarBloqueio(s, id, periodo) {
   if (!alvo.ok) return alvo;
   var ctx = _ageCtx_(alvo.controle, false);
   var b = ctx.bloqueios.filter(function (x) { return x.id === String(id || '').trim(); })[0];
-  if (b) ctx.abaB.deleteRow(b.__linha);
+  if (b) { ctx.abaB.deleteRow(b.__linha); _ageEsquecer_(ctx.abaB); } // 14.12
   return _ageResposta_(alvo, { ok: true }, periodo, _lemAgora_());
 }
 
@@ -8158,6 +8229,7 @@ function _agendaApagarDoPaciente_(controle, sigla) {
     var aba = _ageAba_(controle, par[0], par[1], false);
     if (!aba) return;
     _lembretesLer_(aba).reverse().forEach(function (x) { if (_siglaChave_(x.sigla) === alvo) aba.deleteRow(x.__linha); });
+    _ageEsquecer_(aba); // 14.12
   });
 }
 
@@ -8209,7 +8281,7 @@ function enviarAvisosSessao_(quando) {
           reserva = _comTrava_(function () {
             if (String(aba.getRange(x.__linha, colId).getDisplayValues()[0][0]).trim() !== x.id) return 'mudou';
             if (String(aba.getRange(x.__linha, colMarca).getDisplayValues()[0][0]).trim()) return 'ja';
-            aba.getRange(x.__linha, colMarca).setValue(_lemCelula_(agora.carimbo));
+            aba.getRange(x.__linha, colMarca).setValue(_lemCelula_(agora.carimbo)); _ageEsquecer_(aba); // 14.12: marca gravada direto na celula
             return 'ok';
           });
         } catch (erroTrava) { reserva = 'falha'; }
@@ -8218,7 +8290,7 @@ function enviarAvisosSessao_(quando) {
         var motivo = _ageAvisarPaciente_(ctx, prof.profissional_id, pac, item.tipo, x, item.tipo);
         if (!motivo) { r.enviados++; return; }
         if (motivo === 'cota') r.sem_cota++; else r.falhas++;
-        _comTravaSeDer_(function () { aba.getRange(x.__linha, colMarca).setValue(''); });
+        _comTravaSeDer_(function () { aba.getRange(x.__linha, colMarca).setValue(''); _ageEsquecer_(aba); });
       });
     } catch (e) {
       r.falhas++;
@@ -8558,7 +8630,7 @@ function _calSincronizar_(controle, profId, o) {
     if (!aba) return feitos;
     var so = null;
     if (op.ids) { so = {}; op.ids.forEach(function (i) { so[i] = true; }); }
-    var pend = _lembretesLer_(aba).filter(function (x) { return x.gcal_sinc === 'pendente' && (!so || so[x.id]); });
+    var pend = _ageLer_(aba).filter(function (x) { return x.gcal_sinc === 'pendente' && (!so || so[x.id]); }); // 14.12
     if (!pend.length) return feitos;
     var hoje = (op.agora || _lemAgora_()).data, max = op.max || 1, n = 0, calId = null, pacs = null;
     var colId = _garantirColunas_(aba, COLUNAS_SESSOES).indexOf('id') + 1;
