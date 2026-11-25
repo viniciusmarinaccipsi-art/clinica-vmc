@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.16';
+var VERSAO_PACOTE = '19.7';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -260,7 +260,7 @@ function _despachar_(acao, payload, s) {
 
       // Pacote 18.1 - acoes publicas (sem cracha)
       case 'autenticar':
-        resposta = autenticar(payload.tipo, payload.email, payload.senha, payload.escolha);
+        resposta = autenticar(payload.tipo, payload.email, payload.senha, payload.escolha, payload.enxuta === true);
         break;
 
       case 'pedirRedefinicao':
@@ -343,7 +343,7 @@ function _despachar_(acao, payload, s) {
 
       // Acoes do profissional (profissional do cracha; siglaPaciente = alvo)
       case 'profListarPacientes':
-        resposta = listarPacientesDoProfissional(s);
+        resposta = listarPacientesDoProfissional(s, payload.enxuta === true);
         break;
 
       case 'profLerDadosPaciente':
@@ -2044,7 +2044,7 @@ function _idEscolha_(tipo, email, conta, segredo) {
   return _hmacHex_(['escolha', tipo, email, conta.sigla, conta.profissional_id].join('|'), segredo).slice(0, 16);
 }
 
-function autenticar(tipo, email, senha, escolha) {
+function autenticar(tipo, email, senha, escolha, enxuta) {
   var t0 = Date.now();
   var falha = function (r) { return _completarPiso_(t0, PISO_LOGIN_MS, r || { ok: false, erro: MSG_LOGIN }); };
   var t = String(tipo || '').trim().toLowerCase();
@@ -2131,7 +2131,7 @@ function autenticar(tipo, email, senha, escolha) {
   // lista (erro aqui), o cliente pede profListarPacientes como antes.
   if (t === 'profissional') {
     try {
-      var lista = listarPacientesDoProfissional({ tipo: t, sigla: conta.sigla, profissional_id: conta.profissional_id, nome: reg.nome, email: reg.email });
+      var lista = listarPacientesDoProfissional({ tipo: t, sigla: conta.sigla, profissional_id: conta.profissional_id, nome: reg.nome, email: reg.email }, enxuta === true);
       if (lista && lista.ok === true) { entrada.pacientes = lista.pacientes; entrada.email_pacientes = lista.email_pacientes; } // 14.10
     } catch (erroLista) {
       console.error('autenticar: lista de pacientes nao foi junto: ' + String(erroLista && erroLista.message || erroLista).slice(0, 120));
@@ -2535,7 +2535,9 @@ function medirHashSenha() {
  *   { ok: true, pacientes: [ { sigla, nome_completo, data_cadastro,
  *     data_anamnese, ativo } ] }
  */
-function listarPacientesDoProfissional(s) {
+/** 19.7: `enxuta` = a tela nova pede a lista sem os blocos do Inicio (lembretes, pedidos e eventos da Agenda),
+ *  que passam a vir depois, em `profLerFinanceiro { so: 'inicio', por_paciente: true }`. Sem o parametro, tudo como antes. */
+function listarPacientesDoProfissional(s, enxuta) {
   // 1. Revalidar credenciais do profissional
   var authResult = _authProfissional_(s);
   if (!authResult.ok) {
@@ -2579,14 +2581,14 @@ function listarPacientesDoProfissional(s) {
   // uma leitura a mais na Controle que ja esta aberta, nenhuma chamada nova. Erro aqui nao derruba a lista.
   var lembretesPorSigla = {};
   try {
-    lembretesPorSigla = _lembretesDoInicio_(controle, _lemAgora_().data);
+    if (!enxuta) lembretesPorSigla = _lembretesDoInicio_(controle, _lemAgora_().data);
   } catch (erroLem) {
     console.error('listarPacientes: lembretes nao foram junto: ' + String(erroLem && erroLem.message || erroLem).slice(0, 120));
   }
   // 14.3: pedidos pendentes de remarcacao e de reposicao vao junto (bloco do Inicio), como os lembretes
   var pedidosPorSigla = {}, eventosPorSigla = {};
   try {
-    var agendaDoInicio = _ageInicio_(controle);
+    var agendaDoInicio = enxuta ? { pedidos: {}, eventos: {} } : _ageInicio_(controle);
     pedidosPorSigla = agendaDoInicio.pedidos; eventosPorSigla = agendaDoInicio.eventos; // 14.4: os eventos da agenda tambem
   } catch (erroPed) {
     console.error('listarPacientes: pedidos da agenda nao foram junto: ' + String(erroPed && erroPed.message || erroPed).slice(0, 120));
@@ -9461,7 +9463,7 @@ function _finCtx_(controle) {
   var ler = function (nome) { return _lembretesLer_(_finAba_(controle, nome, false)); };
   var c = { controle: controle, cfgAgenda: _ageConfig_(controle), pacs: _agePacientes_(controle), cadastros: {} };
   c.abaS = _ageAba_(controle, ABA_SESSOES, COLUNAS_SESSOES, false);
-  c.sessoes = _lembretesLer_(c.abaS);
+  c.sessoes = _ageLer_(c.abaS); // 19.7: a mesma leitura serve a Agenda na mesma chamada (copia das linhas; sem a memoria, le como antes)
   ler(ABA_FIN_CADASTRO).forEach(function (l) { c.cadastros[_siglaChave_(l.id)] = l; });
   c.pessoas = ler(ABA_FIN_PESSOAS); c.pagamentos = ler(ABA_FIN_PAGAMENTOS); c.alocacoes = ler(ABA_FIN_ALOCACOES);
   c.cobrancas = ler(ABA_FIN_COBRANCAS); c.fixas = ler(ABA_FIN_FIXAS); c.despesas = ler(ABA_FIN_DESPESAS); c.recibos = ler(ABA_FIN_RECIBOS);
@@ -9712,6 +9714,28 @@ function _finInicio_(c, agora) {
       .map(function (d) { return { nome: d.nome, valor: d.valor, vence: d.vence }; }) };
 }
 
+/**
+ * 19.7: o que ia por paciente na lista do login — lembretes de hoje e atrasados (so paciente ativo, com o contato dos
+ * botoes), pedidos pendentes e eventos da Agenda. Mesmo formato de antes, por sigla. Um bloco que falhe nao derruba os outros.
+ */
+function _inicioPorPaciente_(c, agora) {
+  var mapa = {}, de = function (sig) { return mapa[sig] || (mapa[sig] = {}); };
+  try {
+    var lem = _lembretesDoInicio_(c.controle, agora.data);
+    Object.keys(lem).forEach(function (sig) {
+      var p = c.pacs[sig];
+      if (!p || !p.ativo || p.excluido) return;
+      var o = de(sig); o.lembretes = lem[sig]; o.telefone = p.telefone; o.tem_email = !!p.email;
+    });
+  } catch (erroLem) { console.error('inicio: lembretes nao foram junto: ' + String(erroLem && erroLem.message || erroLem).slice(0, 120)); }
+  try {
+    var age = _ageInicio_(c.controle);
+    Object.keys(age.pedidos).forEach(function (sig) { if (c.pacs[sig] && !c.pacs[sig].excluido) de(sig).pedidos_agenda = age.pedidos[sig]; });
+    Object.keys(age.eventos).forEach(function (sig) { if (c.pacs[sig] && !c.pacs[sig].excluido) de(sig).eventos_agenda = age.eventos[sig]; });
+  } catch (erroAge) { console.error('inicio: pedidos da agenda nao foram junto: ' + String(erroAge && erroAge.message || erroAge).slice(0, 120)); }
+  return mapa;
+}
+
 // ---------- acoes do profissional ----------
 
 function _finResposta_(alvo, resp, p, agora) { resp.financeiro = _finLeitura_(_finCtx_(alvo.controle), p, agora); return resp; }
@@ -9724,7 +9748,11 @@ function profLerFinanceiro(s, p) {
   if (!alvo.ok) return alvo;
   p = p && typeof p === 'object' ? p : {};
   var c = _finCtx_(alvo.controle), agora = _lemAgora_();
-  if (p.so === 'inicio') return { ok: true, inicio: _finInicio_(c, agora) };
+  if (p.so === 'inicio') {
+    var rIni = { ok: true, inicio: _finInicio_(c, agora) };
+    if (p.por_paciente === true) rIni.por_paciente = _inicioPorPaciente_(c, agora); // 19.7
+    return rIni;
+  }
   if (p.siglaPaciente) {
     var sig = _finDoPaciente_(c, p.siglaPaciente);
     return sig ? { ok: true, paciente: _finPaciente_(c, sig, agora) } : { ok: false, erro: 'Este paciente nao pertence a voce' };

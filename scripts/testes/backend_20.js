@@ -609,5 +609,31 @@ tenta('X19', () => {
   ok('X19 o servidor não registrou nenhum erro', inesperados.length === 0, inesperados.slice(0, 5));
 });
 
+/* ---------------------------------------------------------------- Y19 (Pacote 19.7) */
+console.log('Y19. Blocos do Início depois da lista');
+tenta('Y19', () => {
+  const hoje = S('_lemAgora_')().data, dia = n => S('_lemIso_')(S('_lemDia_')(hoje) + n);
+  const rL = prof('profSalvarLembrete', { siglaPaciente: CARLA, dados: { id: uuid(), tipo: 'auto', recorrencia: 'recorrente', periodicidade: 'diaria', data_inicio: hoje, hora: '09:00' } });
+  let alvo = ''; for (let k = 9; k < 16 && !alvo; k++) { const p = dia(k).split('-'), ds = new Real(+p[0], +p[1] - 1, +p[2]).getDay(); if (ds >= 1 && ds <= 5) alvo = dia(k); }
+  const rP = pac(BRUNO, 'pacienteAgendarSessao', { dados: { id: uuid(), data: alvo, hora: '19:00', modalidade: 'presencial' } });
+  ok('Y1 o cenário tem um lembrete de hoje e um pedido pendente', rL.ok === true && rP.ok === true, [rL.erro, rP.erro, alvo]);
+  const cheia = prof('profListarPacientes'), enxuta = prof('profListarPacientes', { enxuta: true }), ini = prof('profLerFinanceiro', { so: 'inicio', por_paciente: true }), velho = prof('profLerFinanceiro', { so: 'inicio' });
+  const blocos = p => JSON.stringify([p.lembretes || [], p.pedidos_agenda || [], p.eventos_agenda || [], (p.lembretes || []).length ? [p.telefone, p.tem_email] : []]);
+  const comLem = cheia.pacientes.filter(p => (p.lembretes || []).length).length, comPed = cheia.pacientes.filter(p => (p.pedidos_agenda || []).length).length;
+  ok('Y2 sem o parâmetro, a lista continua levando lembretes e pedidos (página antiga aberta num aparelho não quebra)', cheia.ok === true && comLem >= 1 && comPed >= 1, [comLem, comPed]);
+  ok('Y3 a lista enxuta não leva lembrete, pedido, evento nem o contato dos botões', enxuta.ok === true && enxuta.pacientes.length === cheia.pacientes.length &&
+    enxuta.pacientes.every(p => (p.lembretes || []).length === 0 && p.pedidos_agenda === undefined && p.eventos_agenda === undefined && p.telefone === undefined && p.tem_email === undefined));
+  const semBlocos = p => { const o = Object.assign({}, p); ['lembretes', 'pedidos_agenda', 'eventos_agenda', 'telefone', 'tem_email'].forEach(k => delete o[k]); return JSON.stringify(o); };
+  ok('Y4 fora os blocos, a lista enxuta é igual à de antes, paciente a paciente', cheia.pacientes.every((p, i) => semBlocos(p) === semBlocos(enxuta.pacientes[i])));
+  const junta = enxuta.pacientes.map(p => Object.assign({}, p, { lembretes: [] }, (ini.por_paciente || {})[String(p.sigla).trim().toUpperCase()] || {}));
+  ok('Y5 lista enxuta + blocos da segunda leitura = a lista de antes, bloco a bloco', ini.ok === true && !!ini.por_paciente && cheia.pacientes.every((p, i) => blocos(p) === blocos(junta[i])),
+    cheia.pacientes.map((p, i) => blocos(p) === blocos(junta[i])));
+  ok('Y6 os blocos do financeiro vêm iguais com e sem o pedido novo; sem o parâmetro não vem nada por paciente', JSON.stringify(ini.inicio) === JSON.stringify(velho.inicio) && velho.por_paciente === undefined);
+  ok('Y7 só entram pacientes deste profissional; o excluído que deixou dinheiro fica de fora', Object.keys(ini.por_paciente || {}).every(sig => enxuta.pacientes.some(p => String(p.sigla).toUpperCase() === sig)) && (ini.por_paciente || {})[ANA] === undefined);
+  ok('Y8 crachá de paciente não lê os blocos; sem crachá, recusado', pac(BRUNO, 'profLerFinanceiro', { so: 'inicio', por_paciente: true }).ok === false && h.post({ acao: 'profLerFinanceiro', so: 'inicio', por_paciente: true }).ok === false);
+  const inesperados = logServidor.filter(l => !/^trava de gravacao: nao obtida/.test(l));
+  ok('Y9 o servidor não registrou nenhum erro', inesperados.length === 0, inesperados.slice(0, 5));
+});
+
 console.log('\nRESULTADO (' + process.env.VMC_FUSO_20 + '): ' + (falhas ? falhas + ' FALHA(S) em ' + passo + ' provas' : 'OK — ' + passo + '/' + passo + ' provas'));
 process.exit(falhas ? 1 : 0);
