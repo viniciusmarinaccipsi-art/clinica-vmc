@@ -2637,7 +2637,8 @@ function listarPacientesDoProfissional(s) {
       ind_ultima_escala_data: String(ultimaEscala.data || ''),
       ind_alertas: alerta.instrumento !== undefined ? [alerta] : [],
       lembretes: [], // 19.2.1
-      valor_sessao: idxValorSessao >= 0 ? String(row[idxValorSessao] === undefined || row[idxValorSessao] === null ? '' : row[idxValorSessao]).trim() : '' // 14.6
+      valor_sessao: idxValorSessao >= 0 ? String(row[idxValorSessao] === undefined || row[idxValorSessao] === null ? '' : row[idxValorSessao]).trim() : '', // 14.6
+      email: idxEmailCad >= 0 ? normalizarEmail(row[idxEmailCad]) : '' // 19.6: sem a sigla na tela, o e-mail distingue dois pacientes de mesmo nome
     });
     // 19.2.1: so paciente ativo e com lembrete de hoje ou atrasado leva os itens e o contato do botao WhatsApp
     if (pedidosPorSigla[_siglaChave_(siglaPac)]) lista[lista.length - 1].pedidos_agenda = pedidosPorSigla[_siglaChave_(siglaPac)]; // 14.3
@@ -2899,6 +2900,7 @@ function lerDadosPaciente(s, siglaPaciente) {
     // Pacote 18.1: contato do cadastro (Controle), unica fonte de e-mail e telefone
     contato: { email: normalizarEmail(paciente.email), telefone: normalizarTelefone(paciente.telefone) },
     nome_cadastro: String(paciente.nome || ''),
+    cpf_cadastro: String(paciente.cpf === undefined || paciente.cpf === null ? '' : paciente.cpf).replace(/\D/g, ''), // 19.6: Dados Cadastrais nascem com o cadastro
     escalas_liberadas: _escalasLiberadasLista_(paciente.escalas_liberadas), // 17.1.2: BSS liberada por paciente
     lembretes: _lembretesDoPaciente_(abrirControleDoProfissional(profissionalId), siglaPaciente, _lemAgora_().data) // 19.2.1: plano de lembretes
   };
