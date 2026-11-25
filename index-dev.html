@@ -24552,8 +24552,7 @@ function ageRender_() {
 
   var paciente;
   if (p.sigla) {
-    var homonimo = profHomonimo_(PROF_LISTA.filter(function (x) { return x.sigla === p.sigla; })[0]); // 14.15: sem a sigla; dois pacientes de mesmo nome levam o e-mail
-    paciente = '<div class="age-pac"><strong>' + esc(p.nome) + '</strong>' + (homonimo ? ' <span class="prof-ev-sigla">(' + esc(homonimo) + ')</span>' : '') +
+    paciente = '<div class="age-pac"><strong>' + esc(p.nome) + '</strong>' + // 14.15: só o nome (decisão do usuário, 25/11/2026: nem sigla nem e-mail)
       ((novo && !p.reposicao_de) ? ' <button type="button" class="age-link" onclick="ageTrocarPaciente_()">Trocar</button>' : '') + '</div>';
   } else {
     paciente = '<input type="search" id="ageBusca" placeholder="Buscar paciente pelo nome" autocomplete="off" oninput="ageBuscar_()"><div class="age-res" id="ageRes"></div>';
@@ -24615,8 +24614,7 @@ function ageBuscar_() {
   if (!q) { box.innerHTML = ''; return; } // 14.15: nenhum nome aparece antes de digitar
   var todos = PROF_LISTA.filter(function (x) { return String(x.ativo || 'Sim').trim().toLowerCase() !== 'nao' && profNormalizar_(x.nome_completo || '').indexOf(q) !== -1; });
   box.innerHTML = (todos.slice(0, AGE_BUSCA_MAX).map(function (x) {
-    var homonimo = profHomonimo_(x);
-    return '<button type="button" class="age-res-item" data-sigla="' + esc(x.sigla) + '" onclick="ageEscolher_(this.dataset.sigla)">' + esc(x.nome_completo || 'Paciente') + (homonimo ? ' <span class="prof-ev-sigla">(' + esc(homonimo) + ')</span>' : '') + '</button>';
+    return '<button type="button" class="age-res-item" data-sigla="' + esc(x.sigla) + '" onclick="ageEscolher_(this.dataset.sigla)">' + esc(x.nome_completo || 'Paciente') + '</button>'; // só o nome (decisão do usuário, 25/11/2026)
   }).join('') + (todos.length > AGE_BUSCA_MAX ? '<p class="age-dica" id="ageResMais">Digite mais letras para ver os outros.</p>' : '')) ||
     '<p class="age-dica" id="ageResNada">Nenhum paciente com esse nome. <button type="button" class="age-link" onclick="ageNovoPaciente_()">Novo Paciente</button></p>';
 }
