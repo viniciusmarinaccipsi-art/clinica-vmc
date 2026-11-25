@@ -2359,3 +2359,13 @@ paciente de quem não permitiu não gera link (o profissional reenvia o acesso p
 - **Google Cloud:** Gmail API ativada no projeto da chave do botão. A lista de escopos da tela de consentimento não é usada.
 - **Provas:** `scripts/testes/backend_14_10.js`; `scripts/testes/_gmail_de_mentira.js` (lê a mensagem entregue ao Gmail e a devolve no
   formato do `MailApp`; não é suíte). No arnês `backend_18_10a.js` a profissional de prova é a dona do script.
+
+## Pacote 14.11 — Agenda: a confirmação no evento do Google e o evento recolocado (25/11/2026)
+
+Só servidor; nenhuma ação nova. O COGNIATIVO continua sendo a fonte e o Google só recebe.
+
+- **Confirmação no evento.** `confirmarSessaoPorLink` e `pacienteConfirmarSessao` gravam `gcal_sinc = 'pendente'` junto de `confirmada_em`; nenhuma das duas fala com o Google (o toque do paciente não espera). `_calEvento_` monta a descrição: "Criado pelo COGNIATIVO." + " Reposição." (se for) + " Presença confirmada pelo paciente." (se `confirmada_em`). A frase chega ao evento na rodada seguinte do gatilho ou na próxima ação do profissional que espelha. Remarcar zera a confirmação (14.5.4) e a frase sai.
+- **Evento apagado direto no Google volta.** `_calRecolocar_(controle, profId, agora)`, chamada em `enviarAvisosSessao_` logo antes de `_calSincronizar_`: lê a lista dos eventos da agenda do espelho de hoje em diante (`_calEventosVivos_`: uma chamada, paginada até `CAL_LISTA_PAGINAS`; `{}` se a agenda inteira sumiu, `null` se não deu para saber) e põe de volta na fila a sessão futura e agendada cujo evento não está lá. Sem resposta do Google, ninguém mexe em nada. A função só lê o Google e só grava a marca da fila: nunca cancela sessão, nunca envia e-mail.
+- **Como o evento volta.** `_calSincronizar_` manda o `patch` com `status: 'confirmed'` (o próprio evento sai da lixeira do Google, com a sala do Meet que tinha); se o evento não volta (404, 410 ou continua `cancelled`), nasce outro — e, em sessão on-line, o evento novo não pede sala nova: o link que o paciente já recebeu vai escrito no local do evento e `meet_link` não muda.
+- **Fora do pacote:** evento mudado de horário direto no Google não é desfeito.
+- Suíte: `scripts/testes/backend_14_11.js` (Google de mentira com lixeira). As suítes 14.5, 14.8 e 14.10 ganharam a resposta da lista de eventos no Google de mentira.

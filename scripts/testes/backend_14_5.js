@@ -53,6 +53,7 @@ global.UrlFetchApp = { fetch: (url, o) => {
     const cal = decodeURIComponent(m[1]), evs = G.eventos[cal];
     if (!evs) return resp(404, {});
     if (metodo === 'post') { const id = 'ev' + (++G.seq); const ev = Object.assign({}, corpo, { id }); if (corpo.conferenceData && corpo.conferenceData.createRequest) ev.hangoutLink = 'https://meet.google.com/sala-' + G.seq; evs[id] = ev; return resp(200, ev); }
+    if (metodo === 'get' && !m[2]) return resp(200, { items: Object.keys(evs).map(k => ({ id: k, status: evs[k].status })) }); // 14.11: a lista dos eventos (evento apagado volta)
     const id = decodeURIComponent(m[2] || '');
     if (!evs[id]) return resp(404, {});
     if (metodo === 'delete') { delete evs[id]; return resp(204, null); }
@@ -136,7 +137,7 @@ tenta('C', () => {
   ok('C6 evento presencial: nome do paciente, lilás, endereço da data, horário de São Paulo', pres && pres.summary === 'Sessão de Psicoterapia — Paula Primeira' && pres.colorId === '1' && pres.location === NOVO && pres.end.dateTime === '2026-12-03T10:00:00' && pres.start.timeZone === 'America/Sao_Paulo' && !pres.conferenceData, pres);
   ok('C7 evento on-line: verde, sem endereço, com a sala do Meet', on && on.colorId === '2' && on.location === '' && /^https:\/\/meet\.google\.com\//.test(on.hangoutLink), on);
   const semMarca = prof('profLerAgenda', PER).sessoes.every(x => cel('Sessoes', x.id, 'gcal_sinc') === '' && cel('Sessoes', x.id, 'gcal_evento') !== '');
-  ok('C8 as células guardam o id do evento e a marca some; segunda rodada não repete', semMarca && (() => { const n = G.chamadas.length; gatilho(quando(2026, 11, 25, 14, 10)); return G.chamadas.length === n; })());
+  ok('C8 as células guardam o id do evento e a marca some; segunda rodada não repete', semMarca && (() => { const esc = () => G.chamadas.filter(c => c.metodo !== 'get').length, n = esc(); gatilho(quando(2026, 11, 25, 14, 10)); return esc() === n; })()); // 14.11: a rodada so le a lista dos eventos
   h.EMAILS.length = 0;
   idC1 = uuid(); idC2 = uuid();
   r = sessao(P1, { id: idC1, data: '2026-12-04', hora: '10:00', modalidade: 'online' });
@@ -177,13 +178,13 @@ tenta('C', () => {
   n = chamadasEv().length;
   prof('profMarcarSituacao', { id: idPas, situacao: 'realizada', periodo: PER });
   pac(P1, 'pacienteConfirmarSessao', { id: idC1 });
-  ok('C20 marcar situação e confirmar presença não mexem no evento', chamadasEv().length === n);
+  ok('C20 marcar situação não mexe no evento; a confirmação não fala com o Google na ação do paciente e fica na fila (14.11)', chamadasEv().length === n && cel('Sessoes', idC1, 'gcal_sinc') === 'pendente');
   const uPac = uuid(), idPac = 'ag-' + uPac; // 14.7: pedido do paciente + aprovação
   n = chamadasEv().length;
   r = pac(P1, 'pacienteAgendarSessao', { dados: { id: uPac, data: '2026-12-09', hora: '08:00', modalidade: 'online' } });
   const nPedido = chamadasEv().length;
   r = prof('profDecidirPedido', { id: uPac, aprovar: true, periodo: PER });
-  ok('C21 o pedido não toca o Calendar; aprovado, a sessão é espelhada, com Meet', r.ok === true && nPedido === n && chamadasEv().length === n + 1 && /^https:\/\/meet/.test(cel('Sessoes', idPac, 'meet_link')) && minha(P1, idPac).meet_link !== '', r.erro);
+  ok('C21 o pedido não toca o Calendar; aprovado, a sessão é espelhada, com Meet', r.ok === true && nPedido === n && chamadasEv().slice(n).filter(c => c.metodo === 'post').length === 1 && chamadasEv().slice(n).filter(c => c.metodo === 'patch').length === 1 && /^https:\/\/meet/.test(cel('Sessoes', idPac, 'meet_link')) && minha(P1, idPac).meet_link !== '', r.erro);
   n = chamadasEv().length;
   r = pac(P1, 'pacienteCancelarSessao', { id: idPac });
   ok('C22 cancelamento pelo paciente apaga o evento', r.ok === true && chamadasEv().slice(n).length === 1 && chamadasEv().slice(n)[0].metodo === 'delete' && cel('Sessoes', idPac, 'gcal_evento') === '');

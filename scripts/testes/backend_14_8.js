@@ -74,6 +74,7 @@ global.UrlFetchApp = { fetch: (url, o) => {
     const evs = c.eventos[decodeURIComponent(m[1])];
     if (!evs) return resp(404, {});
     if (metodo === 'post') { const id = 'ev' + (++G.seq); const ev = Object.assign({}, corpo, { id }); if (corpo.conferenceData && corpo.conferenceData.createRequest) ev.hangoutLink = 'https://meet.google.com/sala-' + G.seq; evs[id] = ev; return resp(200, ev); }
+    if (metodo === 'get' && !m[2]) return resp(200, { items: Object.keys(evs).map(k => ({ id: k, status: evs[k].status })) }); // 14.11: a lista dos eventos (evento apagado volta)
     const id = decodeURIComponent(m[2] || '');
     if (!evs[id]) return resp(404, {});
     if (metodo === 'delete') { delete evs[id]; return resp(204, null); }

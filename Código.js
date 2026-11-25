@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.10.1';
+var VERSAO_PACOTE = '14.11';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -6853,6 +6853,7 @@ var AGENDA_SUGESTAO_MAX = 200;
 var CAL_NOME_PADRAO = 'Cogniativo: Agenda Consultório'; // 14.5: agenda do Google que recebe o espelho (decisao do usuario de 22/11/2026)
 var CAL_COR = { presencial: '1', online: '2' };         // cores do Google Calendar: 1 = lavanda (lilas), 2 = salvia (verde)
 var CAL_SINC_RODADA = 20;         // eventos espelhados por rodada do gatilho, por profissional
+var CAL_LISTA_PAGINAS = 4;        // 14.11: paginas (2500 eventos cada) lidas para saber que eventos existem no Google
 var CAL_LIVRES_DIAS_PROF = 14;    // dias da lista de horarios livres do profissional
 
 // Mensagens de tela (aprovadas pelo usuario em 22/11/2026)
@@ -7128,7 +7129,7 @@ function confirmarSessaoPorLink(token) {
   var x = _lembretesLer_(aba).filter(function (y) { return y.id === t.sessaoId; })[0];
   if (!x || (x.estado !== 'agendada' && x.estado !== '') || _ageMinutosAte_(x.data, x.hora_inicio, agora) <= 0) return vencido;
   var ja = !!x.confirmada_em;
-  if (!ja) _ageGravar_(aba, COLUNAS_SESSOES, x.__linha, { confirmada_em: agora.carimbo, atualizado_em: agora.carimbo });
+  if (!ja) _ageGravar_(aba, COLUNAS_SESSOES, x.__linha, { confirmada_em: agora.carimbo, atualizado_em: agora.carimbo, gcal_sinc: 'pendente' }); // 14.11: a confirmacao vai ao evento do Google na rodada seguinte
   var online = x.modalidade === 'online';
   var ender = online ? '' : _ageEndereco_(_ageConfig_(controle), x.data);
   return { ok: true, ja_confirmada: ja, data: x.data, hora: _lemHora_(x.hora_inicio), modalidade: online ? 'online' : 'presencial',
@@ -8072,7 +8073,7 @@ function pacienteConfirmarSessao(sigla, id) {
   var ctx = _ageCtx_(alvo.controle, false), agora = _lemAgora_();
   var x = _ageDoPaciente_(ctx, alvo, id);
   if (!x || (x.estado !== 'agendada' && x.estado !== '') || _ageMinutosAte_(x.data, x.hora_inicio, agora) <= 0) return { ok: false, erro: MSG_AGE_NAO_ACHEI };
-  if (!x.confirmada_em) _ageGravar_(ctx.abaS, COLUNAS_SESSOES, x.__linha, { confirmada_em: agora.carimbo, atualizado_em: agora.carimbo });
+  if (!x.confirmada_em) _ageGravar_(ctx.abaS, COLUNAS_SESSOES, x.__linha, { confirmada_em: agora.carimbo, atualizado_em: agora.carimbo, gcal_sinc: 'pendente' }); // 14.11
   return _ageMinhas_(_ageCtx_(alvo.controle, false), alvo, agora);
 }
 
@@ -8168,12 +8169,13 @@ function _agendaApagarDoPaciente_(controle, sigla) {
  */
 function enviarAvisosSessao_(quando) {
   var agora = _lemAgora_(quando);
-  var r = { profissionais: 0, sessoes: 0, vencendo: 0, enviados: 0, ja_enviados: 0, desligados: 0, sem_email: 0, sem_conexao: 0, inativos: 0, sem_cota: 0, falhas: 0, calendar: 0 };
+  var r = { profissionais: 0, sessoes: 0, vencendo: 0, enviados: 0, ja_enviados: 0, desligados: 0, sem_email: 0, sem_conexao: 0, inativos: 0, sem_cota: 0, falhas: 0, calendar: 0, recolocados: 0 };
   lerAbaComoObjetos(_abrirPlanilha_(SISTEMA_VMC_ID), ABA_PROFISSIONAIS).forEach(function (prof) {
     try {
       if (!prof.profissional_id || !_estaAtivo_(prof.ativo)) return;
       var controle = abrirControleDoProfissional(prof.profissional_id);
       var aba = _ageAba_(controle, ABA_SESSOES, COLUNAS_SESSOES, false);
+      r.recolocados += _calRecolocar_(controle, prof.profissional_id, agora); // 14.11: evento apagado direto no Google volta para a fila
       r.calendar += Object.keys(_calSincronizar_(controle, prof.profissional_id, { max: CAL_SINC_RODADA, agora: agora, contar: true })).length; // 14.5: series e o que ficou pendente
       var sessoes = _lembretesLer_(aba);
       if (!sessoes.length) return;
@@ -8533,7 +8535,8 @@ function _calEvento_(x, pac, cfg) {
   var ev = { summary: 'Sessão de Psicoterapia — ' + (pac ? pac.nome : x.sigla),
     start: { dateTime: _calQuando_(x.data, ini), timeZone: 'America/Sao_Paulo' }, end: { dateTime: _calQuando_(x.data, ini + dur), timeZone: 'America/Sao_Paulo' },
     colorId: CAL_COR[online ? 'online' : 'presencial'], location: online ? '' : _ageEndereco_(cfg, x.data),
-    description: 'Criado pelo COGNIATIVO.' + (x.reposicao_de ? ' Reposição.' : ''), extendedProperties: { 'private': { cogniativo: x.id } } };
+    description: 'Criado pelo COGNIATIVO.' + (x.reposicao_de ? ' Reposição.' : '') + (x.confirmada_em ? ' Presença confirmada pelo paciente.' : ''), // 14.11
+    status: 'confirmed', extendedProperties: { 'private': { cogniativo: x.id } } };
   // um link do Meet por sessao on-line, nunca o mesmo: cada evento pede a sua propria sala
   if (online && !x.meet_link) ev.conferenceData = { createRequest: { requestId: ('cg' + x.id + x.data + ini).replace(/[^A-Za-z0-9]/g, '').slice(-60), conferenceSolutionKey: { type: 'hangoutsMeet' } } };
   if (!online && x.meet_link) ev.conferenceData = null;
@@ -8580,7 +8583,12 @@ function _calSincronizar_(controle, profId, o) {
       if (!pacs) pacs = _agePacientes_(controle);
       var corpo = _calEvento_(x, pacs[_siglaChave_(x.sigla)], cfg);
       var r = x.gcal_evento ? _calApi_('patch', base + '/' + encodeURIComponent(x.gcal_evento) + '?conferenceDataVersion=1', corpo, profId) : null;
-      if (!r || r.codigo === 404 || r.codigo === 410) r = _calApi_('post', base + '?conferenceDataVersion=1', corpo, profId);
+      // 14.11: evento apagado direto no Google — se o proprio evento nao voltou com o patch, nasce outro; a sala do Meet
+      // que o paciente ja recebeu continua a mesma (vai escrita no local do evento novo, que nao pede sala nova)
+      if (!r || r.codigo === 404 || r.codigo === 410 || (r.codigo === 200 && r.corpo && r.corpo.status === 'cancelled')) {
+        if (x.modalidade === 'online' && x.meet_link) corpo.location = x.meet_link;
+        r = _calApi_('post', base + '?conferenceDataVersion=1', corpo, profId);
+      }
       if (r.codigo === 200 && r.corpo && r.corpo.id) {
         var meet = x.modalidade === 'online' ? String(r.corpo.hangoutLink || x.meet_link || '') : '';
         gravar(x, { gcal_evento: r.corpo.id, gcal_sinc: '', meet_link: meet });
@@ -8594,6 +8602,61 @@ function _calSincronizar_(controle, profId, o) {
     console.error('calendar: ' + String(e && e.message || e).slice(0, 160));
   }
   return feitos;
+}
+
+/**
+ * 14.11: os ids dos eventos que existem na agenda do espelho, de hoje em diante: { id: true }.
+ * {} se a agenda inteira foi apagada no Google; null se nao deu para saber (falha ou agenda grande demais) —
+ * e, sem saber, ninguem mexe em nada.
+ */
+function _calEventosVivos_(calId, hojeIso, profId) {
+  var vivos = {}, pagina = '';
+  for (var i = 0; i < CAL_LISTA_PAGINAS; i++) {
+    var r = _calApi_('get', '/calendars/' + encodeURIComponent(calId) + '/events?maxResults=2500&showDeleted=false&singleEvents=true&timeMin=' +
+      encodeURIComponent(hojeIso + 'T00:00:00-03:00') + '&fields=' + encodeURIComponent('items(id,status),nextPageToken') + (pagina ? '&pageToken=' + encodeURIComponent(pagina) : ''), null, profId);
+    if (r.codigo === 404 || r.codigo === 410) return {};
+    if (r.codigo !== 200 || !r.corpo) return null;
+    (r.corpo.items || []).forEach(function (e) { if (e && e.id && e.status !== 'cancelled') vivos[e.id] = true; });
+    pagina = String(r.corpo.nextPageToken || '');
+    if (!pagina) return vivos;
+  }
+  return null;
+}
+
+/**
+ * 14.11 (decisao do usuario, 24/11/2026): evento apagado direto no Google volta. A cada rodada do gatilho, a sessao
+ * futura e agendada que ja tinha evento e nao o tem mais na agenda do espelho volta para a fila (gcal_sinc =
+ * 'pendente'); quem recoloca e _calSincronizar_, na mesma rodada. Apagar no Google nunca cancela sessao nem avisa
+ * paciente: aqui so se le o Google e so se grava a marca da fila. Devolve quantas sessoes voltaram para a fila.
+ */
+function _calRecolocar_(controle, profId, agora) {
+  var n = 0;
+  try {
+    if (!controle) return 0;
+    var cfg = _ageConfig_(controle);
+    if (!cfg.gcal_id || !_calConectada_(profId, cfg)) return 0;
+    var aba = _ageAba_(controle, ABA_SESSOES, COLUNAS_SESSOES, false);
+    if (!aba) return 0;
+    var alvo = _lembretesLer_(aba).filter(function (x) {
+      return x.gcal_evento && x.gcal_sinc !== 'pendente' && (x.estado === 'agendada' || x.estado === '') && _ageMinutosAte_(x.data, x.hora_inicio, agora) > 0;
+    });
+    if (!alvo.length) return 0;
+    var vivos = _calEventosVivos_(cfg.gcal_id, agora.data, profId);
+    if (!vivos) return 0;
+    var sumiram = alvo.filter(function (x) { return !vivos[x.gcal_evento]; });
+    if (!sumiram.length) return 0;
+    var colId = _garantirColunas_(aba, COLUNAS_SESSOES).indexOf('id') + 1;
+    _comTravaSeDer_(function () {
+      sumiram.forEach(function (x) {
+        if (String(aba.getRange(x.__linha, colId).getDisplayValues()[0][0]).trim() !== x.id) return;
+        _ageGravar_(aba, COLUNAS_SESSOES, x.__linha, { gcal_sinc: 'pendente' });
+        n++;
+      });
+    });
+  } catch (e) {
+    console.error('calendar: ' + String(e && e.message || e).slice(0, 160));
+  }
+  return n;
 }
 
 /** Ao ligar o espelho: as sessoes agendadas de hoje em diante que ainda nao tem evento entram na fila. */
