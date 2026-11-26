@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.19';
+var VERSAO_PACOTE = '14.20';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -5692,6 +5692,11 @@ function salvarGradeAtendimento(s, config, grade) {
     if (config.email_agenda_amanha !== undefined) cfgGravar.email_agenda_amanha = (String(config.email_agenda_amanha).toLowerCase() === 'sim' && podeEmailProf) ? 'Sim' : 'Nao';
   }
   if (config.email_agenda_hora !== undefined && _stpHoraValida_(config.email_agenda_hora)) cfgGravar.email_agenda_hora = String(config.email_agenda_hora);
+  // 14.20: politica de cobranca (so muda quando a tela a manda)
+  if (config.prazo_cancelar_horas !== undefined && parseInt(config.prazo_cancelar_horas, 10) >= 1 && parseInt(config.prazo_cancelar_horas, 10) <= 168) cfgGravar.prazo_cancelar_horas = parseInt(config.prazo_cancelar_horas, 10);
+  ['cobrar_falta', 'cobrar_cancel_fora', 'cobrar_cancel_dentro'].forEach(function (k) {
+    if (config[k] !== undefined) cfgGravar[k] = String(config[k]).toLowerCase() === 'sim' ? 'Sim' : 'Nao';
+  });
   for (var chave in cfgGravar) {
     var valorTxt = (chave === 'endereco' || chave === 'endereco_novo' || chave === 'endereco_novo_desde' || chave === 'email_agenda_hora') ? _lemCelula_(cfgGravar[chave]) : _celulaSegura_(String(cfgGravar[chave])); // 18.2; 14.5: endereco e texto literal
     if (chavesExistentes[chave]) {
@@ -7203,10 +7208,15 @@ function _ageNoPrazo_(dataIso, hora, agora, horas) {
  * Tabela de cobranca (decisao 12 do usuario). evento: realizada | falta | cancel_paciente | cancel_profissional.
  * Reposicao nunca e cobrada: a cobranca e uma so e fica na sessao original.
  */
-function _ageCobrada_(evento, noPrazo, ehReposicao) {
+function _ageCobrada_(evento, noPrazo, ehReposicao, cfg) {
+  // 14.20: a politica de cobranca e configuravel (Config_Agenda). Sem configuracao, vale a tabela de sempre:
+  // falta cobrada, cancelamento do paciente fora do prazo cobrado, dentro do prazo nao. Realizada e sempre cobrada;
+  // reposicao e cancelamento pelo profissional, nunca.
+  var c = cfg || {};
   if (ehReposicao) return 'Nao';
-  if (evento === 'realizada' || evento === 'falta') return 'Sim';
-  if (evento === 'cancel_paciente') return noPrazo ? 'Nao' : 'Sim';
+  if (evento === 'realizada') return 'Sim';
+  if (evento === 'falta') return c.cobrar_falta === 'Nao' ? 'Nao' : 'Sim';
+  if (evento === 'cancel_paciente') return noPrazo ? (c.cobrar_cancel_dentro === 'Sim' ? 'Sim' : 'Nao') : (c.cobrar_cancel_fora === 'Nao' ? 'Nao' : 'Sim');
   return 'Nao';
 }
 
@@ -7262,7 +7272,8 @@ function _ageConfig_(controle) {
 }
 
 function _ageConfigLer_(controle) {
-  var cfg = { duracao_slot_min: GRADE_CONFIG_PADRAO.duracao_slot_min, antecedencia_min_horas: GRADE_CONFIG_PADRAO.antecedencia_min_horas, avisos_sessao: 'Nao' };
+  var cfg = { duracao_slot_min: GRADE_CONFIG_PADRAO.duracao_slot_min, antecedencia_min_horas: GRADE_CONFIG_PADRAO.antecedencia_min_horas, avisos_sessao: 'Nao',
+    cobrar_falta: 'Sim', cobrar_cancel_fora: 'Sim', cobrar_cancel_dentro: 'Nao' }; // 14.20: a politica de cobranca nasce com a tabela de sempre
   var aba = controle ? controle.getSheetByName(GRADE_ABA_CONFIG) : null;
   if (!aba) return cfg;
   var v = aba.getDataRange().getDisplayValues();
@@ -7278,7 +7289,11 @@ function _ageConfigLer_(controle) {
     // 14.8: conta conectada (so o e-mail), opcao dos compromissos pessoais (nasce 'Nao') e o aviso de conexao caida
     if (chave === 'agenda_conta' || chave === 'agenda_aviso') cfg[chave] = valor;
     if (chave === 'agenda_ocupado') cfg.agenda_ocupado = valor.toLowerCase() === 'sim' ? 'Sim' : 'Nao';
+    // 14.20: politica de cobranca — o prazo para cancelar ou reagendar sem cobranca e o que e cobrado
+    if (chave === 'prazo_cancelar_horas' && valor !== '' && parseInt(valor, 10) >= 0) cfg.prazo_cancelar_horas = parseInt(valor, 10);
+    if (chave === 'cobrar_falta' || chave === 'cobrar_cancel_fora' || chave === 'cobrar_cancel_dentro') cfg[chave] = valor.toLowerCase() === 'sim' ? 'Sim' : 'Nao';
   }
+  if (cfg.prazo_cancelar_horas === undefined) cfg.prazo_cancelar_horas = cfg.antecedencia_min_horas; // quem nunca abriu a politica continua com o numero de antes
   return cfg;
 }
 
@@ -7672,7 +7687,7 @@ function _ageAvisarPaciente_(ctx, profId, pac, tipo, sessao, caixa, extra) {
   if (!_emailPermitido_(profId)) return 'sem_conexao'; // 14.10
   if (!_reservarEmail_('sessoes')) return 'cota';
   var prof = buscarProfissional(profId) || {};
-  var p = { nome: pac.primeiro, profissional: String(prof.nome_completo || '').trim(), sessao: sessao, horas: ctx.cfg.antecedencia_min_horas,
+  var p = { nome: pac.primeiro, profissional: String(prof.nome_completo || '').trim(), sessao: sessao, horas: ctx.cfg.prazo_cancelar_horas,
     assinatura: _assinaturaDoProfissional_(profId), link: _ageLinkConfirmar_(profId, sessao.id), confirmada: !!sessao.confirmada_em };
   for (var k in (extra || {})) p[k] = extra[k];
   // 14.5: endereco (presencial), sala do Meet (on-line: espelha a sessao agora se ainda nao ha link) e o evento em anexo
@@ -7945,14 +7960,14 @@ function profCancelarSessao(s, id, opcoes, periodo) {
     ctx.sessoes.forEach(function (x) { if (x.serie_id === ref.serie_id && x.id !== ref.id && x.data > ref.data && x.estado === 'agendada') lista.push(x); });
   }
   var cobrancaDe = function (x) {
-    var noPrazo = _ageNoPrazo_(x.data, x.hora_inicio, avisou, ctx.cfg.antecedencia_min_horas);
-    var proposta = _ageCobrada_(quem === 'paciente' ? 'cancel_paciente' : 'cancel_profissional', noPrazo, !!x.reposicao_de);
+    var noPrazo = _ageNoPrazo_(x.data, x.hora_inicio, avisou, ctx.cfg.prazo_cancelar_horas);
+    var proposta = _ageCobrada_(quem === 'paciente' ? 'cancel_paciente' : 'cancel_profissional', noPrazo, !!x.reposicao_de, ctx.cfg);
     var final = (x === ref && quem === 'paciente' && !x.reposicao_de && (o.cobrar === true || o.cobrar === false)) ? (o.cobrar ? 'Sim' : 'Nao') : proposta;
     return { no_prazo: noPrazo, proposta: proposta, cobrada: final };
   };
   var cRef = cobrancaDe(ref);
   if (simular) {
-    return { ok: true, simulacao: { quem: quem, horas: ctx.cfg.antecedencia_min_horas, no_prazo: cRef.no_prazo, proposta: cRef.proposta, cobrada: cRef.cobrada,
+    return { ok: true, simulacao: { quem: quem, horas: ctx.cfg.prazo_cancelar_horas, no_prazo: cRef.no_prazo, proposta: cRef.proposta, cobrada: cRef.cobrada,
       pode_trocar: quem === 'paciente' && !ref.reposicao_de, quantas: lista.length, previa: _ageTextoCancelamento_(ref, String(alvo.nome || '')) } };
   }
   if (lista.length > 1) {
@@ -7999,7 +8014,7 @@ function _ageStatusCampos_(ctx, x, situacao, sempre, cobrar) {
   if (!sempre && !clique && estado === (x.estado || 'agendada')) return { ok: true, campos: null };
   if (estado === 'agendada' && _ageRepostaEm_(ctx, x.id)) return { ok: false, erro: 'Esta sessão já foi reposta. Cancele a reposição antes de mudar o status.' };
   if (clique && !cobrar && _ageRepostaEm_(ctx, x.id)) return { ok: false, erro: 'Esta sessão já foi reposta. Cancele a reposição antes de deixar de cobrar.' };
-  var cobrada = estado === 'agendada' ? (x.reposicao_de ? 'Nao' : '') : _ageCobrada_(estado, true, !!x.reposicao_de);
+  var cobrada = estado === 'agendada' ? (x.reposicao_de ? 'Nao' : '') : _ageCobrada_(estado, true, !!x.reposicao_de, ctx.cfg);
   if (clique) cobrada = cobrar ? 'Sim' : 'Nao';
   return { ok: true, campos: { estado: estado, cobrada: cobrada } };
 }
@@ -8219,7 +8234,7 @@ function _agePaciente_(sigla) {
 
 /** As sessoes do paciente como a tela "Minhas sessoes" as recebe (sem valor e sem notas). */
 function _ageMinhas_(ctx, alvo, agora) {
-  var chave = _siglaChave_(alvo.sigla), horas = ctx.cfg.antecedencia_min_horas;
+  var chave = _siglaChave_(alvo.sigla), horas = ctx.cfg.prazo_cancelar_horas;
   var pedidos = ctx.pedidos.filter(function (p) { return _siglaChave_(p.sigla) === chave; });
   var sessoes = ctx.sessoes.filter(function (x) { return _siglaChave_(x.sigla) === chave && x.cancelada_por !== 'edicao_serie'; }).map(function (x) {
     var futura = _ageMinutosAte_(x.data, x.hora_inicio, agora) > 0, agendada = x.estado === 'agendada' || x.estado === '';
@@ -8397,8 +8412,8 @@ function pacienteCancelarSessao(sigla, id) {
   if (!x) return { ok: false, erro: MSG_AGE_NAO_ACHEI };
   if (x.estado === 'cancelada') { var rd = _ageMinhas_(ctx, alvo, agora); rd.duplicado = true; return rd; }
   if (x.estado !== 'agendada' && x.estado !== '') return { ok: false, erro: MSG_AGE_NAO_ACHEI };
-  if (!_ageNoPrazo_(x.data, x.hora_inicio, agora, ctx.cfg.antecedencia_min_horas)) return { ok: false, codigo: 'prazo', erro: _ageMsgPrazo_(ctx.cfg.antecedencia_min_horas, alvo.profissional) };
-  _ageGravar_(ctx.abaS, COLUNAS_SESSOES, x.__linha, { estado: 'cancelada', cancelada_em: agora.carimbo, cancelada_por: 'paciente', cobrada: _ageCobrada_('cancel_paciente', true, !!x.reposicao_de), atualizado_em: agora.carimbo });
+  if (!_ageNoPrazo_(x.data, x.hora_inicio, agora, ctx.cfg.prazo_cancelar_horas)) return { ok: false, codigo: 'prazo', erro: _ageMsgPrazo_(ctx.cfg.prazo_cancelar_horas, alvo.profissional) };
+  _ageGravar_(ctx.abaS, COLUNAS_SESSOES, x.__linha, { estado: 'cancelada', cancelada_em: agora.carimbo, cancelada_por: 'paciente', cobrada: _ageCobrada_('cancel_paciente', true, !!x.reposicao_de, ctx.cfg), atualizado_em: agora.carimbo });
   _agePedidosFechar_(ctx, x.id, agora);
   _ageAvisarProfissional_(ctx, alvo.profissionalId, alvo.nome + ' cancelou a sessão de ' + _ageDiaMes_(x.data) + ' às ' + _lemHora_(x.hora_inicio) + '.');
   _calSincronizar_(alvo.controle, alvo.profissionalId, { max: 2, agora: agora }); // 14.5
@@ -8424,7 +8439,7 @@ function pacientePedirAgenda(sigla, dados) {
   if (ctx.pedidos.some(function (p) { return p.sessao_id === x.id && p.estado === 'pendente'; })) return { ok: false, erro: 'Já existe um pedido aguardando resposta para esta sessão.' };
   if (tipo === 'remarcar') {
     if (x.estado !== 'agendada' && x.estado !== '') return { ok: false, erro: MSG_AGE_NAO_ACHEI };
-    if (!_ageNoPrazo_(x.data, x.hora_inicio, agora, ctx.cfg.antecedencia_min_horas)) return { ok: false, codigo: 'prazo', erro: _ageMsgPrazo_(ctx.cfg.antecedencia_min_horas, alvo.profissional) };
+    if (!_ageNoPrazo_(x.data, x.hora_inicio, agora, ctx.cfg.prazo_cancelar_horas)) return { ok: false, codigo: 'prazo', erro: _ageMsgPrazo_(ctx.cfg.prazo_cancelar_horas, alvo.profissional) };
   } else if (!_agePodeRepor_(ctx, x)) {
     return { ok: false, erro: 'Esta sessão não pode ser reposta.' };
   }
@@ -10571,7 +10586,7 @@ function profMarcarStatusLote(s, ids, situacao) {
   lista.forEach(function (id) {
     var x = pend[id];
     if (!x) return;
-    _ageGravar_(c.abaS, COLUNAS_SESSOES, x.__linha, { estado: estado, cobrada: _ageCobrada_(estado, true, !!x.reposicao_de), atualizado_em: agora.carimbo });
+    _ageGravar_(c.abaS, COLUNAS_SESSOES, x.__linha, { estado: estado, cobrada: _ageCobrada_(estado, true, !!x.reposicao_de, c.cfgAgenda), atualizado_em: agora.carimbo });
     delete pend[id];
     marcadas++;
   });
