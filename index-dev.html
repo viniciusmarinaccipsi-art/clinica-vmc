@@ -223,7 +223,7 @@ vmcTemaAplicar_();
   --cal-disp:      var(--c-surface-sub);
   /* 14.14 (paleta escolhida pelo usuário em 25/11/2026): on-line azul, presencial laranja; ocupado em cinza listrado */
   --cal-ev-online:     #D8E8FB;
-  --cal-ev-presencial: #FDE4CB;
+  --cal-ev-presencial: #D7EFE2;
   --cal-ocup-a:        #EEEDF3;
   --cal-ocup-b:        #E1DFEA;
   --cal-ocup-linha:    #C9C6D8;
@@ -234,7 +234,7 @@ vmcTemaAplicar_();
    o tema do aparelho). Era @media (prefers-color-scheme: dark); os valores são os mesmos. */
   :root[data-tema="escuro"] {
     --cal-ev-online:     #1B2C45;
-    --cal-ev-presencial: #3D2B17;
+    --cal-ev-presencial: #18352A;
     --cal-ocup-a:        #252333;
     --cal-ocup-b:        #2E2B40;
     --cal-ocup-linha:    #454260;
@@ -4325,7 +4325,7 @@ button.cab-no-item{cursor:pointer;}
 /* Pacote 14.3 — Agenda completa: sessões reais na grade, bloqueio, feriado, painel da consulta, pedidos e Minhas sessões */
 .cal-dia-col{cursor:pointer;}
 .cal-ev-presencial,.cal-ev-online{border:0;width:calc(100% - 6px);text-align:left;color:var(--c-ink);font-family:var(--f-text);display:block;z-index:3;}
-.cal-ev-presencial{background:var(--cal-ev-presencial);} /* 14.14: presencial em laranja, on-line em azul (decisão do usuário, 25/11/2026; substitui a de 22/11) */
+.cal-ev-presencial{background:var(--cal-ev-presencial);} /* 14.19.1: presencial em verde-água, on-line em azul (o usuário tirou o laranja em 25/11/2026: confundia com as canceladas) */
 .cal-ev-online{background:var(--cal-ev-online);}
 /* 14.14: a barra lateral só aparece depois do status — verde na realizada, vermelha na falta */
 .cal-ev-presencial.cal-ev-realizada,.cal-ev-online.cal-ev-realizada{border-left:4px solid var(--c-pos);}
@@ -4340,7 +4340,7 @@ button.cab-no-item{cursor:pointer;}
 .cal-leg-cor.cal-leg-real{background:var(--c-surface-sub);border:1px solid var(--c-line);border-left:4px solid var(--c-pos);} /* 14.19.1: fundo neutro — o status vale para presencial e on-line */
 .cal-leg-cor.cal-leg-falta{background:var(--c-surface-sub);border:1px solid var(--c-line);border-left:4px solid var(--c-risk);}
 /* Pacote 14.6 — sessão cancelada e cobrada: continua na grade, apagada e tracejada, sem ocupar o horário; ao lado quando há outra sessão no mesmo horário */
-.cal-ev-cancelada.cal-ev-canc-cobrada{background:var(--c-warn-tint);border-color:var(--c-warn);color:var(--c-warn-ink);} /* 14.19.1 (decisão do usuário): as duas canceladas com contorno tracejado e nome riscado; a cobrada em tom amarelado com a carteira, a não cobrada em cinza com o X */
+.cal-ev-cancelada.cal-ev-canc-cobrada{background:var(--c-warn-tint);border-color:var(--c-warn);color:var(--c-warn-ink);} /* 14.19.1 (decisão do usuário): as duas canceladas com contorno tracejado e nome riscado; a cobrada em tom amarelado com a carteira, a não cobrada em cinza com a carteira riscada */
 .cal-leg-canc{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:4px;flex-shrink:0;background:var(--c-surface-sub);border:1px dashed var(--c-ink-3);color:var(--c-ink-3);}
 .cal-leg-canc .ico{width:14px;height:14px;}
 .cal-leg-canc.cal-leg-canc-cobrada{background:var(--c-warn-tint);border-color:var(--c-warn);color:var(--c-warn-ink);}
@@ -4704,6 +4704,7 @@ button.fin-enc-lin:focus-visible{outline:2px solid var(--c-action);outline-offse
   <symbol id="i-humor-5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9h.01M15 9h.01"/><path d="M7.5 13.5c1 3.2 8 3.2 9 0"/></symbol>
   <!-- Pacote 16.10: símbolo da marca (docs/design/marca/simbolo.svg) — o C pega currentColor, o ponto --c-marca-ponto -->
   <symbol id="i-marca" viewBox="0 0 64 64"><path d="M47.32 19.14A20 20 0 1 0 47.32 44.86" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round"/><circle cx="32" cy="32" r="7.5" stroke="none" style="fill:var(--c-marca-ponto)"/></symbol>
+  <symbol id="i-wallet-off" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H5a2 2 0 0 1-2-2z"/><path d="M3 3l18 18"/></symbol>
   <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H5a2 2 0 0 1-2-2z"/><path d="M16.5 14h.01"/></symbol>
   <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 11.5V4a1 1 0 0 1 1-1h7.5l9.3 9.3a1 1 0 0 1 0 1.4l-7.1 7.1a1 1 0 0 1-1.4 0L3 11.5z"/><path d="M7.5 7.5h.01"/></symbol>
 </svg>
@@ -4997,7 +4998,7 @@ button.fin-enc-lin:focus-visible{outline:2px solid var(--c-action);outline-offse
           <div class="cal-leg-item"><span class="cal-leg-cor cal-leg-real"></span> Realizada</div>
           <div class="cal-leg-item"><span class="cal-leg-cor cal-leg-falta"></span> Falta</div>
           <div class="cal-leg-item"><span class="cal-leg-canc cal-leg-canc-cobrada"><svg class="ico" aria-hidden="true"><use href="#i-wallet"/></svg></span> Cancelada · cobrada</div>
-          <div class="cal-leg-item"><span class="cal-leg-canc"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></span> Cancelada · não cobrada</div>
+          <div class="cal-leg-item"><span class="cal-leg-canc"><svg class="ico" aria-hidden="true"><use href="#i-wallet-off"/></svg></span> Cancelada · não cobrada</div>
         </div>
       </div>
       <div class="cal-main">
@@ -24315,7 +24316,7 @@ function ageDesenharDia_(col, iso) {
     var sala = (s.modalidade === 'online' && s.estado === 'agendada' && s.meet_link) ? s.meet_link : ''; // 14.17: tocar na câmera inicia a sessão on-line
     var icones = (s.modalidade === 'online' ? (sala ? '<span class="cal-ev-cam" title="Iniciar sessão on-line"><svg class=ico aria-hidden=true><use href=#i-video></use></svg></span>' : '<svg class=ico aria-hidden=true><use href=#i-video></use></svg>') : '') +
       (s.serie_id ? '<svg class=ico aria-hidden=true><use href=#i-repeat></use></svg>' : '') +
-      (canc ? '<svg class=ico aria-hidden=true><use href=#i-' + (s.cobrada === 'Sim' ? 'wallet' : 'x') + '></use></svg>' : '') + // 14.19.1: carteira na cancelada cobrada, X na não cobrada
+      (canc ? '<svg class=ico aria-hidden=true><use href=#i-' + (s.cobrada === 'Sim' ? 'wallet' : 'wallet-off') + '></use></svg>' : '') + // 14.19.1: carteira na cancelada cobrada, carteira riscada na não cobrada
       (s.confirmada ? '<svg class=ico aria-hidden=true><use href=#i-check></use></svg>' : '');
     el.title = s.hora + ' – ' + ageHora_(ini + dur) + ' · ' + s.nome + ' · ' + ageModNome_(s.modalidade) + (sit ? ' · ' + sit : '') +
       (s.reposicao_de ? ' · Reposição' : '') + (s.reposta_em ? ' · Reposta em ' + lemDataBR_(s.reposta_em, true) : '') +
