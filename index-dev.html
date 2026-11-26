@@ -4337,12 +4337,14 @@ button.cab-no-item{cursor:pointer;}
 .cal-leg-cor.cal-leg-on{background:var(--cal-ev-online);border:1px solid var(--c-ink-3);}
 .cal-leg-cor.cal-leg-pres{background:var(--cal-ev-presencial);border:1px solid var(--c-ink-3);}
 .cal-leg-cor.cal-leg-ocup{background:repeating-linear-gradient(135deg,var(--cal-ocup-a) 0 3px,var(--cal-ocup-b) 3px 6px);border:1px solid var(--cal-ocup-linha);}
-.cal-leg-cor.cal-leg-real{background:var(--cal-ev-presencial);border-left:4px solid var(--c-pos);}
-.cal-leg-cor.cal-leg-falta{background:var(--cal-ev-presencial);border-left:4px solid var(--c-risk);}
+.cal-leg-cor.cal-leg-real{background:var(--c-surface-sub);border:1px solid var(--c-line);border-left:4px solid var(--c-pos);} /* 14.19.1: fundo neutro — o status vale para presencial e on-line */
+.cal-leg-cor.cal-leg-falta{background:var(--c-surface-sub);border:1px solid var(--c-line);border-left:4px solid var(--c-risk);}
 /* Pacote 14.6 — sessão cancelada e cobrada: continua na grade, apagada e tracejada, sem ocupar o horário; ao lado quando há outra sessão no mesmo horário */
-.cal-ev-cancelada.cal-ev-canc-cobrada{border-left:4px solid var(--c-warn);} /* 14.19.1: só a cancelada cobrada leva a barra (âmbar) */
+.cal-ev-cancelada.cal-ev-canc-cobrada .cal-ev-nome{text-decoration:none;} /* 14.19.1: cancelada cobrada = nome sem risco + ícone da carteira; não cobrada = nome riscado */
 .cal-leg-cor.cal-leg-canc{background:var(--c-surface-sub);border:1px dashed var(--c-ink-3);}
-.cal-leg-cor.cal-leg-canc-cobrada{border-left:4px solid var(--c-warn);}
+.cal-leg-canc-cobrada{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:4px;flex-shrink:0;background:var(--c-surface-sub);border:1px dashed var(--c-ink-3);color:var(--c-ink-2);}
+.cal-leg-canc-cobrada .ico{width:14px;height:14px;}
+.cal-leg-riscado{text-decoration:line-through;color:var(--c-ink-3);}
 .cal-ev-cancelada{border:1px dashed var(--c-ink-3);background:var(--c-surface-sub);width:calc(100% - 6px);text-align:left;color:var(--c-ink-3);font-family:var(--f-text);display:block;z-index:2;box-shadow:none;}
 .cal-ev-cancelada .cal-ev-nome{text-decoration:line-through;}
 .cal-ev-lado{left:auto;right:2px;width:42%;z-index:4;}
@@ -4995,8 +4997,8 @@ button.fin-enc-lin:focus-visible{outline:2px solid var(--c-action);outline-offse
           <div class="cal-leg-grupo">Status</div>
           <div class="cal-leg-item"><span class="cal-leg-cor cal-leg-real"></span> Realizada</div>
           <div class="cal-leg-item"><span class="cal-leg-cor cal-leg-falta"></span> Falta</div>
-          <div class="cal-leg-item"><span class="cal-leg-cor cal-leg-canc cal-leg-canc-cobrada"></span> Cancelada · cobrada</div>
-          <div class="cal-leg-item"><span class="cal-leg-cor cal-leg-canc"></span> Cancelada · não cobrada</div>
+          <div class="cal-leg-item"><span class="cal-leg-canc-cobrada"><svg class="ico" aria-hidden="true"><use href="#i-wallet"/></svg></span> Cancelada · cobrada</div>
+          <div class="cal-leg-item"><span class="cal-leg-cor cal-leg-canc"></span> <span>Cancelada · não cobrada <span class="cal-leg-riscado">nome riscado</span></span></div>
         </div>
       </div>
       <div class="cal-main">
@@ -24314,6 +24316,7 @@ function ageDesenharDia_(col, iso) {
     var sala = (s.modalidade === 'online' && s.estado === 'agendada' && s.meet_link) ? s.meet_link : ''; // 14.17: tocar na câmera inicia a sessão on-line
     var icones = (s.modalidade === 'online' ? (sala ? '<span class="cal-ev-cam" title="Iniciar sessão on-line"><svg class=ico aria-hidden=true><use href=#i-video></use></svg></span>' : '<svg class=ico aria-hidden=true><use href=#i-video></use></svg>') : '') +
       (s.serie_id ? '<svg class=ico aria-hidden=true><use href=#i-repeat></use></svg>' : '') +
+      (canc && s.cobrada === 'Sim' ? '<svg class=ico aria-hidden=true><use href=#i-wallet></use></svg>' : '') + // 14.19.1: a carteira marca a cancelada que é cobrada
       (s.confirmada ? '<svg class=ico aria-hidden=true><use href=#i-check></use></svg>' : '');
     el.title = s.hora + ' – ' + ageHora_(ini + dur) + ' · ' + s.nome + ' · ' + ageModNome_(s.modalidade) + (sit ? ' · ' + sit : '') +
       (s.reposicao_de ? ' · Reposição' : '') + (s.reposta_em ? ' · Reposta em ' + lemDataBR_(s.reposta_em, true) : '') +
