@@ -8330,7 +8330,8 @@ function _ageMinhas_(ctx, alvo, agora) {
     return p.estado === 'recusado' && dec !== null && hojeN - dec <= 7;
   }).map(function (p) { return { id: p.id, estado: p.estado, data: p.data, hora: _lemHora_(p.hora), modalidade: p.modalidade === 'online' ? 'online' : 'presencial' }; })
     .sort(function (a, b) { var p = a.data + ' ' + a.hora, q = b.data + ' ' + b.hora; return p < q ? -1 : (p > q ? 1 : 0); });
-  return { ok: true, hoje: agora.data, agora_hora: agora.hora, antecedencia_horas: horas, profissional: alvo.profissional, sessoes: sessoes, pedidos_agendar: agendar };
+  return { ok: true, hoje: agora.data, agora_hora: agora.hora, antecedencia_horas: horas, cobra_fora_prazo: ctx.cfg.cobrar_cancel_fora === 'Sim', // 14.22
+    profissional: alvo.profissional, sessoes: sessoes, pedidos_agendar: agendar };
 }
 
 /**
