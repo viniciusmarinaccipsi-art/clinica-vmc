@@ -101,7 +101,7 @@ const cel = (nomeAba, id, col) => h.celula(aba(nomeAba), h.linhaDe(aba(nomeAba),
 const PER = { de: '2026-11-20', ate: '2026-12-31' };
 const sessao = (sigla, d) => prof('profSalvarSessao', { periodo: PER, dados: Object.assign({ id: uuid(), sigla: sigla, data: '2026-12-02', hora: '10:00', duracao_min: 60, modalidade: 'presencial', valor: '', notas: '', avisos: [] }, d || {}) });
 const GRADE = [1, 2, 3, 4, 5].map(d => ({ dia_semana: d, hora_inicio: '08:00', hora_fim: '18:00', modalidade: 'ambas', ativo: 'sim' }));
-const grade = cfg => prof('profSalvarGrade', { config: Object.assign({ duracao_slot_min: 60, antecedencia_min_horas: 24 }, cfg || {}), grade: GRADE });
+const grade = cfg => prof('profSalvarGrade', { config: Object.assign({ duracao_slot_min: 60, antecedencia_min_horas: 24, agendar_ultimo: '24s' }, cfg || {}), grade: GRADE }); // 14.24: esta suíte pede horários a mais de uma semana; o padrão do 14.20 é uma semana
 const cfg = () => prof('profLerGrade').config;
 const externa = () => prof('profLerAgenda', PER).agenda_externa;
 const gatilho = () => { h.memo(); return S('enviarLembretes_')(); };
@@ -306,10 +306,11 @@ tenta('T', () => {
   const novas = ['profAgendaConectar', 'profAgendaDesconectar', 'profAgendaOpcao'];
   ok('T1 as três ações novas estão na trava, exigem crachá e não são leitura', novas.every(a => S('ACOES_COM_TRAVA').indexOf(a) !== -1 && S('ACOES_PUBLICAS').indexOf(a) === -1 && S('ACOES_SO_LEITURA').indexOf(a) === -1));
   ok('T2 VERSAO_PACOTE do 14.8.1 em diante (o número exato é conferido em backend_16_11.js)', /^(14\.(8\.[1-9]|9|\d{2})|[12]\d\.)/.test(S('VERSAO_PACOTE')), S('VERSAO_PACOTE'));
-  ok('T3 nenhuma coluna nova nas abas da agenda (a conexão mora na Config_Agenda e no cofre do script)', S('COLUNAS_SESSOES').slice(-3).join(',') === 'gcal_evento,gcal_sinc,meet_link' && S('COLUNAS_PEDIDOS_AGENDA').slice(-2).join(',') === 'sugestao,modalidade');
+  ok('T3 o 14.8 não criou coluna nas abas da agenda (a conexão mora na Config_Agenda e no cofre do script; as colunas depois de meet_link são do 14.19 em diante)', S('COLUNAS_SESSOES').join(',').indexOf('gcal_evento,gcal_sinc,meet_link,cancel_motivo') !== -1 && S('COLUNAS_PEDIDOS_AGENDA').slice(-2).join(',') === 'sugestao,modalidade');
   const esperados = logServidor.filter(l => /agenda externa: o Google nao devolveu a permissao \(400\)/.test(l)).length;
   const inesperados = logServidor.filter(l => !/^trava de gravacao: nao obtida/.test(l) && !/agenda externa: o Google nao devolveu a permissao \(400\)/.test(l));
   ok('T4 o servidor só registrou a recusa provocada do Google (B9)', esperados === 1 && inesperados.length === 0, inesperados.slice(0, 5));
 });
 
 console.log('\nRESULTADO: ' + (falhas ? falhas + ' FALHA(S) em ' + passo + ' provas' : 'OK — ' + passo + '/' + passo + ' provas'));
+process.exit(falhas ? 1 : 0); // 14.24: sem isto o portão não via a falha

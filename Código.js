@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.22';
+var VERSAO_PACOTE = '14.24';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -463,6 +463,10 @@ function _despachar_(acao, payload, s) {
         resposta = profCancelarSessao(s, payload.id, payload.opcoes, payload.periodo);
         break;
 
+      case 'profApagarSessao': // 14.24
+        resposta = profApagarSessao(s, payload.id, payload.opcoes, payload.periodo);
+        break;
+
       case 'profMarcarSituacao':
         resposta = profMarcarSituacao(s, payload.id, payload.situacao, payload.periodo);
         break;
@@ -710,7 +714,7 @@ var ACOES_SO_LEITURA = ['lerHistorico', 'lerEscalas', 'lerRascunhos', 'lerEditan
   'profLerHorariosLivres']; // 14.5
 
 // 14.12: gravacoes da Agenda — nenhuma delas muda a aba Profissionais, entao o cadastro do profissional e lido uma vez por chamada
-var ACOES_DA_AGENDA = ['profSalvarSessao', 'profEditarSerie', 'profCancelarSessao', 'profMarcarSituacao', 'profSalvarBloqueio', 'profApagarBloqueio',
+var ACOES_DA_AGENDA = ['profSalvarSessao', 'profEditarSerie', 'profCancelarSessao', 'profApagarSessao', 'profMarcarSituacao', 'profSalvarBloqueio', 'profApagarBloqueio',
   'profDecidirPedido', 'profAvisarSessao', 'profMarcarEventosVistos', 'profMarcarStatusLote',
   'pacienteAgendarSessao', 'pacienteConfirmarSessao', 'pacienteCancelarSessao', 'pacientePedirAgenda', 'confirmarSessaoPorLink'];
 
@@ -873,7 +877,7 @@ var ACOES_COM_TRAVA = [
   'admDesativarProfissional', 'admReativarProfissional', 'admEnviarConvite',
   'profSalvarMeusDados', 'admAprovarPedido', 'admRecusarPedido', // 18.8.1
   'profSalvarLembrete', 'profEncerrarLembrete', 'profLembrarAgora', // 19.2.1
-  'profSalvarSessao', 'profEditarSerie', 'profCancelarSessao', 'profMarcarSituacao', 'profSalvarBloqueio', 'profApagarBloqueio', 'profDecidirPedido', // 14.3
+  'profSalvarSessao', 'profEditarSerie', 'profCancelarSessao', 'profApagarSessao', 'profMarcarSituacao', 'profSalvarBloqueio', 'profApagarBloqueio', 'profDecidirPedido', // 14.3; profApagarSessao no 14.24
   'pacienteAgendarSessao', 'pacienteConfirmarSessao', 'pacienteCancelarSessao', 'pacientePedirAgenda', // 14.3
   'confirmarSessaoPorLink', 'profMarcarEventosVistos', 'profAvisarSessao', // 14.4
   'profAgendaConectar', 'profAgendaDesconectar', 'profAgendaOpcao', // 14.8
@@ -7381,7 +7385,7 @@ function _ageEventos_(ctx, pacs, agora) {
   var pediuReag = {};
   ctx.pedidos.forEach(function (p) { if (p.tipo === 'remarcar' && p.sessao_id) pediuReag[p.sessao_id + '|' + p.criado_em] = true; });
   ctx.sessoes.forEach(function (x) {
-    if (x.cancelada_por === 'edicao_serie') return;
+    if (_ageSemRegistro_(x)) return;
     if (x.origem === 'paciente' && !x.reposicao_de) ev('agendou', x, x.criado_em);
     if (x.confirmada_em) ev('confirmou', x, x.confirmada_em);
     if (x.estado === 'cancelada' && x.cancelada_por === 'paciente' && !x.reagendada_para && !pediuReag[x.id + '|' + x.cancelada_em]) ev('cancelou', x, x.cancelada_em);
@@ -7453,9 +7457,14 @@ function _ageCtx_(controle, criar) {
 
 function _ageAtiva_(x) { return x.estado !== 'cancelada'; }
 /** 14.6: sessao cancelada e COBRADA — continua na grade do profissional (apagada, sem ocupar o horario) para poder ser reposta. */
-function _ageCanceladaCobrada_(x) { return x.estado === 'cancelada' && x.cobrada === 'Sim' && x.cancelada_por !== 'edicao_serie'; }
+/** 14.24: sessao que saiu sem ser cancelamento de ninguem — as recorrentes mudaram ('edicao_serie') ou foi marcada por engano e apagada
+ *  ('engano'). A linha fica na planilha; nenhuma leitura a mostra (profissional, paciente, historico, sino, resumo). */
+var MSG_AGE_NAO_APAGA = 'Esta sessão não pode ser apagada. Use o cancelamento.';
+var MSG_AGE_NAO_APAGA_PAGA = 'Esta sessão tem pagamento lançado e não pode ser apagada. Use o cancelamento.';
+function _ageSemRegistro_(x) { return x.cancelada_por === 'edicao_serie' || x.cancelada_por === 'engano'; }
+function _ageCanceladaCobrada_(x) { return x.estado === 'cancelada' && x.cobrada === 'Sim' && !_ageSemRegistro_(x); }
 /** 14.19: toda sessao cancelada por alguem (paciente ou profissional) continua na grade, apagada e sem ocupar o horario, com a etiqueta. */
-function _ageCanceladaVisivel_(x) { return x.estado === 'cancelada' && x.cancelada_por !== 'edicao_serie'; }
+function _ageCanceladaVisivel_(x) { return x.estado === 'cancelada' && !_ageSemRegistro_(x); }
 /** 14.19: o momento que conta para o prazo do cancelamento — quando o paciente avisou ('AAAA-MM-DD HH:mm'), nunca depois de agora. */
 function _ageAvisouEm_(texto, agora) {
   var m = /^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2})$/.exec(String(texto || '').trim());
@@ -7568,6 +7577,7 @@ function _ageSessaoProf_(ctx, x, pacs) {
     duracao_min: _ageDur_(x.duracao_min, ctx.cfg.duracao_slot_min), modalidade: x.modalidade === 'online' ? 'online' : 'presencial',
     valor: x.valor, notas: x.notas, serie_id: x.serie_id, estado: x.estado || 'agendada', cobrada: x.cobrada,
     reposicao_de: x.reposicao_de, reposta_em: _ageRepostaEm_(ctx, x.id), pode_repor: _agePodeRepor_(ctx, x), origem: x.origem || 'profissional',
+    pode_apagar: _agePodeApagar_(ctx, x), // 14.24
     confirmada: !!x.confirmada_em, avisos: _ageAvisosLista_(x.avisos), cancelada_por: x.cancelada_por,
     cancel_motivo: x.cancel_motivo || '', cancel_avisou_em: x.cancel_avisou_em || '', cancelada_em: x.cancelada_em || '', // 14.19
     cancel_no_prazo: x.cancel_no_prazo || '', // 14.20
@@ -7789,11 +7799,11 @@ function _ageHistorico_(controle, siglaPaciente) {
   if (!sig || !pac || pac.excluido) return { ok: false, erro: 'Este paciente nao pertence a voce' };
   var agora = _lemAgora_();
   var lista = _ageLer_(_ageAba_(controle, ABA_SESSOES, COLUNAS_SESSOES, false)).filter(function (x) {
-    return _siglaChave_(x.sigla) === sig && x.cancelada_por !== 'edicao_serie';
+    return _siglaChave_(x.sigla) === sig && !_ageSemRegistro_(x);
   }).map(function (x) {
     return { id: x.id, data: x.data, hora: _lemHora_(x.hora_inicio), modalidade: x.modalidade === 'online' ? 'online' : 'presencial',
       valor: x.reposicao_de ? '' : (String(x.valor === undefined || x.valor === null ? '' : x.valor).trim() || pac.valor || ''),
-      estado: x.estado || 'agendada', confirmada: !!x.confirmada_em, reposicao: !!x.reposicao_de };
+      estado: x.estado || 'agendada', confirmada: !!x.confirmada_em, reposicao: !!x.reposicao_de, reagendada: !!x.reagendada_para }; // 14.24: a etiqueta "Reagendada" do histórico
   }).sort(function (a, b) { var ka = a.data + ' ' + a.hora, kb = b.data + ' ' + b.hora; return ka < kb ? 1 : (ka > kb ? -1 : 0); });
   return { ok: true, historico: lista, hoje: agora.data, hora: agora.hora };
 }
@@ -8041,6 +8051,46 @@ function profCancelarSessao(s, id, opcoes, periodo) {
   }
   resp.aviso = !AGE_EMAIL_AUTOMATICO ? 'clique' : (o.avisar === true ? _ageAvisarPaciente_(ctx, alvo.profissionalId, _agePacientes_(alvo.controle)[_siglaChave_(ref.sigla)], 'cancelamento', ref, '') : 'caixa'); // 14.13
   return _ageResposta_(alvo, resp, periodo, agora);
+}
+
+/** 14.24: pode ser apagada a sessao ainda agendada, ou a cancelada sem cobranca, que nao esta ligada a outra (reposicao ou reagendamento). */
+function _agePodeApagar_(ctx, x) {
+  if (!x || _ageSemRegistro_(x)) return false;
+  var estado = x.estado || 'agendada';
+  if (estado !== 'agendada' && estado !== 'cancelada') return false;
+  if (estado === 'cancelada' && x.cobrada === 'Sim') return false;
+  if (x.reposicao_de || x.reagendada_para || _ageRepostaEm_(ctx, x.id) || _ageReagendadaDe_(ctx, x)) return false;
+  return true;
+}
+
+/** 14.24 (pedido do usuario): apagar a sessao marcada por engano. Nao e cancelamento: nao cobra, nao avisa o paciente e nao fica
+ *  registrada como cancelada. `opcoes.escopo = 'seguintes'` apaga tambem as proximas da mesma regra. Sessao com pagamento lancado e recusada. */
+function profApagarSessao(s, id, opcoes, periodo) {
+  var o = opcoes && typeof opcoes === 'object' ? opcoes : {};
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  var ctx = _ageCtx_(alvo.controle, true);
+  var agora = _lemAgora_();
+  var ref = ctx.sessoes.filter(function (x) { return x.id === String(id || '').trim(); })[0];
+  if (!ref) return { ok: false, erro: MSG_AGE_NAO_ACHEI };
+  if (_ageSemRegistro_(ref)) return _ageResposta_(alvo, { ok: true, duplicado: true, apagadas: 0 }, periodo, agora);
+  if (!_agePodeApagar_(ctx, ref)) return { ok: false, codigo: 'nao_pode', erro: MSG_AGE_NAO_APAGA };
+  var lista = [ref];
+  if (o.escopo === 'seguintes' && ref.serie_id && (ref.estado || 'agendada') === 'agendada') {
+    ctx.sessoes.forEach(function (x) { if (x.serie_id === ref.serie_id && x.id !== ref.id && x.data > ref.data && (x.estado || 'agendada') === 'agendada' && _agePodeApagar_(ctx, x)) lista.push(x); });
+  }
+  var alvoIds = {};
+  lista.forEach(function (x) { alvoIds[x.id] = true; });
+  if (_lembretesLer_(_finAba_(alvo.controle, ABA_FIN_ALOCACOES, false)).some(function (a) { return alvoIds[a.sessao_id]; })) return { ok: false, codigo: 'pagamento', erro: MSG_AGE_NAO_APAGA_PAGA };
+  if (lista.length > 1) {
+    var regra = ctx.series.filter(function (x) { return x.id === ref.serie_id; })[0];
+    if (regra && !regra.encerrada_em) _ageGravar_(ctx.abaR, COLUNAS_SERIES, regra.__linha, { encerrada_em: agora.carimbo });
+  }
+  lista.forEach(function (x) {
+    _ageGravar_(ctx.abaS, COLUNAS_SESSOES, x.__linha, { estado: 'cancelada', cancelada_em: agora.carimbo, cancelada_por: 'engano', cobrada: 'Nao', atualizado_em: agora.carimbo });
+    _agePedidosFechar_(ctx, x.id, agora, 'sem_efeito');
+  });
+  return _ageResposta_(alvo, { ok: true, apagadas: lista.length }, periodo, agora);
 }
 
 /** Pedidos pendentes de uma sessao que deixou de existir como estava: recusados. */
@@ -8303,7 +8353,7 @@ function _agePaciente_(sigla) {
 function _ageMinhas_(ctx, alvo, agora) {
   var chave = _siglaChave_(alvo.sigla), horas = ctx.cfg.prazo_cancelar_horas;
   var pedidos = ctx.pedidos.filter(function (p) { return _siglaChave_(p.sigla) === chave; });
-  var sessoes = ctx.sessoes.filter(function (x) { return _siglaChave_(x.sigla) === chave && x.cancelada_por !== 'edicao_serie'; }).map(function (x) {
+  var sessoes = ctx.sessoes.filter(function (x) { return _siglaChave_(x.sigla) === chave && !_ageSemRegistro_(x); }).map(function (x) {
     var futura = _ageMinutosAte_(x.data, x.hora_inicio, agora) > 0, agendada = x.estado === 'agendada' || x.estado === '';
     var noPrazo = _ageNoPrazo_(x.data, x.hora_inicio, agora, horas);
     var pend = pedidos.filter(function (p) { return p.sessao_id === x.id && p.estado === 'pendente'; })[0];
@@ -9793,7 +9843,7 @@ function _finResumo_(c, e, per, agora) {
     if (estado !== 'cancelada' && x.data > per.ate) temDepois[sig] = true;
     if (estado !== 'cancelada' && x.data >= per.antes.de && x.data <= per.antes.ate) temAntes[sig] = true;
     if (x.data < per.de || x.data > per.ate) return;
-    if (estado === 'cancelada') { if (x.cancelada_por === 'paciente') g.canc_pac++; else if (x.cancelada_por !== 'edicao_serie') g.canc_prof++; return; }
+    if (estado === 'cancelada') { if (x.cancelada_por === 'paciente') g.canc_pac++; else if (!_ageSemRegistro_(x)) g.canc_prof++; return; }
     temNoPeriodo[sig] = true;
     if (estado === 'falta') g.faltas++; else if (estado === 'realizada' || _finPassou_(x, agora)) g.realizadas++;
     if (x.modalidade === 'online') g.online++; else g.presencial++;

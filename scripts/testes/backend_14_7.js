@@ -49,7 +49,7 @@ const sessao = (sigla, d) => prof('profSalvarSessao', { periodo: PER, dados: Obj
 // segunda a quinta com as duas modalidades; sexta só on-line
 const GRADE = [1, 2, 3, 4].map(d => ({ dia_semana: d, hora_inicio: '08:00', hora_fim: '18:00', modalidade: 'ambas', ativo: 'sim' }))
   .concat([{ dia_semana: 5, hora_inicio: '08:00', hora_fim: '12:00', modalidade: 'online', ativo: 'sim' }]);
-const grade = cfg => prof('profSalvarGrade', { config: Object.assign({ duracao_slot_min: 60, antecedencia_min_horas: 24 }, cfg || {}), grade: GRADE });
+const grade = cfg => prof('profSalvarGrade', { config: Object.assign({ duracao_slot_min: 60, antecedencia_min_horas: 24, agendar_ultimo: '24s' }, cfg || {}), grade: GRADE }); // 14.24: esta suíte pede horários a mais de uma semana; o padrão do 14.20 é uma semana
 const pedir = (sigla, data, hora, mod, id) => pac(sigla, 'pacienteAgendarSessao', { dados: { id: id || uuid(), data: data, hora: hora, modalidade: mod || 'presencial' } });
 const decidir = (id, aprovar, quando) => prof('profDecidirPedido', { id: id, aprovar: aprovar, periodo: PER, quando: quando || null });
 const livresPac = (sigla, de) => pac(sigla, 'lerHorariosLivres', { de: de }).livres.map(x => x.data + ' ' + x.hora);
@@ -162,7 +162,7 @@ tenta('C', () => {
   ok('C17 vários pedidos do mesmo paciente são aceitos (não há mais limite)', [['2026-12-15', '09:00'], ['2026-12-16', '09:00'], ['2026-12-17', '09:00']].every(x => pedir(P1, x[0], x[1]).ok === true) && pac(P1, 'lerMinhasSessoes').pedidos_agendar.length === 3);
   // remarcação continua como era
   r = decidir(uRem, true);
-  ok('C18 pedido de remarcação continua igual: aprovado, a sessão muda e volta a pedir confirmação', r.ok === true && r.aprovado === true && cel('Sessoes', idS1, 'data') === '2026-12-09' && cel('Sessoes', idS1, 'hora_inicio') === '14:00' && cel('Sessoes', idS1, 'confirmada_em') === '', r.erro);
+  ok('C18 (14.22) pedido de reagendamento aprovado: a original fica cancelada com a ligação e nasce a sessão nova no horário pedido, a confirmar', r.ok === true && r.aprovado === true && cel('Sessoes', idS1, 'estado') === 'cancelada' && cel('Sessoes', idS1, 'reagendada_para') === 'rg-' + idS1 && cel('Sessoes', 'rg-' + idS1, 'data') === '2026-12-09' && cel('Sessoes', 'rg-' + idS1, 'hora_inicio') === '14:00' && cel('Sessoes', 'rg-' + idS1, 'confirmada_em') === '', r.erro);
 });
 
 /* ---------------------------------------------------------------- E */
@@ -214,7 +214,7 @@ console.log('T. Listas, colunas e versão');
 tenta('T', () => {
   const fonteJs = fs.readFileSync(path.join(__dirname, '..', '..', 'Código.js'), 'utf8');
   ok('T1 nenhuma ação nova: as mesmas da trava, e o pedido continua gravando dentro dela', S('ACOES_COM_TRAVA').indexOf('pacienteAgendarSessao') !== -1 && S('ACOES_COM_TRAVA').indexOf('profDecidirPedido') !== -1 && S('ACOES_SO_LEITURA').indexOf('profLerHorariosLivres') !== -1);
-  ok('T2 a coluna nova do pedido fica no fim e é criada na planilha', S('COLUNAS_PEDIDOS_AGENDA').slice(-2).join(',') === 'sugestao,modalidade' && h.cab(aba('Pedidos_Agenda')).indexOf('modalidade') !== -1 && S('COLUNAS_SESSOES').slice(-3).join(',') === 'gcal_evento,gcal_sinc,meet_link');
+  ok('T2 a coluna nova do pedido fica no fim e é criada na planilha', S('COLUNAS_PEDIDOS_AGENDA').slice(-2).join(',') === 'sugestao,modalidade' && h.cab(aba('Pedidos_Agenda')).indexOf('modalidade') !== -1 && S('COLUNAS_SESSOES').join(',').indexOf('gcal_evento,gcal_sinc,meet_link') !== -1); // 14.24: as colunas do 14.19, 14.20 e 14.22 vieram depois destas
   const bruta = aba('Pedidos_Agenda').getRange(h.linhaDe(aba('Pedidos_Agenda'), 'id', uA), h.cab(aba('Pedidos_Agenda')).indexOf('hora') + 1).getValue();
   ok('T3 as células do pedido são texto literal (a hora não vira número)', String(bruta).replace(/^'/, '') === '10:00', bruta);
   ok('T4 o limite não existe mais no servidor (a versão é conferida em backend_16_11.js)', fonteJs.indexOf('limite_agendamentos') === -1 && fonteJs.indexOf('_ageLimite_') === -1);
@@ -223,3 +223,4 @@ tenta('T', () => {
 });
 
 console.log('\nRESULTADO: ' + (falhas ? falhas + ' FALHA(S) em ' + passo + ' provas' : 'OK — ' + passo + '/' + passo + ' provas'));
+process.exit(falhas ? 1 : 0); // 14.24: sem isto o portão não via a falha
