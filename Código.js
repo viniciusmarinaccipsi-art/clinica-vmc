@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.24';
+var VERSAO_PACOTE = '14.26';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -479,6 +479,14 @@ function _despachar_(acao, payload, s) {
         resposta = profApagarBloqueio(s, payload.id, payload.periodo);
         break;
 
+      case 'profSalvarLembreteAgenda': // 14.26
+        resposta = profSalvarLembreteAgenda(s, payload.dados, payload.periodo);
+        break;
+
+      case 'profApagarLembreteAgenda': // 14.26
+        resposta = profApagarLembreteAgenda(s, payload.id, payload.periodo);
+        break;
+
       case 'profDecidirPedido':
         resposta = profDecidirPedido(s, payload.id, payload.aprovar, payload.periodo, payload.quando);
         break;
@@ -715,6 +723,7 @@ var ACOES_SO_LEITURA = ['lerHistorico', 'lerEscalas', 'lerRascunhos', 'lerEditan
 
 // 14.12: gravacoes da Agenda — nenhuma delas muda a aba Profissionais, entao o cadastro do profissional e lido uma vez por chamada
 var ACOES_DA_AGENDA = ['profSalvarSessao', 'profEditarSerie', 'profCancelarSessao', 'profApagarSessao', 'profMarcarSituacao', 'profSalvarBloqueio', 'profApagarBloqueio',
+  'profSalvarLembreteAgenda', 'profApagarLembreteAgenda', // 14.26
   'profDecidirPedido', 'profAvisarSessao', 'profMarcarEventosVistos', 'profMarcarStatusLote',
   'pacienteAgendarSessao', 'pacienteConfirmarSessao', 'pacienteCancelarSessao', 'pacientePedirAgenda', 'confirmarSessaoPorLink'];
 
@@ -878,6 +887,7 @@ var ACOES_COM_TRAVA = [
   'profSalvarMeusDados', 'admAprovarPedido', 'admRecusarPedido', // 18.8.1
   'profSalvarLembrete', 'profEncerrarLembrete', 'profLembrarAgora', // 19.2.1
   'profSalvarSessao', 'profEditarSerie', 'profCancelarSessao', 'profApagarSessao', 'profMarcarSituacao', 'profSalvarBloqueio', 'profApagarBloqueio', 'profDecidirPedido', // 14.3; profApagarSessao no 14.24
+  'profSalvarLembreteAgenda', 'profApagarLembreteAgenda', // 14.26
   'pacienteAgendarSessao', 'pacienteConfirmarSessao', 'pacienteCancelarSessao', 'pacientePedirAgenda', // 14.3
   'confirmarSessaoPorLink', 'profMarcarEventosVistos', 'profAvisarSessao', // 14.4
   'profAgendaConectar', 'profAgendaDesconectar', 'profAgendaOpcao', // 14.8
@@ -7004,6 +7014,9 @@ var ABA_SESSOES = 'Sessoes';
 var ABA_SERIES = 'Series';
 var ABA_BLOQUEIOS = 'Bloqueios';
 var ABA_PEDIDOS_AGENDA = 'Pedidos_Agenda';
+// 14.26: lembrete do profissional na Agenda (anotacao dele para ele mesmo; a aba `Lembretes`, da Fase 19, e outra coisa: tarefas do paciente)
+var ABA_LEMBRETES_AGENDA = 'Lembretes_Agenda';
+var COLUNAS_LEMBRETES_AGENDA = ['id', 'data', 'hora', 'nome', 'comentario', 'sigla', 'feito_em', 'criado_em', 'atualizado_em'];
 var COLUNAS_SESSOES = ['id', 'sigla', 'data', 'hora_inicio', 'duracao_min', 'modalidade', 'valor', 'notas', 'serie_id',
   'estado', 'cobrada', 'reposicao_de', 'origem', 'confirmada_em', 'cancelada_em', 'cancelada_por', 'avisos',
   'ultimo_aviso_em', 'criado_em', 'criado_por', 'atualizado_em',
@@ -7627,8 +7640,24 @@ function _ageLeitura_(ctx, de, ate, pacs, agora) {
     .sort(function (a, b) { var p = a.data_inicio + ' ' + a.hora_inicio, q = b.data_inicio + ' ' + b.hora_inicio; return p < q ? -1 : (p > q ? 1 : 0); });
   return { de: deIso, ate: ateIso, hoje: hoje, agora_hora: agora.hora, config: ctx.cfg, sessoes: sessoes, series: series, bloqueios: bloqueios, bloqueios_futuros: bloqFuturos,
     feriados: _ageFeriadosEntre_(deIso, ateIso), pedidos: _agePedidosPendentes_(ctx, pacs),
+    lembretes: _lemAgEntre_(ctx.controle, deIso, ateIso, pacs), // 14.26
     eventos: _ageEventos_(ctx, pacs, agora), eventos_vistos_ate: ctx.cfg.agenda_vistos_ate || '', // 14.4
     agenda_externa: externa, ocupados: (externa && externa.ocupado) ? _calOcupadosTela_(ctx.profId, ctx.cfg, deIso, ateIso) : [] }; // 14.8
+}
+
+/** 14.26: lembretes do profissional. A aba nasce no primeiro lembrete; enquanto nao existe, a leitura custa so a procura pelo nome. */
+function _lemAgLer_(controle) {
+  var aba = _ageAba_(controle, ABA_LEMBRETES_AGENDA, COLUNAS_LEMBRETES_AGENDA, false);
+  return aba ? _ageLer_(aba) : [];
+}
+/** O que a tela mostra de um lembrete. O paciente vinculado vai so pelo nome (e a sigla, para a tela abrir o vinculo ao editar). */
+function _lemAgSaida_(x, pacs) {
+  var p = x.sigla ? pacs[_siglaChave_(x.sigla)] : null;
+  return { id: x.id, data: x.data, hora: _lemHora_(x.hora), nome: x.nome, comentario: x.comentario || '', sigla: p ? x.sigla : '', paciente: p ? p.nome : '', feito: !!x.feito_em };
+}
+function _lemAgEntre_(controle, deIso, ateIso, pacs) {
+  return _lemAgLer_(controle).filter(function (x) { return x.data >= deIso && x.data <= ateIso; }).map(function (x) { return _lemAgSaida_(x, pacs); })
+    .sort(function (a, b) { var p = a.data + ' ' + a.hora, q = b.data + ' ' + b.hora; return p < q ? -1 : (p > q ? 1 : 0); });
 }
 
 /** Profissional do cracha + a Controle dele. */
@@ -8163,6 +8192,41 @@ function profApagarBloqueio(s, id, periodo) {
   return _ageResposta_(alvo, { ok: true }, periodo, _lemAgora_());
 }
 
+/** 14.26 (pedido do usuario): cria ou altera um lembrete do profissional. `dados.so_feito` muda so a marca de feito (true/false em `dados.feito`). */
+function profSalvarLembreteAgenda(s, dados, periodo) {
+  var d = dados && typeof dados === 'object' ? dados : {};
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  if (!_ageIdValido_(d.id)) return { ok: false, erro: 'Parametros incompletos' };
+  var id = String(d.id).trim(), agora = _lemAgora_();
+  var aba = _ageAba_(alvo.controle, ABA_LEMBRETES_AGENDA, COLUNAS_LEMBRETES_AGENDA, true);
+  var existente = _ageLer_(aba).filter(function (x) { return x.id === id; })[0];
+  if (d.so_feito === true) {
+    if (!existente) return { ok: false, erro: MSG_AGE_NAO_ACHEI };
+    _ageGravar_(aba, COLUNAS_LEMBRETES_AGENDA, existente.__linha, { feito_em: d.feito === true ? (existente.feito_em || agora.carimbo) : '', atualizado_em: agora.carimbo });
+    return _ageResposta_(alvo, { ok: true }, periodo, agora);
+  }
+  var limpa = function (v, max) { return String(v === undefined || v === null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, max); };
+  var nome = limpa(d.nome, 120), data = String(d.data || '').trim(), hora = _lemHora_(d.hora), sig = String(d.sigla || '').trim();
+  if (!nome) return { ok: false, codigo: 'sem_nome', erro: 'Escreva o nome do lembrete.' };
+  if (_lemDia_(data) === null || !hora) return { ok: false, codigo: 'sem_horario', erro: 'Escolha o dia e a hora.' };
+  var pac = sig ? _agePacientes_(alvo.controle)[_siglaChave_(sig)] : null;
+  if (sig && (!pac || pac.excluido)) return { ok: false, erro: 'Este paciente nao pertence a voce' };
+  var campos = { data: data, hora: hora, nome: nome, comentario: limpa(d.comentario, 500), sigla: sig, atualizado_em: agora.carimbo };
+  if (!existente) { campos.id = id; campos.feito_em = ''; campos.criado_em = agora.carimbo; }
+  _ageGravar_(aba, COLUNAS_LEMBRETES_AGENDA, existente ? existente.__linha : 0, campos);
+  return _ageResposta_(alvo, { ok: true }, periodo, agora);
+}
+
+function profApagarLembreteAgenda(s, id, periodo) {
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  var aba = _ageAba_(alvo.controle, ABA_LEMBRETES_AGENDA, COLUNAS_LEMBRETES_AGENDA, false);
+  var x = aba ? _ageLer_(aba).filter(function (y) { return y.id === String(id || '').trim(); })[0] : null;
+  if (x) { aba.deleteRow(x.__linha); _ageEsquecer_(aba); }
+  return _ageResposta_(alvo, { ok: true }, periodo, _lemAgora_());
+}
+
 /** Aprova (a sessao nasce, muda ou a reposicao nasce) ou recusa um pedido do paciente. `quando` { data, hora }: aprovar em outro horario. */
 function profDecidirPedido(s, id, aprovar, periodo, quando) {
   var alvo = _ageProf_(s);
@@ -8625,7 +8689,7 @@ function _ageInicio_(controle) {
 /** Paciente excluido: sessoes e pedidos dele saem (a sigla pode voltar a ser usada por outro paciente). */
 function _agendaApagarDoPaciente_(controle, sigla, guardar) {
   var alvo = _siglaChave_(sigla), fica = guardar || {}; // 19.6: `guardar` = { id da sessao: true } — so vale para a aba Sessoes
-  [[ABA_SESSOES, COLUNAS_SESSOES], [ABA_SERIES, COLUNAS_SERIES], [ABA_PEDIDOS_AGENDA, COLUNAS_PEDIDOS_AGENDA]].forEach(function (par) {
+  [[ABA_SESSOES, COLUNAS_SESSOES], [ABA_SERIES, COLUNAS_SERIES], [ABA_PEDIDOS_AGENDA, COLUNAS_PEDIDOS_AGENDA], [ABA_LEMBRETES_AGENDA, COLUNAS_LEMBRETES_AGENDA]].forEach(function (par) { // 14.26: os lembretes vinculados a ele saem junto
     var aba = _ageAba_(controle, par[0], par[1], false);
     if (!aba) return;
     _lembretesLer_(aba).reverse().forEach(function (x) { if (_siglaChave_(x.sigla) === alvo && !(par[0] === ABA_SESSOES && fica[x.id])) aba.deleteRow(x.__linha); });
@@ -9932,6 +9996,7 @@ function _finInicio_(c, agora) {
     if (p && p.ativo && String(l.recibo_pedido_em || '').slice(0, 7) === mes) recibos.push({ sigla: sig, nome: p.nome, data: String(l.recibo_pedido_em).slice(0, 10) });
   });
   return { comprovantes: _finComprovantes_(c), recibos: recibos, status_pendente: _stpVisao_(c, agora), sessoes_hoje: _hojeVisao_(c, agora), // 20.2; 14.17
+    lembretes_hoje: _lemAgEntre_(c.controle, agora.data, agora.data, c.pacs), // 14.26
     contas: _finDespesas_(c, mes + '-01', ate > _finFimDoMes_(mes) ? ate : _finFimDoMes_(mes), agora.data).filter(function (d) { return d.situacao === 'a_pagar' && d.vence <= ate; })
       .map(function (d) { return { nome: d.nome, valor: d.valor, vence: d.vence }; }) };
 }
