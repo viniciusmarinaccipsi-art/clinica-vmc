@@ -4427,6 +4427,11 @@ button.cab-no-item{cursor:pointer;}
 .age-datas{margin:0 0 var(--s-3);padding-left:20px;font:var(--t-body);color:var(--c-ink);max-height:220px;overflow-y:auto;}
 .age-whats{margin-top:var(--s-2);}
 .age-topo{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:var(--s-2);margin:0 0 var(--s-3);}
+/* 14.24 (pedido do usuário): os comandos da sessão como ícones pequenos, lado a lado, no topo da janela */
+.age-barra{display:flex;justify-content:center;gap:var(--s-2);margin:0 0 var(--s-3);}
+.age-barra-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;flex:1 1 0;max-width:104px;min-height:var(--hit-min);padding:6px 4px;border:1px solid var(--c-line);border-radius:var(--r-field);background:var(--c-surface);color:var(--c-ink);font:var(--t-label);cursor:pointer;}
+.age-barra-btn .ico{width:18px;height:18px;}
+.age-barra-btn.age-barra-ativo{border-color:var(--c-action);background:var(--c-action-tint);color:var(--c-action-ink);}
 .age-ped{display:flex;align-items:center;gap:var(--s-2);flex-wrap:wrap;border:1px solid var(--c-line);border-radius:var(--r-field);padding:10px 12px;background:var(--c-surface);}
 .age-ped-texto{flex:1 1 220px;font:var(--t-body);color:var(--c-ink);overflow-wrap:anywhere;}
 .age-ped-acoes{display:flex;flex-wrap:wrap;gap:var(--s-2);}
@@ -24775,7 +24780,10 @@ function ageRender_() {
     '<button type="button" class="p5-btn p5-btn-secondary" id="ageRepEditar" onclick="ageRepAbrir_()">Editar</button></div><p class="age-dica" id="ageRepResumo"></p>', 'ageRepSel');
   var alterar = (s && s.serie_id) ? ageCampo_('Alterar', '<select id="ageEscopo"><option value="esta">Só esta sessão</option><option value="seguintes">Esta sessão e as seguintes</option></select>', 'ageEscopo') : ''; // 14.15: logo abaixo de Data e Hora
   // 14.23 (pedido do usuário): cancelar por um comando visível, sem procurar no campo do status; o caminho é o mesmo do campo
-  var topo = (s && s.estado === 'agendada') ? '<div class="age-topo">' + (s.pode_apagar ? ageApagarBotao_() : '') + '<button type="button" class="prof-lem-btn" id="ageBtnCancelar" onclick="ageCancelarAbrir_()"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg> Cancelar sessão</button></div>' : '';
+  var topo = (s && s.estado === 'agendada') ? '<div class="age-barra" role="group" aria-label="O que fazer com esta sessão">' +
+    ageBarraBtn_('ageBtnReagendar', 'ageStatusAbrir_(\'reagendada\')', 'refresh', 'Reagendar', 'Reagendar sessão') +
+    ageBarraBtn_('ageBtnCancelar', 'ageStatusAbrir_(\'cancelada\')', 'x', 'Cancelar', 'Cancelar sessão') +
+    (s.pode_apagar ? ageBarraBtn_('ageBtnApagar', 'ageApagarPedir_()', 'trash', 'Apagar', 'Apagar sessão') : '') + '</div>' : '';
   corpo.innerHTML = topo + abas + (p.nota ? '<p class="age-msg" id="ageNota" role="status">' + esc(p.nota) + '</p>' : '') +
     ageCampo_('Paciente', paciente, p.sigla ? '' : 'ageBusca') +
     (marcas ? '<div class="age-marcas">' + marcas + '</div>' : '') + ageOndeHtml_(s, true) +
@@ -25032,11 +25040,12 @@ function ageSitMudou_() {
   ageSitPintar_();
   if (p.sit === 'cancelada' || p.sit === 'reagendada') ageCancSimular_();
 }
-/* 14.23: o botão do topo escolhe "Cancelada" no campo do status e leva a janela até as perguntas; quem grava continua sendo o Salvar */
-function ageCancelarAbrir_() {
+/* 14.23 e 14.24: os comandos do topo escolhem "Cancelada" ou "Reagendada" no campo do status e levam a janela até as perguntas; quem grava continua sendo o Salvar */
+function ageBarraBtn_(id, acao, icone, rotulo, nome) { return '<button type="button" class="age-barra-btn" id="' + id + '" title="' + nome + '" aria-label="' + nome + '" onclick="' + acao + '"><svg class="ico" aria-hidden="true"><use href="#i-' + icone + '"/></svg><span>' + rotulo + '</span></button>'; }
+function ageStatusAbrir_(valor) {
   var sel = document.getElementById('ageSit');
   if (!sel) return;
-  sel.value = 'cancelada';
+  sel.value = valor;
   ageSitMudou_();
   if (sel.scrollIntoView) sel.scrollIntoView({ block: 'start' });
   var quem = document.getElementById('ageCQuem');
@@ -25047,8 +25056,7 @@ function ageSaindo_(p) { return (p.sit === 'cancelada' || p.sit === 'reagendada'
 function ageSitPintar_() {
   var p = AGE.p, box = document.getElementById('ageSitBox'), s = p && p.sessao;
   if (!box || !s) return;
-  var btnCanc = document.getElementById('ageBtnCancelar');
-  if (btnCanc) btnCanc.classList.toggle('hidden', p.sit === 'cancelada'); // 14.23
+  [['ageBtnCancelar', 'cancelada'], ['ageBtnReagendar', 'reagendada']].forEach(function (b) { var el = document.getElementById(b[0]); if (el) el.classList.toggle('age-barra-ativo', p.sit === b[1]); }); // 14.24: o comando escolhido fica marcado
   var h = '';
   if (ageSaindo_(p)) h = ageCancHtml_();
   else if (p.sit === 'falta') {
