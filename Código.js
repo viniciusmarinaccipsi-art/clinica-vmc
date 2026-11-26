@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.20';
+var VERSAO_PACOTE = '14.21';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -7956,7 +7956,7 @@ function profCancelarSessao(s, id, opcoes, periodo) {
   var ref = ctx.sessoes.filter(function (x) { return x.id === String(id || '').trim(); })[0];
   if (!ref) return { ok: false, erro: MSG_AGE_NAO_ACHEI };
   if (ref.estado === 'cancelada') return simular ? { ok: false, erro: MSG_AGE_NAO_ACHEI } : _ageResposta_(alvo, { ok: true, duplicado: true, canceladas: 0 }, periodo, agora);
-  if (ref.estado !== 'agendada' && ref.estado !== '') return { ok: false, erro: 'Esta consulta já tem situação marcada e não pode ser cancelada.' };
+  if (ref.estado !== 'agendada' && ref.estado !== '') return { ok: false, erro: 'Esta sessão já tem status e não pode ser cancelada.' };
   var quem = o.quem === 'paciente' ? 'paciente' : 'profissional';
   // 14.19: o prazo conta de quando o paciente avisou (padrao: agora); o motivo fica so para o profissional;
   // `cobrar` (true/false) e o clique do profissional sobre o que a regra propos — so vale para a sessao aberta e so quando foi o paciente
