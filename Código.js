@@ -8299,14 +8299,16 @@ function lerMinhasSessoes(sigla) {
 
 // 14.20: codigos das duas regras de agendamento do paciente (as opcoes sao as do Doctoralia, mais 24 e 48 horas, que ja existiam aqui).
 // Primeiro agendamento: 'Nh' = N horas de margem (0h = nesse instante); 'amanha' = dia seguinte; 'Nd' = N dias de margem (2 a 7).
-// Ultimo agendamento: 'Nd' = em N dias (1 a 6); 'Ns' = dentro de N semanas (1 a 24); vazio = sem limite.
+// Ultimo agendamento: 'Nd' = em N dias (1 a 6); 'Ns' = dentro de N semanas (1 a 24). Quem nunca escolheu fica com uma semana
+// (decisao do usuario, 26/11/2026). AGENDAR_ULTIMO_PADRAO so e trocado pelas suites antigas, que pedem horarios a semanas de distancia.
 var AGENDAR_PRIMEIRO_RE = /^(\d{1,3}h|amanha|[2-7]d)$/;
-var AGENDAR_ULTIMO_RE = /^([1-6]d|([1-9]|1\d|2[0-4])s)?$/;
+var AGENDAR_ULTIMO_RE = /^([1-6]d|([1-9]|1\d|2[0-4])s)$/;
+var AGENDAR_ULTIMO_PADRAO = '1s';
 /** De quando ate quando o paciente pode agendar: { horas (margem), de (primeiro dia), ate (ultimo dia ou '') }. Pura; o "agora" vem por parametro. */
 function _ageAgendarLimites_(cfg, agora) {
   var hoje = _lemDia_(agora.data), p = String((cfg && cfg.agendar_primeiro) || ''), u = String((cfg && cfg.agendar_ultimo) || '');
   if (!AGENDAR_PRIMEIRO_RE.test(p)) p = (parseInt(cfg && cfg.antecedencia_min_horas, 10) >= 0 ? parseInt(cfg.antecedencia_min_horas, 10) : GRADE_CONFIG_PADRAO.antecedencia_min_horas) + 'h'; // quem nunca escolheu continua com a antecedencia de antes
-  if (!AGENDAR_ULTIMO_RE.test(u)) u = '';
+  if (!AGENDAR_ULTIMO_RE.test(u)) u = AGENDAR_ULTIMO_PADRAO;
   var r = { horas: 0, de: agora.data, ate: '' };
   if (p === 'amanha') r.de = _lemIso_(hoje + 1);
   else if (/d$/.test(p)) r.de = _lemIso_(hoje + parseInt(p, 10));

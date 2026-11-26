@@ -182,10 +182,10 @@ tenta('C', () => {
 console.log('D. Primeiro e último agendamento disponível (só para o paciente)');
 tenta('D', () => {
   const L = S('_ageAgendarLimites_'), AG = { data: '2026-11-25', hora: '14:00' };
-  ok('D1 a regra, sem configurar: a antecedência de antes (24 horas), a partir de hoje, sem limite', JSON.stringify(L({ antecedencia_min_horas: 24 }, AG)) === JSON.stringify({ horas: 24, de: '2026-11-25', ate: '' }), L({ antecedencia_min_horas: 24 }, AG));
+  ok('D1 a regra, sem configurar: a antecedência de antes (24 horas), a partir de hoje, e a agenda aberta por uma semana', JSON.stringify(L({ antecedencia_min_horas: 24 }, AG)) === JSON.stringify({ horas: 24, de: '2026-11-25', ate: '2026-12-02' }), L({ antecedencia_min_horas: 24 }, AG));
   ok('D2 "Nesse instante", "6 horas", "Dia seguinte" e "3 dias de margem"', L({ agendar_primeiro: '0h' }, AG).horas === 0 && L({ agendar_primeiro: '6h' }, AG).horas === 6 && L({ agendar_primeiro: 'amanha' }, AG).de === '2026-11-26' && L({ agendar_primeiro: 'amanha' }, AG).horas === 0 && L({ agendar_primeiro: '3d' }, AG).de === '2026-11-28');
   ok('D3 "No prazo de 1 dia", "Em 5 dias", "Dentro de 2 semanas" e "Dentro de 24 semanas"', L({ agendar_ultimo: '1d' }, AG).ate === '2026-11-26' && L({ agendar_ultimo: '5d' }, AG).ate === '2026-11-30' && L({ agendar_ultimo: '2s' }, AG).ate === '2026-12-09' && L({ agendar_ultimo: '24s' }, AG).ate === '2027-05-12', [L({ agendar_ultimo: '2s' }, AG), L({ agendar_ultimo: '24s' }, AG)]);
-  ok('D4 código mal escrito não vale: volta a antecedência de antes e fica sem limite', L({ agendar_primeiro: '9d', agendar_ultimo: '30s', antecedencia_min_horas: 12 }, AG).horas === 12 && L({ agendar_primeiro: '9d', agendar_ultimo: '30s', antecedencia_min_horas: 12 }, AG).ate === '');
+  ok('D4 código mal escrito não vale: volta a antecedência de antes e a uma semana', L({ agendar_primeiro: '9d', agendar_ultimo: '30s', antecedencia_min_horas: 12 }, AG).horas === 12 && L({ agendar_primeiro: '9d', agendar_ultimo: '', antecedencia_min_horas: 12 }, AG).ate === '2026-12-02' && L({ agendar_ultimo: '30s' }, AG).ate === '2026-12-02');
   const livres = de => (pac(P1, 'lerHorariosLivres', { de: de }).livres || []);
   const resp = de => pac(P1, 'lerHorariosLivres', { de: de });
   let r = grade({ agendar_primeiro: 'amanha', agendar_ultimo: '1s' });
@@ -204,13 +204,13 @@ tenta('D', () => {
   ok('D11 o profissional não tem limite: vê os horários livres de qualquer data', (lp.livres || []).some(x => x.data >= '2026-12-07'), (lp.livres || []).length);
   r = sessao(P2, { id: uuid(), data: '2026-12-21', hora: '10:00' });
   ok('D12 e marca sessão além do limite do paciente', r.ok === true, r.erro);
-  grade({ agendar_primeiro: '0h', agendar_ultimo: '' });
+  grade({ agendar_primeiro: '0h', agendar_ultimo: '24s' });
   l = livres('2026-11-25');
-  ok('D13 "Nesse instante" e "Sem limite": hoje às 15:00 aparece (falta 1 hora) e a agenda não tem data final', l.some(x => x.data === '2026-11-25' && x.hora === '15:00') && resp('2026-11-25').agenda_ate === '' && livres('2026-12-28').length > 0, l.slice(0, 3));
-  grade({ agendar_primeiro: 'xx', agendar_ultimo: '99s' });
+  ok('D13 "Nesse instante" e "Dentro de 24 semanas": hoje às 15:00 aparece (falta 1 hora) e a agenda vai até 12/05/2027', l.some(x => x.data === '2026-11-25' && x.hora === '15:00') && resp('2026-11-25').agenda_ate === '2027-05-12' && livres('2026-12-28').length > 0, l.slice(0, 3));
+  grade({ agendar_primeiro: 'xx', agendar_ultimo: '99s' }); grade({ agendar_ultimo: '' });
   c = cfg();
-  ok('D14 valores fora da lista são ignorados ao salvar', c.agendar_primeiro === '0h' && (c.agendar_ultimo || '') === '', c);
-  grade({ agendar_primeiro: '24h', agendar_ultimo: '' });
+  ok('D14 valores fora da lista (e o vazio) são ignorados ao salvar', c.agendar_primeiro === '0h' && c.agendar_ultimo === '24s', c);
+  grade({ agendar_primeiro: '24h', agendar_ultimo: '1s' });
 });
 
 /* ---------------------------------------------------------------- T */

@@ -5030,7 +5030,7 @@ button.fin-enc-lin:focus-visible{outline:2px solid var(--c-action);outline-offse
       <h3><svg class="ico" aria-hidden="true"><use href="#i-settings"/></svg> Configurações gerais</h3>
       <div class="gra-cfg-grid">
         <div class="gra-cfg-item">
-          <label for="graCfgPrimeiro">Primeiro agendamento disponível em</label>
+          <label for="graCfgPrimeiro">Antecedência mínima para agendar</label>
           <select id="graCfgPrimeiro">
             <option value="0h">Nesse instante</option>
             <option value="1h">1 hora de margem</option>
@@ -5048,12 +5048,12 @@ button.fin-enc-lin:focus-visible{outline:2px solid var(--c-action);outline-offse
             <option value="6d">6 dias de margem</option>
             <option value="7d">7 dias de margem</option>
           </select>
-          <div class="gra-hint">Ex.: se você definir "Dia seguinte", o paciente só agenda a partir de amanhã.</div>
+          <div class="gra-hint">O primeiro horário que o paciente pode agendar. Ex.: com "Dia seguinte", ele só agenda a partir de amanhã.</div>
         </div>
         <div class="gra-cfg-item">
-          <label for="graCfgUltimo">Último agendamento disponível até</label>
+          <label for="graCfgUltimo">Período aberto para agendar</label>
           <select id="graCfgUltimo"></select>
-          <div class="gra-hint">Ex.: se você definir 5 semanas, o paciente não vê horários além desse período. Você continua agendando em qualquer data.</div>
+          <div class="gra-hint">Até quando, a partir de hoje, a sua agenda fica aberta para o paciente. Ex.: com "Dentro de 2 semanas", ele não vê horários depois disso. Você continua agendando em qualquer data.</div>
         </div>
         <div class="gra-cfg-item">
           <label for="graCfgAvisos">Avisos de sessão por e-mail</label>
@@ -23816,18 +23816,18 @@ async function graCarregar() {
 
   // Config -> select de antecedência
   var cfg = resp.config || {};
-  // 14.20: de quando até quando o paciente pode agendar (as opções do Doctoralia, mais 24 e 48 horas); quem nunca escolheu vê a antecedência de antes e "Sem limite"
+  // 14.20: de quando até quando o paciente pode agendar (as opções do Doctoralia, mais 24 e 48 horas); quem nunca escolheu vê a antecedência de antes e uma semana de agenda aberta
   var selPri = document.getElementById('graCfgPrimeiro'), pri = String(cfg.agendar_primeiro || ((cfg.antecedencia_min_horas || 24) + 'h'));
   if (!selPri.querySelector('option[value="' + CSS.escape(pri) + '"]')) { var opP = document.createElement('option'); opP.value = pri; opP.textContent = parseInt(pri, 10) + ' horas de margem'; selPri.appendChild(opP); }
   selPri.value = pri;
   var selUlt = document.getElementById('graCfgUltimo');
   if (!selUlt.options.length) {
-    var ops = [['', 'Sem limite'], ['1d', 'No prazo de 1 dia']];
+    var ops = [['1d', 'No prazo de 1 dia']];
     for (var nd = 2; nd <= 6; nd++) ops.push([nd + 'd', 'Em ' + nd + ' dias']);
     for (var ns = 1; ns <= 24; ns++) ops.push([ns + 's', 'Dentro de ' + ns + (ns === 1 ? ' semana' : ' semanas')]);
     ops.forEach(function (o) { var e = document.createElement('option'); e.value = o[0]; e.textContent = o[1]; selUlt.appendChild(e); });
   }
-  selUlt.value = String(cfg.agendar_ultimo || '');
+  selUlt.value = String(cfg.agendar_ultimo || '1s'); // quem nunca escolheu fica com uma semana (decisão do usuário)
 
   document.getElementById('graCfgAvisos').value = String(cfg.avisos_sessao || '').toLowerCase() === 'sim' ? 'Sim' : 'Nao'; // 14.3
   // 14.20: política de cobrança — quem nunca a abriu vê o padrão (o prazo é a antecedência que já valia)
@@ -24533,6 +24533,9 @@ function agePainelDe_(s) {
   var p = agePainelNovo_(s.data, s.hora);
   p.modo = 'editar'; p.id = s.id; p.sigla = s.sigla; p.nome = s.nome; p.dur = s.duracao_min; p.modalidade = s.modalidade;
   p.valor = s.valor || ''; p.notas = s.notas || ''; p.sessao = s; p.sit = ageSitDe_(s);
+  // 14.20 (pedido do usuário): "quem cancelou" já vem preenchido — nesta janela quem age é o profissional ("Eu"), a não ser que o
+  // paciente tenha um pedido aguardando resposta para esta sessão; ele confirma ou troca
+  p.canc.quem = ((AGE.agenda && AGE.agenda.pedidos) || []).some(function (q) { return q.sessao_id === s.id; }) ? 'paciente' : 'profissional';
   p.avisos = {}; AGE_AVISOS.forEach(function (a) { p.avisos[a[0]] = s.avisos.indexOf(a[0]) !== -1; });
   p.repLigada = !!s.serie_id;
   p.rep = (s.serie_id && AGE.agenda.series[s.serie_id]) ? JSON.parse(JSON.stringify(AGE.agenda.series[s.serie_id])) : null;
@@ -25018,6 +25021,7 @@ function ageCancHtml_() {
   return '<fieldset class="age-fieldset"><legend>Quem cancelou?</legend>' +
       '<label class="age-check"><input type="radio" name="ageCQuem" id="ageCQuemPac" onchange="ageCancMudou_()"> <span>O paciente</span></label>' +
       '<label class="age-check"><input type="radio" name="ageCQuem" id="ageCQuemEu" onchange="ageCancMudou_()"> <span>Eu</span></label></fieldset>' +
+    '<p class="age-dica" id="ageCQuemDica">Já vem preenchido. Confirme ou troque.</p>' +
     (pac ? ageCampo_('Quando o paciente avisou?', '<select id="ageCAvisou" onchange="ageCancMudou_()"><option value="agora">Agora</option><option value="antes">Antes</option></select>', 'ageCAvisou') +
       (c.avisou === 'antes' ? '<div class="age-linha">' + ageCampo_('Dia do aviso', '<input type="date" id="ageCAvData" onchange="ageCancMudou_()">', 'ageCAvData') +
         ageCampo_('Hora do aviso', '<input type="time" id="ageCAvHora" onchange="ageCancMudou_()">', 'ageCAvHora') + '</div>' : '') : '') +

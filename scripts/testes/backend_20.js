@@ -34,6 +34,7 @@ const fonte = fs.readFileSync(ARNES, 'utf8');
 const fim = fonte.indexOf(MARCA);
 if (fim === -1) { console.log('RESULTADO: FALHA — não achei o fim do arnês'); process.exit(1); }
 const av = new Function('require', '__dirname', 'Date', fonte.slice(0, fim) + '\nreturn function (__src) { return eval(__src); };')(require, __dirname, DataFixa);
+av("AGENDAR_ULTIMO_PADRAO = '24s'"); // 14.20: esta suíte pede horários a semanas de distância; o padrão de quem nunca escolheu é uma semana
 const logServidor = [];
 console.error = (...a) => { logServidor.push(a.map(String).join(' ')); };
 const CACHE = new Map();
