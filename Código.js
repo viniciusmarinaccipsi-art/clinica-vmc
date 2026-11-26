@@ -5694,6 +5694,8 @@ function salvarGradeAtendimento(s, config, grade) {
   if (config.email_agenda_hora !== undefined && _stpHoraValida_(config.email_agenda_hora)) cfgGravar.email_agenda_hora = String(config.email_agenda_hora);
   // 14.20: politica de cobranca (so muda quando a tela a manda)
   if (config.prazo_cancelar_horas !== undefined && parseInt(config.prazo_cancelar_horas, 10) >= 1 && parseInt(config.prazo_cancelar_horas, 10) <= 168) cfgGravar.prazo_cancelar_horas = parseInt(config.prazo_cancelar_horas, 10);
+  if (config.agendar_primeiro !== undefined && AGENDAR_PRIMEIRO_RE.test(String(config.agendar_primeiro))) cfgGravar.agendar_primeiro = String(config.agendar_primeiro);
+  if (config.agendar_ultimo !== undefined && AGENDAR_ULTIMO_RE.test(String(config.agendar_ultimo))) cfgGravar.agendar_ultimo = String(config.agendar_ultimo);
   ['cobrar_falta', 'cobrar_cancel_fora', 'cobrar_cancel_dentro'].forEach(function (k) {
     if (config[k] !== undefined) cfgGravar[k] = String(config[k]).toLowerCase() === 'sim' ? 'Sim' : 'Nao';
   });
@@ -7292,6 +7294,9 @@ function _ageConfigLer_(controle) {
     // 14.20: politica de cobranca — o prazo para cancelar ou reagendar sem cobranca e o que e cobrado
     if (chave === 'prazo_cancelar_horas' && valor !== '' && parseInt(valor, 10) >= 0) cfg.prazo_cancelar_horas = parseInt(valor, 10);
     if (chave === 'cobrar_falta' || chave === 'cobrar_cancel_fora' || chave === 'cobrar_cancel_dentro') cfg[chave] = valor.toLowerCase() === 'sim' ? 'Sim' : 'Nao';
+    // 14.20: de quando ate quando o paciente pode agendar (codigos de _ageAgendarLimites_)
+    if (chave === 'agendar_primeiro' && AGENDAR_PRIMEIRO_RE.test(valor)) cfg.agendar_primeiro = valor;
+    if (chave === 'agendar_ultimo' && AGENDAR_ULTIMO_RE.test(valor)) cfg.agendar_ultimo = valor;
   }
   if (cfg.prazo_cancelar_horas === undefined) cfg.prazo_cancelar_horas = cfg.antecedencia_min_horas; // quem nunca abriu a politica continua com o numero de antes
   return cfg;
@@ -8292,6 +8297,25 @@ function lerMinhasSessoes(sigla) {
   return _ageMinhas_(_ageCtx_(alvo.controle, false), alvo, _lemAgora_());
 }
 
+// 14.20: codigos das duas regras de agendamento do paciente (as opcoes sao as do Doctoralia, mais 24 e 48 horas, que ja existiam aqui).
+// Primeiro agendamento: 'Nh' = N horas de margem (0h = nesse instante); 'amanha' = dia seguinte; 'Nd' = N dias de margem (2 a 7).
+// Ultimo agendamento: 'Nd' = em N dias (1 a 6); 'Ns' = dentro de N semanas (1 a 24); vazio = sem limite.
+var AGENDAR_PRIMEIRO_RE = /^(\d{1,3}h|amanha|[2-7]d)$/;
+var AGENDAR_ULTIMO_RE = /^([1-6]d|([1-9]|1\d|2[0-4])s)?$/;
+/** De quando ate quando o paciente pode agendar: { horas (margem), de (primeiro dia), ate (ultimo dia ou '') }. Pura; o "agora" vem por parametro. */
+function _ageAgendarLimites_(cfg, agora) {
+  var hoje = _lemDia_(agora.data), p = String((cfg && cfg.agendar_primeiro) || ''), u = String((cfg && cfg.agendar_ultimo) || '');
+  if (!AGENDAR_PRIMEIRO_RE.test(p)) p = (parseInt(cfg && cfg.antecedencia_min_horas, 10) >= 0 ? parseInt(cfg.antecedencia_min_horas, 10) : GRADE_CONFIG_PADRAO.antecedencia_min_horas) + 'h'; // quem nunca escolheu continua com a antecedencia de antes
+  if (!AGENDAR_ULTIMO_RE.test(u)) u = '';
+  var r = { horas: 0, de: agora.data, ate: '' };
+  if (p === 'amanha') r.de = _lemIso_(hoje + 1);
+  else if (/d$/.test(p)) r.de = _lemIso_(hoje + parseInt(p, 10));
+  else r.horas = parseInt(p, 10);
+  if (/d$/.test(u)) r.ate = _lemIso_(hoje + parseInt(u, 10));
+  else if (/s$/.test(u)) r.ate = _lemIso_(hoje + 7 * parseInt(u, 10));
+  return r;
+}
+
 /**
  * Horarios livres para o paciente em `dias` dias a partir de `deIso`: janelas da Grade, de
  * `duracao_slot_min` em `duracao_slot_min`, menos sessoes, bloqueios, feriados e o que esta a menos
@@ -8300,12 +8324,14 @@ function lerMinhasSessoes(sigla) {
 function _ageLivres_(ctx, janelas, deIso, dias, agora, horas) {
   var ini = _lemDia_(deIso), dur = ctx.cfg.duracao_slot_min, mapa = {}, lista = [];
   if (ini === null) return lista;
-  var prazo = horas === undefined ? ctx.cfg.antecedencia_min_horas : horas; // 14.5: o profissional ve os livres sem o prazo do paciente
+  var lim = horas === undefined ? _ageAgendarLimites_(ctx.cfg, agora) : null; // 14.20: so o paciente tem primeiro e ultimo agendamento disponivel
+  var prazo = lim ? lim.horas : horas;                                       // 14.5: o profissional ve os livres sem o prazo do paciente
   var externos = ctx.externos || [];                                        // 14.5: ocupado na agenda pessoal do Google
   var reservas = _ageReservas_(ctx, agora, ctx.semReservaDe);               // 14.7: horarios pedidos e ainda sem resposta
   for (var k = 0; k < dias; k++) {
     var iso = _lemIso_(ini + k), dow = _ageDow_(ini + k);
     if (_ageFeriadoEm_(iso)) continue;
+    if (lim && (iso < lim.de || (lim.ate && iso > lim.ate))) continue; // 14.20
     janelas.forEach(function (j) {
       if (j.dia_semana !== dow) return;
       for (var t = j.ini; t + dur <= j.fim; t += dur) {
@@ -8333,7 +8359,7 @@ function lerHorariosLivres(sigla, de) {
   var deIso = _lemDia_(de) === null || String(de) < agora.data ? agora.data : String(de);
   var ctx = _ageCtx_(alvo.controle, false);
   ctx.externos = _calOcupados_(alvo.profissionalId, ctx.cfg, deIso, 7);
-  return { ok: true, de: deIso, hoje: agora.data, livres: _ageLivres_(ctx, _ageJanelas_(alvo.controle), deIso, 7, agora) };
+  return { ok: true, de: deIso, hoje: agora.data, agenda_ate: _ageAgendarLimites_(ctx.cfg, agora).ate, livres: _ageLivres_(ctx, _ageJanelas_(alvo.controle), deIso, 7, agora) }; // 14.20: ate quando a agenda esta aberta
 }
 
 /** 14.5: horarios livres para o PROFISSIONAL repor ou remarcar (14 dias a partir de `de`; sem o prazo do paciente). */

@@ -5030,14 +5030,30 @@ button.fin-enc-lin:focus-visible{outline:2px solid var(--c-action);outline-offse
       <h3><svg class="ico" aria-hidden="true"><use href="#i-settings"/></svg> Configurações gerais</h3>
       <div class="gra-cfg-grid">
         <div class="gra-cfg-item">
-          <label for="graCfgAntecedencia">Antecedência mínima para agendar</label>
-          <select id="graCfgAntecedencia">
-            <option value="6">6 horas</option>
-            <option value="12">12 horas</option>
-            <option value="24" selected>24 horas</option>
-            <option value="48">48 horas</option>
+          <label for="graCfgPrimeiro">Primeiro agendamento disponível em</label>
+          <select id="graCfgPrimeiro">
+            <option value="0h">Nesse instante</option>
+            <option value="1h">1 hora de margem</option>
+            <option value="2h">2 horas de margem</option>
+            <option value="3h">3 horas de margem</option>
+            <option value="6h">6 horas de margem</option>
+            <option value="12h">12 horas de margem</option>
+            <option value="24h" selected>24 horas de margem</option>
+            <option value="48h">48 horas de margem</option>
+            <option value="amanha">Dia seguinte</option>
+            <option value="2d">2 dias de margem</option>
+            <option value="3d">3 dias de margem</option>
+            <option value="4d">4 dias de margem</option>
+            <option value="5d">5 dias de margem</option>
+            <option value="6d">6 dias de margem</option>
+            <option value="7d">7 dias de margem</option>
           </select>
-          <div class="gra-hint">O paciente só agenda com esta antecedência.</div>
+          <div class="gra-hint">Ex.: se você definir "Dia seguinte", o paciente só agenda a partir de amanhã.</div>
+        </div>
+        <div class="gra-cfg-item">
+          <label for="graCfgUltimo">Último agendamento disponível até</label>
+          <select id="graCfgUltimo"></select>
+          <div class="gra-hint">Ex.: se você definir 5 semanas, o paciente não vê horários além desse período. Você continua agendando em qualquer data.</div>
         </div>
         <div class="gra-cfg-item">
           <label for="graCfgAvisos">Avisos de sessão por e-mail</label>
@@ -23800,10 +23816,18 @@ async function graCarregar() {
 
   // Config -> select de antecedência
   var cfg = resp.config || {};
-  var sel = document.getElementById('graCfgAntecedencia');
-  if (cfg.antecedencia_min_horas && sel.querySelector('option[value="' + CSS.escape(String(cfg.antecedencia_min_horas)) + '"]')) { // 18.4 (8.83)
-    sel.value = String(cfg.antecedencia_min_horas);
+  // 14.20: de quando até quando o paciente pode agendar (as opções do Doctoralia, mais 24 e 48 horas); quem nunca escolheu vê a antecedência de antes e "Sem limite"
+  var selPri = document.getElementById('graCfgPrimeiro'), pri = String(cfg.agendar_primeiro || ((cfg.antecedencia_min_horas || 24) + 'h'));
+  if (!selPri.querySelector('option[value="' + CSS.escape(pri) + '"]')) { var opP = document.createElement('option'); opP.value = pri; opP.textContent = parseInt(pri, 10) + ' horas de margem'; selPri.appendChild(opP); }
+  selPri.value = pri;
+  var selUlt = document.getElementById('graCfgUltimo');
+  if (!selUlt.options.length) {
+    var ops = [['', 'Sem limite'], ['1d', 'No prazo de 1 dia']];
+    for (var nd = 2; nd <= 6; nd++) ops.push([nd + 'd', 'Em ' + nd + ' dias']);
+    for (var ns = 1; ns <= 24; ns++) ops.push([ns + 's', 'Dentro de ' + ns + (ns === 1 ? ' semana' : ' semanas')]);
+    ops.forEach(function (o) { var e = document.createElement('option'); e.value = o[0]; e.textContent = o[1]; selUlt.appendChild(e); });
   }
+  selUlt.value = String(cfg.agendar_ultimo || '');
 
   document.getElementById('graCfgAvisos').value = String(cfg.avisos_sessao || '').toLowerCase() === 'sim' ? 'Sim' : 'Nao'; // 14.3
   // 14.20: política de cobrança — quem nunca a abriu vê o padrão (o prazo é a antecedência que já valia)
@@ -23972,7 +23996,9 @@ async function graSalvar() {
   var resp = await chamarServidor('profSalvarGrade', {
     config: {
       duracao_slot_min: 60,
-      antecedencia_min_horas: Number(document.getElementById('graCfgAntecedencia').value),
+      antecedencia_min_horas: graHorasDoPrimeiro_(document.getElementById('graCfgPrimeiro').value), // mantida para quem ainda a lê; quem manda é `agendar_primeiro`
+      agendar_primeiro: document.getElementById('graCfgPrimeiro').value, // 14.20
+      agendar_ultimo: document.getElementById('graCfgUltimo').value,
       avisos_sessao: document.getElementById('graCfgAvisos').value, // 14.3
       prazo_cancelar_horas: Number(document.getElementById('graCfgPrazo').value), // 14.20: política de cobrança
       cobrar_falta: document.getElementById('graCfgCobFalta').value,
@@ -25252,24 +25278,31 @@ function sesEscolherHorario_(tipo, btn) {
   sesRender_();
   sesCarregarLivres_();
 }
+/* 14.20: o código do "Primeiro agendamento disponível em" em horas, para a chave antiga da configuração */
+function graHorasDoPrimeiro_(codigo) {
+  var n = parseInt(codigo, 10) || 0;
+  return codigo === 'amanha' ? 24 : (/d$/.test(codigo) ? n * 24 : n);
+}
 async function sesCarregarLivres_() {
   var geracao = VMC_GERACAO_SESSAO, de = SES.de;
   var r = await chamarServidor('lerHorariosLivres', { de: de });
   if (geracao !== VMC_GERACAO_SESSAO || de !== SES.de || SES.vista === 'lista') return;
   if (!r || !r.ok) { SES.erro = (r && r.erro) || 'Não foi possível ler os horários agora.'; SES.livres = []; }
-  else { SES.livres = r.livres || []; SES.de = r.de; }
+  else { SES.livres = r.livres || []; SES.de = r.de; SES.agendaAte = r.agenda_ate || ''; } // 14.20
   sesRender_();
 }
 function sesSemana_(delta) {
   var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(SES.de); if (!m) return;
   var d = new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10) + delta * 7);
   var iso = ageIso_(d), hoje = (SES.dados && SES.dados.hoje) || lemHojeIso_();
+  if (delta > 0 && SES.agendaAte && iso > SES.agendaAte) return; // 14.20: não há o que ver além do último agendamento disponível
   SES.de = iso < hoje ? hoje : iso; SES.livres = null; SES.escolhido = null; SES.erro = '';
   sesRender_(); sesCarregarLivres_();
 }
 function sesRenderHorarios_(el, topo) {
   var intro = SES.vista === 'remarcar' ? 'Escolha um novo horário. O pedido vai para ' + sesProf_() + '; a sessão só muda depois da aprovação.'
     : (SES.vista === 'repor' ? 'A reposição não é garantida: fica a critério de ' + sesProf_() + '. Se aprovada, usa o valor da sessão já cobrada.' : 'Escolha o dia e o horário. O pedido vai para ' + sesProf_() + '; a sessão só é marcada depois da aprovação.'); // 14.7
+  if (SES.agendaAte) intro += ' A agenda está aberta até ' + lemDataBR_(SES.agendaAte, true) + '.'; // 14.20
   var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(SES.de), fim = m ? ageIso_(new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10) + 6)) : SES.de;
   var corpo;
   if (SES.livres === null) corpo = '<p class="age-dica">Carregando…</p>';

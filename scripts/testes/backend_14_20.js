@@ -2,7 +2,7 @@
    No servidor: o prazo para cancelar ou reagendar sem cobrança (`prazo_cancelar_horas`) deixa de ser a antecedência
    mínima para agendar; o que é cobrado (falta, cancelamento fora do prazo, cancelamento dentro do prazo) é configurável.
    Sem configuração, vale a tabela de sempre.
-   Blocos: A o padrão · B a política trocada · C o que não muda · T estrutura.
+   Blocos: A o padrão · B a política trocada · C o que não muda · D primeiro e último agendamento · T estrutura.
    Agora simulado: quarta, 25/11/2026, 14:00.
    Uso: node scripts/testes/backend_14_20.js */
 'use strict';
@@ -176,6 +176,41 @@ tenta('C', () => {
   grade({ prazo_cancelar_horas: 24, cobrar_falta: 'Sim', cobrar_cancel_fora: 'Sim', cobrar_cancel_dentro: 'Nao', antecedencia_min_horas: 24 });
   const s = simular(id40, { quem: 'paciente' });
   ok('C6 de volta ao padrão, a sessão de 40 horas volta a estar no prazo e sem cobrança', s.horas === 24 && s.no_prazo === true && s.proposta === 'Nao', s);
+});
+
+/* ---------------------------------------------------------------- D */
+console.log('D. Primeiro e último agendamento disponível (só para o paciente)');
+tenta('D', () => {
+  const L = S('_ageAgendarLimites_'), AG = { data: '2026-11-25', hora: '14:00' };
+  ok('D1 a regra, sem configurar: a antecedência de antes (24 horas), a partir de hoje, sem limite', JSON.stringify(L({ antecedencia_min_horas: 24 }, AG)) === JSON.stringify({ horas: 24, de: '2026-11-25', ate: '' }), L({ antecedencia_min_horas: 24 }, AG));
+  ok('D2 "Nesse instante", "6 horas", "Dia seguinte" e "3 dias de margem"', L({ agendar_primeiro: '0h' }, AG).horas === 0 && L({ agendar_primeiro: '6h' }, AG).horas === 6 && L({ agendar_primeiro: 'amanha' }, AG).de === '2026-11-26' && L({ agendar_primeiro: 'amanha' }, AG).horas === 0 && L({ agendar_primeiro: '3d' }, AG).de === '2026-11-28');
+  ok('D3 "No prazo de 1 dia", "Em 5 dias", "Dentro de 2 semanas" e "Dentro de 24 semanas"', L({ agendar_ultimo: '1d' }, AG).ate === '2026-11-26' && L({ agendar_ultimo: '5d' }, AG).ate === '2026-11-30' && L({ agendar_ultimo: '2s' }, AG).ate === '2026-12-09' && L({ agendar_ultimo: '24s' }, AG).ate === '2027-05-12', [L({ agendar_ultimo: '2s' }, AG), L({ agendar_ultimo: '24s' }, AG)]);
+  ok('D4 código mal escrito não vale: volta a antecedência de antes e fica sem limite', L({ agendar_primeiro: '9d', agendar_ultimo: '30s', antecedencia_min_horas: 12 }, AG).horas === 12 && L({ agendar_primeiro: '9d', agendar_ultimo: '30s', antecedencia_min_horas: 12 }, AG).ate === '');
+  const livres = de => (pac(P1, 'lerHorariosLivres', { de: de }).livres || []);
+  const resp = de => pac(P1, 'lerHorariosLivres', { de: de });
+  let r = grade({ agendar_primeiro: 'amanha', agendar_ultimo: '1s' });
+  let c = cfg();
+  ok('D5 salvar: "Dia seguinte" e "Dentro de 1 semana" ficam gravados', r.ok === true && c.agendar_primeiro === 'amanha' && c.agendar_ultimo === '1s', c);
+  let l = livres('2026-11-25');
+  ok('D6 "Dia seguinte": nada hoje; amanhã já aparece desde o primeiro horário (08:00), mesmo faltando menos de 24 horas', !l.some(x => x.data === '2026-11-25') && l.some(x => x.data === '2026-11-26' && x.hora === '08:00'), l.slice(0, 4));
+  ok('D7 "Dentro de 1 semana": a resposta diz até quando a agenda está aberta (02/12)', resp('2026-11-25').agenda_ate === '2026-12-02', resp('2026-11-25').agenda_ate);
+  l = livres('2026-11-30');
+  ok('D8 pedindo a semana seguinte: aparecem os horários até 02/12 e nenhum depois', l.some(x => x.data === '2026-12-02') && !l.some(x => x.data > '2026-12-02'), l.map(x => x.data).filter((v, i, a) => a.indexOf(v) === i));
+  ok('D9 pedindo depois do limite: nenhum horário', livres('2026-12-07').length === 0);
+  const idP = uuid();
+  r = pac(P1, 'pacienteAgendarSessao', { dados: { id: idP, data: '2026-12-10', hora: '10:00', modalidade: 'presencial' } });
+  ok('D10 o paciente tenta pedir um horário além do limite: recusado, e nenhum pedido é criado', r.ok === false && !aba('Pedidos_Agenda') || (r.ok === false && h.linhaDe(aba('Pedidos_Agenda'), 'id', idP) < 1), r);
+  const lp = prof('profLerHorariosLivres', { de: '2026-12-07' });
+  ok('D11 o profissional não tem limite: vê os horários livres de qualquer data', (lp.livres || []).some(x => x.data >= '2026-12-07'), (lp.livres || []).length);
+  r = sessao(P2, { id: uuid(), data: '2026-12-21', hora: '10:00' });
+  ok('D12 e marca sessão além do limite do paciente', r.ok === true, r.erro);
+  grade({ agendar_primeiro: '0h', agendar_ultimo: '' });
+  l = livres('2026-11-25');
+  ok('D13 "Nesse instante" e "Sem limite": hoje às 15:00 aparece (falta 1 hora) e a agenda não tem data final', l.some(x => x.data === '2026-11-25' && x.hora === '15:00') && resp('2026-11-25').agenda_ate === '' && livres('2026-12-28').length > 0, l.slice(0, 3));
+  grade({ agendar_primeiro: 'xx', agendar_ultimo: '99s' });
+  c = cfg();
+  ok('D14 valores fora da lista são ignorados ao salvar', c.agendar_primeiro === '0h' && (c.agendar_ultimo || '') === '', c);
+  grade({ agendar_primeiro: '24h', agendar_ultimo: '' });
 });
 
 /* ---------------------------------------------------------------- T */
