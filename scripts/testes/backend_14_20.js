@@ -152,8 +152,9 @@ tenta('B', () => {
   sessao(P2, { id: idR, data: '2026-11-24', hora: '13:00' });
   r = sessao(P2, { id: idR, data: '2026-11-24', hora: '13:00', situacao: 'realizada' });
   ok('B9 sessão realizada é sempre cobrada', cel('Sessoes', idR, 'cobrada') === 'Sim');
-  r = pac(P1, 'pacienteCancelarSessao', { id: id40 });
-  ok('B10 o paciente tenta cancelar pelo sistema com 40 horas, prazo de 48: recusado pelo prazo, e a mensagem fala em 48 horas', r.ok === false && r.codigo === 'prazo' && /48/.test(r.erro), r);
+  const id40b = uuid(); sessao(P1, { id: id40b, data: '2026-11-27', hora: '07:00' }); // faltam 41 horas
+  r = pac(P1, 'pacienteCancelarSessao', { id: id40b });
+  ok('B10 (14.22) o paciente cancela pelo sistema com 41 horas, prazo de 48: cancela, fora do prazo, e a cobrança segue a política ("fora do prazo: não cobrar")', r.ok === true && cel('Sessoes', id40b, 'estado') === 'cancelada' && cel('Sessoes', id40b, 'cancel_no_prazo') === 'Nao' && cel('Sessoes', id40b, 'cobrada') === 'Nao', estadoDe(id40b));
   const m = pac(P1, 'lerMinhasSessoes', {});
   ok('B11 a tela do paciente recebe o prazo novo (48 horas)', m.antecedencia_horas === 48, m.antecedencia_horas);
 });

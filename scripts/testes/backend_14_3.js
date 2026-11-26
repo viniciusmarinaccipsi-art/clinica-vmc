@@ -295,12 +295,13 @@ tenta('P', () => {
   const perto = uuid();
   sessao(P1, { id: perto, data: '2026-11-26', hora: '12:00' });
   const m = pac(P1, 'lerMinhasSessoes').sessoes;
-  ok('P12 dentro das 24 h a ação não é oferecida; fora, é', m.filter(x => x.id === perto)[0].pode_cancelar === false && m.filter(x => x.id === perto)[0].pode_remarcar === false && m.filter(x => x.id === perto)[0].pode_confirmar === true && m.filter(x => x.id === idPac)[0].pode_cancelar === true, m.filter(x => x.id === perto)[0]);
+  ok('P12 (14.22) dentro das 24 h cancelar e reagendar continuam oferecidos, e a leitura diz que está fora do prazo e que será cobrada', m.filter(x => x.id === perto)[0].pode_cancelar === true && m.filter(x => x.id === perto)[0].pode_remarcar === true && m.filter(x => x.id === perto)[0].no_prazo === false && m.filter(x => x.id === perto)[0].cobra_fora === true && m.filter(x => x.id === perto)[0].pode_confirmar === true && m.filter(x => x.id === idPac)[0].pode_cancelar === true && m.filter(x => x.id === idPac)[0].no_prazo === true && m.filter(x => x.id === idPac)[0].cobra_fora === false, m.filter(x => x.id === perto)[0]);
   r = pac(P1, 'pacienteCancelarSessao', { id: perto });
-  ok('P13 cancelar com menos de 24 h é recusado pelo servidor, com a regra', r.ok === false && r.codigo === 'prazo' && r.erro.indexOf('só com 24 horas ou mais de antecedência') !== -1 && cel('Sessoes', perto, 'estado') === 'agendada', r);
+  ok('P13 (14.22) cancelar com menos de 24 h: o servidor cancela, cobrada, fora do prazo', r.ok === true && cel('Sessoes', perto, 'estado') === 'cancelada' && cel('Sessoes', perto, 'cobrada') === 'Sim' && cel('Sessoes', perto, 'cancel_no_prazo') === 'Nao' && cel('Sessoes', perto, 'cancelada_por') === 'paciente', r);
   irPara(2026, 11, 25, 12, 0);
-  r = pac(P1, 'pacienteCancelarSessao', { id: perto });
-  ok('P14 exatamente 24 h antes: cancela, não cobrada', r.ok && cel('Sessoes', perto, 'estado') === 'cancelada' && cel('Sessoes', perto, 'cobrada') === 'Nao' && cel('Sessoes', perto, 'cancelada_por') === 'paciente' && r.sessoes.filter(x => x.id === perto)[0].estado === 'cancelada', r);
+  const perto2 = uuid(); sessao(P1, { id: perto2, data: '2026-11-26', hora: '12:00' });
+  r = pac(P1, 'pacienteCancelarSessao', { id: perto2 });
+  ok('P14 exatamente 24 h antes: cancela, não cobrada', r.ok && cel('Sessoes', perto2, 'estado') === 'cancelada' && cel('Sessoes', perto2, 'cobrada') === 'Nao' && cel('Sessoes', perto2, 'cancel_no_prazo') === 'Sim' && cel('Sessoes', perto2, 'cancelada_por') === 'paciente' && r.sessoes.filter(x => x.id === perto2)[0].estado === 'cancelada', r);
   irPara(2026, 11, 25, 14, 0);
   r = pac(P1, 'lerMeusLembretes');
   ok('P15 a próxima sessão vai junto na leitura do Início do paciente', r.ok && r.proxima_sessao && r.proxima_sessao.data === '2026-11-30' && r.proxima_sessao.hora === '15:00' && r.proxima_sessao.modalidade === 'online', r.proxima_sessao);
@@ -312,7 +313,7 @@ console.log('Q. Pedidos do paciente');
 tenta('Q', () => {
   const idQ = uuid();
   let r = pac(P1, 'pacientePedirAgenda', { dados: { id: idQ, tipo: 'remarcar', sessao_id: idPac, data: '2026-12-01', hora: '16:00' } });
-  ok('Q1 pedir remarcação: a sessão não muda; o pedido fica pendente', r.ok && cel('Sessoes', idPac, 'data') === '2026-11-30' && cel('Pedidos_Agenda', idQ, 'estado') === 'pendente' && r.sessoes.filter(x => x.id === idPac)[0].pedido.estado === 'pendente' && r.sessoes.filter(x => x.id === idPac)[0].pode_remarcar === false, r);
+  ok('Q1 (14.22) pedir reagendamento: a sessão é cancelada na hora (dentro do prazo: não cobrada), fica na data dela, e o pedido fica pendente', r.ok && cel('Sessoes', idPac, 'data') === '2026-11-30' && cel('Sessoes', idPac, 'estado') === 'cancelada' && cel('Sessoes', idPac, 'cancelada_por') === 'paciente' && cel('Sessoes', idPac, 'cobrada') === 'Nao' && cel('Sessoes', idPac, 'cancel_no_prazo') === 'Sim' && cel('Pedidos_Agenda', idQ, 'estado') === 'pendente' && r.sessoes.filter(x => x.id === idPac)[0].pedido.estado === 'pendente' && r.sessoes.filter(x => x.id === idPac)[0].pode_remarcar === false, r);
   ok('Q2 segundo pedido para a mesma sessão enquanto o primeiro aguarda: recusado; reenvio do mesmo id: duplicado', pac(P1, 'pacientePedirAgenda', { dados: { id: uuid(), tipo: 'remarcar', sessao_id: idPac, data: '2026-12-01', hora: '17:00' } }).ok === false && pac(P1, 'pacientePedirAgenda', { dados: { id: idQ, tipo: 'remarcar', sessao_id: idPac, data: '2026-12-01', hora: '16:00' } }).duplicado === true && linhas('Pedidos_Agenda') === 3); // 14.7: + os dois pedidos de agendamento do bloco P
   h.memo();
   const lista = prof('profListarPacientes').pacientes.filter(p => p.sigla === P1)[0];
@@ -322,13 +323,15 @@ tenta('Q', () => {
   r = prof('profDecidirPedido', { id: idQ, aprovar: true, periodo: PER });
   ok('Q4 aprovar quando o horário pedido foi ocupado: recusado com a mensagem, pedido continua pendente', r.ok === false && r.erro === 'O horário pedido já foi ocupado. Recuse o pedido ou marque outro horário.' && cel('Pedidos_Agenda', idQ, 'estado') === 'pendente', r);
   r = prof('profDecidirPedido', { id: idQ, aprovar: false, periodo: PER });
-  ok('Q5 recusar: a sessão fica onde estava', r.ok && r.aprovado === false && cel('Pedidos_Agenda', idQ, 'estado') === 'recusado' && cel('Sessoes', idPac, 'data') === '2026-11-30' && r.agenda.pedidos.length === 0, r);
+  ok('Q5 (14.22) recusar: a sessão continua cancelada, sem data nova', r.ok && r.aprovado === false && cel('Pedidos_Agenda', idQ, 'estado') === 'recusado' && cel('Sessoes', idPac, 'data') === '2026-11-30' && cel('Sessoes', idPac, 'estado') === 'cancelada' && cel('Sessoes', idPac, 'reagendada_para') === '' && r.agenda.pedidos.length === 0 && r.agenda.sessoes.filter(x => x.id === idPac)[0].pedido_reagendar === false, r);
   const idQ2 = uuid();
-  pac(P1, 'pacientePedirAgenda', { dados: { id: idQ2, tipo: 'remarcar', sessao_id: idPac, data: '2026-12-02', hora: '16:00' } });
+  const idPacB = uuid(); sessao(P1, { id: idPacB, data: '2026-11-30', hora: '15:00', modalidade: 'online' }); pac(P1, 'pacienteConfirmarSessao', { id: idPacB });
+  pac(P1, 'pacientePedirAgenda', { dados: { id: idQ2, tipo: 'remarcar', sessao_id: idPacB, data: '2026-12-02', hora: '16:00' } });
   r = prof('profDecidirPedido', { id: idQ2, aprovar: true, periodo: PER });
-  ok('Q6 aprovar: a sessão muda para o horário pedido e a confirmação de presença é zerada (o paciente confirma depois — 14.5.4)', r.ok && r.aprovado === true && cel('Sessoes', idPac, 'data') === '2026-12-02' && cel('Sessoes', idPac, 'hora_inicio') === '16:00' && cel('Sessoes', idPac, 'confirmada_em') === '' && cel('Pedidos_Agenda', idQ2, 'estado') === 'aprovado', r);
+  const novaQ = r.agenda ? r.agenda.sessoes.filter(x => x.id === 'rg-' + idPacB)[0] : null;
+  ok('Q6 (14.22) aprovar: a original fica como reagendada (cancelada, com a ligação) e nasce a sessão nova no horário pedido, a confirmar (14.5.4)', r.ok && r.aprovado === true && cel('Sessoes', idPacB, 'data') === '2026-11-30' && cel('Sessoes', idPacB, 'estado') === 'cancelada' && cel('Sessoes', idPacB, 'reagendada_para') === 'rg-' + idPacB && !!novaQ && novaQ.data === '2026-12-02' && novaQ.hora === '16:00' && novaQ.estado === 'agendada' && novaQ.confirmada === false && novaQ.modalidade === 'online' && novaQ.reagendada_de.data === '2026-11-30' && r.agenda.sessoes.filter(x => x.id === idPacB)[0].reagendada_para.data === '2026-12-02' && cel('Pedidos_Agenda', idQ2, 'estado') === 'aprovado', { r: r.erro, novaQ });
   ok('Q7 decidir de novo o mesmo pedido não repete a ação', prof('profDecidirPedido', { id: idQ2, aprovar: true, periodo: PER }).duplicado === true);
-  ok('Q8 pedido de remarcação para horário que não está livre ou fora da grade: recusado', pac(P1, 'pacientePedirAgenda', { dados: { id: uuid(), tipo: 'remarcar', sessao_id: idPac, data: '2026-12-01', hora: '16:00' } }).ok === false && pac(P1, 'pacientePedirAgenda', { dados: { id: uuid(), tipo: 'remarcar', sessao_id: idPac, data: '2026-12-05', hora: '10:00' } }).ok === false);
+  ok('Q8 pedido de reagendamento para horário que não está livre ou fora da grade: recusado, e a sessão continua agendada', pac(P1, 'pacientePedirAgenda', { dados: { id: uuid(), tipo: 'remarcar', sessao_id: 'rg-' + idPacB, data: '2026-12-01', hora: '16:00' } }).ok === false && pac(P1, 'pacientePedirAgenda', { dados: { id: uuid(), tipo: 'remarcar', sessao_id: 'rg-' + idPacB, data: '2026-12-05', hora: '10:00' } }).ok === false && cel('Sessoes', 'rg-' + idPacB, 'estado') === 'agendada');
   const idFalta = uuid();
   sessao(P2, { id: idFalta, data: '2026-11-24', hora: '15:00', valor: '250' });
   prof('profMarcarSituacao', { id: idFalta, situacao: 'falta', periodo: PER });
@@ -345,7 +348,7 @@ tenta('Q', () => {
   agendaAprovada(P2, { id: uX, data: '2026-12-09', hora: '10:00' });
   pac(P2, 'pacientePedirAgenda', { dados: { id: idQ4, tipo: 'remarcar', sessao_id: idX, data: '2026-12-10', hora: '10:00' } });
   prof('profCancelarSessao', { id: idX, opcoes: { quem: 'profissional' }, periodo: PER });
-  ok('Q13 sessão cancelada fecha o pedido pendente dela', cel('Pedidos_Agenda', idQ4, 'estado') === 'recusado');
+  ok('Q13 (14.22) a sessão com reagendamento pedido já está cancelada: cancelar de novo não muda nada e o pedido continua aguardando a resposta', cel('Sessoes', idX, 'estado') === 'cancelada' && cel('Sessoes', idX, 'cancelada_por') === 'paciente' && cel('Pedidos_Agenda', idQ4, 'estado') === 'pendente');
 });
 
 /* ---------------------------------------------------------------- V */
@@ -397,7 +400,7 @@ tenta('V', () => {
   prof('profDecidirPedido', { id: idQ, aprovar: true, periodo: PER });
   ok('V15 pedido aprovado: e-mail ao paciente', h.EMAILS.length === 1 && h.EMAILS[0].to === 'p2@exemplo.test' && h.EMAILS[0].subject === 'Pedido aprovado — COGNIATIVO' && h.EMAILS[0].body.indexOf('14/12/2026, às 10:00') !== -1, h.EMAILS.map(e => e.subject));
   h.EMAILS.length = 0;
-  pac(P2, 'pacienteCancelarSessao', { id: idW });
+  pac(P2, 'pacienteCancelarSessao', { id: 'rg-' + idW }); // 14.22: o pedido aprovado criou a sessao nova; e ela que o paciente cancela
   ok('V16 paciente cancela: aviso ao profissional', h.EMAILS.length === 1 && h.EMAILS[0].body.indexOf('Pedro Segundo cancelou a sessão de 14/12 às 10:00.') !== -1, h.EMAILS.map(e => e.body.slice(0, 200)));
   const html = S('montarEmailSessao')('confirmacao', { nome: 'Ana', profissional: 'Dr. <b>X</b>', sessao: { data: '2026-12-08', hora_inicio: '10:00', modalidade: 'online' }, horas: 24, assinatura: [] }).html;
   ok('V17 o HTML do e-mail escapa o que vem de cadastro', html.indexOf('<b>X</b>') === -1 && html.indexOf('&lt;b&gt;X&lt;/b&gt;') !== -1);

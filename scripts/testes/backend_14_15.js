@@ -155,7 +155,12 @@ tenta('B', () => {
   const ped10 = uuid(), ped17 = uuid();
   r = pac(P2, 'pacientePedirAgenda', { dados: { id: ped10, tipo: 'remarcar', sessao_id: id10, data: '2026-12-11', hora: '14:00' } });
   const r17 = pac(P2, 'pacientePedirAgenda', { dados: { id: ped17, tipo: 'remarcar', sessao_id: id17, data: '2026-12-18', hora: '14:00' } });
-  ok('B2 o paciente pede remarcação da de 10/12 e da de 17/12', r.ok === true && r17.ok === true && cel('Pedidos_Agenda', ped10, 'estado') === 'pendente' && cel('Pedidos_Agenda', ped17, 'estado') === 'pendente', { a: r.erro, b: r17.erro });
+  // 14.22: hoje o pedido de reagendar cancela a sessão na hora. Este bloco prova o caso ANTIGO (pedido pendente com a sessão ainda agendada),
+  // que pode existir em dado gravado antes do 14.22: as duas sessões voltam a 'agendada' direto na planilha.
+  const antigo = id => { const a = aba('Sessoes'), l = h.linhaDe(a, 'id', id), c = h.cab(a); ['estado', 'cancelada_em', 'cancelada_por', 'cancel_no_prazo', 'cobrada'].forEach(k => a.getRange(l, c.indexOf(k) + 1).setValue(k === 'estado' ? 'agendada' : '')); h.memo(); };
+  const cancelouNaHora = cel('Sessoes', id10, 'estado') === 'cancelada' && cel('Sessoes', id17, 'estado') === 'cancelada';
+  antigo(id10); antigo(id17);
+  ok('B2 (14.22) o pedido de reagendar da de 10/12 e da de 17/12 cancela as duas na hora; para o caso antigo, elas voltam a agendada com o pedido pendente', r.ok === true && r17.ok === true && cancelouNaHora && cel('Sessoes', id10, 'estado') === 'agendada' && cel('Sessoes', id17, 'confirmada_em') !== '' && cel('Pedidos_Agenda', ped10, 'estado') === 'pendente' && cel('Pedidos_Agenda', ped17, 'estado') === 'pendente', { a: r.erro, b: r17.erro, cancelouNaHora });
   const regra = { cada: 2, unidade: 'semana', dias_semana: [4], fim_tipo: 'n', fim_n: 3 };
   const linhasAntes = aba('Sessoes').getLastRow();
   r = prof('profEditarSerie', { periodo: PER, dados: { id: idE, sessao_id: idS, simular: true, repeticao: regra } });

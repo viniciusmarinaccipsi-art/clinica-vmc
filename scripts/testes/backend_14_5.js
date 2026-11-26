@@ -291,24 +291,25 @@ tenta('S', () => {
   ok('S4 aprovar sem escolher o horário é recusado', r.ok === false && r.codigo === 'sem_horario', r);
   h.EMAILS.length = 0;
   r = prof('profDecidirPedido', { id: idPed, aprovar: true, periodo: PER, quando: { data: '2026-12-17', hora: '17:00' } });
-  ok('S5 aprovar com o horário escolhido muda a sessão e fecha o pedido com esse horário', r.ok === true && r.aprovado === true && r.data === '2026-12-17' && r.hora === '17:00' && cel('Sessoes', idS, 'hora_inicio') === '17:00' && cel('Pedidos_Agenda', idPed, 'estado') === 'aprovado' && cel('Pedidos_Agenda', idPed, 'hora') === '17:00', r);
-  ok('S6 o paciente recebe o e-mail do pedido aprovado, com o horário e o evento em anexo', h.EMAILS.length === 1 && h.EMAILS[0].body.indexOf('17/12/2026, às 17:00') !== -1 && h.EMAILS[0].attachments && h.EMAILS[0].attachments[0].texto.indexOf('UID:' + idS + '@cogniativo') !== -1, h.EMAILS[0] && h.EMAILS[0].body);
+  ok('S5 (14.22) aprovar com o horário escolhido: a original fica reagendada, nasce a sessão nova nesse horário e o pedido fecha com ele', r.ok === true && r.aprovado === true && r.data === '2026-12-17' && r.hora === '17:00' && cel('Sessoes', idS, 'estado') === 'cancelada' && cel('Sessoes', idS, 'reagendada_para') === 'rg-' + idS && cel('Sessoes', 'rg-' + idS, 'hora_inicio') === '17:00' && cel('Sessoes', 'rg-' + idS, 'estado') === 'agendada' && cel('Pedidos_Agenda', idPed, 'estado') === 'aprovado' && cel('Pedidos_Agenda', idPed, 'hora') === '17:00', r);
+  ok('S6 o paciente recebe o e-mail do pedido aprovado, com o horário e o evento em anexo', h.EMAILS.length === 1 && h.EMAILS[0].body.indexOf('17/12/2026, às 17:00') !== -1 && h.EMAILS[0].attachments && h.EMAILS[0].attachments[0].texto.indexOf('UID:rg-' + idS + '@cogniativo') !== -1, h.EMAILS[0] && h.EMAILS[0].body);
   const idPed2 = uuid();
-  pac(P1, 'pacientePedirAgenda', { dados: { id: idPed2, tipo: 'remarcar', sessao_id: idS, sugestao: 'Só à noite' } });
+  pac(P1, 'pacientePedirAgenda', { dados: { id: idPed2, tipo: 'remarcar', sessao_id: 'rg-' + idS, sugestao: 'Só à noite' } });
   h.EMAILS.length = 0;
   r = prof('profDecidirPedido', { id: idPed2, aprovar: false, periodo: PER });
   ok('S7 recusar a sugestão avisa o paciente sem citar horário', r.ok === true && r.aprovado === false && h.EMAILS.length === 1 && h.EMAILS[0].body.indexOf('não pôde atender ao horário que você sugeriu') !== -1 && h.EMAILS[0].body.indexOf('undefined') === -1 && !/\d\d\/\d\d/.test(h.EMAILS[0].body.split('CRP')[0]), h.EMAILS[0] && h.EMAILS[0].body);
   const idPed3 = uuid();
-  r = pac(P1, 'pacientePedirAgenda', { dados: { id: idPed3, tipo: 'remarcar', sessao_id: idS, data: '2026-12-18', hora: '09:00' } });
+  const idS3 = uuid(); sessao(P1, { id: idS3, data: '2026-12-16', hora: '09:00' }); // 14.22: a sessão do pedido recusado continua cancelada; os pedidos seguintes partem de outra
+  r = pac(P1, 'pacientePedirAgenda', { dados: { id: idPed3, tipo: 'remarcar', sessao_id: idS3, data: '2026-12-18', hora: '09:00' } });
   r = prof('profDecidirPedido', { id: idPed3, aprovar: true, periodo: PER, quando: { data: '2026-12-18', hora: '11:00' } });
-  ok('S8 no pedido com horário, o profissional também pode aprovar em outro horário', r.ok === true && r.hora === '11:00' && cel('Sessoes', idS, 'data') === '2026-12-18' && cel('Sessoes', idS, 'hora_inicio') === '11:00', r);
+  ok('S8 no pedido com horário, o profissional também pode aprovar em outro horário', r.ok === true && r.hora === '11:00' && cel('Sessoes', 'rg-' + idS3, 'data') === '2026-12-18' && cel('Sessoes', 'rg-' + idS3, 'hora_inicio') === '11:00' && cel('Sessoes', idS3, 'reagendada_para') === 'rg-' + idS3, r);
   const idPed4 = uuid();
-  pac(P1, 'pacientePedirAgenda', { dados: { id: idPed4, tipo: 'remarcar', sessao_id: idS, data: '2026-12-21', hora: '09:00' } });
+  pac(P1, 'pacientePedirAgenda', { dados: { id: idPed4, tipo: 'remarcar', sessao_id: 'rg-' + idS3, data: '2026-12-21', hora: '09:00' } });
   r = prof('profDecidirPedido', { id: idPed4, aprovar: true, periodo: PER });
-  ok('S9 o pedido comum continua aprovado no horário pedido', r.ok === true && r.data === '2026-12-21' && r.hora === '09:00' && cel('Sessoes', idS, 'data') === '2026-12-21');
+  ok('S9 o pedido comum continua aprovado no horário pedido (a sessão nova de uma reagendada também pode ser reagendada)', r.ok === true && r.data === '2026-12-21' && r.hora === '09:00' && cel('Sessoes', 'rg-rg-' + idS3, 'data') === '2026-12-21');
   const ev = prof('profLerAgenda', PER).eventos.filter(e => e.tipo === 'remarcar' && e.sugestao);
   ok('S10 o evento do sino traz a sugestão', ev.length === 2 && ev.every(e => e.sugestao.length > 0), ev);
-  r = pac(P1, 'pacientePedirAgenda', { dados: { id: uuid(), tipo: 'remarcar', sessao_id: idS, sugestao: '   ' } });
+  r = pac(P1, 'pacientePedirAgenda', { dados: { id: uuid(), tipo: 'remarcar', sessao_id: 'rg-rg-' + idS3, sugestao: '   ' } });
   ok('S11 sugestão vazia e sem horário não vira pedido', r.ok === false && r.codigo === 'ocupado', r);
 });
 
@@ -357,13 +358,14 @@ tenta('V', () => {
   let idP = pedir(idA, { data: '2027-01-27', hora: '10:00' });
   h.EMAILS.length = 0;
   let r = prof('profDecidirPedido', { id: idP, aprovar: true, periodo: PER });
-  ok('V1 aprovado no horário pedido: a sessão muda e fica A CONFIRMAR (a confirmação antiga cai)', r.ok === true && r.confirmada === undefined && cel('Sessoes', idA, 'data') === '2027-01-27' && cel('Sessoes', idA, 'hora_inicio') === '10:00' && cel('Sessoes', idA, 'confirmada_em') === '', [cel('Sessoes', idA, 'confirmada_em')]);
+  const idA2 = 'rg-' + idA; // 14.22: a sessão nova do reagendamento
+  ok('V1 (14.22) aprovado no horário pedido: nasce a sessão nova, A CONFIRMAR (a confirmação era da original, que ficou reagendada)', r.ok === true && r.confirmada === undefined && cel('Sessoes', idA, 'reagendada_para') === idA2 && cel('Sessoes', idA2, 'data') === '2027-01-27' && cel('Sessoes', idA2, 'hora_inicio') === '10:00' && cel('Sessoes', idA2, 'confirmada_em') === '', [cel('Sessoes', idA2, 'confirmada_em')]);
   let e = h.EMAILS.filter(m => m.subject === 'Pedido aprovado — COGNIATIVO')[0];
   ok('V2 e-mail "Pedido aprovado" com o botão "Confirmar presença", o link e a linha da antecedência (texto puro e HTML)', !!e && e.body.indexOf('27/01/2027, às 10:00') !== -1 && pede(e), e && e.body);
-  ok('V3 na tela do paciente a sessão oferece "Confirmar presença"', minha(P1, idA).confirmada === false && minha(P1, idA).pode_confirmar === true, minha(P1, idA));
-  ok('V4 nenhum "confirmou" no sino antes de o paciente confirmar; o pedido dele continua lá', eventosConf(idA).length === 0 && prof('profLerAgenda', PER).eventos.some(ev => ev.tipo === 'remarcar' && ev.sigla === P1), eventosConf(idA));
+  ok('V3 na tela do paciente a sessão oferece "Confirmar presença"', minha(P1, idA2).confirmada === false && minha(P1, idA2).pode_confirmar === true, minha(P1, idA2));
+  ok('V4 nenhum "confirmou" da sessão nova no sino antes de o paciente confirmar; o pedido dele continua lá', eventosConf(idA2).length === 0 && prof('profLerAgenda', PER).eventos.some(ev => ev.tipo === 'remarcar' && ev.sigla === P1), eventosConf(idA));
   r = h.post({ acao: 'confirmarSessaoPorLink', t: tokDe(e) });
-  ok('V5 o link confirma a data nova e aí o sino mostra a confirmação (mesmo no mesmo minuto da aprovação)', r.ok === true && r.ja_confirmada === false && r.data === '2027-01-27' && r.hora === '10:00' && cel('Sessoes', idA, 'confirmada_em') !== '' && eventosConf(idA).length === 1, [r, eventosConf(idA)]);
+  ok('V5 o link confirma a data nova e aí o sino mostra a confirmação (mesmo no mesmo minuto da aprovação)', r.ok === true && r.ja_confirmada === false && r.data === '2027-01-27' && r.hora === '10:00' && cel('Sessoes', idA2, 'confirmada_em') !== '' && eventosConf(idA2).length === 1, [r, eventosConf(idA2)]);
 
   // 2. aprovado em OUTRO horário e pedido só com o horário ideal: iguais
   const idC = uuid();
@@ -372,7 +374,7 @@ tenta('V', () => {
   h.EMAILS.length = 0;
   r = prof('profDecidirPedido', { id: idP, aprovar: true, periodo: PER, quando: { data: '2027-01-27', hora: '14:00' } });
   e = h.EMAILS.filter(m => m.subject === 'Pedido aprovado — COGNIATIVO')[0];
-  ok('V6 aprovado em outro horário: a confirmar, e-mail com o botão', r.ok === true && cel('Sessoes', idC, 'hora_inicio') === '14:00' && cel('Sessoes', idC, 'confirmada_em') === '' && !!e && e.body.indexOf('27/01/2027, às 14:00') !== -1 && pede(e), e && e.body);
+  ok('V6 aprovado em outro horário: a confirmar, e-mail com o botão', r.ok === true && cel('Sessoes', 'rg-' + idC, 'hora_inicio') === '14:00' && cel('Sessoes', 'rg-' + idC, 'confirmada_em') === '' && !!e && e.body.indexOf('27/01/2027, às 14:00') !== -1 && pede(e), e && e.body);
   const idD = uuid();
   sessao(P1, { id: idD, data: '2027-01-26', hora: '15:00' });
   idP = pedir(idD, { sugestao: 'De manhã cedo' });
