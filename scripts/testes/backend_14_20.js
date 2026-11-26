@@ -213,6 +213,34 @@ tenta('D', () => {
   grade({ agendar_primeiro: '24h', agendar_ultimo: '1s' });
 });
 
+/* ---------------------------------------------------------------- E */
+console.log('E. Antecedência trocada pelo profissional (o paciente avisou por fora)');
+tenta('E', () => {
+  const idA = uuid(), idB = uuid(), idC = uuid(), idD = uuid(), idE = uuid();
+  [[idA, '09:00'], [idB, '10:00'], [idC, '11:00'], [idD, '13:00']].forEach(x => sessao(P2, { id: x[0], data: '2026-11-26', hora: x[1] })); // amanhã: menos de 24 horas
+  sessao(P2, { id: idE, data: '2026-12-03', hora: '09:00' }); // daqui a oito dias: dentro do prazo
+  let s = simular(idA, { quem: 'paciente' });
+  ok('E1 o relógio diz: sessão de amanhã cedo, fora do prazo (24), cobrada', s.no_prazo === false && s.proposta === 'Sim', s);
+  let r = prof('profCancelarSessao', { id: idA, opcoes: { quem: 'paciente', no_prazo: true }, periodo: PER });
+  ok('E2 o profissional diz "com 24 horas ou mais": fica dentro do prazo, não cobrada, e a antecedência fica gravada', r.ok === true && cel('Sessoes', idA, 'cobrada') === 'Nao' && cel('Sessoes', idA, 'cancel_no_prazo') === 'Sim', estadoDe(idA));
+  r = prof('profCancelarSessao', { id: idB, opcoes: { quem: 'paciente', no_prazo: true, cobrar: true }, periodo: PER });
+  ok('E3 e o clique de cobrança vale por cima: dentro do prazo, cobrada', r.ok === true && cel('Sessoes', idB, 'cobrada') === 'Sim' && cel('Sessoes', idB, 'cancel_no_prazo') === 'Sim', estadoDe(idB));
+  r = prof('profCancelarSessao', { id: idE, opcoes: { quem: 'paciente', no_prazo: false }, periodo: PER });
+  ok('E4 o contrário: sessão de daqui a oito dias marcada como "com menos de 24 horas" fica fora do prazo e cobrada', r.ok === true && cel('Sessoes', idE, 'cobrada') === 'Sim' && cel('Sessoes', idE, 'cancel_no_prazo') === 'Nao', estadoDe(idE));
+  r = prof('profCancelarSessao', { id: idC, opcoes: { quem: 'profissional', no_prazo: false, cobrar: true }, periodo: PER });
+  ok('E5 cancelada por mim: a antecedência não se aplica (fica em branco) e nunca é cobrada, mande o que mandar', r.ok === true && cel('Sessoes', idC, 'cobrada') === 'Nao' && cel('Sessoes', idC, 'cancel_no_prazo') === '', estadoDe(idC));
+  r = prof('profCancelarSessao', { id: idD, opcoes: { quem: 'paciente' }, periodo: PER });
+  ok('E6 sem trocar nada, vale o relógio: fora do prazo, cobrada', r.ok === true && cel('Sessoes', idD, 'cobrada') === 'Sim' && cel('Sessoes', idD, 'cancel_no_prazo') === 'Nao', estadoDe(idD));
+  const lida = (prof('profLerAgenda', PER).sessoes || []).filter(x => x.id === idA)[0];
+  ok('E7 a leitura do profissional devolve a antecedência gravada', !!lida && lida.cancel_no_prazo === 'Sim', lida && lida.cancel_no_prazo);
+  const idP = uuid();
+  sessao(P1, { id: idP, data: '2026-12-01', hora: '09:00' });
+  r = pac(P1, 'pacienteCancelarSessao', { id: idP });
+  ok('E8 cancelamento feito pelo paciente no sistema grava "dentro do prazo" (fora do prazo o sistema recusa)', r.ok === true && cel('Sessoes', idP, 'cancel_no_prazo') === 'Sim' && cel('Sessoes', idP, 'cancelada_por') === 'paciente', { r: r.erro, e: estadoDe(idP) });
+  const m = (pac(P2, 'lerMinhasSessoes', {}).sessoes || []);
+  ok('E9 a tela do paciente não recebe a coluna nova', m.every(x => !('cancel_no_prazo' in x)), m.slice(0, 1));
+});
+
 /* ---------------------------------------------------------------- T */
 console.log('T. Estrutura e versão');
 tenta('T', () => {

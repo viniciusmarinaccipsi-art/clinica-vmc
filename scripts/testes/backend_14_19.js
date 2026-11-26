@@ -208,7 +208,7 @@ tenta('D', () => {
 console.log('T. Estrutura e versão');
 tenta('T', () => {
   ok('T1 VERSAO_PACOTE do 14.19 em diante (o número exato é conferido em backend_16_11.js)', /^(14\.(19|[2-9]\d)|[12]\d\.)/.test(S('VERSAO_PACOTE')), S('VERSAO_PACOTE'));
-  ok('T2 as duas colunas novas ficam no fim de Sessoes e foram criadas na planilha', S('COLUNAS_SESSOES').slice(-2).join(',') === 'cancel_motivo,cancel_avisou_em' && h.cab(aba('Sessoes')).indexOf('cancel_motivo') !== -1 && h.cab(aba('Sessoes')).indexOf('cancel_avisou_em') !== -1);
+  ok('T2 as duas colunas novas ficam no fim de Sessoes e foram criadas na planilha', S('COLUNAS_SESSOES').indexOf('cancel_avisou_em') === S('COLUNAS_SESSOES').indexOf('cancel_motivo') + 1 && h.cab(aba('Sessoes')).indexOf('cancel_motivo') !== -1 && h.cab(aba('Sessoes')).indexOf('cancel_avisou_em') !== -1);
   ok('T3 nenhuma ação nova; cancelar continua na trava e exige crachá', S('ACOES_COM_TRAVA').indexOf('profCancelarSessao') !== -1 && S('ACOES_PUBLICAS').indexOf('profCancelarSessao') === -1);
   const inesperados = logServidor.filter(l => !/^trava de gravacao: nao obtida/.test(l));
   ok('T4 o servidor não registrou nenhum erro', inesperados.length === 0, inesperados.slice(0, 5));

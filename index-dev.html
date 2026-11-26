@@ -24506,7 +24506,7 @@ function agePainelNovo_(iso, hora) {
     modalidade: 'presencial', valor: '', notas: '', avisos: { confirmacao: true, lembrete48: true, lembrete: true, cancelamento: true }, repLigada: false, rep: null,
     reposicao_de: '', sessao: null, escopo: 'esta', erro: '',
     bloq: { id: vmcNovoIdEnvio_(), existente: false, data_inicio: iso, hora_inicio: hora, data_fim: iso, hora_fim: ageHora_(Math.min(ageMin_(hora) + 60, 1439)), dia_todo: false, nome: '' },
-    canc: { quem: 'paciente', escopo: 'esta', avisou: 'agora', avData: '', avHora: '', motivo: '', cobrar: null }, faltaCobrar: null, cancSim: null };
+    canc: { quem: 'paciente', escopo: 'esta', motivo: '', noPrazo: null, cobrar: null }, faltaCobrar: null, cancSim: null };
 }
 function ageFoto_(p) { return JSON.stringify([p.aba, p.sigla, p.data, p.hora, p.dur, p.modalidade, p.valor, p.notas, p.avisos, p.repLigada, p.rep, p.bloq, p.sit || '', p.faltaCobrar === null || p.faltaCobrar === undefined ? '' : String(p.faltaCobrar)]); }
 function ageMostrar_(p, vista) {
@@ -24593,10 +24593,7 @@ function ageLer_() {
     if (v('ageRepSel') !== null) p.repLigada = v('ageRepSel') === 'sim';
     if (v('ageEscopo') !== null) p.escopo = v('ageEscopo');
     if (v('ageSit') !== null) p.sit = v('ageSit');
-    if (c('ageCQuemPac') !== null) p.canc.quem = c('ageCQuemPac') ? 'paciente' : 'profissional'; // 14.19
-    if (v('ageCAvisou') !== null) p.canc.avisou = v('ageCAvisou');
-    if (v('ageCAvData') !== null) p.canc.avData = v('ageCAvData');
-    if (v('ageCAvHora') !== null) p.canc.avHora = v('ageCAvHora');
+    if (v('ageCQuem') !== null) p.canc.quem = v('ageCQuem') === 'paciente' ? 'paciente' : 'profissional'; // 14.19; 14.20: os três campos são listas já preenchidas
     if (v('ageCMotivo') !== null) p.canc.motivo = v('ageCMotivo').trim();
     if (v('ageCEsc') !== null) p.canc.escopo = v('ageCEsc');
     AGE_AVISOS.forEach(function (a) { if (c('ageAv_' + a[0]) !== null) p.avisos[a[0]] = c('ageAv_' + a[0]); });
@@ -24662,7 +24659,7 @@ function ageRender_() {
     corpo.innerHTML = '<p class="age-texto"><strong>' + esc(sc.nome) + '</strong> · ' + esc(ageQuandoCurto_(sc.data, sc.hora)) + '</p>' +
       '<div class="age-marcas"><span class="cal-ev-marca">' + esc(ageEtiquetaCanc_(sc)) + '</span>' + (sc.reposta_em ? ' <span class="cal-ev-marca">' + esc('Reposta em ' + lemDataBR_(sc.reposta_em, true)) + '</span>' : '') + '</div>' +
       ageTresHtml_([['Quem cancelou', sc.cancelada_por === 'profissional' ? 'você' : 'o paciente']]
-        .concat(sc.cancel_avisou_em ? [['Quando avisou', lemDataBR_(sc.cancel_avisou_em.slice(0, 10)) + ' às ' + sc.cancel_avisou_em.slice(11, 16)]] : [])
+        .concat(sc.cancel_no_prazo ? [['Antecedência', sc.cancel_no_prazo === 'Sim' ? 'dentro do prazo' : 'fora do prazo']] : [])
         .concat([['Cobrança', sc.cobrada === 'Sim' ? 'cobrada' : 'não cobrada']])
         .concat(sc.cancel_motivo ? [['Motivo', sc.cancel_motivo]] : [])) +
       (sc.pode_repor ? '<p class="age-dica">A reposição usa o valor desta sessão e não gera cobrança nova.</p>' : '');
@@ -25007,60 +25004,72 @@ function ageSitPintar_() {
   if (p.sit === ageSitDe_(s) && s.pode_repor) h += '<button type="button" class="p5-btn p5-btn-secondary age-btn-largo" id="ageBtnRepor" onclick="ageRepor_()">Repor em outra data</button><p class="age-dica">A reposição usa o valor desta sessão e não gera cobrança nova.</p>';
   box.innerHTML = h;
   if (p.sit === 'cancelada' && s.estado === 'agendada') {
-    var c = p.canc, pac = c.quem === 'paciente';
-    document.getElementById(pac ? 'ageCQuemPac' : 'ageCQuemEu').checked = true;
-    if (pac) document.getElementById('ageCAvisou').value = c.avisou;
-    if (document.getElementById('ageCAvData')) { document.getElementById('ageCAvData').value = c.avData; document.getElementById('ageCAvData').max = lemHojeIso_(); document.getElementById('ageCAvHora').value = c.avHora; }
-    document.getElementById('ageCMotivo').value = c.motivo;
-    if (document.getElementById('ageCEsc')) document.getElementById('ageCEsc').value = c.escopo;
+    ageCancPreencher_();
+    document.getElementById('ageCMotivo').value = p.canc.motivo;
+    if (document.getElementById('ageCEsc')) document.getElementById('ageCEsc').value = p.canc.escopo;
   }
 }
 function ageFaltaCobrar_(cobrar) { ageLer_(); AGE.p.faltaCobrar = cobrar; ageSitPintar_(); }
 function ageCancHtml_() {
-  var p = AGE.p, s = p.sessao, c = p.canc, pac = c.quem === 'paciente';
-  return '<fieldset class="age-fieldset"><legend>Quem cancelou?</legend>' +
-      '<label class="age-check"><input type="radio" name="ageCQuem" id="ageCQuemPac" onchange="ageCancMudou_()"> <span>O paciente</span></label>' +
-      '<label class="age-check"><input type="radio" name="ageCQuem" id="ageCQuemEu" onchange="ageCancMudou_()"> <span>Eu</span></label></fieldset>' +
-    '<p class="age-dica" id="ageCQuemDica">Já vem preenchido. Confirme ou troque.</p>' +
-    (pac ? ageCampo_('Quando o paciente avisou?', '<select id="ageCAvisou" onchange="ageCancMudou_()"><option value="agora">Agora</option><option value="antes">Antes</option></select>', 'ageCAvisou') +
-      (c.avisou === 'antes' ? '<div class="age-linha">' + ageCampo_('Dia do aviso', '<input type="date" id="ageCAvData" onchange="ageCancMudou_()">', 'ageCAvData') +
-        ageCampo_('Hora do aviso', '<input type="time" id="ageCAvHora" onchange="ageCancMudou_()">', 'ageCAvHora') + '</div>' : '') : '') +
+  var p = AGE.p, s = p.sessao;
+  return '<div id="ageCTresBox">' + ageCancTresHtml_() + '</div>' +
     ageCampo_('Motivo (opcional)', '<input type="text" id="ageCMotivo" maxlength="200" autocomplete="off">', 'ageCMotivo') +
     (s.serie_id ? ageCampo_('Cancelar', '<select id="ageCEsc" onchange="ageCancMudou_()"><option value="esta">Só esta consulta</option><option value="seguintes">Esta consulta e as seguintes</option></select>', 'ageCEsc') : '') +
     '<div id="ageCResumo">' + ageCancResumoHtml_() + '</div>';
 }
-/* As três linhas, o clique da cobrança e a mensagem ao paciente — com o que o servidor respondeu */
+/* 14.20 (pedido do usuário): o que os três campos mostram — quem cancelou, a antecedência e a cobrança. Cada um já vem
+   preenchido (quem age na janela, o relógio contra o prazo, a política de cobrança) e os três podem ser trocados. */
+function ageCancEstado_() {
+  var p = AGE.p, c = p.canc, sim = p.cancSim, cfg = (AGE.agenda && AGE.agenda.config) || {};
+  var pac = c.quem === 'paciente', troca = pac && !p.sessao.reposicao_de;
+  var noPrazo = (c.noPrazo === true || c.noPrazo === false) ? c.noPrazo : (sim ? !!sim.no_prazo : true);
+  var proposta = troca && (noPrazo ? cfg.cobrar_cancel_dentro === 'Sim' : cfg.cobrar_cancel_fora !== 'Nao');
+  return { pac: pac, troca: troca, noPrazo: noPrazo, cobra: (troca && (c.cobrar === true || c.cobrar === false)) ? c.cobrar : proposta,
+    horas: (sim && sim.horas) || cfg.prazo_cancelar_horas || 24 };
+}
+function ageCancTresHtml_() {
+  var e = ageCancEstado_();
+  return '<p class="age-cobrar-rot" id="ageCQuemDica">Já vem preenchido. Confirme ou troque.</p>' +
+    ageCampo_('Quem cancelou', '<select id="ageCQuem" onchange="ageCancMudou_()"><option value="paciente">O paciente</option><option value="profissional">Eu</option></select>', 'ageCQuem') +
+    ageCampo_('Antecedência', e.pac ? '<select id="ageCAntec" onchange="ageCancMudou_()"><option value="sim">Com ' + e.horas + ' horas ou mais</option><option value="nao">Com menos de ' + e.horas + ' horas</option></select>'
+      : '<select id="ageCAntec" disabled><option value="">Não se aplica</option></select>', 'ageCAntec') +
+    ageCampo_('Cobrança', e.troca ? '<select id="ageCCob" onchange="ageCancCobrar_()"><option value="sim">Cobrada</option><option value="nao">Não cobrada</option></select>'
+      : '<select id="ageCCob" disabled><option value="nao">Não cobrada</option></select>', 'ageCCob');
+}
+function ageCancPreencher_() {
+  var e = ageCancEstado_();
+  document.getElementById('ageCQuem').value = e.pac ? 'paciente' : 'profissional';
+  if (e.pac) document.getElementById('ageCAntec').value = e.noPrazo ? 'sim' : 'nao';
+  if (e.troca) document.getElementById('ageCCob').value = e.cobra ? 'sim' : 'nao';
+}
+/* Abaixo dos três campos: quantas sessões saem (em sessão recorrente) e a mensagem que o paciente receberia */
 function ageCancResumoHtml_() {
-  var p = AGE.p, c = p.canc, sim = p.cancSim, pac = c.quem === 'paciente';
-  if (!sim) return '<p class="age-dica" id="ageCCalc" role="status">Calculando a cobrança…</p>';
-  var cobra = (sim.pode_trocar && (c.cobrar === true || c.cobrar === false)) ? c.cobrar : sim.proposta === 'Sim';
-  return ageTresHtml_([['Quem cancelou', pac ? 'o paciente' : 'você'],
-      ['Antecedência', pac ? (sim.no_prazo ? 'com ' + sim.horas + ' horas ou mais' : 'com menos de ' + sim.horas + ' horas') : 'não se aplica'],
-      ['Cobrança', cobra ? 'cobrada' : 'não cobrada']]) +
-    (sim.pode_trocar ? ageCobrarHtml_(cobra, 'ageCancCobrar_') : '') +
-    (sim.quantas > 1 ? '<p class="age-aviso" id="ageCQuantas">Serão canceladas ' + sim.quantas + ' sessões. A cobrança acima é a desta; as seguintes seguem a regra.</p>' : '') +
+  var sim = AGE.p.cancSim;
+  if (!sim) return '<p class="age-dica" id="ageCCalc" role="status">Calculando…</p>';
+  return (sim.quantas > 1 ? '<p class="age-aviso" id="ageCQuantas">Serão canceladas ' + sim.quantas + ' sessões. A cobrança acima é a desta; as seguintes seguem a regra.</p>' : '') +
     '<p class="age-cobrar-rot">Mensagem ao paciente, se você enviar o e-mail depois de salvar:</p><p class="age-previa" id="ageCPrevia">' + esc(sim.previa) + '</p>';
 }
-/* Mudou quem cancelou, quando avisou ou o alcance: a cobrança volta a ser a que a regra propõe, e o servidor responde de novo */
+/* Mudou quem cancelou, a antecedência ou o alcance: a cobrança volta a ser a que a regra propõe */
 function ageCancMudou_() {
+  var p = AGE.p, c = p.canc, quemAntes = c.quem, escopoAntes = c.escopo, antecAntes = ageCancEstado_().noPrazo, an = document.getElementById('ageCAntec');
   ageLer_();
-  var p = AGE.p, c = p.canc;
-  if (c.avisou === 'antes' && !c.avData) { var d = new Date(); c.avData = lemHojeIso_(); c.avHora = ageHora_(d.getHours() * 60 + d.getMinutes()); }
-  c.cobrar = null; p.cancSim = null;
-  ageSitPintar_();
-  ageCancSimular_();
+  if (c.quem !== quemAntes) c.noPrazo = null;
+  else if (c.quem === 'paciente' && an && !an.disabled && (an.value === 'sim') !== antecAntes) c.noPrazo = an.value === 'sim';
+  c.cobrar = null;
+  if (c.quem !== quemAntes || c.escopo !== escopoAntes) { p.cancSim = null; ageSitPintar_(); ageCancSimular_(); return; }
+  document.getElementById('ageCTresBox').innerHTML = ageCancTresHtml_();
+  ageCancPreencher_();
 }
-function ageCancCobrar_(cobrar) {
+function ageCancCobrar_() {
   ageLer_();
-  AGE.p.canc.cobrar = cobrar;
-  var el = document.getElementById('ageCResumo');
-  if (el) el.innerHTML = ageCancResumoHtml_();
+  AGE.p.canc.cobrar = document.getElementById('ageCCob').value === 'sim';
 }
 function ageCancOpcoes_(p, simular) {
   var c = p.canc, pac = c.quem === 'paciente';
-  var o = { quem: c.quem, escopo: p.sessao.serie_id ? c.escopo : 'esta', motivo: c.motivo, avisou_em: (pac && c.avisou === 'antes' && c.avData && c.avHora) ? c.avData + ' ' + c.avHora : '' };
-  if (simular) o.simular = true;
-  else if (pac && (c.cobrar === true || c.cobrar === false)) o.cobrar = c.cobrar;
+  var o = { quem: c.quem, escopo: p.sessao.serie_id ? c.escopo : 'esta', motivo: c.motivo };
+  if (simular) { o.simular = true; return o; }
+  if (pac && (c.noPrazo === true || c.noPrazo === false)) o.no_prazo = c.noPrazo;
+  if (pac && (c.cobrar === true || c.cobrar === false)) o.cobrar = c.cobrar;
   return o;
 }
 /* Pergunta ao servidor, sem gravar e sem cobrir a tela; resposta atrasada de uma escolha anterior é descartada */
@@ -25071,8 +25080,9 @@ async function ageCancSimular_() {
   if (!r || !r.ok) { ageErro_((r && r.erro) || 'Não foi possível calcular a cobrança agora.'); return; }
   ageErro_('');
   p.cancSim = r.simulacao;
-  var el = document.getElementById('ageCResumo');
+  var el = document.getElementById('ageCResumo'), tres = document.getElementById('ageCTresBox');
   if (el) el.innerHTML = ageCancResumoHtml_();
+  if (tres) { tres.innerHTML = ageCancTresHtml_(); ageCancPreencher_(); } // a antecedência calculada pelo relógio chega aqui
 }
 async function ageCancelarPeloCampo_() {
   var p = AGE.p, s = p.sessao;

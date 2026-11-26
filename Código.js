@@ -7005,7 +7005,8 @@ var COLUNAS_SESSOES = ['id', 'sigla', 'data', 'hora_inicio', 'duracao_min', 'mod
   'ultimo_aviso_em', 'criado_em', 'criado_por', 'atualizado_em',
   'lembrete48_em', // 14.4: marca do lembrete de 48 h (ultimo_aviso_em e a do de 24 h); 'dispensado' = a sessao nasceu ja dentro do prazo
   'gcal_evento', 'gcal_sinc', 'meet_link', // 14.5: id do evento no Google Calendar, 'pendente' enquanto o espelho nao foi feito, link do Meet da sessao on-line
-  'cancel_motivo', 'cancel_avisou_em']; // 14.19: motivo do cancelamento (so para o profissional) e quando o paciente avisou ('AAAA-MM-DD HH:mm')
+  'cancel_motivo', 'cancel_avisou_em', // 14.19: motivo do cancelamento (so para o profissional) e quando o paciente avisou ('AAAA-MM-DD HH:mm')
+  'cancel_no_prazo']; // 14.20: 'Sim' = o paciente avisou dentro do prazo; 'Nao' = fora do prazo; vazio = nao foi o paciente
 var COLUNAS_SERIES = ['id', 'sigla', 'cada', 'unidade', 'dias_semana', 'modo_mes', 'fim_tipo', 'fim_n', 'fim_data',
   'ocupado', 'criada_em', 'encerrada_em'];
 var COLUNAS_BLOQUEIOS = ['id', 'data_inicio', 'hora_inicio', 'data_fim', 'hora_fim', 'dia_todo', 'nome'];
@@ -7537,6 +7538,7 @@ function _ageSessaoProf_(ctx, x, pacs) {
     reposicao_de: x.reposicao_de, reposta_em: _ageRepostaEm_(ctx, x.id), pode_repor: _agePodeRepor_(ctx, x), origem: x.origem || 'profissional',
     confirmada: !!x.confirmada_em, avisos: _ageAvisosLista_(x.avisos), cancelada_por: x.cancelada_por,
     cancel_motivo: x.cancel_motivo || '', cancel_avisou_em: x.cancel_avisou_em || '', cancelada_em: x.cancelada_em || '', // 14.19
+    cancel_no_prazo: x.cancel_no_prazo || '', // 14.20
     link_confirmar: ((x.estado === 'agendada' || x.estado === '') && ctx.profId) ? _ageLinkConfirmar_(ctx.profId, x.id) : '', // 14.4
     meet_link: x.modalidade === 'online' ? (x.meet_link || '') : '', endereco: x.modalidade === 'online' ? '' : _ageEndereco_(ctx.cfg, x.data), // 14.5
     mapa: x.modalidade === 'online' ? '' : _ageMapa_(_ageEndereco_(ctx.cfg, x.data)), no_calendar: !!x.gcal_evento,
@@ -7966,6 +7968,8 @@ function profCancelarSessao(s, id, opcoes, periodo) {
   }
   var cobrancaDe = function (x) {
     var noPrazo = _ageNoPrazo_(x.data, x.hora_inicio, avisou, ctx.cfg.prazo_cancelar_horas);
+    // 14.20: a antecedencia vem calculada e o profissional pode troca-la (o paciente avisou por fora, antes): so na sessao aberta
+    if (x === ref && quem === 'paciente' && (o.no_prazo === true || o.no_prazo === false)) noPrazo = o.no_prazo;
     var proposta = _ageCobrada_(quem === 'paciente' ? 'cancel_paciente' : 'cancel_profissional', noPrazo, !!x.reposicao_de, ctx.cfg);
     var final = (x === ref && quem === 'paciente' && !x.reposicao_de && (o.cobrar === true || o.cobrar === false)) ? (o.cobrar ? 'Sim' : 'Nao') : proposta;
     return { no_prazo: noPrazo, proposta: proposta, cobrada: final };
@@ -7981,7 +7985,8 @@ function profCancelarSessao(s, id, opcoes, periodo) {
   }
   lista.forEach(function (x) {
     _ageGravar_(ctx.abaS, COLUNAS_SESSOES, x.__linha, { estado: 'cancelada', cancelada_em: agora.carimbo, cancelada_por: quem,
-      cobrada: cobrancaDe(x).cobrada, cancel_motivo: motivo, cancel_avisou_em: quem === 'paciente' ? avisou.carimbo : '', atualizado_em: agora.carimbo });
+      cobrada: cobrancaDe(x).cobrada, cancel_motivo: motivo, cancel_avisou_em: quem === 'paciente' ? avisou.carimbo : '',
+      cancel_no_prazo: quem === 'paciente' ? (cobrancaDe(x).no_prazo ? 'Sim' : 'Nao') : '', atualizado_em: agora.carimbo });
     _agePedidosFechar_(ctx, x.id, agora);
   });
   var resp = { ok: true, canceladas: lista.length, cobrada: cRef.cobrada };
@@ -8441,7 +8446,7 @@ function pacienteCancelarSessao(sigla, id) {
   if (x.estado === 'cancelada') { var rd = _ageMinhas_(ctx, alvo, agora); rd.duplicado = true; return rd; }
   if (x.estado !== 'agendada' && x.estado !== '') return { ok: false, erro: MSG_AGE_NAO_ACHEI };
   if (!_ageNoPrazo_(x.data, x.hora_inicio, agora, ctx.cfg.prazo_cancelar_horas)) return { ok: false, codigo: 'prazo', erro: _ageMsgPrazo_(ctx.cfg.prazo_cancelar_horas, alvo.profissional) };
-  _ageGravar_(ctx.abaS, COLUNAS_SESSOES, x.__linha, { estado: 'cancelada', cancelada_em: agora.carimbo, cancelada_por: 'paciente', cobrada: _ageCobrada_('cancel_paciente', true, !!x.reposicao_de, ctx.cfg), atualizado_em: agora.carimbo });
+  _ageGravar_(ctx.abaS, COLUNAS_SESSOES, x.__linha, { estado: 'cancelada', cancelada_em: agora.carimbo, cancelada_por: 'paciente', cancel_no_prazo: 'Sim', cobrada: _ageCobrada_('cancel_paciente', true, !!x.reposicao_de, ctx.cfg), atualizado_em: agora.carimbo });
   _agePedidosFechar_(ctx, x.id, agora);
   _ageAvisarProfissional_(ctx, alvo.profissionalId, alvo.nome + ' cancelou a sessão de ' + _ageDiaMes_(x.data) + ' às ' + _lemHora_(x.hora_inicio) + '.');
   _calSincronizar_(alvo.controle, alvo.profissionalId, { max: 2, agora: agora }); // 14.5
