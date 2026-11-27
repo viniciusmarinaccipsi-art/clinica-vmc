@@ -141,7 +141,7 @@ tenta('E', () => {
   ok('E8 paciente não marca eventos como vistos', pac(P1, 'profMarcarEventosVistos', {}).ok === false);
   irPara(2026, 12, 26, 16, 0);
   a = prof('profLerAgenda', { de: '2026-12-20', ate: '2027-01-10' });
-  ok('E9 passados 30 dias, os eventos saem da lista', a.eventos.length === 0, a.eventos.length);
+  ok('E9 passados 30 dias, os eventos saem da lista (fica só o aviso de pedido que venceu, do 14.28)', a.eventos.every(e => e.tipo === 'venceu'), a.eventos.map(e => e.tipo));
   irPara(2026, 11, 25, 14, 0);
 });
 

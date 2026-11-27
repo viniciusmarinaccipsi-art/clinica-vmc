@@ -113,8 +113,8 @@ tenta('B', () => {
   irPara(2026, 11, 27, 9, 30);
   ok('B10 pedido cujo horário passou sem resposta deixa de reservar', S('_ageReservas_')({ pedidos: S('_lembretesLer_')(aba('Pedidos_Agenda')), sessoes: [], cfg: { duracao_slot_min: 60 } }, { data: '2026-11-27', hora: '09:30' }).every(v => v.data !== '2026-11-27'));
   r = decidir(uC, true);
-  ok('B11 e aprová-lo no horário que já passou é recusado com a frase', r.ok === false && r.codigo === 'passou' && r.erro === 'O horário pedido já passou. Recuse o pedido ou escolha outro horário.' && linhas('Sessoes') === 3, [r, linhas('Sessoes')]);
-  ok('B12 o paciente não vê mais esse pedido vencido na tela', pac(P2, 'lerMinhasSessoes').pedidos_agendar.every(x => x.id !== uC));
+  ok('B11 e aprová-lo no horário que já passou é recusado com a frase', r.ok === false && r.codigo === 'vencido' && r.erro === 'Este pedido venceu.' && linhas('Sessoes') === 3, [r, linhas('Sessoes')]);
+  ok('B12 o paciente vê esse pedido como vencido (14.28: "Pedido sem resposta" por 7 dias)', pac(P2, 'lerMinhasSessoes').pedidos_agendar.filter(x => x.id === uC).every(x => x.estado === 'vencido'));
   decidir(uC, false);
   irPara(2026, 11, 25, 14, 0);
 });

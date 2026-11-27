@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.27';
+var VERSAO_PACOTE = '14.28';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -7492,6 +7492,10 @@ function _ageEventos_(ctx, pacs, agora) {
     if (x.estado === 'cancelada' && x.cancelada_por === 'paciente' && !x.reagendada_para && !pediuReag[x.id + '|' + x.cancelada_em]) ev('cancelou', x, x.cancelada_em);
   });
   ctx.pedidos.forEach(function (p) {
+    if (p.estado === 'vencido') { // 14.28: o vencimento aparece no sino (sem e-mail)
+      var xo = ctx.sessoes.filter(function (y) { return y.id === p.sessao_id; })[0] || {};
+      ev('venceu', { sigla: p.sigla, data: p.data || xo.data || '', hora_inicio: p.hora || xo.hora_inicio || '', id: p.sessao_id || '' }, p.venceu_em);
+    }
     if (p.tipo === 'agendar') { ev('agendar', { sigla: p.sigla, data: p.data, hora_inicio: p.hora }, p.criado_em); return; } // 14.7: o pedido, nao a sessao
     var x = ctx.sessoes.filter(function (y) { return y.id === p.sessao_id; })[0];
     if (!x) return;
@@ -7552,10 +7556,29 @@ function _ageCtx_(controle, criar) {
   c.sessoes = _ageLer_(c.abaS); // 14.12: cada aba da Agenda e lida uma vez por chamada
   c.series = _ageLer_(c.abaR);
   c.bloqueios = _ageLer_(c.abaB);
-  c.pedidos = _ageLer_(c.abaP);
+  c.pedidos = _agePedidosVencer_(_ageLer_(c.abaP), _lemAgora_()); // 14.28
   return c;
 }
 
+/**
+ * 14.28 (decisao do usuario): pedido sem resposta vence. Com dia e hora, vence quando esse horario chega; so com texto,
+ * PEDIDO_SEM_DATA_DIAS depois de feito. Nada e gravado: o pedido continua 'pendente' na planilha e a leitura o entrega como
+ * 'vencido' (com `venceu_em`), de modo que toda regra que procura pedido pendente deixa de ve-lo.
+ */
+var PEDIDO_SEM_DATA_DIAS = 7;
+function _agePedidoVenceEm_(p) {
+  if (_lemDia_(p.data) !== null && _lemHora_(p.hora)) return p.data + ' ' + _lemHora_(p.hora);
+  var c = String(p.criado_em || ''), d = _lemDia_(c.slice(0, 10));
+  return d === null ? '' : _lemIso_(d + PEDIDO_SEM_DATA_DIAS) + ' ' + (c.slice(11, 16) || '00:00');
+}
+function _agePedidosVencer_(lista, agora) {
+  lista.forEach(function (p) {
+    if (p.estado !== 'pendente') return;
+    var v = _agePedidoVenceEm_(p);
+    if (v && v <= agora.carimbo) { p.estado = 'vencido'; p.venceu_em = v; }
+  });
+  return lista;
+}
 function _ageAtiva_(x) { return x.estado !== 'cancelada'; }
 /** 14.6: sessao cancelada e COBRADA — continua na grade do profissional (apagada, sem ocupar o horario) para poder ser reposta. */
 /** 14.24: sessao que saiu sem ser cancelamento de ninguem — as recorrentes mudaram ('edicao_serie') ou foi marcada por engano e apagada
@@ -7690,7 +7713,19 @@ function _ageSessaoProf_(ctx, x, pacs) {
     mapa: x.modalidade === 'online' ? '' : _ageMapa_(_ageEndereco_(ctx.cfg, x.data)), no_calendar: !!x.gcal_evento,
     telefone: p.telefone, tem_email: !!p.email,
     proxima: _ageProximaDoPaciente_(ctx, x), confirmada_em: x.confirmada_em || '', aviso_ultimo: _ageAvisoUltimo_(x), // 14.27: o balao da grade
+    credito: _ageViraCredito_(ctx, x), // 14.28: cancelada sem cobranca que ja estava paga
     confirma_abre: ((x.estado === 'agendada' || x.estado === '') && !x.confirmada_em && _ageMinutosAte_(x.data, x.hora_inicio, _lemAgora_()) > 0 && !_ageConfirmaAberta_(x.data, x.hora_inicio, _lemAgora_(), ctx.cfg)) ? _ageConfirmaAbreEm_(x.data, x.hora_inicio, ctx.cfg) : null };
+}
+/** 14.28: a sessao cancelada sem cobranca ja tinha pagamento confirmado? (o valor volta como credito). So le o financeiro quando ha uma dessas na leitura. */
+function _ageViraCredito_(ctx, x) {
+  if (x.estado !== 'cancelada' || x.cobrada === 'Sim' || !ctx.controle) return false;
+  if (!ctx._pagas) {
+    ctx._pagas = {};
+    var conf = {};
+    _lembretesLer_(_finAba_(ctx.controle, ABA_FIN_PAGAMENTOS, false)).forEach(function (p) { if (p.situacao === 'confirmado') conf[p.id] = true; });
+    _lembretesLer_(_finAba_(ctx.controle, ABA_FIN_ALOCACOES, false)).forEach(function (a) { if (conf[a.pagamento_id] && (parseInt(a.valor, 10) || 0) > 0) ctx._pagas[a.sessao_id] = true; });
+  }
+  return !!ctx._pagas[x.id];
 }
 /** 14.27: a proxima sessao agendada do mesmo paciente depois desta ('' se nao ha). O indice por paciente e montado uma vez por leitura. */
 function _ageProximaDoPaciente_(ctx, x) {
@@ -8353,6 +8388,7 @@ function profDecidirPedido(s, id, aprovar, periodo, quando) {
   var agora = _lemAgora_();
   var p = ctx.pedidos.filter(function (x) { return x.id === String(id || '').trim(); })[0];
   if (!p) return { ok: false, erro: 'Pedido não encontrado.' };
+  if (p.estado === 'vencido') return { ok: false, codigo: 'vencido', erro: 'Este pedido venceu.' }; // 14.28
   if (p.estado !== 'pendente') return _ageResposta_(alvo, { ok: true, duplicado: true }, periodo, agora);
   var ehAgendar = p.tipo === 'agendar'; // 14.7: pedido de agendamento — nao ha sessao ate ser aprovado
   var x = ehAgendar ? null : ctx.sessoes.filter(function (y) { return y.id === p.sessao_id; })[0];
@@ -8576,6 +8612,7 @@ function profLerHistoricoSessao(s, id) {
     por(p.criado_em, 'O paciente pediu ' + oque + (p.data ? ' para ' + _ageDiaMes_(p.data) + ' às ' + _lemHora_(p.hora) : ', com um horário sugerido') + '.');
     if (p.estado === 'aprovado') por(marca(p.decidido_em), 'Você aprovou o pedido de ' + oque + '.');
     else if (p.estado === 'recusado') por(marca(p.decidido_em), 'Você recusou o pedido de ' + oque + '.');
+    else if (p.estado === 'vencido') por(p.venceu_em, 'O pedido de ' + oque + ' venceu sem resposta.', true); // 14.28
   });
   lista.sort(function (a, b) { return a.em < b.em ? 1 : (a.em > b.em ? -1 : b.o - a.o); });
   lista.forEach(function (e) { delete e.o; });
@@ -8632,7 +8669,9 @@ function _ageMinhas_(ctx, alvo, agora) {
   // 14.7: pedidos de agendamento do paciente — o que espera resposta e o que foi recusado ha ate 7 dias (so de horario que ainda nao passou)
   var hojeN = _lemDia_(agora.data);
   var agendar = pedidos.filter(function (p) {
-    if (p.tipo !== 'agendar' || !(_ageMinutosAte_(p.data, _lemHora_(p.hora), agora) > 0)) return false;
+    if (p.tipo !== 'agendar') return false;
+    if (p.estado === 'vencido') return hojeN - _lemDia_(String(p.venceu_em).slice(0, 10)) <= 7; // 14.28: o pedido que venceu aparece como "sem resposta" por 7 dias
+    if (!(_ageMinutosAte_(p.data, _lemHora_(p.hora), agora) > 0)) return false;
     if (p.estado === 'pendente') return true;
     var dec = _lemDia_(String(p.decidido_em || '').slice(0, 10));
     return p.estado === 'recusado' && dec !== null && hojeN - dec <= 7;
@@ -8857,6 +8896,14 @@ function pacientePedirAgenda(sigla, dados) {
     _ageGravar_(ctx.abaP, COLUNAS_PEDIDOS_AGENDA, 0, { id: id, sigla: alvo.sigla, tipo: tipo, sessao_id: x.id, data: '', hora: '', estado: 'pendente', criado_em: agora.carimbo, sugestao: sugestao });
     _ageAvisarProfissional_(ctx, alvo.profissionalId, alvo.nome + (tipo === 'remarcar' ? ' pediu remarcação da sessão de ' : ' pediu reposição da sessão de ') +
       _ageDiaMes_(x.data) + (tipo === 'remarcar' ? ' às ' + _lemHora_(x.hora_inicio) : '') + ' e sugeriu: ' + sugestao);
+    return _ageMinhas_(_ageCtx_(alvo.controle, false), alvo, agora);
+  }
+  if (d.preferido === true) { // 14.28 (pedido do usuario): nenhum horario livre serve -> o paciente diz o dia e a hora que prefere; o texto e opcional
+    if (_lemDia_(data) === null || !hora || !(_ageMinutosAte_(data, hora, agora) > 0)) return { ok: false, erro: 'Escolha um dia e uma hora que ainda não passaram.' };
+    if (tipo === 'remarcar') _ageCancelarPeloPaciente_(ctx, x, agora);
+    _ageGravar_(ctx.abaP, COLUNAS_PEDIDOS_AGENDA, 0, { id: id, sigla: alvo.sigla, tipo: tipo, sessao_id: x.id, data: data, hora: hora, estado: 'pendente', criado_em: agora.carimbo, sugestao: sugestao });
+    _ageAvisarProfissional_(ctx, alvo.profissionalId, alvo.nome + (tipo === 'remarcar' ? ' pediu remarcação da sessão de ' : ' pediu reposição da sessão de ') +
+      _ageDiaMes_(x.data) + ' e prefere ' + _ageDiaMes_(data) + ' às ' + hora + (sugestao ? ' (' + sugestao + ')' : '') + '.');
     return _ageMinhas_(_ageCtx_(alvo.controle, false), alvo, agora);
   }
   if (_lemDia_(data) === null || !hora || !_ageSlotLivre_(ctx, alvo.controle, data, hora, agora)) return { ok: false, codigo: 'ocupado', erro: MSG_AGE_ACABOU };
@@ -9951,6 +9998,12 @@ function _finCtx_(controle) {
   c.pessoas = ler(ABA_FIN_PESSOAS); c.pagamentos = ler(ABA_FIN_PAGAMENTOS); c.alocacoes = ler(ABA_FIN_ALOCACOES);
   c.cobrancas = ler(ABA_FIN_COBRANCAS); c.fixas = ler(ABA_FIN_FIXAS); c.despesas = ler(ABA_FIN_DESPESAS); c.recibos = ler(ABA_FIN_RECIBOS);
   c.config = _finConfigDe_(ler(ABA_FIN_CONFIG));
+  // 14.28 (achado da conferencia Agenda x Fluxo de caixa): o valor alocado numa sessao cancelada SEM cobranca volta a ser credito do
+  // paciente. Nada e apagado nem regravado: essas alocacoes so deixam de contar (`devolvidas`); se a sessao voltar a ser cobrada, contam de novo.
+  var semCobranca = {};
+  c.sessoes.forEach(function (x) { if (x.estado === 'cancelada' && x.cobrada !== 'Sim') semCobranca[x.id] = true; });
+  c.devolvidas = c.alocacoes.filter(function (a) { return !!semCobranca[a.sessao_id]; });
+  c.alocacoes = c.alocacoes.filter(function (a) { return !semCobranca[a.sessao_id]; });
   return c;
 }
 function _finCad_(c, sigla) {
@@ -11120,7 +11173,7 @@ function _stpEnviarDe_(prof, controle, agora) {
     var email = d.tipo === 'pendente'
       ? montarEmailAgendaProfissional('pendente', { nome: nome, sessoes: d.dados.hoje.map(linha), antigas: d.dados.antigas })
       : montarEmailAgendaProfissional('amanha', { nome: nome, data: d.dados.data, sessoes: d.dados.sessoes.map(linha),
-          pedidos: _lembretesLer_(_ageAba_(controle, ABA_PEDIDOS_AGENDA, COLUNAS_PEDIDOS_AGENDA, false)).filter(function (x) { return x.estado === 'pendente'; }).length });
+          pedidos: _agePedidosVencer_(_lembretesLer_(_ageAba_(controle, ABA_PEDIDOS_AGENDA, COLUNAS_PEDIDOS_AGENDA, false)), _lemAgora_()).filter(function (x) { return x.estado === 'pendente'; }).length });
     if (_enviarEmail_(para, email, prof.profissional_id)) r[d.tipo]++; else { r.falhas++; desfazer(); }
   });
   return r;
