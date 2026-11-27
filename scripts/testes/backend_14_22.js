@@ -225,7 +225,7 @@ tenta('D', () => {
 console.log('T. Estrutura e versão');
 tenta('T', () => {
   ok('T1 VERSAO_PACOTE do 14.22 em diante (o número exato é conferido em backend_16_11.js)', /^(14\.(2[2-9]|[3-9]\d)|[12]\d\.)/.test(S('VERSAO_PACOTE')), S('VERSAO_PACOTE'));
-  ok('T2 a coluna nova entra no fim de Sessoes, e o estado gravado continua sendo um dos quatro de sempre', S('COLUNAS_SESSOES').slice(-1)[0] === 'reagendada_para' && (prof('profLerAgenda', PER).sessoes || []).every(x => ['agendada', 'realizada', 'falta', 'cancelada'].indexOf(x.estado) !== -1));
+  ok('T2 a coluna nova entra no fim de Sessoes, e o estado gravado continua sendo um dos quatro de sempre', S('COLUNAS_SESSOES').slice(-2)[0] === 'reagendada_para' && (prof('profLerAgenda', PER).sessoes || []).every(x => ['agendada', 'realizada', 'falta', 'cancelada'].indexOf(x.estado) !== -1));
   ok('T3 a tela do paciente não recebe valor, motivo nem cobrança da sessão', (pac(P1, 'lerMinhasSessoes', {}).sessoes || []).every(x => !('valor' in x) && !('cancel_motivo' in x) && !('cobrada' in x)));
   const inesperados = logServidor.filter(l => !/^trava de gravacao: nao obtida/.test(l));
   ok('T4 o servidor não registrou nenhum erro', inesperados.length === 0, inesperados.slice(0, 5));

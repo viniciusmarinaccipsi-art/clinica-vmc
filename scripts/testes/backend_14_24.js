@@ -211,7 +211,7 @@ console.log('T. Estrutura e versão');
 tenta('T', () => {
   ok('T1 VERSAO_PACOTE do 14.24 em diante (o número exato é conferido em backend_16_11.js)', /^(14\.(2[4-9]|[3-9]\d)|[12]\d\.)/.test(S('VERSAO_PACOTE')), S('VERSAO_PACOTE'));
   ok('T2 a ação nova exige crachá, está na trava e não é leitura', S('ACOES_COM_TRAVA').indexOf('profApagarSessao') !== -1 && S('ACOES_PUBLICAS').indexOf('profApagarSessao') === -1 && S('ACOES_SO_LEITURA').indexOf('profApagarSessao') === -1 && S('ACOES_DA_AGENDA').indexOf('profApagarSessao') !== -1);
-  ok('T3 nenhuma coluna nova em Sessoes', S('COLUNAS_SESSOES').slice(-1)[0] === 'reagendada_para');
+  ok('T3 nenhuma coluna nova em Sessoes (a do último aviso é do 14.27)', S('COLUNAS_SESSOES').slice(-2).join(',') === 'reagendada_para,aviso_ultimo');
   ok('T4 o estado gravado continua sendo um dos quatro de sempre', (prof('profLerAgenda', PER).sessoes || []).every(x => ['agendada', 'realizada', 'falta', 'cancelada'].indexOf(x.estado) !== -1));
   const inesperados = logServidor.filter(l => !/^trava de gravacao: nao obtida/.test(l));
   ok('T5 o servidor não registrou nenhum erro', inesperados.length === 0, inesperados.slice(0, 5));

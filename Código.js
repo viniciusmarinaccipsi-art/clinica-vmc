@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.26.1';
+var VERSAO_PACOTE = '14.27';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -229,19 +229,21 @@ function doPost(e) {
       s = _validarToken_(payload.token);
       if (!s) return _respostaJson_(_respostaSessaoExpirada_());
     }
+    _AGE_ATOR_ = !s ? 'sistema' : (s.tipo === 'paciente' ? 'paciente' : 'profissional'); // 14.27: quem age nesta execucao
 
     // 18.10 (8.45): acao que grava roda inteira dentro da trava do script. Sem a trava em
     // 10 s nada e gravado: erro generico para o cliente, motivo no log.
     var resposta;
     if (ACOES_COM_TRAVA.indexOf(acao) !== -1) {
       try {
-        resposta = _comTrava_(function () { return _despachar_(acao, payload, s); });
+        resposta = _comTrava_(function () { var r = _despachar_(acao, payload, s); _ageLogGravar_(); return r; }); // 14.27
       } catch (erroTrava) {
         if (!erroTrava || erroTrava.message !== ERRO_TRAVA) throw erroTrava;
         resposta = { ok: false, codigo: 'ocupado', erro: MSG_OCUPADO };
       }
     } else {
       resposta = _despachar_(acao, payload, s);
+      if (_AGE_LOG_.length) _comTravaSeDer_(_ageLogGravar_); // 14.27
     }
     return _respostaJson_(resposta);
 
@@ -483,6 +485,12 @@ function _despachar_(acao, payload, s) {
         resposta = profSalvarLembreteAgenda(s, payload.dados, payload.periodo);
         break;
 
+      case 'profLerHistoricoSessao': // 14.27
+        resposta = profLerHistoricoSessao(s, payload.id);
+        break;
+      case 'profRegistrarWhatsApp': // 14.27
+        resposta = profRegistrarWhatsApp(s, payload.id);
+        break;
       case 'profApagarLembreteAgenda': // 14.26
         resposta = profApagarLembreteAgenda(s, payload.id, payload.periodo);
         break;
@@ -719,11 +727,13 @@ var ACOES_SO_LEITURA = ['lerHistorico', 'lerEscalas', 'lerRascunhos', 'lerEditan
   'lerMeusLembretes', // 19.2.1
   'profLerAgenda', 'lerMinhasSessoes', 'lerHorariosLivres', // 14.3
   'profLerFinanceiro', 'lerMeuFinanceiro', 'lerArquivoFinanceiro', // Fase 20
-  'profLerHorariosLivres']; // 14.5
+  'profLerHorariosLivres', // 14.5
+  'profLerHistoricoSessao']; // 14.27
 
 // 14.12: gravacoes da Agenda — nenhuma delas muda a aba Profissionais, entao o cadastro do profissional e lido uma vez por chamada
 var ACOES_DA_AGENDA = ['profSalvarSessao', 'profEditarSerie', 'profCancelarSessao', 'profApagarSessao', 'profMarcarSituacao', 'profSalvarBloqueio', 'profApagarBloqueio',
   'profSalvarLembreteAgenda', 'profApagarLembreteAgenda', // 14.26
+  'profRegistrarWhatsApp', // 14.27
   'profDecidirPedido', 'profAvisarSessao', 'profMarcarEventosVistos', 'profMarcarStatusLote',
   'pacienteAgendarSessao', 'pacienteConfirmarSessao', 'pacienteCancelarSessao', 'pacientePedirAgenda', 'confirmarSessaoPorLink'];
 
@@ -888,6 +898,7 @@ var ACOES_COM_TRAVA = [
   'profSalvarLembrete', 'profEncerrarLembrete', 'profLembrarAgora', // 19.2.1
   'profSalvarSessao', 'profEditarSerie', 'profCancelarSessao', 'profApagarSessao', 'profMarcarSituacao', 'profSalvarBloqueio', 'profApagarBloqueio', 'profDecidirPedido', // 14.3; profApagarSessao no 14.24
   'profSalvarLembreteAgenda', 'profApagarLembreteAgenda', // 14.26
+  'profRegistrarWhatsApp', // 14.27
   'pacienteAgendarSessao', 'pacienteConfirmarSessao', 'pacienteCancelarSessao', 'pacientePedirAgenda', // 14.3
   'confirmarSessaoPorLink', 'profMarcarEventosVistos', 'profAvisarSessao', // 14.4
   'profAgendaConectar', 'profAgendaDesconectar', 'profAgendaOpcao', // 14.8
@@ -7025,7 +7036,16 @@ var COLUNAS_SESSOES = ['id', 'sigla', 'data', 'hora_inicio', 'duracao_min', 'mod
   'gcal_evento', 'gcal_sinc', 'meet_link', // 14.5: id do evento no Google Calendar, 'pendente' enquanto o espelho nao foi feito, link do Meet da sessao on-line
   'cancel_motivo', 'cancel_avisou_em', // 14.19: motivo do cancelamento (so para o profissional) e quando o paciente avisou ('AAAA-MM-DD HH:mm')
   'cancel_no_prazo', // 14.20: 'Sim' = o paciente avisou dentro do prazo; 'Nao' = fora do prazo; vazio = nao foi o paciente
-  'reagendada_para']; // 14.22: id da sessao nova. A original continua `estado = cancelada`; com esta coluna preenchida a tela a mostra como "Reagendada"
+  'reagendada_para', // 14.22: id da sessao nova. A original continua `estado = cancelada`; com esta coluna preenchida a tela a mostra como "Reagendada"
+  'aviso_ultimo']; // 14.27: o ultimo e-mail enviado ao paciente sobre a sessao, 'tipo|AAAA-MM-DD HH:mm' (o balao da grade mostra)
+// 14.27: historico de eventos da sessao. Uma linha por evento, texto literal; a aba nasce no primeiro evento.
+// tipo: mudou | status | cancelada | apagada | reagendada | confirmou | email | whatsapp. quem: profissional | paciente | sistema.
+var ABA_EVENTOS_SESSOES = 'Eventos_Sessoes';
+var COLUNAS_EVENTOS_SESSOES = ['id', 'sessao_id', 'em', 'tipo', 'quem', 'detalhe'];
+var _AGE_LOG_ = [];          // eventos desta execucao, gravados de uma vez no fim (`_ageLogGravar_`)
+var _AGE_DONO_ = new Map();  // aba -> a Controle dela (quem registra precisa saber em que Controle esta)
+var _AGE_LOG_N_ = 0;
+var _AGE_ATOR_ = 'sistema';  // quem esta agindo nesta execucao (o cracha decide; o gatilho e 'sistema')
 var COLUNAS_SERIES = ['id', 'sigla', 'cada', 'unidade', 'dias_semana', 'modo_mes', 'fim_tipo', 'fim_n', 'fim_data',
   'ocupado', 'criada_em', 'encerrada_em'];
 var COLUNAS_BLOQUEIOS = ['id', 'data_inicio', 'hora_inicio', 'data_fim', 'hora_fim', 'dia_todo', 'nome'];
@@ -7272,8 +7292,47 @@ function _ageAba_(controle, nome, colunas, criar) {
   if (!aba) aba = controle.getSheetByName(nome);
   if (!aba && criar) aba = controle.insertSheet(nome);
   if (aba && mapa) mapa[nome] = aba;
+  if (aba) _AGE_DONO_.set(aba, controle); // 14.27
   if (aba && criar) _garantirColunas_(aba, colunas);
   return aba;
+}
+
+/** 14.27: anota um evento da sessao. Nada vai a planilha aqui: `_ageLogGravar_` grava tudo de uma vez no fim da execucao. */
+function _ageLog_(controle, sessaoId, tipo, detalhe) {
+  if (!controle || !sessaoId) return;
+  var agora = _lemAgora_();
+  _AGE_LOG_.push({ controle: controle, linha: ['e' + agora.carimbo.replace(/[^0-9]/g, '') + '-' + (++_AGE_LOG_N_) + '-' + String(sessaoId).slice(-6), String(sessaoId), agora.carimbo, tipo, _AGE_ATOR_, String(detalhe || '')] });
+}
+/** Grava os eventos anotados (uma escrita por Controle). Quem chama garante a trava. Nunca derruba a acao. */
+function _ageLogGravar_() {
+  var fila = _AGE_LOG_; _AGE_LOG_ = [];
+  if (!fila.length) return;
+  try {
+    var grupos = [];
+    fila.forEach(function (e) { var g = grupos.filter(function (y) { return y.controle === e.controle; })[0]; if (!g) { g = { controle: e.controle, linhas: [] }; grupos.push(g); } g.linhas.push(e.linha); });
+    grupos.forEach(function (g) {
+      var aba = _ageAba_(g.controle, ABA_EVENTOS_SESSOES, COLUNAS_EVENTOS_SESSOES, true);
+      aba.getRange(aba.getLastRow() + 1, 1, g.linhas.length, COLUNAS_EVENTOS_SESSOES.length).setValues(g.linhas.map(function (l) { return l.map(_lemCelula_); }));
+      _ageEsquecer_(aba);
+    });
+  } catch (e) { console.error('agenda: historico nao gravado: ' + String(e && e.message || e).slice(0, 120)); }
+}
+/** O que mudou numa sessao que ja existia vira evento (comparando com o que a memoria da chamada tinha). */
+function _ageLogMudanca_(aba, antes, campos) {
+  var id = (antes && antes.id) || campos.id, controle = _AGE_DONO_.get(aba) || (aba.getParent ? aba.getParent() : null);
+  if (!id) return;
+  var hAntes = antes ? _lemHora_(antes.hora_inicio) : '', hNova = campos.hora_inicio !== undefined ? _lemHora_(campos.hora_inicio) : hAntes;
+  var dAntes = antes ? antes.data : '', dNova = campos.data !== undefined ? String(campos.data) : dAntes;
+  if (antes && (dNova !== dAntes || hNova !== hAntes)) _ageLog_(controle, id, 'mudou', dAntes + ' ' + hAntes + '>' + dNova + ' ' + hNova);
+  if (campos.estado !== undefined && (!antes || String(campos.estado) !== String(antes.estado || ''))) {
+    if (campos.estado === 'cancelada') {
+      var por = String(campos.cancelada_por || '');
+      if (por === 'engano') _ageLog_(controle, id, 'apagada', '');
+      else if (por !== 'edicao_serie') _ageLog_(controle, id, 'cancelada', por + '|' + String(campos.cobrada || '') + '|' + String(campos.cancel_no_prazo || ''));
+    } else _ageLog_(controle, id, 'status', String(campos.estado || 'agendada'));
+  }
+  if (campos.confirmada_em && (!antes || !antes.confirmada_em)) _ageLog_(controle, id, 'confirmou', '');
+  if (campos.reagendada_para && (!antes || !antes.reagendada_para)) _ageLog_(controle, id, 'reagendada', String(campos.reagendada_para));
 }
 
 /** Grava `campos` pelo nome do cabecalho: linha nova (`linha` = 0) ou so as colunas dadas. */
@@ -7294,6 +7353,7 @@ function _ageGravar_(aba, colunas, linha, campos) {
   }
   var item = null;
   if (guardado) { item = guardado.filter(function (o) { return o.__linha === linha; })[0] || null; if (!item) _ageEsquecer_(aba); }
+  if (colunas === COLUNAS_SESSOES) _ageLogMudanca_(aba, item, campos); // 14.27
   for (var col in campos) {
     var i = header.indexOf(col);
     if (i >= 0) { aba.getRange(linha, i + 1).setValue(_lemCelula_(campos[col])); if (item) item[col] = texto(campos[col]); }
@@ -7385,6 +7445,7 @@ function confirmarSessaoPorLink(token) {
   var x = _lembretesLer_(aba).filter(function (y) { return y.id === t.sessaoId; })[0];
   if (!x || (x.estado !== 'agendada' && x.estado !== '') || _ageMinutosAte_(x.data, x.hora_inicio, agora) <= 0) return vencido;
   var ja = !!x.confirmada_em, cfgL = _ageConfig_(controle);
+  _AGE_ATOR_ = 'paciente'; // 14.27
   var cedo = !ja && !_ageConfirmaAberta_(x.data, x.hora_inicio, agora, cfgL); // 14.26.1
   if (!ja && !cedo) _ageGravar_(aba, COLUNAS_SESSOES, x.__linha, { confirmada_em: agora.carimbo, atualizado_em: agora.carimbo, gcal_sinc: 'pendente' }); // 14.11: a confirmacao vai ao evento do Google na rodada seguinte
   var online = x.modalidade === 'online';
@@ -7627,7 +7688,29 @@ function _ageSessaoProf_(ctx, x, pacs) {
     link_confirmar: ((x.estado === 'agendada' || x.estado === '') && ctx.profId) ? _ageLinkConfirmar_(ctx.profId, x.id) : '', // 14.4
     meet_link: x.modalidade === 'online' ? (x.meet_link || '') : '', endereco: x.modalidade === 'online' ? '' : _ageEndereco_(ctx.cfg, x.data), // 14.5
     mapa: x.modalidade === 'online' ? '' : _ageMapa_(_ageEndereco_(ctx.cfg, x.data)), no_calendar: !!x.gcal_evento,
-    telefone: p.telefone, tem_email: !!p.email };
+    telefone: p.telefone, tem_email: !!p.email,
+    proxima: _ageProximaDoPaciente_(ctx, x), confirmada_em: x.confirmada_em || '', aviso_ultimo: _ageAvisoUltimo_(x), // 14.27: o balao da grade
+    confirma_abre: ((x.estado === 'agendada' || x.estado === '') && !x.confirmada_em && _ageMinutosAte_(x.data, x.hora_inicio, _lemAgora_()) > 0 && !_ageConfirmaAberta_(x.data, x.hora_inicio, _lemAgora_(), ctx.cfg)) ? _ageConfirmaAbreEm_(x.data, x.hora_inicio, ctx.cfg) : null };
+}
+/** 14.27: a proxima sessao agendada do mesmo paciente depois desta ('' se nao ha). O indice por paciente e montado uma vez por leitura. */
+function _ageProximaDoPaciente_(ctx, x) {
+  if (!ctx._prox) {
+    ctx._prox = {};
+    ctx.sessoes.forEach(function (y) { if (y.estado !== 'agendada' && y.estado !== '') return; var k = _siglaChave_(y.sigla); (ctx._prox[k] = ctx._prox[k] || []).push(y.data + ' ' + _lemHora_(y.hora_inicio)); });
+    Object.keys(ctx._prox).forEach(function (k) { ctx._prox[k].sort(); });
+  }
+  var eu = x.data + ' ' + _lemHora_(x.hora_inicio), lista = ctx._prox[_siglaChave_(x.sigla)] || [];
+  for (var i = 0; i < lista.length; i++) if (lista[i] > eu) return lista[i].slice(0, 10);
+  return '';
+}
+/** 14.27: o ultimo e-mail enviado sobre a sessao: { tipo, em } ou null. Sessao anterior ao pacote: sai das marcas dos lembretes. */
+function _ageAvisoUltimo_(x) {
+  var v = String(x.aviso_ultimo || '').split('|');
+  if (v.length === 2 && _lemDia_(v[1].slice(0, 10)) !== null) return { tipo: v[0], em: v[1] };
+  var m24 = String(x.ultimo_aviso_em || ''), m48 = String(x.lembrete48_em || '');
+  if (_lemDia_(m24.slice(0, 10)) !== null) return { tipo: 'lembrete', em: m24 };
+  if (_lemDia_(m48.slice(0, 10)) !== null) return { tipo: 'lembrete48', em: m48 };
+  return null;
 }
 
 /** Pedidos pendentes, com o que a tela mostra (nome e a sessao a que se referem). */
@@ -7790,10 +7873,8 @@ function _ageAvisarPaciente_(ctx, profId, pac, tipo, sessao, caixa, extra) {
   var forcar = !!(extra && extra.forcar); // 14.4: "Enviar e-mail agora" e decisao do profissional, sessao por sessao — nao depende da chave nem da caixa
   if (!forcar && ctx.cfg.avisos_sessao !== 'Sim') return 'desligado';
   if (!forcar && caixa && _ageAvisosLista_(sessao.avisos).indexOf(caixa) === -1) return 'caixa';
-  if (!pac || !pac.ativo) return 'inativo';
-  if (!pac.email) return 'sem_email';
-  if (!_emailPermitido_(profId)) return 'sem_conexao'; // 14.10
-  if (!_reservarEmail_('sessoes')) return 'cota';
+  var naoSai = (!pac || !pac.ativo) ? 'inativo' : (!pac.email ? 'sem_email' : (!_emailPermitido_(profId) ? 'sem_conexao' : (!_reservarEmail_('sessoes') ? 'cota' : ''))); // 14.10
+  if (naoSai) { _ageAvisoLog_(ctx, sessao, tipo, naoSai, forcar); return naoSai; } // 14.27: o que nao saiu tambem entra no historico
   var prof = buscarProfissional(profId) || {};
   var p = { nome: pac.primeiro, profissional: String(prof.nome_completo || '').trim(), sessao: sessao, horas: ctx.cfg.prazo_cancelar_horas,
     assinatura: _assinaturaDoProfissional_(profId), confirmada: !!sessao.confirmada_em,
@@ -7812,7 +7893,16 @@ function _ageAvisarPaciente_(ctx, profId, pac, tipo, sessao, caixa, extra) {
     var lista = (p.sessoes && p.sessoes.length) ? p.sessoes : [sessao];
     email.anexo = { nome: 'sessao.ics', metodo: icsDe, texto: _ageIcs_(lista, p.profissional, ctx.cfg, icsDe, _ageAgoraUtc_()) };
   }
-  return _enviarEmail_(pac.email, email, profId) ? '' : 'falha';
+  var saiu = _enviarEmail_(pac.email, email, profId);
+  _ageAvisoLog_(ctx, sessao, tipo, saiu ? '' : 'falha', forcar);
+  return saiu ? '' : 'falha';
+}
+/** 14.27: a tentativa de e-mail no historico da sessao (`como`: clique do profissional ou sozinho) e, se saiu, na coluna do ultimo aviso. */
+function _ageAvisoLog_(ctx, sessao, tipo, motivo, forcar) {
+  var onde = ctx.controle || ctx.controleLog;
+  if (!sessao || !sessao.id || !onde) return;
+  _ageLog_(onde, sessao.id, 'email', tipo + '|' + motivo + '|' + (forcar ? 'clique' : 'sozinho'));
+  if (!motivo && sessao.__linha && ctx.abaS) _comTravaSeDer_(function () { _ageGravar_(ctx.abaS, COLUNAS_SESSOES, sessao.__linha, { aviso_ultimo: tipo + '|' + _lemAgora_().carimbo }); });
 }
 
 /** Avisa o PROFISSIONAL de um movimento feito pelo paciente (mesma chave geral). Nunca derruba a acao que chamou. */
@@ -8428,6 +8518,80 @@ function profAvisarSessao(s, id, dados) {
   return { ok: true, enviado: motivo === '', motivo: motivo, hora: agora.hora, tipo: tipo };
 }
 
+/** 14.27: nomes dos e-mails de sessao, como o historico e o balao os mostram. */
+var AGE_EMAIL_NOME = { confirmacao: 'E-mail do agendamento', serie: 'E-mail das sessões agendadas', lembrete48: 'Lembrete de 48 horas', lembrete: 'Lembrete de 24 horas',
+  cancelamento: 'E-mail do cancelamento', remarcacao: 'E-mail do reagendamento', pedido_aprovado: 'E-mail do pedido aprovado', pedido_recusado: 'E-mail do pedido recusado' };
+var AGE_EMAIL_MOTIVO = { sem_email: 'paciente sem e-mail', sem_conexao: 'conta de e-mail não conectada', cota: 'limite de e-mails do dia', inativo: 'paciente inativo', falha: 'falha no envio' };
+function _ageQuandoCurto_(dataHora) { var t = String(dataHora || '').trim().split(' '); return t[0] ? _ageDiaMes_(t[0]) + (t[1] ? ' às ' + _lemHora_(t[1]) : '') : ''; }
+/**
+ * 14.27: historico de eventos de uma sessao, do mais novo ao mais antigo: [{ em, texto, erro }].
+ * Junta o que foi registrado em `Eventos_Sessoes` com o que as colunas da sessao e os pedidos ja contam. So leitura.
+ * `incompleto`: a sessao e anterior ao primeiro registro (o que veio antes sai so das marcas que a sessao guarda).
+ */
+function profLerHistoricoSessao(s, id) {
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  var ctx = _ageCtx_(alvo.controle, false);
+  var x = ctx.sessoes.filter(function (y) { return y.id === String(id || '').trim(); })[0];
+  if (!x || _ageSemRegistro_(x) && x.cancelada_por !== 'engano') return { ok: false, erro: MSG_AGE_NAO_ACHEI };
+  var abaE = _ageAba_(alvo.controle, ABA_EVENTOS_SESSOES, COLUNAS_EVENTOS_SESSOES, false);
+  var todos = abaE ? _ageLer_(abaE) : [], meus = todos.filter(function (e) { return e.sessao_id === x.id; });
+  var primeiro = todos.length ? todos.map(function (e) { return e.em; }).sort()[0] : '';
+  var quem = function (q) { return q === 'paciente' ? 'o paciente' : (q === 'profissional' ? 'você' : 'o sistema'); };
+  var lista = [], tem = {}, ordem = 0;
+  var por = function (em, texto, erro) { if (em) lista.push({ em: em, texto: texto, erro: !!erro, o: ordem }); };
+  meus.forEach(function (e) {
+    var d = String(e.detalhe || '').split('|');
+    tem[e.tipo] = true; ordem++; // no mesmo minuto, vale a ordem em que foram registrados
+    if (e.tipo === 'mudou') { var m = String(e.detalhe).split('>'); por(e.em, 'Dia ou hora alterados por ' + quem(e.quem) + ': de ' + _ageQuandoCurto_(m[0]) + ' para ' + _ageQuandoCurto_(m[1]) + '.'); }
+    else if (e.tipo === 'status') por(e.em, 'Status marcado por ' + quem(e.quem) + ': ' + ({ realizada: 'Realizada', falta: 'Falta', agendada: 'Agendada' }[d[0]] || d[0]) + '.');
+    else if (e.tipo === 'cancelada') por(e.em, 'Sessão cancelada ' + (d[0] === 'paciente' ? 'pelo paciente' : 'por você') + (d[2] ? (d[2] === 'Sim' ? ', dentro do prazo' : ', fora do prazo') : '') + (d[1] === 'Sim' ? ', cobrada.' : ', não cobrada.'));
+    else if (e.tipo === 'apagada') por(e.em, 'Sessão apagada por você (marcada por engano).');
+    else if (e.tipo === 'reagendada') { var n = ctx.sessoes.filter(function (y) { return y.id === d[0]; })[0]; por(e.em, 'Sessão reagendada' + (n ? ' para ' + _ageDiaMes_(n.data) + ' às ' + _lemHora_(n.hora_inicio) : '') + '.'); }
+    else if (e.tipo === 'confirmou') por(e.em, 'O paciente confirmou a presença.');
+    else if (e.tipo === 'whatsapp') por(e.em, 'WhatsApp aberto por você, com a mensagem da sessão.');
+    else if (e.tipo === 'email') {
+      var nome = AGE_EMAIL_NOME[d[0]] || 'E-mail';
+      tem['email:' + d[0]] = true;
+      if (d[1]) por(e.em, nome + ' não foi enviado: ' + (AGE_EMAIL_MOTIVO[d[1]] || d[1]) + '.', true);
+      else por(e.em, nome + ' enviado' + (d[2] === 'clique' ? ', pelo seu clique.' : ', sozinho.'));
+    }
+  });
+  ordem = 0;
+  // o que as colunas da sessao ja contam (sempre: a criacao; so quando nao ha registro: confirmacao, lembretes e cancelamento)
+  var orig = _ageReagendadaDe_(ctx, x);
+  por(x.criado_em, orig ? 'Sessão criada pelo reagendamento da sessão de ' + _ageDiaMes_(orig.data) + ' às ' + _lemHora_(orig.hora_inicio) + '.'
+    : (x.reposicao_de ? 'Sessão de reposição criada.' : (x.origem === 'pedido' || x.origem === 'paciente' ? 'Sessão criada a partir do pedido do paciente.' : 'Sessão criada por você.')));
+  var marca = function (v) { return _lemDia_(String(v || '').slice(0, 10)) !== null ? String(v) : ''; };
+  if (!tem.confirmou) por(marca(x.confirmada_em), 'O paciente confirmou a presença.');
+  if (!tem['email:lembrete48']) por(marca(x.lembrete48_em), 'Lembrete de 48 horas enviado, sozinho.');
+  if (!tem['email:lembrete']) por(marca(x.ultimo_aviso_em), 'Lembrete de 24 horas enviado, sozinho.');
+  if (!tem.cancelada && !tem.apagada && x.estado === 'cancelada' && x.cancelada_por !== 'engano' && x.cancelada_por !== 'edicao_serie')
+    por(marca(x.cancelada_em), 'Sessão cancelada ' + (x.cancelada_por === 'paciente' ? 'pelo paciente' : 'por você') + (x.cobrada === 'Sim' ? ', cobrada.' : ', não cobrada.'));
+  // pedidos do paciente sobre esta sessao e a resposta
+  ctx.pedidos.forEach(function (p) {
+    var daqui = p.sessao_id === x.id, nasceu = x.id === 'ag-' + p.id.slice(0, 56) || x.id === 'rep-' + p.id.slice(0, 56);
+    if (!daqui && !nasceu) return;
+    var oque = p.tipo === 'repor' ? 'reposição' : (p.tipo === 'agendar' ? 'agendamento' : 'reagendamento');
+    por(p.criado_em, 'O paciente pediu ' + oque + (p.data ? ' para ' + _ageDiaMes_(p.data) + ' às ' + _lemHora_(p.hora) : ', com um horário sugerido') + '.');
+    if (p.estado === 'aprovado') por(marca(p.decidido_em), 'Você aprovou o pedido de ' + oque + '.');
+    else if (p.estado === 'recusado') por(marca(p.decidido_em), 'Você recusou o pedido de ' + oque + '.');
+  });
+  lista.sort(function (a, b) { return a.em < b.em ? 1 : (a.em > b.em ? -1 : b.o - a.o); });
+  lista.forEach(function (e) { delete e.o; });
+  return { ok: true, id: x.id, eventos: lista, incompleto: !primeiro || String(x.criado_em || '') < primeiro, desde: primeiro ? primeiro.slice(0, 10) : '' };
+}
+/** 14.27: o profissional tocou no botao do WhatsApp da sessao. So registra o toque: o sistema nao sabe se a mensagem foi enviada. */
+function profRegistrarWhatsApp(s, id) {
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  var ctx = _ageCtx_(alvo.controle, false);
+  var x = ctx.sessoes.filter(function (y) { return y.id === String(id || '').trim(); })[0];
+  if (!x || _ageSemRegistro_(x)) return { ok: false, erro: MSG_AGE_NAO_ACHEI };
+  _ageLog_(alvo.controle, x.id, 'whatsapp', '');
+  return { ok: true };
+}
+
 // ---------- acoes do paciente ----------
 
 /** Paciente do cracha + a Controle do profissional dele. */
@@ -8763,7 +8927,7 @@ function enviarAvisosSessao_(quando) {
       if (cfg.avisos_sessao !== 'Sim') { r.desligados += devidas.length; return; }
       if (!_emailPermitido_(prof.profissional_id)) { r.sem_conexao += devidas.length; return; } // 14.10
       var pacs = _agePacientes_(controle);
-      var ctx = { cfg: cfg };
+      var ctx = { cfg: cfg, controleLog: controle, abaS: aba }; // 14.27: o lembrete enviado entra no historico e no ultimo aviso
       var header = _garantirColunas_(aba, COLUNAS_SESSOES);
       var colId = header.indexOf('id') + 1;
       devidas.forEach(function (item) {
@@ -8793,6 +8957,7 @@ function enviarAvisosSessao_(quando) {
       console.error('agenda: ' + String(e && e.message || e).slice(0, 160));
     }
   });
+  if (_AGE_LOG_.length) _comTravaSeDer_(_ageLogGravar_); // 14.27: os lembretes enviados entram no historico
   return r;
 }
 

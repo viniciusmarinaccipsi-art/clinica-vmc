@@ -207,7 +207,7 @@ tenta('T', () => {
   const novas = ['profSalvarLembreteAgenda', 'profApagarLembreteAgenda'];
   ok('T2 as duas ações novas exigem crachá, estão na trava e não são leitura', novas.every(a => S('ACOES_COM_TRAVA').indexOf(a) !== -1 && S('ACOES_PUBLICAS').indexOf(a) === -1 && S('ACOES_SO_LEITURA').indexOf(a) === -1 && S('ACOES_DA_AGENDA').indexOf(a) !== -1));
   ok('T3 a aba é outra: não é a dos lembretes do paciente (Fase 19)', S('ABA_LEMBRETES_AGENDA') === 'Lembretes_Agenda' && S('ABA_LEMBRETES_AGENDA') !== S('ABA_LEMBRETES'));
-  ok('T4 nenhuma coluna nova em Sessoes', S('COLUNAS_SESSOES').slice(-1)[0] === 'reagendada_para');
+  ok('T4 nenhuma coluna nova em Sessoes (a do último aviso é do 14.27)', S('COLUNAS_SESSOES').slice(-2).join(',') === 'reagendada_para,aviso_ultimo');
   const inesperados = logServidor.filter(l => !/^trava de gravacao: nao obtida/.test(l));
   ok('T5 o servidor não registrou nenhum erro', inesperados.length === 0, inesperados.slice(0, 5));
 });
