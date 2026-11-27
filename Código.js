@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.26';
+var VERSAO_PACOTE = '14.26.1';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -5708,6 +5708,7 @@ function salvarGradeAtendimento(s, config, grade) {
   if (config.email_agenda_hora !== undefined && _stpHoraValida_(config.email_agenda_hora)) cfgGravar.email_agenda_hora = String(config.email_agenda_hora);
   // 14.20: politica de cobranca (so muda quando a tela a manda)
   if (config.prazo_cancelar_horas !== undefined && parseInt(config.prazo_cancelar_horas, 10) >= 1 && parseInt(config.prazo_cancelar_horas, 10) <= 168) cfgGravar.prazo_cancelar_horas = parseInt(config.prazo_cancelar_horas, 10);
+  if (config.confirmar_abre_horas !== undefined && parseInt(config.confirmar_abre_horas, 10) >= 1 && parseInt(config.confirmar_abre_horas, 10) <= 168) cfgGravar.confirmar_abre_horas = parseInt(config.confirmar_abre_horas, 10); // 14.26.1
   if (config.agendar_primeiro !== undefined && AGENDAR_PRIMEIRO_RE.test(String(config.agendar_primeiro))) cfgGravar.agendar_primeiro = String(config.agendar_primeiro);
   if (config.agendar_ultimo !== undefined && AGENDAR_ULTIMO_RE.test(String(config.agendar_ultimo))) cfgGravar.agendar_ultimo = String(config.agendar_ultimo);
   ['cobrar_falta', 'cobrar_cancel_fora', 'cobrar_cancel_dentro'].forEach(function (k) {
@@ -7219,6 +7220,27 @@ function _ageMinutosAte_(dataIso, hora, agora) {
   return (d - h) * 1440 + m - a;
 }
 
+/**
+ * 14.26.1 (decisao do usuario, 26/11/2026): o paciente so confirma a presenca perto da sessao — a partir de
+ * `confirmar_abre_horas` antes dela (padrao 48), ate a hora da sessao. Vale para o perfil, para o link e para o botao dos e-mails.
+ */
+var CONFIRMAR_ABRE_PADRAO = 48;
+function _ageConfirmaAberta_(dataIso, hora, agora, cfg) {
+  var m = _ageMinutosAte_(dataIso, hora, agora);
+  return m !== null && m > 0 && m <= ((cfg && cfg.confirmar_abre_horas) || CONFIRMAR_ABRE_PADRAO) * 60;
+}
+/** O dia e a hora em que a confirmacao abre: { data: 'AAAA-MM-DD', hora: 'HH:mm' }. */
+function _ageConfirmaAbreEm_(dataIso, hora, cfg) {
+  var d = _lemDia_(dataIso), m = _ageMin_(hora);
+  if (d === null || m === null) return null;
+  var t = d * 1440 + m - ((cfg && cfg.confirmar_abre_horas) || CONFIRMAR_ABRE_PADRAO) * 60, dia = Math.floor(t / 1440), min = t - dia * 1440;
+  return { data: _lemIso_(dia), hora: _age2_(Math.floor(min / 60)) + ':' + _age2_(min % 60) };
+}
+function _ageConfirmaAbreFrase_(dataIso, hora, cfg) {
+  var q = _ageConfirmaAbreEm_(dataIso, hora, cfg);
+  return q ? 'A confirmação abre em ' + _ageDataBR_(q.data) + ', às ' + q.hora + '.' : MSG_AGE_NAO_ACHEI;
+}
+
 /** A antecedencia combinada foi respeitada? (faltam `horas` ou mais para a sessao) */
 function _ageNoPrazo_(dataIso, hora, agora, horas) {
   var m = _ageMinutosAte_(dataIso, hora, agora);
@@ -7313,11 +7335,13 @@ function _ageConfigLer_(controle) {
     // 14.20: politica de cobranca — o prazo para cancelar ou reagendar sem cobranca e o que e cobrado
     if (chave === 'prazo_cancelar_horas' && valor !== '' && parseInt(valor, 10) >= 0) cfg.prazo_cancelar_horas = parseInt(valor, 10);
     if (chave === 'cobrar_falta' || chave === 'cobrar_cancel_fora' || chave === 'cobrar_cancel_dentro') cfg[chave] = valor.toLowerCase() === 'sim' ? 'Sim' : 'Nao';
+    if (chave === 'confirmar_abre_horas' && parseInt(valor, 10) >= 1) cfg.confirmar_abre_horas = parseInt(valor, 10); // 14.26.1
     // 14.20: de quando ate quando o paciente pode agendar (codigos de _ageAgendarLimites_)
     if (chave === 'agendar_primeiro' && AGENDAR_PRIMEIRO_RE.test(valor)) cfg.agendar_primeiro = valor;
     if (chave === 'agendar_ultimo' && AGENDAR_ULTIMO_RE.test(valor)) cfg.agendar_ultimo = valor;
   }
   if (cfg.prazo_cancelar_horas === undefined) cfg.prazo_cancelar_horas = cfg.antecedencia_min_horas; // quem nunca abriu a politica continua com o numero de antes
+  if (cfg.confirmar_abre_horas === undefined) cfg.confirmar_abre_horas = CONFIRMAR_ABRE_PADRAO; // 14.26.1
   return cfg;
 }
 
@@ -7360,10 +7384,13 @@ function confirmarSessaoPorLink(token) {
   var agora = _lemAgora_();
   var x = _lembretesLer_(aba).filter(function (y) { return y.id === t.sessaoId; })[0];
   if (!x || (x.estado !== 'agendada' && x.estado !== '') || _ageMinutosAte_(x.data, x.hora_inicio, agora) <= 0) return vencido;
-  var ja = !!x.confirmada_em;
-  if (!ja) _ageGravar_(aba, COLUNAS_SESSOES, x.__linha, { confirmada_em: agora.carimbo, atualizado_em: agora.carimbo, gcal_sinc: 'pendente' }); // 14.11: a confirmacao vai ao evento do Google na rodada seguinte
+  var ja = !!x.confirmada_em, cfgL = _ageConfig_(controle);
+  var cedo = !ja && !_ageConfirmaAberta_(x.data, x.hora_inicio, agora, cfgL); // 14.26.1
+  if (!ja && !cedo) _ageGravar_(aba, COLUNAS_SESSOES, x.__linha, { confirmada_em: agora.carimbo, atualizado_em: agora.carimbo, gcal_sinc: 'pendente' }); // 14.11: a confirmacao vai ao evento do Google na rodada seguinte
   var online = x.modalidade === 'online';
-  var ender = online ? '' : _ageEndereco_(_ageConfig_(controle), x.data);
+  var ender = online ? '' : _ageEndereco_(cfgL, x.data);
+  if (cedo) return { ok: false, codigo: 'cedo', erro: _ageConfirmaAbreFrase_(x.data, x.hora_inicio, cfgL), abre: _ageConfirmaAbreEm_(x.data, x.hora_inicio, cfgL), data: x.data, hora: _lemHora_(x.hora_inicio),
+    modalidade: online ? 'online' : 'presencial', estado: 'agendada', endereco: ender, mapa: _ageMapa_(ender), meet_link: online ? String(x.meet_link || '') : '' };
   return { ok: true, ja_confirmada: ja, data: x.data, hora: _lemHora_(x.hora_inicio), modalidade: online ? 'online' : 'presencial',
     estado: 'agendada', endereco: ender, mapa: _ageMapa_(ender), meet_link: online ? String(x.meet_link || '') : '' };
 }
@@ -7769,7 +7796,8 @@ function _ageAvisarPaciente_(ctx, profId, pac, tipo, sessao, caixa, extra) {
   if (!_reservarEmail_('sessoes')) return 'cota';
   var prof = buscarProfissional(profId) || {};
   var p = { nome: pac.primeiro, profissional: String(prof.nome_completo || '').trim(), sessao: sessao, horas: ctx.cfg.prazo_cancelar_horas,
-    assinatura: _assinaturaDoProfissional_(profId), link: _ageLinkConfirmar_(profId, sessao.id), confirmada: !!sessao.confirmada_em };
+    assinatura: _assinaturaDoProfissional_(profId), confirmada: !!sessao.confirmada_em,
+    link: (sessao.data && _ageConfirmaAberta_(sessao.data, sessao.hora_inicio || sessao.hora, _lemAgora_(), ctx.cfg)) ? _ageLinkConfirmar_(profId, sessao.id) : '' }; // 14.26.1: o botao de confirmar so vai no e-mail com a confirmacao aberta
   for (var k in (extra || {})) p[k] = extra[k];
   // 14.5: endereco (presencial), sala do Meet (on-line: espelha a sessao agora se ainda nao ha link) e o evento em anexo
   if (sessao.modalidade === 'online') {
@@ -8425,7 +8453,9 @@ function _ageMinhas_(ctx, alvo, agora) {
     return { id: x.id, data: x.data, hora: _lemHora_(x.hora_inicio), duracao_min: _ageDur_(x.duracao_min, ctx.cfg.duracao_slot_min),
       modalidade: x.modalidade === 'online' ? 'online' : 'presencial', estado: x.estado || 'agendada', reposicao: !!x.reposicao_de,
       reposta_em: _ageRepostaEm_(ctx, x.id), confirmada: !!x.confirmada_em, futura: futura,
-      pode_confirmar: agendada && futura && !x.confirmada_em, pode_cancelar: agendada && futura, pode_remarcar: agendada && futura && !pend,
+      pode_confirmar: agendada && futura && !x.confirmada_em && _ageConfirmaAberta_(x.data, x.hora_inicio, agora, ctx.cfg), // 14.26.1
+      confirma_abre: (agendada && futura && !x.confirmada_em && !_ageConfirmaAberta_(x.data, x.hora_inicio, agora, ctx.cfg)) ? _ageConfirmaAbreEm_(x.data, x.hora_inicio, ctx.cfg) : null,
+      pode_cancelar: agendada && futura, pode_remarcar: agendada && futura && !pend,
       no_prazo: noPrazo, cobra_fora: !noPrazo && !x.reposicao_de && ctx.cfg.cobrar_cancel_fora === 'Sim', // 14.22: fora do prazo a tela avisa antes
       reagendada_para: (function (n) { return n ? { data: n.data, hora: _lemHora_(n.hora_inicio) } : null; })(_ageReagendadaEm_(ctx, x)),
       reagendada_de: (function (o) { return o ? { data: o.data, hora: _lemHora_(o.hora_inicio) } : null; })(_ageReagendadaDe_(ctx, x)),
@@ -8445,6 +8475,7 @@ function _ageMinhas_(ctx, alvo, agora) {
   }).map(function (p) { return { id: p.id, estado: p.estado, data: p.data, hora: _lemHora_(p.hora), modalidade: p.modalidade === 'online' ? 'online' : 'presencial' }; })
     .sort(function (a, b) { var p = a.data + ' ' + a.hora, q = b.data + ' ' + b.hora; return p < q ? -1 : (p > q ? 1 : 0); });
   return { ok: true, hoje: agora.data, agora_hora: agora.hora, antecedencia_horas: horas, cobra_fora_prazo: ctx.cfg.cobrar_cancel_fora === 'Sim', // 14.22
+    confirmar_abre_horas: ctx.cfg.confirmar_abre_horas, // 14.26.1
     profissional: alvo.profissional, sessoes: sessoes, pedidos_agendar: agendar };
 }
 
@@ -8602,6 +8633,7 @@ function pacienteConfirmarSessao(sigla, id) {
   var ctx = _ageCtx_(alvo.controle, false), agora = _lemAgora_();
   var x = _ageDoPaciente_(ctx, alvo, id);
   if (!x || (x.estado !== 'agendada' && x.estado !== '') || _ageMinutosAte_(x.data, x.hora_inicio, agora) <= 0) return { ok: false, erro: MSG_AGE_NAO_ACHEI };
+  if (!x.confirmada_em && !_ageConfirmaAberta_(x.data, x.hora_inicio, agora, ctx.cfg)) return { ok: false, erro: _ageConfirmaAbreFrase_(x.data, x.hora_inicio, ctx.cfg) }; // 14.26.1
   if (!x.confirmada_em) _ageGravar_(ctx.abaS, COLUNAS_SESSOES, x.__linha, { confirmada_em: agora.carimbo, atualizado_em: agora.carimbo, gcal_sinc: 'pendente' }); // 14.11
   return _ageMinhas_(_ageCtx_(alvo.controle, false), alvo, agora);
 }
