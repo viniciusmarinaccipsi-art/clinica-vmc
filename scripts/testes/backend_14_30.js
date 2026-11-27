@@ -248,7 +248,7 @@ tenta('E', () => {
 console.log('T. Estrutura');
 tenta('T', () => {
   const src = fs.readFileSync(path.join(__dirname, '..', '..', 'Código.js'), 'utf8');
-  ok('T1 VERSAO_PACOTE = 14.30', S('VERSAO_PACOTE') === '14.30');
+  ok('T1 o segundo lembrete nasce em 36 horas', S('MSG_PADRAO').lembrete.horas === 36);
   ok('T2 duas ações novas, as duas com crachá; só a que grava está na trava', (src.match(/\n      case '/g) || []).length === 103 && S('ACOES_COM_TRAVA').indexOf('profSalvarMensagem') !== -1 && S('ACOES_COM_TRAVA').indexOf('profLerMensagens') === -1 && S('ACOES_PUBLICAS').indexOf('profLerMensagens') === -1 && S('ACOES_PUBLICAS').indexOf('profSalvarMensagem') === -1);
   ok('T3 o padrão do segundo lembrete é 36 horas e a frase antiga saiu do código', /lembrete: \{ nome: 'Segundo lembrete', auto: true, horas: 36/.test(src) && !/horas ou mais de antecedência\.'/.test(src));
   ok('T4 todo e-mail ao paciente continua levando o profissional', (src.match(/_enviarEmail_\(pac\.email, email, profId\)/g) || []).length === 1);

@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.30';
+var VERSAO_PACOTE = '14.31';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -7047,7 +7047,7 @@ var ABA_BLOQUEIOS = 'Bloqueios';
 var ABA_PEDIDOS_AGENDA = 'Pedidos_Agenda';
 // 14.26: lembrete do profissional na Agenda (anotacao dele para ele mesmo; a aba `Lembretes`, da Fase 19, e outra coisa: tarefas do paciente)
 var ABA_LEMBRETES_AGENDA = 'Lembretes_Agenda';
-var COLUNAS_LEMBRETES_AGENDA = ['id', 'data', 'hora', 'nome', 'comentario', 'sigla', 'feito_em', 'criado_em', 'atualizado_em'];
+var COLUNAS_LEMBRETES_AGENDA = ['id', 'data', 'hora', 'nome', 'comentario', 'sigla', 'feito_em', 'criado_em', 'atualizado_em', 'gcal_evento', 'gcal_sinc']; // 14.31: o lembrete vai tambem a Google Agenda do profissional (gcal_sinc: '' nunca foi, 'pendente', 'ok')
 var COLUNAS_SESSOES = ['id', 'sigla', 'data', 'hora_inicio', 'duracao_min', 'modalidade', 'valor', 'notas', 'serie_id',
   'estado', 'cobrada', 'reposicao_de', 'origem', 'confirmada_em', 'cancelada_em', 'cancelada_por', 'avisos',
   'ultimo_aviso_em', 'criado_em', 'criado_por', 'atualizado_em',
@@ -7839,6 +7839,7 @@ function _ageProf_(s) {
 function _ageResposta_(alvo, resp, periodo, agora) {
   var p = periodo && typeof periodo === 'object' ? periodo : {};
   _calSincronizar_(alvo.controle, alvo.profissionalId, { max: 3, agora: agora }); // 14.5: o espelho no Calendar (nunca derruba a acao)
+  _calSincLembretes_(alvo.controle, alvo.profissionalId, { max: 2, agora: agora }); // 14.31: os lembretes do profissional tambem
   var ctx = _ageCtx_(alvo.controle, false);
   ctx.profId = alvo.profissionalId; // 14.4: o link de confirmacao de cada sessao
   resp.agenda = _ageLeitura_(ctx, p.de, p.ate, _agePacientes_(alvo.controle), agora);
@@ -8369,7 +8370,8 @@ function _agePodeApagar_(ctx, x) {
   var estado = x.estado || 'agendada';
   if (estado !== 'agendada' && estado !== 'cancelada') return false;
   if (estado === 'cancelada' && x.cobrada === 'Sim') return false;
-  if (x.reposicao_de || x.reagendada_para || _ageRepostaEm_(ctx, x.id) || _ageReagendadaDe_(ctx, x)) return false;
+  if (x.reposicao_de && estado !== 'agendada') return false; // 14.31: a reposicao ainda agendada pode ser apagada (marcada por engano); a que ja foi cancelada segue o cancelamento
+  if (x.reagendada_para || _ageRepostaEm_(ctx, x.id) || _ageReagendadaDe_(ctx, x)) return false;
   return true;
 }
 
@@ -8484,7 +8486,7 @@ function profSalvarLembreteAgenda(s, dados, periodo) {
   var existente = _ageLer_(aba).filter(function (x) { return x.id === id; })[0];
   if (d.so_feito === true) {
     if (!existente) return { ok: false, erro: MSG_AGE_NAO_ACHEI };
-    _ageGravar_(aba, COLUNAS_LEMBRETES_AGENDA, existente.__linha, { feito_em: d.feito === true ? (existente.feito_em || agora.carimbo) : '', atualizado_em: agora.carimbo });
+    _ageGravar_(aba, COLUNAS_LEMBRETES_AGENDA, existente.__linha, { feito_em: d.feito === true ? (existente.feito_em || agora.carimbo) : '', atualizado_em: agora.carimbo, gcal_sinc: 'pendente' });
     return _ageResposta_(alvo, { ok: true }, periodo, agora);
   }
   var limpa = function (v, max) { return String(v === undefined || v === null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, max); };
@@ -8493,7 +8495,7 @@ function profSalvarLembreteAgenda(s, dados, periodo) {
   if (_lemDia_(data) === null || !hora) return { ok: false, codigo: 'sem_horario', erro: 'Escolha o dia e a hora.' };
   var pac = sig ? _agePacientes_(alvo.controle)[_siglaChave_(sig)] : null;
   if (sig && (!pac || pac.excluido)) return { ok: false, erro: 'Este paciente nao pertence a voce' };
-  var campos = { data: data, hora: hora, nome: nome, comentario: limpa(d.comentario, 500), sigla: sig, atualizado_em: agora.carimbo };
+  var campos = { data: data, hora: hora, nome: nome, comentario: limpa(d.comentario, 500), sigla: sig, atualizado_em: agora.carimbo, gcal_sinc: 'pendente' }; // 14.31
   if (!existente) { campos.id = id; campos.feito_em = ''; campos.criado_em = agora.carimbo; }
   _ageGravar_(aba, COLUNAS_LEMBRETES_AGENDA, existente ? existente.__linha : 0, campos);
   return _ageResposta_(alvo, { ok: true }, periodo, agora);
@@ -8504,7 +8506,10 @@ function profApagarLembreteAgenda(s, id, periodo) {
   if (!alvo.ok) return alvo;
   var aba = _ageAba_(alvo.controle, ABA_LEMBRETES_AGENDA, COLUNAS_LEMBRETES_AGENDA, false);
   var x = aba ? _ageLer_(aba).filter(function (y) { return y.id === String(id || '').trim(); })[0] : null;
-  if (x) { aba.deleteRow(x.__linha); _ageEsquecer_(aba); }
+  if (x) {
+    if (x.gcal_evento) _calLembreteApagar_(alvo.controle, alvo.profissionalId, x.gcal_evento); // 14.31: sai tambem da Google Agenda (se o Google nao responder, o lembrete e apagado aqui do mesmo jeito)
+    aba.deleteRow(x.__linha); _ageEsquecer_(aba);
+  }
   return _ageResposta_(alvo, { ok: true }, periodo, _lemAgora_());
 }
 
@@ -9116,6 +9121,7 @@ function enviarAvisosSessao_(quando) {
       var aba = _ageAba_(controle, ABA_SESSOES, COLUNAS_SESSOES, false);
       r.recolocados += _calRecolocar_(controle, prof.profissional_id, agora); // 14.11: evento apagado direto no Google volta para a fila
       r.calendar += Object.keys(_calSincronizar_(controle, prof.profissional_id, { max: CAL_SINC_RODADA, agora: agora, contar: true })).length; // 14.5: series e o que ficou pendente
+      r.calendar += _calSincLembretes_(controle, prof.profissional_id, { max: CAL_SINC_RODADA, agora: agora }); // 14.31
       var sessoes = _lembretesLer_(aba);
       if (!sessoes.length) return;
       r.profissionais++;
@@ -9544,6 +9550,67 @@ function _calSincronizar_(controle, profId, o) {
     console.error('calendar: ' + String(e && e.message || e).slice(0, 160));
   }
   return feitos;
+}
+
+/** 14.31: o lembrete do profissional como evento da Google Agenda dele (meia hora; nunca vai a paciente). */
+function _calLembreteEvento_(x, pac) {
+  var ini = _ageMin_(_lemHora_(x.hora));
+  return { summary: (x.feito_em ? 'Feito: ' : 'Lembrete: ') + x.nome,
+    start: { dateTime: _calQuando_(x.data, ini), timeZone: 'America/Sao_Paulo' }, end: { dateTime: _calQuando_(x.data, ini + 30), timeZone: 'America/Sao_Paulo' },
+    description: 'Lembrete criado no COGNIATIVO.' + (x.comentario ? ' ' + x.comentario : '') + (pac ? ' Paciente: ' + pac.nome + '.' : ''),
+    status: 'confirmed', extendedProperties: { 'private': { cogniativo: 'lem-' + x.id } } };
+}
+/**
+ * 14.31: espelha na Google Agenda os lembretes do profissional que estao na fila ('pendente') ou que nunca foram (de hoje em diante).
+ * Mao unica, como as sessoes: nunca lanca, nunca bloqueia; o que falhar fica na fila para a rodada seguinte. Devolve quantos foram.
+ */
+function _calSincLembretes_(controle, profId, o) {
+  var n = 0, op = o || {};
+  try {
+    if (!controle) return 0;
+    var cfg = _ageConfig_(controle);
+    if (!_calConectada_(profId, cfg)) return 0;
+    var aba = _ageAba_(controle, ABA_LEMBRETES_AGENDA, COLUNAS_LEMBRETES_AGENDA, false);
+    if (!aba) return 0;
+    var hoje = (op.agora || _lemAgora_()).data, max = op.max || 1;
+    var pend = _ageLer_(aba).filter(function (x) { return x.gcal_sinc === 'pendente' || (!x.gcal_sinc && !x.gcal_evento && x.data >= hoje); });
+    if (!pend.length) return 0;
+    var colId = _garantirColunas_(aba, COLUNAS_LEMBRETES_AGENDA).indexOf('id') + 1, calId = null, pacs = null;
+    var gravar = function (x, campos) {
+      _comTravaSeDer_(function () {
+        if (String(aba.getRange(x.__linha, colId).getDisplayValues()[0][0]).trim() === x.id) _ageGravar_(aba, COLUNAS_LEMBRETES_AGENDA, x.__linha, campos);
+      });
+    };
+    for (var i = 0; i < pend.length; i++) {
+      var x = pend[i];
+      if (!x.gcal_evento && x.data < hoje) { gravar(x, { gcal_sinc: 'ok' }); continue; } // lembrete que ja passou e nunca foi: nada a espelhar
+      if (n >= max) break;
+      if (calId === null) calId = _calAgendaId_(controle, cfg, profId);
+      if (!calId) break;
+      if (!pacs) pacs = _agePacientes_(controle);
+      var base = '/calendars/' + encodeURIComponent(calId) + '/events', corpo = _calLembreteEvento_(x, x.sigla ? pacs[_siglaChave_(x.sigla)] : null);
+      var r = x.gcal_evento ? _calApi_('patch', base + '/' + encodeURIComponent(x.gcal_evento), corpo, profId) : null;
+      if (!r || r.codigo === 404 || r.codigo === 410 || (r.codigo === 200 && r.corpo && r.corpo.status === 'cancelled')) r = _calApi_('post', base, corpo, profId);
+      if (r.codigo === 200 && r.corpo && r.corpo.id) { gravar(x, { gcal_evento: r.corpo.id, gcal_sinc: 'ok' }); n++; }
+      else if (r.codigo === 404) { _comTravaSeDer_(function () { _ageConfigGravar_(controle, 'gcal_id', ''); }); break; }
+      else break;
+    }
+  } catch (e) {
+    console.error('calendar (lembrete): ' + String(e && e.message || e).slice(0, 160));
+  }
+  return n;
+}
+/** 14.31: tira da Google Agenda o evento de um lembrete apagado. Nunca lanca. */
+function _calLembreteApagar_(controle, profId, evento) {
+  try {
+    var cfg = _ageConfig_(controle);
+    if (!cfg.gcal_id || !_calConectada_(profId, cfg)) return false;
+    var r = _calApi_('delete', '/calendars/' + encodeURIComponent(cfg.gcal_id) + '/events/' + encodeURIComponent(evento), null, profId);
+    return [200, 204, 404, 410].indexOf(r.codigo) !== -1;
+  } catch (e) {
+    console.error('calendar (lembrete): ' + String(e && e.message || e).slice(0, 160));
+    return false;
+  }
 }
 
 /**
