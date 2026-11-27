@@ -231,7 +231,7 @@ console.log('T. Estrutura');
 tenta('T', () => {
   const src = fs.readFileSync(path.join(__dirname, '..', '..', 'Código.js'), 'utf8');
   ok('T1 o pedido só com texto vence em 7 dias', S('PEDIDO_SEM_DATA_DIAS') === 7);
-  ok('T2 nenhuma ação nova, nenhuma aba e nenhuma coluna nova', (src.match(/\n      case '/g) || []).length === 101 && S('COLUNAS_PEDIDOS_AGENDA').join(',') === 'id,sigla,tipo,sessao_id,data,hora,estado,criado_em,decidido_em,sugestao,modalidade' && S('COLUNAS_SESSOES').slice(-1)[0] === 'aviso_ultimo');
+  ok('T2 nenhuma ação nova, nenhuma aba e nenhuma coluna nova', (src.match(/\n      case '/g) || []).length === 103 && S('COLUNAS_PEDIDOS_AGENDA').join(',') === 'id,sigla,tipo,sessao_id,data,hora,estado,criado_em,decidido_em,sugestao,modalidade' && S('COLUNAS_SESSOES').slice(-1)[0] === 'aviso_ultimo');
   ok('T3 o vencimento não é gravado por robô: o gatilho não escreve em Pedidos_Agenda', !/venceu_em:/.test(src.replace(/p\.venceu_em = v/, '')));
   const inesperados = logServidor.filter(l => !/^trava de gravacao: nao obtida/.test(l));
   ok('T4 o servidor não registrou nenhum erro', inesperados.length === 0, inesperados.slice(0, 5));

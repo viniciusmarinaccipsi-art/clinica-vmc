@@ -215,7 +215,7 @@ console.log('T. Estrutura');
 tenta('T', () => {
   const src = fs.readFileSync(path.join(__dirname, '..', '..', 'Código.js'), 'utf8');
   ok('T1 o padrão é 48', /var CONFIRMAR_ABRE_PADRAO = 48;/.test(src));
-  ok('T2 nenhuma ação nova e nenhuma ação pública nova', S('ACOES_PUBLICAS').join(',') === 'ping,autenticar,pedirRedefinicao,definirSenha,confirmarSessaoPorLink,concluirConexaoAgenda' && (src.match(/\n      case '/g) || []).length === 101, [S('ACOES_PUBLICAS'), (src.match(/\n      case '/g) || []).length]);
+  ok('T2 nenhuma ação nova e nenhuma ação pública nova', S('ACOES_PUBLICAS').join(',') === 'ping,autenticar,pedirRedefinicao,definirSenha,confirmarSessaoPorLink,concluirConexaoAgenda' && (src.match(/\n      case '/g) || []).length === 103, [S('ACOES_PUBLICAS'), (src.match(/\n      case '/g) || []).length]);
   ok('T3 as três portas da confirmação passam pela mesma regra', (src.match(/_ageConfirmaAberta_\(/g) || []).length >= 6);
   const A = S('_ageConfirmaAberta_'), E = S('_ageConfirmaAbreEm_');
   const ag = { data: '2026-11-25', hora: '14:00' };

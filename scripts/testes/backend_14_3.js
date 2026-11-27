@@ -36,6 +36,7 @@ global.Utilities.base64Decode = s => Array.from(Buffer.from(String(s), 'base64')
 const h = av('({ post: post, cracha: cracha, novoPaciente: novoPaciente, celula: celula, linhaDe: linhaDe, cab: cab, abaPac: abaPac, ctrl: ctrl, sProf: sProf, EMAILS: EMAILS, PROPS: PROPS, TRAVA: TRAVA, memo: _memoZerar_, aceite: _gravarAceitePolitica_, hashProf: hashProf })');
 const S = nome => av(nome);
 av('CONFIRMAR_ABRE_PADRAO = 100000'); // 14.26.1: esta suíte confirma a presença com muita antecedência (regra de antes); a janela de 48 horas é provada em backend_14_26_1.js
+av('MSG_PADRAO.lembrete.horas = 24'); // 14.30: esta suíte foi escrita com o segundo lembrete 24 horas antes; o padrão passou a 36 (provado em backend_14_30.js)
 av('AGE_EMAIL_AUTOMATICO = true'); // 14.13: esta suíte confere o conteúdo dos e-mails pelo caminho de antes (envio na própria gravação); em produção a chave é false
 
 let passo = 0, falhas = 0;
@@ -372,7 +373,7 @@ tenta('V', () => {
   h.EMAILS.length = 0;
   const idV = uuid();
   r = sessao(P1, { id: idV, data: '2026-12-08', hora: '10:00', modalidade: 'online' });
-  ok('V7 criar com a caixa marcada: confirmação ao paciente, com o prazo', r.ok && r.aviso === '' && h.EMAILS.length === 1 && h.EMAILS[0].to === 'p1@exemplo.test' && h.EMAILS[0].subject === 'Sessão agendada — COGNIATIVO' && h.EMAILS[0].body.indexOf('terça, 08/12/2026, às 10:00 (On-line)') !== -1 && h.EMAILS[0].body.indexOf('com 24 horas ou mais de antecedência') !== -1, [r.aviso, h.EMAILS.map(e => e.subject)]);
+  ok('V7 criar com a caixa marcada: confirmação ao paciente, com o prazo', r.ok && r.aviso === '' && h.EMAILS.length === 1 && h.EMAILS[0].to === 'p1@exemplo.test' && h.EMAILS[0].subject === 'Sessão agendada — COGNIATIVO' && h.EMAILS[0].body.indexOf('terça, 08/12/2026, às 10:00 (On-line)') !== -1 && h.EMAILS[0].body.indexOf('Para reagendar ou cancelar, entre no COGNIATIVO.') !== -1, [r.aviso, h.EMAILS.map(e => e.subject)]);
   h.EMAILS.length = 0;
   r = sessao(P1, { data: '2026-12-08', hora: '11:00', avisos: ['lembrete'] });
   ok('V8 criar sem a caixa da confirmação: nenhum e-mail', r.ok && r.aviso === 'caixa' && h.EMAILS.length === 0, r.aviso);

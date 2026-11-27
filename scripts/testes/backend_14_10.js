@@ -92,6 +92,7 @@ const doCalendar = () => G.chamadas.filter(c => c.u !== '/token' && c.u !== '/re
 const h = av('({ post: post, cracha: cracha, novoPaciente: novoPaciente, celula: celula, linhaDe: linhaDe, cab: cab, abaPac: abaPac, ctrl: ctrl, EMAILS: EMAILS, memo: _memoZerar_, aceite: _gravarAceitePolitica_, hashProf: hashProf, PROPS: PROPS })');
 const S = nome => av(nome);
 av('CONFIRMAR_ABRE_PADRAO = 100000'); // 14.26.1: esta suíte confirma a presença com muita antecedência (regra de antes); a janela de 48 horas é provada em backend_14_26_1.js
+av('MSG_PADRAO.lembrete.horas = 24'); // 14.30: esta suíte foi escrita com o segundo lembrete 24 horas antes; o padrão passou a 36 (provado em backend_14_30.js)
 av('AGE_EMAIL_AUTOMATICO = true'); // 14.13: esta suíte confere o conteúdo dos e-mails pelo caminho de antes (envio na própria gravação); em produção a chave é false
 let falhas = 0, passo = 0;
 const ok = (n, c, x) => { passo++; if (c) console.log('  ok   ' + n); else { falhas++; console.log('  FALHA ' + n + (x !== undefined ? '  → ' + JSON.stringify(x).slice(0, 700) : '')); } };
@@ -281,7 +282,7 @@ tenta('T', () => {
   ok('T3 o Gmail só é chamado em _gmailEnviar_, e só para enviar', (src.match(/gmail\.googleapis\.com/g) || []).length === 1 && src.indexOf('gmail/v1/users/me/messages/send') !== -1);
   ok('T4 a permissão pedida ao Google não inclui ler nem apagar e-mails', src.indexOf('gmail.readonly') === -1 && src.indexOf('gmail.modify') === -1 && src.indexOf('mail.google.com') === -1 && src.indexOf('gmail.compose') === -1);
   ok('T5 todo e-mail a paciente passa o profissional a _enviarEmail_ (convite, senha, lembretes, sessão, cobrança)', ['_assinaturaDoProfissional_(s.profissional_id)), s.profissional_id)', "t === 'paciente' ? ativas[j].profissional_id : undefined)", '_lembreteDestino_(item)), alvo.profissionalId)', '_lembreteDestino_(item)), prof.profissional_id)', '_enviarEmail_(pac.email, email, profId)', '_assinaturaDoProfissional_(alvo.profissionalId)), alvo.profissionalId)'].every(t => src.indexOf(t) !== -1));
-  ok('T6 nenhuma ação nova no servidor (a conexão e o envio usam as que já existiam)', (src.match(/\n      case '/g) || []).length === 101, (src.match(/\n      case '/g) || []).length);
+  ok('T6 nenhuma ação nova no servidor (a conexão e o envio usam as que já existiam)', (src.match(/\n      case '/g) || []).length === 103, (src.match(/\n      case '/g) || []).length);
   ok('T7 o servidor não registrou erro fora dos provocados (Gmail recusando e permissão caída)', logServidor.every(l => /e-mail pela conta conectada|agenda externa/.test(l)), logServidor);
 });
 

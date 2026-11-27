@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.29';
+var VERSAO_PACOTE = '14.30';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -485,6 +485,12 @@ function _despachar_(acao, payload, s) {
         resposta = profSalvarLembreteAgenda(s, payload.dados, payload.periodo);
         break;
 
+      case 'profLerMensagens': // 14.30
+        resposta = profLerMensagens(s);
+        break;
+      case 'profSalvarMensagem': // 14.30
+        resposta = profSalvarMensagem(s, payload.id, payload.dados);
+        break;
       case 'profLerHistoricoSessao': // 14.27
         resposta = profLerHistoricoSessao(s, payload.id);
         break;
@@ -728,12 +734,14 @@ var ACOES_SO_LEITURA = ['lerHistorico', 'lerEscalas', 'lerRascunhos', 'lerEditan
   'profLerAgenda', 'lerMinhasSessoes', 'lerHorariosLivres', // 14.3
   'profLerFinanceiro', 'lerMeuFinanceiro', 'lerArquivoFinanceiro', // Fase 20
   'profLerHorariosLivres', // 14.5
-  'profLerHistoricoSessao']; // 14.27
+  'profLerHistoricoSessao', // 14.27
+  'profLerMensagens']; // 14.30
 
 // 14.12: gravacoes da Agenda — nenhuma delas muda a aba Profissionais, entao o cadastro do profissional e lido uma vez por chamada
 var ACOES_DA_AGENDA = ['profSalvarSessao', 'profEditarSerie', 'profCancelarSessao', 'profApagarSessao', 'profMarcarSituacao', 'profSalvarBloqueio', 'profApagarBloqueio',
   'profSalvarLembreteAgenda', 'profApagarLembreteAgenda', // 14.26
   'profRegistrarWhatsApp', // 14.27
+  'profSalvarMensagem', // 14.30
   'profDecidirPedido', 'profAvisarSessao', 'profMarcarEventosVistos', 'profMarcarStatusLote',
   'pacienteAgendarSessao', 'pacienteConfirmarSessao', 'pacienteCancelarSessao', 'pacientePedirAgenda', 'confirmarSessaoPorLink'];
 
@@ -899,6 +907,7 @@ var ACOES_COM_TRAVA = [
   'profSalvarSessao', 'profEditarSerie', 'profCancelarSessao', 'profApagarSessao', 'profMarcarSituacao', 'profSalvarBloqueio', 'profApagarBloqueio', 'profDecidirPedido', // 14.3; profApagarSessao no 14.24
   'profSalvarLembreteAgenda', 'profApagarLembreteAgenda', // 14.26
   'profRegistrarWhatsApp', // 14.27
+  'profSalvarMensagem', // 14.30
   'pacienteAgendarSessao', 'pacienteConfirmarSessao', 'pacienteCancelarSessao', 'pacientePedirAgenda', // 14.3
   'confirmarSessaoPorLink', 'profMarcarEventosVistos', 'profAvisarSessao', // 14.4
   'profAgendaConectar', 'profAgendaDesconectar', 'profAgendaOpcao', // 14.8
@@ -7467,14 +7476,15 @@ function confirmarSessaoPorLink(token) {
 }
 
 /** Marcas dos dois lembretes para uma sessao que nasce ou muda de data: 'dispensado' quando ela ja esta dentro do prazo daquele lembrete. */
-function _ageMarcasLembrete_(dataIso, hora, agora) {
-  var m = _ageMinutosAte_(dataIso, hora, agora);
-  return { lembrete48_em: (m !== null && m <= 2880) ? 'dispensado' : '', ultimo_aviso_em: (m !== null && m <= 1440) ? 'dispensado' : '' };
+function _ageMarcasLembrete_(dataIso, hora, agora, msgs) {
+  var mg = msgs || _msgLer_(null); // 14.30: a antecedencia de cada lembrete e a que o profissional escolheu
+  var e1 = _msgEnvia_(dataIso, hora, mg.lembrete48.horas), e2 = _msgEnvia_(dataIso, hora, mg.lembrete.horas);
+  return { lembrete48_em: (e1 && agora.carimbo >= e1) ? 'dispensado' : '', ultimo_aviso_em: (e2 && agora.carimbo >= e2) ? 'dispensado' : '' };
 }
 
 /** Linha nova em Sessoes, com as marcas dos lembretes. */
 function _ageNovaSessao_(ctx, agora, campos) {
-  var marcas = _ageMarcasLembrete_(campos.data, campos.hora_inicio, agora);
+  var marcas = _ageMarcasLembrete_(campos.data, campos.hora_inicio, agora, _msgLer_(ctx.controle));
   campos.lembrete48_em = marcas.lembrete48_em; campos.ultimo_aviso_em = marcas.ultimo_aviso_em;
   _ageGravar_(ctx.abaS, COLUNAS_SESSOES, 0, campos);
 }
@@ -7796,6 +7806,7 @@ function _ageLeitura_(ctx, de, ate, pacs, agora) {
   return { de: deIso, ate: ateIso, hoje: hoje, agora_hora: agora.hora, config: ctx.cfg, sessoes: sessoes, series: series, bloqueios: bloqueios, bloqueios_futuros: bloqFuturos,
     feriados: _ageFeriadosEntre_(deIso, ateIso), pedidos: _agePedidosPendentes_(ctx, pacs),
     lembretes: _lemAgEntre_(ctx.controle, deIso, ateIso, pacs), // 14.26
+    mensagens: (function (m) { return { lembrete48: { ligado: m.lembrete48.ligado, horas: m.lembrete48.horas }, lembrete: { ligado: m.lembrete.ligado, horas: m.lembrete.horas } }; })(_msgLer_(ctx.controle)), // 14.30
     eventos: _ageEventos_(ctx, pacs, agora), eventos_vistos_ate: ctx.cfg.agenda_vistos_ate || '', // 14.4
     agenda_externa: externa, ocupados: (externa && externa.ocupado) ? _calOcupadosTela_(ctx.profId, ctx.cfg, deIso, ateIso) : [] }; // 14.8
 }
@@ -7850,6 +7861,95 @@ function _ageValidarSessao_(d, cfg) {
   return v;
 }
 
+// ---------- 14.30: mensagens editaveis pelo profissional ----------
+// O padrao mora aqui; a aba `Mensagens` da Controle guarda so o que o profissional mudou (uma linha por e-mail, texto literal).
+// Marcadores do texto: {paciente} {profissional} {dia} {quando} {antes} {depois} {quantas} {pedido} {onde} {prazo}.
+var ABA_MENSAGENS = 'Mensagens';
+var COLUNAS_MENSAGENS = ['id', 'ligado', 'horas', 'assunto', 'titulo', 'texto', 'atualizado_em'];
+var MSG_HORAS = [72, 48, 36, 24, 12, 6, 3];
+var MSG_ORDEM = ['confirmacao', 'serie', 'lembrete48', 'lembrete', 'cancelamento', 'remarcacao', 'pedido_aprovado', 'pedido_recusado'];
+var MSG_PADRAO = {
+  confirmacao: { nome: 'Sessão agendada', auto: false, horas: 0, marcas: ['paciente', 'profissional', 'dia', 'onde', 'prazo'], assunto: 'Sessão agendada — COGNIATIVO', titulo: 'Sua sessão está agendada',
+    texto: 'Sua sessão com {profissional} está marcada para {dia}.' },
+  serie: { nome: 'Sessões recorrentes agendadas', auto: false, horas: 0, marcas: ['paciente', 'profissional', 'quantas', 'dia', 'onde'], assunto: 'Sessões agendadas — COGNIATIVO', titulo: 'Suas sessões estão agendadas',
+    texto: 'Foram marcadas {quantas} sessões com {profissional}. A primeira é {dia}. Todas as datas estão em Minhas sessões.' },
+  lembrete48: { nome: 'Primeiro lembrete', auto: true, horas: 48, marcas: ['paciente', 'profissional', 'dia', 'onde', 'prazo'], assunto: 'Lembrete de sessão — COGNIATIVO', titulo: 'Sua sessão é em dois dias',
+    texto: 'Lembrete da sua sessão com {profissional}: {dia}.' },
+  lembrete: { nome: 'Segundo lembrete', auto: true, horas: 36, marcas: ['paciente', 'profissional', 'dia', 'onde', 'prazo'], assunto: 'Lembrete de sessão — COGNIATIVO', titulo: 'Sua sessão está chegando',
+    texto: 'Lembrete da sua sessão com {profissional}: {dia}.' },
+  cancelamento: { nome: 'Sessão cancelada', auto: false, horas: 0, marcas: ['paciente', 'profissional', 'quando'], assunto: 'Sessão cancelada — COGNIATIVO', titulo: 'Sessão cancelada',
+    texto: 'A sessão de {quando} com {profissional} foi cancelada. Para marcar outra data, acesse Minhas sessões.' },
+  remarcacao: { nome: 'Sessão reagendada', auto: false, horas: 0, marcas: ['paciente', 'profissional', 'antes', 'depois', 'onde'], assunto: 'Sessão remarcada — COGNIATIVO', titulo: 'Sua sessão mudou de horário',
+    texto: 'Sua sessão com {profissional} passou de {antes} para {depois}.' },
+  pedido_aprovado: { nome: 'Pedido aprovado', auto: false, horas: 0, marcas: ['paciente', 'profissional', 'dia', 'onde'], assunto: 'Pedido aprovado — COGNIATIVO', titulo: 'Seu pedido foi aprovado',
+    texto: '{profissional} aprovou o seu pedido. A sessão está marcada para {dia}.' },
+  pedido_recusado: { nome: 'Pedido não aprovado', auto: false, horas: 0, marcas: ['paciente', 'profissional', 'pedido'], assunto: 'Pedido respondido — COGNIATIVO', titulo: 'Seu pedido não foi aprovado',
+    texto: '{profissional} não pôde aprovar o horário pedido ({pedido}). Veja outros horários em Minhas sessões ou fale diretamente com {profissional}.' }
+};
+/** As mensagens do profissional: o padrao com o que ele mudou por cima. { tipo: { ligado, horas, assunto, titulo, texto, padrao } }. So leitura. */
+function _msgLer_(controle) {
+  var mapa = {}, salvas = {};
+  var aba = controle ? _ageAba_(controle, ABA_MENSAGENS, COLUNAS_MENSAGENS, false) : null;
+  if (aba) _ageLer_(aba).forEach(function (l) { salvas[l.id] = l; });
+  MSG_ORDEM.forEach(function (tipo) {
+    var p = MSG_PADRAO[tipo], g = salvas[tipo] || null, h = g ? parseInt(g.horas, 10) : NaN;
+    mapa[tipo] = { ligado: !(p.auto && g && String(g.ligado).toLowerCase() === 'nao'), horas: (p.auto && MSG_HORAS.indexOf(h) !== -1) ? h : p.horas,
+      assunto: (g && g.assunto) || p.assunto, titulo: (g && g.titulo) || p.titulo, texto: (g && g.texto) || p.texto, padrao: !g };
+  });
+  return mapa;
+}
+/**
+ * Quando um e-mail automatico sai: `horas` antes da sessao; se cair de madrugada (das 22h as 6h59), sai as 20h da noite anterior a esse
+ * horario (decisao do usuario: nenhum e-mail automatico de madrugada). Devolve 'AAAA-MM-DD HH:mm' ou ''. Pura.
+ */
+function _msgEnvia_(dataIso, hora, horas) {
+  var d = _lemDia_(dataIso), m = _ageMin_(hora);
+  if (d === null || m === null) return '';
+  var t = d * 1440 + m - horas * 60, dia = Math.floor(t / 1440), min = t - dia * 1440;
+  if (min < 420) { dia -= 1; min = 1200; } else if (min >= 1320) min = 1200;
+  return _lemIso_(dia) + ' ' + _age2_(Math.floor(min / 60)) + ':' + _age2_(min % 60);
+}
+/** Troca os marcadores do texto pelos valores; marcador que nao existe naquele e-mail some. O resultado e texto puro (o layout escapa). */
+function _msgPreencher_(texto, v) {
+  return String(texto || '').replace(/\{(\w+)\}/g, function (tudo, k) { return k === 'onde' ? tudo : (v[k] === undefined || v[k] === null ? '' : String(v[k])); }).replace(/\s+/g, ' ').trim();
+}
+/** O que a tela "Mensagens" recebe: a lista na ordem, com o texto padrao de cada uma para o "Voltar ao texto padrao". */
+function _msgSaida_(controle) {
+  var m = _msgLer_(controle);
+  return MSG_ORDEM.map(function (tipo) {
+    var p = MSG_PADRAO[tipo], x = m[tipo];
+    return { id: tipo, nome: p.nome, auto: p.auto, ligado: x.ligado, horas: x.horas, assunto: x.assunto, titulo: x.titulo, texto: x.texto, mudou: !x.padrao, marcas: p.marcas,
+      padrao: { horas: p.horas, assunto: p.assunto, titulo: p.titulo, texto: p.texto } };
+  });
+}
+function profLerMensagens(s) {
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  return { ok: true, mensagens: _msgSaida_(alvo.controle), horas: MSG_HORAS, prazo_horas: _ageConfig_(alvo.controle).prazo_cancelar_horas };
+}
+/** Salva um e-mail (`dados`: { ligado, horas, assunto, titulo, texto }) ou volta ao padrao (`dados.restaurar`: a linha do profissional e apagada). */
+function profSalvarMensagem(s, id, dados) {
+  var alvo = _ageProf_(s);
+  if (!alvo.ok) return alvo;
+  var tipo = String(id || ''), p = MSG_PADRAO.hasOwnProperty(tipo) ? MSG_PADRAO[tipo] : null, d = dados && typeof dados === 'object' ? dados : {};
+  if (!p) return { ok: false, erro: 'Mensagem não encontrada.' };
+  var aba = _ageAba_(alvo.controle, ABA_MENSAGENS, COLUNAS_MENSAGENS, true);
+  var linha = _ageLer_(aba).filter(function (l) { return l.id === tipo; })[0];
+  if (d.restaurar === true) {
+    if (linha) { aba.deleteRow(linha.__linha); _ageEsquecer_(aba); }
+    return { ok: true, restaurada: true, mensagens: _msgSaida_(alvo.controle) };
+  }
+  var limpo = function (v, max) { return String(v === undefined || v === null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, max); };
+  var assunto = limpo(d.assunto, 90), titulo = limpo(d.titulo, 70), texto = limpo(d.texto, 600), h = parseInt(d.horas, 10);
+  if (!assunto) return { ok: false, erro: 'Escreva o assunto.' };
+  if (!titulo) return { ok: false, erro: 'Escreva o título.' };
+  if (!texto) return { ok: false, erro: 'Escreva o texto.' };
+  if (p.auto && MSG_HORAS.indexOf(h) === -1) return { ok: false, erro: 'Escolha quando o e-mail sai.' };
+  var campos = { id: tipo, ligado: (p.auto && d.ligado === false) ? 'Nao' : 'Sim', horas: p.auto ? String(h) : '', assunto: assunto, titulo: titulo, texto: texto, atualizado_em: _lemAgora_().carimbo };
+  _ageGravar_(aba, COLUNAS_MENSAGENS, linha ? linha.__linha : 0, campos);
+  return { ok: true, mensagens: _msgSaida_(alvo.controle) };
+}
+
 // ---------- e-mails de sessao ----------
 
 var AGE_DIAS_NOME = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
@@ -7870,14 +7970,14 @@ function montarEmailSessao(tipo, p) {
   var x = p.sessao || {};
   var t;
   // 14.4: confirmacao e lembretes levam o botao "Confirmar presenca" com o link que confirma direto (p.link)
-  var sobConfirmar = 'Para remarcar ou cancelar, entre no COGNIATIVO com ' + p.horas + ' horas ou mais de antecedência.';
+  var sobConfirmar = 'Para reagendar ou cancelar, entre no COGNIATIVO.'; // 14.30: saiu "com N horas ou mais de antecedencia" (o paciente ja cancela fora do prazo)
   if (tipo === 'confirmacao') t = { assunto: 'Sessão agendada — COGNIATIVO', titulo: 'Sua sessão está agendada',
     paragrafo: 'Sua sessão com ' + prof + ' está marcada para ' + _ageQuando_(x) + '.', botao: 'Confirmar presença', aviso: '', sob: sobConfirmar, confirma: true };
   else if (tipo === 'lembrete48') t = { assunto: 'Lembrete de sessão — COGNIATIVO', titulo: 'Sua sessão é em dois dias',
     paragrafo: 'Lembrete da sua sessão com ' + prof + ': ' + _ageQuando_(x) + '.', botao: 'Confirmar presença', aviso: '', sob: sobConfirmar, confirma: true };
   else if (tipo === 'serie') t = { assunto: 'Sessões agendadas — COGNIATIVO', titulo: 'Suas sessões estão agendadas',
     paragrafo: 'Foram marcadas ' + p.n + ' sessões com ' + prof + '. A primeira é ' + _ageQuando_(x) + '. Todas as datas estão em Minhas sessões.', botao: 'Ver minhas sessões',
-    aviso: 'Para cancelar ou pedir remarcação, use o sistema com ' + p.horas + ' horas ou mais de antecedência.' };
+    aviso: 'Para cancelar ou pedir reagendamento, entre no COGNIATIVO.' }; // 14.30
   else if (tipo === 'lembrete') t = { assunto: 'Lembrete de sessão — COGNIATIVO', titulo: 'Sua sessão está chegando',
     paragrafo: 'Lembrete da sua sessão com ' + prof + ': ' + _ageQuando_(x) + '.', botao: 'Confirmar presença', aviso: '', sob: sobConfirmar, confirma: true };
   else if (tipo === 'cancelamento') t = { assunto: 'Sessão cancelada — COGNIATIVO', titulo: 'Sessão cancelada',
@@ -7889,6 +7989,18 @@ function montarEmailSessao(tipo, p) {
   else if (tipo === 'pedido_recusado') t = { assunto: 'Pedido respondido — COGNIATIVO', titulo: 'Seu pedido não foi aprovado',
     paragrafo: prof + ' não pôde aprovar o horário pedido (' + _ageDataBR_(x.data) + ' às ' + _lemHora_(x.hora_inicio) + '). Veja outros horários em Minhas sessões ou fale diretamente com ' + prof + '.', botao: 'Ver minhas sessões', aviso: '' };
   else t = { assunto: 'Agenda — movimento de paciente', titulo: 'Movimento na sua agenda', paragrafo: String(p.frase || ''), botao: 'Abrir a Agenda', aviso: '' };
+  // 14.30: assunto, titulo e texto sao os do profissional (tela "Mensagens"); sem escolha dele, o padrao da o mesmo texto de sempre
+  var mm = (p.msg && MSG_PADRAO.hasOwnProperty(tipo)) ? p.msg : null;
+  if (mm && !(tipo === 'pedido_recusado' && !x.data)) {
+    var pz = (x.data && p.horas !== undefined) ? _ageConfirmaAbreEm_(x.data, x.hora_inicio || x.hora, { confirmar_abre_horas: p.horas }) : null;
+    var vars = { paciente: p.nome || '', profissional: prof, dia: x.data ? _ageQuando_(x) : '', quando: x.data ? _ageDataBR_(x.data) + ' às ' + _lemHora_(x.hora_inicio || x.hora) : '',
+      antes: p.anterior ? _ageDataBR_(p.anterior.data) + ' às ' + _lemHora_(p.anterior.hora_inicio) : '',
+      depois: x.data ? _ageDataBR_(x.data) + ' às ' + _lemHora_(x.hora_inicio || x.hora) + ' (' + _ageModNome_(x.modalidade) + ')' : '', quantas: p.n || '',
+      pedido: x.data ? _ageDataBR_(x.data) + ' às ' + _lemHora_(x.hora_inicio || x.hora) : '', prazo: pz ? _ageDiaNome_(pz.data) + ', ' + _ageDiaMes_(pz.data) + ', às ' + pz.hora : '' };
+    t.assunto = _msgPreencher_(mm.assunto, vars).replace(/\s*\{onde\}/g, '') || t.assunto;
+    t.titulo = _msgPreencher_(mm.titulo, vars).replace(/\s*\{onde\}/g, '') || t.titulo;
+    t.paragrafo = _msgPreencher_(mm.texto, vars) || t.paragrafo;
+  }
   // sessao ja confirmada (ou sem link): o botao volta a ser o do sistema e a frase avisa
   var link = SITE_URL, sob = EMAIL_LEMBRETE_SOB_BOTAO;
   if (t.confirma && p.confirmada) { t.paragrafo += ' Sua presença já está confirmada.'; t.botao = 'Ver minhas sessões'; }
@@ -7897,9 +8009,14 @@ function montarEmailSessao(tipo, p) {
   // 14.5: onde a sessao acontece — endereco (com link do mapa) na presencial, sala do Meet na on-line
   var extra = null;
   if (['confirmacao', 'serie', 'lembrete48', 'lembrete', 'remarcacao', 'pedido_aprovado'].indexOf(tipo) !== -1) {
-    if (x.modalidade === 'online' && p.meet) { t.paragrafo += ' A sessão acontece pelo Google Meet.'; extra = { rotulo: 'Iniciar sessão on-line', url: p.meet }; } // 14.17: o mesmo nome para o profissional e para o paciente
-    else if (x.modalidade !== 'online' && p.endereco) { t.paragrafo += ' Endereço: ' + p.endereco + '.'; extra = { rotulo: 'Abrir o endereço no mapa', url: _ageMapa_(p.endereco) }; }
+    var ondeFrase = '';
+    if (x.modalidade === 'online' && p.meet) { ondeFrase = 'A sessão acontece pelo Google Meet.'; extra = { rotulo: 'Iniciar sessão on-line', url: p.meet }; } // 14.17: o mesmo nome para o profissional e para o paciente
+    else if (x.modalidade !== 'online' && p.endereco) { ondeFrase = 'Endereço: ' + p.endereco + '.'; extra = { rotulo: 'Abrir o endereço no mapa', url: _ageMapa_(p.endereco) }; }
+    // 14.30: com o marcador {onde} no texto, a frase do local entra onde o profissional pos; sem ele, vai no fim, como sempre
+    if (t.paragrafo.indexOf('{onde}') !== -1) t.paragrafo = t.paragrafo.replace(/\s*\{onde\}/g, ondeFrase ? ' ' + ondeFrase : '').trim();
+    else if (ondeFrase) t.paragrafo += ' ' + ondeFrase;
   }
+  t.paragrafo = String(t.paragrafo).replace(/\s*\{onde\}/g, '').trim();
   if (tipo === 'pedido_recusado' && !x.data) t.paragrafo = prof + ' não pôde atender ao horário que você sugeriu. Veja outros horários em Minhas sessões ou fale diretamente com ' + prof + '.';
   var ola = p.nome ? 'Olá, ' + p.nome + '.' : 'Olá.';
   var ass = p.assinatura || [];
@@ -7925,6 +8042,7 @@ function _ageAvisarPaciente_(ctx, profId, pac, tipo, sessao, caixa, extra) {
     assinatura: _assinaturaDoProfissional_(profId), confirmada: !!sessao.confirmada_em,
     link: (sessao.data && _ageConfirmaAberta_(sessao.data, sessao.hora_inicio || sessao.hora, _lemAgora_(), ctx.cfg)) ? _ageLinkConfirmar_(profId, sessao.id) : '' }; // 14.26.1: o botao de confirmar so vai no e-mail com a confirmacao aberta
   for (var k in (extra || {})) p[k] = extra[k];
+  p.msg = _msgLer_(ctx.controle || ctx.controleLog)[tipo] || null; // 14.30
   // 14.5: endereco (presencial), sala do Meet (on-line: espelha a sessao agora se ainda nao ha link) e o evento em anexo
   if (sessao.modalidade === 'online') {
     if (!sessao.meet_link && sessao.id && ctx.controle && tipo !== 'cancelamento' && tipo !== 'pedido_recusado') sessao.meet_link = _calSincronizar_(ctx.controle, profId, { ids: [sessao.id], max: 1 })[sessao.id] || '';
@@ -8041,7 +8159,7 @@ function profSalvarSessao(s, dados, periodo) {
     var campos = { data: v.data, hora_inicio: v.hora, duracao_min: String(v.dur), modalidade: v.modalidade, valor: existente.reposicao_de ? existente.valor : v.valor,
       notas: v.notas, avisos: v.avisos, atualizado_em: agora.carimbo };
     if (mudouQuando) { // 14.4: a confirmacao cai e os lembretes voltam a valer para a data nova
-      var marcas = _ageMarcasLembrete_(v.data, v.hora, agora);
+      var marcas = _ageMarcasLembrete_(v.data, v.hora, agora, _msgLer_(ctx.controle));
       campos.confirmada_em = ''; campos.ultimo_aviso_em = marcas.ultimo_aviso_em; campos.lembrete48_em = marcas.lembrete48_em;
     }
     if (d.situacao !== undefined) { // 14.15: o status vem junto com o Salvar (nada grava antes dele)
@@ -8054,7 +8172,7 @@ function profSalvarSessao(s, dados, periodo) {
     plano.movidas.forEach(function (m) {
       var x = m.x, camposSeg = { hora_inicio: v.hora, duracao_min: String(v.dur), modalidade: v.modalidade, valor: v.valor, notas: v.notas, avisos: v.avisos, atualizado_em: agora.carimbo };
       if (m.data !== m.de || m.horaDe !== v.hora) { // mudou o dia ou a hora: o paciente confirma de novo e os lembretes valem para a data nova
-        var marcasSeg = _ageMarcasLembrete_(m.data, v.hora, agora);
+        var marcasSeg = _ageMarcasLembrete_(m.data, v.hora, agora, _msgLer_(ctx.controle));
         camposSeg.data = m.data; camposSeg.confirmada_em = ''; camposSeg.ultimo_aviso_em = marcasSeg.ultimo_aviso_em; camposSeg.lembrete48_em = marcasSeg.lembrete48_em;
       }
       _ageGravar_(ctx.abaS, COLUNAS_SESSOES, x.__linha, camposSeg);
@@ -9002,14 +9120,16 @@ function enviarAvisosSessao_(quando) {
       if (!sessoes.length) return;
       r.profissionais++;
       r.sessoes += sessoes.length;
-      // 14.4: dois lembretes — 48 h antes (entre 48 h e 24 h) e 24 h antes; cada um com a sua caixa e a sua marca
-      var devidas = [];
+      // 14.4: dois lembretes, cada um com a sua caixa e a sua marca
+      var devidas = [], msgs = _msgLer_(controle);
       sessoes.forEach(function (x) {
         if (x.estado !== 'agendada' && x.estado !== '') return;
         var m = _ageMinutosAte_(x.data, x.hora_inicio, agora), caixas = _ageAvisosLista_(x.avisos);
         if (m === null || m <= 0) return;
-        if (m > 1440 && m <= 2880 && !x.lembrete48_em && caixas.indexOf('lembrete48') !== -1) devidas.push({ x: x, tipo: 'lembrete48', coluna: 'lembrete48_em' });
-        if (m <= 1440 && !x.ultimo_aviso_em && caixas.indexOf('lembrete') !== -1) devidas.push({ x: x, tipo: 'lembrete', coluna: 'ultimo_aviso_em' });
+        // 14.30: cada lembrete sai na antecedencia que o profissional escolheu (padrao 48 h e 36 h), nunca de madrugada, e so se estiver ligado
+        var e1 = _msgEnvia_(x.data, x.hora_inicio, msgs.lembrete48.horas), e2 = _msgEnvia_(x.data, x.hora_inicio, msgs.lembrete.horas);
+        if (msgs.lembrete48.ligado && e1 && agora.carimbo >= e1 && (e1 >= e2 || agora.carimbo < e2) && !x.lembrete48_em && caixas.indexOf('lembrete48') !== -1) devidas.push({ x: x, tipo: 'lembrete48', coluna: 'lembrete48_em' });
+        if (msgs.lembrete.ligado && e2 && agora.carimbo >= e2 && !x.ultimo_aviso_em && caixas.indexOf('lembrete') !== -1) devidas.push({ x: x, tipo: 'lembrete', coluna: 'ultimo_aviso_em' });
       });
       if (!devidas.length) return;
       var cfg = _ageConfig_(controle);

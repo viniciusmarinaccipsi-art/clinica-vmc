@@ -68,6 +68,7 @@ const eventosDe = nome => { const c = G.agendas.filter(a => a.summary === nome)[
 const h = av('({ post: post, cracha: cracha, novoPaciente: novoPaciente, celula: celula, linhaDe: linhaDe, cab: cab, abaPac: abaPac, ctrl: ctrl, EMAILS: EMAILS, memo: _memoZerar_, aceite: _gravarAceitePolitica_, hashProf: hashProf })');
 const S = nome => av(nome);
 av('CONFIRMAR_ABRE_PADRAO = 100000'); // 14.26.1: esta suíte confirma a presença com muita antecedência (regra de antes); a janela de 48 horas é provada em backend_14_26_1.js
+av('MSG_PADRAO.lembrete.horas = 24'); // 14.30: esta suíte foi escrita com o segundo lembrete 24 horas antes; o padrão passou a 36 (provado em backend_14_30.js)
 av('AGE_EMAIL_AUTOMATICO = true'); // 14.13: esta suíte confere o conteúdo dos e-mails pelo caminho de antes (envio na própria gravação); em produção a chave é false
 
 let passo = 0, falhas = 0;
@@ -344,7 +345,7 @@ tenta('U', () => {
 console.log('V. 14.5.4 — o paciente sempre confirma depois (e-mails de remarcação e de pedido aprovado com o botão)');
 tenta('V', () => {
   grade({ avisos_sessao: 'Sim', endereco: ATUAL, endereco_novo: '', endereco_novo_desde: '' });
-  const SOB = 'Para remarcar ou cancelar, entre no COGNIATIVO com 24 horas ou mais de antecedência.';
+  const SOB = 'Para reagendar ou cancelar, entre no COGNIATIVO.';
   const JA = 'Sua presença já está confirmada.';
   const pede = e => e.body.indexOf('?confirmar=') !== -1 && html(e).indexOf('?confirmar=') !== -1 && html(e).indexOf('Confirmar presença') !== -1 && e.body.indexOf(SOB) !== -1 && html(e).indexOf(SOB) !== -1 && e.body.indexOf(JA) === -1;
   const naoPede = e => e.body.indexOf('?confirmar=') === -1 && html(e).indexOf('?confirmar=') === -1 && html(e).indexOf('Confirmar presença') === -1 && html(e).indexOf('Ver minhas sessões') !== -1 && e.body.indexOf(JA) !== -1 && html(e).indexOf(JA) !== -1 && e.body.indexOf(SOB) === -1;

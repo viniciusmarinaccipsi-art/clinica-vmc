@@ -205,8 +205,8 @@ tenta('E', () => {
 console.log('T. Estrutura');
 tenta('T', () => {
   const src = fs.readFileSync(path.join(__dirname, '..', '..', 'Código.js'), 'utf8');
-  ok('T1 VERSAO_PACOTE = 14.29', S('VERSAO_PACOTE') === '14.29');
-  ok('T2 nenhuma ação, aba ou coluna nova', (src.match(/\n      case '/g) || []).length === 101 && S('COLUNAS_SERIES').length === 12);
+  ok('T1 a janela do semanal é de 3 dias', S('AGE_FREQUENCIAS').semanal === 3);
+  ok('T2 nenhuma ação, aba ou coluna nova', (src.match(/\n      case '/g) || []).length === 103 && S('COLUNAS_SERIES').length === 12);
   const p = prof('profLerHorariosLivres', { de: '2026-11-26' });
   ok('T3 a leitura do profissional não mudou: sem sugestões e sem janela', p.ok === true && p.sugeridos === undefined && p.janela_dias === undefined);
   ok('T4 nada foi gravado pela leitura das sugestões', (src.match(/_ageSugestoes_\(/g) || []).length === 2);

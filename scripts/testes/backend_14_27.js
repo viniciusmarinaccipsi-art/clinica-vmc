@@ -227,7 +227,7 @@ console.log('T. Estrutura');
 tenta('T', () => {
   const src = fs.readFileSync(path.join(__dirname, '..', '..', 'Código.js'), 'utf8');
   ok('T1 a aba do registro tem nome próprio', S('ABA_EVENTOS_SESSOES') === 'Eventos_Sessoes');
-  ok('T2 duas ações novas, as duas com crachá; só a que grava está na trava', (src.match(/\n      case '/g) || []).length === 101 && S('ACOES_COM_TRAVA').indexOf('profRegistrarWhatsApp') !== -1 && S('ACOES_COM_TRAVA').indexOf('profLerHistoricoSessao') === -1 && S('ACOES_PUBLICAS').indexOf('profLerHistoricoSessao') === -1 && S('ACOES_PUBLICAS').indexOf('profRegistrarWhatsApp') === -1);
+  ok('T2 duas ações novas, as duas com crachá; só a que grava está na trava', (src.match(/\n      case '/g) || []).length === 103 && S('ACOES_COM_TRAVA').indexOf('profRegistrarWhatsApp') !== -1 && S('ACOES_COM_TRAVA').indexOf('profLerHistoricoSessao') === -1 && S('ACOES_PUBLICAS').indexOf('profLerHistoricoSessao') === -1 && S('ACOES_PUBLICAS').indexOf('profRegistrarWhatsApp') === -1);
   ok('T3 a aba nova tem as seis colunas', S('COLUNAS_EVENTOS_SESSOES').join(',') === 'id,sessao_id,em,tipo,quem,detalhe' && abaEv().getRange(1, 1, 1, 6).getValues()[0].join(',') === 'id,sessao_id,em,tipo,quem,detalhe');
   ok('T4 nenhum evento guarda nome, e-mail ou telefone', !/Paula|Pedro|exemplo\.test|@/.test(JSON.stringify(abaEv().getDataRange().getValues())));
   ok('T5 uma coluna nova no fim de Sessoes', S('COLUNAS_SESSOES').slice(-1)[0] === 'aviso_ultimo');

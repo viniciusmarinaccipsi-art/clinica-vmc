@@ -35,6 +35,7 @@ global.Utilities.base64Decode = s => Array.from(Buffer.from(String(s), 'base64')
 const h = av('({ post: post, cracha: cracha, novoPaciente: novoPaciente, celula: celula, linhaDe: linhaDe, cab: cab, abaPac: abaPac, ctrl: ctrl, sProf: sProf, EMAILS: EMAILS, PROPS: PROPS, TRAVA: TRAVA, memo: _memoZerar_, aceite: _gravarAceitePolitica_, hashProf: hashProf })');
 const S = nome => av(nome);
 av('CONFIRMAR_ABRE_PADRAO = 100000'); // 14.26.1: esta suíte confirma a presença com muita antecedência (regra de antes); a janela de 48 horas é provada em backend_14_26_1.js
+av('MSG_PADRAO.lembrete.horas = 24'); // 14.30: esta suíte foi escrita com o segundo lembrete 24 horas antes; o padrão passou a 36 (provado em backend_14_30.js)
 av('AGE_EMAIL_AUTOMATICO = true'); // 14.13: esta suíte confere o conteúdo dos e-mails pelo caminho de antes (envio na própria gravação); em produção a chave é false
 
 let passo = 0, falhas = 0;
@@ -163,7 +164,7 @@ tenta('R', () => {
   ok('R3 a 48 h e 5 min ainda não sai', g.enviados === 0 && h.EMAILS.length === 0, g);
   g = gatilho(quando(2026, 12, 13, 10, 5));
   const e48 = h.EMAILS[0] || {};
-  ok('R4 a menos de 48 h sai o primeiro lembrete: título, texto, botão "Confirmar presença" com o link e a linha sob o botão', g.enviados === 1 && h.EMAILS.length === 1 && e48.to === 'p1@exemplo.test' && e48.subject === 'Lembrete de sessão — COGNIATIVO' && html(e48).indexOf('Sua sessão é em dois dias') !== -1 && e48.body.indexOf('Lembrete da sua sessão com') !== -1 && e48.body.indexOf('terça, 15/12/2026, às 10:00 (On-line)') !== -1 && html(e48).indexOf('Confirmar presença') !== -1 && e48.body.indexOf('?confirmar=') !== -1 && e48.body.indexOf('Para remarcar ou cancelar, entre no COGNIATIVO com 24 horas ou mais de antecedência.') !== -1 && cel('Sessoes', longe, 'lembrete48_em') === '2026-12-13 10:05', [g, e48.subject, (e48.body || '').slice(0, 400)]);
+  ok('R4 a menos de 48 h sai o primeiro lembrete: título, texto, botão "Confirmar presença" com o link e a linha sob o botão', g.enviados === 1 && h.EMAILS.length === 1 && e48.to === 'p1@exemplo.test' && e48.subject === 'Lembrete de sessão — COGNIATIVO' && html(e48).indexOf('Sua sessão é em dois dias') !== -1 && e48.body.indexOf('Lembrete da sua sessão com') !== -1 && e48.body.indexOf('terça, 15/12/2026, às 10:00 (On-line)') !== -1 && html(e48).indexOf('Confirmar presença') !== -1 && e48.body.indexOf('?confirmar=') !== -1 && e48.body.indexOf('Para reagendar ou cancelar, entre no COGNIATIVO.') !== -1 && cel('Sessoes', longe, 'lembrete48_em') === '2026-12-13 10:05', [g, e48.subject, (e48.body || '').slice(0, 400)]);
   ok('R5 o link do e-mail é o da própria sessão', (() => { const m = /\?confirmar=([A-Za-z0-9_.-]+)/.exec(e48.body); return !!m && m[1] === tokenDe(lida(longe).link_confirmar); })());
   g = gatilho(quando(2026, 12, 13, 12, 0));
   ok('R6 segunda rodada não repete o de 48 h; a sessão sem a caixa não recebe', g.enviados === 0 && h.EMAILS.length === 1, g);
