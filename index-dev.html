@@ -4296,6 +4296,31 @@ button.cab-no-item{cursor:pointer;}
 /* Pacote 14.30.2: botoes que a varredura do celular achou com menos de 44 px (Inicio, paciente aberto, Grade) */
 .prof-btn-logout,.prof-pv-back,.p135-btn,.gra-add-janela,.gra-btn-salvar{min-height:var(--hit-min);}
 .gra-jan-remover{min-width:var(--hit-min);min-height:var(--hit-min);}
+/* paciente aberto no celular: Voltar em cima, nome ao lado das iniciais, e os botões de gestão em grade de dois (antes ficavam empilhados numa coluna estreita) */
+@media (max-width:560px){
+  .prof-pv-header{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start;}
+  .prof-pv-back{grid-row:1;grid-column:1 / -1;justify-self:start;}
+  .prof-pv-avatar{grid-row:2;grid-column:1;}
+  .prof-pv-info{grid-row:2;grid-column:2;}
+  .p135-acoes-wrap{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));row-gap:8px;}
+  .p135-btn{justify-content:center;}
+}
+/* Fluxo de caixa no celular: as abas cabem na tela (três por linha) em vez de rolar para o lado com uma aba cortada */
+@media (max-width:560px){
+  .fin-abas{flex-wrap:wrap;overflow-x:visible;}
+  .fin-aba{flex:1 1 30%;padding:0 var(--s-2);}
+}
+/* Agenda no celular: sino ao lado do título, busca e "Nova sessão" na largura toda, os outros botões dois a dois */
+@media (max-width:560px){
+  #sec-prof-agenda-cal > .gra-topo > .cal-sino{order:0;flex:0 0 auto;}
+  #sec-prof-agenda-cal > .gra-topo > .cal-busca{order:1;flex:1 1 100%;max-width:none;}
+  #sec-prof-agenda-cal > .gra-topo > .cal-btn-forte{order:2;flex:1 1 100%;}
+  #sec-prof-agenda-cal > .gra-topo > .cal-btn:not(.cal-sino):not(.cal-btn-forte){order:3;flex:1 1 auto;white-space:nowrap;}
+  #sec-prof-agenda-cal > .gra-topo > .cal-btn{justify-content:center;}
+}
+/* caixas "Quais avisos enviamos?": o texto longo quebra ao lado da caixa, não embaixo dela */
+.age-fieldset .age-check{flex-wrap:nowrap;}
+.age-fieldset .age-check > span{min-width:0;}
 .gra-ok{display:none;background:var(--c-pos-tint);border-left:4px solid var(--c-pos);
   color:var(--c-pos-ink);border-radius:8px;padding:10px 14px;font-size:13.5px;flex:1;min-width:220px;}
 /* ============================================================
