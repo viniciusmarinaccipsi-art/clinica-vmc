@@ -75,7 +75,7 @@
 // site (conectar.html), que entrega `state` + `code` a acao publica concluirConexaoAgenda (23/11/2026).
 // Pacote 19.2.2 — Lembretes: a sigla da escala e o texto do "Outro" passam a aparecer no e-mail e no WhatsApp
 // (decisao do usuario de 22/11/2026; assunto, titulo e previa do e-mail nao mudam)
-var VERSAO_PACOTE = '14.28';
+var VERSAO_PACOTE = '14.29';
 
 var SISTEMA_VMC_ID = '1B6DbaQ8pq1oRudP_7tWikGAFpzL5ldqG_N0u6HHzGI0';
 
@@ -505,7 +505,7 @@ function _despachar_(acao, payload, s) {
         break;
 
       case 'lerHorariosLivres':
-        resposta = _exigir_(s, 'paciente') || lerHorariosLivres(s.sigla, payload.de);
+        resposta = _exigir_(s, 'paciente') || lerHorariosLivres(s.sigla, payload.de, payload.sessao); // 14.29: a sessao que esta sendo trocada
         break;
 
       case 'profLerHorariosLivres': // 14.5
@@ -5002,7 +5002,15 @@ function profEditarPaciente(s, siglaPaciente, dados, idEnvio) {
   var abaAnam = null;
   try { abaAnam = _abrirPlanilha_(extrairIdDaUrl(pac.link_planilha_individual)).getSheetByName(ABA_ANAMNESE); } catch (e) { abaAnam = null; }
   var atual = _cadastroDoPaciente_(pac, abaAnam);
-  var saida = function (c) { return { nome: c.nome, email: c.email, telefone: c.telefone, cpf: c.cpf, tem_anamnese: c.tem_anamnese }; };
+  // 14.29: a frequencia das sessoes (cadastro) e, enquanto o profissional nao escolhe, a que as sessoes recorrentes do paciente sugerem
+  var freqAtual = String(pac.frequencia || '').trim().toLowerCase();
+  if (!AGE_FREQUENCIAS.hasOwnProperty(freqAtual)) freqAtual = '';
+  var freqSugerida = (function () {
+    var ctl = abrirControleDoProfissional(s.profissional_id), abaR = ctl ? _ageAba_(ctl, ABA_SERIES, COLUNAS_SERIES, false) : null;
+    var minhas = abaR ? _lembretesLer_(abaR).filter(function (r) { return _siglaChave_(r.sigla) === _siglaChave_(siglaPaciente) && !r.encerrada_em; }) : [];
+    return minhas.length ? _ageFrequenciaDaSerie_(minhas[minhas.length - 1]) : '';
+  })();
+  var saida = function (c) { return { nome: c.nome, email: c.email, telefone: c.telefone, cpf: c.cpf, tem_anamnese: c.tem_anamnese, frequencia: freqAtual, frequencia_sugerida: freqSugerida }; };
   if (!dados || typeof dados !== 'object') return { ok: true, cadastro: saida(atual) };
 
   var nome = String(dados.nome || '').replace(/\s+/g, ' ').trim().slice(0, 120);
@@ -5019,7 +5027,9 @@ function profEditarPaciente(s, siglaPaciente, dados, idEnvio) {
     if (!rc.ok) return rc;
   }
   var controle = abrirControleDoProfissional(s.profissional_id);
-  if (!controle || !_atualizarLinhaPorChave_(controle.getSheetByName(ABA_PACIENTES), 'sigla', siglaPaciente, { nome: nome, cpf: cpf })) return { ok: false, erro: 'Paciente não encontrado na Controle.' };
+  var camposCad = { nome: nome, cpf: cpf };
+  if (dados.frequencia !== undefined && AGE_FREQUENCIAS.hasOwnProperty(String(dados.frequencia))) { camposCad.frequencia = String(dados.frequencia); freqAtual = camposCad.frequencia; } // 14.29
+  if (!controle || !_atualizarLinhaPorChave_(controle.getSheetByName(ABA_PACIENTES), 'sigla', siglaPaciente, camposCad)) return { ok: false, erro: 'Paciente não encontrado na Controle.' };
   if (atual.tem_anamnese) {
     var campos = {};
     if (nome !== atual.nome_anamnese) campos.nome_completo = nome;
@@ -5032,7 +5042,7 @@ function profEditarPaciente(s, siglaPaciente, dados, idEnvio) {
       _atualizarCamposLinha_(abaAnam, 2, abaAnam.getRange(1, 1, 1, abaAnam.getLastColumn()).getValues()[0], { email: contato.email, telefone: contato.telefone });
     }
   }
-  var resp = { ok: true, cadastro: { nome: nome, email: contato.email, telefone: contato.telefone, cpf: cpf, tem_anamnese: atual.tem_anamnese }, email_mudou: emailMudou };
+  var resp = { ok: true, cadastro: { nome: nome, email: contato.email, telefone: contato.telefone, cpf: cpf, tem_anamnese: atual.tem_anamnese, frequencia: freqAtual, frequencia_sugerida: freqSugerida }, email_mudou: emailMudou };
   if (emailMudou && dados.enviar_convite === true) {
     var rv = profEnviarConvite(s, siglaPaciente, 'email');
     resp.convite = (rv && rv.ok && rv.enviado) ? { enviado: true } : { enviado: false, codigo: (rv && rv.codigo) || '', erro: (rv && rv.erro) || 'Não foi possível enviar o convite agora.' };
@@ -7638,7 +7648,7 @@ function _agePacientes_(controle) {
     if (!sigla) return;
     var nome = String(p.ind_nome || p.nome || '').trim();
     mapa[sigla] = { nome: nome || String(p.sigla).trim(), primeiro: _lemPrimeiroNome_(p), telefone: normalizarTelefone(p.telefone),
-      email: normalizarEmail(p.email), ativo: _estaAtivo_(p.ativo),
+      email: normalizarEmail(p.email), ativo: _estaAtivo_(p.ativo), frequencia: String(p.frequencia || '').trim().toLowerCase(), // 14.29
       valor: String(p.valor_sessao === undefined || p.valor_sessao === null ? '' : p.valor_sessao).replace(/[^0-9.,]/g, '').slice(0, 12) }; // 14.7: a sessao aprovada nasce com o valor do cadastro
   });
   var excluidos = _excluidosLer_(controle); // 19.6
@@ -8768,14 +8778,46 @@ function _ageLivres_(ctx, janelas, deIso, dias, agora, horas) {
 }
 
 /** Horarios livres da semana que comeca em `de` (7 dias; padrao: hoje). */
-function lerHorariosLivres(sigla, de) {
+/**
+ * 14.29 (regra do usuario): a janela do reagendamento, em dias depois da sessao, pela frequencia das sessoes recorrentes do
+ * paciente — semanal 3, quinzenal 7, mais espacadas 14. Sessao avulsa (sem recorrencia): 0, sem sugestoes. Pura.
+ */
+var AGE_FREQUENCIAS = { semanal: 3, quinzenal: 7, mensal: 14, livre: 0 }; // 14.29: o que o profissional escolhe no cadastro -> dias da janela
+/** A frequencia que a recorrencia do paciente sugere ('' se ele nao tem sessoes recorrentes): semanal | quinzenal | mensal. */
+function _ageFrequenciaDaSerie_(serie) {
+  var d = _ageJanelaReagendar_(serie);
+  return d === 3 ? 'semanal' : (d === 7 ? 'quinzenal' : (d === 14 ? 'mensal' : ''));
+}
+function _ageJanelaReagendar_(serie) {
+  if (!serie) return 0;
+  var cada = parseInt(serie.cada, 10) || 1;
+  if (serie.unidade !== 'semana') return 14;
+  return cada <= 1 ? 3 : (cada === 2 ? 7 : 14);
+}
+/** Os horarios livres dentro da janela, logo depois da sessao `x` (respeitando o periodo aberto ao paciente). So leitura. */
+function _ageSugestoes_(ctx, alvo, x, agora) {
+  var serie = x.serie_id ? ctx.series.filter(function (r) { return r.id === x.serie_id; })[0] : null;
+  var freq = String((_agePacientes_(alvo.controle)[_siglaChave_(x.sigla)] || {}).frequencia || '');
+  // a frequencia escolhida no cadastro vale sobre a da recorrencia; "sem frequencia fixa" desliga as sugestoes
+  var dias = AGE_FREQUENCIAS.hasOwnProperty(freq) ? AGE_FREQUENCIAS[freq] : _ageJanelaReagendar_(serie), d = _lemDia_(x.data);
+  if (!dias || d === null) return { dias: 0, livres: [] };
+  var deIso = _lemIso_(d + 1), guardado = ctx.externos;
+  ctx.externos = _calOcupados_(alvo.profissionalId, ctx.cfg, deIso, dias);
+  var livres = _ageLivres_(ctx, _ageJanelas_(alvo.controle), deIso, dias, agora);
+  ctx.externos = guardado;
+  return { dias: dias, livres: livres };
+}
+function lerHorariosLivres(sigla, de, sessao) {
   var alvo = _agePaciente_(sigla);
   if (!alvo.ok) return alvo;
   var agora = _lemAgora_();
   var deIso = _lemDia_(de) === null || String(de) < agora.data ? agora.data : String(de);
   var ctx = _ageCtx_(alvo.controle, false);
   ctx.externos = _calOcupados_(alvo.profissionalId, ctx.cfg, deIso, 7);
-  return { ok: true, de: deIso, hoje: agora.data, agenda_ate: _ageAgendarLimites_(ctx.cfg, agora).ate, livres: _ageLivres_(ctx, _ageJanelas_(alvo.controle), deIso, 7, agora) }; // 14.20: ate quando a agenda esta aberta
+  var resp = { ok: true, de: deIso, hoje: agora.data, agenda_ate: _ageAgendarLimites_(ctx.cfg, agora).ate, livres: _ageLivres_(ctx, _ageJanelas_(alvo.controle), deIso, 7, agora) }; // 14.20: ate quando a agenda esta aberta
+  var xs = sessao ? _ageDoPaciente_(ctx, alvo, sessao) : null; // 14.29: so a sessao do proprio paciente, e so se ainda esta agendada
+  if (xs && (xs.estado === 'agendada' || xs.estado === '')) { var sg = _ageSugestoes_(ctx, alvo, xs, agora); resp.sugeridos = sg.livres; resp.janela_dias = sg.dias; }
+  return resp;
 }
 
 /** 14.5: horarios livres para o PROFISSIONAL repor ou remarcar (14 dias a partir de `de`; sem o prazo do paciente). */
