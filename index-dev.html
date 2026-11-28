@@ -4322,9 +4322,10 @@ button.cab-no-item{cursor:pointer;}
 /* Agenda no celular: sino ao lado do título, busca e "Nova sessão" na largura toda, os outros botões dois a dois */
 @media (max-width:560px){
   #sec-prof-agenda-cal > .gra-topo > .cal-sino{order:0;flex:0 0 auto;}
+  #sec-prof-agenda-cal > .gra-topo > .cal-so-ico{order:0;flex:0 0 auto;}
   #sec-prof-agenda-cal > .gra-topo > .cal-busca{order:1;flex:1 1 100%;max-width:none;}
   #sec-prof-agenda-cal > .gra-topo > .cal-btn-forte{order:2;flex:1 1 100%;}
-  #sec-prof-agenda-cal > .gra-topo > .cal-btn:not(.cal-sino):not(.cal-btn-forte){order:3;flex:1 1 auto;white-space:nowrap;}
+  #sec-prof-agenda-cal > .gra-topo > .cal-btn:not(.cal-sino):not(.cal-btn-forte):not(.cal-so-ico){order:3;flex:1 1 auto;white-space:nowrap;}
   #sec-prof-agenda-cal > .gra-topo > .cal-btn{justify-content:center;}
 }
 /* caixas "Quais avisos enviamos?": o texto longo quebra ao lado da caixa, não embaixo dela */
@@ -4425,7 +4426,21 @@ button.cab-no-item{cursor:pointer;}
 /* Pacote 14.4 — sino da Agenda e cartão "Avisar o paciente" */
 .cal-sino{position:relative;}
 .cal-sino-num{position:absolute;top:2px;right:2px;min-width:18px;height:18px;padding:0 4px;border-radius:var(--r-chip);background:var(--c-risk);color:var(--c-ink-inv);font:var(--t-label);line-height:18px;text-align:center;}
-.cal-sino-painel{background:var(--c-surface);border:1px solid var(--c-line);border-radius:var(--r-card);box-shadow:var(--sh-2);padding:14px 16px;margin:0 0 12px;text-align:left;}
+.cal-sino-painel{background:var(--c-surface);border:1px solid var(--c-line);border-radius:var(--r-card);box-shadow:var(--sh-3);padding:14px 16px;margin:0;text-align:left;}
+/* Pacote 14.32: janelinhas presas a um botão da barra (menu "Novo" e notificações): flutuam no canto, não empurram a grade */
+.cal-pop{position:fixed;z-index:60;width:min(380px,calc(100vw - 16px));max-height:calc(100vh - 140px);overflow-y:auto;}
+.cal-novo-menu{width:min(240px,calc(100vw - 16px));background:var(--c-surface);border:1px solid var(--c-line);border-radius:var(--r-card);box-shadow:var(--sh-3);padding:6px;display:flex;flex-direction:column;gap:2px;}
+.cal-novo-menu.hidden{display:none;}
+.cal-novo-item{display:flex;align-items:center;gap:var(--s-2);width:100%;min-height:var(--hit-min);padding:0 var(--s-3);border:0;border-radius:var(--r-field);background:transparent;color:var(--c-ink);font:var(--t-body);text-align:left;cursor:pointer;}
+.cal-novo-item:hover{background:var(--c-action-tint);}
+.cal-novo-item:focus-visible{outline:2px solid var(--c-action);outline-offset:-2px;}
+.cal-so-ico{min-width:var(--hit-min);justify-content:center;padding-left:0;padding-right:0;}
+/* marca de reposição: a letra R, sem moldura, como as outras marcas da legenda */
+.cal-ev-repo{display:inline-flex;align-items:center;justify-content:center;min-width:16px;font:var(--t-label);font-weight:700;color:var(--c-ink-2);}
+/* campo único "Status" das sessões com status pendente */
+.stp-status{display:flex;align-items:center;gap:var(--s-2);min-width:0;color:var(--c-ink-2);}
+.stp-sel{min-height:var(--hit-min);min-width:150px;max-width:100%;padding:0 var(--s-3);border:1px solid var(--c-line-strong);border-radius:var(--r-field);background:var(--c-surface);color:var(--c-ink);font:var(--t-action);cursor:pointer;}
+.stp-sel:focus-visible{outline:2px solid var(--c-action);outline-offset:2px;}
 .cal-sino-topo{display:flex;align-items:center;justify-content:space-between;gap:var(--s-2);flex-wrap:wrap;margin-bottom:var(--s-2);}
 .cal-sino-topo h3{font:600 16px/1.3 var(--f-title);color:var(--c-ink);margin:0;}
 .age-evs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--s-2);max-height:320px;overflow-y:auto;}
@@ -4602,10 +4617,9 @@ input[type="checkbox"],input[type="radio"]{width:20px;height:20px;}
 }
 /* ===== Fase 20 — Fluxo de caixa (telas do profissional e do paciente). Classes novas: prefixo fin- ===== */
 body:has(#sec-prof-financeiro.active) .app,body:has(#sec-prof-financeiro.active) .topbar-in{max-width:1120px;}
-.prof-atalhos:has(#profAtalhoFinanceiro) #profAtalhoFinanceiro{grid-column:1 / -1;}
+/* 14.32: seis atalhos (entrou Configurações): o Fluxo de caixa deixa de ocupar a linha inteira */
 @media (min-width:700px){
-  .prof-atalhos:has(#profAtalhoFinanceiro){grid-template-columns:repeat(5,minmax(0,1fr));}
-  .prof-atalhos:has(#profAtalhoFinanceiro) #profAtalhoFinanceiro{grid-column:auto;}
+  .prof-atalhos:has(#profAtalhoFinanceiro){grid-template-columns:repeat(3,minmax(0,1fr));}
 }
 .fin-abas{display:flex;gap:var(--s-2);overflow-x:auto;margin:0 0 var(--s-4);padding:2px 2px 6px;scrollbar-width:thin;}
 .fin-aba{flex:0 0 auto;min-height:var(--hit-min);padding:0 var(--s-4);border:1.5px solid var(--c-line);border-radius:var(--r-field);background:var(--c-surface);color:var(--c-ink-2);font:var(--t-action);cursor:pointer;white-space:nowrap;}
@@ -4738,6 +4752,8 @@ button.fin-enc-lin:focus-visible{outline:2px solid var(--c-action);outline-offse
   .stp-acoes .prof-lem-btn{grid-column:span 2;padding:0 var(--s-1);min-width:0;}
   .stp-acoes .prof-lem-btn:nth-child(n+4){grid-column:span 3;}
   .hoje-linha .stp-acoes .prof-lem-btn{grid-column:1 / -1;}
+  .stp-acoes .stp-status{grid-column:1 / -1;}
+  .stp-acoes .stp-sel{flex:1 1 auto;}
   .stp-dia .prof-lem-btn{margin-left:auto;}
 }
 .stp-msg{font:var(--t-body-sm);color:var(--c-ink-2);margin:var(--s-2) 0 0;}
@@ -5011,9 +5027,7 @@ button.fin-enc-lin:focus-visible{outline:2px solid var(--c-action);outline-offse
         <p id="profSiglaHeader">Área do Psicólogo</p>
       </div>
       <div class="prof-header-acoes">
-        <button class="prof-btn-logout" type="button" id="profBtnConfig" onclick="cfgAbrirTela('inicio')">Configurações</button>
-        <button class="prof-btn-logout" type="button" id="profBtnMeusDados" onclick="profAbrirMeusDados()">Meus dados</button>
-        <button class="prof-btn-logout" onclick="sairDoSistema()">Sair</button>
+        <button class="prof-btn-logout" type="button" onclick="sairDoSistema()"><svg class="ico" aria-hidden="true"><use href="#i-power"/></svg> Sair</button>
       </div>
     </div>
     <div class="prof-placeholder" id="profDashboardConteudo">
@@ -5072,15 +5086,19 @@ button.fin-enc-lin:focus-visible{outline:2px solid var(--c-action);outline-offse
       <div class="cal-busca" id="calBusca"><input type="search" class="cal-busca-campo" id="calBuscaCampo" placeholder="Buscar paciente pelo nome" aria-label="Buscar paciente" autocomplete="off" oninput="calBuscaFiltrar_()"><div class="cal-busca-res hidden" id="calBuscaRes"></div></div>
       <!-- Pacote 14.4: sino com os últimos eventos dos pacientes (confirmou, agendou, cancelou, pediu) -->
       <!-- Pacote 14.16: as duas ações mais comuns, visíveis no topo -->
-      <button class="cal-btn cal-btn-forte" id="calBtnNova" type="button" onclick="ageNovaPeloBotao_()"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg> Nova sessão</button>
-      <button class="cal-btn" id="calBtnBloquear" type="button" onclick="ageBloqueiosAbrir_()"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg> Bloquear datas</button>
+      <button class="cal-btn cal-btn-forte" id="calBtnNovo" type="button" aria-haspopup="true" aria-expanded="false" onclick="calPopAlternar_('calNovoMenu', 'calBtnNovo')"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg> Novo</button>
       <button class="cal-btn cal-sino" id="calSino" type="button" style="margin-left:auto;" aria-label="Últimos eventos" aria-expanded="false" onclick="ageSinoAlternar_()"><svg class="ico" aria-hidden="true"><use href="#i-bell"/></svg><span class="cal-sino-num hidden" id="calSinoNum"></span></button>
       <!-- Pacote 14.8: cada profissional conecta a própria agenda -->
       <button class="cal-btn" id="calBtnConectar" type="button" onclick="ageContaAbrir_()"><svg class="ico" aria-hidden="true"><use href="#i-calendar"/></svg> Conectar agenda</button>
-      <!-- Pacote 14.32: "Mensagens" e "Grade de Atendimento" saíram da barra; as duas ficam em Configurações -->
-      <button class="cal-btn" id="calBtnConfig" type="button" onclick="cfgAbrirTela('agenda')"><svg class="ico" aria-hidden="true"><use href="#i-settings"/></svg> Configurações</button>
+      <!-- Pacote 14.32: a engrenagem abre só as configurações da Agenda (Grade e conta); as gerais ficam no menu do aplicativo -->
+      <button class="cal-btn cal-so-ico" id="calBtnConfig" type="button" aria-label="Configurações da agenda" title="Configurações da agenda" onclick="cfgAbrirTela('agenda', 'agenda')"><svg class="ico" aria-hidden="true"><use href="#i-settings"/></svg></button>
     </div>
-    <div class="cal-sino-painel hidden" id="calSinoPainel"></div>
+    <div class="cal-pop cal-novo-menu hidden" id="calNovoMenu" role="menu" aria-label="Novo">
+      <button type="button" class="cal-novo-item" role="menuitem" onclick="calNovoEscolher_('sessao')"><svg class="ico" aria-hidden="true"><use href="#i-calendar"/></svg> Nova sessão</button>
+      <button type="button" class="cal-novo-item" role="menuitem" onclick="calNovoEscolher_('bloqueio')"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg> Bloquear datas</button>
+      <button type="button" class="cal-novo-item" role="menuitem" onclick="calNovoEscolher_('lembrete')"><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg> Lembrete</button>
+    </div>
+    <div class="cal-pop cal-sino-painel hidden" id="calSinoPainel"></div>
 
     <div class="cal-vazio-aviso" id="calAvisoGrade" style="display:none;">
       Você ainda não definiu seus horários de atendimento.
@@ -5108,7 +5126,7 @@ button.fin-enc-lin:focus-visible{outline:2px solid var(--c-action);outline-offse
           <div class="cal-leg-grupo">Marcas</div>
           <div class="cal-leg-item"><span><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg></span> Confirmada pelo paciente</div>
           <div class="cal-leg-item"><span><svg class="ico" aria-hidden="true"><use href="#i-repeat"/></svg></span> Sessões recorrentes</div>
-          <div class="cal-leg-item"><span class="cal-ev-marca">Reposição</span></div>
+          <div class="cal-leg-item"><span class="cal-ev-repo" aria-hidden="true">R</span> Reposição</div>
           <div class="cal-leg-item"><span><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg></span> Bloqueado</div>
           <div class="cal-leg-item"><span class="cal-leg-cor cal-leg-lem"></span> Lembrete</div>
           <div class="cal-leg-item"><span class="cal-leg-cor cal-leg-ocup"></span> Ocupado · agenda pessoal</div>
@@ -5307,14 +5325,14 @@ button.fin-enc-lin:focus-visible{outline:2px solid var(--c-action);outline-offse
   <div class="section" id="sec-prof-config">
     <div class="gra-topo">
       <button class="gra-voltar" type="button" onclick="cfgVoltar_()">← Voltar</button>
-      <h2 class="gra-titulo"><svg class="ico" aria-hidden="true"><use href="#i-settings"/></svg> Configurações</h2>
+      <h2 class="gra-titulo"><svg class="ico" aria-hidden="true"><use href="#i-settings"/></svg> <span id="cfgTitulo">Configurações</span></h2>
     </div>
     <div class="cfg-lista" id="cfgLista">
-      <button type="button" class="cfg-item" data-cfg="email" onclick="cfgIr_('email')"><svg class="ico" aria-hidden="true"><use href="#i-file"/></svg><span><span class="cfg-item-nome">Configurações de e-mail</span><span class="cfg-item-desc">Os e-mails de sessão que o paciente recebe e quando os lembretes saem.</span></span><span class="cfg-item-seta" aria-hidden="true">›</span></button>
-      <button type="button" class="cfg-item" data-cfg="grade" onclick="cfgIr_('grade')"><svg class="ico" aria-hidden="true"><use href="#i-calendar"/></svg><span><span class="cfg-item-nome">Grade de Atendimento</span><span class="cfg-item-desc">Seus horários, regras de agendamento, política de cobrança e endereço.</span></span><span class="cfg-item-seta" aria-hidden="true">›</span></button>
-      <button type="button" class="cfg-item" data-cfg="google" onclick="cfgIr_('google')"><svg class="ico" aria-hidden="true"><use href="#i-refresh"/></svg><span><span class="cfg-item-nome">Sua conta do Google</span><span class="cfg-item-desc">A sua Google Agenda e o envio dos e-mails pelo seu endereço.</span></span><span class="cfg-item-seta" aria-hidden="true">›</span></button>
-      <button type="button" class="cfg-item" data-cfg="fin" onclick="cfgIr_('fin')"><svg class="ico" aria-hidden="true"><use href="#i-wallet"/></svg><span><span class="cfg-item-nome">Fluxo de caixa</span><span class="cfg-item-desc">Dados para receber, formas de pagamento e texto da cobrança.</span></span><span class="cfg-item-seta" aria-hidden="true">›</span></button>
       <button type="button" class="cfg-item" data-cfg="dados" onclick="cfgIr_('dados')"><svg class="ico" aria-hidden="true"><use href="#i-user"/></svg><span><span class="cfg-item-nome">Meus dados</span><span class="cfg-item-desc">Gênero, tema e os dados do seu cadastro.</span></span><span class="cfg-item-seta" aria-hidden="true">›</span></button>
+      <button type="button" class="cfg-item" data-cfg="email" onclick="cfgIr_('email')"><svg class="ico" aria-hidden="true"><use href="#i-file"/></svg><span><span class="cfg-item-nome">Configurações de e-mail</span><span class="cfg-item-desc">Os e-mails de sessão que o paciente recebe e quando os lembretes saem.</span></span><span class="cfg-item-seta" aria-hidden="true">›</span></button>
+      <button type="button" class="cfg-item" data-cfg="grade" data-cfg-agenda="1" onclick="cfgIr_('grade')"><svg class="ico" aria-hidden="true"><use href="#i-calendar"/></svg><span><span class="cfg-item-nome">Grade de Atendimento</span><span class="cfg-item-desc">Seus horários, regras de agendamento, política de cobrança e endereço.</span></span><span class="cfg-item-seta" aria-hidden="true">›</span></button>
+      <button type="button" class="cfg-item" data-cfg="conta" data-cfg-agenda="1" onclick="cfgIr_('conta')"><svg class="ico" aria-hidden="true"><use href="#i-refresh"/></svg><span><span class="cfg-item-nome">Conta de e-mail e agenda</span><span class="cfg-item-desc">A conta que recebe as suas sessões na agenda e envia os e-mails pelo seu endereço. Hoje: Google.</span></span><span class="cfg-item-seta" aria-hidden="true">›</span></button>
+      <button type="button" class="cfg-item" data-cfg="fin" onclick="cfgIr_('fin')"><svg class="ico" aria-hidden="true"><use href="#i-wallet"/></svg><span><span class="cfg-item-nome">Fluxo de caixa</span><span class="cfg-item-desc">Dados para receber, formas de pagamento e texto da cobrança.</span></span><span class="cfg-item-seta" aria-hidden="true">›</span></button>
     </div>
   </div>
 
@@ -10702,6 +10720,7 @@ function profRenderInicio_() {
     '<button type="button" class="prof-atalho" id="profAtalhoPacientes" onclick="profAbrirPacientes()"><svg class=ico aria-hidden=true><use href=#i-user></use></svg><span>Pacientes</span></button>' +
     '<button type="button" class="prof-atalho" id="profAtalhoEscalas" onclick="profAbrirBiblioteca()"><svg class=ico aria-hidden=true><use href=#i-clipboard></use></svg><span>Escalas e Inventários</span></button>' + // 19.3: abre a Biblioteca
     '<button type="button" class="prof-atalho" id="profAtalhoFinanceiro" onclick="finAbrirTela()"><svg class=ico aria-hidden=true><use href=#i-wallet></use></svg><span>Fluxo de caixa</span></button>' + // Fase 20
+    '<button type="button" class="prof-atalho" id="profAtalhoConfig" onclick="cfgAbrirTela(\'inicio\')"><svg class=ico aria-hidden=true><use href=#i-settings></use></svg><span>Configurações</span></button>' + // 14.32
   '</div>';
 
   if (pacientes.length === 0) {
@@ -24245,11 +24264,15 @@ async function graSalvar() {
    A tela é só uma lista de entradas. `CFG.origem` diz para onde o Voltar dela leva (Início ou Agenda);
    `CFG.dentro` diz se a Grade e as Configurações de e-mail foram abertas por aqui (o Voltar delas volta para cá).
    ============================================================ */
-var CFG = { origem: 'inicio', dentro: false };
-function cfgAbrirTela(origem) {
+var CFG = { origem: 'inicio', modo: 'geral', dentro: false };
+/* `origem`: 'inicio' ou 'agenda' (para onde o Voltar leva). `modo`: 'geral' (todas as entradas) ou 'agenda' (só as da Agenda). */
+function cfgAbrirTela(origem, modo) {
   if (!PROF_SESSAO) return;
   if (origem) CFG.origem = origem;
+  CFG.modo = modo === 'agenda' ? 'agenda' : 'geral';
   CFG.dentro = false;
+  document.getElementById('cfgTitulo').textContent = CFG.modo === 'agenda' ? 'Configurações da agenda' : 'Configurações';
+  document.querySelectorAll('#cfgLista .cfg-item').forEach(function (b) { b.classList.toggle('hidden', CFG.modo === 'agenda' && !b.dataset.cfgAgenda); });
   abrirSecao('sec-prof-config');
 }
 function cfgVoltar_() {
@@ -24265,7 +24288,62 @@ async function cfgIr_(qual) {
   if (qual === 'grade') { CFG.dentro = true; graAbrirTela(); return; }
   if (qual === 'dados') { profAbrirMeusDados(); return; }
   if (qual === 'fin') { finAbrirTela(); for (var i = 0; i < 100 && !FIN.dados; i++) await new Promise(function (ok) { setTimeout(ok, 100); }); if (secaoAtivaId() === 'sec-prof-financeiro' && FIN.dados) finTrocarAba_('config'); return; }
-  if (qual === 'google') { await calAbrirTela(); for (var j = 0; j < 100 && AGE.carregando; j++) await new Promise(function (ok) { setTimeout(ok, 100); }); if (secaoAtivaId() === 'sec-prof-agenda-cal') ageContaAbrir_(); }
+  if (qual === 'conta') { await calAbrirTela(); for (var j = 0; j < 100 && AGE.carregando; j++) await new Promise(function (ok) { setTimeout(ok, 100); }); if (secaoAtivaId() === 'sec-prof-agenda-cal') ageContaAbrir_(); }
+}
+
+/* ---- 14.32: janelinhas presas a um botão da barra da Agenda (o menu "Novo" e as notificações) ----
+   Abrem no canto, embaixo do botão, sem empurrar a grade; fecham com clique fora, Esc, rolagem ou no próprio botão. */
+var CAL_POP = '';
+function calPopAbrir_(painelId, botaoId) {
+  calPopFechar_();
+  var p = document.getElementById(painelId), b = document.getElementById(botaoId);
+  if (!p || !b) return;
+  p.style.width = ''; p.classList.remove('hidden');
+  var r = b.getBoundingClientRect(), L = document.documentElement.clientWidth, larg = p.getBoundingClientRect().width;
+  if (larg > L - 16) { larg = L - 16; p.style.width = larg + 'px'; } // no celular a janelinha ocupa a largura útil da tela
+  p.style.top = Math.round(r.bottom + 8) + 'px';
+  p.style.left = Math.round(Math.min(Math.max(8, r.right - larg), L - larg - 8)) + 'px';
+  b.setAttribute('aria-expanded', 'true');
+  CAL_POP = painelId + '|' + botaoId;
+}
+function calPopFechar_() {
+  if (!CAL_POP) return;
+  var x = CAL_POP.split('|'), p = document.getElementById(x[0]), b = document.getElementById(x[1]);
+  CAL_POP = '';
+  if (p) p.classList.add('hidden');
+  if (b) b.setAttribute('aria-expanded', 'false');
+}
+function calPopAlternar_(painelId, botaoId) { if (CAL_POP === painelId + '|' + botaoId) calPopFechar_(); else calPopAbrir_(painelId, botaoId); }
+document.addEventListener('click', function (e) {
+  if (!CAL_POP) return;
+  var x = CAL_POP.split('|');
+  if (e.target.closest('#' + x[1])) return;
+  if (e.target.closest('#' + x[0])) { if (e.target.closest('.age-ev, .cal-novo-item')) setTimeout(calPopFechar_, 0); return; }
+  calPopFechar_();
+});
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') calPopFechar_(); });
+window.addEventListener('scroll', function () { calPopFechar_(); }, { passive: true });
+/* O botão único da barra: Nova sessão, Bloquear datas ou Lembrete */
+function calNovoEscolher_(qual) {
+  calPopFechar_();
+  if (qual === 'bloqueio') { ageBloqueiosAbrir_(); return; }
+  ageNovaPeloBotao_();
+  if (qual === 'lembrete') ageTrocarAba_('lembrete');
+}
+/* "Abrir na Agenda" (Início): leva à Agenda no dia, sem abrir janela nenhuma */
+async function hojeAbrirAgenda_(dia) {
+  var p = String(dia || '').split('-');
+  if (p.length !== 3) return;
+  calDataRef = new Date(+p[0], +p[1] - 1, +p[2]);
+  await calAbrirTela();
+}
+/* O campo único "Status" de cada sessão com status pendente */
+function stpEscolher_(sel) {
+  var v = sel.value, id = sel.dataset.id, dia = sel.dataset.dia;
+  if (!v) return;
+  sel.value = '';
+  if (v === 'realizada' || v === 'falta') stpMarcar_([id], v);
+  else stpOutra_(id, dia, v === 'outra' ? undefined : v);
 }
 /* Fim do Pacote 14.32 — Configurações */
 
@@ -24851,7 +24929,7 @@ function ageDesenharDia_(col, iso) {
       (s.confirmada ? ' · Confirmada pelo paciente' : '') + (s.serie_id ? ' · Sessões recorrentes' : '');
     el.innerHTML = '<span class="cal-ev-hora"><span>' + esc(s.hora) + ' – ' + ageHora_(ini + dur) + '</span><span>' + icones + '</span></span>' +
       '<span class="cal-ev-nome">' + esc(s.nome) + '</span>' +
-      '<span class="cal-ev-linha">' + (s.reagendada_de ? '<span class="cal-ev-sit">Reagendada de ' + esc(lemDataBR_(s.reagendada_de.data, true)) + '</span>' : (s.reposicao_de ? '<span class="cal-ev-marca">Reposição</span>' : '')) + // 14.22
+      '<span class="cal-ev-linha">' + (s.reagendada_de ? '<span class="cal-ev-sit">Reagendada de ' + esc(lemDataBR_(s.reagendada_de.data, true)) + '</span>' : (s.reposicao_de ? '<span class="cal-ev-repo" title="Reposição" aria-label="Reposição">R</span>' : '')) + // 14.22; 14.32: a letra R
       (sit ? '<span class="cal-ev-sit">' + esc(sit) + '</span>' : '') +
       ((s.reposta_em && !s.reagendada_para) ? '<span class="cal-ev-sit"> · Reposta em ' + esc(lemDataBR_(s.reposta_em, true)) + '</span>' : '') + '</span>';
     if (CAL_BALAO_OK) { // 14.27: com mouse, o balão substitui a dica de uma linha do navegador
@@ -26289,7 +26367,7 @@ function hojeInicioHtml_() {
   var lemsHtml = lems.map(function (x) {
     return '<div class="stp-linha hoje-linha hoje-lem"><span class="stp-quem"><strong>' + esc(stpHora_(x.hora)) + '</strong> · Lembrete: ' + esc(x.nome) +
       ' <span class="hoje-marca">' + (x.paciente ? '· ' + esc(x.paciente) : '') + (x.feito ? ' · Feito' : '') + '</span></span><span class="stp-acoes">' +
-      '<button type="button" class="prof-lem-btn" data-id="' + esc(x.id) + '" data-dia="' + esc(x.data) + '" onclick="hojeLemAbrir_(this.dataset.id, this.dataset.dia)"><svg class="ico" aria-hidden="true"><use href="#i-calendar"/></svg> Abrir na Agenda</button></span></div>';
+      '<button type="button" class="prof-lem-btn" data-id="' + esc(x.id) + '" data-dia="' + esc(x.data) + '" onclick="hojeAbrirAgenda_(this.dataset.dia)"><svg class="ico" aria-hidden="true"><use href="#i-calendar"/></svg> Abrir na Agenda</button></span></div>';
   }).join('');
   var h = '<section class="prof-bloco" id="hojeBloco"><h3 class="prof-bloco-titulo">Sessões de hoje</h3>';
   if (!lista.length) return h + '<p class="prof-bloco-vazio" id="hojeVazio">Nenhuma sessão hoje.</p>' + lemsHtml + '</section>';
@@ -26298,19 +26376,9 @@ function hojeInicioHtml_() {
     h += '<div class="stp-linha hoje-linha"><span class="stp-quem"><strong>' + esc(stpHora_(x.hora)) + '</strong> · ' + esc(x.nome) +
       ' <span class="hoje-marca">· ' + (x.modalidade === 'online' ? 'On-line' : 'Presencial') + (sit ? ' · ' + sit : '') + '</span></span><span class="stp-acoes">' +
       (x.meet_link ? ageSalaBotoes_(x.meet_link, true) : '') +
-      '<button type="button" class="prof-lem-btn" data-id="' + esc(x.id) + '" data-dia="' + esc(x.data) + '" onclick="stpOutra_(this.dataset.id, this.dataset.dia)"><svg class="ico" aria-hidden="true"><use href="#i-calendar"/></svg> Abrir na Agenda</button></span></div>';
+      '<button type="button" class="prof-lem-btn" data-id="' + esc(x.id) + '" data-dia="' + esc(x.data) + '" onclick="hojeAbrirAgenda_(this.dataset.dia)"><svg class="ico" aria-hidden="true"><use href="#i-calendar"/></svg> Abrir na Agenda</button></span></div>';
   });
   return h + lemsHtml + '</section>';
-}
-async function hojeLemAbrir_(id, dia) { // 14.26: abre a Agenda no dia e a janela do lembrete
-  var p = String(dia || '').split('-');
-  if (p.length !== 3) return;
-  calDataRef = new Date(+p[0], +p[1] - 1, +p[2]);
-  await calAbrirTela();
-  for (var i = 0; i < 150 && AGE.carregando; i++) await new Promise(function (ok) { setTimeout(ok, 100); });
-  if (!((AGE.agenda && AGE.agenda.lembretes) || []).some(function (x) { return x.id === id; })) await ageCarregar_(true, true);
-  if (secaoAtivaId() !== 'sec-prof-agenda-cal') return;
-  ageAbrirLembrete_(id);
 }
 
 /* Lista de horários livres agrupada por dia (a mesma aparência da tela do paciente); `fn` é o onclick de cada horário */
@@ -26437,12 +26505,7 @@ function ageSinoRender_() {
     (novos ? '<button type="button" class="prof-lem-btn" id="calSinoVistos" onclick="ageSinoVistos_()">Marcar como vistos</button>' : '') + '</div>' +
     (eventos.length ? '<ul class="age-evs" id="calSinoLista">' + ageEventosHtml_(eventos, vistos) + '</ul>' : '<p class="prof-bloco-vazio">Nenhum evento nos últimos 30 dias.</p>');
 }
-function ageSinoAlternar_() {
-  var painel = document.getElementById('calSinoPainel'), btn = document.getElementById('calSino');
-  var abrir = painel.classList.contains('hidden');
-  painel.classList.toggle('hidden', !abrir);
-  btn.setAttribute('aria-expanded', abrir ? 'true' : 'false');
-}
+function ageSinoAlternar_() { calPopAlternar_('calSinoPainel', 'calSino'); } // 14.32: abre no canto, preso ao sino
 async function ageSinoVistos_() {
   if (AGE.ocupado) return;
   AGE.ocupado = true;
@@ -27425,14 +27488,12 @@ function stpInicioHtml_() {
       dia = x.data;
       var doDia = sp.itens.filter(function (y) { return y.data === dia; }).length;
       h += '<div class="stp-dia"><span class="stp-dia-nome">' + esc(stpDia_(dia)) + '</span>' +
-        (doDia > 1 ? '<button type="button" class="prof-lem-btn" data-dia="' + esc(dia) + '" onclick="stpTodas_(this.dataset.dia)">Todas realizadas</button>' : '') + '</div>';
+        (doDia > 1 ? '<button type="button" class="prof-lem-btn" data-dia="' + esc(dia) + '" onclick="stpTodas_(this.dataset.dia)"><svg class="ico" aria-hidden="true"><use href="#i-check"/></svg> Todas realizadas</button>' : '') + '</div>';
     }
     h += '<div class="stp-linha"><span class="stp-quem"><strong>' + esc(stpHora_(x.hora)) + '</strong> · ' + esc(x.nome) + '</span><span class="stp-acoes">' +
-      '<button type="button" class="prof-lem-btn" data-id="' + esc(x.id) + '" data-sit="realizada" onclick="stpUma_(this)">Realizada</button>' +
-      '<button type="button" class="prof-lem-btn" data-id="' + esc(x.id) + '" data-sit="falta" onclick="stpUma_(this)">Falta</button>' +
-      '<button type="button" class="prof-lem-btn" data-id="' + esc(x.id) + '" data-dia="' + esc(x.data) + '" onclick="stpOutra_(this.dataset.id, this.dataset.dia, \'cancelada\')">Cancelada</button>' +
-      '<button type="button" class="prof-lem-btn" data-id="' + esc(x.id) + '" data-dia="' + esc(x.data) + '" onclick="stpOutra_(this.dataset.id, this.dataset.dia, \'reagendada\')">Reagendada</button>' +
-      '<button type="button" class="prof-lem-btn" data-id="' + esc(x.id) + '" data-dia="' + esc(x.data) + '" onclick="stpOutra_(this.dataset.id, this.dataset.dia)">Outra</button></span></div>';
+      '<label class="stp-status"><svg class="ico" aria-hidden="true"><use href="#i-check-square"/></svg><span class="age-sr">Status da sessão</span>' +
+      '<select class="stp-sel" data-id="' + esc(x.id) + '" data-dia="' + esc(x.data) + '" onchange="stpEscolher_(this)"><option value="">Status</option><option value="realizada">Realizada</option><option value="falta">Falta</option>' +
+      '<option value="cancelada">Cancelada</option><option value="reagendada">Reagendada</option><option value="outra">Outra…</option></select></label></span></div>';
   });
   if (sp.total > sp.itens.length) h += '<p class="stp-apoio">Mostrando as ' + sp.itens.length + ' mais antigas de ' + sp.total + '.</p>';
   return h + msg + '</section>';
@@ -27453,7 +27514,6 @@ async function stpMarcar_(ids, situacao) {
   }
   if (document.getElementById('sec-prof-dashboard').classList.contains('active')) profRenderInicio_();
 }
-function stpUma_(botao) { stpMarcar_([botao.dataset.id], botao.dataset.sit); }
 function stpTodas_(dia) {
   var sp = (FIN.inicio && FIN.inicio.status_pendente) || { itens: [] };
   stpMarcar_(sp.itens.filter(function (x) { return x.data === dia; }).map(function (x) { return x.id; }), 'realizada');
