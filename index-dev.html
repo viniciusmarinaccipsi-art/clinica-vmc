@@ -4386,9 +4386,10 @@ button.cab-no-item{cursor:pointer;}
 .cal-ev:hover{filter:brightness(.97);}
 /* 14.37: arrastar a sessão na grade */
 .cal-ev-move{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
-.cal-ev-origem{opacity:.35;}
+.cal-ev-origem{visibility:hidden;}
 .cal-ev-arrastando{position:fixed;z-index:60;margin:0;pointer-events:none;opacity:.94;box-shadow:var(--sh-3);cursor:grabbing;}
-.cal-ev-destino{position:absolute;left:3px;right:3px;z-index:2;border:2px dashed var(--c-action);border-radius:7px;background:var(--c-action-tint);pointer-events:none;}
+.cal-ev-destino{position:absolute;left:3px;right:3px;z-index:2;border:2px dashed var(--c-action);border-radius:7px;background:var(--c-action-tint);color:var(--c-action-ink);font:var(--t-body-sm);line-height:1.25;padding:3px 5px;overflow:hidden;pointer-events:none;}
+.cal-ev-destino strong{display:block;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 body.arr-ativo{-webkit-user-select:none;user-select:none;cursor:grabbing;}
 .arr-linha{display:grid;grid-template-columns:48px minmax(0,1fr);gap:var(--s-2);font:var(--t-body);color:var(--c-ink);margin:0 0 var(--s-1);}
 .arr-rot{font:var(--t-label);color:var(--c-ink-3);padding-top:3px;}
@@ -27571,13 +27572,17 @@ function arrConfirmar_(s, alvo) {
 }
 function arrMarcarDestino_(col, iso) {
   var p = ARR.pend;
-  if (!p || p.data !== iso) return;
+  if (!p) return;
+  var antigo = col.querySelector('.cal-ev[data-sessao="' + p.s.id + '"]'); // o horário anterior fica livre enquanto a confirmação está aberta
+  if (antigo) antigo.classList.add('cal-ev-origem');
+  if (p.data !== iso) return;
   var ini = ageMin_(p.hora), dur = p.s.duracao_min || 60;
   if (ini < CAL_HORA_INI * 60 || ini >= CAL_HORA_FIM * 60) return;
   var el = document.createElement('div');
   el.className = 'cal-ev-destino'; el.id = 'arrDestino';
   el.style.top = ((ini - CAL_HORA_INI * 60) / 60 * CAL_ALT_HORA) + 'px';
   el.style.height = Math.max(dur / 60 * CAL_ALT_HORA - 4, 26) + 'px';
+  el.innerHTML = '<span>' + esc(p.hora) + ' – ' + ageHora_(ini + dur) + '</span><strong>' + esc(p.s.nome || 'Paciente') + '</strong>';
   col.appendChild(el);
 }
 function arrQuando_(iso, hora) { return ageDiaNome_(iso) + ', ' + lemDataBR_(iso) + ' às ' + hora; }
